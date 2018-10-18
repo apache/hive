@@ -1,0 +1,345 @@
+PREHOOK: query: create table string_fields_n0(strct struct<a:int, b:string, c:string>)
+row format delimited
+  fields terminated by '\t'
+  collection items terminated by '\001'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@string_fields_n0
+POSTHOOK: query: create table string_fields_n0(strct struct<a:int, b:string, c:string>)
+row format delimited
+  fields terminated by '\t'
+  collection items terminated by '\001'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@string_fields_n0
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt'
+overwrite into table string_fields_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@string_fields_n0
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt'
+overwrite into table string_fields_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@string_fields_n0
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@string_fields_n0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@string_fields_n0
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: string_fields_n0
+                  Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Select Operator
+                    expressions: strct (type: struct<a:int,b:string,c:string>), strct.a (type: int), strct.b (type: string), strct.c (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 3, 4]
+                        selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 0:int) -> 2:int, VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 1:int) -> 3:string, VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 2:int) -> 4:string
+                    Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
+                      Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@string_fields_n0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@string_fields_n0
+#### A masked pattern was here ####
+{"a":238,"b":"val_238","c":null}	238	val_238	NULL
+{"a":86,"b":"val_86","c":null}	86	val_86	NULL
+{"a":311,"b":"val_311","c":null}	311	val_311	NULL
+{"a":27,"b":"val_27","c":null}	27	val_27	NULL
+{"a":165,"b":"val_165","c":null}	165	val_165	NULL
+{"a":409,"b":"val_409","c":null}	409	val_409	NULL
+{"a":255,"b":"val_255","c":null}	255	val_255	NULL
+{"a":278,"b":"val_278","c":null}	278	val_278	NULL
+{"a":98,"b":"val_98","c":null}	98	val_98	NULL
+{"a":484,"b":"val_484","c":null}	484	val_484	NULL
+PREHOOK: query: create table char_fields_n0(strct struct<a:int, b:char(10), c:char(10)>)
+row format delimited
+  fields terminated by '\t'
+  collection items terminated by '\001'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@char_fields_n0
+POSTHOOK: query: create table char_fields_n0(strct struct<a:int, b:char(10), c:char(10)>)
+row format delimited
+  fields terminated by '\t'
+  collection items terminated by '\001'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@char_fields_n0
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt'
+overwrite into table char_fields_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@char_fields_n0
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt'
+overwrite into table char_fields_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@char_fields_n0
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_fields_n0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_fields_n0
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: char_fields_n0
+                  Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Select Operator
+                    expressions: strct (type: struct<a:int,b:char(10),c:char(10)>), strct.a (type: int), strct.b (type: char(10)), strct.c (type: char(10))
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 3, 4]
+                        selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 0:int) -> 2:int, VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 1:int) -> 3:char(10), VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 2:int) -> 4:char(10)
+                    Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
+                      Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_fields_n0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_fields_n0
+#### A masked pattern was here ####
+{"a":238,"b":"val_238   ","c":null}	238	val_238   	NULL
+{"a":86,"b":"val_86    ","c":null}	86	val_86    	NULL
+{"a":311,"b":"val_311   ","c":null}	311	val_311   	NULL
+{"a":27,"b":"val_27    ","c":null}	27	val_27    	NULL
+{"a":165,"b":"val_165   ","c":null}	165	val_165   	NULL
+{"a":409,"b":"val_409   ","c":null}	409	val_409   	NULL
+{"a":255,"b":"val_255   ","c":null}	255	val_255   	NULL
+{"a":278,"b":"val_278   ","c":null}	278	val_278   	NULL
+{"a":98,"b":"val_98    ","c":null}	98	val_98    	NULL
+{"a":484,"b":"val_484   ","c":null}	484	val_484   	NULL
+PREHOOK: query: create table varchar_fields_n0(strct struct<a:int, b:varchar(5), c:varchar(5)>)
+row format delimited
+  fields terminated by '\t'
+  collection items terminated by '\001'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_fields_n0
+POSTHOOK: query: create table varchar_fields_n0(strct struct<a:int, b:varchar(5), c:varchar(5)>)
+row format delimited
+  fields terminated by '\t'
+  collection items terminated by '\001'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_fields_n0
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt'
+overwrite into table varchar_fields_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@varchar_fields_n0
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt'
+overwrite into table varchar_fields_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@varchar_fields_n0
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_fields_n0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_fields_n0
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: varchar_fields_n0
+                  Statistics: Num rows: 1 Data size: 238 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Select Operator
+                    expressions: strct (type: struct<a:int,b:varchar(5),c:varchar(5)>), strct.a (type: int), strct.b (type: varchar(5)), strct.c (type: varchar(5))
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 3, 4]
+                        selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 0:int) -> 2:int, VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 1:int) -> 3:varchar(5), VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 2:int) -> 4:varchar(5)
+                    Statistics: Num rows: 1 Data size: 238 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
+                      Statistics: Num rows: 1 Data size: 238 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 1 Data size: 238 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_fields_n0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_fields_n0
+#### A masked pattern was here ####
+{"a":238,"b":"val_2","c":null}	238	val_2	NULL
+{"a":86,"b":"val_8","c":null}	86	val_8	NULL
+{"a":311,"b":"val_3","c":null}	311	val_3	NULL
+{"a":27,"b":"val_2","c":null}	27	val_2	NULL
+{"a":165,"b":"val_1","c":null}	165	val_1	NULL
+{"a":409,"b":"val_4","c":null}	409	val_4	NULL
+{"a":255,"b":"val_2","c":null}	255	val_2	NULL
+{"a":278,"b":"val_2","c":null}	278	val_2	NULL
+{"a":98,"b":"val_9","c":null}	98	val_9	NULL
+{"a":484,"b":"val_4","c":null}	484	val_4	NULL

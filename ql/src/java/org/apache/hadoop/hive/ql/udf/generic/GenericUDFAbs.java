@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -141,7 +141,8 @@ public class GenericUDFAbs extends GenericUDF {
       HiveDecimalWritable val = decimalOI.getPrimitiveWritableObject(valObject);
 
       if (val != null) {
-        resultDecimal.set(val.getHiveDecimal().abs());
+        resultDecimal.set(val);
+        resultDecimal.mutateAbs();
         val = resultDecimal;
       }
       return val;

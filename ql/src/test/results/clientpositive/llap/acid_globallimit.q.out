@@ -1,13 +1,11 @@
-PREHOOK: query: -- Global Limit optimization does not work with ACID table. Make sure to skip it for ACID table.
-CREATE TABLE acidtest1(c1 INT, c2 STRING)
+PREHOOK: query: CREATE TABLE acidtest1(c1 INT, c2 STRING)
 CLUSTERED BY (c1) INTO 3 BUCKETS
 STORED AS ORC
 TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtest1
-POSTHOOK: query: -- Global Limit optimization does not work with ACID table. Make sure to skip it for ACID table.
-CREATE TABLE acidtest1(c1 INT, c2 STRING)
+POSTHOOK: query: CREATE TABLE acidtest1(c1 INT, c2 STRING)
 CLUSTERED BY (c1) INTO 3 BUCKETS
 STORED AS ORC
 TBLPROPERTIES ("transactional"="true")
@@ -24,24 +22,24 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acidtest1
 POSTHOOK: Lineage: acidtest1.c1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtest1.c2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: select cast (c1 as string) from acidtest1 limit 10
+PREHOOK: query: select cast (c1 as string) from acidtest1 order by c1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtest1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast (c1 as string) from acidtest1 limit 10
+POSTHOOK: query: select cast (c1 as string) from acidtest1 order by c1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtest1
 #### A masked pattern was here ####
--340178543
--339581189
--339244391
-356535438
--338184935
--338131778
-356416560
-844686816
-355274340
--821957276
+-1000318990
+-1000804087
+-1000977746
+-1001217298
+-1001446082
+-1001487162
+-1001510525
+-1002045753
+-1002277189
+-1002350795
 PREHOOK: query: drop table acidtest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acidtest1

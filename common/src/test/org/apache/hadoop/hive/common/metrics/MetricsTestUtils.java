@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,13 +17,13 @@
  */
 package org.apache.hadoop.hive.common.metrics;
 
+import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -34,6 +34,7 @@ public class MetricsTestUtils {
   public static final MetricsCategory COUNTER = new MetricsCategory("counters", "count");
   public static final MetricsCategory TIMER = new MetricsCategory("timers", "count");
   public static final MetricsCategory GAUGE = new MetricsCategory("gauges", "value");
+  public static final MetricsCategory METER = new MetricsCategory("meters", "count");
 
   static class MetricsCategory {
     String category;
@@ -48,6 +49,12 @@ public class MetricsTestUtils {
     Object expectedValue) throws Exception {
     JsonNode jsonNode = getJsonNode(json, category, metricsName);
     Assert.assertEquals(expectedValue.toString(), jsonNode.asText());
+  }
+
+  public static void verifyMetricsJson(String json, MetricsCategory category, String metricsName,
+                                           Double expectedValue, Double delta) throws Exception {
+    JsonNode jsonNode = getJsonNode(json, category, metricsName);
+    Assert.assertEquals(expectedValue, Double.valueOf(jsonNode.asText()), delta);
   }
 
   public static JsonNode getJsonNode(String json, MetricsCategory category, String metricsName) throws Exception {

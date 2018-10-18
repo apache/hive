@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,10 +28,9 @@ import org.apache.hadoop.io.Writable;
  * HiveSerializer is used to serialize data to a Hadoop Writable object. The
  * serialize In addition to the interface below, all implementations are assume
  * to have a ctor that takes a single 'Table' object as argument.
- * All serializers should extend the abstract class AbstractSerializer, and eventually
- * Serializer interface should be removed
+ * All serializers should extend the abstract class AbstractSerializer.
+ * The interface is necessary for SerDes to be able to implement both Serializer and Deserializer.
  */
-@Deprecated
 public interface Serializer {
 
   /**

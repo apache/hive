@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,19 +17,24 @@
  */
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import org.apache.hadoop.hive.serde2.SerDe;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 
 @SuppressWarnings("deprecation")
 public class MapJoinObjectSerDeContext {
   private final ObjectInspector standardOI;
-  private final SerDe serde;
+  private final AbstractSerDe serde;
   private final boolean hasFilter;
 
-  public MapJoinObjectSerDeContext(SerDe serde, boolean hasFilter)
+  public MapJoinObjectSerDeContext(AbstractSerDe serde, boolean hasFilter)
       throws SerDeException {
     this.serde = serde;
     this.hasFilter = hasFilter;
@@ -47,12 +52,24 @@ public class MapJoinObjectSerDeContext {
   /**
    * @return the serde
    */
-  public SerDe getSerDe() {
+  public AbstractSerDe getSerDe() {
     return serde;
   }
 
   public boolean hasFilterTag() {
     return hasFilter;
+  }
+
+  public String stringify() {
+    StandardStructObjectInspector standardStructOI = (StandardStructObjectInspector) standardOI;
+    List<? extends StructField> structFields = standardStructOI.getAllStructFieldRefs();
+    List<String> typeInfoStrings = new ArrayList<String>();
+    for (StructField field : structFields) {
+      ObjectInspector fieldOI = field.getFieldObjectInspector();
+      typeInfoStrings.add(fieldOI.getTypeName());
+    }
+    return "[types " + typeInfoStrings.toString() + ", serde=" + serde.getClass().getName()
+        + ", hasFilter=" + hasFilter + "]";
   }
 
   @Override

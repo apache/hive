@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.conf;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -27,6 +28,7 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 
@@ -41,11 +43,6 @@ public class TestHiveConf {
   public void testHiveSitePath() throws Exception {
     String expectedPath = HiveTestUtils.getFileFromClasspath("hive-site.xml");
     String hiveSiteLocation = HiveConf.getHiveSiteLocation().getPath();
-    if (Shell.WINDOWS) {
-      // Do case-insensitive comparison on Windows, as drive letter can have different case.
-      expectedPath = expectedPath.toLowerCase();
-      hiveSiteLocation = hiveSiteLocation.toLowerCase();
-    }
     Assert.assertEquals(expectedPath, hiveSiteLocation);
   }
 
@@ -116,33 +113,59 @@ public class TestHiveConf {
     Assert.assertEquals(TimeUnit.MILLISECONDS, HiveConf.unitFor("ms", null));
     Assert.assertEquals(TimeUnit.MILLISECONDS, HiveConf.unitFor("msecs", null));
     Assert.assertEquals(TimeUnit.MICROSECONDS, HiveConf.unitFor("us", null));
-    Assert.assertEquals(TimeUnit.MICROSECONDS, HiveConf.unitFor("useconds", null));
+    Assert.assertEquals(TimeUnit.MICROSECONDS, HiveConf.unitFor("usecs", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("ns", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("nsecs", null));
   }
 
   @Test
+  public void testToSizeBytes() throws Exception {
+    Assert.assertEquals(1L, HiveConf.toSizeBytes("1b"));
+    Assert.assertEquals(1L, HiveConf.toSizeBytes("1bytes"));
+    Assert.assertEquals(1024L, HiveConf.toSizeBytes("1kb"));
+    Assert.assertEquals(1048576L, HiveConf.toSizeBytes("1mb"));
+    Assert.assertEquals(1073741824L, HiveConf.toSizeBytes("1gb"));
+    Assert.assertEquals(1099511627776L, HiveConf.toSizeBytes("1tb"));
+    Assert.assertEquals(1125899906842624L, HiveConf.toSizeBytes("1pb"));
+  }
+
+  @Test
   public void testHiddenConfig() throws Exception {
     HiveConf conf = new HiveConf();
-    // check password configs are hidden
-    Assert.assertTrue(conf.isHiddenConfig(HiveConf.ConfVars.METASTOREPWD.varname));
-    Assert.assertTrue(conf.isHiddenConfig(
-        HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
-    // check change hidden list should fail
+
+    // check that a change to the hidden list should fail
     try {
       final String name = HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname;
       conf.verifyAndSet(name, "");
+      conf.verifyAndSet(name + "postfix", "");
       Assert.fail("Setting config property " + name + " should fail");
     } catch (IllegalArgumentException e) {
       // the verifyAndSet in this case is expected to fail with the IllegalArgumentException
     }
-    // check stripHiddenConfigurations
-    Configuration conf2 = new Configuration(conf);
-    conf2.set(HiveConf.ConfVars.METASTOREPWD.varname, "password");
-    conf2.set(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname, "password");
-    conf.stripHiddenConfigurations(conf2);
-    Assert.assertEquals("", conf2.get(HiveConf.ConfVars.METASTOREPWD.varname));
-    Assert.assertEquals("", conf2.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
+
+    ArrayList<String> hiddenList = Lists.newArrayList(
+        HiveConf.ConfVars.METASTOREPWD.varname,
+        HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
+        "fs.s3.awsSecretAccessKey",
+        "fs.s3n.awsSecretAccessKey",
+        "dfs.adls.oauth2.credential",
+        "fs.adl.oauth2.credential"
+    );
+
+    for (String hiddenConfig : hiddenList) {
+      // check configs are hidden
+      Assert.assertTrue("config " + hiddenConfig + " should be hidden",
+          conf.isHiddenConfig(hiddenConfig));
+      // check stripHiddenConfigurations removes the property
+      Configuration conf2 = new Configuration(conf);
+      conf2.set(hiddenConfig, "password");
+      conf.stripHiddenConfigurations(conf2);
+      // check that a property that begins the same is also hidden
+      Assert.assertTrue(conf.isHiddenConfig(
+          hiddenConfig + "postfix"));
+      // Check the stripped property is the empty string
+      Assert.assertEquals("", conf2.get(hiddenConfig));
+    }
   }
 
   @Test
@@ -150,7 +173,7 @@ public class TestHiveConf {
     HiveConf conf = new HiveConf();
     Assert.assertFalse(conf.getSparkConfigUpdated());
 
-    conf.verifyAndSet("spark.master", "yarn-cluster");
+    conf.verifyAndSet("spark.master", "yarn");
     Assert.assertTrue(conf.getSparkConfigUpdated());
     conf.verifyAndSet("hive.execution.engine", "spark");
     Assert.assertTrue("Expected spark config updated.", conf.getSparkConfigUpdated());

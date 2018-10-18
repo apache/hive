@@ -20,15 +20,20 @@ package org.apache.hive.ptest.execution;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Joiner;
 import org.apache.hive.ptest.execution.conf.Host;
+import org.apache.hive.ptest.execution.conf.QFileTestBatch;
 import org.apache.hive.ptest.execution.conf.TestBatch;
 import org.apache.hive.ptest.execution.context.ExecutionContext;
 import org.slf4j.Logger;
@@ -88,9 +93,18 @@ public class ExecutionPhase extends Phase {
     }
     logger.info("ParallelWorkQueueSize={}, IsolatedWorkQueueSize={}", parallelWorkQueue.size(),
         isolatedWorkQueue.size());
+    if (logger.isDebugEnabled()) {
+      for (TestBatch testBatch : parallelWorkQueue) {
+        logger.debug("PBatch: {}", testBatch);
+      }
+      for (TestBatch testBatch : isolatedWorkQueue) {
+        logger.debug("IBatch: {}", testBatch);
+      }
+    }
     try {
       int expectedNumHosts = hostExecutors.size();
       initalizeHosts();
+      resetPerfMetrics();
       do {
         replaceBadHosts(expectedNumHosts);
         List<ListenableFuture<Void>> results = Lists.newArrayList();
@@ -107,19 +121,48 @@ public class ExecutionPhase extends Phase {
           batchLogDir = new File(succeededLogDir, batch.getName());
         }
         JUnitReportParser parser = new JUnitReportParser(logger, batchLogDir);
-        executedTests.addAll(parser.getExecutedTests());
-        failedTests.addAll(parser.getFailedTests());
+        executedTests.addAll(parser.getAllExecutedTests());
+        for (String failedTest : parser.getAllFailedTests()) {
+          failedTests.add(failedTest + " (batchId=" + batch.getBatchId() + ")");
+        }
+
         // if the TEST*.xml was not generated or was corrupt, let someone know
-        if (parser.getNumAttemptedTests() == 0) {
-          failedTests.add(batch.getName() + " - did not produce a TEST-*.xml file");
+        if (parser.getTestClassesWithReportAvailable().size() < batch.getTestClasses().size()) {
+          Set<String> expTestClasses = new HashSet<>(batch.getTestClasses());
+          expTestClasses.removeAll(parser.getTestClassesWithReportAvailable());
+          for (String testClass : expTestClasses) {
+            StringBuilder messageBuilder = new StringBuilder();
+            messageBuilder.append(testClass).append(" - did not produce a TEST-*.xml file (likely timed out)")
+                .append(" (batchId=").append(batch.getBatchId()).append(")");
+            if (batch instanceof QFileTestBatch) {
+              Collection<String> tests = ((QFileTestBatch)batch).getTests();
+              if (tests.size() != 0) {
+                messageBuilder.append("\n\t[");
+                messageBuilder.append(Joiner.on(",").join(tests));
+                messageBuilder.append("]");
+              }
+            }
+            failedTests.add(messageBuilder.toString());
+          }
         }
       }
     } finally {
       long elapsed = System.currentTimeMillis() - start;
+      addAggregatePerfMetrics();
       logger.info("PERF: exec phase " +
           TimeUnit.MINUTES.convert(elapsed, TimeUnit.MILLISECONDS) + " minutes");
     }
   }
+
+  public static final String TOTAL_RSYNC_TIME = "TotalRsyncElapsedTime";
+  private void addAggregatePerfMetrics() {
+    long totalRsycTime = 0L;
+    for (HostExecutor hostExecutor : ImmutableList.copyOf(hostExecutors)) {
+      totalRsycTime += hostExecutor.getTotalRsyncTimeInMs();
+    }
+    addPerfMetric(TOTAL_RSYNC_TIME, totalRsycTime);
+  }
+
   private void replaceBadHosts(int expectedNumHosts)
       throws Exception {
     Set<Host> goodHosts = Sets.newHashSet();

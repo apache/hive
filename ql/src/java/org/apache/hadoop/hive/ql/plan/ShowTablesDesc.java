@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -31,24 +32,38 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Show Tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowTablesDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  String pattern;
-  String dbName;
-  String resFile;
+
   /**
    * table name for the result of show tables.
    */
   private static final String table = "show";
+
   /**
    * thrift ddl for the result of show tables.
    */
-  private static final String schema = "tab_name#string";
+  private static final String TABLES_VIEWS_SCHEMA = "tab_name#string";
+
+  /**
+   * thrift ddl for the result of show tables.
+   */
+  private static final String MATERIALIZED_VIEWS_SCHEMA =
+      "mv_name,rewrite_enabled,mode#string:string:string";
+
+
+  String pattern;
+  String dbName;
+  String resFile;
+  TableType type;
 
   public String getTable() {
     return table;
   }
 
   public String getSchema() {
-    return schema;
+    if (type != null && type == TableType.MATERIALIZED_VIEW) {
+      return MATERIALIZED_VIEWS_SCHEMA;
+    }
+    return TABLES_VIEWS_SCHEMA;
   }
 
   public ShowTablesDesc() {
@@ -82,6 +97,17 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * @param type
+   *          type of the tables to show
+   */
+  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType type) {
+    this.resFile = resFile.toString();
+    this.dbName = dbName;
+    this.pattern = pattern;
+    this.type    = type;
+  }
+
+  /**
    * @return the pattern
    */
   @Explain(displayName = "pattern")
@@ -95,6 +121,22 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
    */
   public void setPattern(String pattern) {
     this.pattern = pattern;
+  }
+
+  /**
+   * @return the table type to be fetched
+   */
+  @Explain(displayName = "type")
+  public TableType getType() {
+    return type;
+  }
+
+  /**
+   * @param type
+   *          the table type to set
+   */
+  public void setType(TableType type) {
+    this.type = type;
   }
 
   /**

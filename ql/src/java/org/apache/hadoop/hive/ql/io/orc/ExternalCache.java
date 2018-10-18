@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -54,7 +54,6 @@ import com.google.common.collect.Lists;
 /** Metastore-based footer cache storing serialized footers. Also has a local cache. */
 public class ExternalCache implements FooterCache {
   private static final Logger LOG = LoggerFactory.getLogger(ExternalCache.class);
-  private static boolean isDebugEnabled = LOG.isDebugEnabled();
 
   private final LocalCache localCache;
   private final ExternalFooterCachesByConf externalCacheSrc;
@@ -162,7 +161,9 @@ public class ExternalCache implements FooterCache {
 
   private boolean processBbResult(
       ByteBuffer bb, int ix, HdfsFileStatusWithId file, OrcTail[] result) throws IOException {
-    if (bb == null) return true;
+    if (bb == null) {
+      return true;
+    }
     result[ix] = createOrcTailFromMs(file, bb);
     if (result[ix] == null) {
       return false;
@@ -174,7 +175,10 @@ public class ExternalCache implements FooterCache {
 
   private void processPpdResult(MetadataPpdResult mpr, HdfsFileStatusWithId file,
       int ix, OrcTail[] result, ByteBuffer[] ppdResult) throws IOException {
-    if (mpr == null) return; // This file is unknown to metastore.
+    if (mpr == null)
+     {
+      return; // This file is unknown to metastore.
+    }
 
     ppdResult[ix] = mpr.isSetIncludeBitset() ? mpr.bufferForIncludeBitset() : NO_SPLIT_AFTER_PPD;
     if (mpr.isSetMetadata()) {
@@ -188,13 +192,15 @@ public class ExternalCache implements FooterCache {
   private List<Long> determineFileIdsToQuery(
       List<HdfsFileStatusWithId> files, OrcTail[] result, HashMap<Long, Integer> posMap) {
     for (int i = 0; i < result.length; ++i) {
-      if (result[i] != null) continue;
+      if (result[i] != null) {
+        continue;
+      }
       HdfsFileStatusWithId file = files.get(i);
       final FileStatus fs = file.getFileStatus();
       Long fileId = file.getFileId();
       if (fileId == null) {
         if (!isInTest) {
-          if (!isWarnLogged || isDebugEnabled) {
+          if (!isWarnLogged || LOG.isDebugEnabled()) {
             LOG.warn("Not using metastore cache because fileId is missing: " + fs.getPath());
             isWarnLogged = true;
           }
@@ -209,7 +215,7 @@ public class ExternalCache implements FooterCache {
   }
 
   private Long generateTestFileId(final FileStatus fs, List<HdfsFileStatusWithId> files, int i) {
-    final Long fileId = HdfsUtils.createFileId(fs.getPath().toUri().getPath(), fs, false, null);
+    final Long fileId = HdfsUtils.createTestFileId(fs.getPath().toUri().getPath(), fs, false, null);
     files.set(i, new HdfsFileStatusWithId() {
       @Override
       public FileStatus getFileStatus() {
@@ -225,9 +231,13 @@ public class ExternalCache implements FooterCache {
   }
 
   private ByteBuffer getSerializedSargForMetastore(boolean isOriginal) {
-    if (sarg == null) return null;
+    if (sarg == null) {
+      return null;
+    }
     ByteBuffer serializedSarg = isOriginal ? sargIsOriginal : sargNotIsOriginal;
-    if (serializedSarg != null) return serializedSarg;
+    if (serializedSarg != null) {
+      return serializedSarg;
+    }
     SearchArgument sarg2 = sarg;
     Kryo kryo = SerializationUtilities.borrowKryo();
     try {
@@ -293,7 +303,9 @@ public class ExternalCache implements FooterCache {
 
   private static OrcTail createOrcTailFromMs(
       HdfsFileStatusWithId file, ByteBuffer bb) throws IOException {
-    if (bb == null) return null;
+    if (bb == null) {
+      return null;
+    }
     FileStatus fs = file.getFileStatus();
     ByteBuffer copy = bb.duplicate();
     try {

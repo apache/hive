@@ -1,0 +1,116 @@
+PREHOOK: query: DROP TABLE blobstore_source
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_source
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE blobstore_source (
+    a string,
+    b string,
+    c double)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/insert_blobstore_to_blobstore/blobstore_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_source
+POSTHOOK: query: CREATE TABLE blobstore_source (
+    a string,
+    b string,
+    c double)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/insert_blobstore_to_blobstore/blobstore_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_source
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE blobstore_source
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@blobstore_source
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE blobstore_source
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@blobstore_source
+PREHOOK: query: DROP TABLE blobstore_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE blobstore_table LIKE blobstore_source
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/insert_blobstore_to_blobstore/blobstore_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_table
+POSTHOOK: query: CREATE TABLE blobstore_table LIKE blobstore_source
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/insert_blobstore_to_blobstore/blobstore_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_table
+PREHOOK: query: INSERT OVERWRITE TABLE blobstore_table SELECT * FROM blobstore_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@blobstore_table
+POSTHOOK: query: INSERT OVERWRITE TABLE blobstore_table SELECT * FROM blobstore_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@blobstore_table
+POSTHOOK: Lineage: blobstore_table.a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_table.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_table.c SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_table
+#### A masked pattern was here ####
+7
+PREHOOK: query: INSERT INTO TABLE blobstore_table SELECT * FROM blobstore_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@blobstore_table
+POSTHOOK: query: INSERT INTO TABLE blobstore_table SELECT * FROM blobstore_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@blobstore_table
+POSTHOOK: Lineage: blobstore_table.a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_table.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_table.c SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_table
+#### A masked pattern was here ####
+14
+PREHOOK: query: SELECT * FROM blobstore_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM blobstore_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_table
+#### A masked pattern was here ####
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084

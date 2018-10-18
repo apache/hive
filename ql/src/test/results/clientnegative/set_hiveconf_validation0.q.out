@@ -1,9 +1,7 @@
-PREHOOK: query: -- should fail: hive.join.cache.size accepts int type
-desc src
+PREHOOK: query: desc src
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src
-POSTHOOK: query: -- should fail: hive.join.cache.size accepts int type
-desc src
+POSTHOOK: query: desc src
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src
 key                 	string              	default             

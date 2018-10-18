@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 // Single-Column String hash table import.
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMultiSet;
 
@@ -46,8 +46,17 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerBigOnlyGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinInnerBigOnlyStringOperator.class.getName());
+
+  //------------------------------------------------------------------------------------------------
+
   private static final String CLASS_NAME = VectorMapJoinInnerBigOnlyStringOperator.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  protected String getLoggingPrefix() {
+    return super.getLoggingPrefix(CLASS_NAME);
+  }
+
+  //------------------------------------------------------------------------------------------------
 
   // (none)
 
@@ -78,9 +87,9 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
     super(ctx);
   }
 
-  public VectorMapJoinInnerBigOnlyStringOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinInnerBigOnlyStringOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   //---------------------------------------------------------------------------
@@ -88,40 +97,31 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
   //
 
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
+
+    /*
+     * Initialize Single-Column String members for this specialized class.
+     */
+
+    singleJoinColumn = bigTableKeyColumnMap[0];
+  }
+
+  @Override
+  public void hashTableSetup() throws HiveException {
+    super.hashTableSetup();
+
+    /*
+     * Get our Single-Column String hash multi-set information for this specialized class.
+     */
+
+    hashMultiSet = (VectorMapJoinBytesHashMultiSet) vectorMapJoinHashTable;
+  }
+
+  @Override
+  public void processBatch(VectorizedRowBatch batch) throws HiveException {
 
     try {
-      VectorizedRowBatch batch = (VectorizedRowBatch) row;
-
-      alias = (byte) tag;
-
-      if (needCommonSetup) {
-        // Our one time process method initialization.
-        commonSetup(batch);
-
-        /*
-         * Initialize Single-Column String members for this specialized class.
-         */
-
-        singleJoinColumn = bigTableKeyColumnMap[0];
-
-        needCommonSetup = false;
-      }
-
-      if (needHashTableSetup) {
-        // Setup our hash table specialization.  It will be the first time the process
-        // method is called, or after a Hybrid Grace reload.
-
-        /*
-         * Get our Single-Column String hash multi-set information for this specialized class.
-         */
-
-        hashMultiSet = (VectorMapJoinBytesHashMultiSet) vectorMapJoinHashTable;
-
-        needHashTableSetup = false;
-      }
-
-      batchCounter++;
 
       // Do the per-batch setup for an inner big-only join.
 
@@ -134,11 +134,7 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
       }
 
       final int inputLogicalSize = batch.size;
-
       if (inputLogicalSize == 0) {
-        if (isLogDebugEnabled) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
-        }
         return;
       }
 
@@ -196,7 +192,7 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
          * Common repeated join result processing.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishInnerBigOnlyRepeated(batch, joinResult, hashMultiSetResults[0]);
@@ -206,7 +202,7 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
          * NOT Repeating.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -354,7 +350,7 @@ public class VectorMapJoinInnerBigOnlyStringOperator extends VectorMapJoinInnerB
           }
         }
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
               " equalKeySeriesValueCounts " + longArrayToRangesString(equalKeySeriesValueCounts, equalKeySeriesCount) +

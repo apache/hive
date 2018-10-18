@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -46,7 +46,7 @@ public class JarDelegator extends LauncherDelegator {
                boolean usesHcatalog, String completedUrl,
                boolean enablelog, Boolean enableJobReconnect, JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
     runAs = user;
     List<String> args = makeArgs(jar, mainClass,
       libjars, files, jarArgs, defines,
@@ -69,7 +69,6 @@ public class JarDelegator extends LauncherDelegator {
       args.addAll(makeLauncherArgs(appConf, statusdir,
         completedUrl, allFiles, enablelog, enableJobReconnect, jobType));
       args.add("--");
-      TempletonUtils.addCmdForWindows(args);
 
       //check if the rest command specified explicitly to use hcatalog
       if(usesHcatalog){
@@ -89,13 +88,13 @@ public class JarDelegator extends LauncherDelegator {
         // (which is not very useful since users might not have access to that file system).
         //This is likely the HIVE-5188 issue
         args.add("-libjars");
-        args.add(TempletonUtils.quoteForWindows(libjarsListAsString));
+        args.add(libjarsListAsString);
       }
       if (TempletonUtils.isset(files)) {
         String filesListAsString =
             TempletonUtils.hadoopFsListAsString(files, appConf, runAs);
         args.add("-files");
-        args.add(TempletonUtils.quoteForWindows(filesListAsString));
+        args.add(filesListAsString);
       }
       //the token file location comes after mainClass, as a -D prop=val
       args.add("-D");
@@ -107,10 +106,10 @@ public class JarDelegator extends LauncherDelegator {
 
       for (String d : defines) {
         args.add("-D");
-        args.add(TempletonUtils.quoteForWindows(d));
+        args.add(d);
       }
       for (String arg : jarArgs) {
-        args.add(TempletonUtils.quoteForWindows(arg));
+        args.add(arg);
       }
     } catch (FileNotFoundException e) {
       throw new BadParam(e.getMessage());

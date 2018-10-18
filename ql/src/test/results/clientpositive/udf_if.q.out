@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED if
 POSTHOOK: type: DESCFUNCTION
 IF(expr1,expr2,expr3) - If expr1 is TRUE (expr1 <> 0 and expr1 <> NULL) then IF() returns expr2; otherwise it returns expr3. IF() returns a numeric or string value, depending on the context in which it is used.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2) AS COL1,
        IF(FALSE, CAST(NULL AS STRING), CAST(1 AS STRING)) AS COL2,
@@ -17,6 +19,8 @@ SELECT IF(TRUE, 1, 2) AS COL1,
        IF(IF(TRUE, NULL, FALSE), 1, 2) AS COL6
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2) AS COL1,
        IF(FALSE, CAST(NULL AS STRING), CAST(1 AS STRING)) AS COL2,
@@ -26,6 +30,8 @@ SELECT IF(TRUE, 1, 2) AS COL1,
        IF(IF(TRUE, NULL, FALSE), 1, 2) AS COL6
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -65,22 +71,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1	1	1	1	NULL	2
-PREHOOK: query: -- Type conversions
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS COL1,
        IF(FALSE, 1, 1.1) AS COL2,
        IF(FALSE, 1, 'ABC') AS COL3,
        IF(FALSE, 'ABC', 12.3) AS COL4
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Type conversions
-EXPLAIN
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
 SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS COL1,
        IF(FALSE, 1, 1.1) AS COL2,
        IF(FALSE, 1, 'ABC') AS COL3,
        IF(FALSE, 'ABC', 12.3) AS COL4
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -94,7 +102,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 128 (type: smallint), 1.1 (type: decimal(11,1)), 'ABC' (type: string), '12.3' (type: string)
+            expressions: 128S (type: smallint), 1.1 (type: decimal(11,1)), 'ABC' (type: string), '12.3' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 500 Data size: 145500 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

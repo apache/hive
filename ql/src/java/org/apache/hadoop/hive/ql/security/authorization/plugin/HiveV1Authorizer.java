@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeScope;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessController;
@@ -47,6 +46,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class HiveV1Authorizer extends AbstractHiveAuthorizer {
 
   private final HiveConf conf;
+  static private final String AUTHORIZER = "v1";
 
   public HiveV1Authorizer(HiveConf conf) {
     this.conf = conf;
@@ -77,7 +77,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
       HivePrincipal grantor, boolean grantOption)
       throws HiveAuthzPluginException, HiveAccessControlException {
     try {
-      PrivilegeBag privBag = toPrivilegeBag(privileges, privObject, grantor, grantOption);
+      PrivilegeBag privBag = toPrivilegeBag(privileges, privObject, grantor, grantOption, AUTHORIZER);
       grantOrRevokePrivs(principals, privBag, true, grantOption);
     } catch (Exception e) {
       throw new HiveAuthzPluginException(e);
@@ -90,7 +90,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
       HivePrincipal grantor, boolean grantOption)
       throws HiveAuthzPluginException, HiveAccessControlException {
     try {
-      PrivilegeBag privBag = toPrivilegeBag(privileges, privObject, grantor, grantOption);
+      PrivilegeBag privBag = toPrivilegeBag(privileges, privObject, grantor, grantOption, AUTHORIZER);
       grantOrRevokePrivs(principals, privBag, false, grantOption);
     } catch (Exception e) {
       throw new HiveAuthzPluginException(e);
@@ -115,7 +115,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   }
 
   private PrivilegeBag toPrivilegeBag(List<HivePrivilege> privileges,
-      HivePrivilegeObject privObject, HivePrincipal grantor, boolean grantOption)
+      HivePrivilegeObject privObject, HivePrincipal grantor, boolean grantOption, String authorizer)
       throws HiveException {
 
     PrivilegeBag privBag = new PrivilegeBag();
@@ -136,7 +136,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
         privBag.addToPrivileges(new HiveObjectPrivilege(new HiveObjectRef(
             HiveObjectType.GLOBAL, null, null, null, null), null, null,
             new PrivilegeGrantInfo(priv.getName(), 0, grantor.getName(), grantorType,
-                grantOption)));
+                grantOption), authorizer));
       }
       return privBag;
     }
@@ -186,23 +186,23 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
           privBag.addToPrivileges(new HiveObjectPrivilege(
               new HiveObjectRef(HiveObjectType.COLUMN, dbObj.getName(), tableObj.getTableName(),
                   partValues, columns.get(i)), null, null,
-              new PrivilegeGrantInfo(priv.getName(), 0, grantorName, grantorType, grantOption)));
+              new PrivilegeGrantInfo(priv.getName(), 0, grantorName, grantorType, grantOption), authorizer));
         }
       } else if (tableObj == null) {
         privBag.addToPrivileges(new HiveObjectPrivilege(
             new HiveObjectRef(HiveObjectType.DATABASE, dbObj.getName(), null,
                 null, null), null, null,
-            new PrivilegeGrantInfo(priv.getName(), 0, grantorName, grantorType, grantOption)));
+            new PrivilegeGrantInfo(priv.getName(), 0, grantorName, grantorType, grantOption), authorizer));
       } else if (partValues == null) {
         privBag.addToPrivileges(new HiveObjectPrivilege(
             new HiveObjectRef(HiveObjectType.TABLE, dbObj.getName(), tableObj.getTableName(),
                 null, null), null, null,
-            new PrivilegeGrantInfo(priv.getName(), 0, grantorName, grantorType, grantOption)));
+            new PrivilegeGrantInfo(priv.getName(), 0, grantorName, grantorType, grantOption), authorizer));
       } else {
         privBag.addToPrivileges(new HiveObjectPrivilege(
             new HiveObjectRef(HiveObjectType.PARTITION, dbObj.getName(), tableObj.getTableName(),
                 partValues, null), null, null,
-            new PrivilegeGrantInfo(priv.getName(), 0, grantorName, grantorType, grantOption)));
+            new PrivilegeGrantInfo(priv.getName(), 0, grantorName, grantorType, grantOption), authorizer));
       }
     }
     return privBag;

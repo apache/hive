@@ -1,19 +1,15 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE IF EXISTS unencrypted_table
+PREHOOK: query: DROP TABLE IF EXISTS unencrypted_table
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE IF EXISTS unencrypted_table
+POSTHOOK: query: DROP TABLE IF EXISTS unencrypted_table
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@unencrypted_table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unencrypted_table
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE unencrypted_table
@@ -27,11 +23,11 @@ POSTHOOK: Output: default@unencrypted_table
 PREHOOK: query: SELECT count(*) FROM unencrypted_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@unencrypted_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*) FROM unencrypted_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@unencrypted_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: drop table unencrypted_table
 PREHOOK: type: DROPTABLE

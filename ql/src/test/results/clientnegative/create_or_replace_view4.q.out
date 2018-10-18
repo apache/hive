@@ -1,10 +1,6 @@
-PREHOOK: query: -- View must have at least one non-partition column.
-
-drop view v
+PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: -- View must have at least one non-partition column.
-
-drop view v
+POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
@@ -16,4 +12,6 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
-FAILED: SemanticException [Error 10092]: At least one non-partitioning column must be present in view
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException: At least one non-partitioning column must be present in view

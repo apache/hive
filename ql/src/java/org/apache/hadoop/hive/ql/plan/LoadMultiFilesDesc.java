@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,15 +36,23 @@ public class LoadMultiFilesDesc implements Serializable {
   private String columns;
   private String columnTypes;
   private transient List<Path> srcDirs;
+  private transient List<String> targetPrefixes;
 
   public LoadMultiFilesDesc() {
   }
 
   public LoadMultiFilesDesc(final List<Path> sourceDirs, final List<Path> targetDir,
       final boolean isDfsDir, final String columns, final String columnTypes) {
+    this(sourceDirs, targetDir, null, isDfsDir, columns, columnTypes);
+  }
+
+  public LoadMultiFilesDesc(final List<Path> sourceDirs, final List<Path> targetDir,
+      List<String> targetPrefixes, final boolean isDfsDir, final String columns,
+      final String columnTypes) {
 
     this.srcDirs = sourceDirs;
     this.targetDirs = targetDir;
+    this.targetPrefixes = targetPrefixes;
     this.isDfsDir = isDfsDir;
     this.columns = columns;
     this.columnTypes = columnTypes;
@@ -105,5 +113,9 @@ public class LoadMultiFilesDesc implements Serializable {
    */
   public void setColumnTypes(String columnTypes) {
     this.columnTypes = columnTypes;
+  }
+
+  public List<String> getTargetPrefixes() {
+    return targetPrefixes;
   }
 }

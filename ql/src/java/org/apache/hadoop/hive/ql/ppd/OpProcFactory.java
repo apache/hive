@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -61,7 +62,6 @@ import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
@@ -97,7 +97,7 @@ public final class OpProcFactory {
   protected static final Logger LOG = LoggerFactory.getLogger(OpProcFactory.class
     .getName());
 
-  private static ExprWalkerInfo getChildWalkerInfo(Operator<?> current, OpWalkerInfo owi) {
+  private static ExprWalkerInfo getChildWalkerInfo(Operator<?> current, OpWalkerInfo owi) throws SemanticException {
     if (current.getNumChild() == 0) {
       return null;
     }
@@ -139,8 +139,10 @@ public final class OpProcFactory {
   }
 
   private static void removeOperator(Operator<? extends OperatorDesc> operator) {
-    List<Operator<? extends OperatorDesc>> children = operator.getChildOperators();
-    List<Operator<? extends OperatorDesc>> parents = operator.getParentOperators();
+    // since removeParent/removeChild updates the childOperators and parentOperators list in place
+    // we need to make a copy of list to iterator over them
+    List<Operator<? extends OperatorDesc>> children = new ArrayList<>(operator.getChildOperators());
+    List<Operator<? extends OperatorDesc>> parents = new ArrayList<>(operator.getParentOperators());
     for (Operator<? extends OperatorDesc> parent : parents) {
       parent.getChildOperators().addAll(children);
       parent.removeChild(operator);
@@ -332,7 +334,7 @@ public final class OpProcFactory {
         }
         WindowFrameDef wdwFrame = wFnDef.getWindowFrame();
         BoundaryDef end = wdwFrame.getEnd();
-        if ( end instanceof ValueBoundaryDef ) {
+        if (wdwFrame.getWindowType() == WindowType.RANGE) {
           return false;
         }
         if ( end.getDirection() == Direction.FOLLOWING ) {
@@ -651,6 +653,7 @@ public final class OpProcFactory {
   }
 
   public static class ReduceSinkPPD extends DefaultPPD implements NodeProcessor {
+    @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, procCtx, nodeOutputs);
@@ -788,7 +791,9 @@ public final class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
-      if (!LOG.isDebugEnabled()) return;
+      if (!LOG.isDebugEnabled()) {
+        return;
+      }
       for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates().entrySet()) {
         StringBuilder sb = new StringBuilder("Pushdown predicates of ").append(nd.getName())
             .append(" for alias ").append(e.getKey()).append(": ");
@@ -875,7 +880,7 @@ public final class OpProcFactory {
   }
 
   protected static Object createFilter(Operator op,
-      ExprWalkerInfo pushDownPreds, OpWalkerInfo owi) {
+      ExprWalkerInfo pushDownPreds, OpWalkerInfo owi) throws SemanticException {
     if (pushDownPreds != null && pushDownPreds.hasAnyCandidates()) {
       return createFilter(op, pushDownPreds.getFinalCandidates(), owi);
     }
@@ -883,7 +888,7 @@ public final class OpProcFactory {
   }
 
   protected static Object createFilter(Operator op,
-      Map<String, List<ExprNodeDesc>> predicates, OpWalkerInfo owi) {
+      Map<String, List<ExprNodeDesc>> predicates, OpWalkerInfo owi) throws SemanticException {
     RowSchema inputRS = op.getSchema();
 
     // combine all predicates into a single expression
@@ -970,7 +975,7 @@ public final class OpProcFactory {
     TableScanOperator tableScanOp,
     ExprNodeGenericFuncDesc originalPredicate,
     OpWalkerInfo owi,
-    HiveConf hiveConf) {
+    HiveConf hiveConf) throws SemanticException {
 
     TableScanDesc tableScanDesc = tableScanOp.getConf();
     Table tbl = tableScanDesc.getTableMetadata();
@@ -997,9 +1002,15 @@ public final class OpProcFactory {
     JobConf jobConf = new JobConf(owi.getParseContext().getConf());
     Utilities.setColumnNameList(jobConf, tableScanOp);
     Utilities.setColumnTypeList(jobConf, tableScanOp);
-    Utilities.copyTableJobPropertiesToConf(
-      Utilities.getTableDesc(tbl),
-      jobConf);
+
+    try {
+      Utilities.copyTableJobPropertiesToConf(
+        Utilities.getTableDesc(tbl),
+        jobConf);
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+
     Deserializer deserializer = tbl.getDeserializer();
     HiveStoragePredicateHandler.DecomposedPredicate decomposed =
       predicateHandler.decomposePredicate(

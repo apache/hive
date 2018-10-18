@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -33,7 +34,7 @@ import org.junit.Test;
  */
 public class TestBeeLineHistory {
 
-  private static final String fileName = "history";
+  private static final String fileName = System.getProperty("test.tmp.dir") + "/history";
 
   @BeforeClass
   public static void beforeTests() throws Exception {
@@ -58,11 +59,14 @@ public class TestBeeLineHistory {
     BeeLine beeline = new BeeLine();
     beeline.getOpts().setHistoryFile(fileName);
     beeline.setOutputStream(ops);
-    beeline.getConsoleReader(null);
+    Method method = beeline.getClass().getDeclaredMethod("setupHistory");
+    method.setAccessible(true);
+    method.invoke(beeline);
+    beeline.initializeConsoleReader(null);
     beeline.dispatch("!history");
     String output = os.toString("UTF-8");
     int numHistories = output.split("\n").length;
-    Assert.assertEquals(numHistories, 10);
+    Assert.assertEquals(10, numHistories);
     beeline.close();
   }
 
@@ -73,7 +77,10 @@ public class TestBeeLineHistory {
     BeeLine beeline = new BeeLine();
     beeline.getOpts().setHistoryFile(fileName);
     beeline.setOutputStream(ops);
-    beeline.getConsoleReader(null);
+    Method method = beeline.getClass().getDeclaredMethod("setupHistory");
+    method.setAccessible(true);
+    method.invoke(beeline);
+    beeline.initializeConsoleReader(null);
     beeline.dispatch("!history");
     String output = os.toString("UTF-8");
     String[] tmp = output.split("\n");

@@ -1,4 +1,4 @@
-############################################################################           
+############################################################################
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,13 +15,13 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-                                                                                       
+
 package TestDriverCurl;
 
 ###########################################################################
 # Class: TestDriver
 # A base class for TestDrivers.
-# 
+#
 
 use TestDriverFactory;
 use TestReport;
@@ -59,25 +59,25 @@ my $dependStr = 'failed_dependency';
 # None.
 #
 sub printResults
-  {
+{
     my ($testStatuses, $log, $prefix) = @_;
 
     my ($pass, $fail, $abort, $depend, $skipped) = (0, 0, 0, 0, 0);
 
     foreach (keys(%$testStatuses)) {
-      ($testStatuses->{$_} eq $passedStr) && $pass++;
-      ($testStatuses->{$_} eq $failedStr) && $fail++;
-      ($testStatuses->{$_} eq $abortedStr) && $abort++;
-      ($testStatuses->{$_} eq $dependStr) && $depend++;
-      ($testStatuses->{$_} eq $skippedStr) && $skipped++;
+        ($testStatuses->{$_} eq $passedStr) && $pass++;
+        ($testStatuses->{$_} eq $failedStr) && $fail++;
+        ($testStatuses->{$_} eq $abortedStr) && $abort++;
+        ($testStatuses->{$_} eq $dependStr) && $depend++;
+        ($testStatuses->{$_} eq $skippedStr) && $skipped++;
     }
 
     my $msg = "$prefix, PASSED: $pass FAILED: $fail SKIPPED: $skipped ABORTED: $abort "
-      . "FAILED DEPENDENCY: $depend";
+        . "FAILED DEPENDENCY: $depend";
     print $log "$msg\n";
     print "$msg\n";
-         
-  }
+
+}
 
 ##############################################################################
 #  Sub: printGroupResultsXml
@@ -93,25 +93,25 @@ sub printResults
 # None.
 #
 sub printGroupResultsXml
-  {
+{
     my ( $report, $groupName, $testStatuses,  $totalDuration) = @_;
     $totalDuration=0 if  ( !$totalDuration );
 
     my ($pass, $fail, $abort, $depend) = (0, 0, 0, 0);
 
     foreach my $key (keys(%$testStatuses)) {
-      if ( $key =~ /^$groupName/ ) {
-        ($testStatuses->{$key} eq $passedStr) && $pass++;
-        ($testStatuses->{$key} eq $failedStr) && $fail++;
-        ($testStatuses->{$key} eq $abortedStr) && $abort++;
-        ($testStatuses->{$key} eq $dependStr) && $depend++;
-      }
+        if ( $key =~ /^$groupName/ ) {
+            ($testStatuses->{$key} eq $passedStr) && $pass++;
+            ($testStatuses->{$key} eq $failedStr) && $fail++;
+            ($testStatuses->{$key} eq $abortedStr) && $abort++;
+            ($testStatuses->{$key} eq $dependStr) && $depend++;
+        }
     }
 
     my $total= $pass + $fail + $abort;
     $report->totals( $groupName, $total, $fail, $abort, $totalDuration );
 
-  }
+}
 
 ##############################################################################
 #  Sub: new
@@ -123,7 +123,7 @@ sub printGroupResultsXml
 # Returns:
 # None.
 sub new
-  {
+{
     my $proto = shift;
     my $class = ref($proto) || $proto;
     my $self = {};
@@ -133,7 +133,7 @@ sub new
     $self->{'wrong_execution_mode'} = "_xyz_wrong_execution_mode_zyx_";
 
     return $self;
-  }
+}
 
 ##############################################################################
 #  Sub: globalSetup
@@ -150,7 +150,7 @@ sub new
 # None
 #
 sub globalSetup
-  {
+{
     my ($self, $globalHash, $log) = @_;
     my $subName = (caller(0))[3];
 
@@ -166,11 +166,11 @@ sub globalSetup
     # if "-ignore false" was provided on the command line,
     # it means do run tests even when marked as 'ignore'
     if (defined($globalHash->{'ignore'}) && $globalHash->{'ignore'} eq 'false') {
-      $self->{'ignore'} = 'false';
+        $self->{'ignore'} = 'false';
     }
 
     if (! defined $globalHash->{'localpathbase'}) {
-      $globalHash->{'localpathbase'} = '/tmp';
+        $globalHash->{'localpathbase'} = '/tmp';
     }
 
     $globalHash->{'outpath'} = $globalHash->{'outpathbase'} . "/" . $globalHash->{'runid'} . "/";
@@ -197,19 +197,19 @@ sub globalSetup
 
     # add libexec location to the path
     if (defined($ENV{'PATH'})) {
-      $ENV{'PATH'} = $globalHash->{'scriptPath'} . ":" . $ENV{'PATH'};
+        $ENV{'PATH'} = $globalHash->{'scriptPath'} . ":" . $ENV{'PATH'};
     } else {
-      $ENV{'PATH'} = $globalHash->{'scriptPath'};
+        $ENV{'PATH'} = $globalHash->{'scriptPath'};
     }
 
-    IPC::Run::run(['mkdir', '-p', $globalHash->{'localpath'}], \undef, $log, $log) or 
+    IPC::Run::run(['mkdir', '-p', $globalHash->{'localpath'}], \undef, $log, $log) or
         die "Cannot create localpath directory " . $globalHash->{'localpath'} .
-          " " . "$ERRNO\n";
+        " " . "$ERRNO\n";
 
     # Create the temporary directory
-    IPC::Run::run(['mkdir', '-p', $globalHash->{'tmpPath'}], \undef, $log, $log) or 
+    IPC::Run::run(['mkdir', '-p', $globalHash->{'tmpPath'}], \undef, $log, $log) or
         die "Cannot create temporary directory " . $globalHash->{'tmpPath'} .
-          " " . "$ERRNO\n";
+        " " . "$ERRNO\n";
 
     my $testCmdBasics = $self->copyTestBasicConfig($globalHash);
     $testCmdBasics->{'method'} = 'PUT';
@@ -221,8 +221,8 @@ sub globalSetup
     my $json = new JSON;
     $json->utf8->decode($curl_result->{'body'})->{'boolean'} or
         die "Cannot create hdfs directory " . $globalHash->{'outpath'} .
-          " " . "$ERRNO\n";
-  }
+        " " . "$ERRNO\n";
+}
 
 ###############################################################################
 # Sub: globalCleanup
@@ -238,14 +238,14 @@ sub globalSetup
 # Returns:
 # None
 sub globalCleanup
-  {
+{
     my ($self, $globalHash, $log) = @_;
 
-    IPC::Run::run(['rm', '-rf', $globalHash->{'tmpPath'}], \undef, $log, $log) or 
+    IPC::Run::run(['rm', '-rf', $globalHash->{'tmpPath'}], \undef, $log, $log) or
         warn "Cannot remove temporary directory " . $globalHash->{'tmpPath'} .
-          " " . "$ERRNO\n";
+        " " . "$ERRNO\n";
 
-  }
+}
 
 ###############################################################################
 # Sub: runTest
@@ -260,7 +260,7 @@ sub globalCleanup
 # @returns reference to hash.  Contents of hash are defined by the subclass.
 #
 sub runTest
-  {
+{
     my ($self, $testCmd, $log) = @_;
     my $subName  = (caller(0))[3];
 
@@ -270,23 +270,23 @@ sub runTest
         my %result;
         return \%result;
     }
-    # Handle the various methods of running used in 
+    # Handle the various methods of running used in
     # the original TestDrivers
 
     if ( $testCmd->{'url'} ) {
-      return $self->runCurlCmd( $testCmd, $log);
+        return $self->runCurlCmd( $testCmd, $log);
     } else {
-      die "$subName FATAL Did not find a testCmd that " .
-        "I know how to handle : " . $testCmd->{'Curl'};
+        die "$subName FATAL Did not find a testCmd that " .
+            "I know how to handle : " . $testCmd->{'Curl'};
     }
 
 
-  }
+}
 
 ###############################################################################
 
 sub replaceParameters
-  {
+{
     my ($self, $testCmd, $aPfix, $log) = @_;
 
     my $url =  $testCmd->{$aPfix . 'url'};
@@ -295,60 +295,49 @@ sub replaceParameters
     $url = $self->replaceParametersInArg($url, $testCmd, $log);
     $testCmd->{$aPfix . 'url'} = $url;
 
-    $testCmd->{$aPfix . 'upload_file'} = 
-      $self->replaceParametersInArg($testCmd->{$aPfix . 'upload_file'}, $testCmd, $log);
+    $testCmd->{$aPfix . 'upload_file'} =
+        $self->replaceParametersInArg($testCmd->{$aPfix . 'upload_file'}, $testCmd, $log);
 
-    $testCmd->{$aPfix . 'user_name'} = 
-      $self->replaceParametersInArg($testCmd->{$aPfix . 'user_name'}, $testCmd, $log);
+    $testCmd->{$aPfix . 'user_name'} =
+        $self->replaceParametersInArg($testCmd->{$aPfix . 'user_name'}, $testCmd, $log);
 
     if (defined $testCmd->{$aPfix . 'post_options'}) {
-      my @options = @{$testCmd->{$aPfix . 'post_options'}};
-      my @new_options = ();
-      foreach my $option (@options) {
-        $option = $self->replaceParametersInArg($option, $testCmd, $log);
-        if (isWindows()) {
-          my $equal_pos = index($option, '=');
-          if ($equal_pos != -1) {
-            my $left = substr($option, 0, $equal_pos);
-            my $right = substr($option, $equal_pos+1);
-            if ($right =~ /=/) {
-              $right = '"'.$right.'"';
-              $option = $left . "=" . $right;
-            }
-          }
+        my @options = @{$testCmd->{$aPfix . 'post_options'}};
+        my @new_options = ();
+        foreach my $option (@options) {
+            $option = $self->replaceParametersInArg($option, $testCmd, $log);
+            push @new_options, ($option);
         }
-        push @new_options, ($option);
-      }
-      $testCmd->{$aPfix . 'post_options'} = \@new_options;
-    }    
+        $testCmd->{$aPfix . 'post_options'} = \@new_options;
+    }
     if (defined $testCmd->{$aPfix . 'json_field_substr_match'}) {
-      my $json_matches = $testCmd->{$aPfix . 'json_field_substr_match'};
-      my @keys = keys %{$json_matches};
+        my $json_matches = $testCmd->{$aPfix . 'json_field_substr_match'};
+        my @keys = keys %{$json_matches};
 
-      foreach my $key (@keys) {
-        my $new_value = $self->replaceParametersInArg($json_matches->{$key}, $testCmd, $log);
-        $json_matches->{$key} = $new_value;
-      }
-    }    
-
-    if (defined $testCmd->{$aPfix . 'json_path'}) {
-      my $json_path_matches = $testCmd->{$aPfix . 'json_path'};
-      my @keys = keys %{$json_path_matches};
-
-      foreach my $key (@keys) {
-        my $new_value = $self->replaceParametersInArg($json_path_matches->{$key}, $testCmd, $log);
-        $json_path_matches->{$key} = $new_value;
-      }
+        foreach my $key (@keys) {
+            my $new_value = $self->replaceParametersInArg($json_matches->{$key}, $testCmd, $log);
+            $json_matches->{$key} = $new_value;
+        }
     }
 
-  }
+    if (defined $testCmd->{$aPfix . 'json_path'}) {
+        my $json_path_matches = $testCmd->{$aPfix . 'json_path'};
+        my @keys = keys %{$json_path_matches};
+
+        foreach my $key (@keys) {
+            my $new_value = $self->replaceParametersInArg($json_path_matches->{$key}, $testCmd, $log);
+            $json_path_matches->{$key} = $new_value;
+        }
+    }
+
+}
 
 ###############################################################################
 sub replaceParametersInArg
-  {
+{
     my ($self, $arg, $testCmd, $log) = @_;
     if(! defined $arg){
-      return $arg;
+        return $arg;
     }
     my $outdir = $testCmd->{'outpath'} . $testCmd->{'group'} . "_" . $testCmd->{'num'};
     $arg =~ s/:UNAME:/$testCmd->{'current_user'}/g;
@@ -364,240 +353,240 @@ sub replaceParametersInArg
     $arg =~ s/:DB_PASSWORD:/$testCmd->{'db_password'}/g;
     $arg =~ s/:TNUM:/$testCmd->{'num'}/g;
     return $arg;
-  }
+}
 
 
 
 ###############################################################################
 
 sub getBaseCurlCmd(){
-  my ($self) = @_; 
-  my @curl_cmd = ("curl", '--silent','--show-error', '-H','Expect:');
-  if (defined $ENV{'SOCKS_PROXY'}) {
-    push @curl_cmd, ('--socks5-hostname', $ENV{'SOCKS_PROXY'});
-  }
-  return @curl_cmd;
+    my ($self) = @_;
+    my @curl_cmd = ("curl", '--silent','--show-error', '-H','Expect:');
+    if (defined $ENV{'SOCKS_PROXY'}) {
+        push @curl_cmd, ('--socks5-hostname', $ENV{'SOCKS_PROXY'});
+    }
+    return @curl_cmd;
 
 }
 
 ###############################################################################
 sub runCurlCmd(){
-  my ($self, $testCmd, $log) = @_;
-  if (defined $testCmd->{'upload_file'}) {
-    return $self->upload_file($testCmd,$log);
-  } else {
-    #if there are setup steps, run them first
-    if (defined $testCmd->{'setup'}) {
-      my $i = 0;
-      foreach my $setupCmd (@{$testCmd->{'setup'}}){
-        $i++;
-        print $log "\nRUNNING SETUP COMMAND: $i\n";
-        my $pfix = "setup_${i}_";
-        my $setupTestCmd = $self->createSetupCmd($testCmd, $setupCmd, $pfix, $log);
-        my $setupResult = $self->execCurlCmd($setupTestCmd, $pfix, $log);
-        
-        #if status code is set in setup, check if it matches results
-        if(defined $setupTestCmd->{"${pfix}status_code"}){
-          $self->checkResStatusCode($setupResult, $setupTestCmd->{"${pfix}status_code"}, $log);
+    my ($self, $testCmd, $log) = @_;
+    if (defined $testCmd->{'upload_file'}) {
+        return $self->upload_file($testCmd,$log);
+    } else {
+        #if there are setup steps, run them first
+        if (defined $testCmd->{'setup'}) {
+            my $i = 0;
+            foreach my $setupCmd (@{$testCmd->{'setup'}}){
+                $i++;
+                print $log "\nRUNNING SETUP COMMAND: $i\n";
+                my $pfix = "setup_${i}_";
+                my $setupTestCmd = $self->createSetupCmd($testCmd, $setupCmd, $pfix, $log);
+                my $setupResult = $self->execCurlCmd($setupTestCmd, $pfix, $log);
+
+                #if status code is set in setup, check if it matches results
+                if(defined $setupTestCmd->{"${pfix}status_code"}){
+                    $self->checkResStatusCode($setupResult, $setupTestCmd->{"${pfix}status_code"}, $log);
+                }
+            }
         }
-      }
+        return $self->execCurlCmd($testCmd, "", $log);
     }
-    return $self->execCurlCmd($testCmd, "", $log);
-  }
 }
 ###############################################################################
 sub createSetupCmd(){
-  my ($self, $testCmd, $setupCmd, $pfix, $log) = @_;
-  my $newTestCmd = dclone ($testCmd);
-  for my $key (keys %$setupCmd){
-    $newTestCmd->{$pfix . $key} = $setupCmd->{$key};
-  }
-  return $newTestCmd;
+    my ($self, $testCmd, $setupCmd, $pfix, $log) = @_;
+    my $newTestCmd = dclone ($testCmd);
+    for my $key (keys %$setupCmd){
+        $newTestCmd->{$pfix . $key} = $setupCmd->{$key};
+    }
+    return $newTestCmd;
 }
 
 ###############################################################################
 sub upload_file(){
-  my ($self, $testCmd, $log) = @_;
-  $testCmd->{'method'} = 'PUT';
-  my $result = $self->execCurlCmd($testCmd, "", $log);
-  my $checkRes = $self->checkResStatusCode($result, 100, $log);
-  if ($checkRes == 0) {
-    #fail
-    return 0;
-  }
-  my $header = $result->{'header_fields'};
+    my ($self, $testCmd, $log) = @_;
+    $testCmd->{'method'} = 'PUT';
+    my $result = $self->execCurlCmd($testCmd, "", $log);
+    my $checkRes = $self->checkResStatusCode($result, 100, $log);
+    if ($checkRes == 0) {
+        #fail
+        return 0;
+    }
+    my $header = $result->{'header_fields'};
 
-  #final url where the file should be stored
-  my $location = $header->{'Location'};
-  $testCmd->{'url'} = $location;
-    
-  $result = $self->execCurlCmd($testCmd, "", $log);
-  return $result;
+    #final url where the file should be stored
+    my $location = $header->{'Location'};
+    $testCmd->{'url'} = $location;
+
+    $result = $self->execCurlCmd($testCmd, "", $log);
+    return $result;
 }
 
 ###############################################################################
 sub execCurlCmd(){
-  my ($self, $testCmd, $argPrefix, $log) = @_;
-  my @curl_cmd = $self->getBaseCurlCmd();
-  # Set up file locations
-  my $subName = (caller(0))[3];
+    my ($self, $testCmd, $argPrefix, $log) = @_;
+    my @curl_cmd = $self->getBaseCurlCmd();
+    # Set up file locations
+    my $subName = (caller(0))[3];
 
-  my $filePrefix = $testCmd->{'localpath'} . $testCmd->{'group'} . "_" . $argPrefix . $testCmd->{'num'}; 
-  my $cmd_body =  $filePrefix . ".cmd_body";
+    my $filePrefix = $testCmd->{'localpath'} . $testCmd->{'group'} . "_" . $argPrefix . $testCmd->{'num'};
+    my $cmd_body =  $filePrefix . ".cmd_body";
 
-  #results
-  my $res_header = $filePrefix . ".res_header";
-  my $res_body = $filePrefix . ".res_body";
+    #results
+    my $res_header = $filePrefix . ".res_header";
+    my $res_body = $filePrefix . ".res_body";
 
-  my $outdir = $filePrefix .  ".out";
-  my $stdoutfile = "$outdir/stdout";
-  my $stderrfile = "$outdir/stderr";
+    my $outdir = $filePrefix .  ".out";
+    my $stdoutfile = "$outdir/stdout";
+    my $stderrfile = "$outdir/stderr";
 
-  mkpath( [ $outdir ] , 0, 0755) if ( ! -e outdir );
-  if ( ! -e $outdir ) {
-    print $log "$0.$subName FATAL could not mkdir $outdir\n";
-    die "$0.$subName FATAL could not mkdir $outdir\n";
-  }
-
-  $self->replaceParameters($testCmd, $argPrefix, $log );
-
-  my $method = $testCmd->{ $argPrefix . 'method'};
-
-  my $url = $testCmd->{ $argPrefix . 'url'};
-
-  #allow curl to make insecure ssl connections and transfers
-  if ($url =~ /^https:/) {
-    push @curl_cmd, '-k';
-  }
-
-  my @options = ();
-  if (defined $testCmd->{$argPrefix . 'post_options'}) {
-    @options = @{$testCmd->{$argPrefix . 'post_options'}};
-  }
-
-  #handle authentication based on secure mode
-  my $user_name = $testCmd->{ $argPrefix . 'user_name' }; 
-  if (defined $testCmd->{'is_secure_mode'} &&  $testCmd->{'is_secure_mode'} =~ /y.*/i) {
-    push @curl_cmd, ('--negotiate', '-u', ':');
-
-    #if keytab dir is defined, look for a keytab file for user and do a kinit
-    if(defined  $testCmd->{'keytab_dir'} && defined $user_name){
-      $user_name =~ /(.*?)(\/|$)/;
-      my $just_uname = $1; #uname without principal
-      my $keytab_dir = $testCmd->{'keytab_dir'};
-      print $log "regex " .  "${keytab_dir}/*${just_uname}\.*keytab";
-      my @files = bsd_glob(  "${keytab_dir}/*${just_uname}\.*keytab" );
-      if(scalar @files == 0){
-        die "Could not find keytab file for user $user_name in $keytab_dir";
-      } elsif(scalar @files > 1){
-        die "More than one keytab file found for user $user_name in $keytab_dir";
-      }
-      my @cmd = ();
-      if (defined $testCmd->{'user_realm'}){
-          my $user_name_with_realm_name = $user_name.'@'.$testCmd->{'user_realm'};
-          @cmd = ('kinit', '-k', '-t', $files[0], $user_name_with_realm_name);
-      }
-      else{
-          @cmd = ('kinit', '-k', '-t', $files[0], $user_name);
-      }
-      print $log "Command  @cmd";
-      IPC::Run::run(\@cmd, \undef, $log, $log) or 
-          die "Could not kinit as $user_name using " .  $files[0] . " $ERRNO";
+    mkpath( [ $outdir ] , 0, 0755) if ( ! -e outdir );
+    if ( ! -e $outdir ) {
+        print $log "$0.$subName FATAL could not mkdir $outdir\n";
+        die "$0.$subName FATAL could not mkdir $outdir\n";
     }
 
-  } else { 
-    #if mode is unsecure
-    if (defined $user_name) {
-      my $user_param = "user.name=${user_name}";
-      if ($method eq 'POST' ) {
-        push @options, $user_param;
-      } else {
-        if ($url =~ /\?/) {
-          #has some parameters in url
-          $url = $url . '&' . $user_param;
-        } else {
-          $url = $url . '?' . $user_param;
+    $self->replaceParameters($testCmd, $argPrefix, $log );
+
+    my $method = $testCmd->{ $argPrefix . 'method'};
+
+    my $url = $testCmd->{ $argPrefix . 'url'};
+
+    #allow curl to make insecure ssl connections and transfers
+    if ($url =~ /^https:/) {
+        push @curl_cmd, '-k';
+    }
+
+    my @options = ();
+    if (defined $testCmd->{$argPrefix . 'post_options'}) {
+        @options = @{$testCmd->{$argPrefix . 'post_options'}};
+    }
+
+    #handle authentication based on secure mode
+    my $user_name = $testCmd->{ $argPrefix . 'user_name' };
+    if (defined $testCmd->{'is_secure_mode'} &&  $testCmd->{'is_secure_mode'} =~ /y.*/i) {
+        push @curl_cmd, ('--negotiate', '-u', ':');
+
+        #if keytab dir is defined, look for a keytab file for user and do a kinit
+        if(defined  $testCmd->{'keytab_dir'} && defined $user_name){
+            $user_name =~ /(.*?)(\/|$)/;
+            my $just_uname = $1; #uname without principal
+            my $keytab_dir = $testCmd->{'keytab_dir'};
+            print $log "regex " .  "${keytab_dir}/*${just_uname}\.*keytab";
+            my @files = bsd_glob(  "${keytab_dir}/*${just_uname}\.*keytab" );
+            if(scalar @files == 0){
+                die "Could not find keytab file for user $user_name in $keytab_dir";
+            } elsif(scalar @files > 1){
+                die "More than one keytab file found for user $user_name in $keytab_dir";
+            }
+            my @cmd = ();
+            if (defined $testCmd->{'user_realm'}){
+                my $user_name_with_realm_name = $user_name.'@'.$testCmd->{'user_realm'};
+                @cmd = ('kinit', '-k', '-t', $files[0], $user_name_with_realm_name);
+            }
+            else{
+                @cmd = ('kinit', '-k', '-t', $files[0], $user_name);
+            }
+            print $log "Command  @cmd";
+            IPC::Run::run(\@cmd, \undef, $log, $log) or
+                die "Could not kinit as $user_name using " .  $files[0] . " $ERRNO";
         }
-      }
+
+    } else {
+        #if mode is unsecure
+        if (defined $user_name) {
+            my $user_param = "user.name=${user_name}";
+            if ($method eq 'POST' ) {
+                push @options, $user_param;
+            } else {
+                if ($url =~ /\?/) {
+                    #has some parameters in url
+                    $url = $url . '&' . $user_param;
+                } else {
+                    $url = $url . '?' . $user_param;
+                }
+            }
+        }
+
     }
 
-  }
-  
-  if (defined $testCmd->{'format_header'}) {
-    push @curl_cmd, ('-H', $testCmd->{'format_header'});
-  }
-
-  
-  
-  
-  if (defined $testCmd->{$argPrefix . 'format_header'}) {
-    push @curl_cmd, ('-H', $testCmd->{$argPrefix . 'format_header'});
-  }
-
-  if (defined $testCmd->{$argPrefix . 'upload_file'}) {
-    push @curl_cmd, ('-T', $testCmd->{$argPrefix . 'upload_file'});
-  }
-
-  #    if(!defined $testCmd->{'post_options'}){
-  #	$testCmd->{'post_options'} = \();
-  #    }
-
-  if (defined $testCmd->{$argPrefix . 'check_call_back'}) {
-    my $d = HTTP::Daemon->new || die;
-    $testCmd->{'http_daemon'} = $d;
-    $testCmd->{'callback_url'} = $d->url . 'templeton/$jobId';
-    push @curl_cmd, ('-d', 'callback=' . $testCmd->{'callback_url'});
-    push @{$testCmd->{$argPrefix . 'post_options'}}, ('callback=' . $testCmd->{'callback_url'});
-    #	#my @options = @{$testCmd->{'post_options'}};
-    #	print $log "post options  @options\n";
-  }
-
-  foreach my $option (@options) {
-    push @curl_cmd, ('-d', $option);
-  }
-
-  push @curl_cmd, ("-X", $method, "-o", $res_body, "-D", $res_header);  
-  push @curl_cmd, ($url);
-
-  print $log "$0:$subName Going to run command : " .  join (' , ', @curl_cmd);
-  print $log "\n";
-
-
-  my %result;
-  my $out;
-  my $err;
-  IPC::Run::run(\@curl_cmd, \undef, $out, $err) 
-      or die "Failed running curl cmd " . join ' ', @curl_cmd;
-
-  $result{'rc'} = $? >> 8;
-  $result{'stderr'} = $err;
-  $result{'stdout'} = $out;
-  $result{'body'} = `cat $res_body`;
- 
-  my @full_header = `cat $res_header`;
-  $result{'full_header'} = join '\n', @full_header;
-
-  #find the final http status code
-  for my $line ( @full_header){
-    if($line =~ /.*(HTTP\/1.1)\s+(\S+)/){
-      $result{'status_code'}  = $2;
+    if (defined $testCmd->{'format_header'}) {
+        push @curl_cmd, ('-H', $testCmd->{'format_header'});
     }
-  }
 
-  my %header_field;
-  foreach my $line (@full_header) {
-    chomp $line;
-    $line =~ /(.*?)\s*:\s*(.*)/;
-    if (defined $1 && defined $2 ) {
-      $header_field{$1} = $2;
+
+
+
+    if (defined $testCmd->{$argPrefix . 'format_header'}) {
+        push @curl_cmd, ('-H', $testCmd->{$argPrefix . 'format_header'});
     }
-  }
-  $result{'header_fields'} = \%header_field;
 
-  print $log "result : " . dump(%result);
-  #dump(%result);
-    
-  return \%result;
+    if (defined $testCmd->{$argPrefix . 'upload_file'}) {
+        push @curl_cmd, ('-T', $testCmd->{$argPrefix . 'upload_file'});
+    }
+
+    #    if(!defined $testCmd->{'post_options'}){
+    # $testCmd->{'post_options'} = \();
+    #    }
+
+    if (defined $testCmd->{$argPrefix . 'check_call_back'}) {
+        my $d = HTTP::Daemon->new || die;
+        $testCmd->{'http_daemon'} = $d;
+        $testCmd->{'callback_url'} = $d->url . 'templeton/$jobId';
+        push @curl_cmd, ('-d', 'callback=' . $testCmd->{'callback_url'});
+        push @{$testCmd->{$argPrefix . 'post_options'}}, ('callback=' . $testCmd->{'callback_url'});
+        # #my @options = @{$testCmd->{'post_options'}};
+        # print $log "post options  @options\n";
+    }
+
+    foreach my $option (@options) {
+        push @curl_cmd, ('-d', $option);
+    }
+
+    push @curl_cmd, ("-X", $method, "-o", $res_body, "-D", $res_header);
+    push @curl_cmd, ($url);
+
+    print $log "$0:$subName Going to run command : " .  join (' , ', @curl_cmd);
+    print $log "\n";
+
+
+    my %result;
+    my $out;
+    my $err;
+    IPC::Run::run(\@curl_cmd, \undef, $out, $err)
+        or die "Failed running curl cmd " . join ' ', @curl_cmd;
+
+    $result{'rc'} = $? >> 8;
+    $result{'stderr'} = $err;
+    $result{'stdout'} = $out;
+    $result{'body'} = `cat $res_body`;
+
+    my @full_header = `cat $res_header`;
+    $result{'full_header'} = join '\n', @full_header;
+
+    #find the final http status code
+    for my $line ( @full_header){
+        if($line =~ /.*(HTTP\/1.1)\s+(\S+)/){
+            $result{'status_code'}  = $2;
+        }
+    }
+
+    my %header_field;
+    foreach my $line (@full_header) {
+        chomp $line;
+        $line =~ /(.*?)\s*:\s*(.*)/;
+        if (defined $1 && defined $2 ) {
+            $header_field{$1} = $2;
+        }
+    }
+    $result{'header_fields'} = \%header_field;
+
+    print $log "result : " . dump(%result);
+    #dump(%result);
+
+    return \%result;
 
 }
 
@@ -616,14 +605,14 @@ sub execCurlCmd(){
 # @returns reference to hash.  Contents of hash are defined by the subclass.
 #
 sub generateBenchmark
-  {
+{
     my %result;
     return \%result;
-  }
+}
 
 ###############################################################################
 # Sub: compare
-# Compare the results of the test run with the generated benchmark results.  
+# Compare the results of the test run with the generated benchmark results.
 # This is a pure virtual function.
 #
 # Parameters:
@@ -638,7 +627,7 @@ sub generateBenchmark
 # same" is defined by the subclass.
 #
 sub compare
-  {
+{
 
     my ($self, $testResult, $benchmarkResult, $log, $testCmd) = @_;
     my $subName  = (caller(0))[3];
@@ -652,374 +641,374 @@ sub compare
 
     my $result = 1;             # until proven wrong...
     if (defined $testCmd->{'status_code'}) {
-      my $res = $self->checkResStatusCode($testResult, $testCmd->{'status_code'}, $log);
-      if ($res == 0) {
-        $result = 0;
-      }
+        my $res = $self->checkResStatusCode($testResult, $testCmd->{'status_code'}, $log);
+        if ($res == 0) {
+            $result = 0;
+        }
     }
 
     my $json_hash;
     my %json_info;
     # for information on JSONPath, check http://goessner.net/articles/JsonPath/
     if (defined $testCmd->{'json_path'}) {
-      my $json_matches = $testCmd->{'json_path'};
-      foreach my $key (keys %$json_matches) {
-        my $regex_expected_value = $json_matches->{$key};
-        my $path = JSON::Path->new($key);
+        my $json_matches = $testCmd->{'json_path'};
+        foreach my $key (keys %$json_matches) {
+            my $regex_expected_value = $json_matches->{$key};
+            my $path = JSON::Path->new($key);
 
-        # decode $testResult->{'body'} to an array of hash
-        my $body = decode_json $testResult->{'body'};
-        my @filtered_body;
-        if (defined $testCmd->{'filter_job_names'}) {
-          foreach my $filter (@{$testCmd->{'filter_job_names'}}) {
-            my @filtered_body_tmp = grep { $_->{detail}{profile}{jobName} eq $filter } @$body;
-            @filtered_body = (@filtered_body, @filtered_body_tmp);
-          }
-        } else {
-          @filtered_body = @$body;
+            # decode $testResult->{'body'} to an array of hash
+            my $body = decode_json $testResult->{'body'};
+            my @filtered_body;
+            if (defined $testCmd->{'filter_job_names'}) {
+                foreach my $filter (@{$testCmd->{'filter_job_names'}}) {
+                    my @filtered_body_tmp = grep { $_->{detail}{profile}{jobName} eq $filter } @$body;
+                    @filtered_body = (@filtered_body, @filtered_body_tmp);
+                }
+            } else {
+                @filtered_body = @$body;
+            }
+            my @sorted_filtered_body;
+            if (ref @$body[0] eq 'HASH') {
+                @sorted_filtered_body = sort { $a->{id} cmp $b->{id} } @filtered_body;
+            } else {
+                @sorted_filtered_body = sort { $a cmp $b } @filtered_body;
+            }
+            my $value = $path->value(\@sorted_filtered_body);
+            if (JSON::is_bool($value)) {
+                $value = $value ? 'true' : 'false';
+            }
+
+            if ($value !~ /$regex_expected_value/s) {
+                print $log "$0::$subName INFO check failed:"
+                    . " json pattern check failed. For field "
+                    . "$key, regex <" . $regex_expected_value
+                    . "> did not match the result <" . $value
+                    . ">\n";
+                $result = 0;
+                last;
+            }
         }
-        my @sorted_filtered_body;
-        if (ref @$body[0] eq 'HASH') {
-          @sorted_filtered_body = sort { $a->{id} cmp $b->{id} } @filtered_body;
-        } else {
-          @sorted_filtered_body = sort { $a cmp $b } @filtered_body;
-        }
-        my $value = $path->value(\@sorted_filtered_body);
-        if (JSON::is_bool($value)) {
-          $value = $value ? 'true' : 'false';
-        }
-        
-        if ($value !~ /$regex_expected_value/s) {
-          print $log "$0::$subName INFO check failed:"
-            . " json pattern check failed. For field "
-              . "$key, regex <" . $regex_expected_value
-                . "> did not match the result <" . $value
-                  . ">\n";
-          $result = 0;
-          last;
-        }
-      }
-    } 
+    }
     if (defined $testCmd->{'json_field_substr_match'} || $testCmd->{'json_field_match_object'}) {
-      my $json = new JSON;
-      $json_hash = $json->utf8->decode($testResult->{'body'});
-      my $json_matches = $testCmd->{'json_field_substr_match'};
-      my $json_matches_object = $testCmd->{'json_field_match_object'};
+        my $json = new JSON;
+        $json_hash = $json->utf8->decode($testResult->{'body'});
+        my $json_matches = $testCmd->{'json_field_substr_match'};
+        my $json_matches_object = $testCmd->{'json_field_match_object'};
 
-      %json_info = %$json_hash;
-      if (defined $json_info{'info'}) {
-        %json_info = %{$json_info{'info'}};
-        
-      }
-      print $log "\n\n json_info";
-      print $log dump(%json_info);
-      print $log "\n\n";
+        %json_info = %$json_hash;
+        if (defined $json_info{'info'}) {
+            %json_info = %{$json_info{'info'}};
 
-      if (defined $json_hash->{'id'}) {
-        print STDERR "jobid " . $json_hash->{'id'} . "\n";        
-        $json_info{'id'} = $json_hash->{'id'};
-      }
-
-      if(defined $json_matches->{'location_perms'} || defined $json_matches->{'location_group'}){
-        $self->setLocationPermGroup(\%json_info, $testCmd, $log);
-      }
-
-      foreach my $key (keys %$json_matches) {
-        my $json_field_val = $json_info{$key};
-        if( (ref($json_field_val) && ! UNIVERSAL::isa($json_field_val,'SCALAR')) ||
-            (!ref($json_field_val) && ! UNIVERSAL::isa(\$json_field_val,'SCALAR')) ){
-          #flatten the object into a string
-          $json_field_val = dump($json_field_val);
         }
-        if (JSON::is_bool($json_field_val)) {
-          $json_field_val = $json_field_val ? 'true' : 'false';
-        }
-        my $regex_expected_value = $json_matches->{$key};
-        print $log "Comparing $key: $json_field_val with regex /$regex_expected_value/\n";
+        print $log "\n\n json_info";
+        print $log dump(%json_info);
+        print $log "\n\n";
 
-        if ($json_field_val !~ /$regex_expected_value/s) {
-          print $log "$0::$subName WARN check failed:" 
-            . " json pattern check failed. For field "
-              . "$key, regex <" . $regex_expected_value 
-                . "> did not match the result <" . $json_field_val
-                  . ">\n";
-          $result = 0;
+        if (defined $json_hash->{'id'}) {
+            print STDERR "jobid " . $json_hash->{'id'} . "\n";
+            $json_info{'id'} = $json_hash->{'id'};
         }
-      }
 
-      foreach my $key (keys %$json_matches_object) {
-        my $json_field_val = $json_info{$key};
-        my $regex_expected_obj = $json->utf8->decode($json_matches_object->{$key});
-        print $log "Comparing $key: " . dump($json_field_val) . ",expected value:  " . dump($regex_expected_obj);
-
-        if (!Compare($json_field_val, $regex_expected_obj)) {
-          print $log "$0::$subName WARN check failed:" 
-            . " json compare failed. For field "
-              . "$key, regex <" . dump($regex_expected_obj)
-                . "> did not match the result <" . dump($json_field_val)
-                  . ">\n";
-          $result = 0;
+        if(defined $json_matches->{'location_perms'} || defined $json_matches->{'location_group'}){
+            $self->setLocationPermGroup(\%json_info, $testCmd, $log);
         }
-      }
+
+        foreach my $key (keys %$json_matches) {
+            my $json_field_val = $json_info{$key};
+            if( (ref($json_field_val) && ! UNIVERSAL::isa($json_field_val,'SCALAR')) ||
+                (!ref($json_field_val) && ! UNIVERSAL::isa(\$json_field_val,'SCALAR')) ){
+                #flatten the object into a string
+                $json_field_val = dump($json_field_val);
+            }
+            if (JSON::is_bool($json_field_val)) {
+                $json_field_val = $json_field_val ? 'true' : 'false';
+            }
+            my $regex_expected_value = $json_matches->{$key};
+            print $log "Comparing $key: $json_field_val with regex /$regex_expected_value/\n";
+
+            if ($json_field_val !~ /$regex_expected_value/s) {
+                print $log "$0::$subName WARN check failed:"
+                    . " json pattern check failed. For field "
+                    . "$key, regex <" . $regex_expected_value
+                    . "> did not match the result <" . $json_field_val
+                    . ">\n";
+                $result = 0;
+            }
+        }
+
+        foreach my $key (keys %$json_matches_object) {
+            my $json_field_val = $json_info{$key};
+            my $regex_expected_obj = $json->utf8->decode($json_matches_object->{$key});
+            print $log "Comparing $key: " . dump($json_field_val) . ",expected value:  " . dump($regex_expected_obj);
+
+            if (!Compare($json_field_val, $regex_expected_obj)) {
+                print $log "$0::$subName WARN check failed:"
+                    . " json compare failed. For field "
+                    . "$key, regex <" . dump($regex_expected_obj)
+                    . "> did not match the result <" . dump($json_field_val)
+                    . ">\n";
+                $result = 0;
+            }
+        }
 
 
     }
-    
+
     #kill it if there is a request to kill
     if($testCmd->{'kill_job_timeout'}){
-      sleep $testCmd->{'kill_job_timeout'};
-      my $jobid = $json_hash->{'id'};
-      if (!defined $jobid) {
-        print $log "$0::$subName WARN check failed: " 
-          . "no jobid (id field)found in result";
-        $result = 0;
-      } else {
-        $self->killJob($testCmd, $jobid, $log);
-      }
+        sleep $testCmd->{'kill_job_timeout'};
+        my $jobid = $json_hash->{'id'};
+        if (!defined $jobid) {
+            print $log "$0::$subName WARN check failed: "
+                . "no jobid (id field)found in result";
+            $result = 0;
+        } else {
+            $self->killJob($testCmd, $jobid, $log);
+        }
     }
 
 
     #try to get the call back url request until timeout
     if ($result == 1 && defined $testCmd->{'check_call_back'}) {
 
-      my $timeout = 300; #wait for 5 mins for callback
-      if(defined $testCmd->{'timeout'}){
-        $timeout = $testCmd->{'timeout'};
-      }
-
-      my $d = $testCmd->{'http_daemon'};
-      $d->timeout($timeout);
-      my $url_requested;
-      $testCmd->{'callback_url'} =~ s/\$jobId/$json_hash->{'id'}/g;
-      print $log "Expanded callback url : <" . $testCmd->{'callback_url'} . ">\n";
-      do{
-        print $log "Waiting for call back url request\n";
-        if (my $c = $d->accept) {
-          if (my $r = $c->get_request) {
-            my $durl = $d->url;
-            chop $durl;
-            $url_requested = $durl . $r->uri->path ;
-            print $log "Got request at url <" .  $url_requested  . ">\n";
-            $c->send_status_line(200);
-            $c->close;
-          }
-          undef($c);
-        } else {
-          print $log "Timeout on wait on call back url"  . "\n";
-          $result = 0;
+        my $timeout = 300; #wait for 5 mins for callback
+        if(defined $testCmd->{'timeout'}){
+            $timeout = $testCmd->{'timeout'};
         }
-      }while (defined $url_requested && $url_requested  ne $testCmd->{'callback_url'});
-      $d->close;
-      if (!defined $url_requested || $url_requested  ne $testCmd->{'callback_url'}) {
-        print $log "failed to recieve request on call back url";
-        $result = 0;
-      }
+
+        my $d = $testCmd->{'http_daemon'};
+        $d->timeout($timeout);
+        my $url_requested;
+        $testCmd->{'callback_url'} =~ s/\$jobId/$json_hash->{'id'}/g;
+        print $log "Expanded callback url : <" . $testCmd->{'callback_url'} . ">\n";
+        do{
+            print $log "Waiting for call back url request\n";
+            if (my $c = $d->accept) {
+                if (my $r = $c->get_request) {
+                    my $durl = $d->url;
+                    chop $durl;
+                    $url_requested = $durl . $r->uri->path ;
+                    print $log "Got request at url <" .  $url_requested  . ">\n";
+                    $c->send_status_line(200);
+                    $c->close;
+                }
+                undef($c);
+            } else {
+                print $log "Timeout on wait on call back url"  . "\n";
+                $result = 0;
+            }
+        }while (defined $url_requested && $url_requested  ne $testCmd->{'callback_url'});
+        $d->close;
+        if (!defined $url_requested || $url_requested  ne $testCmd->{'callback_url'}) {
+            print $log "failed to recieve request on call back url";
+            $result = 0;
+        }
 
     }
 
     if ( (defined $testCmd->{'check_job_created'})
          || (defined $testCmd->{'check_job_complete'})
          || (defined $testCmd->{'check_job_exit_value'})
-         || (defined $testCmd->{'check_job_percent_complete'}) ) {    
-      my $jobid = $json_hash->{'id'};
-      if (!defined $jobid) {
-        print $log "$0::$subName WARN check failed: " 
-          . "no jobid (id field)found in result";
-        $result = 0;
-      } else {
-        my $jobResult = $self->getJobResult($testCmd, $jobid, $log);
-        my $json = new JSON;
-        my $res_hash = $json->utf8->decode($jobResult->{'body'});
-        if (! defined $res_hash->{'status'}) {
-          print $log "$0::$subName WARN check failed: " 
-            . "jobresult not defined ";
-          $result = 0;
-        }
-        if (defined($testCmd->{'check_job_complete'}) || defined($testCmd->{'check_job_exit_value'})
-            || defined($testCmd->{'check_job_percent_complete'})) {
-          my $jobComplete;
-          my $NUM_RETRIES = 60;
-          my $SLEEP_BETWEEN_RETRIES = 5;
-
-          #first wait for job completion
-          while ($NUM_RETRIES-- > 0) {
-            $jobComplete = $res_hash->{'status'}->{'jobComplete'};
-            if (defined $jobComplete && (lc($jobComplete) eq "true" || lc($jobComplete) eq "1")) {
-              last;
-            }
-            sleep $SLEEP_BETWEEN_RETRIES;
-            $jobResult = $self->getJobResult($testCmd, $jobid, $log);
-            $json = new JSON;
-            $res_hash = $json->utf8->decode($jobResult->{'body'});
-          }
-          if ( (!defined $jobComplete) || (lc($jobComplete) ne "true" && lc($jobComplete) ne "1")) {
-            print $log "$0::$subName WARN check failed: " 
-              . " timeout on wait for job completion ";
+         || (defined $testCmd->{'check_job_percent_complete'}) ) {
+        my $jobid = $json_hash->{'id'};
+        if (!defined $jobid) {
+            print $log "$0::$subName WARN check failed: "
+                . "no jobid (id field)found in result";
             $result = 0;
-          } else { 
-            # job has completed, check the runState value
-            if (defined($testCmd->{'check_job_complete'})) {
-              my $runState = $res_hash->{'status'}->{'runState'};
-              my $runStateVal = $self->getRunStateNum($testCmd->{'check_job_complete'});
-              if ( (!defined $runState) || $runState ne $runStateVal) {
-                print $log "check_job_complete failed. got runState  $runState,  expected  $runStateVal";
+        } else {
+            my $jobResult = $self->getJobResult($testCmd, $jobid, $log);
+            my $json = new JSON;
+            my $res_hash = $json->utf8->decode($jobResult->{'body'});
+            if (! defined $res_hash->{'status'}) {
+                print $log "$0::$subName WARN check failed: "
+                    . "jobresult not defined ";
                 $result = 0;
-              }
             }
-            if (defined($testCmd->{'check_job_exit_value'})) {
-              my $exitValue = $res_hash->{'exitValue'};
-              my $expectedExitValue = $testCmd->{'check_job_exit_value'};
-              if ( (!defined $exitValue) || $exitValue % 128 ne $expectedExitValue) {
-                print $log "check_job_exit_value failed. got exitValue $exitValue,  expected  $expectedExitValue";
-                $result = 0;
-              }
-            }
-            # check the percentComplete value
-            if (defined($testCmd->{'check_job_percent_complete'})) {
-              my $pcValue = $res_hash->{'percentComplete'};
-              my $expectedPercentComplete = $testCmd->{'check_job_percent_complete'};
-              if ( (!defined $pcValue) || $pcValue !~ m/$expectedPercentComplete/ ) {
-                print $log "check_job_percent_complete failed. got percentComplete $pcValue,  expected  $expectedPercentComplete";
-                $result = 0;
-              }
-            }
-          }
+            if (defined($testCmd->{'check_job_complete'}) || defined($testCmd->{'check_job_exit_value'})
+                || defined($testCmd->{'check_job_percent_complete'})) {
+                my $jobComplete;
+                my $NUM_RETRIES = 60;
+                my $SLEEP_BETWEEN_RETRIES = 5;
 
-	  #Check userargs
-	  print $log "$0::$subName INFO Checking userargs";
-          my @options = @{$testCmd->{'post_options'}};
-          if( !defined $res_hash->{'userargs'}){
-            print $log "$0::$subName INFO expected userargs" 
-                . " but userargs not defined\n";
-            $result = 0;
-          }
-
-	  #create exp_userargs hash from @options
-          my %exp_userargs = ();
-          foreach my $opt ( @options ){
-            print $log "opt $opt";
-            my ($key, $val) = split q:=:, $opt, 2;   
-            if(defined $exp_userargs{$key}){
-
-              #if we have already seen this value
-              #then make the value an array and push new value in
-              if(ref($exp_userargs{$key}) eq ""){
-                my @ar = ($exp_userargs{$key});
-                $exp_userargs{$key} = \@ar;
-              }
-              my $ar = $exp_userargs{$key}; 
-              push @$ar, ($val); 
-            }
-            else{
-              $exp_userargs{$key} = $val;	
-            }
-          }
-
-          my %r_userargs = %{$res_hash->{'userargs'}};
-          foreach my $key( keys %exp_userargs){
-            if($key eq 'inputreader'){
-              next;
-            }
-            if( !defined $r_userargs{$key}){
-              print $log "$0::$subName INFO $key not found in userargs \n";
-              $result = 0;
-              next;
-            }
-              
-            print $log "$0::$subName DEBUG comparing expected " 
-                . " $key ->" . dump($exp_userargs{$key})
-                . " With result $key ->" . dump($r_userargs{$key}) . "\n";
-
-            if (!Compare($exp_userargs{$key}, $r_userargs{$key})) {
-              print $log "$0::$subName WARN check failed:" 
-                  . " json compare failed. For field "
-                  . "$key, regex <" . dump($r_userargs{$key})
-                  . "> did not match the result <" . dump($exp_userargs{$key})
-                  . ">\n";
-              $result = 0;
-            }
-          }
-		  if ($result != 0 && $testCmd->{'check_logs'}) {
-            my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
-            $testCmdBasics->{'method'} = 'GET';
-            $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs?op=LISTSTATUS';
-            my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
-            my $path = JSON::Path->new("FileStatuses.FileStatus[*].pathSuffix");
-            my @value = $path->values($curl_result->{'body'});
-            if ($testCmd->{'check_logs'}->{'job_num'} && $testCmd->{'check_logs'}->{'job_num'} ne (scalar @value)-1) {
-              print $log "$0::$subName INFO check failed: "
-                . " Expect " . $testCmd->{'check_logs'}->{'job_num'} . " jobs in logs, but get " . scalar @value;
-              $result = 0;
-              return $result;
-            }
-            foreach my $jobid (@value) {
-              if ($jobid eq 'list.txt') {
-                next;
-              }
-              my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
-              $testCmdBasics->{'method'} = 'GET';
-              $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs/' . $jobid . '?op=LISTSTATUS';
-              my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
-
-              my $path = JSON::Path->new("FileStatuses.FileStatus[*]");
-              my @value = $path->values($curl_result->{'body'});
-
-              my $foundjobconf = 0;
-              foreach my $elem (@value) {
-                if ($elem->{'pathSuffix'} eq "job.xml.html") {
-                  $foundjobconf = 1;
-                  if ($elem->{'length'} eq "0") {
-                    print $log "$0::$subName INFO check failed: "
-                      . " job.xml.html for " . $jobid . " is empty";
-					$result = 0;
-					return $result;
-                  }
-                  next;
+                #first wait for job completion
+                while ($NUM_RETRIES-- > 0) {
+                    $jobComplete = $res_hash->{'status'}->{'jobComplete'};
+                    if (defined $jobComplete && (lc($jobComplete) eq "true" || lc($jobComplete) eq "1")) {
+                        last;
+                    }
+                    sleep $SLEEP_BETWEEN_RETRIES;
+                    $jobResult = $self->getJobResult($testCmd, $jobid, $log);
+                    $json = new JSON;
+                    $res_hash = $json->utf8->decode($jobResult->{'body'});
                 }
-                my $attempt = $elem->{'pathSuffix'};
-                my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
-                $testCmdBasics->{'method'} = 'GET';
-                $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs/' . $jobid . '/' . $attempt . '?op=LISTSTATUS';
-                my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
-                my $path = JSON::Path->new("FileStatuses.FileStatus[*].pathSuffix");
-                my @value = $path->values($curl_result->{'body'});
-                my @files = ('stderr', 'stdout', 'syslog');
-                foreach my $file (@files) {
-                  if ( !grep( /$file/, @value ) ) {
-                    print $log "$0::$subName INFO check failed: "
-                      . " Cannot find " . $file . " in logs/" . $attempt;
+                if ( (!defined $jobComplete) || (lc($jobComplete) ne "true" && lc($jobComplete) ne "1")) {
+                    print $log "$0::$subName WARN check failed: "
+                        . " timeout on wait for job completion ";
                     $result = 0;
-                    return $result;
-                  }
+                } else {
+                    # job has completed, check the runState value
+                    if (defined($testCmd->{'check_job_complete'})) {
+                        my $runState = $res_hash->{'status'}->{'runState'};
+                        my $runStateVal = $self->getRunStateNum($testCmd->{'check_job_complete'});
+                        if ( (!defined $runState) || $runState ne $runStateVal) {
+                            print $log "check_job_complete failed. got runState  $runState,  expected  $runStateVal";
+                            $result = 0;
+                        }
+                    }
+                    if (defined($testCmd->{'check_job_exit_value'})) {
+                        my $exitValue = $res_hash->{'exitValue'};
+                        my $expectedExitValue = $testCmd->{'check_job_exit_value'};
+                        if ( (!defined $exitValue) || $exitValue % 128 ne $expectedExitValue) {
+                            print $log "check_job_exit_value failed. got exitValue $exitValue,  expected  $expectedExitValue";
+                            $result = 0;
+                        }
+                    }
+                    # check the percentComplete value
+                    if (defined($testCmd->{'check_job_percent_complete'})) {
+                        my $pcValue = $res_hash->{'percentComplete'};
+                        my $expectedPercentComplete = $testCmd->{'check_job_percent_complete'};
+                        if ( (!defined $pcValue) || $pcValue !~ m/$expectedPercentComplete/ ) {
+                            print $log "check_job_percent_complete failed. got percentComplete $pcValue,  expected  $expectedPercentComplete";
+                            $result = 0;
+                        }
+                    }
                 }
-                $path = JSON::Path->new("FileStatuses.FileStatus[*].length");
-                @value = $path->values($curl_result->{'body'});
-                my $foundnonzerofile = 0;
-                foreach my $length (@value) {
-                  if ($length ne "0") {
-                    $foundnonzerofile = 1;
-                  }
+
+                #Check userargs
+                print $log "$0::$subName INFO Checking userargs";
+                my @options = @{$testCmd->{'post_options'}};
+                if( !defined $res_hash->{'userargs'}){
+                    print $log "$0::$subName INFO expected userargs"
+                        . " but userargs not defined\n";
+                    $result = 0;
                 }
-                if (!$foundnonzerofile) {
-                  print $log "$0::$subName INFO check failed: "
-                    . " All files in logs/" . $attempt . " are empty";
-                  $result = 0;
-                  return $result;
+
+                #create exp_userargs hash from @options
+                my %exp_userargs = ();
+                foreach my $opt ( @options ){
+                    print $log "opt $opt";
+                    my ($key, $val) = split q:=:, $opt, 2;
+                    if(defined $exp_userargs{$key}){
+
+                        #if we have already seen this value
+                        #then make the value an array and push new value in
+                        if(ref($exp_userargs{$key}) eq ""){
+                            my @ar = ($exp_userargs{$key});
+                            $exp_userargs{$key} = \@ar;
+                        }
+                        my $ar = $exp_userargs{$key};
+                        push @$ar, ($val);
+                    }
+                    else{
+                        $exp_userargs{$key} = $val;
+                    }
                 }
-              }
-              if (!$foundjobconf) {
-                print $log "$0::$subName INFO check failed: "
-                  . " Cannot find job.xml.html for " . $jobid;
-				$result = 0;
-				return $result;
-              }
+
+                my %r_userargs = %{$res_hash->{'userargs'}};
+                foreach my $key( keys %exp_userargs){
+                    if($key eq 'inputreader'){
+                        next;
+                    }
+                    if( !defined $r_userargs{$key}){
+                        print $log "$0::$subName INFO $key not found in userargs \n";
+                        $result = 0;
+                        next;
+                    }
+
+                    print $log "$0::$subName DEBUG comparing expected "
+                        . " $key ->" . dump($exp_userargs{$key})
+                        . " With result $key ->" . dump($r_userargs{$key}) . "\n";
+
+                    if (!Compare($exp_userargs{$key}, $r_userargs{$key})) {
+                        print $log "$0::$subName WARN check failed:"
+                            . " json compare failed. For field "
+                            . "$key, regex <" . dump($r_userargs{$key})
+                            . "> did not match the result <" . dump($exp_userargs{$key})
+                            . ">\n";
+                        $result = 0;
+                    }
+                }
+                if ($result != 0 && $testCmd->{'check_logs'}) {
+                    my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+                    $testCmdBasics->{'method'} = 'GET';
+                    $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs?op=LISTSTATUS';
+                    my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
+                    my $path = JSON::Path->new("FileStatuses.FileStatus[*].pathSuffix");
+                    my @value = $path->values($curl_result->{'body'});
+                    if ($testCmd->{'check_logs'}->{'job_num'} && $testCmd->{'check_logs'}->{'job_num'} ne (scalar @value)-1) {
+                        print $log "$0::$subName INFO check failed: "
+                            . " Expect " . $testCmd->{'check_logs'}->{'job_num'} . " jobs in logs, but get " . scalar @value;
+                        $result = 0;
+                        return $result;
+                    }
+                    foreach my $jobid (@value) {
+                        if ($jobid eq 'list.txt') {
+                            next;
+                        }
+                        my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+                        $testCmdBasics->{'method'} = 'GET';
+                        $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs/' . $jobid . '?op=LISTSTATUS';
+                        my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
+
+                        my $path = JSON::Path->new("FileStatuses.FileStatus[*]");
+                        my @value = $path->values($curl_result->{'body'});
+
+                        my $foundjobconf = 0;
+                        foreach my $elem (@value) {
+                            if ($elem->{'pathSuffix'} eq "job.xml.html") {
+                                $foundjobconf = 1;
+                                if ($elem->{'length'} eq "0") {
+                                    print $log "$0::$subName INFO check failed: "
+                                        . " job.xml.html for " . $jobid . " is empty";
+                                    $result = 0;
+                                    return $result;
+                                }
+                                next;
+                            }
+                            my $attempt = $elem->{'pathSuffix'};
+                            my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+                            $testCmdBasics->{'method'} = 'GET';
+                            $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs/' . $jobid . '/' . $attempt . '?op=LISTSTATUS';
+                            my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
+                            my $path = JSON::Path->new("FileStatuses.FileStatus[*].pathSuffix");
+                            my @value = $path->values($curl_result->{'body'});
+                            my @files = ('stderr', 'stdout', 'syslog');
+                            foreach my $file (@files) {
+                                if ( !grep( /$file/, @value ) ) {
+                                    print $log "$0::$subName INFO check failed: "
+                                        . " Cannot find " . $file . " in logs/" . $attempt;
+                                    $result = 0;
+                                    return $result;
+                                }
+                            }
+                            $path = JSON::Path->new("FileStatuses.FileStatus[*].length");
+                            @value = $path->values($curl_result->{'body'});
+                            my $foundnonzerofile = 0;
+                            foreach my $length (@value) {
+                                if ($length ne "0") {
+                                    $foundnonzerofile = 1;
+                                }
+                            }
+                            if (!$foundnonzerofile) {
+                                print $log "$0::$subName INFO check failed: "
+                                    . " All files in logs/" . $attempt . " are empty";
+                                $result = 0;
+                                return $result;
+                            }
+                        }
+                        if (!$foundjobconf) {
+                            print $log "$0::$subName INFO check failed: "
+                                . " Cannot find job.xml.html for " . $jobid;
+                            $result = 0;
+                            return $result;
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
     return $result;
-  }
+}
 
 ##############################################################################
 # Check whether we should be running this test or not.
@@ -1044,33 +1033,33 @@ sub wrongExecutionMode($$)
 
 ###############################################################################
 sub  setLocationPermGroup{
-  my ($self, $job_info, $testCmd, $log) = @_;
-  my $location = $job_info->{'location'};
-  $location =~ /hdfs.*:\d+(\/.*)\/(.*)/;  
-  my $dir = $1;
-  my $file = $2;
+    my ($self, $job_info, $testCmd, $log) = @_;
+    my $location = $job_info->{'location'};
+    $location =~ /hdfs:\/\/[^\/]*(\/.*)\/(.*)/;
+    my $dir = $1;
+    my $file = $2;
 
-  my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
-  $testCmdBasics->{'method'} = 'GET';
-  $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_checkFile";
-  $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1' 
-    . $dir . '?op=LISTSTATUS';
+    my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+    $testCmdBasics->{'method'} = 'GET';
+    $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_checkFile";
+    $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1'
+        . $dir . '?op=LISTSTATUS';
 
 
-  my $result =  $self->execCurlCmd($testCmdBasics, "", $log);
+    my $result =  $self->execCurlCmd($testCmdBasics, "", $log);
 
-  my $json = new JSON;
-  my $json_hash = $json->utf8->decode($result->{'body'});
-  my @filestatuses = @{$json_hash->{'FileStatuses'}->{'FileStatus'}};
-  foreach my $filestatus (@filestatuses){
-    if($filestatus->{'pathSuffix'} eq $file){
-      $job_info->{'location_perms'} =  numPermToStringPerm($filestatus->{'permission'});
-      $job_info->{'location_group'} = $filestatus->{'group'};
-      $job_info->{'location_owner'} = $filestatus->{'owner'};
-      last;
+    my $json = new JSON;
+    my $json_hash = $json->utf8->decode($result->{'body'});
+    my @filestatuses = @{$json_hash->{'FileStatuses'}->{'FileStatus'}};
+    foreach my $filestatus (@filestatuses){
+        if($filestatus->{'pathSuffix'} eq $file){
+            $job_info->{'location_perms'} =  numPermToStringPerm($filestatus->{'permission'});
+            $job_info->{'location_group'} = $filestatus->{'group'};
+            $job_info->{'location_owner'} = $filestatus->{'owner'};
+            last;
+        }
+
     }
-
-  }
 
 }
 
@@ -1079,7 +1068,7 @@ sub  setLocationPermGroup{
 sub dec2bin {
     my $decimal = shift;
     my $binary = unpack("B32", pack("N", $decimal));
-    $binary =~ s/^0+(?=\d)//;   # remove leading zeros                                                                                                                                                                                                                                                   
+    $binary =~ s/^0+(?=\d)//;   # remove leading zeros
     return $binary;
 }
 
@@ -1091,19 +1080,19 @@ sub digitPermToStringPerm{
     my $stringPerm = "";
     if($binaryPerm =~ /1\d\d$/){
         $stringPerm .= "r";
-      }else{
+    }else{
         $stringPerm .= "-";
     }
 
     if($binaryPerm =~ /\d1\d$/){
         $stringPerm .= "w";
-      }else{
+    }else{
         $stringPerm .= "-";
     }
 
     if($binaryPerm =~ /\d\d1$/){
         $stringPerm .= "x";
-      }else{
+    }else{
         $stringPerm .= "-";
     }
 
@@ -1122,72 +1111,72 @@ sub numPermToStringPerm{
 
 ###############################################################################
 sub getRunStateNum{
-  my ($self, $job_complete_state) = @_;
-  if (lc($job_complete_state) eq 'success') {
-    return 2;
-  } elsif (lc($job_complete_state) eq 'failure') {
-    return 3;
-  } elsif (lc($job_complete_state) eq 'killed') {
-    return 5;
-  }
+    my ($self, $job_complete_state) = @_;
+    if (lc($job_complete_state) eq 'success') {
+        return 2;
+    } elsif (lc($job_complete_state) eq 'failure') {
+        return 3;
+    } elsif (lc($job_complete_state) eq 'killed') {
+        return 5;
+    }
 
 }
 
 
 ###############################################################################
 sub getJobResult{
-  my ($self, $testCmd, $jobid, $log) = @_;
-  my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
-  $testCmdBasics->{'method'} = 'GET';
-  $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_jobStatusCheck";
-  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/jobs/'
-    . $jobid . '?' . "user.name=:UNAME:" ;
-  return $self->execCurlCmd($testCmdBasics, "", $log);
+    my ($self, $testCmd, $jobid, $log) = @_;
+    my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+    $testCmdBasics->{'method'} = 'GET';
+    $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_jobStatusCheck";
+    $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/jobs/'
+        . $jobid . '?' . "user.name=:UNAME:" ;
+    return $self->execCurlCmd($testCmdBasics, "", $log);
 }
 ###############################################################################
 sub killJob{
-  my ($self, $testCmd, $jobid, $log) = @_;
-  my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
-  $testCmdBasics->{'method'} = 'DELETE';
-  $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_killJob";
-  $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/jobs/'
-    . $jobid . '?' . "user.name=:UNAME:" ;
-  return $self->execCurlCmd($testCmdBasics, "", $log);
+    my ($self, $testCmd, $jobid, $log) = @_;
+    my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+    $testCmdBasics->{'method'} = 'DELETE';
+    $testCmdBasics->{'num'} = $testCmdBasics->{'num'} . "_killJob";
+    $testCmdBasics->{'url'} = ':TEMPLETON_URL:/templeton/v1/jobs/'
+        . $jobid . '?' . "user.name=:UNAME:" ;
+    return $self->execCurlCmd($testCmdBasics, "", $log);
 }
 ###############################################################################
 #Copy test config essential for running a sub command
 sub copyTestBasicConfig{
-  my ($self, $testCmd) = @_;
-  my %testCmdBasics;
-  foreach my $key (keys %$testCmd) {
-    if ($key ne 'method'
-        && $key ne 'url'
-        && $key ne 'upload_file'
-        && $key ne 'post_options'
-       ) {
-      $testCmdBasics{$key} = $testCmd->{$key};
+    my ($self, $testCmd) = @_;
+    my %testCmdBasics;
+    foreach my $key (keys %$testCmd) {
+        if ($key ne 'method'
+            && $key ne 'url'
+            && $key ne 'upload_file'
+            && $key ne 'post_options'
+            ) {
+            $testCmdBasics{$key} = $testCmd->{$key};
+        }
     }
-  }
-  #   $testCmdBasics{'localpath'} = $testCmd->{'localpath'};
-  #   $testCmdBasics{'group'} = $testCmd->{'group'};
-  #   $testCmdBasics{'num'} = $testCmd->{'num'};
-  return \%testCmdBasics;
+    #   $testCmdBasics{'localpath'} = $testCmd->{'localpath'};
+    #   $testCmdBasics{'group'} = $testCmd->{'group'};
+    #   $testCmdBasics{'num'} = $testCmd->{'num'};
+    return \%testCmdBasics;
 }
 ###############################################################################
 sub checkResStatusCode{
-  my ($self, $testResult, $e_status_code, $log) = @_;
-  my $subName  = (caller(0))[3];
+    my ($self, $testResult, $e_status_code, $log) = @_;
+    my $subName  = (caller(0))[3];
 
-  #    print STDERR "expected " . $e_status_code . " was " . $testResult->{'status_code'};
+    #    print STDERR "expected " . $e_status_code . " was " . $testResult->{'status_code'};
 
-  if (!defined $testResult->{'status_code'} || 
-      $testResult->{'status_code'} != $e_status_code) {
-    print $log "$0::$subName INFO Check failed: status_code " .
-      "$e_status_code expected, test returned " .
-        "<$testResult->{'status_code'}>\n";
-    return 0;
-  }
-  return 1;
+    if (!defined $testResult->{'status_code'} ||
+        $testResult->{'status_code'} != $e_status_code) {
+        print $log "$0::$subName INFO Check failed: status_code " .
+            "$e_status_code expected, test returned " .
+            "<$testResult->{'status_code'}>\n";
+        return 0;
+    }
+    return 1;
 
 }
 
@@ -1210,8 +1199,8 @@ sub checkResStatusCode{
 # None
 #
 sub recordResults
-  {
-  }
+{
+}
 
 ###############################################################################
 # Sub: cleanup
@@ -1225,13 +1214,13 @@ sub recordResults
 # testResult - reference to hash returned by runTest.
 # benchmarkResult - reference to hash returned by generateBenchmark.
 # log - reference to a stream pointer for the logs
-# 
+#
 # Returns:
 # None
 #
 sub cleanup
-  {
-  }
+{
+}
 
 ###############################################################################
 # Sub: run
@@ -1254,7 +1243,7 @@ sub cleanup
 # failed.
 #
 sub run
-  {
+{
     my ($self, $testsToRun, $testsToMatch, $cfg, $log, $dbh, $testStatuses,
         $confFile, $startat, $logname ) = @_;
 
@@ -1272,8 +1261,8 @@ sub run
 
     # Read the global keys
     foreach (keys(%$cfg)) {
-      next if $_ eq 'groups';
-      $globalHash{$_} = $cfg->{$_};
+        next if $_ eq 'groups';
+        $globalHash{$_} = $cfg->{$_};
     }
 
     $globalHash{$_} = $cfg->{$_};
@@ -1285,344 +1274,335 @@ sub run
 
     my %groupExecuted;
     foreach my $group (@{$cfg->{'groups'}}) {
- 
-      print $log "INFO $subName at ".__LINE__.": Running TEST GROUP(".$group->{'name'}.")\n";
-                
-      my %groupHash = %globalHash;
-      $groupHash{'group'} = $group->{'name'};
 
-      # Read the group keys
-      foreach (keys(%$group)) {
-        next if $_ eq 'tests';
-        $groupHash{$_} = $group->{$_};
-      }
+        print $log "INFO $subName at ".__LINE__.": Running TEST GROUP(".$group->{'name'}.")\n";
+
+        my %groupHash = %globalHash;
+        $groupHash{'group'} = $group->{'name'};
+
+        # Read the group keys
+        foreach (keys(%$group)) {
+            next if $_ eq 'tests';
+            $groupHash{$_} = $group->{$_};
+        }
 
 
-      # Run each test
-      foreach my $test (@{$group->{'tests'}}) {
-        # Check if we're supposed to run this one or not.
-        if (!$runAll) {
-          # check if we are supposed to run this test or not.
-          my $foundIt = 0;
-          foreach (@$testsToRun) {
-            if (/^$groupHash{'group'}(_[0-9]+)?$/) {
-              if (not defined $1) {
-                # In this case it's just the group name, so we'll
-                # run every test in the group
-                $foundIt = 1;
-                last;
-              } else {
-                # maybe, it at least matches the group
-                my $num = "_" . $test->{'num'};
-                if ($num eq $1) {
-                  $foundIt = 1;
-                  last;
+        # Run each test
+        foreach my $test (@{$group->{'tests'}}) {
+            # Check if we're supposed to run this one or not.
+            if (!$runAll) {
+                # check if we are supposed to run this test or not.
+                my $foundIt = 0;
+                foreach (@$testsToRun) {
+                    if (/^$groupHash{'group'}(_[0-9]+)?$/) {
+                        if (not defined $1) {
+                            # In this case it's just the group name, so we'll
+                            # run every test in the group
+                            $foundIt = 1;
+                            last;
+                        } else {
+                            # maybe, it at least matches the group
+                            my $num = "_" . $test->{'num'};
+                            if ($num eq $1) {
+                                $foundIt = 1;
+                                last;
+                            }
+                        }
+                    }
                 }
-              }
-            }
-          }
-          foreach (@$testsToMatch) {
-            my $protoName = $groupHash{'group'} . "_" .  $test->{'num'};
-            if ($protoName =~ /$_/) {
-              if (not defined $1) {
-                # In this case it's just the group name, so we'll
-                # run every test in the group
-                $foundIt = 1;
-                last;
-              } else {
-                # maybe, it at least matches the group
-                my $num = "_" . $test->{'num'};
-                if ($num eq $1) {
-                  $foundIt = 1;
-                  last;
+                foreach (@$testsToMatch) {
+                    my $protoName = $groupHash{'group'} . "_" .  $test->{'num'};
+                    if ($protoName =~ /$_/) {
+                        if (not defined $1) {
+                            # In this case it's just the group name, so we'll
+                            # run every test in the group
+                            $foundIt = 1;
+                            last;
+                        } else {
+                            # maybe, it at least matches the group
+                            my $num = "_" . $test->{'num'};
+                            if ($num eq $1) {
+                                $foundIt = 1;
+                                last;
+                            }
+                        }
+                    }
                 }
-              }
+
+                next unless $foundIt;
             }
-          }
 
-          next unless $foundIt;
+            # This is a test, so run it.
+            my %testHash = %groupHash;
+            foreach (keys(%$test)) {
+                $testHash{$_} = $test->{$_};
+            }
+
+            my $testName = $testHash{'group'} . "_" . $testHash{'num'};
+
+            #            if ( $groupExecuted{ $group->{'name'} }== 0 ){
+            #                $groupExecuted{ $group->{'name'} }=1;
+            #
+            #                my $xmlDir= $globalHash{'localxmlpathbase'}."/run".$globalHash->{'UID'};
+            #                mkpath( [ $xmlDir ] , 1, 0777) if ( ! -e $xmlDir );
+            #
+            #                my $filename = $group->{'name'}.".xml";
+            #                $report = new TestReport ( $properties, "$xmlDir/$filename" );
+            #                $report->purge();
+            #            }
+
+            # Check that ignore isn't set for this file, group, or test
+            if (defined $testHash{'ignore'}) {
+                print $log "Ignoring test $testName, ignore message: " .
+                    $testHash{'ignore'} . "\n";
+                next;
+            }
+
+            # Have we not reached the starting point yet?
+            if (!$sawstart) {
+                if ($testName eq $startat) {
+                    $sawstart = 1;
+                } else {
+                    next;
+                }
+            }
+
+            # Check that this test doesn't depend on an earlier test or tests
+            # that failed.  Don't abort if that test wasn't run, just assume the
+            # user knew what they were doing and set it up right.
+            my $skipThisOne = 0;
+            foreach (keys(%testHash)) {
+                if (/^depends_on/ && defined($testStatuses->{$testHash{$_}}) &&
+                    $testStatuses->{$testHash{$_}} ne $passedStr) {
+                    print $log "Skipping test $testName, it depended on " .
+                        "$testHash{$_} which returned a status of " .
+                        "$testStatuses->{$testHash{$_}}\n";
+                    $testStatuses->{$testName} = $dependStr;
+                    $skipThisOne = 1;
+                    last;
+                }
+            }
+            if ($skipThisOne) {
+                printResults($testStatuses, $log, "Results so far");
+                next;
+            }
+
+            print $log "\n******************************************************\n";
+            print $log "\nTEST: $confFile::$testName\n";
+            print $log  "******************************************************\n";
+            print $log "Beginning test $testName at " . time . "\n";
+            my %dbinfo = (
+                'testrun_id' => $testHash{'trid'},
+                'test_type' => $testHash{'driver'},
+                #'test_file' => $testHash{'file'},
+                'test_file' => $confFile,
+                'test_group' => $testHash{'group'},
+                'test_num' => $testHash{'num'},
+                );
+            my $beginTime = time;
+            my $endTime = 0;
+            my ($testResult, $benchmarkResult);
+            eval {
+                $testResult = $self->runTest(\%testHash, $log);
+                $benchmarkResult = $self->generateBenchmark(\%testHash, $log);
+                my $result =
+                    $self->compare($testResult, $benchmarkResult, $log, \%testHash);
+                $msg = "INFO: $subName() at ".__LINE__.":Test $testName";
+
+                if ($result eq $self->{'wrong_execution_mode'}) {
+                    $msg .= " SKIPPED";
+                    $testStatuses->{$testName} = $skippedStr;
+                } elsif ($result) {
+                    $msg .= " SUCCEEDED";
+                    $testStatuses->{$testName} = $passedStr;
+
+                } else {
+                    $msg .= " FAILED";
+                    $testStatuses->{$testName} = $failedStr;
+
+                }
+                $endTime = time;
+                $msg .= "\nEnding test $testName at " . $endTime ."\n";
+                #print $msg;
+                print $log $msg;
+                $duration = $endTime - $beginTime;
+                $dbinfo{'duration'} = $duration;
+                $self->recordResults($result, $testResult
+                                     , $benchmarkResult, \%dbinfo, $log);
+
+            };
+
+
+            if ($@) {
+                $msg= "ERROR $subName at : ".__LINE__." Failed to run test $testName <$@>\n";
+                $msg .= "Ending test $testName at " . time ."\n";
+                #print $msg;
+                print $log $msg;
+                $testStatuses->{$testName} = $abortedStr;
+                $dbinfo{'duration'} = $duration;
+            }
+
+
+            eval {
+                $dbinfo{'status'} = $testStatuses->{$testName};
+                if ($dbh) {
+                    $dbh->insertTestCase(\%dbinfo);
+                }
+            };
+            if ($@) {
+                chomp $@;
+                warn "Failed to insert test case info, error <$@>\n";
+            }
+
+            $self->cleanup($testStatuses->{$testName}, \%testHash, $testResult,
+                           $benchmarkResult, $log);
+            #$report->testcase( $group->{'name'}, $testName, $duration, $msg, $testStatuses->{$testName}, $testResult ) if ( $report );
+            $report->testcase( $group->{'name'}, $testName, $duration, $msg, $testStatuses->{$testName} ) if ( $report );
+            $groupDuration = $groupDuration + $duration;
+            $totalDuration = $totalDuration + $duration;
+            printResults( $testStatuses, $log, "Results so far" );
         }
 
-        # This is a test, so run it.
-        my %testHash = %groupHash;
-        foreach (keys(%$test)) {
-          $testHash{$_} = $test->{$_};
+        if ( $report ) {
+            $report->systemOut( $logname, $group->{'name'});
+            printGroupResultsXml( $report, $group->{'name'}, $testStatuses, $groupDuration );
         }
-
-        my $testName = $testHash{'group'} . "_" . $testHash{'num'};
-
-        #            if ( $groupExecuted{ $group->{'name'} }== 0 ){
-        #                $groupExecuted{ $group->{'name'} }=1;
-        #               
-        #                my $xmlDir= $globalHash{'localxmlpathbase'}."/run".$globalHash->{'UID'};
-        #                mkpath( [ $xmlDir ] , 1, 0777) if ( ! -e $xmlDir );
-        #
-        #                my $filename = $group->{'name'}.".xml";
-        #                $report = new TestReport ( $properties, "$xmlDir/$filename" );
-        #                $report->purge();
-        #            }
-
-        # Check that ignore isn't set for this file, group, or test
-        if (defined $testHash{'ignore'}) {
-          print $log "Ignoring test $testName, ignore message: " .
-            $testHash{'ignore'} . "\n";
-          next;
-        }
-
-        # Have we not reached the starting point yet?
-        if (!$sawstart) {
-          if ($testName eq $startat) {
-            $sawstart = 1;
-          } else {
-            next;
-          }
-        }
-
-        # Check that this test doesn't depend on an earlier test or tests
-        # that failed.  Don't abort if that test wasn't run, just assume the
-        # user knew what they were doing and set it up right.
-        my $skipThisOne = 0;
-        foreach (keys(%testHash)) {
-          if (/^depends_on/ && defined($testStatuses->{$testHash{$_}}) &&
-              $testStatuses->{$testHash{$_}} ne $passedStr) {
-            print $log "Skipping test $testName, it depended on " .
-              "$testHash{$_} which returned a status of " .
-                "$testStatuses->{$testHash{$_}}\n";
-            $testStatuses->{$testName} = $dependStr;
-            $skipThisOne = 1;
-            last;
-          }
-        }
-        if ($skipThisOne) {
-          printResults($testStatuses, $log, "Results so far");
-          next;
-        }
-
-        print $log "\n******************************************************\n";
-        print $log "\nTEST: $confFile::$testName\n";
-        print $log  "******************************************************\n";
-        print $log "Beginning test $testName at " . time . "\n";
-        my %dbinfo = (
-                      'testrun_id' => $testHash{'trid'},
-                      'test_type' => $testHash{'driver'},
-                      #'test_file' => $testHash{'file'},
-                      'test_file' => $confFile,
-                      'test_group' => $testHash{'group'},
-                      'test_num' => $testHash{'num'},
-                     );
-        my $beginTime = time;
-        my $endTime = 0;
-        my ($testResult, $benchmarkResult);
-        eval {
-          $testResult = $self->runTest(\%testHash, $log);
-          $endTime = time;
-          $benchmarkResult = $self->generateBenchmark(\%testHash, $log);
-          my $result =
-            $self->compare($testResult, $benchmarkResult, $log, \%testHash);
-          $msg = "INFO: $subName() at ".__LINE__.":Test $testName";
-
-          if ($result eq $self->{'wrong_execution_mode'}) {
-            $msg .= " SKIPPED";
-            $testStatuses->{$testName} = $skippedStr;
-          } elsif ($result) {
-            $msg .= " SUCCEEDED";
-            $testStatuses->{$testName} = $passedStr;
-
-          } else {
-            $msg .= " FAILED";
-            $testStatuses->{$testName} = $failedStr;
-
-          }
-          $msg .= "\nEnding test $testName at " . $endTime ."\n";
-          #print $msg;
-          print $log $msg;
-          $duration = $endTime - $beginTime;
-          $dbinfo{'duration'} = $duration;
-          $self->recordResults($result, $testResult
-                               , $benchmarkResult, \%dbinfo, $log);
-                                  
-        };
-
-
-        if ($@) {
-          $msg= "ERROR $subName at : ".__LINE__." Failed to run test $testName <$@>\n";
-          $msg .= "Ending test $testName at " . time ."\n";
-          #print $msg;
-          print $log $msg;
-          $testStatuses->{$testName} = $abortedStr;
-          $dbinfo{'duration'} = $duration;
-        }
-
-
-        eval {
-          $dbinfo{'status'} = $testStatuses->{$testName};
-          if ($dbh) {
-            $dbh->insertTestCase(\%dbinfo);
-          }
-        };
-        if ($@) {
-          chomp $@;
-          warn "Failed to insert test case info, error <$@>\n";
-        }
-
-        $self->cleanup($testStatuses->{$testName}, \%testHash, $testResult,
-                       $benchmarkResult, $log);
-        #$report->testcase( $group->{'name'}, $testName, $duration, $msg, $testStatuses->{$testName}, $testResult ) if ( $report );
-        $report->testcase( $group->{'name'}, $testName, $duration, $msg, $testStatuses->{$testName} ) if ( $report );
-        $groupDuration = $groupDuration + $duration;
-        $totalDuration = $totalDuration + $duration;
-        printResults( $testStatuses, $log, "Results so far" );
-      }
-
-      if ( $report ) {
-        $report->systemOut( $logname, $group->{'name'});
-        printGroupResultsXml( $report, $group->{'name'}, $testStatuses, $groupDuration );
-      }
-      $report = 0;
-      $groupDuration=0;
+        $report = 0;
+        $groupDuration=0;
 
 
     }
 
     # Do the global cleanup
     $self->globalCleanup(\%globalHash, $log);
-  }
+}
 
 # TODO These should be removed
 
 sub tmpIPCRun(){
 
-  my $self = shift;
-  my $subName      = (caller(0))[3];
-  my $runningSubName= shift;
-  my $refCmd  = shift;
-  my @cmd     = @$refCmd;
-  my $log    = shift;
-  my $msg    = shift;
+    my $self = shift;
+    my $subName      = (caller(0))[3];
+    my $runningSubName= shift;
+    my $refCmd  = shift;
+    my @cmd     = @$refCmd;
+    my $log    = shift;
+    my $msg    = shift;
 
-  print $log "$0::$subName INFO Running ( @cmd )\n";
+    print $log "$0::$subName INFO Running ( @cmd )\n";
 
-  my $result= `@cmd`;
-  if ( $@ ) {
-    my $msg= "$0::$subName FATAL Failed to run from $runningSubName $msg < $@ >\n$result\n";
-    print $log $msg;
-    die "$msg";
-  }
+    my $result= `@cmd`;
+    if ( $@ ) {
+        my $msg= "$0::$subName FATAL Failed to run from $runningSubName $msg < $@ >\n$result\n";
+        print $log $msg;
+        die "$msg";
+    }
 
-  return $?;
+    return $?;
 }
 
 sub tmpIPCRunSplitStdoe {
 
-  my $self = shift;
-  my $subName      = (caller(0))[3];
-  my $runningSubName= shift;
-  my $refCmd  = shift;
-  my @cmd     = @$refCmd;
-  my $dir    = shift;
-  my $log    = shift;
-  my $msg    = shift;
-  my $die    = shift;
+    my $self = shift;
+    my $subName      = (caller(0))[3];
+    my $runningSubName= shift;
+    my $refCmd  = shift;
+    my @cmd     = @$refCmd;
+    my $dir    = shift;
+    my $log    = shift;
+    my $msg    = shift;
+    my $die    = shift;
 
 
-  my $failed = 0;
-  
-  my $outfilename = $dir."out.tmp";
-  my $errfilename = $dir."err.tmp";
-  print $log "$0::$subName INFO Running from $runningSubName ( @cmd 1>$outfilename 2>$errfilename )\n";
-  #make sure files are writeable
-  open( TMP, ">$outfilename" ) || die "$0::$subName FATAL: Cannot open $outfilename for writing\n";
-  close( TMP );
-  open( TMP, ">$errfilename" ) || die "$0::$subName FATAL: Cannot open $errfilename for writing\n";
-  close( TMP );
+    my $failed = 0;
 
-  #RUN CMD
-  my $msg;
-  print $log `@cmd 1>$outfilename 2>$errfilename`;
-   
-  my $failed=0;
-  if ( $@ ) { 
-    $msg= "$0::$subName FATAL < $@ >\n"; 
-    $failed++;
-  }
-   
-  #READ FILES
-  my $stdout=""; 
-  my $stderr="";;
-  open( TMP, "$outfilename" ) || die "$0::$subName FATAL: Cannot open $outfilename for reading\n";
-  while ( <TMP> ) {
-    $stdout .= $_;
-  }
-  close( TMP );
- 
-  open( TMP, "$errfilename" ) || die "$0::$subName FATAL: Cannot open $errfilename for reading\n";
-  while ( <TMP> ) {
-    $stderr .= $_;
-  }
-  close( TMP );
+    my $outfilename = $dir."out.tmp";
+    my $errfilename = $dir."err.tmp";
+    print $log "$0::$subName INFO Running from $runningSubName ( @cmd 1>$outfilename 2>$errfilename )\n";
+    #make sure files are writeable
+    open( TMP, ">$outfilename" ) || die "$0::$subName FATAL: Cannot open $outfilename for writing\n";
+    close( TMP );
+    open( TMP, ">$errfilename" ) || die "$0::$subName FATAL: Cannot open $errfilename for writing\n";
+    close( TMP );
 
-  #DIE IF Test Failed, otherwise return stdout and stderr
-  if ( $failed ) {
+    #RUN CMD
+    my $msg;
+    print $log `@cmd 1>$outfilename 2>$errfilename`;
 
-    $msg = "$0::$subName FATAL: Faied from $runningSubName \nSTDOUT:" . $stdout . "\nSTDERR:" . $stderr . "\n" if ( $failed );
-    print $log "$msg";
-    die $msg if ( $die != "1" ); #die by defaultast
-    return ( -1, $stdout, $stderr );
+    my $failed=0;
+    if ( $@ ) {
+        $msg= "$0::$subName FATAL < $@ >\n";
+        $failed++;
+    }
 
-  }
+    #READ FILES
+    my $stdout="";
+    my $stderr="";;
+    open( TMP, "$outfilename" ) || die "$0::$subName FATAL: Cannot open $outfilename for reading\n";
+    while ( <TMP> ) {
+        $stdout .= $_;
+    }
+    close( TMP );
 
-  return ( $?, $stdout, $stderr);
+    open( TMP, "$errfilename" ) || die "$0::$subName FATAL: Cannot open $errfilename for reading\n";
+    while ( <TMP> ) {
+        $stderr .= $_;
+    }
+    close( TMP );
+
+    #DIE IF Test Failed, otherwise return stdout and stderr
+    if ( $failed ) {
+
+        $msg = "$0::$subName FATAL: Faied from $runningSubName \nSTDOUT:" . $stdout . "\nSTDERR:" . $stderr . "\n" if ( $failed );
+        print $log "$msg";
+        die $msg if ( $die != "1" ); #die by defaultast
+        return ( -1, $stdout, $stderr );
+
+    }
+
+    return ( $?, $stdout, $stderr);
 }
 
 sub tmpIPCRunJoinStdoe {
 
-  my $self = shift;
-  my $subName      = (caller(0))[3];
-  my $runningSubName= shift;
-  my $refCmd  = shift;
-  my @cmd     = @$refCmd;
-  my $outfilename= shift;
-  my $log    = shift;
-  my $msg    = shift;
-  my $die    = shift;
+    my $self = shift;
+    my $subName      = (caller(0))[3];
+    my $runningSubName= shift;
+    my $refCmd  = shift;
+    my @cmd     = @$refCmd;
+    my $outfilename= shift;
+    my $log    = shift;
+    my $msg    = shift;
+    my $die    = shift;
 
-  #make sure files are writeable
-  open( TMP, ">$outfilename" ) || die "$0::$subName FATAL: Cannot open $outfilename for writing\n";
-  close( TMP );
+    #make sure files are writeable
+    open( TMP, ">$outfilename" ) || die "$0::$subName FATAL: Cannot open $outfilename for writing\n";
+    close( TMP );
 
-  #RUN CMD
-  my $msg;
-  my $failed=0;
-  print $log "$0::$subName INFO Running ( @cmd 2>&1$outfilename 2>/dev/null )\n";
-  print $log `@cmd 2>&1 > $outfilename 2>/dev/null`;
-  if ( $@ ) { 
-    $failed++;
-    $msg= "$0::$subName FATAL < $@ >\n"; 
-  }
-   
-  #READ FILES
-  my $stdoe=""; 
-  open( TMP, "$outfilename" ) || die "$0::$subName FATAL: Cannot open $outfilename for reading\n";
-  while ( <TMP> ) {
-    $stdoe .= $_;
-  }
-  close( TMP );
+    #RUN CMD
+    my $msg;
+    my $failed=0;
+    print $log "$0::$subName INFO Running ( @cmd 2>&1$outfilename 2>/dev/null )\n";
+    print $log `@cmd 2>&1 > $outfilename 2>/dev/null`;
+    if ( $@ ) {
+        $failed++;
+        $msg= "$0::$subName FATAL < $@ >\n";
+    }
 
-  if ( $failed ) {
-    print $log "$msg";
-    die $msg if ( $die != "1" ); #die by default
-    return ( -1 ); 
-  }
-  return ( $? );
+    #READ FILES
+    my $stdoe="";
+    open( TMP, "$outfilename" ) || die "$0::$subName FATAL: Cannot open $outfilename for reading\n";
+    while ( <TMP> ) {
+        $stdoe .= $_;
+    }
+    close( TMP );
+
+    if ( $failed ) {
+        print $log "$msg";
+        die $msg if ( $die != "1" ); #die by default
+        return ( -1 );
+    }
+    return ( $? );
 }
 
-sub isWindows
-{
-    if($^O =~ /mswin/i) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
 1;

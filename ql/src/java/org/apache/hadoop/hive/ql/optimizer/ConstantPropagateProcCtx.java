@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -236,7 +236,7 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
         }
       }
     }
-    LOG.debug("Offerring constants " + constants.keySet() + " to operator " + op.toString());
+    LOG.debug("Offering constants " + constants.keySet() + " to operator " + op.toString());
     return constants;
   }
 

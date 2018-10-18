@@ -1,5 +1,5 @@
+--! qt:dataset:src
 set hive.explain.user=false;
--- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 -- SORT_QUERY_RESULTS
 
 create table nzhang_Tmp(a int, b string);
@@ -49,7 +49,7 @@ select * from nzhang_ctas4;
 
 describe formatted nzhang_CTAS4;
 
-explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10;
+explain create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10;
 
 set mapreduce.framework.name=yarn;
 set mapreduce.jobtracker.address=localhost:58;

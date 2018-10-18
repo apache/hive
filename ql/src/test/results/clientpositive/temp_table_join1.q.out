@@ -1,13 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
+PREHOOK: query: CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_nontemp
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
+POSTHOOK: query: CREATE TABLE src_nontemp AS SELECT * FROM src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -24,16 +20,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_temp
-PREHOOK: query: -- Non temp table join
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM src_nontemp src1 JOIN src_nontemp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Non temp table join
-EXPLAIN
+PREHOOK: Input: default@src_nontemp
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
 FROM src_nontemp src1 JOIN src_nontemp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_nontemp
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -44,6 +42,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -59,6 +58,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -120,16 +120,20 @@ POSTHOOK: Input: default@src_nontemp
 484	val_484
 86	val_86
 98	val_98
-PREHOOK: query: -- Non temp table join with temp table
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM src_nontemp src1 JOIN src_temp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Non temp table join with temp table
-EXPLAIN
+PREHOOK: Input: default@src_nontemp
+PREHOOK: Input: default@src_temp
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
 FROM src_nontemp src1 JOIN src_temp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_nontemp
+POSTHOOK: Input: default@src_temp
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -140,6 +144,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -155,6 +160,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -218,16 +224,18 @@ POSTHOOK: Input: default@src_temp
 484	val_484
 86	val_86
 98	val_98
-PREHOOK: query: -- temp table join with temp table
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM src_temp src1 JOIN src_temp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- temp table join with temp table
-EXPLAIN
+PREHOOK: Input: default@src_temp
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
 FROM src_temp src1 JOIN src_temp src2 ON (src1.key = src2.key)
 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_temp
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -238,6 +246,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -253,6 +262,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

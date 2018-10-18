@@ -1,0 +1,95 @@
+PREHOOK: query: CREATE TABLE alter_table_location3 (id int, name string, dept string)
+  PARTITIONED BY (year int)
+  STORED AS TEXTFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_location3
+POSTHOOK: query: CREATE TABLE alter_table_location3 (id int, name string, dept string)
+  PARTITIONED BY (year int)
+  STORED AS TEXTFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_table_location3
+PREHOOK: query: INSERT INTO alter_table_location3 PARTITION (year=2016) VALUES (8,'Henry','CSE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alter_table_location3@year=2016
+POSTHOOK: query: INSERT INTO alter_table_location3 PARTITION (year=2016) VALUES (8,'Henry','CSE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alter_table_location3@year=2016
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2016).dept SCRIPT []
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2016).id SCRIPT []
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2016).name SCRIPT []
+PREHOOK: query: ALTER TABLE alter_table_location3 ADD PARTITION (year=2017)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@alter_table_location3
+POSTHOOK: query: ALTER TABLE alter_table_location3 ADD PARTITION (year=2017)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@alter_table_location3
+POSTHOOK: Output: default@alter_table_location3@year=2017
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@alter_table_location3
+PREHOOK: Output: default@alter_table_location3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@alter_table_location3
+POSTHOOK: Output: default@alter_table_location3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: INSERT INTO alter_table_location3 PARTITION (year=2016) VALUES (9,'Horace','CSE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alter_table_location3@year=2016
+POSTHOOK: query: INSERT INTO alter_table_location3 PARTITION (year=2016) VALUES (9,'Horace','CSE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alter_table_location3@year=2016
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2016).dept SCRIPT []
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2016).id SCRIPT []
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2016).name SCRIPT []
+PREHOOK: query: INSERT INTO alter_table_location3 PARTITION (year=2017) VALUES (10,'Harris','CSE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alter_table_location3@year=2017
+POSTHOOK: query: INSERT INTO alter_table_location3 PARTITION (year=2017) VALUES (10,'Harris','CSE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alter_table_location3@year=2017
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2017).dept SCRIPT []
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2017).id SCRIPT []
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2017).name SCRIPT []
+PREHOOK: query: INSERT INTO alter_table_location3 PARTITION (year=2018) VALUES (11,'Humphrey','CSE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alter_table_location3@year=2018
+POSTHOOK: query: INSERT INTO alter_table_location3 PARTITION (year=2018) VALUES (11,'Humphrey','CSE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alter_table_location3@year=2018
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2018).dept SCRIPT []
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2018).id SCRIPT []
+POSTHOOK: Lineage: alter_table_location3 PARTITION(year=2018).name SCRIPT []
+PREHOOK: query: SELECT * from alter_table_location3 order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_location3
+PREHOOK: Input: default@alter_table_location3@year=2016
+PREHOOK: Input: default@alter_table_location3@year=2017
+PREHOOK: Input: default@alter_table_location3@year=2018
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * from alter_table_location3 order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_location3
+POSTHOOK: Input: default@alter_table_location3@year=2016
+POSTHOOK: Input: default@alter_table_location3@year=2017
+POSTHOOK: Input: default@alter_table_location3@year=2018
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8	Henry	CSE	2016
+9	Horace	CSE	2016
+10	Harris	CSE	2017
+11	Humphrey	CSE	2018

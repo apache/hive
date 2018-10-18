@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import java.io.IOException;
 
 public interface SparkSession {
+
   /**
    * Initializes a Spark session for DAG execution.
    * @param conf Hive configuration.
@@ -75,4 +76,30 @@ public interface SparkSession {
    * Get an HDFS dir specific to the SparkSession
    * */
   Path getHDFSSessionDir() throws IOException;
+
+  /**
+   * Callback function that is invoked by the {@link org.apache.hadoop.hive.ql.Driver} when a
+   * query has completed.
+   *
+   * @param queryId the id of the query that completed
+   */
+  void onQueryCompletion(String queryId);
+
+  /**
+   * Callback function that is invoked by the {@link org.apache.hadoop.hive.ql.Driver} when a
+   * query has been submitted.
+   *
+   * @param queryId the id of the query that completed
+   */
+  void onQuerySubmission(String queryId);
+
+  /**
+   * Checks if a session has timed out, and closes if the session if the timeout has occurred;
+   * returns true if the session timed out, and false otherwise.
+   *
+   * @param sessionTimeout the session timeout
+   *
+   * @return true if the session timed out and was closed, false otherwise
+   */
+  boolean triggerTimeout(long sessionTimeout);
 }

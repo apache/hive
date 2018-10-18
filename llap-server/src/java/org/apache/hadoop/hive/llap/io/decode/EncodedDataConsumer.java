@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,10 +22,14 @@ import java.util.concurrent.Callable;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
+import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.orc.TypeDescription;
 
 public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedColumnBatch<BatchKey>>
   implements Consumer<BatchType>, ReadPipeline {
@@ -35,7 +39,7 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   private Callable<Void> readCallable;
   private final LlapDaemonIOMetrics ioMetrics;
   // Note that the pool is per EDC - within EDC, CVBs are expected to have the same schema.
-  private final static int CVB_POOL_SIZE = 128;
+  private static final int CVB_POOL_SIZE = 128;
   protected final FixedSizedObjectPool<ColumnVectorBatch> cvbPool;
 
   public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, final int colCount,
@@ -67,15 +71,23 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   }
 
   @Override
-  public void consumeData(BatchType data) {
+  public void consumeData(BatchType data) throws InterruptedException {
     if (isStopped) {
       returnSourceData(data);
       return;
     }
     long start = System.currentTimeMillis();
-    decodeBatch(data, downstreamConsumer);
-    long end = System.currentTimeMillis();
-    ioMetrics.addDecodeBatchTime(end - start);
+    try {
+      decodeBatch(data, downstreamConsumer);
+    } catch (Throwable ex) {
+      // This probably should not happen; but it does... at least also stop the consumer.
+      LlapIoImpl.LOG.error("decodeBatch threw", ex);
+      downstreamConsumer.setError(ex);
+      throw ex;
+    } finally {
+      long end = System.currentTimeMillis();
+      ioMetrics.addDecodeBatchTime(end - start);
+    }
     returnSourceData(data);
   }
 
@@ -88,15 +100,15 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   }
 
   protected abstract void decodeBatch(BatchType batch,
-      Consumer<ColumnVectorBatch> downstreamConsumer);
+      Consumer<ColumnVectorBatch> downstreamConsumer) throws InterruptedException;
 
   @Override
-  public void setDone() {
+  public void setDone() throws InterruptedException {
     downstreamConsumer.setDone();
   }
 
   @Override
-  public void setError(Throwable t) {
+  public void setError(Throwable t) throws InterruptedException {
     downstreamConsumer.setError(t);
   }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,6 +41,10 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.metadata.BuiltInMetadata;
+import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
+import org.apache.calcite.rel.metadata.MetadataDef;
+import org.apache.calcite.rel.metadata.MetadataHandler;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdPredicates;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -66,19 +71,32 @@ import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 
 //TODO: Move this to calcite
-public class HiveRelMdPredicates extends RelMdPredicates {
+public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Predicates> {
 
-  public static final RelMetadataProvider SOURCE = ReflectiveRelMetadataProvider.reflectiveSource(
-                                                     BuiltInMethod.PREDICATES.method,
-                                                     new HiveRelMdPredicates());
+  public static final RelMetadataProvider SOURCE =
+          ChainedRelMetadataProvider.of(
+                  ImmutableList.of(
+                          ReflectiveRelMetadataProvider.reflectiveSource(
+                                  BuiltInMethod.PREDICATES.method, new HiveRelMdPredicates()),
+                          RelMdPredicates.SOURCE));
 
   private static final List<RexNode> EMPTY_LIST = ImmutableList.of();
+
+  //~ Constructors -----------------------------------------------------------
+
+  private HiveRelMdPredicates() {}
+
+  //~ Methods ----------------------------------------------------------------
+
+  @Override
+  public MetadataDef<BuiltInMetadata.Predicates> getDef() {
+    return BuiltInMetadata.Predicates.DEF;
+  }
 
   /**
    * Infers predicates for a project.
@@ -99,8 +117,8 @@ public class HiveRelMdPredicates extends RelMdPredicates {
    *
    * </ol>
    */
-  @Override
   public RelOptPredicateList getPredicates(Project project, RelMetadataQuery mq) {
+
     RelNode child = project.getInput();
     final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
     RelOptPredicateList childInfo = mq.getPulledUpPredicates(child);
@@ -147,11 +165,10 @@ public class HiveRelMdPredicates extends RelMdPredicates {
             rexBuilder.makeInputRef(project, expr.i), expr.e));
       }
     }
-    return RelOptPredicateList.of(projectPullUpPredicates);
+    return RelOptPredicateList.of(rexBuilder, projectPullUpPredicates);
   }
 
   /** Infers predicates for a {@link org.apache.calcite.rel.core.Join}. */
-  @Override
   public RelOptPredicateList getPredicates(Join join, RelMetadataQuery mq) {
     RexBuilder rB = join.getCluster().getRexBuilder();
     RelNode left = join.getInput(0);
@@ -181,11 +198,11 @@ public class HiveRelMdPredicates extends RelMdPredicates {
    * pulledUpExprs    : { a &gt; 7}
    * </pre>
    */
-  @Override
   public RelOptPredicateList getPredicates(Aggregate agg, RelMetadataQuery mq) {
     final RelNode input = agg.getInput();
     final RelOptPredicateList inputInfo = mq.getPulledUpPredicates(input);
     final List<RexNode> aggPullUpPredicates = new ArrayList<>();
+    final RexBuilder rexBuilder = agg.getCluster().getRexBuilder();
 
     ImmutableBitSet groupKeys = agg.getGroupSet();
     Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION,
@@ -203,13 +220,12 @@ public class HiveRelMdPredicates extends RelMdPredicates {
         aggPullUpPredicates.add(r);
       }
     }
-    return RelOptPredicateList.of(aggPullUpPredicates);
+    return RelOptPredicateList.of(rexBuilder, aggPullUpPredicates);
   }
 
   /**
    * Infers predicates for a Union.
    */
-  @Override
   public RelOptPredicateList getPredicates(Union union, RelMetadataQuery mq) {
     RexBuilder rB = union.getCluster().getRexBuilder();
 
@@ -256,7 +272,7 @@ public class HiveRelMdPredicates extends RelMdPredicates {
     if (!disjPred.isAlwaysTrue()) {
       preds.add(disjPred);
     }
-    return RelOptPredicateList.of(preds);
+    return RelOptPredicateList.of(rB, preds);
   }
 
   /**
@@ -396,6 +412,7 @@ public class HiveRelMdPredicates extends RelMdPredicates {
       final JoinRelType joinType = joinRel.getJoinType();
       final List<RexNode> leftPreds = ImmutableList.copyOf(RelOptUtil.conjunctions(leftChildPredicates));
       final List<RexNode> rightPreds = ImmutableList.copyOf(RelOptUtil.conjunctions(rightChildPredicates));
+      final RexBuilder rexBuilder = joinRel.getCluster().getRexBuilder();
       switch (joinType) {
       case INNER:
       case LEFT:
@@ -461,13 +478,13 @@ public class HiveRelMdPredicates extends RelMdPredicates {
           pulledUpPredicates = Iterables.concat(leftPreds, rightPreds,
                 RelOptUtil.conjunctions(joinRel.getCondition()), inferredPredicates);
         }
-        return RelOptPredicateList.of(
+        return RelOptPredicateList.of(rexBuilder,
           pulledUpPredicates, leftInferredPredicates, rightInferredPredicates);
-      case LEFT:    
-        return RelOptPredicateList.of(    
+      case LEFT:
+        return RelOptPredicateList.of(rexBuilder,
           leftPreds, EMPTY_LIST, rightInferredPredicates);
-      case RIGHT:   
-        return RelOptPredicateList.of(    
+      case RIGHT:
+        return RelOptPredicateList.of(rexBuilder,
           rightPreds, leftInferredPredicates, EMPTY_LIST);
       default:
         assert inferredPredicates.size() == 0;
@@ -517,7 +534,7 @@ public class HiveRelMdPredicates extends RelMdPredicates {
         public Iterator<Mapping> iterator() {
           ImmutableBitSet fields = exprFields.get(predicate.toString());
           if (fields.cardinality() == 0) {
-            return Iterators.emptyIterator();
+            return Collections.emptyIterator();
           }
           return new ExprsItr(fields);
         }
@@ -625,7 +642,7 @@ public class HiveRelMdPredicates extends RelMdPredicates {
         } else {
           computeNextMapping(iterationIdx.length - 1);
         }
-        return nextMapping != null;
+          return nextMapping != null;
       }
 
       public Mapping next() {
@@ -642,7 +659,9 @@ public class HiveRelMdPredicates extends RelMdPredicates {
           if (level == 0) {
             nextMapping = null;
           } else {
-            iterationIdx[level] = 0;
+            int tmp = columnSets[level].nextSetBit(0);
+            nextMapping.set(columns[level], tmp);
+            iterationIdx[level] = tmp + 1;
             computeNextMapping(level - 1);
           }
         } else {

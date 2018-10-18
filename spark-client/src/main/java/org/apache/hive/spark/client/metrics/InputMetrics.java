@@ -28,25 +28,32 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
  */
 @InterfaceAudience.Private
 public class InputMetrics implements Serializable {
-
-  public final DataReadMethod readMethod;
+  /** Total number of bytes read. */
   public final long bytesRead;
+  /** Total number of records read. */
+  public final long recordsRead;
 
   private InputMetrics() {
     // For Serialization only.
-    this(null, 0L);
+    this(0L, 0L);
   }
 
   public InputMetrics(
-      DataReadMethod readMethod,
-      long bytesRead) {
-    this.readMethod = readMethod;
+      long bytesRead,
+      long recordsRead) {
     this.bytesRead = bytesRead;
+    this.recordsRead = recordsRead;
   }
 
   public InputMetrics(TaskMetrics metrics) {
-    this(DataReadMethod.valueOf(metrics.inputMetrics().get().readMethod().toString()),
-      metrics.inputMetrics().get().bytesRead());
+    this(metrics.inputMetrics().bytesRead(),
+      metrics.inputMetrics().recordsRead());
   }
 
+  @Override
+  public String toString() {
+    return "InputMetrics{" +
+            "bytesRead=" + bytesRead +
+            '}';
+  }
 }

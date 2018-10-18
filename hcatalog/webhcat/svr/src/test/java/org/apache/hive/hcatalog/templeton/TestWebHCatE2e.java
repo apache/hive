@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,7 +25,7 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -70,21 +70,38 @@ public class TestWebHCatE2e {
   private static final String charSet = "UTF-8";
 
   @BeforeClass
-  public static void startHebHcatInMem() {
-    int webhcatPort = 50111;
-    try {
-      //in case concurrent tests are running on the same machine
-      webhcatPort = MetaStoreUtils.findFreePort();
+  public static void startHebHcatInMem() throws Exception {
+    Exception webhcatException = null;
+    int webhcatPort = 0;
+    boolean webhcatStarted = false;
+
+    for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
+      try {
+        if (tryCount == MetaStoreTestUtils.RETRY_COUNT - 1) {
+          /* Last try to get a port.  Just use default 50111.  */
+          webhcatPort = 50111;
+          LOG.warn("Unable to find free port; using default: " + webhcatPort);
+        }
+        else {
+          webhcatPort = MetaStoreTestUtils.findFreePort();
+        }
+        templetonBaseUrl = templetonBaseUrl.replace("50111", Integer.toString(webhcatPort));
+        templetonServer = new Main(new String[] { "-D" + AppConfig.UNIT_TEST_MODE + "=true",
+            "-D" + AppConfig.PORT + "=" + webhcatPort });
+        LOG.info("Starting Main; WebHCat using port: " + webhcatPort);
+        templetonServer.run();
+        LOG.info("Main started");
+        webhcatStarted = true;
+        break;
+      } catch (Exception ce) {
+        LOG.info("Attempt to Start WebHCat using port: " + webhcatPort + " failed");
+        webhcatException = ce;
+      }
     }
-    catch (IOException ex) {
-      LOG.warn("Unable to find free port; using default: " + webhcatPort);
+
+    if (!webhcatStarted) {
+      throw webhcatException;
     }
-    templetonBaseUrl = templetonBaseUrl.replace("50111", Integer.toString(webhcatPort));
-    templetonServer = new Main(new String[] {"-D" +
-            AppConfig.UNIT_TEST_MODE + "=true", "-D" + AppConfig.PORT + "=" + webhcatPort});
-    LOG.info("Starting Main; WebHCat using port: " + webhcatPort);
-    templetonServer.run();
-    LOG.info("Main started");
   }
 
   @AfterClass
@@ -238,7 +255,7 @@ public class TestWebHCatE2e {
     Map<String, Object> props = JsonBuilder.jsonToMap(p.responseBody);
     Assert.assertEquals("hadoop", props.get("module"));
     Assert.assertTrue(p.getAssertMsg(),
-        ((String)props.get("version")).matches("[1-2].[0-9]+.[0-9]+.*"));
+        ((String)props.get("version")).matches("[1-3].[0-9]+.[0-9]+.*"));
   }
 
   @Test

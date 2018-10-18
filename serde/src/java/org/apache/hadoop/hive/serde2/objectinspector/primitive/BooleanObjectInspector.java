@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,11 +17,15 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
 /**
  * A BooleanObjectInspector inspects an Object representing a Boolean.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface BooleanObjectInspector extends PrimitiveObjectInspector {
 
   /**

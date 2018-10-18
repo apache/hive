@@ -1,13 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE src11 as SELECT * FROM src
+PREHOOK: query: CREATE TABLE src11 as SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src11
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE src11 as SELECT * FROM src
+POSTHOOK: query: CREATE TABLE src11 as SELECT * FROM src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -55,11 +51,21 @@ src11 a JOIN
 src12 b ON (a.key = b.key) JOIN
 (SELECT * FROM (SELECT * FROM src13 UNION ALL SELECT * FROM src14)a )c ON c.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src11
+PREHOOK: Input: default@src12
+PREHOOK: Input: default@src13
+PREHOOK: Input: default@src14
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM 
 src11 a JOIN
 src12 b ON (a.key = b.key) JOIN
 (SELECT * FROM (SELECT * FROM src13 UNION ALL SELECT * FROM src14)a )c ON c.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src11
+POSTHOOK: Input: default@src12
+POSTHOOK: Input: default@src13
+POSTHOOK: Input: default@src14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-6 depends on stages: Stage-8
@@ -72,16 +78,17 @@ STAGE PLANS:
         $hdt$_0:a 
           Fetch Operator
             limit: -1
-        $hdt$_2-subquery1:$hdt$_2-subquery1:src13 
+        $hdt$_2:$hdt$_2-subquery1:src13 
           Fetch Operator
             limit: -1
-        $hdt$_2-subquery2:$hdt$_2-subquery2:src14 
+        $hdt$_2:$hdt$_2-subquery2:src14 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -94,9 +101,10 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
-        $hdt$_2-subquery1:$hdt$_2-subquery1:src13 
+        $hdt$_2:$hdt$_2-subquery1:src13 
           TableScan
             alias: src13
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -111,9 +119,10 @@ STAGE PLANS:
                     keys:
                       0 _col3 (type: string)
                       1 _col1 (type: string)
-        $hdt$_2-subquery2:$hdt$_2-subquery2:src14 
+        $hdt$_2:$hdt$_2-subquery2:src14 
           TableScan
             alias: src14
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -134,6 +143,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: (key is not null and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key is not null and value is not null) (type: boolean)
@@ -165,6 +175,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 

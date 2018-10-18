@@ -19,9 +19,14 @@
 
 package org.apache.hive.ptest.execution.conf;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -257,5 +262,84 @@ public class Context {
   @Override
   public String toString() {
     return "{ parameters:" + parameters + " }";
+  }
+
+  /**
+   * Build a context with the properties read from an input stream.
+   * @param inputStream
+   * @return context
+   * @throws IOException
+   */
+  public static Context fromInputStream(InputStream inputStream)
+      throws IOException {
+    Properties properties = new Properties();
+    properties.load(inputStream);
+    return new Context(Maps.fromProperties(properties));
+  }
+
+  /**
+   * Build a context with the properties read from a file
+   * @param file
+   * @return
+   * @throws IOException
+   */
+  public static Context fromFile(String file) throws IOException {
+    return fromFile(new File(file));
+  }
+
+  /**
+   * Build a context with the properties read from a file
+   * @param file
+   * @return
+   * @throws IOException
+   */
+  public static Context fromFile(File file) throws IOException {
+    try (InputStream in = new FileInputStream(file)){
+      return fromInputStream(in);
+    }
+  }
+
+  /**
+   * Builder that can aggregate properties from several files
+   * when building a context. If the same key is present in more
+   * than one file, the last one will be used.
+   */
+  public static class ContextBuilder {
+
+    private Context context = new Context();
+
+    /**
+     * Add properties from a file to the context
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    public ContextBuilder addPropertiesFile(File file) throws IOException {
+      try(InputStream is = new FileInputStream(file)) {
+        Properties properties = new Properties();
+        properties.load(is);
+        context.putAll(Maps.fromProperties(properties));
+      }
+      return this;
+    }
+
+    /**
+     * Add properties from a file to the context
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    public ContextBuilder addPropertiesFile(String file) throws IOException {
+      return  addPropertiesFile(new File(file));
+    }
+
+    /**
+     * Build the context using the aggregated properties
+     * @return
+     * @throws IOException
+     */
+    public Context build() throws IOException {
+      return context;
+    }
   }
 }

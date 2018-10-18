@@ -1,5 +1,4 @@
-PREHOOK: query: -- Cast from varchar to other data types
-select
+PREHOOK: query: select
   cast(cast('11' as string) as tinyint),
   cast(cast('11' as string) as smallint),
   cast(cast('11' as string) as int),
@@ -11,8 +10,7 @@ from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Cast from varchar to other data types
-select
+POSTHOOK: query: select
   cast(cast('11' as string) as tinyint),
   cast(cast('11' as string) as smallint),
   cast(cast('11' as string) as int),
@@ -80,16 +78,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2011-01-01	2011-01-01 01:02:03
-PREHOOK: query: -- no tests from string/varchar to boolean, that conversion doesn't look useful
-select
+PREHOOK: query: select
   cast(cast('abc123' as string) as string),
   cast(cast('abc123' as string) as varchar(10))
 from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- no tests from string/varchar to boolean, that conversion doesn't look useful
-select
+POSTHOOK: query: select
   cast(cast('abc123' as string) as string),
   cast(cast('abc123' as string) as varchar(10))
 from src limit 1
@@ -112,8 +108,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 abc123	abc123
-PREHOOK: query: -- cast from other types to varchar
-select
+PREHOOK: query: select
   cast(cast(11 as tinyint) as string),
   cast(cast(11 as smallint) as string),
   cast(cast(11 as int) as string),
@@ -125,8 +120,7 @@ from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- cast from other types to varchar
-select
+POSTHOOK: query: select
   cast(cast(11 as tinyint) as string),
   cast(cast(11 as smallint) as string),
   cast(cast(11 as int) as string),

@@ -2,8 +2,7 @@ PREHOOK: query: DROP VIEW xxx5
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW xxx5
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: -- duplicate column names are illegal
-CREATE VIEW xxx5(x,x) AS
+PREHOOK: query: CREATE VIEW xxx5(x,x) AS
 SELECT key,value FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src

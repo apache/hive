@@ -1,0 +1,24 @@
+PREHOOK: query: DESCRIBE FUNCTION logged_in_user
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION logged_in_user
+POSTHOOK: type: DESCFUNCTION
+logged_in_user() - Returns logged in user name
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED logged_in_user
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED logged_in_user
+POSTHOOK: type: DESCFUNCTION
+logged_in_user() - Returns logged in user name
+SessionState GetUserName - the username provided at session initialization
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLoggedInUser
+Function type:BUILTIN
+PREHOOK: query: select logged_in_user()
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select logged_in_user()
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL

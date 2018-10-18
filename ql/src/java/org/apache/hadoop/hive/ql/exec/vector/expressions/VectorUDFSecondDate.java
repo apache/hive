@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,8 +28,8 @@ public final class VectorUDFSecondDate extends VectorUDFTimestampFieldDate {
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFSecondDate(int colNum, int outputColumn) {
-    super(Calendar.SECOND, colNum, outputColumn);
+  public VectorUDFSecondDate(int colNum, int outputColumnNum) {
+    super(Calendar.SECOND, colNum, outputColumnNum);
   }
 
   public VectorUDFSecondDate() {

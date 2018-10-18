@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -59,7 +59,6 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
     expectedLogsPerformance = new String[]{
       "<PERFLOG method=compile from=org.apache.hadoop.hive.ql.Driver>",
       "<PERFLOG method=parse from=org.apache.hadoop.hive.ql.Driver>",
-      "<PERFLOG method=Driver.run from=org.apache.hadoop.hive.ql.Driver>",
       "<PERFLOG method=runTasks from=org.apache.hadoop.hive.ql.Driver>"
     };
     hiveConf = new HiveConf();
@@ -97,7 +96,7 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
       if (System.currentTimeMillis() > pollTimeout) {
         break;
       }
-      opStatus = client.getOperationStatus(operationHandle);
+      opStatus = client.getOperationStatus(operationHandle, false);
       Assert.assertNotNull(opStatus);
       state = opStatus.getState();
 

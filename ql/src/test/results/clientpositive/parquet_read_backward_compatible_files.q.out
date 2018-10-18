@@ -1,7 +1,4 @@
-PREHOOK: query: -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12
--- alltypesparquet is a files written by older version of Hive
-
-CREATE TABLE alltypesparquet (
+PREHOOK: query: CREATE TABLE alltypesparquet_old (
     bo1 boolean,
     ti1 tinyint,
     si1 smallint,
@@ -16,11 +13,8 @@ CREATE TABLE alltypesparquet (
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypesparquet
-POSTHOOK: query: -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12
--- alltypesparquet is a files written by older version of Hive
-
-CREATE TABLE alltypesparquet (
+PREHOOK: Output: default@alltypesparquet_old
+POSTHOOK: query: CREATE TABLE alltypesparquet_old (
     bo1 boolean,
     ti1 tinyint,
     si1 smallint,
@@ -35,21 +29,21 @@ CREATE TABLE alltypesparquet (
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypesparquet
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet
+POSTHOOK: Output: default@alltypesparquet_old
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet_old
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@alltypesparquet
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet
+PREHOOK: Output: default@alltypesparquet_old
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet_old
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@alltypesparquet
-PREHOOK: query: SELECT * FROM alltypesparquet
+POSTHOOK: Output: default@alltypesparquet_old
+PREHOOK: query: SELECT * FROM alltypesparquet_old
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesparquet
+PREHOOK: Input: default@alltypesparquet_old
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM alltypesparquet
+POSTHOOK: query: SELECT * FROM alltypesparquet_old
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesparquet
+POSTHOOK: Input: default@alltypesparquet_old
 #### A masked pattern was here ####
 true	10	100	1000	10000	4.0	20.0	hello	{"k1":"v1"}	[100,200]	{"c1":10,"c2":"foo"}

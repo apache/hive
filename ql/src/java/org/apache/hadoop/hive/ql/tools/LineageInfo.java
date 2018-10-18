@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,8 @@
  */
 
 package org.apache.hadoop.hive.ql.tools;
+
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -109,8 +111,7 @@ public class LineageInfo implements NodeProcessor {
     /*
      * Get the AST tree
      */
-    ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(query);
+    ASTNode tree = ParseUtils.parse(query, null);
 
     while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
       tree = (ASTNode) tree.getChild(0);

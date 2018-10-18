@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -49,7 +49,7 @@ public class HiveDelegator extends LauncherDelegator {
                String statusdir, String callback, String completedUrl, boolean enablelog,
                Boolean enableJobReconnect)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
-    ExecuteException, IOException, InterruptedException
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException
   {
     runAs = user;
     List<String> args = makeArgs(execute, srcFile, defines, hiveArgs, otherFiles, statusdir,
@@ -69,7 +69,6 @@ public class HiveDelegator extends LauncherDelegator {
       args.addAll(makeBasicArgs(execute, srcFile, otherFiles, statusdir, completedUrl,
           enablelog, enableJobReconnect));
       args.add("--");
-      TempletonUtils.addCmdForWindows(args);
       addHiveMetaStoreTokenArg();
       
       args.add(appConf.hivePath());
@@ -92,18 +91,18 @@ public class HiveDelegator extends LauncherDelegator {
 
       for (String prop : appConf.hiveProps()) {
         args.add("--hiveconf");
-        args.add(TempletonUtils.quoteForWindows(prop));
+        args.add(prop);
       }
       for (String prop : defines) {
         args.add("--hiveconf");
-        args.add(TempletonUtils.quoteForWindows(prop));
+        args.add(prop);
       }
       for (String hiveArg : hiveArgs) {
-        args.add(TempletonUtils.quoteForWindows(hiveArg));
+        args.add(hiveArg);
       }
       if (TempletonUtils.isset(execute)) {
         args.add("-e");
-        args.add(TempletonUtils.quoteForWindows(execute));
+        args.add(execute);
       } else if (TempletonUtils.isset(srcFile)) {
         args.add("-f");
         args.add(TempletonUtils.hadoopFsPath(srcFile, appConf, runAs)

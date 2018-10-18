@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.limit.pushdown.memory.usage=0.3f;
@@ -46,7 +48,8 @@ select key,value from src order by key limit 0;
 -- 2MR (applied to last RS)
 explain
 select value, sum(key) as sum from src group by value order by sum limit 20;
-select value, sum(key) as sum from src group by value order by sum limit 20;
+
+select value, sum(key) as sum from src group by value order by sum, value limit 20;
 
 set hive.map.aggr=false;
 -- map aggregation disabled

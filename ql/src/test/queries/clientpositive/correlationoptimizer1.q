@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.auto.convert.join=false;
@@ -214,6 +216,7 @@ set hive.optimize.correlation=false;
 -- they share the same key. Because those keys with a null value are not grouped
 -- in the output of the Full Outer Join, we cannot use a single MR to execute
 -- these two operators.
+SET hive.mapjoin.full.outer=false;
 EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -224,8 +227,23 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp;
+
+SET hive.mapjoin.full.outer=true;
+SET hive.merge.nway.joins=false;
+EXPLAIN
+SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
+FROM (SELECT x.key AS key, count(1) AS cnt
+      FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
+      GROUP BY x.key) tmp;
+
+SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
+FROM (SELECT x.key AS key, count(1) AS cnt
+      FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
+      GROUP BY x.key) tmp;
+SET hive.merge.nway.joins=true;
 
 set hive.optimize.correlation=true;
+SET hive.mapjoin.full.outer=false;
 EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -236,6 +254,20 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp;
+
+SET hive.mapjoin.full.outer=true;
+SET hive.merge.nway.joins=false;
+EXPLAIN
+SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
+FROM (SELECT x.key AS key, count(1) AS cnt
+      FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
+      GROUP BY x.key) tmp;
+
+SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
+FROM (SELECT x.key AS key, count(1) AS cnt
+      FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
+      GROUP BY x.key) tmp;
+SET hive.merge.nway.joins=true;
 
 set hive.auto.convert.join=false;
 set hive.optimize.correlation=false;

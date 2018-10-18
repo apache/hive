@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,63 +13,22 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet;
 
+import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.createHiveColumnsFrom;
+import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.createHiveTypeInfoFrom;
+import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.testConversion;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.MessageTypeParser;
 import org.apache.parquet.schema.OriginalType;
-import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
 import org.junit.Test;
 
+
 public class TestHiveSchemaConverter {
-
-  private List<String> createHiveColumnsFrom(final String columnNamesStr) {
-    List<String> columnNames;
-    if (columnNamesStr.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
-      columnNames = Arrays.asList(columnNamesStr.split(","));
-    }
-
-    return columnNames;
-  }
-
-  private List<TypeInfo> createHiveTypeInfoFrom(final String columnsTypeStr) {
-    List<TypeInfo> columnTypes;
-
-    if (columnsTypeStr.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnsTypeStr);
-    }
-
-    return columnTypes;
-  }
-
-  private void testConversion(final String columnNamesStr, final String columnsTypeStr, final String expectedSchema) throws Exception {
-    final List<String> columnNames = createHiveColumnsFrom(columnNamesStr);
-    final List<TypeInfo> columnTypes = createHiveTypeInfoFrom(columnsTypeStr);
-    final MessageType messageTypeFound = HiveSchemaConverter.convert(columnNames, columnTypes);
-    final MessageType expectedMT = MessageTypeParser.parseMessageType(expectedSchema);
-    assertEquals("converting " + columnNamesStr + ": " + columnsTypeStr + " to " + expectedSchema, expectedMT, messageTypeFound);
-
-    // Required to check the original types manually as PrimitiveType.equals does not care about it
-    List<Type> expectedFields = expectedMT.getFields();
-    List<Type> actualFields = messageTypeFound.getFields();
-    for (int i = 0, n = expectedFields.size(); i < n; ++i) {
-      OriginalType exp = expectedFields.get(i).getOriginalType();
-      OriginalType act = actualFields.get(i).getOriginalType();
-      assertEquals("Original types of the field do not match", exp, act);
-    }
-  }
 
   @Test
   public void testSimpleType() throws Exception {
@@ -182,8 +141,8 @@ public class TestHiveSchemaConverter {
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
             + "    repeated group map (MAP_KEY_VALUE) {\n"
-            + "      required binary key;\n"
-            + "      optional binary value;\n"
+            + "      required binary key (UTF8);\n"
+            + "      optional binary value (UTF8);\n"
             + "    }\n"
             + "  }\n"
             + "}\n");
@@ -196,7 +155,7 @@ public class TestHiveSchemaConverter {
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
             + "    repeated group map (MAP_KEY_VALUE) {\n"
-            + "      required binary key;\n"
+            + "      required binary key (UTF8);\n"
             + "      optional fixed_len_byte_array(3) value (DECIMAL(5,2));\n"
             + "    }\n"
             + "  }\n"

@@ -1,0 +1,26 @@
+PREHOOK: query: create table amvcng_gtable (a int, b varchar(256), c decimal(10,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@amvcng_gtable
+POSTHOOK: query: create table amvcng_gtable (a int, b varchar(256), c decimal(10,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@amvcng_gtable
+PREHOOK: query: insert into amvcng_gtable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@amvcng_gtable
+POSTHOOK: query: insert into amvcng_gtable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@amvcng_gtable
+POSTHOOK: Lineage: amvcng_gtable.a SCRIPT []
+POSTHOOK: Lineage: amvcng_gtable.b SCRIPT []
+POSTHOOK: Lineage: amvcng_gtable.c SCRIPT []
+PREHOOK: query: grant select on table amvcng_gtable to user user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@amvcng_gtable
+POSTHOOK: query: grant select on table amvcng_gtable to user user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@amvcng_gtable
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation CREATE_MATERIALIZED_VIEW [[SELECT with grant] on Object [type=TABLE_OR_VIEW, name=default.amvcng_gtable]]

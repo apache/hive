@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,14 @@
  */
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * HCat message sent when a table is Altered.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class AlterTableMessage extends HCatEventMessage {
 
   protected AlterTableMessage() {
@@ -28,10 +33,13 @@ public abstract class AlterTableMessage extends HCatEventMessage {
   }
 
   public abstract String getTable();
+  public abstract String getTableType();
 
   @Override
   public HCatEventMessage checkValid() {
     if (getTable() == null) throw new IllegalStateException("Table name unset.");
     return super.checkValid();
   }
+
+  public abstract Long getWriteId();
 }

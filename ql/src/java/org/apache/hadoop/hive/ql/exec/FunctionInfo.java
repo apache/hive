@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -73,36 +73,36 @@ public class FunctionInfo {
     this.discarded = new AtomicBoolean(false);  // shared to all session functions
   }
 
-  public FunctionInfo(boolean isNative, String displayName,
+  public FunctionInfo(FunctionType functionType, String displayName,
       GenericUDF genericUDF, FunctionResource... resources) {
-    this.functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    this.functionType = functionType;
     this.displayName = displayName;
     this.genericUDF = genericUDF;
     this.isInternalTableFunction = false;
     this.resources = resources;
   }
 
-  public FunctionInfo(boolean isNative, String displayName,
+  public FunctionInfo(FunctionType functionType, String displayName,
       GenericUDAFResolver genericUDAFResolver, FunctionResource... resources) {
-    this.functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    this.functionType = functionType;
     this.displayName = displayName;
     this.genericUDAFResolver = genericUDAFResolver;
     this.isInternalTableFunction = false;
     this.resources = resources;
   }
 
-  public FunctionInfo(boolean isNative, String displayName,
+  public FunctionInfo(FunctionType functionType, String displayName,
       GenericUDTF genericUDTF, FunctionResource... resources) {
-    this.functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    this.functionType = functionType;
     this.displayName = displayName;
     this.genericUDTF = genericUDTF;
     this.isInternalTableFunction = false;
     this.resources = resources;
   }
 
-  public FunctionInfo(boolean isNative, String displayName, Class<? extends TableFunctionResolver> tFnCls,
+  public FunctionInfo(FunctionType functionType, String displayName, Class<? extends TableFunctionResolver> tFnCls,
       FunctionResource... resources) {
-    this.functionType = isNative ? FunctionType.BUILTIN : FunctionType.TEMPORARY;
+    this.functionType = functionType;
     this.displayName = displayName;
     this.tableFunctionResolver = tFnCls;
     PartitionTableFunctionDescription def = AnnotationUtils.getAnnotation(
@@ -261,6 +261,10 @@ public class FunctionInfo {
     if (function != null) {
       function.discarded = discarded;
     }
+  }
+
+  public FunctionType getFunctionType() {
+    return functionType;
   }
 
   public static class FunctionResource {

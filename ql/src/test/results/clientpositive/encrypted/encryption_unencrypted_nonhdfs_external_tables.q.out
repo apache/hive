@@ -1,12 +1,6 @@
-PREHOOK: query: -- This test does not test encrypted data, but it makes sure that external tables out of HDFS can
--- be queried due to internal encryption functions;
-
-DROP TABLE mydata
+PREHOOK: query: DROP TABLE mydata
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- This test does not test encrypted data, but it makes sure that external tables out of HDFS can
--- be queried due to internal encryption functions;
-
-DROP TABLE mydata
+POSTHOOK: query: DROP TABLE mydata
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE EXTERNAL TABLE mydata (key STRING, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' '
 #### A masked pattern was here ####
@@ -31,11 +25,11 @@ POSTHOOK: Output: default@mydata
 PREHOOK: query: SELECT * from mydata
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mydata
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * from mydata
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mydata
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238val_238	NULL
 86val_86	NULL
 311val_311	NULL

@@ -38,6 +38,11 @@ SELECT foo.id, count(*) as factor from
  WHERE foo.orders != 'blah'  
  group by foo.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+PREHOOK: Input: default@forecast
+PREHOOK: Input: default@split
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 SELECT foo.id, count(*) as factor from 
  foo JOIN bar  ON (foo.id = bar.id and foo.line_id = bar.line_id) 
@@ -46,6 +51,11 @@ SELECT foo.id, count(*) as factor from
  WHERE foo.orders != 'blah'  
  group by foo.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+POSTHOOK: Input: default@forecast
+POSTHOOK: Input: default@split
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -57,6 +67,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: foo
+            filterExpr: ((orders <> 'blah') and id is not null and line_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((orders <> 'blah') and id is not null and line_id is not null) (type: boolean)
@@ -72,6 +83,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: bar
+            filterExpr: (id is not null and line_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id is not null and line_id is not null) (type: boolean)
@@ -87,6 +99,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: split
+            filterExpr: (id is not null and line_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id is not null and line_id is not null) (type: boolean)
@@ -102,6 +115,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: forecast
+            filterExpr: (id is not null and line_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id is not null and line_id is not null) (type: boolean)
@@ -151,6 +165,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: int)
               Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

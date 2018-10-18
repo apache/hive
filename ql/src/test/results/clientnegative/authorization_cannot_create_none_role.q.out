@@ -2,4 +2,4 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-FAILED: ParseException line 2:12 Failed to recognize predicate 'None'. Failed rule: 'identifier' in create role
+FAILED: ParseException line 2:12 cannot recognize input near 'None' '<EOF>' '<EOF>' in create role

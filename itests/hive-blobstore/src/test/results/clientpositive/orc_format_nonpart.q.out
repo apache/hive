@@ -1,0 +1,201 @@
+PREHOOK: query: DROP TABLE blobstore_source
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_source
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE blobstore_source(a STRING, b STRING, c DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/orc_format_nonpart/blobstore_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_source
+POSTHOOK: query: CREATE TABLE blobstore_source(a STRING, b STRING, c DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/orc_format_nonpart/blobstore_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_source
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE blobstore_source
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@blobstore_source
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE blobstore_source
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@blobstore_source
+PREHOOK: query: DROP TABLE orc_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE orc_table (a INT, b STRING, value DOUBLE) STORED AS ORC
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/orc_format_nonpart/orc_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: CREATE EXTERNAL TABLE orc_table (a INT, b STRING, value DOUBLE) STORED AS ORC
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/orc_format_nonpart/orc_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table
+PREHOOK: query: INSERT OVERWRITE TABLE orc_table
+SELECT * FROM blobstore_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_table
+SELECT * FROM blobstore_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@orc_table
+POSTHOOK: Lineage: orc_table.a EXPRESSION [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_table.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_table.value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT * FROM orc_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084
+PREHOOK: query: SELECT a FROM orc_table GROUP BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a FROM orc_table GROUP BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6
+7
+PREHOOK: query: SELECT b FROM orc_table GROUP BY b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT b FROM orc_table GROUP BY b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+abc
+ajss
+data
+def
+djns
+ne
+random
+PREHOOK: query: SELECT value FROM orc_table GROUP BY value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value FROM orc_table GROUP BY value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+2.99
+3.002
+10.5
+11.5
+71.9084
+89.02002
+90.23232
+PREHOOK: query: INSERT INTO TABLE orc_table
+SELECT * FROM blobstore_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: INSERT INTO TABLE orc_table
+SELECT * FROM blobstore_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@orc_table
+POSTHOOK: Lineage: orc_table.a EXPRESSION [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_table.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_table.value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT * FROM orc_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084
+PREHOOK: query: SELECT a FROM orc_table GROUP BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a FROM orc_table GROUP BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6
+7
+PREHOOK: query: SELECT b FROM orc_table GROUP BY b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT b FROM orc_table GROUP BY b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+abc
+ajss
+data
+def
+djns
+ne
+random
+PREHOOK: query: SELECT value FROM orc_table GROUP BY value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value FROM orc_table GROUP BY value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table
+#### A masked pattern was here ####
+2.99
+3.002
+10.5
+11.5
+71.9084
+89.02002
+90.23232

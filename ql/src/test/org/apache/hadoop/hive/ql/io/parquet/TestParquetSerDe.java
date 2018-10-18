@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,12 +19,16 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -79,6 +83,36 @@ public class TestParquetSerDe extends TestCase {
       e.printStackTrace();
       throw e;
     }
+  }
+
+  public void testParquetHiveSerDeComplexTypes() throws Throwable {
+    // Initialize
+    ParquetHiveSerDe serDe = new ParquetHiveSerDe();
+    Configuration conf = new Configuration();
+    Properties tblProperties = new Properties();
+
+    tblProperties.setProperty(serdeConstants.LIST_COLUMNS, "a,s");
+    tblProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, "int,struct<a:int,b:string>");
+    conf.set(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR, "s.b");
+
+    serDe.initialize(conf, tblProperties);
+
+    // Generate test data
+    Writable[] wb = new Writable[1];
+    wb[0] = new BytesWritable("foo".getBytes("UTF-8"));
+    Writable[] ws = new Writable[2];
+    ws[0] = null;
+    ArrayWritable awb = new ArrayWritable(Writable.class, wb);
+    ws[1] = awb;
+    ArrayWritable aws = new ArrayWritable(Writable.class, ws);
+
+    // Inspect the test data
+    StructObjectInspector soi = (StructObjectInspector) serDe.getObjectInspector();
+    StructField s = soi.getStructFieldRef("s");
+    assertEquals(awb, soi.getStructFieldData(aws, s));
+    StructObjectInspector boi = (StructObjectInspector) s.getFieldObjectInspector();
+    StructField b = boi.getStructFieldRef("b");
+    assertEquals(wb[0], boi.getStructFieldData(awb, b));
   }
 
   private void deserializeAndSerializeLazySimple(final ParquetHiveSerDe serDe, final ArrayWritable t) throws SerDeException {

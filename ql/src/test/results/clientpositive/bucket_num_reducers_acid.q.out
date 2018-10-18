@@ -1,0 +1,35 @@
+PREHOOK: query: drop table if exists bucket_nr_acid
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists bucket_nr_acid
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table bucket_nr_acid (a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_nr_acid
+POSTHOOK: query: create table bucket_nr_acid (a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucket_nr_acid
+PREHOOK: query: insert into bucket_nr_acid values(1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@bucket_nr_acid
+PREHOOK: query: insert into bucket_nr_acid values(0,0),(3,3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@bucket_nr_acid
+PREHOOK: query: update bucket_nr_acid set b = -1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_nr_acid
+PREHOOK: Output: default@bucket_nr_acid
+PREHOOK: query: select * from bucket_nr_acid order by a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_nr_acid
+PREHOOK: Output: hdfs://### HDFS PATH ###
+0	-1
+1	-1
+3	-1
+PREHOOK: query: drop table bucket_nr_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@bucket_nr_acid
+PREHOOK: Output: default@bucket_nr_acid

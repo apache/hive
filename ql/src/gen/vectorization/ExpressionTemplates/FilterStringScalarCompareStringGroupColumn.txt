@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,16 +28,16 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
  * This is a generated class to evaluate a <OperatorSymbol> comparison on a vector of strings.
- * Do not edit the generated code directly. 
+ * Do not edit the generated code directly.
  */
 public class <ClassName> extends <BaseClassName> {
 
   public <ClassName>(byte[] value, int colNum) {
-    this.colNum = colNum;
-    this.value = value;
+    super(value, colNum);
   }
 
   public <ClassName>() {
+    super();
   }
 
   @Override

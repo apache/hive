@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Invalid type: int for default value: 1. Please make sure that the type is compatible with column type: double

@@ -1,50 +1,50 @@
-PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+PREHOOK: query: create table partition_test_partitioned_n5(key string, value string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+PREHOOK: Output: default@partition_test_partitioned_n5
+POSTHOOK: query: create table partition_test_partitioned_n5(key string, value string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: alter table partition_test_partitioned set fileformat sequencefile
+POSTHOOK: Output: default@partition_test_partitioned_n5
+PREHOOK: query: alter table partition_test_partitioned_n5 set fileformat sequencefile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: alter table partition_test_partitioned set fileformat sequencefile
+PREHOOK: Input: default@partition_test_partitioned_n5
+PREHOOK: Output: default@partition_test_partitioned_n5
+POSTHOOK: query: alter table partition_test_partitioned_n5 set fileformat sequencefile
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt='1') select * from src1
+POSTHOOK: Input: default@partition_test_partitioned_n5
+POSTHOOK: Output: default@partition_test_partitioned_n5
+PREHOOK: query: insert overwrite table partition_test_partitioned_n5 partition(dt='1') select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@partition_test_partitioned@dt=1
-POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt='1') select * from src1
+PREHOOK: Output: default@partition_test_partitioned_n5@dt=1
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n5 partition(dt='1') select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@partition_test_partitioned@dt=1
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: alter table partition_test_partitioned partition (dt='1') set fileformat sequencefile
+POSTHOOK: Output: default@partition_test_partitioned_n5@dt=1
+POSTHOOK: Lineage: partition_test_partitioned_n5 PARTITION(dt=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n5 PARTITION(dt=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table partition_test_partitioned_n5 partition (dt='1') set fileformat sequencefile
 PREHOOK: type: ALTERPARTITION_FILEFORMAT
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned@dt=1
-POSTHOOK: query: alter table partition_test_partitioned partition (dt='1') set fileformat sequencefile
+PREHOOK: Input: default@partition_test_partitioned_n5
+PREHOOK: Output: default@partition_test_partitioned_n5@dt=1
+POSTHOOK: query: alter table partition_test_partitioned_n5 partition (dt='1') set fileformat sequencefile
 POSTHOOK: type: ALTERPARTITION_FILEFORMAT
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=1
-POSTHOOK: Output: default@partition_test_partitioned@dt=1
-PREHOOK: query: alter table partition_test_partitioned add partition (dt='2')
+POSTHOOK: Input: default@partition_test_partitioned_n5
+POSTHOOK: Input: default@partition_test_partitioned_n5@dt=1
+POSTHOOK: Output: default@partition_test_partitioned_n5@dt=1
+PREHOOK: query: alter table partition_test_partitioned_n5 add partition (dt='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: alter table partition_test_partitioned add partition (dt='2')
+PREHOOK: Output: default@partition_test_partitioned_n5
+POSTHOOK: query: alter table partition_test_partitioned_n5 add partition (dt='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned@dt=2
-PREHOOK: query: alter table partition_test_partitioned drop partition (dt='2')
+POSTHOOK: Output: default@partition_test_partitioned_n5
+POSTHOOK: Output: default@partition_test_partitioned_n5@dt=2
+PREHOOK: query: alter table partition_test_partitioned_n5 drop partition (dt='2')
 PREHOOK: type: ALTERTABLE_DROPPARTS
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned@dt=2
-POSTHOOK: query: alter table partition_test_partitioned drop partition (dt='2')
+PREHOOK: Input: default@partition_test_partitioned_n5
+PREHOOK: Output: default@partition_test_partitioned_n5@dt=2
+POSTHOOK: query: alter table partition_test_partitioned_n5 drop partition (dt='2')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned@dt=2
+POSTHOOK: Input: default@partition_test_partitioned_n5
+POSTHOOK: Output: default@partition_test_partitioned_n5@dt=2

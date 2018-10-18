@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -183,7 +183,7 @@ public abstract class ColumnarStructBase implements StructObject, SerDeStatsStru
    * @param length
    *          the length
    *
-   * @return -1 for null, >=0 for length
+   * @return -1 for null, &gt;=0 for length
    */
   protected abstract int getLength(ObjectInspector objectInspector,
       ByteArrayRef cachedByteArrayRef, int start, int length);

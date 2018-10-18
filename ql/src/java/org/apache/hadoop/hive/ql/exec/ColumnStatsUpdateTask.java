@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -35,14 +33,15 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
-import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Decimal;
-import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -50,11 +49,11 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ColumnStatsUpdateTask implementation. For example, ALTER TABLE src_stat
@@ -78,28 +77,27 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private ColumnStatistics constructColumnStatsFromInput()
       throws SemanticException, MetaException {
 
-    String dbName = SessionState.get().getCurrentDatabase();
-    ColumnStatsDesc desc = work.getColStats();
-    String tableName = desc.getTableName();
+    String dbName = work.dbName();
+    String tableName = work.getTableName();
     String partName = work.getPartName();
-    List<String> colName = desc.getColName();
-    List<String> colType = desc.getColType();
+    String colName = work.getColName();
+    String columnType = work.getColType();
 
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
 
     // grammar prohibits more than 1 column so we are guaranteed to have only 1
     // element in this lists.
 
-    statsObj.setColName(colName.get(0));
+    statsObj.setColName(colName);
 
-    statsObj.setColType(colType.get(0));
-    
+    statsObj.setColType(columnType);
+
     ColumnStatisticsData statsData = new ColumnStatisticsData();
-    
-    String columnType = colType.get(0);
 
-    if (columnType.equalsIgnoreCase("long")) {
-      LongColumnStatsData longStats = new LongColumnStatsData();
+    if (columnType.equalsIgnoreCase("long") || columnType.equalsIgnoreCase("tinyint")
+        || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
+        || columnType.equalsIgnoreCase("bigint") || columnType.equalsIgnoreCase("timestamp")) {
+      LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNullsIsSet(false);
       longStats.setNumDVsIsSet(false);
       longStats.setLowValueIsSet(false);
@@ -119,12 +117,11 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
         } else {
           throw new SemanticException("Unknown stat");
         }
-
       }
       statsData.setLongStats(longStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("double")) {
-      DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+    } else if (columnType.equalsIgnoreCase("double") || columnType.equalsIgnoreCase("float")) {
+      DoubleColumnStatsDataInspector doubleStats = new DoubleColumnStatsDataInspector();
       doubleStats.setNumNullsIsSet(false);
       doubleStats.setNumDVsIsSet(false);
       doubleStats.setLowValueIsSet(false);
@@ -147,8 +144,9 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDoubleStats(doubleStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("string")) {
-      StringColumnStatsData stringStats = new StringColumnStatsData();
+    } else if (columnType.equalsIgnoreCase("string") || columnType.toLowerCase().startsWith("char")
+              || columnType.toLowerCase().startsWith("varchar")) { //char(x),varchar(x) types
+      StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
       stringStats.setMaxColLenIsSet(false);
       stringStats.setAvgColLenIsSet(false);
       stringStats.setNumNullsIsSet(false);
@@ -213,8 +211,8 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setBinaryStats(binaryStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("decimal")) {
-      DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+    } else if (columnType.toLowerCase().startsWith("decimal")) { //decimal(a,b) type
+      DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
       decimalStats.setNumNullsIsSet(false);
       decimalStats.setNumDVsIsSet(false);
       decimalStats.setLowValueIsSet(false);
@@ -229,11 +227,11 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
           decimalStats.setNumDVs(Long.parseLong(value));
         } else if (fName.equals("lowValue")) {
           BigDecimal d = new BigDecimal(value);
-          decimalStats.setLowValue(new Decimal(ByteBuffer.wrap(d
+          decimalStats.setLowValue(DecimalUtils.getDecimal(ByteBuffer.wrap(d
               .unscaledValue().toByteArray()), (short) d.scale()));
         } else if (fName.equals("highValue")) {
           BigDecimal d = new BigDecimal(value);
-          decimalStats.setHighValue(new Decimal(ByteBuffer.wrap(d
+          decimalStats.setHighValue(DecimalUtils.getDecimal(ByteBuffer.wrap(d
               .unscaledValue().toByteArray()), (short) d.scale()));
         } else {
           throw new SemanticException("Unknown stat");
@@ -242,7 +240,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       statsData.setDecimalStats(decimalStats);
       statsObj.setStatsData(statsData);
     } else if (columnType.equalsIgnoreCase("date")) {
-      DateColumnStatsData dateStats = new DateColumnStatsData();
+      DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
       Map<String, String> mapProp = work.getMapProp();
       for (Entry<String, String> entry : mapProp.entrySet()) {
         String fName = entry.getKey();
@@ -266,8 +264,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     } else {
       throw new SemanticException("Unsupported type");
     }
-    String [] names = Utilities.getDbTableName(dbName, tableName);
-    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(names[0], names[1],
+    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName,
         partName, partName == null);
     ColumnStatistics colStat = new ColumnStatistics();
     colStat.setStatsDesc(statsDesc);
@@ -303,6 +300,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       Hive db = getHive();
       return persistColumnStats(db);
     } catch (Exception e) {
+      setException(e);
       LOG.info("Failed to persist stats in metastore", e);
     }
     return 1;
@@ -321,11 +319,11 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private Date readDateValue(String dateStr) {
     // try either yyyy-mm-dd, or integer representing days since epoch
     try {
-      DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(dateStr));
+      DateWritableV2 writableVal = new DateWritableV2(org.apache.hadoop.hive.common.type.Date.valueOf(dateStr));
       return new Date(writableVal.getDays());
     } catch (IllegalArgumentException err) {
       // Fallback to integer parsing
-      LOG.debug("Reading date value as days since epoch: " + dateStr);
+      LOG.debug("Reading date value as days since epoch: {}", dateStr);
       return new Date(Long.parseLong(dateStr));
     }
   }

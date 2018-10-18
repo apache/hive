@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -64,6 +65,7 @@ desc formatted acid partition(ds='2008-04-08');
 
 set hive.compute.query.using.stats=false;
 select count(*) from acid where ds='2008-04-08';
+select count(key) from acid;
 
 set hive.compute.query.using.stats=true;
 explain select count(*) from acid where ds='2008-04-08';

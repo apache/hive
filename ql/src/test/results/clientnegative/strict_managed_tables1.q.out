@@ -1,0 +1,29 @@
+PREHOOK: query: create table strict_managed_tables1_tab1 (c1 string, c2 string) stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strict_managed_tables1_tab1
+POSTHOOK: query: create table strict_managed_tables1_tab1 (c1 string, c2 string) stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@strict_managed_tables1_tab1
+PREHOOK: query: create table strict_managed_tables1_tab2 (c1 string, c2 string) stored as textfile tblproperties ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strict_managed_tables1_tab2
+POSTHOOK: query: create table strict_managed_tables1_tab2 (c1 string, c2 string) stored as textfile tblproperties ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@strict_managed_tables1_tab2
+PREHOOK: query: create external table strict_managed_tables1_tab3 (c1 string, c2 string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strict_managed_tables1_tab3
+POSTHOOK: query: create external table strict_managed_tables1_tab3 (c1 string, c2 string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@strict_managed_tables1_tab3
+PREHOOK: query: create table strict_managed_tables1_tab4 (c1 string, c2 string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strict_managed_tables1_tab4
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Table default.strict_managed_tables1_tab4 failed strict managed table checks due to the following reason: Table is marked as a managed table but is not transactional.)

@@ -22,18 +22,17 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.hive</groupId>
-  <artifactId>spark-client</artifactId>
+  <artifactId>hive-spark-client</artifactId>
   <packaging>jar</packaging>
-  <name>Spark Remote Client</name>
-  <version>2.2.0-SNAPSHOT</version>
+  <name>Hive Spark Remote Client</name>
+  <version>4.0.0-SNAPSHOT</version>
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <scala.binary.version>2.10</scala.binary.version>
     <test.redirectToFile>true</test.redirectToFile>
   </properties>
 
@@ -49,6 +48,10 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-all</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -70,16 +73,38 @@
          <groupId>com.esotericsoftware.kryo</groupId>
          <artifactId>kryo</artifactId>
        </exclusion>
-       <exclusion>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-log4j12</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>commmons-logging</groupId>
-         <artifactId>commons-logging</artifactId>
-       </exclusion>
-     </exclusions>
+        <exclusion>
+          <groupId>org.glassfish.jersey.containers</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.module</groupId>
+          <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
+        </exclusion>
+      </exclusions>
    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-yarn_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>runtime</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -93,6 +118,12 @@
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-servlet</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet</artifactId>
+      <version>${glassfish.jersey.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -171,7 +202,7 @@
           </systemPropertyVariables>
           <redirectTestOutputToFile>${test.redirectToFile}</redirectTestOutputToFile>
           <useFile>${test.redirectToFile}</useFile>
-          <argLine>-Xmx4096m -XX:MaxPermSize=512m</argLine>
+          <argLine>-Xmx4096m</argLine>
         </configuration>
       </plugin>
     </plugins>

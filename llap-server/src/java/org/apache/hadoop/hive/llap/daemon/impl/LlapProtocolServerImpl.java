@@ -25,11 +25,13 @@ import com.google.protobuf.BlockingService;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
+
+import org.apache.hadoop.hive.llap.io.api.LlapIo;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
@@ -45,9 +47,9 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
-import org.apache.hadoop.ipc.ProtobufRpcEngine;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 import org.apache.hadoop.ipc.RPC;
-import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.token.Token;
@@ -63,6 +65,7 @@ public class LlapProtocolServerImpl extends AbstractService
     implements LlapProtocolBlockingPB, LlapManagementProtocolPB {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapProtocolServerImpl.class);
+
   private enum TokenRequiresSigning {
     TRUE, FALSE, EXCEPT_OWNER
   }
@@ -135,6 +138,16 @@ public class LlapProtocolServerImpl extends AbstractService
   }
 
   @Override
+  public UpdateFragmentResponseProto updateFragment(
+      RpcController controller, UpdateFragmentRequestProto request) throws ServiceException {
+    try {
+      return containerRunner.updateFragment(request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
+
+  @Override
   public void serviceStart() {
     final Configuration conf = getConfig();
     isSigningRequiredConfig = getSigningConfig(conf);
@@ -197,33 +210,15 @@ public class LlapProtocolServerImpl extends AbstractService
 
   private void startProtocolServers(
       Configuration conf, BlockingService daemonImpl, BlockingService managementImpl) {
-    server = startProtocolServer(srvPort, numHandlers, srvAddress, conf, daemonImpl,
-        LlapProtocolBlockingPB.class, ConfVars.LLAP_SECURITY_ACL, ConfVars.LLAP_SECURITY_ACL_DENY);
-    mngServer = startProtocolServer(mngPort, 2, mngAddress, conf, managementImpl,
-        LlapManagementProtocolPB.class, ConfVars.LLAP_MANAGEMENT_ACL,
+    LlapDaemonPolicyProvider pp = new LlapDaemonPolicyProvider();
+    server = LlapUtil.startProtocolServer(srvPort, numHandlers, srvAddress, conf, daemonImpl,
+        LlapProtocolBlockingPB.class, secretManager, pp, ConfVars.LLAP_SECURITY_ACL,
+        ConfVars.LLAP_SECURITY_ACL_DENY);
+    mngServer = LlapUtil.startProtocolServer(mngPort, 2, mngAddress, conf, managementImpl,
+        LlapManagementProtocolPB.class, secretManager, pp, ConfVars.LLAP_MANAGEMENT_ACL,
         ConfVars.LLAP_MANAGEMENT_ACL_DENY);
   }
 
-  private RPC.Server startProtocolServer(int srvPort, int numHandlers,
-      AtomicReference<InetSocketAddress> bindAddress, Configuration conf,
-      BlockingService impl, Class<?> protocolClass, ConfVars... aclVars) {
-    InetSocketAddress addr = new InetSocketAddress(srvPort);
-    RPC.Server server;
-    try {
-      server = createServer(protocolClass, addr, conf, numHandlers, impl, aclVars);
-      server.start();
-    } catch (IOException e) {
-      LOG.error("Failed to run RPC Server on port: " + srvPort, e);
-      throw new RuntimeException(e);
-    }
-
-    InetSocketAddress serverBindAddress = NetUtils.getConnectAddress(server);
-    bindAddress.set(NetUtils.createSocketAddrForHost(
-        serverBindAddress.getAddress().getCanonicalHostName(),
-        serverBindAddress.getPort()));
-    LOG.info("Instantiated " + protocolClass.getSimpleName() + " at " + bindAddress);
-    return server;
-  }
 
   @Override
   public void serviceStop() {
@@ -245,40 +240,6 @@ public class LlapProtocolServerImpl extends AbstractService
     return mngAddress.get();
   }
 
-  private RPC.Server createServer(Class<?> pbProtocol, InetSocketAddress addr, Configuration conf,
-    int numHandlers, BlockingService blockingService, ConfVars... aclVars) throws
-      IOException {
-    Configuration serverConf = conf;
-    boolean isSecurityEnabled = conf.getBoolean(
-        CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false);
-    if (isSecurityEnabled) {
-      // Enforce Hive defaults.
-      for (ConfVars acl : aclVars) {
-        if (conf.get(acl.varname) != null) continue; // Some value is set.
-        if (serverConf == conf) {
-          serverConf = new Configuration(conf);
-        }
-        serverConf.set(acl.varname, HiveConf.getVar(serverConf, acl)); // Set the default.
-      }
-    }
-    RPC.setProtocolEngine(serverConf, pbProtocol, ProtobufRpcEngine.class);
-    RPC.Builder builder = new RPC.Builder(serverConf)
-        .setProtocol(pbProtocol)
-        .setInstance(blockingService)
-        .setBindAddress(addr.getHostName())
-        .setPort(addr.getPort())
-        .setNumHandlers(numHandlers);
-    if (secretManager != null) {
-      builder = builder.setSecretManager(secretManager);
-    }
-    RPC.Server server = builder.build();
-    if (isSecurityEnabled) {
-      server.refreshServiceAcl(serverConf, new LlapDaemonPolicyProvider());
-    }
-    return server;
-  }
-
-
   @Override
   public GetTokenResponseProto getDelegationToken(RpcController controller,
       GetTokenRequestProto request) throws ServiceException {
@@ -299,7 +260,7 @@ public class LlapProtocolServerImpl extends AbstractService
     if (isRestrictedToClusterUser && !clusterUser.equals(callingUser.getShortUserName())) {
       throw new ServiceException("Management protocol ACL is too permissive. The access has been"
           + " automatically restricted to " + clusterUser + "; " + callingUser.getShortUserName()
-          + " is denied acccess. Please set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false,"
+          + " is denied access. Please set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false,"
           + " or adjust " + ConfVars.LLAP_MANAGEMENT_ACL.varname + " and "
           + ConfVars.LLAP_MANAGEMENT_ACL_DENY.varname + " to a more restrictive ACL.");
     }
@@ -313,6 +274,20 @@ public class LlapProtocolServerImpl extends AbstractService
     ByteString bs = ByteString.copyFrom(out.toByteArray());
     GetTokenResponseProto response = GetTokenResponseProto.newBuilder().setToken(bs).build();
     return response;
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.PurgeCacheResponseProto purgeCache(final RpcController controller,
+    final LlapDaemonProtocolProtos.PurgeCacheRequestProto request) throws ServiceException {
+    LlapDaemonProtocolProtos.PurgeCacheResponseProto.Builder responseProtoBuilder = LlapDaemonProtocolProtos
+      .PurgeCacheResponseProto.newBuilder();
+    LlapIo<?> llapIo = LlapProxy.getIo();
+    if (llapIo != null) {
+      responseProtoBuilder.setPurgedMemoryBytes(llapIo.purge());
+    } else {
+      responseProtoBuilder.setPurgedMemoryBytes(0);
+    }
+    return responseProtoBuilder.build();
   }
 
   private boolean determineIfSigningIsRequired(UserGroupInformation callingUser) {

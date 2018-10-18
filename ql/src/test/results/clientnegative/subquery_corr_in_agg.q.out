@@ -1,0 +1,43 @@
+PREHOOK: query: create table Part1 (PNum int, OrderOnHand int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@Part1
+POSTHOOK: query: create table Part1 (PNum int, OrderOnHand int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@Part1
+PREHOOK: query: insert into Part1 values (3,6),(10,1),(8,0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part1
+POSTHOOK: query: insert into Part1 values (3,6),(10,1),(8,0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part1
+POSTHOOK: Lineage: part1.orderonhand SCRIPT []
+POSTHOOK: Lineage: part1.pnum SCRIPT []
+PREHOOK: query: create table Supply (PNum int, Qty int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@Supply
+POSTHOOK: query: create table Supply (PNum int, Qty int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@Supply
+PREHOOK: query: insert into Supply values (3,4),(3,2),(10,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@supply
+POSTHOOK: query: insert into Supply values (3,4),(3,2),(10,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@supply
+POSTHOOK: Lineage: supply.pnum SCRIPT []
+POSTHOOK: Lineage: supply.qty SCRIPT []
+PREHOOK: query: select pnum from Part1 p where OrderOnHand in
+                (select count(*) from Supply s where s.pnum = p.pnum)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part1
+PREHOOK: Input: default@supply
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

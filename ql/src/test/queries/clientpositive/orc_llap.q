@@ -1,3 +1,5 @@
+--! qt:dataset:alltypesorc
+
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
 
@@ -7,6 +9,7 @@ SET hive.exec.orc.default.buffer.size=32768;
 SET hive.exec.orc.default.row.index.stride=1000;
 SET hive.optimize.index.filter=true;
 set hive.auto.convert.join=false;
+set hive.llap.memory.oversubscription.max.executors.per.query=3;
 
 DROP TABLE cross_numbers;
 DROP TABLE orc_llap;
@@ -113,3 +116,5 @@ select sum(hash(*)) from (select o1.cstring1, o2.cstring2 from orc_llap o1 inner
 DROP TABLE cross_numbers;
 DROP TABLE orc_llap;
 DROP TABLE orc_llap_small;
+
+reset hive.llap.memory.oversubscription.max.executors.per.query;

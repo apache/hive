@@ -1,0 +1,35 @@
+PREHOOK: query: DROP TABLE birthdays
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE birthdays
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE birthdays (id INT, name STRING, birthday TIMESTAMP)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/multiple_agg/birthdays
+PREHOOK: Output: database:default
+PREHOOK: Output: default@birthdays
+POSTHOOK: query: CREATE EXTERNAL TABLE birthdays (id INT, name STRING, birthday TIMESTAMP)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/multiple_agg/birthdays
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@birthdays
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/birthdays' INTO TABLE birthdays
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@birthdays
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/birthdays' INTO TABLE birthdays
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@birthdays
+PREHOOK: query: SELECT MIN(Birthday) AS MinBirthday, MAX(Birthday) AS MaxBirthday FROM birthdays
+PREHOOK: type: QUERY
+PREHOOK: Input: default@birthdays
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MIN(Birthday) AS MinBirthday, MAX(Birthday) AS MaxBirthday FROM birthdays
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@birthdays
+#### A masked pattern was here ####
+2012-10-15 08:01:00	2012-10-15 08:09:00

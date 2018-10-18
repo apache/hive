@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -72,7 +72,8 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       }
       return pkfk.fkInfo.rowCount * selectivity;
     }
-    return join.getRows();
+    // Do not call mq.getRowCount(join), will trigger CyclicMetadataException
+    return join.estimateRowCount(mq);
   }
 
   @Override
@@ -316,7 +317,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
         (!leftChild && joinRel.getJoinType().generatesNullsOnLeft())) {
       return 1.0;
     } else {
-      HiveTableScan tScan = HiveRelMdUniqueKeys.getTableScan(child, true);
+      HiveTableScan tScan = EstimateUniqueKeys.getTableScan(child, true);
       if (tScan != null) {
         double tRowCount = mq.getRowCount(tScan);
         return childRowCount / tRowCount;
@@ -328,7 +329,10 @@ public class HiveRelMdRowCount extends RelMdRowCount {
 
   private static boolean isKey(ImmutableBitSet c, RelNode rel, RelMetadataQuery mq) {
     boolean isKey = false;
-    Set<ImmutableBitSet> keys = mq.getUniqueKeys(rel);
+    //EstimateUniqueKeys doesn't go through metadata providers anymore, which means we will not be
+    // taking advantage of metadata caching anymore. This could potential increase query compile time
+    // Leaving a note here in case we see increase in timings
+    Set<ImmutableBitSet> keys = EstimateUniqueKeys.getUniqueKeys(rel);
     if (keys != null) {
       for (ImmutableBitSet key : keys) {
         if (key.equals(c)) {

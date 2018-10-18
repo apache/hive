@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -134,7 +134,7 @@ public class MapJoinEagerRowContainer
 
   @SuppressWarnings("unchecked")
   public void read(MapJoinObjectSerDeContext context, Writable currentValue) throws SerDeException {
-    SerDe serde = context.getSerDe();
+    AbstractSerDe serde = context.getSerDe();
     List<Object> value = (List<Object>)ObjectInspectorUtils.copyToStandardObject(serde.deserialize(currentValue),
         serde.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
     if(value == null) {
@@ -151,7 +151,7 @@ public class MapJoinEagerRowContainer
   @Override
   public void write(MapJoinObjectSerDeContext context, ObjectOutputStream out)
   throws IOException, SerDeException {
-    SerDe serde = context.getSerDe();
+    AbstractSerDe serde = context.getSerDe();
     ObjectInspector valueObjectInspector = context.getStandardOI();
     long numRows = rowCount();
     long numRowsWritten = 0L;
@@ -161,7 +161,7 @@ public class MapJoinEagerRowContainer
       ++numRowsWritten;      
     }
     if(numRows != rowCount()) {
-      throw new ConcurrentModificationException("Values was modifified while persisting");
+      throw new ConcurrentModificationException("Values was modified while persisting");
     }
     if(numRowsWritten != numRows) {
       throw new IllegalStateException("Expected to write " + numRows + " but wrote " + numRowsWritten);

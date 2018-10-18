@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,11 +17,16 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * ConstantObjectInspector.  This interface should be implemented by
  * ObjectInspectors which represent constant values and can return them without
  * an evaluation.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface ConstantObjectInspector extends ObjectInspector {
 
   Object getWritableConstantValue();

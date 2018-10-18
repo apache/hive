@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.api.repl;
 
 import com.google.common.base.Function;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -31,7 +32,8 @@ import org.apache.hive.hcatalog.messaging.MessageFactory;
  * ReplicationTask captures the concept of what it'd take to replicate changes from
  * one warehouse to another given a notification event that captures what changed.
  */
-@InterfaceStability.Evolving
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class ReplicationTask {
   protected HCatNotificationEvent event;
   protected StagingDirectoryProvider srcStagingDirProvider = null;

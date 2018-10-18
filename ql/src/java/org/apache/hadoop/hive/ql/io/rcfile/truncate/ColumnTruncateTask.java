@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -94,9 +94,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
         ctxCreated = true;
       }
     }catch (IOException e) {
-      e.printStackTrace();
-      console.printError("Error launching map-reduce job", "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      setException(e);
       return 5;
     }
 
@@ -136,7 +135,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
         fs.mkdirs(tempOutPath);
       }
     } catch (IOException e) {
-      console.printError("Can't make path " + outputPath + " : " + e.getMessage());
+      setException(e);
+      LOG.error("Can't make path " + outputPath, e);
       return 6;
     }
 
@@ -186,24 +186,16 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
-
+      this.jobID = rj.getJobID();
       returnVal = jobExecHelper.progress(rj, jc, ctx);
       success = (returnVal == 0);
 
     } catch (Exception e) {
-      e.printStackTrace();
-      setException(e);
-      String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
-      if (rj != null) {
-        mesg = "Ended Job = " + rj.getJobID() + mesg;
-      } else {
-        mesg = "Job Submission failed" + mesg;
-      }
-
+      String mesg = rj != null ? ("Ended Job = " + rj.getJobID()) : "Job Submission failed";
       // Has to use full name to make sure it does not conflict with
       // org.apache.commons.lang.StringUtils
-      console.printError(mesg, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error(mesg, org.apache.hadoop.util.StringUtils.stringifyException(e));
+      setException(e);
 
       success = false;
       returnVal = 1;
@@ -216,14 +208,13 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
           if (returnVal != 0) {
             rj.killJob();
           }
-          jobID = rj.getID().toString();
         }
         ColumnTruncateMapper.jobClose(outputPath, success, job, console,
           work.getDynPartCtx(), null);
       } catch (Exception e) {
-	LOG.warn("Failed while cleaning up ", e);
+        LOG.warn("Failed while cleaning up ", e);
       } finally {
-	HadoopJobExecHelper.runningJobs.remove(rj);
+        HadoopJobExecHelper.runningJobs.remove(rj);
       }
     }
 

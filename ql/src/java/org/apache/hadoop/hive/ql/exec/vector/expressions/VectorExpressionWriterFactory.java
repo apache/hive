@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -38,7 +39,11 @@ import org.apache.hadoop.hive.serde2.io.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableUnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector;
@@ -58,9 +63,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestamp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.DateUtils;
 
 /**
  * VectorExpressionWritableFactory helper class for generating VectorExpressionWritable objects.
@@ -175,14 +185,14 @@ public final class VectorExpressionWriterFactory {
      * The base implementation must be overridden by the Timestamp specialization
      */
     @Override
-    public Object writeValue(TimestampWritable value) throws HiveException {
+    public Object writeValue(TimestampWritableV2 value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
 
     /**
      * The base implementation must be overridden by the Timestamp specialization
      */
-    public Object setValue(Object field, TimestampWritable value) throws HiveException {
+    public Object setValue(Object field, TimestampWritableV2 value) throws HiveException {
       throw new HiveException("Internal error: should not reach here");
     }
 
@@ -381,8 +391,35 @@ public final class VectorExpressionWriterFactory {
    * if the wrong vector column is used.
    */
   private static abstract class VectorExpressionWriterDecimal extends VectorExpressionWriterBase {
+
     @Override
     public Object writeValue(ColumnVector column, int row) throws HiveException {
+      if (column instanceof Decimal64ColumnVector) {
+        Decimal64ColumnVector d64cv = (Decimal64ColumnVector) column;
+        final long decimal64Long;
+        if (d64cv.noNulls && !d64cv.isRepeating) {
+          decimal64Long = d64cv.vector[row];
+        } else if (d64cv.noNulls && d64cv.isRepeating) {
+          decimal64Long = d64cv.vector[0];
+        } else if (!d64cv.noNulls && !d64cv.isRepeating && !d64cv.isNull[row]) {
+          decimal64Long = d64cv.vector[row];
+        } else if (!d64cv.noNulls && !d64cv.isRepeating && d64cv.isNull[row]) {
+          return null;
+        } else if (!d64cv.noNulls && d64cv.isRepeating && !d64cv.isNull[0]) {
+          decimal64Long = d64cv.vector[0];
+        } else if (!d64cv.noNulls && d64cv.isRepeating && d64cv.isNull[0]) {
+          return null;
+        } else {
+          throw new HiveException(
+              String.format(
+                  "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
+                  row, d64cv.noNulls, d64cv.isRepeating, d64cv.isNull[row], d64cv.isNull[0]));
+        }
+
+        HiveDecimalWritable scratchHiveDecimalWritable = d64cv.getScratchWritable();
+        scratchHiveDecimalWritable.deserialize64(decimal64Long, d64cv.scale);
+        return writeValue(scratchHiveDecimalWritable);
+      }
       DecimalColumnVector dcv = (DecimalColumnVector) column;
       if (dcv.noNulls && !dcv.isRepeating) {
         return writeValue(dcv.vector[row]);
@@ -434,9 +471,9 @@ public final class VectorExpressionWriterFactory {
     @Override
     public Object writeValue(ColumnVector column, int row) throws HiveException {
       TimestampColumnVector dcv = (TimestampColumnVector) column;
-      TimestampWritable timestampWritable = (TimestampWritable) dcv.getScratchWritable();
+      TimestampWritableV2 timestampWritable = (TimestampWritableV2) dcv.getScratchWritable();
       if (timestampWritable == null) {
-        timestampWritable = new TimestampWritable();
+        timestampWritable = new TimestampWritableV2();
         dcv.setScratchWritable(timestampWritable);
       }
       if (dcv.noNulls && !dcv.isRepeating) {
@@ -461,9 +498,9 @@ public final class VectorExpressionWriterFactory {
     @Override
     public Object setValue(Object field, ColumnVector column, int row) throws HiveException {
       TimestampColumnVector dcv = (TimestampColumnVector) column;
-      TimestampWritable timestampWritable = (TimestampWritable) dcv.getScratchWritable();
+      TimestampWritableV2 timestampWritable = (TimestampWritableV2) dcv.getScratchWritable();
       if (timestampWritable == null) {
-        timestampWritable = new TimestampWritable();
+        timestampWritable = new TimestampWritableV2();
         dcv.setScratchWritable(timestampWritable);
       }
       if (dcv.noNulls && !dcv.isRepeating) {
@@ -567,6 +604,62 @@ public final class VectorExpressionWriterFactory {
     /**
      * Compiles the appropriate vector expression writer based on an expression info (ExprNodeDesc)
      */
+    public static VectorExpressionWriter genVectorExpressionWritable(VectorExpression vecExpr)
+      throws HiveException {
+      TypeInfo outputTypeInfo = vecExpr.getOutputTypeInfo();
+      ObjectInspector objectInspector =
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+              outputTypeInfo);
+      return genVectorExpressionWritable(objectInspector);
+    }
+
+    /**
+     * Specialized writer for ListColumnVector. Will throw cast exception
+     * if the wrong vector column is used.
+     */
+    private static abstract class VectorExpressionWriterList extends VectorExpressionWriterBase {
+
+      // For now, we just use this to hold the object inspector.  There are no writeValue,
+      // setValue, etc methods yet...
+
+    }
+
+    /**
+     * Specialized writer for MapColumnVector. Will throw cast exception
+     * if the wrong vector column is used.
+     */
+    private static abstract class VectorExpressionWriterMap extends VectorExpressionWriterBase {
+
+      // For now, we just use this to hold the object inspector.  There are no writeValue,
+      // setValue, etc methods yet...
+
+    }
+
+    /**
+     * Specialized writer for StructColumnVector. Will throw cast exception
+     * if the wrong vector column is used.
+     */
+    private static abstract class VectorExpressionWriterStruct extends VectorExpressionWriterBase {
+
+      // For now, we just use this to hold the object inspector.  There are no writeValue,
+      // setValue, etc methods yet...
+
+    }
+
+    /**
+     * Specialized writer for UnionColumnVector. Will throw cast exception
+     * if the wrong vector column is used.
+     */
+    private static abstract class VectorExpressionWriterUnion extends VectorExpressionWriterBase {
+
+      // For now, we just use this to hold the object inspector.  There are no writeValue,
+      // setValue, etc methods yet...
+
+    }
+
+    /**
+     * Compiles the appropriate vector expression writer based on an expression info (ExprNodeDesc)
+     */
     public static VectorExpressionWriter genVectorExpressionWritable(
         ObjectInspector fieldObjInspector) throws HiveException {
 
@@ -629,11 +722,22 @@ public final class VectorExpressionWriterFactory {
               ((PrimitiveObjectInspector) fieldObjInspector).getPrimitiveCategory());
         }
 
-      case STRUCT:
-      case UNION:
-      case MAP:
       case LIST:
-        return genVectorExpressionWritableEmpty();
+        return genVectorExpressionWritableList(
+            (SettableListObjectInspector) fieldObjInspector);
+
+      case MAP:
+        return genVectorExpressionWritableMap(
+            (SettableMapObjectInspector) fieldObjInspector);
+
+      case STRUCT:
+        return genVectorExpressionWritableStruct(
+            (SettableStructObjectInspector) fieldObjInspector);
+
+      case UNION:
+        return genVectorExpressionWritableUnion(
+            (SettableUnionObjectInspector) fieldObjInspector);
+
       default:
         throw new IllegalArgumentException("Unknown type " +
             fieldObjInspector.getCategory());
@@ -694,7 +798,7 @@ public final class VectorExpressionWriterFactory {
       }
 
       @Override
-      public Object setValue(Object field, TimestampWritable value) {
+      public Object setValue(Object field, TimestampWritableV2 value) {
         if (null == field) {
           field = initValue(null);
         }
@@ -732,7 +836,7 @@ public final class VectorExpressionWriterFactory {
 
       @Override
       public Object writeValue(long value) {
-        dt.setTime(DateWritable.daysToMillis((int) value));
+        dt.setTime(DateWritableV2.daysToMillis((int) value));
         ((SettableDateObjectInspector) this.objectInspector).set(obj, dt);
         return obj;
       }
@@ -742,7 +846,7 @@ public final class VectorExpressionWriterFactory {
         if (null == field) {
           field = initValue(null);
         }
-        dt.setTime(DateWritable.daysToMillis((int) value));
+        dt.setTime(DateWritableV2.daysToMillis((int) value));
         ((SettableDateObjectInspector) this.objectInspector).set(field, dt);
         return field;
       }
@@ -768,7 +872,7 @@ public final class VectorExpressionWriterFactory {
       }
 
       @Override
-      public Object writeValue(TimestampWritable value) throws HiveException {
+      public Object writeValue(TimestampWritableV2 value) throws HiveException {
         return ((SettableTimestampObjectInspector) this.objectInspector).set(obj, value);
       }
 
@@ -788,7 +892,7 @@ public final class VectorExpressionWriterFactory {
       }
 
       @Override
-      public Object setValue(Object field, TimestampWritable value) {
+      public Object setValue(Object field, TimestampWritableV2 value) {
         if (null == field) {
           field = initValue(null);
         }
@@ -1339,6 +1443,282 @@ public final class VectorExpressionWriterFactory {
     }.init(fieldObjInspector);
   }
 
+  private static VectorExpressionWriter genVectorExpressionWritableList(
+      SettableListObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterList() {
+      private Object obj;
+      private VectorExtractRow vectorExtractRow;
+      private ListTypeInfo listTypeInfo;
+
+      public VectorExpressionWriter init(SettableListObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        obj = initValue(null);
+        vectorExtractRow = new VectorExtractRow();
+        listTypeInfo = (ListTypeInfo)
+            TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
+        return this;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableListObjectInspector) this.objectInspector).create(0);
+      }
+
+      @Override
+      public Object writeValue(ColumnVector column, int row)
+          throws HiveException {
+        final ListColumnVector listColVector = (ListColumnVector) column;
+        final SettableListObjectInspector listOI =
+            (SettableListObjectInspector) this.objectInspector;
+        final List value = (List) vectorExtractRow.extractRowColumn(listColVector,
+            listTypeInfo, listOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        listOI.resize(obj, value.size());
+        for (int i = 0; i < value.size(); i++) {
+          listOI.set(obj, i, value.get(i));
+        }
+        return obj;
+      }
+
+      @Override
+      public Object setValue(Object list, ColumnVector column, int row)
+          throws HiveException {
+        if (list == null) {
+          list = initValue(null);
+        }
+
+        final ListColumnVector listColVector = (ListColumnVector) column;
+        final SettableListObjectInspector listOI =
+            (SettableListObjectInspector) this.objectInspector;
+        final List value = (List) vectorExtractRow.extractRowColumn(listColVector,
+            listTypeInfo, listOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        listOI.resize(list, value.size());
+        for (int i = 0; i < value.size(); i++) {
+          listOI.set(list, i, value.get(i));
+        }
+        return list;
+      }
+
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableMap(
+      SettableMapObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterMap() {
+      private Object obj;
+      private VectorExtractRow vectorExtractRow;
+      private MapTypeInfo mapTypeInfo;
+
+      public VectorExpressionWriter init(SettableMapObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        obj = initValue(null);
+        vectorExtractRow = new VectorExtractRow();
+        mapTypeInfo = (MapTypeInfo)
+            TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
+        return this;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableMapObjectInspector) this.objectInspector).create();
+      }
+
+      @Override
+      public Object writeValue(ColumnVector column, int row)
+          throws HiveException {
+        final MapColumnVector mapColVector = (MapColumnVector) column;
+        final SettableMapObjectInspector mapOI =
+            (SettableMapObjectInspector) this.objectInspector;
+        final Map<Object, Object> value =
+            (Map<Object, Object>) vectorExtractRow.extractRowColumn(
+                mapColVector, mapTypeInfo, mapOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        mapOI.clear(obj);
+        for (Map.Entry<Object, Object> entry : value.entrySet()) {
+          mapOI.put(obj, entry.getKey(), entry.getValue());
+        }
+        return obj;
+      }
+
+      @Override
+      public Object setValue(Object map, ColumnVector column, int row)
+          throws HiveException {
+        if (map == null) {
+          map = initValue(null);
+        }
+
+        final MapColumnVector mapColVector = (MapColumnVector) column;
+        final SettableMapObjectInspector mapOI =
+            (SettableMapObjectInspector) this.objectInspector;
+        final Map<Object, Object> value =
+            (Map<Object, Object>) vectorExtractRow.extractRowColumn(
+                mapColVector, mapTypeInfo, mapOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        mapOI.clear(map);
+        for (Map.Entry<Object, Object> entry : value.entrySet()) {
+          mapOI.put(map, entry.getKey(), entry.getValue());
+        }
+        return map;
+      }
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableStruct(
+      SettableStructObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterStruct() {
+      private Object obj;
+      private VectorExtractRow vectorExtractRow;
+      private StructTypeInfo structTypeInfo;
+
+      public VectorExpressionWriter init(SettableStructObjectInspector objInspector)
+          throws HiveException {
+        super.init(objInspector);
+        obj = initValue(null);
+        vectorExtractRow = new VectorExtractRow();
+        structTypeInfo = (StructTypeInfo)
+            TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
+        return this;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableStructObjectInspector) this.objectInspector).create();
+      }
+
+      @Override
+      public Object writeValue(ColumnVector column, int row) throws HiveException {
+        return setValueInternal(obj, column, row);
+      }
+
+      @Override
+      public Object setValue(Object struct, ColumnVector column, int row) throws HiveException {
+        if (struct == null) {
+          struct = initValue(null);
+        }
+
+        return setValueInternal(struct, column, row);
+      }
+
+      private Object setValueInternal(final Object struct, ColumnVector colVector, int batchIndex) {
+        if (colVector == null) {
+          // The planner will not include unneeded columns for reading but other parts of execution
+          // may ask for them..
+          return null;
+        }
+
+        final int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
+        if (!colVector.noNulls && colVector.isNull[adjustedIndex]) {
+          return null;
+        }
+
+        final StructColumnVector structColumnVector = (StructColumnVector) colVector;
+        final StandardStructObjectInspector structInspector =
+            (StandardStructObjectInspector) objectInspector;
+        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        final int size = fieldTypeInfos.size();
+        final List<? extends StructField> structFields =
+            structInspector.getAllStructFieldRefs();
+
+        for (int i = 0; i < size; i++) {
+          final StructField structField = structFields.get(i);
+          final TypeInfo fieldTypeInfo = fieldTypeInfos.get(i);
+          final Object value = vectorExtractRow.extractRowColumn(
+              structColumnVector.fields[i],
+              fieldTypeInfo,
+              structField.getFieldObjectInspector(),
+              adjustedIndex);
+          structInspector.setStructFieldData(struct, structField, value);
+        }
+        return struct;
+      }
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableUnion(
+      SettableUnionObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterMap() {
+      private Object obj;
+      private VectorExtractRow vectorExtractRow;
+      private UnionTypeInfo unionTypeInfo;
+
+      public VectorExpressionWriter init(SettableUnionObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        obj = initValue(null);
+        vectorExtractRow = new VectorExtractRow();
+        unionTypeInfo = (UnionTypeInfo)
+            TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
+        return this;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableUnionObjectInspector) this.objectInspector).create();
+      }
+
+      @Override
+      public Object writeValue(ColumnVector column, int row)
+          throws HiveException {
+
+        final UnionColumnVector unionColumnVector = (UnionColumnVector) column;
+        final int tag = unionColumnVector.tags[row];
+        final SettableUnionObjectInspector unionOI =
+            (SettableUnionObjectInspector) this.objectInspector;
+        ObjectInspector fieldOI = unionOI.getObjectInspectors().get(tag);
+        ColumnVector fieldColVector = unionColumnVector.fields[tag];
+        final Object value =
+            vectorExtractRow.extractRowColumn(
+                fieldColVector, unionTypeInfo.getAllUnionObjectTypeInfos().get(tag), fieldOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        unionOI.setFieldAndTag(obj, value, (byte) tag);
+        return obj;
+      }
+
+      @Override
+      public Object setValue(Object union, ColumnVector column, int row)
+          throws HiveException {
+        if (union == null) {
+          union = initValue(null);
+        }
+
+        final UnionColumnVector unionColumnVector = (UnionColumnVector) column;
+        final int tag = unionColumnVector.tags[row];
+        final SettableUnionObjectInspector unionOI =
+            (SettableUnionObjectInspector) this.objectInspector;
+        ObjectInspector fieldOI = unionOI.getObjectInspectors().get(tag);
+        ColumnVector fieldColVector = unionColumnVector.fields[tag];
+        final Object value =
+            vectorExtractRow.extractRowColumn(
+                fieldColVector, unionTypeInfo.getAllUnionObjectTypeInfos().get(tag), fieldOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        unionOI.setFieldAndTag(union, value, (byte) tag);
+        return union;
+      }
+    }.init(fieldObjInspector);
+  }
+
   // For complex types like STRUCT, MAP, etc we do not support, we need a writer that
   // does nothing.  We assume the Vectorizer class has not validated the query to actually
   // try and use the complex types.  They do show up in inputObjInspector[0] and need to be
@@ -1374,6 +1754,19 @@ public final class VectorExpressionWriterFactory {
     for(int i=0; i<writers.length; ++i) {
       ExprNodeDesc nodeDesc = nodesDesc.get(i);
       writers[i] = genVectorExpressionWritable(nodeDesc);
+    }
+    return writers;
+  }
+
+  /**
+   * Helper function to create an array of writers from a list of expression descriptors.
+   */
+  public static VectorExpressionWriter[] getExpressionWriters(VectorExpression[] vecExprs)
+      throws HiveException {
+    VectorExpressionWriter[] writers = new VectorExpressionWriter[vecExprs.length];
+    for(int i=0; i<writers.length; ++i) {
+      VectorExpression vecExpr = vecExprs[i];
+      writers[i] = genVectorExpressionWritable(vecExpr);
     }
     return writers;
   }

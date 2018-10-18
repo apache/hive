@@ -43,8 +43,7 @@ public class StaticPermanentFunctionChecker implements UdfWhitelistChecker {
       LOG.warn("Could not find UDF whitelist in configuration: " + PERMANENT_FUNCTIONS_LIST);
       return;
     }
-    try {
-      BufferedReader r = new BufferedReader(new InputStreamReader(logger.openStream()));
+    try (BufferedReader r = new BufferedReader(new InputStreamReader(logger.openStream()))) {
       String klassName = r.readLine();
       while (klassName != null) {
         try {

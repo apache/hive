@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -104,13 +104,22 @@ public class StorageFormat {
     }
   }
 
-  protected void fillDefaultStorageFormat(boolean isExternal) throws SemanticException {
+  protected void fillDefaultStorageFormat(boolean isExternal, boolean isMaterializedView)
+      throws  SemanticException {
     if ((inputFormat == null) && (storageHandler == null)) {
-      String defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT);
-      String defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT);
+      String defaultFormat;
+      String defaultManagedFormat;
+      if (isMaterializedView) {
+        defaultFormat = defaultManagedFormat =
+            HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_FILE_FORMAT);
+        serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_SERDE);
+      } else {
+        defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT);
+        defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT);
+      }
 
       if (!isExternal && !"none".equals(defaultManagedFormat)) {
-	defaultFormat = defaultManagedFormat;
+        defaultFormat = defaultManagedFormat;
       }
 
       if (StringUtils.isBlank(defaultFormat)) {

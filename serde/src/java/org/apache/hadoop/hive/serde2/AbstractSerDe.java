@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
  * new methods can be added in the underlying interface, SerDe, and only implementations
  * that need those methods overwrite it.
  */
-public abstract class AbstractSerDe implements SerDe {
+public abstract class AbstractSerDe implements Deserializer, Serializer {
 
   protected String configErrors;
 
@@ -118,7 +118,7 @@ public abstract class AbstractSerDe implements SerDe {
   }
 
   /**
-   * @rturn Whether the SerDe that can store schema both inside and outside of metastore
+   * @return Whether the SerDe that can store schema both inside and outside of metastore
    *        does, in fact, store it inside metastore, based on table parameters.
    */
   public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {

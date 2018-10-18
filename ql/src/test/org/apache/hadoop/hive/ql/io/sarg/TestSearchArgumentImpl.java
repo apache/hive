@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -79,7 +79,7 @@ public class TestSearchArgumentImpl {
                                                   Object literal,
                                                   List<Object> literalList) {
     return new SearchArgumentImpl.PredicateLeafImpl(operator, type, columnName,
-        literal, literalList);
+        literal, literalList, null);
   }
 
   @Test

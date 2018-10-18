@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table char_udf_1;
 
 create table char_udf_1 (c1 string, c2 string, c3 char(10), c4 char(20));
@@ -142,8 +143,8 @@ from char_udf_1 limit 1;
 
 -- Aggregate Functions
 select
-  compute_stats(c2, 16),
-  compute_stats(c4, 16)
+  compute_stats(c2, 'fm', 16),
+  compute_stats(c4, 'fm', 16)
 from char_udf_1;
 
 select

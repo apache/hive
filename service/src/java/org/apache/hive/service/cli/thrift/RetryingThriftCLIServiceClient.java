@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,6 +47,7 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.rpc.thrift.TCLIService;
+import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -73,7 +74,8 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     private final ICLIService cliService;
     private TTransport tTransport;
 
-    public CLIServiceClientWrapper(ICLIService icliService, TTransport tTransport) {
+    public CLIServiceClientWrapper(ICLIService icliService, TTransport tTransport, HiveConf conf) {
+      super(conf);
       cliService = icliService;
       this.tTransport = tTransport;
     }
@@ -189,8 +191,13 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     }
 
     @Override
-    public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
-      return cliService.getOperationStatus(opHandle);
+    public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate) throws HiveSQLException {
+      return cliService.getOperationStatus(opHandle, getProgressUpdate);
+    }
+
+    @Override
+    public String getQueryId(TOperationHandle operationHandle) throws HiveSQLException {
+      return cliService.getQueryId(operationHandle);
     }
 
     @Override
@@ -233,6 +240,11 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
       return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
         primaryTable, foreignCatalog, foreignSchema, foreignTable);
     }
+
+    @Override
+    public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+      cliService.setApplicationName(sh, value);
+    }
   }
 
   protected RetryingThriftCLIServiceClient(HiveConf conf) {
@@ -249,7 +261,7 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     ICLIService cliService =
       (ICLIService) Proxy.newProxyInstance(RetryingThriftCLIServiceClient.class.getClassLoader(),
         CLIServiceClient.class.getInterfaces(), retryClient);
-    return new CLIServiceClientWrapper(cliService, tTransport);
+    return new CLIServiceClientWrapper(cliService, tTransport, conf);
   }
 
   protected TTransport connectWithRetry(int retries) throws HiveSQLException {
@@ -299,7 +311,7 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
 
     TProtocol protocol = new TBinaryProtocol(transport);
     transport.open();
-    base = new ThriftCLIServiceClient(new TCLIService.Client(protocol));
+    base = new ThriftCLIServiceClient(new TCLIService.Client(protocol), conf);
     LOG.info("Connected!");
     return transport;
   }

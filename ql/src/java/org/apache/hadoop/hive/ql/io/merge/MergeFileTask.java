@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,8 @@
  */
 
 package org.apache.hadoop.hive.ql.io.merge;
+
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -38,7 +40,6 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -108,6 +109,8 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
         fs.mkdirs(tempOutPath);
       }
 
+      ExecDriver.propagateSplitSettings(job, work);
+
       // set job name
       boolean noName = StringUtils.isEmpty(job.get(MRJobConfig.JOB_NAME));
 
@@ -150,7 +153,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
-
+      this.jobID = rj.getJobID();
       returnVal = jobExecHelper.progress(rj, jc, ctx);
       success = (returnVal == 0);
 
@@ -179,7 +182,6 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
           if (returnVal != 0) {
             rj.killJob();
           }
-          jobID = rj.getID().toString();
         }
         // get the list of Dynamic partition paths
         if (rj != null) {

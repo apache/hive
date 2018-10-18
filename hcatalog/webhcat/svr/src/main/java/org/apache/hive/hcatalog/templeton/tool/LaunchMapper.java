@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -227,15 +227,6 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       //Token is available, so replace the placeholder
       tokenFile = tokenFile.replaceAll("\"", "");
       String tokenArg = tokenProperty + "=" + tokenFile;
-      if (Shell.WINDOWS) {
-        try {
-          tokenArg = TempletonUtils.quoteForWindows(tokenArg);
-        } catch (BadParam e) {
-          String msg = "cannot pass " + tokenFile + " to " + tokenProperty;
-          LOG.error(msg, e);
-          throw new IOException(msg, e);
-        }
-      }
       for(int i=0; i<jarArgsList.size(); i++){
         String newArg =
           jarArgsList.get(i).replace(tokenPlaceHolder, tokenArg);

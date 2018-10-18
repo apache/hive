@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,9 +19,14 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * Interface for converting HCat events from String-form back to HCatEventMessage instances.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class MessageDeserializer {
 
   /**
@@ -46,9 +51,12 @@ public abstract class MessageDeserializer {
       return getAlterPartitionMessage(messageBody);
     case DROP_PARTITION:
       return getDropPartitionMessage(messageBody);
+    case CREATE_FUNCTION:
+      return getCreateFunctionMessage(messageBody);
+    case DROP_FUNCTION:
+      return getDropFunctionMessage(messageBody);
     case INSERT:
       return getInsertMessage(messageBody);
-
     default:
       throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
     }
@@ -97,6 +105,16 @@ public abstract class MessageDeserializer {
    * Method to de-serialize DropPartitionMessage instance.
    */
   public abstract DropPartitionMessage getDropPartitionMessage(String messageBody);
+
+  /**
+   * Method to de-serialize CreateFunctionMessage instance.
+   */
+  public abstract CreateFunctionMessage getCreateFunctionMessage(String messageBody);
+
+  /**
+   * Method to de-serialize DropFunctionMessage instance.
+   */
+  public abstract DropFunctionMessage getDropFunctionMessage(String messageBody);
 
   /**
    * Method to deserialize InsertMessage

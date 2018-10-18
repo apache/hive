@@ -27,6 +27,10 @@ select * from (
   select * from (select * from tst x where x.d='2009-02-02' limit 10)b
 ) subq
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tst
+PREHOOK: Input: default@tst@d=2009-01-01
+PREHOOK: Input: default@tst@d=2009-02-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (
   select * from (select * from tst x where x.d='2009-01-01' limit 10)a
@@ -34,6 +38,10 @@ select * from (
   select * from (select * from tst x where x.d='2009-02-02' limit 10)b
 ) subq
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst
+POSTHOOK: Input: default@tst@d=2009-01-01
+POSTHOOK: Input: default@tst@d=2009-02-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -46,6 +54,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (d = '2009-01-01') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: a (type: int), b (type: int)
@@ -59,6 +68,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: int), _col1 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)
@@ -107,6 +117,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (d = '2009-02-02') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: a (type: int), b (type: int)
@@ -120,6 +131,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: int), _col1 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)

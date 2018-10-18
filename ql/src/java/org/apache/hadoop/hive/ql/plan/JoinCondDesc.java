@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,10 +27,11 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Objects;
 
 /**
  * Join conditions Descriptor implementation.
- * 
+ *
  */
 public class JoinCondDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -125,22 +126,22 @@ public class JoinCondDesc implements Serializable {
       sb.append("Inner Join ");
       break;
     case JoinDesc.FULL_OUTER_JOIN:
-      sb.append("Outer Join ");
+      sb.append("Full Outer Join ");
       break;
     case JoinDesc.LEFT_OUTER_JOIN:
-      sb.append("Left Outer Join");
+      sb.append("Left Outer Join ");
       break;
     case JoinDesc.RIGHT_OUTER_JOIN:
-      sb.append("Right Outer Join");
+      sb.append("Right Outer Join ");
       break;
     case JoinDesc.UNIQUE_JOIN:
-      sb.append("Unique Join");
+      sb.append("Unique Join ");
       break;
     case JoinDesc.LEFT_SEMI_JOIN:
       sb.append("Left Semi Join ");
       break;
     default:
-      sb.append("Unknow Join ");
+      sb.append("Unknown Join ");
       break;
     }
 
@@ -153,7 +154,7 @@ public class JoinCondDesc implements Serializable {
 
   @Explain(explainLevels = { Level.USER })
   public String getUserLevelJoinCondString() {
-    JSONObject join = new JSONObject(new LinkedHashMap());
+    JSONObject join = new JSONObject(new LinkedHashMap<>());
     try {
       switch (type) {
       case JoinDesc.INNER_JOIN:
@@ -175,7 +176,7 @@ public class JoinCondDesc implements Serializable {
         join.put("type", "Left Semi");
         break;
       default:
-        join.put("type", "Unknow Join");
+        join.put("type", "Unknown Join");
         break;
       }
       join.put("left", left);
@@ -199,5 +200,10 @@ public class JoinCondDesc implements Serializable {
       return false;
     }
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(type, left, right, preserved);
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,6 +34,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.RowId;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -74,7 +75,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void addBatch() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -118,8 +119,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public int executeUpdate() throws SQLException {
-    super.executeUpdate(updateSql(sql, parameters));
-    return 0;
+    return super.executeUpdate(updateSql(sql, parameters));
   }
 
   /**
@@ -197,7 +197,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public ResultSetMetaData getMetaData() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -208,7 +208,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public ParameterMetaData getParameterMetaData() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -219,7 +219,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setArray(int i, Array x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -230,7 +230,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -242,7 +242,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -254,7 +254,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -275,7 +275,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
     String str = new Scanner(x, "UTF-8").useDelimiter("\\A").next();
-    this.parameters.put(parameterIndex, str);
+    setString(parameterIndex, str);
   }
 
   /*
@@ -287,7 +287,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -299,7 +299,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -310,7 +310,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setBlob(int i, Blob x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -321,7 +321,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -333,7 +333,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   public void setBlob(int parameterIndex, InputStream inputStream, long length)
           throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -364,7 +364,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setBytes(int parameterIndex, byte[] x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -375,7 +375,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -388,7 +388,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   public void setCharacterStream(int parameterIndex, Reader reader, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -401,7 +401,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   public void setCharacterStream(int parameterIndex, Reader reader, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -412,7 +412,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setClob(int i, Clob x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -423,7 +423,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setClob(int parameterIndex, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -434,7 +434,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -456,7 +456,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -507,7 +507,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -520,7 +520,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   public void setNCharacterStream(int parameterIndex, Reader value, long length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -531,7 +531,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setNClob(int parameterIndex, NClob value) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -542,7 +542,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setNClob(int parameterIndex, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -553,7 +553,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -564,7 +564,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setNString(int parameterIndex, String value) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -637,7 +637,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   public void setObject(int parameterIndex, Object x, int targetSqlType)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -649,7 +649,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   public void setObject(int parameterIndex, Object x, int targetSqlType, int scale)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -660,7 +660,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setRef(int i, Ref x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -671,7 +671,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setRowId(int parameterIndex, RowId x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -682,7 +682,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -695,6 +695,27 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
     this.parameters.put(parameterIndex,""+x);
   }
 
+  private String replaceBackSlashSingleQuote(String x) {
+    // scrutinize escape pair, specifically, replace \' to '
+    StringBuffer newX = new StringBuffer();
+    for (int i = 0; i < x.length(); i++) {
+      char c = x.charAt(i);
+      if (c == '\\' && i < x.length()-1) {
+        char c1 = x.charAt(i+1);
+        if (c1 == '\'') {
+          newX.append(c1);
+        } else {
+          newX.append(c);
+          newX.append(c1);
+        }
+        i++;
+      } else {
+        newX.append(c);
+      }
+    }
+    return newX.toString();
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -702,8 +723,9 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setString(int parameterIndex, String x) throws SQLException {
-     x=x.replace("'", "\\'");
-     this.parameters.put(parameterIndex,"'"+x+"'");
+    x = replaceBackSlashSingleQuote(x);
+    x=x.replace("'", "\\'");
+    this.parameters.put(parameterIndex, "'"+x+"'");
   }
 
   /*
@@ -714,7 +736,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setTime(int parameterIndex, Time x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -726,7 +748,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -749,7 +771,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -760,7 +782,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void setURL(int parameterIndex, URL x) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -773,6 +795,6 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   public void setUnicodeStream(int parameterIndex, InputStream x, int length)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,10 +21,12 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
@@ -38,21 +40,30 @@ public final class ExprNodeEvaluatorFactory {
   }
 
   public static ExprNodeEvaluator get(ExprNodeDesc desc) throws HiveException {
+    return get(desc, null);
+  }
+
+  public static ExprNodeEvaluator get(ExprNodeDesc desc, Configuration conf) throws HiveException {
     // Constant node
     if (desc instanceof ExprNodeConstantDesc) {
-      return new ExprNodeConstantEvaluator((ExprNodeConstantDesc) desc);
+      return new ExprNodeConstantEvaluator((ExprNodeConstantDesc) desc, conf);
     }
+
     // Column-reference node, e.g. a column in the input row
     if (desc instanceof ExprNodeColumnDesc) {
-      return new ExprNodeColumnEvaluator((ExprNodeColumnDesc) desc);
+      return new ExprNodeColumnEvaluator((ExprNodeColumnDesc) desc, conf);
     }
     // Generic Function node, e.g. CASE, an operator or a UDF node
     if (desc instanceof ExprNodeGenericFuncDesc) {
-      return new ExprNodeGenericFuncEvaluator((ExprNodeGenericFuncDesc) desc);
+      return new ExprNodeGenericFuncEvaluator((ExprNodeGenericFuncDesc) desc, conf);
     }
     // Field node, e.g. get a.myfield1 from a
     if (desc instanceof ExprNodeFieldDesc) {
-      return new ExprNodeFieldEvaluator((ExprNodeFieldDesc) desc);
+      return new ExprNodeFieldEvaluator((ExprNodeFieldDesc) desc, conf);
+    }
+    // Dynamic value which will be determined during query runtime
+    if (desc instanceof ExprNodeDynamicValueDesc) {
+      return new ExprNodeDynamicValueEvaluator((ExprNodeDynamicValueDesc) desc, conf);
     }
     throw new RuntimeException(
         "Cannot find ExprNodeEvaluator for the exprNodeDesc = " + desc);
@@ -88,7 +99,7 @@ public final class ExprNodeEvaluatorFactory {
   }
 
   private static ExprNodeEvaluator iterate(ExprNodeEvaluator eval, EvaluatorContext context) {
-    if (!(eval instanceof ExprNodeConstantEvaluator) && eval.isDeterministic()) {
+    if (!(eval instanceof ExprNodeConstantEvaluator) && eval.isConsistentWithinQuery()) {
       ExprNodeEvaluator replace = context.getEvaluated(eval);
       if (replace != null) {
         return replace;

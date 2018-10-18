@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,11 +42,11 @@ public class CoreDummy extends CliAdapter {
   }
 
   @Override
-  public void shutdown() throws Exception {
+  public void shutdown() {
   }
 
   @Override
-  public void runTest(String name, String name2, String absolutePath) throws Exception {
+  public void runTest(String name, String name2, String absolutePath) {
     List<String> versionFiles = QTestUtil.getVersionFiles(cliConfig.getQueryDirectory(), name);
     if (versionFiles.size() < 2) {
       fail("Cannot run " + name2 + " with only " + versionFiles.size() + " versions");

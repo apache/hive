@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -65,6 +66,8 @@ public class AnnotateWithStatistics extends Transform {
         StatsRulesProcFactory.getLimitRule());
     opRules.put(new RuleRegExp("RS", ReduceSinkOperator.getOperatorName() + "%"),
         StatsRulesProcFactory.getReduceSinkRule());
+    opRules.put(new RuleRegExp("UDTF", UDTFOperator.getOperatorName() + "%"),
+            StatsRulesProcFactory.getUDTFRule());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

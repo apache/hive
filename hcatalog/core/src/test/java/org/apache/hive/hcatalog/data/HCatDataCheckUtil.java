@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,8 +26,8 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.MiniCluster;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class HCatDataCheckUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatDataCheckUtil.class);
 
-  public static Driver instantiateDriver(MiniCluster cluster) {
+  public static IDriver instantiateDriver(MiniCluster cluster) {
     HiveConf hiveConf = new HiveConf(HCatDataCheckUtil.class);
     for (Entry e : cluster.getProperties().entrySet()) {
       hiveConf.set(e.getKey().toString(), e.getValue().toString());
@@ -50,7 +50,7 @@ public class HCatDataCheckUtil {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     LOG.debug("Hive conf : {}", hiveConf.getAllProperties());
-    Driver driver = new Driver(hiveConf);
+    IDriver driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     return driver;
   }
@@ -64,8 +64,7 @@ public class HCatDataCheckUtil {
     MiniCluster.createInputFile(cluster, fileName, input);
   }
 
-  public static void createTable(Driver driver, String tableName, String createTableArgs)
-    throws CommandNeedRetryException, IOException {
+  public static void createTable(IDriver driver, String tableName, String createTableArgs) throws IOException {
     String createTable = "create table " + tableName + createTableArgs;
     int retCode = driver.run(createTable).getResponseCode();
     if (retCode != 0) {
@@ -73,12 +72,11 @@ public class HCatDataCheckUtil {
     }
   }
 
-  public static void dropTable(Driver driver, String tablename) throws IOException, CommandNeedRetryException {
+  public static void dropTable(IDriver driver, String tablename) throws IOException {
     driver.run("drop table if exists " + tablename);
   }
 
-  public static ArrayList<String> formattedRun(Driver driver, String name, String selectCmd)
-    throws CommandNeedRetryException, IOException {
+  public static ArrayList<String> formattedRun(IDriver driver, String name, String selectCmd) throws IOException {
     driver.run(selectCmd);
     ArrayList<String> src_values = new ArrayList<String>();
     driver.getResults(src_values);
@@ -90,7 +88,7 @@ public class HCatDataCheckUtil {
   public static boolean recordsEqual(HCatRecord first, HCatRecord second) {
     return recordsEqual(first, second, null);
   }
-  public static boolean recordsEqual(HCatRecord first, HCatRecord second, 
+  public static boolean recordsEqual(HCatRecord first, HCatRecord second,
                                      StringBuilder debugDetail) {
     return (compareRecords(first, second, debugDetail) == 0);
   }
@@ -98,12 +96,12 @@ public class HCatDataCheckUtil {
   public static int compareRecords(HCatRecord first, HCatRecord second) {
     return compareRecords(first, second, null);
   }
-  public static int compareRecords(HCatRecord first, HCatRecord second, 
+  public static int compareRecords(HCatRecord first, HCatRecord second,
                                    StringBuilder debugDetail) {
     return compareRecordContents(first.getAll(), second.getAll(), debugDetail);
   }
 
-  public static int compareRecordContents(List<Object> first, List<Object> second, 
+  public static int compareRecordContents(List<Object> first, List<Object> second,
                                           StringBuilder debugDetail) {
     int mySz = first.size();
     int urSz = second.size();
@@ -117,7 +115,7 @@ public class HCatDataCheckUtil {
             String msg = "first.get(" + i + "}='" + first.get(i) + "' second.get(" +
                     i + ")='" + second.get(i) + "' compared as " + c + "\n" +
             "Types 1st/2nd=" + DataType.findType(first.get(i)) + "/" +DataType.findType(
-                    second.get(i)) + '\n' + 
+                    second.get(i)) + '\n' +
                     "first='" + first.get(i) + "' second='" + second.get(i) + "'";
             if(first.get(i) instanceof Date) {
               msg += "\n((Date)first.get(i)).getTime()=" + ((Date)first.get(i)).getTime();

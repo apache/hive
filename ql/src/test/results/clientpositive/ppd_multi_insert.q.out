@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mi1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mi1
@@ -41,6 +37,11 @@ INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 
 INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@mi1
+PREHOOK: Output: default@mi2
+PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+PREHOOK: Output: target/warehouse/mi4.out
 POSTHOOK: query: EXPLAIN
 FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
@@ -48,14 +49,22 @@ INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 
 INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@mi1
+POSTHOOK: Output: default@mi2
+POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+POSTHOOK: Output: target/warehouse/mi4.out
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-0 depends on stages: Stage-4
-  Stage-5 depends on stages: Stage-0
+  Stage-5 depends on stages: Stage-0, Stage-6, Stage-8, Stage-10, Stage-3
+  Stage-6 depends on stages: Stage-4
+  Stage-7 depends on stages: Stage-1, Stage-6, Stage-8, Stage-10, Stage-3
+  Stage-9 depends on stages: Stage-2, Stage-6, Stage-8, Stage-10, Stage-3
   Stage-1 depends on stages: Stage-4
-  Stage-6 depends on stages: Stage-1
+  Stage-8 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-4
-  Stage-7 depends on stages: Stage-2
+  Stage-10 depends on stages: Stage-4
   Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
@@ -64,6 +73,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -76,6 +86,7 @@ STAGE PLANS:
                 value expressions: value (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -109,8 +120,23 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.mi1
+              Select Operator
+                expressions: _col0 (type: int), _col1 (type: string)
+                outputColumnNames: key, value
+                Statistics: Num rows: 183 Data size: 1944 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
-            predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
+            predicate: ((_col0 < 200) and (_col0 >= 100)) (type: boolean)
             Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
@@ -124,8 +150,23 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.mi2
+              Select Operator
+                expressions: _col0 (type: int), _col1 (type: string)
+                outputColumnNames: key, value
+                Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
-            predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
+            predicate: ((_col0 < 300) and (_col0 >= 200)) (type: boolean)
             Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToInteger(_col0) (type: int)
@@ -139,6 +180,22 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.mi3
+              Select Operator
+                expressions: _col0 (type: int)
+                outputColumnNames: key
+                Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(key, 'hll')
+                  keys: '2008-04-08' (type: string), '12' (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
             predicate: (_col0 >= 300) (type: boolean)
             Statistics: Num rows: 183 Data size: 1944 Basic stats: COMPLETE Column stats: NONE
@@ -165,7 +222,51 @@ STAGE PLANS:
               name: default.mi1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.mi1
+
+  Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-7
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.mi2
+
+  Stage: Stage-9
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.mi3
 
   Stage: Stage-1
     Move Operator
@@ -177,8 +278,28 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.mi2
 
-  Stage: Stage-6
-    Stats-Aggr Operator
+  Stage: Stage-8
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Move Operator
@@ -193,8 +314,35 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.mi3
 
-  Stage: Stage-7
-    Stats-Aggr Operator
+  Stage: Stage-10
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: '2008-04-08' (type: string), '12' (type: string)
+              sort order: ++
+              Map-reduce partition columns: '2008-04-08' (type: string), '12' (type: string)
+              Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          keys: '2008-04-08' (type: string), '12' (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), '2008-04-08' (type: string), '12' (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Move Operator
@@ -1306,6 +1454,11 @@ INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 
 INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@mi1
+PREHOOK: Output: default@mi2
+PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+PREHOOK: Output: target/warehouse/mi4.out
 POSTHOOK: query: EXPLAIN
 FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
@@ -1313,14 +1466,22 @@ INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 
 INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@mi1
+POSTHOOK: Output: default@mi2
+POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+POSTHOOK: Output: target/warehouse/mi4.out
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-0 depends on stages: Stage-4
-  Stage-5 depends on stages: Stage-0
+  Stage-5 depends on stages: Stage-0, Stage-6, Stage-8, Stage-10, Stage-3
+  Stage-6 depends on stages: Stage-4
+  Stage-7 depends on stages: Stage-1, Stage-6, Stage-8, Stage-10, Stage-3
+  Stage-9 depends on stages: Stage-2, Stage-6, Stage-8, Stage-10, Stage-3
   Stage-1 depends on stages: Stage-4
-  Stage-6 depends on stages: Stage-1
+  Stage-8 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-4
-  Stage-7 depends on stages: Stage-2
+  Stage-10 depends on stages: Stage-4
   Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
@@ -1329,6 +1490,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1341,6 +1503,7 @@ STAGE PLANS:
                 value expressions: value (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1374,8 +1537,23 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.mi1
+              Select Operator
+                expressions: _col0 (type: int), _col1 (type: string)
+                outputColumnNames: key, value
+                Statistics: Num rows: 183 Data size: 1944 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
-            predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
+            predicate: ((_col0 < 200) and (_col0 >= 100)) (type: boolean)
             Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
@@ -1389,8 +1567,23 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.mi2
+              Select Operator
+                expressions: _col0 (type: int), _col1 (type: string)
+                outputColumnNames: key, value
+                Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
-            predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
+            predicate: ((_col0 < 300) and (_col0 >= 200)) (type: boolean)
             Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToInteger(_col0) (type: int)
@@ -1404,6 +1597,22 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.mi3
+              Select Operator
+                expressions: _col0 (type: int)
+                outputColumnNames: key
+                Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(key, 'hll')
+                  keys: '2008-04-08' (type: string), '12' (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
             predicate: (_col0 >= 300) (type: boolean)
             Statistics: Num rows: 183 Data size: 1944 Basic stats: COMPLETE Column stats: NONE
@@ -1430,7 +1639,51 @@ STAGE PLANS:
               name: default.mi1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.mi1
+
+  Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-7
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.mi2
+
+  Stage: Stage-9
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.mi3
 
   Stage: Stage-1
     Move Operator
@@ -1442,8 +1695,28 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.mi2
 
-  Stage: Stage-6
-    Stats-Aggr Operator
+  Stage: Stage-8
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Move Operator
@@ -1458,8 +1731,35 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.mi3
 
-  Stage: Stage-7
-    Stats-Aggr Operator
+  Stage: Stage-10
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: '2008-04-08' (type: string), '12' (type: string)
+              sort order: ++
+              Map-reduce partition columns: '2008-04-08' (type: string), '12' (type: string)
+              Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          keys: '2008-04-08' (type: string), '12' (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), '2008-04-08' (type: string), '12' (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 30 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Move Operator

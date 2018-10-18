@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,16 +18,14 @@
 package org.apache.hadoop.hive.druid.serde;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
+import com.fasterxml.jackson.databind.JavaType;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
-import org.apache.hadoop.hive.ql.optimizer.calcite.druid.DruidTable;
 import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Iterators;
 
 import io.druid.query.Result;
 import io.druid.query.select.EventHolder;
@@ -40,18 +38,18 @@ import io.druid.query.select.SelectResultValue;
 public class DruidSelectQueryRecordReader
         extends DruidQueryRecordReader<SelectQuery, Result<SelectResultValue>> {
 
+  private static final TypeReference<Result<SelectResultValue>> TYPE_REFERENCE =
+          new TypeReference<Result<SelectResultValue>>()
+          {
+          };
+
   private Result<SelectResultValue> current;
-  private Iterator<EventHolder> values = Iterators.emptyIterator();
+
+  private Iterator<EventHolder> values = Collections.emptyIterator();
 
   @Override
-  protected SelectQuery createQuery(String content) throws IOException {
-    return DruidStorageHandlerUtils.JSON_MAPPER.readValue(content, SelectQuery.class);
-  }
-
-  @Override
-  protected List<Result<SelectResultValue>> createResultsList(InputStream content) throws IOException {
-    return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<SelectResultValue>>>(){});
+  protected JavaType getResultTypeDef() {
+    return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
   @Override
@@ -59,10 +57,10 @@ public class DruidSelectQueryRecordReader
     if (values.hasNext()) {
       return true;
     }
-    if (results.hasNext()) {
-      current = results.next();
+    if (queryResultsIterator.hasNext()) {
+      current = queryResultsIterator.next();
       values = current.getValue().getEvents().iterator();
-      return true;
+      return nextKeyValue();
     }
     return false;
   }
@@ -75,12 +73,10 @@ public class DruidSelectQueryRecordReader
   @Override
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
-    if (values.hasNext()) {
-      value.getValue().putAll(values.next().getEvent());
-      return value;
-    }
+    DruidWritable value = new DruidWritable(false);
+    EventHolder e = values.next();
+    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+    value.getValue().putAll(e.getEvent());
     return value;
   }
 
@@ -89,10 +85,9 @@ public class DruidSelectQueryRecordReader
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
-      if (values.hasNext()) {
-        value.getValue().putAll(values.next().getEvent());
-      }
+      EventHolder e = values.next();
+      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+      value.getValue().putAll(e.getEvent());
       return true;
     }
     return false;
@@ -100,7 +95,7 @@ public class DruidSelectQueryRecordReader
 
   @Override
   public float getProgress() {
-    return results.hasNext() || values.hasNext() ? 0 : 1;
+    return queryResultsIterator.hasNext() || values.hasNext() ? 0 : 1;
   }
 
 }

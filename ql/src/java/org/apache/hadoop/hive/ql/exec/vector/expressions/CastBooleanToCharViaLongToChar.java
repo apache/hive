@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 
-public class CastBooleanToCharViaLongToChar extends CastBooleanToStringViaLongToString implements TruncStringOutput {
+public class CastBooleanToCharViaLongToChar extends CastBooleanToStringViaLongToString
+    implements TruncStringOutput {
+
   private static final long serialVersionUID = 1L;
   private int maxLength; // Must be manually set with setMaxLength.
 
-  public CastBooleanToCharViaLongToChar(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastBooleanToCharViaLongToChar(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   public CastBooleanToCharViaLongToChar() {
@@ -37,11 +39,6 @@ public class CastBooleanToCharViaLongToChar extends CastBooleanToStringViaLongTo
     StringExpr.rightTrimAndTruncate(outV, i, bytes, 0, length, maxLength);
   }
 
-  @Override
-  public String getOutputType() {
-    return "Char";
-  }
-  
     @Override
   public int getMaxLength() {
     return maxLength;
@@ -50,5 +47,10 @@ public class CastBooleanToCharViaLongToChar extends CastBooleanToStringViaLongTo
   @Override
   public void setMaxLength(int maxLength) {
     this.maxLength = maxLength;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
   }
 }

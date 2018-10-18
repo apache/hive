@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,9 +28,8 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.ptf.CurrentRowDef;
-import org.apache.hadoop.hive.ql.plan.ptf.RangeBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
@@ -52,18 +51,18 @@ public class TestStreamingSum {
   public static WindowFrameDef wdwFrame(int p, int f) {
     BoundaryDef start, end;
     if (p == 0) {
-      start = new CurrentRowDef();
+      start = new BoundaryDef(Direction.CURRENT, 0);
     } else {
-      start = new RangeBoundaryDef(Direction.PRECEDING, p);
+      start = new BoundaryDef(Direction.PRECEDING, p);
     }
 
     if (f == 0) {
-      end = new CurrentRowDef();
+      end = new BoundaryDef(Direction.CURRENT, 0);
     } else {
-      end = new RangeBoundaryDef(Direction.FOLLOWING, f);
+      end = new BoundaryDef(Direction.FOLLOWING, f);
     }
 
-    return new WindowFrameDef(start, end);
+    return new WindowFrameDef(WindowType.ROWS, start, end);
   }
 
   public void sumDouble(Iterator<Double> inVals, int inSz, int numPreceding,

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,8 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
-import org.apache.log4j.MDC;
+import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.FileSystemCounter;
@@ -40,6 +39,7 @@ import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.runtime.task.TaskRunner2Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * Custom thread pool implementation that records per thread file system statistics in TezCounters.
@@ -157,9 +157,9 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
         TaskRunner2Callable taskRunner2Callable = (TaskRunner2Callable) actualCallable;
         // counters for task execution side
         tezCounters = taskRunner2Callable.addAndGetTezCounter(FileSystemCounter.class.getName());
-      } else if (actualCallable instanceof OrcEncodedDataReader) {
-        // counters for llap io side
-        tezCounters = ((OrcEncodedDataReader) actualCallable).getTezCounters();
+      } else if (actualCallable instanceof TezCounterSource) {
+        // Other counter sources (currently used in LLAP IO).
+        tezCounters = ((TezCounterSource) actualCallable).getTezCounters();
       }
 
       if (tezCounters != null) {

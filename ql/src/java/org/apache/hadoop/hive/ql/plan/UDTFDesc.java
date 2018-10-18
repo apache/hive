@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,10 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+
+import java.util.Objects;
+
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -52,6 +56,7 @@ public class UDTFDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "function name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public String getUDTFName() {
     return genericUDTF.toString();
   }
@@ -65,7 +70,19 @@ public class UDTFDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outer lateral view")
+  @Signature
   public String isOuterLateralView() {
     return outerLV ? "true" : null;
   }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      UDTFDesc otherDesc = (UDTFDesc) other;
+      return Objects.equals(getUDTFName(), otherDesc.getUDTFName()) &&
+          Objects.equals(isOuterLateralView(), otherDesc.isOuterLateralView());
+    }
+    return false;
+  }
+
 }

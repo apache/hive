@@ -1,0 +1,447 @@
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1@key=101
+POSTHOOK: Output: default@table1@key=202
+POSTHOOK: Output: default@table1@key=303
+POSTHOOK: Output: default@table1@key=404
+POSTHOOK: Output: default@table1@key=505
+POSTHOOK: Lineage: table1 PARTITION(key=101).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=202).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=303).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=404).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=505).id SCRIPT []
+PREHOOK: query: SELECT * FROM table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1@key=101
+PREHOOK: Input: default@table1@key=202
+PREHOOK: Input: default@table1@key=303
+PREHOOK: Input: default@table1@key=404
+PREHOOK: Input: default@table1@key=505
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1@key=101
+POSTHOOK: Input: default@table1@key=202
+POSTHOOK: Input: default@table1@key=303
+POSTHOOK: Input: default@table1@key=404
+POSTHOOK: Input: default@table1@key=505
+#### A masked pattern was here ####
+1	101
+2	202
+3	303
+4	404
+5	505
+PREHOOK: query: INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1@key=101
+POSTHOOK: Output: default@table1@key=202
+POSTHOOK: Output: default@table1@key=303
+POSTHOOK: Output: default@table1@key=404
+POSTHOOK: Output: default@table1@key=505
+POSTHOOK: Lineage: table1 PARTITION(key=101).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=202).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=303).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=404).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=505).id SCRIPT []
+PREHOOK: query: SELECT * FROM table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1@key=101
+PREHOOK: Input: default@table1@key=202
+PREHOOK: Input: default@table1@key=303
+PREHOOK: Input: default@table1@key=404
+PREHOOK: Input: default@table1@key=505
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1@key=101
+POSTHOOK: Input: default@table1@key=202
+POSTHOOK: Input: default@table1@key=303
+POSTHOOK: Input: default@table1@key=404
+POSTHOOK: Input: default@table1@key=505
+#### A masked pattern was here ####
+1	101
+2	202
+3	303
+4	404
+5	505
+PREHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions: array(const struct(1,'101'),const struct(2,'202'),const struct(3,'303'),const struct(4,'404'),const struct(5,'505')) (type: array<struct<col1:int,col2:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string), _bucket_number (type: string)
+                    null sort order: aa
+                    sort order: ++
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    tag: -1
+                    value expressions: _col0 (type: int)
+                    auto parallelism: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: dummy_path
+            input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
+              columns 
+              columns.comments 
+              columns.types 
+#### A masked pattern was here ####
+              name _dummy_database._dummy_table
+              serialization.ddl struct _dummy_table { }
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+            serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+          
+              input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
+                columns 
+                columns.comments 
+                columns.types 
+#### A masked pattern was here ####
+                name _dummy_database._dummy_table
+                serialization.ddl struct _dummy_table { }
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+              serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+              name: _dummy_database._dummy_table
+            name: _dummy_database._dummy_table
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: int), KEY._col1 (type: string), KEY._bucket_number (type: string)
+          outputColumnNames: _col0, _col1, _bucket_number
+          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 1
+            directory: ### BLOBSTORE_STAGING_PATH ###
+            Dp Sort State: PARTITION_BUCKET_SORTED
+            NumFilesPerFileSink: 1
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+            Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  bucket_count 2
+                  bucket_field_name id
+                  bucketing_version 2
+                  column.name.delimiter ,
+                  columns id
+                  columns.comments 
+                  columns.types int
+#### A masked pattern was here ####
+                  location ### test.blobstore.path ###/table1
+                  name default.table1
+                  partition_columns key
+                  partition_columns.types string
+                  serialization.ddl struct table1 { i32 id}
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.table1
+            TotalFiles: 1
+            GatherStats: true
+            MultiFileSpray: false
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            key 
+          replace: true
+          source: ### BLOBSTORE_STAGING_PATH ###
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count 2
+                bucket_field_name id
+                bucketing_version 2
+                column.name.delimiter ,
+                columns id
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/table1
+                name default.table1
+                partition_columns key
+                partition_columns.types string
+                serialization.ddl struct table1 { i32 id}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.table1
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+      Column Stats Desc:
+          Columns: id
+          Column Types: int
+          Table: default.table1
+          Is Table Level Stats: false
+
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1
+PREHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('John Doe', 23), ('Jane Doe', 22)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1@country=USA/state=CA
+POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('John Doe', 23), ('Jane Doe', 22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1@country=USA/state=CA
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SCRIPT []
+PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1@country=USA/state=CA
+POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1@country=USA/state=CA
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SCRIPT []
+PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1@country=USA/state=TX
+POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1@country=USA/state=TX
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).name SCRIPT []
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: INSERT OVERWRITE TABLE table2 PARTITION (country, state) SELECT * FROM table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1@country=USA/state=CA
+PREHOOK: Input: default@table1@country=USA/state=TX
+PREHOOK: Output: default@table2
+POSTHOOK: query: INSERT OVERWRITE TABLE table2 PARTITION (country, state) SELECT * FROM table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1@country=USA/state=CA
+POSTHOOK: Input: default@table1@country=USA/state=TX
+POSTHOOK: Output: default@table2@country=USA/state=CA
+POSTHOOK: Output: default@table2@country=USA/state=TX
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).age SIMPLE [(table1)table1.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).age SIMPLE [(table1)table1.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS table2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table2
+POSTHOOK: query: SHOW PARTITIONS table2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table2
+country=USA/state=CA
+country=USA/state=TX
+PREHOOK: query: SELECT * FROM table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2@country=USA/state=CA
+PREHOOK: Input: default@table2@country=USA/state=TX
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2@country=USA/state=CA
+POSTHOOK: Input: default@table2@country=USA/state=TX
+#### A masked pattern was here ####
+Bill Rose	52	USA	TX
+Jane Doe	22	USA	CA
+John Doe	23	USA	CA
+Maria Full	50	USA	TX
+Mark Cage	38	USA	CA
+Mirna Cage	37	USA	CA
+PREHOOK: query: INSERT OVERWRITE TABLE table2 PARTITION (country, state) SELECT * FROM table1 WHERE age < 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1@country=USA/state=CA
+PREHOOK: Input: default@table1@country=USA/state=TX
+PREHOOK: Output: default@table2
+POSTHOOK: query: INSERT OVERWRITE TABLE table2 PARTITION (country, state) SELECT * FROM table1 WHERE age < 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1@country=USA/state=CA
+POSTHOOK: Input: default@table1@country=USA/state=TX
+POSTHOOK: Output: default@table2@country=USA/state=CA
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).age SIMPLE [(table1)table1.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS table2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table2
+POSTHOOK: query: SHOW PARTITIONS table2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table2
+country=USA/state=CA
+country=USA/state=TX
+PREHOOK: query: SELECT * FROM table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2@country=USA/state=CA
+PREHOOK: Input: default@table2@country=USA/state=TX
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2@country=USA/state=CA
+POSTHOOK: Input: default@table2@country=USA/state=TX
+#### A masked pattern was here ####
+Bill Rose	52	USA	TX
+Jane Doe	22	USA	CA
+John Doe	23	USA	CA
+Maria Full	50	USA	TX
+PREHOOK: query: INSERT OVERWRITE TABLE table2 PARTITION (country='MEX', state) VALUES ('Peter Mo', 87, 'SON')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2@country=MEX
+POSTHOOK: query: INSERT OVERWRITE TABLE table2 PARTITION (country='MEX', state) VALUES ('Peter Mo', 87, 'SON')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2@country=MEX/state=SON
+POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).age SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).name SCRIPT []
+PREHOOK: query: SHOW PARTITIONS table2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table2
+POSTHOOK: query: SHOW PARTITIONS table2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table2
+country=MEX/state=SON
+country=USA/state=CA
+country=USA/state=TX
+PREHOOK: query: SELECT * FROM table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2@country=MEX/state=SON
+PREHOOK: Input: default@table2@country=USA/state=CA
+PREHOOK: Input: default@table2@country=USA/state=TX
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2@country=MEX/state=SON
+POSTHOOK: Input: default@table2@country=USA/state=CA
+POSTHOOK: Input: default@table2@country=USA/state=TX
+#### A masked pattern was here ####
+Bill Rose	52	USA	TX
+Jane Doe	22	USA	CA
+John Doe	23	USA	CA
+Maria Full	50	USA	TX
+Peter Mo	87	MEX	SON
+PREHOOK: query: DROP TABLE table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table2
+PREHOOK: Output: default@table2
+POSTHOOK: query: DROP TABLE table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: default@table2
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1

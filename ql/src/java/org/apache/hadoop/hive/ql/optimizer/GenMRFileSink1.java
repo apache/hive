@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -68,10 +69,16 @@ public class GenMRFileSink1 implements NodeProcessor {
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
     boolean chDir = false;
-    Task<? extends Serializable> currTask = ctx.getCurrTask();
+    // we should look take the parent of fsOp's task as the current task.
+    FileSinkOperator fsOp = (FileSinkOperator) nd;
+    Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
+        .getMapCurrCtx();
+    GenMapRedCtx mapredCtx = mapCurrCtx.get(fsOp.getParentOperators().get(0));
+    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
+    
+    ctx.setCurrTask(currTask);
     ctx.addRootIfPossible(currTask);
 
-    FileSinkOperator fsOp = (FileSinkOperator) nd;
     boolean isInsertTable = // is INSERT OVERWRITE TABLE
         GenMapRedUtils.isInsertInto(parseCtx, fsOp);
     HiveConf hconf = parseCtx.getConf();
@@ -105,11 +112,13 @@ public class GenMRFileSink1 implements NodeProcessor {
       LOG.info("using CombineHiveInputformat for the merge job");
       GenMapRedUtils.createMRWorkForMergingFiles(fsOp, finalName,
           ctx.getDependencyTaskForMultiInsert(), ctx.getMvTask(),
-          hconf, currTask);
+          hconf, currTask, parseCtx.getQueryState().getLineageState());
     }
 
     FileSinkDesc fileSinkDesc = fsOp.getConf();
-    if (fileSinkDesc.isLinkedFileSink()) {
+    // There are linked file sink operators and child tasks are present
+    if (fileSinkDesc.isLinkedFileSink() && (currTask.getChildTasks() != null) &&
+        (currTask.getChildTasks().size() == 1)) {
       Map<FileSinkDesc, Task<? extends Serializable>> linkedFileDescTasks =
         ctx.getLinkedFileDescTasks();
       if (linkedFileDescTasks == null) {
@@ -117,12 +126,8 @@ public class GenMRFileSink1 implements NodeProcessor {
         ctx.setLinkedFileDescTasks(linkedFileDescTasks);
       }
 
-      // The child tasks may be null in case of a select
-      if ((currTask.getChildTasks() != null) &&
-        (currTask.getChildTasks().size() == 1)) {
-        for (FileSinkDesc fileDesc : fileSinkDesc.getLinkedFileSinkDesc()) {
-          linkedFileDescTasks.put(fileDesc, currTask.getChildTasks().get(0));
-        }
+      for (FileSinkDesc fileDesc : fileSinkDesc.getLinkedFileSinkDesc()) {
+        linkedFileDescTasks.put(fileDesc, currTask.getChildTasks().get(0));
       }
     }
 

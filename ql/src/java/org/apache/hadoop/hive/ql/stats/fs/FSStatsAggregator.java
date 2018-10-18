@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class FSStatsAggregator implements StatsAggregator {
     List<String> statsDirs = scc.getStatsTmpDirs();
     assert statsDirs.size() == 1 : "Found multiple stats dirs: " + statsDirs;
     Path statsDir = new Path(statsDirs.get(0));
-    LOG.debug("About to read stats from : " + statsDir);
+    Utilities.FILE_OP_LOGGER.trace("About to read stats from {}", statsDir);
     statsMap  = new HashMap<String, Map<String,String>>();
 
     try {
@@ -62,6 +63,7 @@ public class FSStatsAggregator implements StatsAggregator {
         }
       });
       for (FileStatus file : status) {
+        Utilities.FILE_OP_LOGGER.trace("About to read stats file {} ", file.getPath());
         Input in = new Input(fs.open(file.getPath()));
         Kryo kryo = SerializationUtilities.borrowKryo();
         try {
@@ -69,13 +71,13 @@ public class FSStatsAggregator implements StatsAggregator {
         } finally {
           SerializationUtilities.releaseKryo(kryo);
         }
-        LOG.info("Read stats : " +statsMap);
+        Utilities.FILE_OP_LOGGER.trace("Read : {}", statsMap);
         statsList.add(statsMap);
         in.close();
       }
       return true;
     } catch (IOException e) {
-      LOG.error("Failed to read stats from filesystem ", e);
+      Utilities.FILE_OP_LOGGER.error("Failed to read stats from filesystem ", e);
       return false;
     }
   }
@@ -84,7 +86,7 @@ public class FSStatsAggregator implements StatsAggregator {
   @Override
   public String aggregateStats(String partID, String statType) {
     long counter = 0;
-    LOG.debug("Part ID: " + partID + "\t" + statType);
+    Utilities.FILE_OP_LOGGER.debug("Part ID: {}, {}", partID, statType);
     for (Map<String,Map<String,String>> statsMap : statsList) {
       Map<String,String> partStat = statsMap.get(partID);
       if (null == partStat) { // not all partitions are scanned in all mappers, so this could be null.
@@ -96,7 +98,7 @@ public class FSStatsAggregator implements StatsAggregator {
       }
       counter += Long.parseLong(statVal);
     }
-    LOG.info("Read stats for : " + partID + "\t" + statType + "\t" + counter);
+    Utilities.FILE_OP_LOGGER.info("Read stats for {}, {}, {}: ", partID, statType, counter);
 
     return String.valueOf(counter);
   }

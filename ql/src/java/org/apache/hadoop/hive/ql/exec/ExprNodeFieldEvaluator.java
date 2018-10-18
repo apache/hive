@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -43,9 +44,9 @@ public class ExprNodeFieldEvaluator extends ExprNodeEvaluator<ExprNodeFieldDesc>
   transient ObjectInspector structFieldObjectInspector;
   transient ObjectInspector resultObjectInspector;
 
-  public ExprNodeFieldEvaluator(ExprNodeFieldDesc desc) throws HiveException {
-    super(desc);
-    leftEvaluator = ExprNodeEvaluatorFactory.get(desc.getDesc());
+  public ExprNodeFieldEvaluator(ExprNodeFieldDesc desc, Configuration conf) throws HiveException {
+    super(desc, conf);
+    leftEvaluator = ExprNodeEvaluatorFactory.get(desc.getDesc(), conf);
   }
 
   @Override

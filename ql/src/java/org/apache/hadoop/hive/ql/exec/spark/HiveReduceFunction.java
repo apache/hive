@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,8 +25,8 @@ import org.apache.hadoop.io.BytesWritable;
 
 import scala.Tuple2;
 
-public class HiveReduceFunction extends HivePairFlatMapFunction<
-  Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>, HiveKey, BytesWritable> {
+public class HiveReduceFunction<V> extends HivePairFlatMapFunction<
+  Iterator<Tuple2<HiveKey, V>>, HiveKey, BytesWritable> {
 
   private static final long serialVersionUID = 1L;
 
@@ -36,13 +36,13 @@ public class HiveReduceFunction extends HivePairFlatMapFunction<
 
   @SuppressWarnings("unchecked")
   @Override
-  public Iterable<Tuple2<HiveKey, BytesWritable>>
-  call(Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> it) throws Exception {
+  public Iterator<Tuple2<HiveKey, BytesWritable>>
+  call(Iterator<Tuple2<HiveKey, V>> it) throws Exception {
     initJobConf();
 
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();
-    HiveReduceFunctionResultList result =
-        new HiveReduceFunctionResultList(it, reducerRecordhandler);
+    HiveReduceFunctionResultList<V> result =
+        new HiveReduceFunctionResultList<V>(it, reducerRecordhandler);
     reducerRecordhandler.init(jobConf, result, sparkReporter);
 
     return result;

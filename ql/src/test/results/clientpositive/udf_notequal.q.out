@@ -9,6 +9,8 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED <>
 POSTHOOK: type: DESCFUNCTION
 a <> b - Returns TRUE if a is not equal to b
 Synonyms: !=
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual
+Function type:BUILTIN
 PREHOOK: query: DESCRIBE FUNCTION !=
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION !=
@@ -20,16 +22,22 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED !=
 POSTHOOK: type: DESCFUNCTION
 a != b - Returns TRUE if a is not equal to b
 Synonyms: <>
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT key, value
 FROM src
 WHERE key <> '302'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, value
 FROM src
 WHERE key <> '302'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -40,6 +48,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          filterExpr: (key <> '302') (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key <> '302') (type: boolean)
@@ -566,11 +575,15 @@ SELECT key, value
 FROM src
 WHERE key != '302'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, value
 FROM src
 WHERE key != '302'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -581,6 +594,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          filterExpr: (key <> '302') (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key <> '302') (type: boolean)

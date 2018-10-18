@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,8 +27,6 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.RelFactories.FilterFactory;
-import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexCall;
@@ -37,6 +35,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -44,25 +43,25 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
 
   public static final HiveFilterProjectTransposeRule INSTANCE_DETERMINISTIC_WINDOWING =
-          new HiveFilterProjectTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY,
-          HiveProject.class, HiveRelFactories.HIVE_PROJECT_FACTORY, true, true);
+          new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
+                  HiveRelFactories.HIVE_BUILDER, true, true);
 
   public static final HiveFilterProjectTransposeRule INSTANCE_DETERMINISTIC =
-          new HiveFilterProjectTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY,
-          HiveProject.class, HiveRelFactories.HIVE_PROJECT_FACTORY, true, false);
+          new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
+                  HiveRelFactories.HIVE_BUILDER, true, false);
 
   public static final HiveFilterProjectTransposeRule INSTANCE =
-          new HiveFilterProjectTransposeRule(Filter.class, HiveRelFactories.HIVE_FILTER_FACTORY,
-          HiveProject.class, HiveRelFactories.HIVE_PROJECT_FACTORY, false, false);
+          new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
+                  HiveRelFactories.HIVE_BUILDER, false, false);
 
   private final boolean onlyDeterministic;
 
   private final boolean pushThroughWindowing;
 
   private HiveFilterProjectTransposeRule(Class<? extends Filter> filterClass,
-      FilterFactory filterFactory, Class<? extends Project> projectClass,
-      ProjectFactory projectFactory, boolean onlyDeterministic,boolean pushThroughWindowing) {
-    super(filterClass, filterFactory, projectClass, projectFactory);
+      Class<? extends Project> projectClass, RelBuilderFactory relBuilderFactory,
+      boolean onlyDeterministic,boolean pushThroughWindowing) {
+    super(filterClass, projectClass, false, false, relBuilderFactory);
     this.onlyDeterministic = onlyDeterministic;
     this.pushThroughWindowing = pushThroughWindowing;
   }
@@ -70,7 +69,13 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
   @Override
   public boolean matches(RelOptRuleCall call) {
     final Filter filterRel = call.rel(0);
-    RexNode condition = filterRel.getCondition();
+
+    // The condition fetched here can reference a udf that is not deterministic, but defined
+    // as part of the select list when a view is in play.  But the condition after the pushdown
+    // will resolve to using the udf from select list.  The check here for deterministic filters
+    // should be based on the resolved expression.  Refer to test case cbo_ppd_non_deterministic.q.
+    RexNode condition = RelOptUtil.pushPastProject(filterRel.getCondition(), call.rel(1));
+
     if (this.onlyDeterministic && !HiveCalciteUtil.isDeterministic(condition)) {
       return false;
     }

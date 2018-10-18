@@ -32,8 +32,20 @@ POSTHOOK: Lineage: push_or PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.Fie
 POSTHOOK: Lineage: push_or PARTITION(ds=2000-04-09).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended select key, value, ds from push_or where ds='2000-04-09' or key=5 order by key, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@push_or
+PREHOOK: Input: default@push_or@ds=2000-04-08
+PREHOOK: Input: default@push_or@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select key, value, ds from push_or where ds='2000-04-09' or key=5 order by key, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@push_or
+POSTHOOK: Input: default@push_or@ds=2000-04-08
+POSTHOOK: Input: default@push_or@ds=2000-04-09
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`push_or`
+WHERE `ds` = '2000-04-09' OR `key` = 5
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -44,6 +56,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: push_or
+            filterExpr: ((ds = '2000-04-09') or (key = 5)) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -56,12 +69,13 @@ STAGE PLANS:
                 Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col2 (type: string)
-                  null sort order: aa
+                  null sort order: zz
                   sort order: ++
                   Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -73,8 +87,9 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -96,6 +111,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -118,8 +135,9 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -141,6 +159,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string

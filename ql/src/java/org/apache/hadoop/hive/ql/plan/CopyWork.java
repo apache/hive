@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,30 +30,53 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Copy", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CopyWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private Path fromPath;
-  private Path toPath;
+  private Path[] fromPath;
+  private Path[] toPath;
   private boolean errorOnSrcEmpty;
 
   public CopyWork() {
   }
 
-  public CopyWork(final Path fromPath, final Path toPath) {
-    this(fromPath, toPath, true);
-  }
-
   public CopyWork(final Path fromPath, final Path toPath, boolean errorOnSrcEmpty) {
-    this.fromPath = fromPath;
-    this.toPath = toPath;
+    this(new Path[] { fromPath }, new Path[] { toPath });
     this.setErrorOnSrcEmpty(errorOnSrcEmpty);
   }
-  
+
+  public CopyWork(final Path[] fromPath, final Path[] toPath) {
+    if (fromPath.length != toPath.length) {
+      throw new RuntimeException(
+          "Cannot copy " + fromPath.length + " paths into " + toPath.length + " paths");
+    }
+    this.fromPath = fromPath;
+    this.toPath = toPath;
+  }
+
+  // Keep backward compat in explain for single-file copy tasks.
   @Explain(displayName = "source", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public Path getFromPath() {
-    return fromPath;
+  public Path getFromPathExplain() {
+    return (fromPath == null || fromPath.length > 1) ? null : fromPath[0];
   }
 
   @Explain(displayName = "destination", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public Path getToPath() {
+  public Path getToPathExplain() {
+    return (toPath == null || toPath.length > 1) ? null : toPath[0];
+  }
+
+  @Explain(displayName = "sources", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public Path[] getFromPathsExplain() {
+    return (fromPath != null && fromPath.length > 1) ? fromPath : null;
+  }
+
+  @Explain(displayName = "destinations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public Path[] getToPathsExplain() {
+    return (toPath != null && toPath.length > 1) ? toPath : null;
+  }
+
+  public Path[] getFromPaths() {
+    return fromPath;
+  }
+
+  public Path[] getToPaths() {
     return toPath;
   }
 
@@ -64,5 +87,4 @@ public class CopyWork implements Serializable {
   public boolean isErrorOnSrcEmpty() {
     return errorOnSrcEmpty;
   }
-
 }

@@ -1,0 +1,30 @@
+PREHOOK: query: CREATE TABLE transform3_t1 (col string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@transform3_t1
+POSTHOOK: query: CREATE TABLE transform3_t1 (col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@transform3_t1
+PREHOOK: query: INSERT OVERWRITE TABLE transform3_t1 VALUES('aaaa')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@transform3_t1
+POSTHOOK: query: INSERT OVERWRITE TABLE transform3_t1 VALUES('aaaa')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@transform3_t1
+POSTHOOK: Lineage: transform3_t1.col SCRIPT []
+PREHOOK: query: SELECT t.newCol FROM (
+  SELECT TRANSFORM(col) USING 'cat' AS (NewCol string) FROM transform3_t1
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transform3_t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t.newCol FROM (
+  SELECT TRANSFORM(col) USING 'cat' AS (NewCol string) FROM transform3_t1
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transform3_t1
+#### A masked pattern was here ####
+aaaa

@@ -1,10 +1,8 @@
-PREHOOK: query: -- check update without update priv
-create table auth_noupd(i int, j int) clustered by (j) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: create table auth_noupd(i int, j int) clustered by (j) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@auth_noupd
-POSTHOOK: query: -- check update without update priv
-create table auth_noupd(i int, j int) clustered by (j) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: create table auth_noupd(i int, j int) clustered by (j) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@auth_noupd

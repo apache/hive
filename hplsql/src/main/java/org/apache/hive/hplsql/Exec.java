@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -144,7 +144,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     else {
       var = new Var(value);
       var.setName(name);
-      exec.currentScope.addVariable(var);
+      if(exec.currentScope != null) {
+        exec.currentScope.addVariable(var);
+      }
     }    
     return var;
   }
@@ -172,7 +174,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     else {
       var = new Var();
       var.setName(name);
-      exec.currentScope.addVariable(var);
+      if(exec.currentScope != null) {
+        exec.currentScope.addVariable(var);
+      }
     }    
     return var;
   }
@@ -615,9 +619,20 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     }
     ArrayList<String> sql = new ArrayList<String>();
     String dir = Utils.getExecDir();
-    sql.add("ADD JAR " + dir + "hplsql.jar");
-    sql.add("ADD JAR " + dir + "antlr-runtime-4.5.jar");
-    sql.add("ADD FILE " + dir + Conf.SITE_XML);
+    String hplsqlJarName = "hplsql.jar";
+    for(String jarName: new java.io.File(dir).list()) {
+      if(jarName.startsWith("hive-hplsql") && jarName.endsWith(".jar")) {
+        hplsqlJarName = jarName;
+        break;
+      }
+    }
+    sql.add("ADD JAR " + dir + hplsqlJarName);
+    sql.add("ADD JAR " + dir + "antlr4-runtime-4.5.jar");
+    if(!conf.getLocation().equals("")) {
+      sql.add("ADD FILE " + conf.getLocation());
+    } else {
+      sql.add("ADD FILE " + dir + Conf.SITE_XML);
+    }
     if (dotHplsqlrcExists) {
       sql.add("ADD FILE " + dir + Conf.DOT_HPLSQLRC);
     }
@@ -1287,15 +1302,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitCopy_stmt(HplsqlParser.Copy_stmtContext ctx) { 
     return new Copy(exec).run(ctx); 
   }
-  
-  /**
-   * COPY FROM FTP statement
-   */
-  @Override 
-  public Integer visitCopy_from_ftp_stmt(HplsqlParser.Copy_from_ftp_stmtContext ctx) { 
-    return new Ftp(exec).run(ctx); 
-  }
-  
+
   /**
    * COPY FROM LOCAL statement
    */
@@ -1831,6 +1838,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitSignal_stmt(HplsqlParser.Signal_stmtContext ctx) { 
     return exec.stmt.signal(ctx); 
+  }
+  
+  /**
+   * SUMMARY statement
+   */
+  @Override 
+  public Integer visitSummary_stmt(HplsqlParser.Summary_stmtContext ctx) { 
+    return exec.stmt.summary(ctx); 
   }  
   
   /**

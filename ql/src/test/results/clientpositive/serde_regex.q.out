@@ -3,7 +3,7 @@ CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size INT,
@@ -15,12 +15,14 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex
 POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size INT,
@@ -32,6 +34,8 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@serde_regex
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -51,7 +55,7 @@ PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size INT,
@@ -69,7 +73,7 @@ POSTHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size INT,
@@ -99,21 +103,21 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" I
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@serde_regex
-PREHOOK: query: SELECT * FROM serde_regex ORDER BY time
+PREHOOK: query: SELECT * FROM serde_regex ORDER BY `time`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_regex
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM serde_regex ORDER BY time
+POSTHOOK: query: SELECT * FROM serde_regex ORDER BY `time`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex
 #### A masked pattern was here ####
 127.0.0.1	-	frank	[10/Oct/2000:13:55:36 -0700]	"GET /apache_pb.gif HTTP/1.0"	200	2326	NULL	NULL
 127.0.0.1	-	-	[26/May/2009:00:00:00 +0000]	"GET /someurl/?track=Blabla(Main) HTTP/1.1"	200	5864	-	"Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.65 Safari/525.19"
-PREHOOK: query: SELECT host, size, status, time from serde_regex ORDER BY time
+PREHOOK: query: SELECT host, size, status, `time` from serde_regex ORDER BY `time`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_regex
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT host, size, status, time from serde_regex ORDER BY time
+POSTHOOK: query: SELECT host, size, status, `time` from serde_regex ORDER BY `time`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex
 #### A masked pattern was here ####
@@ -137,6 +141,8 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@serde_regex1
 POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_regex1(
   key decimal(38,18),
@@ -147,6 +153,8 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@serde_regex1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -200,7 +208,6 @@ POSTHOOK: query: SELECT key, value FROM serde_regex1 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex1
 #### A masked pattern was here ####
-NULL	0
 -1234567890.123456789000000000	-1234567890
 -4400.000000000000000000	4400
 -1255.490000000000000000	-1255
@@ -238,6 +245,7 @@ NULL	0
 125.200000000000000000	125
 200.000000000000000000	200
 1234567890.123456780000000000	1234567890
+NULL	0
 PREHOOK: query: DROP TABLE serde_regex1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@serde_regex1

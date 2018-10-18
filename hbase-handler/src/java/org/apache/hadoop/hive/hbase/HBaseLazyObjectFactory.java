@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,22 +18,20 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import org.apache.hadoop.hive.hbase.struct.HBaseValueFactory;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParametersImpl;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.io.Text;
 
 // Does same thing with LazyFactory#createLazyObjectInspector except that this replaces
 // original keyOI with OI which is create by HBaseKeyFactory provided by serde property for hbase
@@ -72,8 +70,8 @@ public class HBaseLazyObjectFactory {
             .createValueObjectInspector(columnTypes.get(i)));
       }
     }
-    List<String> structFieldComments = tbl.getProperty("columns.comments") == null ?
-        new ArrayList<String>(Collections.nCopies(columnTypes.size(), ""))
+    List<String> structFieldComments = StringUtils.isEmpty(tbl.getProperty("columns.comments")) ?
+        new ArrayList<>(Collections.nCopies(columnTypes.size(), ""))
         : Arrays.asList(tbl.getProperty("columns.comments").split("\0", columnTypes.size()));
 
     return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(

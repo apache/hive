@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,16 +35,21 @@ public final class VectorUDFWeekOfYearString extends VectorUDFTimestampFieldStri
   private static final long serialVersionUID = 1L;
 
   private transient final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-  private transient final Calendar calendar = Calendar.getInstance();
 
-  public VectorUDFWeekOfYearString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, -1, -1);
-    initCalendar();
+  public VectorUDFWeekOfYearString(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, -1, -1);
   }
 
   public VectorUDFWeekOfYearString() {
     super();
-    initCalendar();
+  }
+
+  @Override
+  public void initCalendar() {
+
+    // code copied over from UDFWeekOfYear implementation
+    calendar.setFirstDayOfWeek(Calendar.MONDAY);
+    calendar.setMinimalDaysInFirstWeek(4);
   }
 
   @Override
@@ -58,12 +63,5 @@ public final class VectorUDFWeekOfYearString extends VectorUDFTimestampFieldStri
     }
     calendar.setTime(date);
     return calendar.get(Calendar.WEEK_OF_YEAR);
-  }
-
-  private void initCalendar() {
-
-    // code copied over from UDFWeekOfYear implementation
-    calendar.setFirstDayOfWeek(Calendar.MONDAY);
-    calendar.setMinimalDaysInFirstWeek(4);
   }
 }

@@ -34,45 +34,24 @@ key                 	int
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- Cleanup
-DROP TABLE set_bucketing_test
+PREHOOK: query: DROP TABLE set_bucketing_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@set_bucketing_test
 PREHOOK: Output: default@set_bucketing_test
-POSTHOOK: query: -- Cleanup
-DROP TABLE set_bucketing_test
+POSTHOOK: query: DROP TABLE set_bucketing_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@set_bucketing_test
 POSTHOOK: Output: default@set_bucketing_test
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "set_bucketing_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "set_bucketing_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-alltypesorc
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
-PREHOOK: query: -- with non-default Database
-
-CREATE DATABASE alter4_db
+PREHOOK: query: CREATE DATABASE alter4_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:alter4_db
-POSTHOOK: query: -- with non-default Database
-
-CREATE DATABASE alter4_db
+POSTHOOK: query: CREATE DATABASE alter4_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:alter4_db
 PREHOOK: query: USE alter4_db

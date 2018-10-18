@@ -1,12 +1,4 @@
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
-
-import java.util.Arrays;
-
-import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.BytesWritable;
-
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +15,16 @@ import org.apache.hadoop.io.BytesWritable;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+
+import java.util.Arrays;
+
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BytesWritable;
+
+
 
 public class JavaBinaryObjectInspector extends AbstractPrimitiveJavaObjectInspector implements
     SettableBinaryObjectInspector {

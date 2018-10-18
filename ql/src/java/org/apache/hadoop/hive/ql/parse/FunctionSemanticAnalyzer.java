@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,8 +47,8 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
  *
  */
 public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
-  private static final Logger LOG = LoggerFactory
-      .getLogger(FunctionSemanticAnalyzer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FunctionSemanticAnalyzer.class);
+  private static final Logger SESISON_STATE_LOG= LoggerFactory.getLogger("SessionState");
 
   public FunctionSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -61,7 +61,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getType() == HiveParser.TOK_DROPFUNCTION) {
       analyzeDropFunction(ast);
     } else if (ast.getType() == HiveParser.TOK_RELOADFUNCTION) {
-      rootTasks.add(TaskFactory.get(new FunctionWork(new ReloadFunctionDesc()), conf));
+      rootTasks.add(TaskFactory.get(new FunctionWork(new ReloadFunctionDesc())));
     }
 
     LOG.info("analyze done");
@@ -80,12 +80,15 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // find any referenced resources
     List<ResourceUri> resources = getResourceList(ast);
+    if (!isTemporaryFunction && resources == null) {
+      SESISON_STATE_LOG.warn("permanent functions created without USING  clause will not be replicated.");
+    }
 
     CreateFunctionDesc desc =
-        new CreateFunctionDesc(functionName, isTemporaryFunction, className, resources);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+        new CreateFunctionDesc(functionName, isTemporaryFunction, className, resources, null);
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
-    addEntities(functionName, isTemporaryFunction, resources);
+    addEntities(functionName, className, isTemporaryFunction, resources);
   }
 
   private void analyzeDropFunction(ASTNode ast) throws SemanticException {
@@ -110,10 +113,10 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     boolean isTemporaryFunction = (ast.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
-    DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporaryFunction);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporaryFunction, null);
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
-    addEntities(functionName, isTemporaryFunction, null);
+    addEntities(functionName, info.getClassName(), isTemporaryFunction, null);
   }
 
   private ResourceType getResourceType(ASTNode token) throws SemanticException {
@@ -159,7 +162,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Add write entities to the semantic analyzer to restrict function creation to privileged users.
    */
-  private void addEntities(String functionName, boolean isTemporaryFunction,
+  private void addEntities(String functionName, String className, boolean isTemporaryFunction,
       List<ResourceUri> resources) throws SemanticException {
     // If the function is being added under a database 'namespace', then add an entity representing
     // the database (only applicable to permanent/metastore functions).
@@ -188,7 +191,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Add the function name as a WriteEntity
-    outputs.add(new WriteEntity(database, functionName, Type.FUNCTION,
+    outputs.add(new WriteEntity(database, functionName, className, Type.FUNCTION,
         WriteEntity.WriteType.DDL_NO_LOCK));
 
     if (resources != null) {

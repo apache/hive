@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -87,10 +88,11 @@ public final class HiveFileFormatUtils {
   public static class FileChecker {
     // we don't have many file formats that implement InputFormatChecker. We won't be holding
     // multiple instances of such classes
-    private static int MAX_CACHE_SIZE = 16;
+    private static final int MAX_CACHE_SIZE = 16;
 
     // immutable maps
     Map<Class<? extends InputFormat>, Class<? extends InputFormatChecker>> inputFormatCheckerMap;
+    Map<Class<? extends InputFormat>, Class<? extends InputFormatChecker>> textInputFormatCheckerMap;
     Map<Class<?>, Class<? extends OutputFormat>> outputFormatSubstituteMap;
 
     // mutable thread-safe map to store instances
@@ -113,6 +115,11 @@ public final class HiveFileFormatUtils {
           .put(SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class)
           .put(RCFileInputFormat.class, RCFileInputFormat.class)
           .put(OrcInputFormat.class, OrcInputFormat.class)
+          .put(MapredParquetInputFormat.class, MapredParquetInputFormat.class)
+          .build();
+      textInputFormatCheckerMap = ImmutableMap
+          .<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>builder()
+          .put(SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class)
           .build();
       outputFormatSubstituteMap = ImmutableMap
           .<Class<?>, Class<? extends OutputFormat>>builder()
@@ -127,6 +134,10 @@ public final class HiveFileFormatUtils {
 
     public Set<Class<? extends InputFormat>> registeredClasses() {
       return inputFormatCheckerMap.keySet();
+    }
+
+    public Set<Class<? extends InputFormat>> registeredTextClasses() {
+      return textInputFormatCheckerMap.keySet();
     }
 
     public Class<? extends OutputFormat> getOutputFormatSubstiture(Class<?> origin) {
@@ -214,7 +225,7 @@ public final class HiveFileFormatUtils {
       }
     }
     if (files2.isEmpty()) return true;
-    Set<Class<? extends InputFormat>> inputFormatter = FileChecker.getInstance().registeredClasses();
+    Set<Class<? extends InputFormat>> inputFormatter = FileChecker.getInstance().registeredTextClasses();
     for (Class<? extends InputFormat> reg : inputFormatter) {
       boolean result = checkInputFormat(fs, conf, reg, files2);
       if (result) {
@@ -340,9 +351,9 @@ public final class HiveFileFormatUtils {
         .isCompressed(conf.getCompressed())
         .tableProperties(tableProp)
         .reporter(reporter)
-        .writingBase(false)
-        .minimumTransactionId(conf.getTransactionId())
-        .maximumTransactionId(conf.getTransactionId())
+        .writingBase(conf.getInsertOverwrite())
+        .minimumWriteId(conf.getTableWriteId())
+        .maximumWriteId(conf.getTableWriteId())
         .bucket(bucket)
         .inspector(inspector)
         .recordIdColumn(rowIdColNum)
@@ -350,41 +361,41 @@ public final class HiveFileFormatUtils {
         .finalDestination(conf.getDestPath()));
   }
 
-  public static PartitionDesc getPartitionDescFromPathRecursively(
-      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir,
-      Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cacheMap)
-      throws IOException {
-    return getPartitionDescFromPathRecursively(pathToPartitionInfo, dir,
-        cacheMap, false);
+  public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
+      Map<Map<Path, T>, Map<Path, T>> cacheMap) throws IOException {
+    return getFromPathRecursively(pathToPartitionInfo, dir, cacheMap, false);
   }
 
-  public static PartitionDesc getPartitionDescFromPathRecursively(
-      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir,
-      Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cacheMap, boolean ignoreSchema)
-          throws IOException {
+  public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
+      Map<Map<Path, T>, Map<Path, T>> cacheMap, boolean ignoreSchema) throws IOException {
+    return getFromPathRecursively(pathToPartitionInfo, dir, cacheMap, ignoreSchema, false);
+  }
 
-    PartitionDesc part = doGetPartitionDescFromPath(pathToPartitionInfo, dir);
+  public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
+      Map<Map<Path, T>, Map<Path, T>> cacheMap, boolean ignoreSchema, boolean ifPresent)
+          throws IOException {
+    T part = getFromPath(pathToPartitionInfo, dir);
 
     if (part == null
         && (ignoreSchema
             || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim().equals(""))
             || FileUtils.pathsContainNoScheme(pathToPartitionInfo.keySet()))) {
 
-      Map<Path, PartitionDesc> newPathToPartitionInfo = null;
+      Map<Path, T> newPathToPartitionInfo = null;
       if (cacheMap != null) {
         newPathToPartitionInfo = cacheMap.get(pathToPartitionInfo);
       }
 
       if (newPathToPartitionInfo == null) { // still null
-        newPathToPartitionInfo = populateNewPartitionDesc(pathToPartitionInfo);
+        newPathToPartitionInfo = populateNewT(pathToPartitionInfo);
 
         if (cacheMap != null) {
           cacheMap.put(pathToPartitionInfo, newPathToPartitionInfo);
         }
       }
-      part = doGetPartitionDescFromPath(newPathToPartitionInfo, dir);
+      part = getFromPath(newPathToPartitionInfo, dir);
     }
-    if (part != null) {
+    if (part != null || ifPresent) {
       return part;
     } else {
       throw new IOException("cannot find dir = " + dir.toString()
@@ -392,18 +403,18 @@ public final class HiveFileFormatUtils {
     }
   }
 
-  private static Map<Path, PartitionDesc> populateNewPartitionDesc(Map<Path, PartitionDesc> pathToPartitionInfo) {
-    Map<Path, PartitionDesc> newPathToPartitionInfo = new HashMap<>();
-    for (Map.Entry<Path, PartitionDesc> entry: pathToPartitionInfo.entrySet()) {
-      PartitionDesc partDesc = entry.getValue();
+  private static <T> Map<Path, T> populateNewT(Map<Path, T> pathToPartitionInfo) {
+    Map<Path, T> newPathToPartitionInfo = new HashMap<>();
+    for (Map.Entry<Path, T> entry: pathToPartitionInfo.entrySet()) {
+      T partDesc = entry.getValue();
       Path pathOnly = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
       newPathToPartitionInfo.put(pathOnly, partDesc);
     }
     return newPathToPartitionInfo;
   }
 
-  private static PartitionDesc doGetPartitionDescFromPath(
-      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir) {
+  private static <T> T getFromPath(
+      Map<Path, T> pathToPartitionInfo, Path dir) {
     
     // We first do exact match, and then do prefix matching. The latter is due to input dir
     // could be /dir/ds='2001-02-21'/part-03 where part-03 is not part of partition

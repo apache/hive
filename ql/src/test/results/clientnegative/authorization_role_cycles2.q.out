@@ -2,13 +2,9 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- this is applicable to any security mode as check is in metastore
-
-create role role1
+PREHOOK: query: create role role1
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: -- this is applicable to any security mode as check is in metastore
-
-create role role1
+POSTHOOK: query: create role role1
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: create role role2
 PREHOOK: type: CREATEROLE
@@ -42,7 +38,6 @@ PREHOOK: query: grant role role5 to role role4
 PREHOOK: type: GRANT_ROLE
 POSTHOOK: query: grant role role5 to role role4
 POSTHOOK: type: GRANT_ROLE
-PREHOOK: query: -- this will create a cycle in middle of the hierarchy
-grant role role2 to role role4
+PREHOOK: query: grant role role2 to role role4
 PREHOOK: type: GRANT_ROLE
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Error granting role: Cannot grant role role4 to role2 as role2 already belongs to the role role4. (no cycles allowed)

@@ -1,0 +1,42 @@
+PREHOOK: query: create table t(i int, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t(i int, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values(0,1), (0,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values(0,1), (0,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.i SCRIPT []
+POSTHOOK: Lineage: t.j SCRIPT []
+PREHOOK: query: create table tt(i int, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tt
+POSTHOOK: query: create table tt(i int, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tt
+PREHOOK: query: insert into tt values(0,3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tt
+POSTHOOK: query: insert into tt values(0,3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tt
+POSTHOOK: Lineage: tt.i SCRIPT []
+POSTHOOK: Lineage: tt.j SCRIPT []
+PREHOOK: query: select * from t where i IN (select count(i) from tt where tt.j = t.j)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Input: default@tt
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

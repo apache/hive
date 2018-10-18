@@ -1,29 +1,29 @@
-PREHOOK: query: CREATE TABLE acid_vectorized(a INT, b STRING, c float) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE acid_vectorized_n2(a INT, b STRING, c float) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acid_vectorized
-POSTHOOK: query: CREATE TABLE acid_vectorized(a INT, b STRING, c float) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: Output: default@acid_vectorized_n2
+POSTHOOK: query: CREATE TABLE acid_vectorized_n2(a INT, b STRING, c float) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acid_vectorized
-PREHOOK: query: insert into table acid_vectorized select cint, cstring1, cfloat from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: Output: default@acid_vectorized_n2
+PREHOOK: query: insert into table acid_vectorized_n2 select cint, cstring1, cfloat from alltypesorc where cint is not null order by cint limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@acid_vectorized
-POSTHOOK: query: insert into table acid_vectorized select cint, cstring1, cfloat from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: Output: default@acid_vectorized_n2
+POSTHOOK: query: insert into table acid_vectorized_n2 select cint, cstring1, cfloat from alltypesorc where cint is not null order by cint limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@acid_vectorized
-POSTHOOK: Lineage: acid_vectorized.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: acid_vectorized.b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: acid_vectorized.c SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-PREHOOK: query: select a,b from acid_vectorized order by a
+POSTHOOK: Output: default@acid_vectorized_n2
+POSTHOOK: Lineage: acid_vectorized_n2.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_vectorized_n2.b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_vectorized_n2.c SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+PREHOOK: query: select a,b from acid_vectorized_n2 order by a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_vectorized
+PREHOOK: Input: default@acid_vectorized_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b from acid_vectorized order by a
+POSTHOOK: query: select a,b from acid_vectorized_n2 order by a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_vectorized
+POSTHOOK: Input: default@acid_vectorized_n2
 #### A masked pattern was here ####
 -1073279343	oj1YrV5Wa
 -1073051226	A34p7oRr2WvUJNf
@@ -35,13 +35,13 @@ POSTHOOK: Input: default@acid_vectorized
 -1070883071	0ruyd6Y50JpdGRf6HqD
 -1070551679	iUR3Q
 -1069736047	k17Am8uPHWk02cEf1jet
-PREHOOK: query: select a,c from acid_vectorized order by a
+PREHOOK: query: select a,c from acid_vectorized_n2 order by a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_vectorized
+PREHOOK: Input: default@acid_vectorized_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select a,c from acid_vectorized order by a
+POSTHOOK: query: select a,c from acid_vectorized_n2 order by a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_vectorized
+POSTHOOK: Input: default@acid_vectorized_n2
 #### A masked pattern was here ####
 -1073279343	11.0
 -1073051226	NULL
@@ -53,13 +53,13 @@ POSTHOOK: Input: default@acid_vectorized
 -1070883071	NULL
 -1070551679	NULL
 -1069736047	11.0
-PREHOOK: query: select b,c from acid_vectorized order by b
+PREHOOK: query: select b,c from acid_vectorized_n2 order by b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_vectorized
+PREHOOK: Input: default@acid_vectorized_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select b,c from acid_vectorized order by b
+POSTHOOK: query: select b,c from acid_vectorized_n2 order by b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_vectorized
+POSTHOOK: Input: default@acid_vectorized_n2
 #### A masked pattern was here ####
 0iqrc5	11.0
 0ruyd6Y50JpdGRf6HqD	NULL

@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -9,9 +7,10 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -20,6 +19,9 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -54,6 +56,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -191,6 +194,9 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src
@@ -200,6 +206,9 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -237,6 +246,7 @@ STAGE PLANS:
                           Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -362,22 +372,24 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- test described in HIVE-4598
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (
     FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
 ) reduced
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
-POSTHOOK: query: -- test described in HIVE-4598
-
-EXPLAIN
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
 FROM (
     FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
 ) reduced
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -405,7 +417,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
-                        predicate: ((_col0 = 'a') or (_col0 = 'b')) (type: boolean)
+                        predicate: (_col0) IN ('a', 'b') (type: boolean)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
@@ -415,7 +427,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Filter Operator
-                        predicate: ((_col0 = 'c') or (_col0 = 'd')) (type: boolean)
+                        predicate: (_col0) IN ('c', 'd') (type: boolean)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false

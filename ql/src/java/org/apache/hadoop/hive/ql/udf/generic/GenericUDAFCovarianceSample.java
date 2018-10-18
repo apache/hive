@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -33,8 +34,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 @Description(name = "covar_samp",
     value = "_FUNC_(x,y) - Returns the sample covariance of a set of number pairs",
     extended = "The function takes as arguments any pair of numeric types and returns a double.\n"
-        + "Any pair with a NULL is ignored. If the function is applied to an empty set, NULL\n"
-        + "will be returned. Otherwise, it computes the following:\n"
+        + "Any pair with a NULL is ignored.\n"
+        + "If applied to an empty set: NULL is returned.\n"
+        + "If applied to a set with a single element: NULL is returned.\n"
+        + "Otherwise, it computes the following:\n"
         + "   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/(COUNT(x,y)-1)\n"
         + "where neither x nor y is null.")
 public class GenericUDAFCovarianceSample extends GenericUDAFCovariance {
@@ -107,15 +110,12 @@ public class GenericUDAFCovarianceSample extends GenericUDAFCovariance {
     public Object terminate(AggregationBuffer agg) throws HiveException {
       StdAgg myagg = (StdAgg) agg;
 
-      if (myagg.count == 0) { // SQL standard - return null for zero elements
+      if (myagg.count <= 1) {
         return null;
       } else {
-        if (myagg.count > 1) {
-          getResult().set(myagg.covar / (myagg.count - 1));
-        } else { // the covariance of a singleton set is always 0
-          getResult().set(0);
-        }
-        return getResult();
+        DoubleWritable result = getResult();
+        result.set(myagg.covar / (myagg.count - 1));
+        return result;
       }
     }
   }

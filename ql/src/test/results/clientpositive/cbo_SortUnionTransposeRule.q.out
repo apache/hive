@@ -1,27 +1,31 @@
-PREHOOK: query: create table s as select * from src limit 10
+PREHOOK: query: create table s_n3 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s
-POSTHOOK: query: create table s as select * from src limit 10
+PREHOOK: Output: default@s_n3
+POSTHOOK: query: create table s_n3 as select * from src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s
-POSTHOOK: Lineage: s.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: s.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@s_n3
+POSTHOOK: Lineage: s_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: s_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -76,17 +80,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -98,17 +106,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -163,19 +175,23 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 order by key
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 order by key
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -248,6 +264,8 @@ on src1.key = src2.key
 limit 10)subq2
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from(
 select src1.key, src2.value
@@ -262,6 +280,8 @@ on src1.key = src2.key
 limit 10)subq2
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -302,7 +322,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -331,6 +351,7 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -407,7 +428,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -436,6 +457,7 @@ STAGE PLANS:
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -458,17 +480,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -523,17 +549,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -545,17 +575,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -581,6 +615,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string)
@@ -644,6 +679,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string)
@@ -666,19 +702,23 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 order by key
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 order by key
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -701,6 +741,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -766,6 +807,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -801,6 +843,8 @@ on src1.key = src2.key
 limit 10)subq2
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from(
 select src1.key, src2.value
@@ -815,6 +859,8 @@ on src1.key = src2.key
 limit 10)subq2
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-1 depends on stages: Stage-4
@@ -844,6 +890,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string)
@@ -884,7 +931,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -913,6 +960,7 @@ STAGE PLANS:
               Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -976,6 +1024,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string)
@@ -1016,7 +1065,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -1045,6 +1094,7 @@ STAGE PLANS:
               Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -1067,17 +1117,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1132,17 +1186,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
-select key from s a
+select key from s_n3 a
 union all
-select key from s b
+select key from s_n3 b
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

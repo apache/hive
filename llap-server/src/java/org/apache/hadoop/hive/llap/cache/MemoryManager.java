@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-public interface MemoryManager extends LlapOomDebugDump {
-  boolean reserveMemory(long memoryToReserve, boolean waitForEviction);
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public interface MemoryManager {
   void releaseMemory(long memUsage);
   void updateMaxSize(long maxSize);
-  /** TODO: temporary method until we get a better allocator. */
-  void forceReservedMemory(int allocationSize, int count);
+  void reserveMemory(long memoryToReserve, AtomicBoolean isStopped);
 }

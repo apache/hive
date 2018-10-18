@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.cli;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Test;
 
@@ -35,7 +35,7 @@ public class TestCliSessionState {
   @Test
   public void testgetDbName() throws Exception {
     SessionState.start(new HiveConf());
-    assertEquals(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+    assertEquals(Warehouse.DEFAULT_DATABASE_NAME,
         SessionState.get().getCurrentDatabase());
   }
 }

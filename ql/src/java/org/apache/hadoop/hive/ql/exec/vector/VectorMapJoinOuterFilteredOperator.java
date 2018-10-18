@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -36,8 +37,6 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
 
   private static final long serialVersionUID = 1L;
 
-  private VectorizationContext vContext;
-
   // The above members are initialized by the constructor and must not be
   // transient.
   //---------------------------------------------------------------------------
@@ -47,6 +46,7 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
   private transient VectorExtractRow vectorExtractRow;
 
   protected transient Object[] singleRow;
+  protected transient int savePosBigTable;
 
   /** Kryo ctor. */
   @VisibleForTesting
@@ -58,17 +58,16 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
     super(ctx);
   }
 
-  public VectorMapJoinOuterFilteredOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
-
-    this.vContext = vContext;
+  public VectorMapJoinOuterFilteredOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {
 
     final int posBigTable = conf.getPosBigTable();
+    savePosBigTable = posBigTable;
 
     // We need a input object inspector that is for the row we will extract out of the
     // vectorized row batch, not for example, an original inspector for an ORC table, etc.
@@ -95,7 +94,7 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
 
     if (firstBatch) {
       vectorExtractRow = new VectorExtractRow();
-      vectorExtractRow.init((StructObjectInspector) inputObjInspectors[0], vContext.getProjectedColumns());
+      vectorExtractRow.init((StructObjectInspector) inputObjInspectors[savePosBigTable], vContext.getProjectedColumns());
 
       singleRow = new Object[vectorExtractRow.getCount()];
 

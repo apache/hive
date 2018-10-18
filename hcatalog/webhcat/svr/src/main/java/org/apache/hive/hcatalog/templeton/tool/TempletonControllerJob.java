@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -81,9 +81,14 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     this.appConf = conf;
   }
 
-  private JobID submittedJobId;
+  private Job job = null;
 
   public String getSubmittedId() {
+    if (job == null ) {
+      return null;
+    }
+
+    JobID submittedJobId = job.getJobID();
     if (submittedJobId == null) {
       return null;
     } else {
@@ -119,7 +124,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
 
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     conf.set("user.name", user);
-    Job job = new Job(conf);
+    job = new Job(conf);
     job.setJarByClass(LaunchMapper.class);
     job.setJobName(TempletonControllerJob.class.getSimpleName());
     job.setMapperClass(LaunchMapper.class);
@@ -141,7 +146,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
 
     job.submit();
 
-    submittedJobId = job.getJobID();
+    JobID submittedJobId = job.getJobID();
     if(metastoreTokenStrForm != null) {
       //so that it can be cancelled later from CompleteDelegator
       DelegationTokenCache.getStringFormTokenCache().storeDelegationToken(
@@ -156,8 +161,8 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     if(!secureMetastoreAccess) {
       return null;
     }
-    Token<org.apache.hadoop.hive.thrift.DelegationTokenIdentifier> hiveToken =
-            new Token<org.apache.hadoop.hive.thrift.DelegationTokenIdentifier>();
+    Token<org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier> hiveToken =
+            new Token<org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier>();
     String metastoreTokenStrForm = buildHcatDelegationToken(user);
     hiveToken.decodeFromUrlString(metastoreTokenStrForm);
     job.getCredentials().addToken(new

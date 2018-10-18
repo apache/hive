@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -287,6 +287,35 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
   }
 
   protected abstract DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2);
+
+  public static final int MINIMUM_ADJUSTED_SCALE = 6;
+
+  /**
+   * Create DecimalTypeInfo from input precision/scale, adjusting if necessary to fit max precision
+   * @param precision precision value before adjustment
+   * @param scale scale value before adjustment
+   * @return
+   */
+  protected DecimalTypeInfo adjustPrecScale(int precision, int scale) {
+    // Assumptions:
+    // precision >= scale
+    // scale >= 0
+
+    if (precision <= HiveDecimal.MAX_PRECISION) {
+      // Adjustment only needed when we exceed max precision
+      return new DecimalTypeInfo(precision, scale);
+    }
+
+    // Precision/scale exceed maximum precision. Result must be adjusted to HiveDecimal.MAX_PRECISION.
+    // See https://blogs.msdn.microsoft.com/sqlprogrammability/2006/03/29/multiplication-and-division-with-numerics/
+    int intDigits = precision - scale;
+    // If original scale less than 6, use original scale value; otherwise preserve at least 6 fractional digits
+    int minScaleValue = Math.min(scale, MINIMUM_ADJUSTED_SCALE);
+    int adjustedScale = HiveDecimal.MAX_PRECISION - intDigits;
+    adjustedScale = Math.max(adjustedScale, minScaleValue);
+
+    return new DecimalTypeInfo(HiveDecimal.MAX_PRECISION, adjustedScale);
+  }
 
   public void copyToNewInstance(Object newInstance) throws UDFArgumentException {
     super.copyToNewInstance(newInstance);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,13 +19,16 @@
 package org.apache.hive.service.server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -53,18 +56,39 @@ public class TestHS2HttpServer {
 
   @BeforeClass
   public static void beforeTests() throws Exception {
-    webUIPort = MetaStoreUtils.findFreePortExcepting(
+    webUIPort = MetaStoreTestUtils.findFreePortExcepting(
         Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
     hiveConf = new HiveConf();
     hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf
-    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    hiveServer2 = new HiveServer2();
-    hiveServer2.init(hiveConf);
-    hiveServer2.start();
-    Thread.sleep(5000);
+        .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+            "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+
+    Exception hs2Exception = null;
+    boolean hs2Started = false;
+    for (int tryCount = 0; (tryCount < MetaStoreTestUtils.RETRY_COUNT); tryCount++) {
+      try {
+        hiveServer2 = new HiveServer2();
+        hiveServer2.init(hiveConf);
+        hiveServer2.start();
+        Thread.sleep(5000);
+        hs2Started = true;
+        break;
+      } catch (Exception t) {
+        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT,
+            MetaStoreTestUtils.findFreePort());
+        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT,
+            MetaStoreTestUtils.findFreePort());
+        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT,
+            MetaStoreTestUtils.findFreePort());
+        webUIPort = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT);
+      }
+    }
+
+    if (!hs2Started) {
+      throw(hs2Exception);
+    }
   }
 
   @Test
@@ -83,6 +107,21 @@ public class TestHS2HttpServer {
       }
     }
     Assert.assertTrue(contents);
+  }
+
+  @Test
+  public void testContextRootUrlRewrite() throws Exception {
+    String datePattern = "[a-zA-Z]{3} [a-zA-Z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}";
+    String dateMask = "xxxMasked_DateTime_xxx";
+    String baseURL = "http://localhost:" + webUIPort + "/";
+    String contextRootContent = getURLResponseAsString(baseURL);
+
+    String jspUrl = "http://localhost:" + webUIPort + "/hiveserver2.jsp";
+    String jspContent = getURLResponseAsString(jspUrl);
+
+    String expected = contextRootContent.replaceAll(datePattern, dateMask);
+    String actual = jspContent.replaceAll(datePattern, dateMask);
+    Assert.assertEquals(expected, actual);
   }
 
   @Test
@@ -120,6 +159,15 @@ public class TestHS2HttpServer {
 
     assertNotNull(pwdKeyFound);
     assertNull(pwdValFound);
+  }
+
+  private String getURLResponseAsString(String baseURL) throws IOException {
+    URL url = new URL(baseURL);
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    Assert.assertEquals("Got an HTTP response code other thank OK.", HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    StringWriter writer = new StringWriter();
+    IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
+    return writer.toString();
   }
 
 

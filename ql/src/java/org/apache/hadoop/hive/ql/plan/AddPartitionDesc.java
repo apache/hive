@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,11 +25,13 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
 /**
  * Contains the information needed to add one or more partitions.
  */
 public class AddPartitionDesc extends DDLDesc implements Serializable {
+
 
   public static class OnePartitionDesc {
     public OnePartitionDesc() {}
@@ -152,6 +154,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
   boolean ifNotExists;
   List<OnePartitionDesc> partitions = null;
   boolean replaceMode = false;
+  private ReplicationSpec replicationSpec = null;
 
 
   /**
@@ -301,5 +304,24 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
    */
   public boolean getReplaceMode() {
     return this.replaceMode;
+  }
+
+  /**
+   * @param replicationSpec Sets the replication spec governing this create.
+   * This parameter will have meaningful values only for creates happening as a result of a replication.
+   */
+  public void setReplicationSpec(ReplicationSpec replicationSpec) {
+    this.replicationSpec = replicationSpec;
+  }
+
+  /**
+   * @return what kind of replication scope this drop is running under.
+   * This can result in a "CREATE/REPLACE IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec(){
+    if (replicationSpec == null){
+      this.replicationSpec = new ReplicationSpec();
+    }
+    return this.replicationSpec;
   }
 }

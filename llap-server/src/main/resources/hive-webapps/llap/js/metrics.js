@@ -79,11 +79,19 @@ llap.model.LlapDaemonCacheMetrics = new function() {
    this.fill_rate = trendlist(50);
    this.push = function(jmx) {
       var bean = jmxbean(jmx, this.name);
-      this.cache_max = bean["CacheCapacityTotal"]/(1024*1024);
-      this.cache_used = bean["CacheCapacityUsed"]/(1024*1024);
-      this.cache_reqs = bean["CacheReadRequests"];
-      this.fill_rate.add((this.cache_used*100.0)/this.cache_max);
-      this.hit_rate.add(bean["CacheHitRatio"]*100.0);
+      if (bean) {
+        this.cache_max = bean["CacheCapacityTotal"]/(1024*1024);
+        this.cache_used = bean["CacheCapacityUsed"]/(1024*1024);
+        this.cache_reqs = bean["CacheReadRequests"];
+        this.fill_rate.add((this.cache_used*100.0)/this.cache_max);
+        this.hit_rate.add(bean["CacheHitRatio"]*100.0);
+      } else {
+        this.cache_max = -1;
+        this.cache_used = -1;
+        this.cache_reqs = -1;
+        this.fill_rate.add(0);
+        this.hit_rate.add(-1);
+      }
    }
    return this;
 }
@@ -95,8 +103,8 @@ llap.model.LlapDaemonInfo = new function() {
    this.push = function(jmx) {
       var bean = jmxbean(jmx, this.name); 
       this.executors = bean["NumExecutors"];
-      this.active = bean["ExecutorsStatus"];
-      this.active_rate.add(this.active.length);
+      this.active = bean["NumActive"];
+      this.active_rate.add(this.active);
    }
 }
 
@@ -106,10 +114,10 @@ llap.model.LlapDaemonExecutorMetrics = new function() {
    this.push = function(jmx) {
       var bean = jmxbean(jmx, this.name);
       this.queue_rate.add(bean["ExecutorNumQueuedRequests"] || 0);
-      this.lost_time = bean["PreemptionTimeLost"];
-	  this.num_tasks = bean["ExecutorTotalRequestsHandled"];
-	  this.interrupted_tasks = bean["ExecutorTotalInterrupted"];
-	  this.failed_tasks = bean["ExecutorTotalExecutionFailure"];
+      this.lost_time = bean["PreemptionTimeLost"] || 0;
+      this.num_tasks = bean["ExecutorTotalRequestsHandled"];
+      this.interrupted_tasks = bean["ExecutorTotalInterrupted"] || 0;
+      this.failed_tasks = bean["ExecutorTotalExecutionFailure"] || 0;
    }
    return this;
 }
@@ -167,7 +175,7 @@ llap.view.Cache = new function () {
 llap.view.Executors = new function () {
    this.refresh = function() {
       var model = llap.model.LlapDaemonInfo;
-      $("#executors-used").text(model.active.length);
+      $("#executors-used").text(model.active);
       $("#executors-max").text(model.executors);
       $("#executors-rate").text(((model.active_rate.peek() * 100.0)/model.executors).toFixed(0));
       $("#executors-trend").sparkline(model.active_rate);
@@ -219,7 +227,7 @@ $(function() {
   var views = [llap.view.Hostname, llap.view.Heap, llap.view.Cache, llap.view.Executors, llap.view.Tasks, llap.view.System]
 
   setInterval(function() {
-    $.getJSON("/jmx", function(jmx){
+    $.getJSON("jmx", function(jmx){
       models.forEach(function (m) { m.push(jmx); });
       views.forEach(function (v) { v.refresh(); });
     });

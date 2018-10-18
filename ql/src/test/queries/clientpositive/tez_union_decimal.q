@@ -1,3 +1,4 @@
+--! qt:dataset:src
 select sum(a) from (
   select cast(1.1 as decimal) a from src tablesample (1 rows)
   union all

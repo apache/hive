@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -105,6 +105,9 @@ public abstract class HCatBaseInputFormat
   public List<InputSplit> getSplits(JobContext jobContext)
     throws IOException, InterruptedException {
     Configuration conf = jobContext.getConfiguration();
+    // Set up recursive reads for sub-directories.
+    // (Otherwise, sub-directories produced by Hive UNION operations won't be readable.)
+    conf.setBoolean("mapred.input.dir.recursive", true);
 
     //Get the job info from the configuration,
     //throws exception if not initialized
@@ -123,16 +126,20 @@ public abstract class HCatBaseInputFormat
     }
 
     HiveStorageHandler storageHandler;
-    JobConf jobConf;
+    Map<String,String> hiveProps = null;
     //For each matching partition, call getSplits on the underlying InputFormat
     for (PartInfo partitionInfo : partitionInfoList) {
-      jobConf = HCatUtil.getJobConfFromContext(jobContext);
+      JobConf jobConf = HCatUtil.getJobConfFromContext(jobContext);
+      if (hiveProps == null) {
+        hiveProps = HCatUtil.getHCatKeyHiveConf(jobConf);
+      }
       List<String> setInputPath = setInputPath(jobConf, partitionInfo.getLocation());
       if (setInputPath.isEmpty()) {
         continue;
       }
       Map<String, String> jobProperties = partitionInfo.getJobProperties();
 
+      HCatUtil.copyJobPropertiesToJobConf(hiveProps, jobConf);
       HCatUtil.copyJobPropertiesToJobConf(jobProperties, jobConf);
 
       storageHandler = HCatUtil.getStorageHandler(

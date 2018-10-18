@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,17 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ListIndexColColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ListIndexColScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMapIndexDecimalCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMapIndexDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMapIndexDoubleCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMapIndexDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMapIndexLongCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMapIndexLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMapIndexStringCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMapIndexStringScalar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -37,6 +48,11 @@ import org.apache.hadoop.io.IntWritable;
  *
  */
 @Description(name = "index", value = "_FUNC_(a, n) - Returns the n-th element of a ")
+@VectorizedExpressions({ListIndexColScalar.class, ListIndexColColumn.class,
+    VectorUDFMapIndexStringScalar.class, VectorUDFMapIndexLongScalar.class,
+    VectorUDFMapIndexDoubleScalar.class, VectorUDFMapIndexDecimalScalar.class,
+    VectorUDFMapIndexStringCol.class, VectorUDFMapIndexLongCol.class,
+    VectorUDFMapIndexDoubleCol.class, VectorUDFMapIndexDecimalCol.class})
 public class GenericUDFIndex extends GenericUDF {
 
   private transient MapObjectInspector mapOI;

@@ -20,10 +20,14 @@ package org.apache.hive.ptest.execution;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.Maps;
 import org.apache.hive.ptest.execution.LocalCommand.CollectLogPolicy;
 import org.apache.hive.ptest.execution.ssh.NonZeroExitCodeException;
 import org.apache.hive.ptest.execution.ssh.RemoteCommandResult;
@@ -44,6 +48,7 @@ public abstract class Phase {
   private final LocalCommandFactory localCommandFactory;
   private final ImmutableMap<String, String> templateDefaults;
   protected final Logger logger;
+  private Map<String, Long> perfMetrics;
 
   public Phase(List<HostExecutor> hostExecutors,
       LocalCommandFactory localCommandFactory,
@@ -53,6 +58,7 @@ public abstract class Phase {
     this.localCommandFactory = localCommandFactory;
     this.templateDefaults = templateDefaults;
     this.logger = logger;
+    this.perfMetrics = new ConcurrentHashMap<>();
   }
 
   public abstract void execute() throws Throwable;
@@ -137,7 +143,7 @@ public abstract class Phase {
   protected List<RemoteCommandResult> initalizeHost(HostExecutor hostExecutor)
       throws Exception {
     List<RemoteCommandResult> results = Lists.newArrayList();
-    results.add(hostExecutor.exec("killall -q -9 -f java || true").get());
+    results.add(hostExecutor.exec("killall -q -9 java || true").get());
     TimeUnit.SECONDS.sleep(1);
     // order matters in all of these so block
     results.addAll(toListOfResults(hostExecutor.execInstances("rm -rf $localDir/$instanceName/scratch $localDir/$instanceName/logs")));
@@ -185,5 +191,17 @@ public abstract class Phase {
   }
   protected ImmutableMap<String, String> getTemplateDefaults() {
     return templateDefaults;
+  }
+
+  public Map<String, Long> getPerfMetrics() {
+    return ImmutableMap.copyOf(perfMetrics);
+  }
+
+  public void addPerfMetric(final String metricKey, long value) {
+    perfMetrics.put(metricKey, Long.valueOf(value));
+  }
+
+  public void resetPerfMetrics() {
+    perfMetrics = new ConcurrentHashMap<>();
   }
 }

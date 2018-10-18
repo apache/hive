@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hive.service.cli.session;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -83,6 +84,10 @@ public interface HiveSessionBase {
   String getIpAddress();
 
   void setIpAddress(String ipAddress);
+
+  List<String> getForwardedAddresses();
+
+  void setForwardedAddresses(List<String> forwardedAddresses);
 
   long getLastAccessTime();
 

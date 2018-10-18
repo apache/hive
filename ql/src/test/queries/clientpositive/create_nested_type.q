@@ -1,16 +1,16 @@
 
 
-CREATE TABLE table1 (
+CREATE TABLE table1_n2 (
        a STRING,
        b ARRAY<STRING>,
        c ARRAY<MAP<STRING,STRING>>,
        d MAP<STRING,ARRAY<STRING>>
        ) STORED AS TEXTFILE;
-DESCRIBE table1;
-DESCRIBE EXTENDED table1;
+DESCRIBE table1_n2;
+DESCRIBE EXTENDED table1_n2;
 
-LOAD DATA LOCAL INPATH '../../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1;
+LOAD DATA LOCAL INPATH '../../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1_n2;
 
-SELECT * from table1;
+SELECT * from table1_n2;
 
 

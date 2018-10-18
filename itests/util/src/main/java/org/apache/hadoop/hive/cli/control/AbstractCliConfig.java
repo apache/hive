@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,29 +23,32 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestUtil.FsType;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hive.testutils.HiveTestEnvSetup;
+
 import com.google.common.base.Splitter;
-import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractCliConfig {
 
-  public static final String HIVE_ROOT = getHiveRoot();
+  public static final String HIVE_ROOT = HiveTestEnvSetup.HIVE_ROOT;
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractCliConfig.class);
 
-  public static enum MetastoreType {
-    sql, hbase
-  };
+  enum MetastoreType {
+    sql
+  }
 
   private MetastoreType metastoreType = MetastoreType.sql;
   private String queryFile;
@@ -63,6 +66,7 @@ public abstract class AbstractCliConfig {
   private String initScript;
   private String hiveConfDir;
   private MiniClusterType clusterType;
+  private FsType fsType;
 
   // FIXME: null value is treated differently on the other end..when those filter will be
   // moved...this may change
@@ -70,36 +74,11 @@ public abstract class AbstractCliConfig {
   private Class<? extends CliAdapter> cliAdapter;
 
   public AbstractCliConfig(Class<? extends CliAdapter> adapter) {
-    cliAdapter=adapter;
+    cliAdapter = adapter;
     clusterType = MiniClusterType.none;
     queryFile = getSysPropValue("qfile");
     queryFileRegex = getSysPropValue("qfile_regex");
     runDisabled = getSysPropValue("run_disabled");
-  }
-
-  private static String getHiveRoot() {
-    List<String> candidateSiblings = new ArrayList<>();
-    if (System.getProperty("hive.root") != null) {
-      try {
-        candidateSiblings.add(new File(System.getProperty("hive.root")).getCanonicalPath());
-      } catch (IOException e) {
-        throw new RuntimeException("error getting hive.root",e);
-      }
-    }
-    candidateSiblings.add(new File(".").getAbsolutePath());
-
-    for (String string : candidateSiblings) {
-      File curr = new File(string);
-      do {
-        Set<String> lls = Sets.newHashSet(curr.list());
-        if (lls.contains("itests") && lls.contains("ql") && lls.contains("metastore")) {
-          System.out.println("detected hiveRoot: " + curr);
-          return QTestUtil.ensurePathEndsInSlash(curr.getAbsolutePath());
-        }
-        curr = curr.getParentFile();
-      } while (curr != null);
-    }
-    throw new RuntimeException("unable to find hiveRoot");
   }
 
   protected void setQueryDir(String dir) {
@@ -158,7 +137,6 @@ public abstract class AbstractCliConfig {
   protected void excludeQuery(String qFile) {
     excludedQueryFileNames.add(qFile);
   }
-
 
   private static final Splitter TEST_SPLITTER =
       Splitter.onPattern("[, ]").trimResults().omitEmptyStrings();
@@ -235,15 +213,22 @@ public abstract class AbstractCliConfig {
     File queryDir = new File(queryDirectory);
 
     // dedup file list
-    Set<File> testFiles = new LinkedHashSet<>();
+    Set<File> testFiles = new TreeSet<>();
     if (queryFile != null && !queryFile.equals("")) {
       // The user may have passed a list of files - comma separated
       for (String qFile : TEST_SPLITTER.split(queryFile)) {
+        File qF;
         if (null != queryDir) {
-          testFiles.add(new File(queryDir, qFile));
+          qF = new File(queryDir, qFile);
         } else {
-          testFiles.add(new File(qFile));
+          qF = new File(qFile);
         }
+        if (excludedQueryFileNames.contains(qFile)) {
+          LOG.warn(qF.getAbsolutePath() + " is among the excluded query files for this driver."
+              + " Please update CliConfigs.java or testconfiguration.properties file to"
+              + " include the qfile");
+        }
+        testFiles.add(qF);
       }
     } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
       for (String regex : TEST_SPLITTER.split(queryFileRegex)) {
@@ -380,6 +365,14 @@ public abstract class AbstractCliConfig {
     }
   }
 
+  protected FsType getFsType() {
+    return this.fsType;
+  }
+
+  protected void setFsType(FsType fsType) {
+    this.fsType = fsType;
+  }
+
   private String getSysPropValue(String propName) {
     String propValue = System.getProperty(propName);
     if (propValue == null || propValue.trim().length() == 0) {
@@ -399,7 +392,16 @@ public abstract class AbstractCliConfig {
   }
 
   protected void setMetastoreType(MetastoreType mt) {
-    metastoreType=mt;
+    String metaStoreTypeProperty = getSysPropValue("metaStoreType");
+    if (metaStoreTypeProperty != null) {
+      if (metaStoreTypeProperty.equalsIgnoreCase("sql")) {
+        metastoreType = MetastoreType.sql;
+      } else {
+        throw new IllegalArgumentException("Unknown metastore type: " + metaStoreTypeProperty);
+      }
+    } else {
+      metastoreType = mt;
+    }
   }
 
   public MetastoreType getMetastoreType() {

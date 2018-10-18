@@ -1,0 +1,54 @@
+#/**
+# * Licensed to the Apache Software Foundation (ASF) under one
+# * or more contributor license agreements.  See the NOTICE file
+# * distributed with this work for additional information
+# * regarding copyright ownership.  The ASF licenses this file
+# * to you under the Apache License, Version 2.0 (the
+# * "License"); you may not use this file except in compliance
+# * with the License.  You may obtain a copy of the License at
+# *
+# *     http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+# */
+#
+# This is just an example of different cloudhost providers
+#
+
+# This context provides configurations for AWS EC2 and GCE (google compute engine)
+executionContextProvider = org.apache.hive.ptest.execution.context.CloudExecutionContextProvider$Builder
+
+# Option: GCE
+cloudProvider = google-compute-engine
+gceJsonFile = # GCE JSON KEY FILE
+instanceType = https://www.googleapis.com/compute/v1/projects/<PROJECT_ID>/zones/us-central1-a/machineTypes/n1-standard-8
+imageId = https://www.googleapis.com/compute/v1/projects/<PROJECT_ID>/global/images/hive-ptest-debian-8-20160927
+# keyPair = # UNUSED
+securityGroup = hive-ptest
+
+# Option: AWS
+cloudProvider = aws-ec2
+apiKey =    # AWS ACCESS KEY
+accessKey = # AWS SECRET ACCESS KEY
+instanceType = c3.2xlarge
+imageId = us-west-1/ami-1fa1445b
+keyPair = hive-ptest
+securityGroup = hive-ptest
+
+# Generic options
+workingDirectory = /data/hive-ptest
+profileDirectory = /usr/local/hiveptest/etc/public/
+privateKey = /home/hiveptest/.ssh/hive-ptest-user-key
+dataDir = /data/hive-ptest/data/
+numHosts = 12
+groupName = hive-ptest-slaves
+localDirs = /home/hiveptest/
+user = hiveptest
+numThreads = 2
+maxLogDirectoriesPerProfile = 30
+userMetadata.owner = # USER
+maxHostsPerCreateRequest = 12

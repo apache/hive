@@ -18,7 +18,6 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.TestCase;
@@ -28,14 +27,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * Tests DDL with remote metastore service and second namenode (HIVE-6374)
@@ -52,6 +49,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   private static final String Table4Name = "table4_nondefault_nn";
   private static final String Table5Name = "table5_nondefault_nn";
   private static final String Table6Name = "table6_nondefault_nn";
+  private static final String Table7Name = "table7_nondefault_nn";
   private static final String Index1Name = "index1_table1_nondefault_nn";
   private static final String Index2Name = "index2_table1_nondefault_nn";
   private static final String tmpdir = System.getProperty("test.tmp.dir");
@@ -63,7 +61,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   private static Hive db;
   private static FileSystem fs, fs2;
   private static HiveConf jobConf;
-  private static Driver driver;
+  private static IDriver driver;
   private static int tests = 0;
   private static Boolean isInitialized = false;
 
@@ -79,8 +77,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       SessionState.start(conf);
 
       // Test with remote metastore service
-      int port = MetaStoreUtils.findFreePort();
-      MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+      int port = MetaStoreTestUtils.startMetaStoreWithRetry();
       conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
       conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
       conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
@@ -100,7 +97,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       fs2Uri = fs2.getUri().toString();
       jobConf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fs2Uri);
 
-      driver = new Driver(jobConf);
+      driver = DriverFactory.newDriver(jobConf);
 
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {
@@ -143,7 +140,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       }
   }
 
-  private void cleanup() throws CommandNeedRetryException {
+  private void cleanup() throws Exception {
       String[] srcidx = {Index1Name, Index2Name};
       for (String src : srcidx) {
         driver.run("DROP INDEX IF EXISTS " + src + " ON " + Table1Name);
@@ -159,7 +156,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       }
   }
 
-  private void executeQuery(String query) throws CommandNeedRetryException {
+  private void executeQuery(String query) throws Exception {
     CommandProcessorResponse result =  driver.run(query);
     assertNotNull("driver.run() was expected to return result for query: " + query, result);
     assertEquals("Execution of (" + query + ") failed with exit status: "
@@ -173,7 +170,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   }
 
   private void addPartitionAndCheck(Table table, String column,
-          String value, String location) throws CommandNeedRetryException, HiveException {
+      String value, String location) throws Exception {
     executeQuery("ALTER TABLE " + table.getTableName() +
             " ADD PARTITION (" + column + "='" + value + "')" +
             buildLocationClause(location));
@@ -197,13 +194,32 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     }
   }
 
+  private void alterPartitionAndCheck(Table table, String column, String value, String location) throws Exception {
+    assertNotNull(location);
+    executeQuery("ALTER TABLE " + table.getTableName() +
+        " PARTITION (" + column + "='" + value + "')" +
+        " SET LOCATION '" + location + "'");
+    HashMap<String, String> partitions = new HashMap<String, String>();
+    partitions.put(column, value);
+    Partition partition = db.getPartition(table, partitions, false);
+    assertNotNull("Partition object is expected for " + table.getTableName() , partition);
+    String locationActual = partition.getLocation();
+    if (new Path(location).toUri().getScheme() != null) {
+      assertEquals("Partition should be located in the first filesystem",
+          fs.makeQualified(new Path(location)).toString(), locationActual);
+    }
+    else {
+      assertEquals("Partition should be located in the second filesystem",
+          fs2.makeQualified(new Path(location)).toString(), locationActual);
+    }
+  }
+
   private Table createTableAndCheck(String tableName, String tableLocation)
-          throws CommandNeedRetryException, HiveException, URISyntaxException {
+      throws Exception {
     return createTableAndCheck(null, tableName, tableLocation);
   }
 
-  private Table createTableAndCheck(Table baseTable, String tableName, String tableLocation)
-          throws CommandNeedRetryException, HiveException, URISyntaxException {
+  private Table createTableAndCheck(Table baseTable, String tableName, String tableLocation) throws Exception {
     executeQuery("CREATE TABLE " + tableName + (baseTable == null ?
             " (col1 string, col2 string) PARTITIONED BY (p string) " :
             " LIKE " + baseTable.getTableName())
@@ -223,27 +239,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     return table;
   }
 
-  private void createIndexAndCheck(Table table, String indexName, String indexLocation)
-          throws CommandNeedRetryException, HiveException, URISyntaxException {
-    executeQuery("CREATE INDEX " + indexName + " ON TABLE " + table.getTableName()
-            + " (col1) AS 'COMPACT' WITH DEFERRED REBUILD "
-            + buildLocationClause(indexLocation));
-    Index index = db.getIndex(table.getTableName(), indexName);
-    assertNotNull("Index object is expected for " + indexName , index);
-    String location = index.getSd().getLocation();
-    if (indexLocation != null) {
-      assertEquals("Index should be located in the second filesystem",
-              fs2.makeQualified(new Path(indexLocation)).toString(), location);
-    }
-    else {
-      // Since warehouse path is non-qualified the index should be located on second filesystem
-      assertEquals("Index should be located in the second filesystem",
-              fs2.getUri().getScheme(), new URI(location).getScheme());
-    }
-  }
-
-  private void createDatabaseAndCheck(String databaseName, String databaseLocation)
-          throws CommandNeedRetryException, HiveException, URISyntaxException {
+  private void createDatabaseAndCheck(String databaseName, String databaseLocation) throws Exception {
     executeQuery("CREATE DATABASE " + databaseName + buildLocationClause(databaseLocation));
     Database database = db.getDatabase(databaseName);
     assertNotNull("Database object is expected for " + databaseName , database);
@@ -259,39 +255,13 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     }
   }
 
-  public void testCreateTableWithIndexAndPartitionsNonDefaultNameNode() throws Exception {
-    assertTrue("Test suite should be initialied", isInitialized );
-    final String tableLocation = tmppathFs2 + "/" + Table1Name;
-    final String table5Location = tmppathFs2 + "/" + Table5Name;
-    final String indexLocation = tmppathFs2 + "/" + Index1Name;
-    final String partition3Location = fs.makeQualified(new Path(tmppath + "/p3")).toString();
+  public void testAlterPartitionSetLocationNonDefaultNameNode() throws Exception {
+    assertTrue("Test suite should have been initialized", isInitialized);
+    String tableLocation = tmppathFs2 + "/" + "test_set_part_loc";
+    Table table = createTableAndCheck(Table7Name, tableLocation);
 
-    // Create table with absolute non-qualified path
-    Table table1 = createTableAndCheck(Table1Name, tableLocation);
-
-    // Create table without location
-    createTableAndCheck(Table2Name, null);
-
-    // Add partition without location
-    addPartitionAndCheck(table1, "p", "p1", null);
-
-    // Add partition with absolute location
-    addPartitionAndCheck(table1, "p", "p2", tableLocation + "/p2");
-
-    // Add partition with qualified location in default fs
-    addPartitionAndCheck(table1, "p", "p3", partition3Location);
-
-    // Create index with absolute non-qualified path
-    createIndexAndCheck(table1, Index1Name, indexLocation);
-
-    // Create index with absolute non-qualified path
-    createIndexAndCheck(table1, Index2Name, null);
-
-    // Create table like Table1Name absolute non-qualified path
-    createTableAndCheck(table1, Table5Name, table5Location);
-
-    // Create table without location
-    createTableAndCheck(table1, Table6Name, null);
+    addPartitionAndCheck(table, "p", "p1", "/tmp/test/1");
+    alterPartitionAndCheck(table, "p", "p1", "/tmp/test/2");
   }
 
   public void testCreateDatabaseWithTableNonDefaultNameNode() throws Exception {

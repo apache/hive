@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.See the NOTICE file
  * distributed with this work for additional information
@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -262,6 +264,10 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
       }
 
       Table tbl = tso.getConf().getTableMetadata();
+      if (AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
+        Utilities.FILE_OP_LOGGER.debug("No bucketed join on MM table " + tbl.getTableName());
+        return false;
+      }
       if (tbl.isPartitioned()) {
         PrunedPartitionList prunedParts = pGraphContext.getPrunedPartitions(alias, tso);
         List<Partition> partitions = prunedParts.getNotDeniedPartns();

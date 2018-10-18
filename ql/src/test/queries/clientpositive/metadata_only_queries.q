@@ -1,8 +1,9 @@
+set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.compute.query.using.stats=true;
 set hive.stats.autogather=true;
-create table over10k(
+create table over10k_n12(
            t tinyint,
            si smallint,
            i int,
@@ -12,12 +13,12 @@ create table over10k(
            bo boolean,
            s string,
            ts timestamp, 
-           dec decimal,  
+           `dec` decimal,  
            bin binary)
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../../data/files/over10k' into table over10k;
+load data local inpath '../../data/files/over10k' into table over10k_n12;
 
 create table stats_tbl(
            t tinyint,
@@ -29,7 +30,7 @@ create table stats_tbl(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,  
+           `dec` decimal,  
            bin binary);
 
 create table stats_tbl_part(
@@ -42,15 +43,15 @@ create table stats_tbl_part(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,  
+           `dec` decimal,  
            bin binary) partitioned by (dt string);
 
 
-insert overwrite table stats_tbl select * from over10k;
+insert overwrite table stats_tbl select * from over10k_n12;
 
-insert into table stats_tbl_part partition (dt='2010') select * from over10k where t>0 and t<30;
-insert into table stats_tbl_part partition (dt='2011') select * from over10k where t>30 and t<60;
-insert into table stats_tbl_part partition (dt='2012') select * from over10k where t>60;
+insert into table stats_tbl_part partition (dt='2010') select * from over10k_n12 where t>0 and t<30;
+insert into table stats_tbl_part partition (dt='2011') select * from over10k_n12 where t>30 and t<60;
+insert into table stats_tbl_part partition (dt='2012') select * from over10k_n12 where t>60;
 
 explain 
 select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b) from stats_tbl;

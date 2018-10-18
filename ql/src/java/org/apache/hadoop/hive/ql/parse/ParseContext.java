@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,31 +18,24 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.Multimap;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -51,6 +44,7 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
+import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
@@ -58,6 +52,17 @@ import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Parse Context: The current parse context. This is passed to the optimizer
@@ -116,33 +121,38 @@ public class ParseContext {
 
   private AnalyzeRewriteContext analyzeRewrite;
   private CreateTableDesc createTableDesc;
+  private CreateViewDesc createViewDesc;
+  private MaterializedViewDesc materializedViewUpdateDesc;
   private boolean reduceSinkAddedBySortedDynPartition;
 
-  private Map<SelectOperator, Table> viewProjectToViewSchema;  
+  private Map<SelectOperator, Table> viewProjectToViewSchema;
   private ColumnAccessInfo columnAccessInfo;
   private boolean needViewColumnAuthorization;
   private Set<FileSinkDesc> acidFileSinks = Collections.emptySet();
 
+  private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
+          new LinkedHashMap<ReduceSinkOperator, RuntimeValuesInfo>();
+  private Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo =
+          new HashMap<>();
+  private Map<ExprNodeDesc, GroupByOperator> colExprToGBMap =
+          new HashMap<>();
+
+  private Map<String, List<SemiJoinHint>> semiJoinHints;
+  private boolean disableMapJoin;
+  private Multimap<TerminalOperator<?>, ReduceSinkOperator> terminalOpToRSMap;
 
   public ParseContext() {
   }
 
   /**
-   * @param conf
-   * @param qb
-   *          current QB
-   * @param ast
-   *          current parse tree
    * @param opToPartPruner
    *          map from table scan operator to partition pruner
    * @param opToPartList
    * @param topOps
    *          list of operators for the top query
-   * @param opParseCtx
-   *          operator parse context - contains a mapping from operator to
-   *          operator parse state (row resolver etc.)
    * @param joinOps
    *          context needed join processing (map join specifically)
+   * @param smbMapJoinOps
    * @param loadTableWork
    *          list of destination tables being loaded
    * @param loadFileWork
@@ -154,13 +164,19 @@ public class ParseContext {
    * @param destTableId
    * @param listMapJoinOpsNoReducer
    *          list of map join operators with no reducer
-   * @param groupOpToInputTables
    * @param prunedPartitions
    * @param opToSamplePruner
    *          operator to sample pruner map
    * @param globalLimitCtx
    * @param nameToSplitSample
    * @param rootTasks
+   * @param opToPartToSkewedPruner
+   * @param viewAliasToInput
+   * @param reduceSinkOperatorsAddedByEnforceBucketingSorting
+   * @param analyzeRewrite
+   * @param createTableDesc
+   * @param createViewDesc
+   * @param queryProperties
    */
   public ParseContext(
       QueryState queryState,
@@ -183,8 +199,8 @@ public class ParseContext {
       Map<String, ReadEntity> viewAliasToInput,
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting,
       AnalyzeRewriteContext analyzeRewrite, CreateTableDesc createTableDesc,
-      QueryProperties queryProperties, Map<SelectOperator, Table> viewProjectToTableSchema,
-      Set<FileSinkDesc> acidFileSinks) {
+      CreateViewDesc createViewDesc, MaterializedViewDesc materializedViewUpdateDesc, QueryProperties queryProperties,
+      Map<SelectOperator, Table> viewProjectToTableSchema, Set<FileSinkDesc> acidFileSinks) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     this.opToPartPruner = opToPartPruner;
@@ -213,6 +229,8 @@ public class ParseContext {
         reduceSinkOperatorsAddedByEnforceBucketingSorting;
     this.analyzeRewrite = analyzeRewrite;
     this.createTableDesc = createTableDesc;
+    this.createViewDesc = createViewDesc;
+    this.materializedViewUpdateDesc = materializedViewUpdateDesc;
     this.queryProperties = queryProperties;
     this.viewProjectToViewSchema = viewProjectToTableSchema;
     this.needViewColumnAuthorization = viewProjectToTableSchema != null
@@ -331,14 +349,6 @@ public class ParseContext {
   }
 
   /**
-   * @param loadTableWork
-   *          the loadTableWork to set
-   */
-  public void setLoadTableWork(List<LoadTableDesc> loadTableWork) {
-    this.loadTableWork = loadTableWork;
-  }
-
-  /**
    * @return the loadFileWork
    */
   public List<LoadFileDesc> getLoadFileWork() {
@@ -422,6 +432,21 @@ public class ParseContext {
   public void setOpToSamplePruner(
       HashMap<TableScanOperator, SampleDesc> opToSamplePruner) {
     this.opToSamplePruner = opToSamplePruner;
+  }
+
+  /**
+   * @return col stats
+   */
+  public Map<String, ColumnStatsList> getColStatsCache() {
+    return ctx.getOpContext().getColStatsCache();
+  }
+
+  /**
+   * @param partList
+   * @return col stats
+   */
+  public ColumnStatsList getColStatsCached(PrunedPartitionList partList) {
+    return ctx.getOpContext().getColStatsCache().get(partList.getKey());
   }
 
   /**
@@ -582,6 +607,14 @@ public class ParseContext {
     this.createTableDesc = createTableDesc;
   }
 
+  public CreateViewDesc getCreateViewDesc() {
+    return createViewDesc;
+  }
+
+  public MaterializedViewDesc getMaterializedViewUpdateDesc() {
+    return materializedViewUpdateDesc;
+  }
+
   public void setReduceSinkAddedBySortedDynPartition(
       final boolean reduceSinkAddedBySortedDynPartition) {
     this.reduceSinkAddedBySortedDynPartition = reduceSinkAddedBySortedDynPartition;
@@ -645,4 +678,51 @@ public class ParseContext {
     }
   }
 
+  public void setRsToRuntimeValuesInfoMap(Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo) {
+    this.rsToRuntimeValuesInfo = rsToRuntimeValuesInfo;
+  }
+
+  public Map<ReduceSinkOperator, RuntimeValuesInfo> getRsToRuntimeValuesInfoMap() {
+    return rsToRuntimeValuesInfo;
+  }
+
+  public void setRsToSemiJoinBranchInfo(Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo) {
+    this.rsToSemiJoinBranchInfo = rsToSemiJoinBranchInfo;
+  }
+
+  public Map<ReduceSinkOperator, SemiJoinBranchInfo> getRsToSemiJoinBranchInfo() {
+    return rsToSemiJoinBranchInfo;
+  }
+
+  public void setColExprToGBMap(Map<ExprNodeDesc, GroupByOperator> colExprToGBMap) {
+    this.colExprToGBMap = colExprToGBMap;
+  }
+
+  public Map<ExprNodeDesc, GroupByOperator> getColExprToGBMap() {
+    return colExprToGBMap;
+  }
+
+  public void setSemiJoinHints(Map<String, List<SemiJoinHint>> hints) {
+    this.semiJoinHints = hints;
+  }
+
+  public Map<String, List<SemiJoinHint>> getSemiJoinHints() {
+    return semiJoinHints;
+  }
+
+  public void setDisableMapJoin(boolean disableMapJoin) {
+    this.disableMapJoin = disableMapJoin;
+  }
+
+  public boolean getDisableMapJoin() {
+    return disableMapJoin;
+  }
+
+  public void setTerminalOpToRSMap(Multimap<TerminalOperator<?>, ReduceSinkOperator> terminalOpToRSMap) {
+    this.terminalOpToRSMap = terminalOpToRSMap;
+  }
+
+  public Multimap<TerminalOperator<?>, ReduceSinkOperator> getTerminalOpToRSMap() {
+    return terminalOpToRSMap;
+  }
 }

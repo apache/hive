@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,21 +32,16 @@ public class CastDecimalToVarChar extends CastDecimalToString implements TruncSt
     super();
   }
 
-  public CastDecimalToVarChar(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastDecimalToVarChar(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override
-  protected void assign(BytesColumnVector outV, int i, byte[] bytes, int length) {
-    StringExpr.truncate(outV, i, bytes, 0, length, maxLength);
+  protected void assign(BytesColumnVector outV, int i, byte[] bytes, int offset, int length) {
+    StringExpr.truncate(outV, i, bytes, offset, length, maxLength);
   }
 
   @Override
-  public String getOutputType() {
-    return "VarChar";
-  }
-  
-    @Override
   public int getMaxLength() {
     return maxLength;
   }
@@ -54,5 +49,10 @@ public class CastDecimalToVarChar extends CastDecimalToString implements TruncSt
   @Override
   public void setMaxLength(int maxLength) {
     this.maxLength = maxLength;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
   }
 }

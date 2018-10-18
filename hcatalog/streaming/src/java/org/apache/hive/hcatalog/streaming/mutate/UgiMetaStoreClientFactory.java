@@ -40,7 +40,9 @@ import com.google.common.reflect.AbstractInvocationHandler;
 /**
  * Creates a proxied {@link IMetaStoreClient client} that wraps calls in a {@link PrivilegedExceptionAction} if the
  * {@link UserGroupInformation} is specified. Invokes directly otherwise.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class UgiMetaStoreClientFactory {
 
   private static Set<Method> I_META_STORE_CLIENT_METHODS = getIMetaStoreClientMethods();

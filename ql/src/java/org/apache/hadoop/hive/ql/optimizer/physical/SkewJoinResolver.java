@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,7 +38,10 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.slf4j.Logger;
 
 /**
  * An implementation of PhysicalPlanResolver. It iterator each task with a rule
@@ -46,6 +49,8 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
  * it will try to add a conditional task associated a list of skew join tasks.
  */
 public class SkewJoinResolver implements PhysicalPlanResolver {
+  private final static Logger LOG = org.slf4j.LoggerFactory.getLogger(SkewJoinResolver.class);
+
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
     Dispatcher disp = new SkewJoinTaskDispatcher(pctx);
@@ -78,8 +83,29 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
         return null;
       }
 
-      SkewJoinProcCtx skewJoinProcContext = new SkewJoinProcCtx(task,
-          physicalContext.getParseContext());
+      ParseContext pc = physicalContext.getParseContext();
+      if (pc.getLoadTableWork() != null) {
+        for (LoadTableDesc ltd : pc.getLoadTableWork()) {
+          if (!ltd.isMmTable()) {
+            continue;
+          }
+          // See the path in FSOP that calls fs.exists on finalPath.
+          LOG.debug("Not using skew join because the destination table "
+              + ltd.getTable().getTableName() + " is an insert_only table");
+          return null;
+        }
+      }
+      if (pc.getLoadFileWork() != null) {
+        for (LoadFileDesc lfd : pc.getLoadFileWork()) {
+          if (!lfd.isMmCtas()) {
+            continue;
+          }
+          LOG.debug("Not using skew join because the destination table is an insert_only table");
+          return null;
+        }
+      }
+
+      SkewJoinProcCtx skewJoinProcContext = new SkewJoinProcCtx(task, pc);
 
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       opRules.put(new RuleRegExp("R1",

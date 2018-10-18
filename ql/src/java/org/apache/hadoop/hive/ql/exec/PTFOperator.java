@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDeserializer;
@@ -37,7 +38,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -217,15 +218,14 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
     return first;
   }
 
-  public static void connectLeadLagFunctionsToPartition(PTFDesc ptfDesc,
+  public static void connectLeadLagFunctionsToPartition(LeadLagInfo leadLagInfo,
       PTFPartitionIterator<Object> pItr) throws HiveException {
-    List<ExprNodeGenericFuncDesc> llFnDescs = ptfDesc.getLlInfo().getLeadLagExprs();
-    if (llFnDescs == null) {
+    if (leadLagInfo == null || leadLagInfo.getLeadLagExprs() == null) {
       return;
     }
-    for (ExprNodeGenericFuncDesc llFnDesc : llFnDescs) {
-      GenericUDFLeadLag llFn = (GenericUDFLeadLag) llFnDesc
-          .getGenericUDF();
+
+    for (ExprNodeGenericFuncDesc llFnDesc : leadLagInfo.getLeadLagExprs()) {
+      GenericUDFLeadLag llFn = (GenericUDFLeadLag) llFnDesc.getGenericUDF();
       llFn.setpItr(pItr);
     }
   }
@@ -403,7 +403,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       ObjectInspector inputOI = conf.getStartOfChain() == tabDef ?
           inputObjInspectors[0] : inputDef.getOutputShape().getOI();
 
-      SerDe serde = conf.isMapSide() ? tabDef.getInput().getOutputShape().getSerde() :
+      AbstractSerDe serde = conf.isMapSide() ? tabDef.getInput().getOutputShape().getSerde() :
         tabDef.getRawInputShape().getSerde();
       StructObjectInspector outputOI = conf.isMapSide() ? tabDef.getInput().getOutputShape().getOI() :
         tabDef.getRawInputShape().getOI();
@@ -416,6 +416,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
     void close() {
       if ( inputPart != null ) {
         inputPart.close();
+        inputPart = null;
       }
       tabFn.close();
       if ( next != null ) {

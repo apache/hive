@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,7 @@ import java.io.Serializable;
 public class ShowTxnsDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static final String schema = "txnid,state,user,host#string:string:string:string";
+  private static final String schema = "txnid,state,startedtime,lastheartbeattime,user,host#string:string:string:string:string:string";
 
   private String resFile;
 

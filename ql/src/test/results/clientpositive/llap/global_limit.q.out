@@ -1,0 +1,1661 @@
+PREHOOK: query: drop table gl_tgt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table gl_tgt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table gl_src1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table gl_src1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table gl_src2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table gl_src2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table gl_src_part1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table gl_src_part1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table gl_src1 (key int, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: create table gl_src1 (key int, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: create table gl_tgt as select key from gl_src1 limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@gl_tgt
+POSTHOOK: query: create table gl_tgt as select key from gl_src1 limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@gl_tgt
+POSTHOOK: Lineage: gl_tgt.key SIMPLE [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from gl_tgt ORDER BY key ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_tgt
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from gl_tgt ORDER BY key ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_tgt
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+165
+PREHOOK: query: select 'x' as key_new , split(value,',') as value_new from gl_src1 ORDER BY key_new ASC, value_new[0] ASC limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select 'x' as key_new , split(value,',') as value_new from gl_src1 ORDER BY key_new ASC, value_new[0] ASC limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+x	["val_0"]
+x	["val_0"]
+x	["val_0"]
+x	["val_0"]
+x	["val_0"]
+x	["val_0"]
+x	["val_0"]
+x	["val_0"]
+x	["val_0"]
+x	["val_103"]
+x	["val_103"]
+x	["val_103"]
+x	["val_103"]
+x	["val_103"]
+x	["val_103"]
+x	["val_11"]
+x	["val_11"]
+x	["val_11"]
+x	["val_114"]
+x	["val_114"]
+PREHOOK: query: select key, value, split(value,',') as value_new from gl_src1 ORDER BY key ASC, value ASC, value_new[0] ASC limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key, value, split(value,',') as value_new from gl_src1 ORDER BY key ASC, value ASC, value_new[0] ASC limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	val_0	["val_0"]
+0	val_0	["val_0"]
+0	val_0	["val_0"]
+0	val_0	["val_0"]
+0	val_0	["val_0"]
+0	val_0	["val_0"]
+0	val_0	["val_0"]
+0	val_0	["val_0"]
+0	val_0	["val_0"]
+4	val_4	["val_4"]
+4	val_4	["val_4"]
+4	val_4	["val_4"]
+8	val_8	["val_8"]
+8	val_8	["val_8"]
+8	val_8	["val_8"]
+11	val_11	["val_11"]
+11	val_11	["val_11"]
+11	val_11	["val_11"]
+15	val_15	["val_15"]
+15	val_15	["val_15"]
+15	val_15	["val_15"]
+15	val_15	["val_15"]
+15	val_15	["val_15"]
+15	val_15	["val_15"]
+19	val_19	["val_19"]
+19	val_19	["val_19"]
+19	val_19	["val_19"]
+26	val_26	["val_26"]
+26	val_26	["val_26"]
+26	val_26	["val_26"]
+PREHOOK: query: select key from gl_src1 ORDER BY key ASC limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src1 ORDER BY key ASC limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+0
+0
+0
+0
+0
+0
+0
+0
+4
+4
+4
+8
+8
+8
+11
+11
+11
+15
+15
+15
+15
+15
+15
+19
+19
+19
+26
+26
+26
+26
+26
+26
+33
+33
+33
+37
+37
+37
+37
+37
+37
+44
+44
+44
+51
+51
+51
+51
+51
+51
+66
+66
+66
+77
+77
+77
+80
+80
+80
+84
+84
+84
+84
+84
+84
+95
+95
+95
+95
+95
+95
+103
+103
+103
+103
+103
+103
+114
+114
+114
+118
+118
+118
+118
+118
+118
+125
+125
+125
+125
+125
+125
+129
+129
+129
+129
+129
+129
+136
+PREHOOK: query: select key from gl_src1 ORDER BY key ASC limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src1 ORDER BY key ASC limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+0
+0
+0
+0
+0
+0
+0
+0
+4
+4
+4
+8
+8
+8
+11
+11
+11
+15
+15
+15
+15
+15
+15
+19
+19
+19
+26
+26
+26
+PREHOOK: query: select key, count(1) from gl_src1 group by key ORDER BY key ASC limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key, count(1) from gl_src1 group by key ORDER BY key ASC limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	9
+4	3
+8	3
+11	3
+15	6
+PREHOOK: query: select distinct key from gl_src1 ORDER BY key ASC limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select distinct key from gl_src1 ORDER BY key ASC limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+4
+8
+11
+15
+19
+26
+33
+37
+44
+PREHOOK: query: select count(1) from gl_src1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(1) from gl_src1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+354
+PREHOOK: query: select transform(*) using "tr _ \n" as t from
+(select "a_a_a_a_a_a_" from gl_src1 limit 100) subq ORDER BY t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select transform(*) using "tr _ \n" as t from
+(select "a_a_a_a_a_a_" from gl_src1 limit 100) subq ORDER BY t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+PREHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 ORDER BY key ASC limit 2000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 ORDER BY key ASC limit 2000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+37
+66
+150
+165
+213
+224
+327
+374
+484
+495
+PREHOOK: query: select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2 ORDER BY key ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2 ORDER BY key ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+37
+66
+150
+165
+213
+224
+327
+374
+484
+495
+PREHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 ORDER BY key ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 ORDER BY key ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+37
+66
+150
+165
+213
+224
+327
+374
+484
+495
+PREHOOK: query: insert overwrite table gl_tgt select key+1 from (select * from (select key,value from gl_src1)t1)t2 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: default@gl_tgt
+POSTHOOK: query: insert overwrite table gl_tgt select key+1 from (select * from (select key,value from gl_src1)t1)t2 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: default@gl_tgt
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from gl_tgt ORDER BY key ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_tgt
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from gl_tgt ORDER BY key ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_tgt
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+38
+67
+151
+166
+214
+225
+328
+375
+485
+496
+PREHOOK: query: create table gl_src2 (key int, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@gl_src2
+POSTHOOK: query: create table gl_src2 (key int, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@gl_src2
+PREHOOK: query: select key from gl_src2 ORDER BY key ASC limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src2 ORDER BY key ASC limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@gl_src_part1
+POSTHOOK: query: create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@gl_src_part1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE gl_src_part1 partition(p='11')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@gl_src_part1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE gl_src_part1 partition(p='11')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@gl_src_part1
+POSTHOOK: Output: default@gl_src_part1@p=11
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@gl_src_part1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@gl_src_part1
+POSTHOOK: Output: default@gl_src_part1@p=12
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@gl_src_part1@p=12
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@gl_src_part1@p=12
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@gl_src_part1@p=12
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@gl_src_part1@p=12
+PREHOOK: query: select key from gl_src_part1 where p like '1%' ORDER BY key ASC limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
+PREHOOK: Input: default@gl_src_part1@p=11
+PREHOOK: Input: default@gl_src_part1@p=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src_part1 where p like '1%' ORDER BY key ASC limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Input: default@gl_src_part1@p=11
+POSTHOOK: Input: default@gl_src_part1@p=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+0
+0
+0
+0
+0
+0
+0
+0
+4
+PREHOOK: query: select key from gl_src_part1 where p='11' ORDER BY key ASC limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
+PREHOOK: Input: default@gl_src_part1@p=11
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src_part1 where p='11' ORDER BY key ASC limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Input: default@gl_src_part1@p=11
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+5
+5
+9
+12
+12
+27
+30
+34
+41
+PREHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
+PREHOOK: Input: default@gl_src_part1@p=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Input: default@gl_src_part1@p=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+0
+0
+0
+0
+0
+0
+0
+0
+4
+PREHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: alter table gl_src_part1 add partition (p='13')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@gl_src_part1
+POSTHOOK: query: alter table gl_src_part1 add partition (p='13')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@gl_src_part1
+POSTHOOK: Output: default@gl_src_part1@p=13
+PREHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
+PREHOOK: Input: default@gl_src_part1@p=13
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src_part1 where p='13' ORDER BY key ASC limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Input: default@gl_src_part1@p=13
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 1000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1
+PREHOOK: Input: default@gl_src_part1@p=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select key from gl_src_part1 where p='12' ORDER BY key ASC limit 1000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Input: default@gl_src_part1@p=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+0
+0
+0
+0
+0
+0
+0
+0
+4
+4
+4
+8
+8
+8
+11
+11
+11
+15
+15
+15
+15
+15
+15
+19
+19
+19
+26
+26
+26
+26
+26
+26
+33
+33
+33
+37
+37
+37
+37
+37
+37
+44
+44
+44
+51
+51
+51
+51
+51
+51
+66
+66
+66
+77
+77
+77
+80
+80
+80
+84
+84
+84
+84
+84
+84
+95
+95
+95
+95
+95
+95
+103
+103
+103
+103
+103
+103
+114
+114
+114
+118
+118
+118
+118
+118
+118
+125
+125
+125
+125
+125
+125
+129
+129
+129
+129
+129
+129
+136
+136
+136
+143
+143
+143
+150
+150
+150
+158
+158
+158
+165
+165
+165
+165
+165
+165
+169
+169
+169
+169
+169
+169
+169
+169
+169
+169
+169
+169
+172
+172
+172
+172
+172
+172
+176
+176
+176
+176
+176
+176
+183
+183
+183
+187
+187
+187
+187
+187
+187
+187
+187
+187
+190
+190
+190
+194
+194
+194
+202
+202
+202
+213
+213
+213
+213
+213
+213
+217
+217
+217
+217
+217
+217
+224
+224
+224
+224
+224
+224
+228
+228
+228
+235
+235
+235
+239
+239
+239
+239
+239
+239
+242
+242
+242
+242
+242
+242
+257
+257
+257
+260
+260
+260
+275
+275
+275
+282
+282
+282
+282
+282
+282
+286
+286
+286
+305
+305
+305
+309
+309
+309
+309
+309
+309
+316
+316
+316
+316
+316
+316
+316
+316
+316
+323
+323
+323
+327
+327
+327
+327
+327
+327
+327
+327
+327
+338
+338
+338
+341
+341
+341
+345
+345
+345
+356
+356
+356
+367
+367
+367
+367
+367
+367
+374
+374
+374
+378
+378
+378
+389
+389
+389
+392
+392
+392
+396
+396
+396
+396
+396
+396
+396
+396
+396
+400
+400
+400
+404
+404
+404
+404
+404
+404
+411
+411
+411
+419
+419
+419
+437
+437
+437
+444
+444
+444
+448
+448
+448
+455
+455
+455
+459
+459
+459
+459
+459
+459
+462
+462
+462
+462
+462
+462
+466
+466
+466
+466
+466
+466
+466
+466
+466
+477
+477
+477
+480
+480
+480
+480
+480
+480
+480
+480
+480
+484
+484
+484
+491
+491
+491
+495
+495
+495
+PREHOOK: query: select * from gl_src1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from gl_src1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+165	val_165
+PREHOOK: query: drop table gl_src1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: drop table gl_src1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: drop table gl_src2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@gl_src2
+PREHOOK: Output: default@gl_src2
+POSTHOOK: query: drop table gl_src2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@gl_src2
+POSTHOOK: Output: default@gl_src2
+PREHOOK: query: drop table gl_src_part1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@gl_src_part1
+PREHOOK: Output: default@gl_src_part1
+POSTHOOK: query: drop table gl_src_part1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Output: default@gl_src_part1
+PREHOOK: query: drop table gl_tgt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@gl_tgt
+PREHOOK: Output: default@gl_tgt
+POSTHOOK: query: drop table gl_tgt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@gl_tgt
+POSTHOOK: Output: default@gl_tgt

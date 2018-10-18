@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.List;
 
+import org.apache.calcite.plan.RelMultipleTrait;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTrait;
 import org.apache.calcite.plan.RelTraitDef;
@@ -26,7 +27,12 @@ import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributionTraitDef;
 import org.apache.calcite.util.mapping.Mappings.TargetMapping;
 
+import com.google.common.collect.Ordering;
+
 public class HiveRelDistribution implements RelDistribution {
+
+  private static final Ordering<Iterable<Integer>> ORDERING =
+      Ordering.<Integer>natural().lexicographical();
 
   List<Integer> keys;
   RelDistribution.Type type;
@@ -75,6 +81,23 @@ public class HiveRelDistribution implements RelDistribution {
   @Override
   public Type getType() {
     return type;
+  }
+
+  @Override
+  public boolean isTop() {
+    return type == Type.ANY;
+  }
+
+  @Override
+  public int compareTo(RelMultipleTrait o) {
+    final RelDistribution distribution = (RelDistribution) o;
+    if (type == distribution.getType()
+        && (type == Type.HASH_DISTRIBUTED
+            || type == Type.RANGE_DISTRIBUTED)) {
+      return ORDERING.compare(getKeys(), distribution.getKeys());
+    }
+
+    return type.compareTo(distribution.getType());
   }
 
 }

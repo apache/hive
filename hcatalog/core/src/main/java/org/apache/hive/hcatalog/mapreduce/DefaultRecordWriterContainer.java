@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,7 @@ package org.apache.hive.hcatalog.mapreduce;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -39,7 +39,7 @@ import org.apache.hive.hcatalog.data.HCatRecord;
 class DefaultRecordWriterContainer extends RecordWriterContainer {
 
   private final HiveStorageHandler storageHandler;
-  private final SerDe serDe;
+  private final AbstractSerDe serDe;
   private final OutputJobInfo jobInfo;
   private final ObjectInspector hcatRecordOI;
 

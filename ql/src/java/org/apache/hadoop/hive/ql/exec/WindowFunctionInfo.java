@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,9 +28,9 @@ public class WindowFunctionInfo extends FunctionInfo {
   private final boolean pivotResult;
   private final boolean impliesOrder;
 
-  public WindowFunctionInfo(boolean isNative, String functionName,
+  public WindowFunctionInfo(FunctionType functionType, String functionName,
       GenericUDAFResolver resolver, FunctionResource[] resources) {
-    super(isNative, functionName, resolver, resources);
+    super(functionType, functionName, resolver, resources);
     WindowFunctionDescription def =
         AnnotationUtils.getAnnotation(resolver.getClass(), WindowFunctionDescription.class);
     supportsWindow = def == null ? true : def.supportsWindow();

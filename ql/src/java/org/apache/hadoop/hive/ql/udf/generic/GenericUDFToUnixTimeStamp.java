@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -39,11 +41,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 
 /**
  * deterministic version of UDFUnixTimeStamp. enforces argument
@@ -56,6 +57,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
 
   private transient DateObjectInspector inputDateOI;
   private transient TimestampObjectInspector inputTimestampOI;
+  private transient TimestampLocalTZObjectInspector inputTimestampLocalTzOI;
   private transient Converter inputTextConverter;
   private transient Converter patternConverter;
 
@@ -79,6 +81,8 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
             " only takes string/date/timestamp types, got " + argument.getTypeName());
       }
     }
+
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
     PrimitiveObjectInspector arg1OI = (PrimitiveObjectInspector) arguments[0];
     switch (arg1OI.getPrimitiveCategory()) {
@@ -105,9 +109,13 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       case TIMESTAMP:
         inputTimestampOI = (TimestampObjectInspector) arguments[0];
         break;
+      case TIMESTAMPLOCALTZ:
+        inputTimestampLocalTzOI = (TimestampLocalTZObjectInspector) arguments[0];
+        break;
       default:
-        throw new UDFArgumentException(
-            "The function " + getName().toUpperCase() + " takes only string/date/timestamp types");
+        throw new UDFArgumentException("The function " + getName().toUpperCase()
+            + " takes only string/date/timestamp/timestampwltz types. Got Type:" + arg1OI
+            .getPrimitiveCategory().name());
     }
   }
 
@@ -151,6 +159,11 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       retValue.set(inputDateOI.getPrimitiveWritableObject(arguments[0].get())
                    .getTimeInSeconds());
       return retValue;
+    } else if (inputTimestampLocalTzOI != null)  {
+      TimestampTZ timestampTZ =
+          inputTimestampLocalTzOI.getPrimitiveJavaObject(arguments[0].get());
+      retValue.set(timestampTZ.getEpochSecond());
+      return retValue;
     }
     Timestamp timestamp = inputTimestampOI.getPrimitiveJavaObject(arguments[0].get());
     setValueFromTs(retValue, timestamp);
@@ -158,7 +171,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   }
 
   protected static void setValueFromTs(LongWritable value, Timestamp timestamp) {
-    value.set(timestamp.getTime() / 1000);
+    value.set(timestamp.toEpochSecond());
   }
 
   @Override

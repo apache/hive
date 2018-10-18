@@ -1,12 +1,8 @@
-PREHOOK: query: -- This pattern matches all printable ASCII characters (disallow unicode) and disallows commas
-
-CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_whitelist_test
-POSTHOOK: query: -- This pattern matches all printable ASCII characters (disallow unicode) and disallows commas
-
-CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE part_whitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_whitelist_test
@@ -19,4 +15,4 @@ POSTHOOK: Input: default@part_whitelist_test
 PREHOOK: query: ALTER TABLE part_whitelist_test ADD PARTITION (ds='1,2,3,4')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@part_whitelist_test
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Partition value '1,2,3,4' contains a character not matched by whitelist pattern '[\\x20-\\x7E&&[^,]]*'.  (configure with hive.metastore.partition.name.whitelist.pattern))
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Partition value '1,2,3,4' contains a character not matched by whitelist pattern '[\\x20-\\x7E&&[^,]]*'.  (configure with metastore.partition.name.whitelist.pattern))

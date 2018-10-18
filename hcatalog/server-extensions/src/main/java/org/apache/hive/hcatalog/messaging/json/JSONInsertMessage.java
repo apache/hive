@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,7 @@ import java.util.Map;
 public class JSONInsertMessage extends InsertMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table;
+  String server, servicePrincipal, db, table, tableType;
 
   @JsonProperty
   Long timestamp;
@@ -49,10 +49,17 @@ public class JSONInsertMessage extends InsertMessage {
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
                            Map<String,String> partKeyVals, List<String> files, Long timestamp) {
+    this(server, servicePrincipal, db, table, null, partKeyVals, files, timestamp);
+  }
+
+  public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
+                           String tableType, Map<String,String> partKeyVals, List<String> files,
+                           Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
+    this.tableType = tableType;
     this.timestamp = timestamp;
     this.partKeyVals = partKeyVals;
     this.files = files;
@@ -62,6 +69,11 @@ public class JSONInsertMessage extends InsertMessage {
 
   @Override
   public String getTable() { return table; }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
+  }
 
   @Override
   public String getServer() { return server; }

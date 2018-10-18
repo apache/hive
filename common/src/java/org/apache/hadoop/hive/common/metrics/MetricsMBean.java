@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,9 +17,8 @@
  */
 package org.apache.hadoop.hive.common.metrics;
 
-import java.io.IOException;
-
 import javax.management.DynamicMBean;
+import javax.management.JMException;
 
 /**
  * MBean definition for metrics tracking from jmx
@@ -36,21 +35,19 @@ public interface MetricsMBean extends DynamicMBean {
      * Add a key/metric and its value to track
      * @param name Name of the key/metric
      * @param value value associated with the key
-     * @throws Exception
      */
-    public abstract void put(String name, Object value) throws IOException;
+    public abstract void put(String name, Object value);
 
     /**
      *
      * @param name
      * @return value associated with the key
-     * @throws Exception
+     * @throws JMException
      */
-    public abstract Object get(String name) throws IOException;
-    
+    public abstract Object get(String name) throws JMException;
 
     /**
-     * Removes all the keys and values from this MetricsMBean. 
+     * Removes all the keys and values from this MetricsMBean.
      */
     void clear();
 }

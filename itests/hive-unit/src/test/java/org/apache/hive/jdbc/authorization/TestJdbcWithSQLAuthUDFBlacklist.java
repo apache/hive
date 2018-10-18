@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -72,7 +72,7 @@ public class TestJdbcWithSQLAuthUDFBlacklist {
     Connection hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL(), "user1", "bar");
 
     Statement stmt = hs2Conn.createStatement();
-    String tableName1 = "test_jdbc_sql_auth_udf";
+    String tableName1 = "test_jdbc_sql_auth_udf_blacklist";
     stmt.execute("create table " + tableName1 + "(i int) ");
 
     verifyUDFNotAllowed(stmt, tableName1, "sqrt(1)", "sqrt");

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -66,7 +66,7 @@ public abstract class GenericUDFBasePad extends GenericUDF {
     Text str = (Text) converter1.convert(valObject1);
     IntWritable lenW = (IntWritable) converter2.convert(valObject2);
     Text pad = (Text) converter3.convert(valObject3);
-    if (str == null || pad == null || lenW == null) {
+    if (str == null || pad == null || lenW == null || pad.toString().isEmpty()) {
       return null;
     }
     int len = lenW.get();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,8 @@ package org.apache.hive.hcatalog.api;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The Class HCatAddPartitionDesc helps users in defining partition attributes.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatAddPartitionDesc {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatAddPartitionDesc.class);

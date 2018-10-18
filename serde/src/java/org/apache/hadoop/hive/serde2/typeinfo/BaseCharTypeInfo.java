@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class BaseCharTypeInfo extends PrimitiveTypeInfo {
   private static final long serialVersionUID = 1L;
 

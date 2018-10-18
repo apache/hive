@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.KeyValueUtil;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
@@ -65,9 +66,9 @@ public class ResultWritable implements Writable {
   throws IOException {
     ProtobufUtil.toResultNoData(result).writeDelimitedTo(DataOutputOutputStream.from(out));
     out.writeInt(result.size());
-    for(KeyValue kv : result.list()) {
+    for(Cell cell : result.listCells()) {
+      KeyValue kv = KeyValueUtil.ensureKeyValue(cell);
       KeyValue.write(kv, out);
     }
   }
-
 }

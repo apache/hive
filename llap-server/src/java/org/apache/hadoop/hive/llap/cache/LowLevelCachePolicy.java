@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,13 +20,11 @@ package org.apache.hadoop.hive.llap.cache;
 
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 
-public interface LowLevelCachePolicy extends LlapOomDebugDump {
+public interface LowLevelCachePolicy extends LlapIoDebugDump {
   void cache(LlapCacheableBuffer buffer, Priority priority);
   void notifyLock(LlapCacheableBuffer buffer);
   void notifyUnlock(LlapCacheableBuffer buffer);
   long evictSomeBlocks(long memoryToReserve);
   void setEvictionListener(EvictionListener listener);
-  void setParentDebugDumper(LlapOomDebugDump dumper);
-  /** TODO: temporary method until we have a better allocator */
-  int tryEvictContiguousData(int allocationSize, int count);
+  long purge();
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.See the NOTICE file
  * distributed with this work for additional information
@@ -515,6 +515,9 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       joinContext.getBigTablePosition(),
       false,
       false);
+    if (mapJoinOp == null) {
+      return null;
+    }
     // Remove the join operator from the query join context
     // Data structures coming from QBJoinTree
     mapJoinOp.getConf().setQBJoinTreeProps(joinOp.getConf());

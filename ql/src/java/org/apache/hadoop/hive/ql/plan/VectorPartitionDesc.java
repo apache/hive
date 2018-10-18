@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.base.Strings;
+
+import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorMapOperatorReadType;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -31,7 +34,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 public class VectorPartitionDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   // Data Type Conversion Needed?
   //
@@ -63,7 +66,7 @@ public class VectorPartitionDesc  {
     LAZY_BINARY
   }
 
-  private final VectorMapOperatorReadType vectorMapOperatorReadType;
+  private VectorMapOperatorReadType vectorMapOperatorReadType;
   private final VectorDeserializeType vectorDeserializeType;
 
   private final String rowDeserializerClassName;
@@ -156,6 +159,39 @@ public class VectorPartitionDesc  {
     return result;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof VectorPartitionDesc) {
+      VectorPartitionDesc other = (VectorPartitionDesc) o;
+      return Strings.nullToEmpty(getInputFileFormatClassName()).equals(
+          Strings.nullToEmpty(other.getInputFileFormatClassName())) &&
+          Strings.nullToEmpty(getRowDeserializerClassName()).equals(
+              Strings.nullToEmpty(other.getRowDeserializerClassName())) &&
+          getVectorDeserializeType() == other.getVectorDeserializeType() &&
+          getVectorMapOperatorReadType() == other.getVectorMapOperatorReadType() &&
+          getIsInputFileFormatSelfDescribing() == other.getIsInputFileFormatSelfDescribing() &&
+          Arrays.equals(getDataTypeInfos(), other.getDataTypeInfos());
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = result * prime +
+        (getInputFileFormatClassName() == null ? 0 : getInputFileFormatClassName().hashCode());
+    result = result * prime +
+        (getRowDeserializerClassName() == null ? 0 : getRowDeserializerClassName().hashCode());
+    result = result * prime +
+        (getVectorDeserializeType() == null ? 0 : getVectorDeserializeType().hashCode());
+    result = result * prime +
+        (getVectorMapOperatorReadType() == null ? 0 : getVectorMapOperatorReadType().hashCode());
+    result = result * prime + Boolean.valueOf(getIsInputFileFormatSelfDescribing()).hashCode();
+    result = result * prime + Arrays.hashCode(getDataTypeInfos());
+    return result;
+  }
+
   public VectorMapOperatorReadType getVectorMapOperatorReadType() {
     return vectorMapOperatorReadType;
   }
@@ -191,24 +227,29 @@ public class VectorPartitionDesc  {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("vector map operator read type ");
+    sb.append("(");
     sb.append(vectorMapOperatorReadType.name());
-    sb.append(", input file format class name ");
+    sb.append(", ");
     sb.append(inputFileFormatClassName);
     switch (vectorMapOperatorReadType) {
     case VECTORIZED_INPUT_FILE_FORMAT:
       break;
     case VECTOR_DESERIALIZE:
-      sb.append(", deserialize type ");
+      sb.append(", ");
       sb.append(vectorDeserializeType.name());
       break;
     case ROW_DESERIALIZE:
-      sb.append(", deserializer class name ");
+      sb.append(", ");
       sb.append(rowDeserializerClassName);
       break;
     default:
       throw new RuntimeException("Unexpected vector map operator read type " + vectorMapOperatorReadType.name());
     }
+    sb.append(")");
     return sb.toString();
+  }
+
+  public void setVectorMapOperatorReadType(VectorMapOperatorReadType val) {
+    this.vectorMapOperatorReadType = val;
   }
 }

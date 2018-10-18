@@ -1,3 +1,4 @@
+--! qt:dataset:src_thrift
 set hive.fetch.task.conversion=more;
 
 DESCRIBE FUNCTION size;

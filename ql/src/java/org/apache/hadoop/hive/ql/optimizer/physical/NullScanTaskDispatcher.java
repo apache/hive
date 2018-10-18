@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,13 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
+import java.io.IOException;
+
+import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+
+import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +34,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Map.Entry;
 import java.util.Stack;
 
@@ -86,13 +92,19 @@ public class NullScanTaskDispatcher implements Dispatcher {
     return null;
   }
 
-  private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc) {
-    if (desc != null) {
-      desc.setInputFileFormatClass(OneNullRowInputFormat.class);
-      desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
-      desc.getProperties().setProperty(serdeConstants.SERIALIZATION_LIB,
-        NullStructSerDe.class.getName());
+  private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc, Path path) {
+    if (desc == null) return null;
+    boolean isEmpty = false;
+    try {
+      isEmpty = Utilities.isEmptyPath(physicalContext.getConf(), path);
+    } catch (IOException e) {
+      LOG.error("Cannot determine if the table is empty", e);
     }
+    desc.setInputFileFormatClass(
+        isEmpty ? ZeroRowsInputFormat.class : OneNullRowInputFormat.class);
+    desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
+    desc.getProperties().setProperty(serdeConstants.SERIALIZATION_LIB,
+      NullStructSerDe.class.getName());
     return desc;
   }
 
@@ -107,12 +119,13 @@ public class NullScanTaskDispatcher implements Dispatcher {
     }
     if (allowed.size() > 0) {
       PartitionDesc partDesc = work.getPathToPartitionInfo().get(path).clone();
-      PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
+      PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc, path);
       // Prefix partition with something to avoid it being a hidden file.
       Path fakePath = new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
           + "/part" + encode(newPartition.getPartSpec()));
+      StringInternUtils.internUriStringsInPath(fakePath);
       work.addPathToPartitionInfo(fakePath, newPartition);
-      work.addPathToAlias(fakePath, new ArrayList<String>(allowed));
+      work.addPathToAlias(fakePath, new ArrayList<>(allowed));
       aliasesAffected.removeAll(allowed);
       if (aliasesAffected.isEmpty()) {
         work.removePathToAlias(path);
@@ -126,7 +139,7 @@ public class NullScanTaskDispatcher implements Dispatcher {
     for (TableScanOperator tso : tableScans) {
       // use LinkedHashMap<String, Operator<? extends OperatorDesc>>
       // getAliasToWork()
-	  // should not apply this for non-native table
+      // should not apply this for non-native table
       if (tso.getConf().getTableMetadata().getStorageHandler() != null) {
         continue;
       }

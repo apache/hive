@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,14 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public Map<String, String> getOpProps();
   public long getMemoryNeeded();
   public void setMemoryNeeded(long memoryNeeded);
+  public long getMaxMemoryAvailable();
+  public void setMaxMemoryAvailable(long memoryAvailble);
   public String getRuntimeStatsTmpDir();
   public void setRuntimeStatsTmpDir(String runtimeStatsTmpDir);
+
+  boolean isSame(OperatorDesc other);
+  public Map<String, ExprNodeDesc> getColumnExprMap();
+  public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap);
+
+  void fillSignature(Map<String, Object> ret);
 }

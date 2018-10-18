@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +19,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.cost;
 
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.metadata.BuiltInMetadata;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
+import org.apache.calcite.rel.metadata.MetadataDef;
+import org.apache.calcite.rel.metadata.MetadataHandler;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdPercentageOriginalRows;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -34,7 +37,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * HiveRelMdCost supplies the implementation of cost model.
  */
-public class HiveRelMdCost {
+public class HiveRelMdCost implements MetadataHandler<BuiltInMetadata.NonCumulativeCost> {
 
   private final HiveCostModel hiveCostModel;
 
@@ -50,6 +53,11 @@ public class HiveRelMdCost {
                    RelMdPercentageOriginalRows.SOURCE));
   }
 
+  @Override
+  public MetadataDef<BuiltInMetadata.NonCumulativeCost> getDef() {
+    return BuiltInMetadata.NonCumulativeCost.DEF;
+  }
+
   public RelOptCost getNonCumulativeCost(HiveAggregate aggregate, RelMetadataQuery mq) {
     return hiveCostModel.getAggregateCost(aggregate);
   }
@@ -59,7 +67,7 @@ public class HiveRelMdCost {
   }
 
   public RelOptCost getNonCumulativeCost(HiveTableScan ts, RelMetadataQuery mq) {
-    return hiveCostModel.getScanCost(ts);
+    return hiveCostModel.getScanCost(ts, mq);
   }
 
   // Default case

@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10326]: Invalid Constraint syntax ENABLE/ENFORCED feature not supported yet. Please use DISABLE/NOT ENFORCED instead.

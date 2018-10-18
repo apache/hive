@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.accumulo.AccumuloHiveRow;
 import org.apache.hadoop.hive.accumulo.LazyAccumuloRow;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapping;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * Deserialization from Accumulo to LazyAccumuloRow for Hive.
  *
  */
-public class AccumuloSerDe implements SerDe {
+public class AccumuloSerDe extends AbstractSerDe {
 
   private AccumuloSerDeParameters accumuloSerDeParameters;
   private LazyAccumuloRow cachedRow;
@@ -54,6 +54,7 @@ public class AccumuloSerDe implements SerDe {
 
   private static final Logger log = LoggerFactory.getLogger(AccumuloSerDe.class);
 
+  @Override
   public void initialize(Configuration conf, Properties properties) throws SerDeException {
     accumuloSerDeParameters = new AccumuloSerDeParameters(conf, properties, getClass().getName());
 
@@ -109,6 +110,7 @@ public class AccumuloSerDe implements SerDe {
     return cachedRow;
   }
 
+  @Override
   public Class<? extends Writable> getSerializedClass() {
     return Mutation.class;
   }
@@ -135,12 +137,14 @@ public class AccumuloSerDe implements SerDe {
     return cachedRow;
   }
 
+  @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return cachedObjectInspector;
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
-    throw new UnsupportedOperationException("SerdeStats not supported.");
+    return null;
   }
 
   public AccumuloSerDeParameters getParams() {

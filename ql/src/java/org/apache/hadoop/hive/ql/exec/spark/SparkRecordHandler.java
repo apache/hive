@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -48,6 +48,8 @@ public abstract class SparkRecordHandler {
   protected boolean abort = false;
   private long rowNumber = 0;
   private long nextLogThreshold = 1;
+
+  protected boolean anyRow = false;
 
   public <K, V> void init(JobConf job, OutputCollector<K, V> output, Reporter reporter) throws Exception {
     jc = job;

@@ -11,6 +11,8 @@ sin(x) - returns the sine of x (x is in radians)
 Example:
    > SELECT sin(0) FROM src LIMIT 1;
   0
+Function class:org.apache.hadoop.hive.ql.udf.UDFSin
+Function type:BUILTIN
 PREHOOK: query: SELECT sin(null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

@@ -1,0 +1,205 @@
+PREHOOK: query: create table d1(d date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@d1
+POSTHOOK: query: create table d1(d date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@d1
+PREHOOK: query: insert into d1 values
+	('2010-10-01'),
+	('2010-10-02'),
+	('2010-10-03'),
+	('2010-10-04'),
+	('2010-10-05'),
+	('2010-10-06'),
+	('2010-10-07'),
+	('2010-10-08'),
+	('2010-10-09'),
+	('2010-10-10')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@d1
+POSTHOOK: query: insert into d1 values
+	('2010-10-01'),
+	('2010-10-02'),
+	('2010-10-03'),
+	('2010-10-04'),
+	('2010-10-05'),
+	('2010-10-06'),
+	('2010-10-07'),
+	('2010-10-08'),
+	('2010-10-09'),
+	('2010-10-10')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@d1
+POSTHOOK: Lineage: d1.d SCRIPT []
+PREHOOK: query: analyze table d1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@d1
+PREHOOK: Output: default@d1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table d1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@d1
+POSTHOOK: Output: default@d1
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted d1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@d1
+POSTHOOK: query: desc formatted d1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@d1
+# col_name            	data_type           	comment             
+d                   	date                	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	100                 
+	totalSize           	110                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted d1 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@d1
+POSTHOOK: query: desc formatted d1 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@d1
+col_name            	d                   	 	 	 	 	 	 	 	 	 	 
+data_type           	date                	 	 	 	 	 	 	 	 	 	 
+min                 	2010-10-01          	 	 	 	 	 	 	 	 	 	 
+max                 	2010-10-10          	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	10                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: explain
+select 'stats: FIL ~0 read',count(1) from d1 where d < '2010-03-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@d1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select 'stats: FIL ~0 read',count(1) from d1 where d < '2010-03-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@d1
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_15]
+        Select Operator [SEL_14] (rows=1 width=110)
+          Output:["_col0","_col1"]
+          Group By Operator [GBY_13] (rows=1 width=8)
+            Output:["_col0"],aggregations:["count(VALUE._col0)"]
+          <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+            PARTITION_ONLY_SHUFFLE [RS_12]
+              Group By Operator [GBY_11] (rows=1 width=8)
+                Output:["_col0"],aggregations:["count()"]
+                Select Operator [SEL_10] (rows=1 width=56)
+                  Filter Operator [FIL_9] (rows=1 width=56)
+                    predicate:(d < DATE'2010-03-01')
+                    TableScan [TS_0] (rows=10 width=56)
+                      default@d1,d1,Tbl:COMPLETE,Col:COMPLETE,Output:["d"]
+
+PREHOOK: query: explain
+select 'stats: FIL estimate some read',count(1) from d1 where d < '2010-10-03'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@d1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select 'stats: FIL estimate some read',count(1) from d1 where d < '2010-10-03'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@d1
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_15]
+        Select Operator [SEL_14] (rows=1 width=121)
+          Output:["_col0","_col1"]
+          Group By Operator [GBY_13] (rows=1 width=8)
+            Output:["_col0"],aggregations:["count(VALUE._col0)"]
+          <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+            PARTITION_ONLY_SHUFFLE [RS_12]
+              Group By Operator [GBY_11] (rows=1 width=8)
+                Output:["_col0"],aggregations:["count()"]
+                Select Operator [SEL_10] (rows=3 width=56)
+                  Filter Operator [FIL_9] (rows=3 width=56)
+                    predicate:(d < DATE'2010-10-03')
+                    TableScan [TS_0] (rows=10 width=56)
+                      default@d1,d1,Tbl:COMPLETE,Col:COMPLETE,Output:["d"]
+
+PREHOOK: query: explain
+select 'stats: FIL estimate all read',count(1) from d1 where d < '2010-11-03'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@d1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select 'stats: FIL estimate all read',count(1) from d1 where d < '2010-11-03'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@d1
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_15]
+        Select Operator [SEL_14] (rows=1 width=120)
+          Output:["_col0","_col1"]
+          Group By Operator [GBY_13] (rows=1 width=8)
+            Output:["_col0"],aggregations:["count(VALUE._col0)"]
+          <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+            PARTITION_ONLY_SHUFFLE [RS_12]
+              Group By Operator [GBY_11] (rows=1 width=8)
+                Output:["_col0"],aggregations:["count()"]
+                Select Operator [SEL_10] (rows=10 width=56)
+                  Filter Operator [FIL_9] (rows=10 width=56)
+                    predicate:(d < DATE'2010-11-03')
+                    TableScan [TS_0] (rows=10 width=56)
+                      default@d1,d1,Tbl:COMPLETE,Col:COMPLETE,Output:["d"]
+

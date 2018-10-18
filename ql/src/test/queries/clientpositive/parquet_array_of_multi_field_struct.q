@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 -- this test creates a Parquet table with an array of multi-field structs
 
 CREATE TABLE parquet_array_of_multi_field_structs (

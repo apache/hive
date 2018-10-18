@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,8 +37,6 @@ import static org.junit.Assert.*;
 public class TestTimestampColumnVector {
 
   private static int TEST_COUNT = 5000;
-
-  private static int fake = 0;
 
   @Test
   public void testSaveAndRetrieve() throws Exception {

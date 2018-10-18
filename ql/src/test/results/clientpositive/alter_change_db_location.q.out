@@ -18,20 +18,20 @@ PREHOOK: Input: database:newdb
 POSTHOOK: query: use newDB
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:newdb
-PREHOOK: query: create table tab (name string)
+PREHOOK: query: create table tab_n13 (name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:newdb
-PREHOOK: Output: newDB@tab
-POSTHOOK: query: create table tab (name string)
+PREHOOK: Output: newDB@tab_n13
+POSTHOOK: query: create table tab_n13 (name string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:newdb
-POSTHOOK: Output: newDB@tab
-PREHOOK: query: alter table tab rename to newName
+POSTHOOK: Output: newDB@tab_n13
+PREHOOK: query: alter table tab_n13 rename to newName
 PREHOOK: type: ALTERTABLE_RENAME
-PREHOOK: Input: newdb@tab
-PREHOOK: Output: newdb@tab
-POSTHOOK: query: alter table tab rename to newName
+PREHOOK: Input: newdb@tab_n13
+PREHOOK: Output: newdb@tab_n13
+POSTHOOK: query: alter table tab_n13 rename to newName
 POSTHOOK: type: ALTERTABLE_RENAME
-POSTHOOK: Input: newdb@tab
+POSTHOOK: Input: newdb@tab_n13
 POSTHOOK: Output: newDB@newName
-POSTHOOK: Output: newdb@tab
+POSTHOOK: Output: newdb@tab_n13

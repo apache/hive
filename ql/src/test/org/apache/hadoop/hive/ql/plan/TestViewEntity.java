@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,14 +24,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.TestReadEntityDirect.CheckInputReadEntityDirect;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -68,7 +66,6 @@ public class TestViewEntity {
         .setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
     driver = new Driver(conf);
-    driver.init();
   }
 
   @AfterClass
@@ -138,6 +135,74 @@ public class TestViewEntity {
     // table as second read entity
     assertEquals("default@" + tab1, CheckInputReadEntity.readEntities[1].getName());
     assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[1].isDirect());
+
+  }
+
+  /**
+   * Verify that the the query with the subquery inside a view will have the correct
+   * direct and indirect inputs.
+   * @throws Exception
+   */
+  @Test
+  public void testSubQueryInSubView() throws Exception {
+    String prefix = "tvsubqueryinsubview" + NAME_PREFIX;
+    final String tab1 = prefix + "t";
+    final String view1 = prefix + "v";
+    final String view2 = prefix + "v2";
+
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    ret = driver.run("create view " + view2 + " as select * from (select * from " + view1 + ") x").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    driver.compile("select * from " + view2);
+    // view entity
+    assertEquals("default@" + view2, CheckInputReadEntity.readEntities[0].getName());
+
+    // table1 and view1 as second read entity
+    assertEquals("default@" + view1, CheckInputReadEntity.readEntities[1].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[1].isDirect());
+    Set<ReadEntity> parents = CheckInputReadEntity.readEntities[1].getParents();
+    assertTrue("Table does not have parent", parents != null && parents.size() > 0);
+    assertEquals("default@" + tab1, CheckInputReadEntity.readEntities[2].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[2].isDirect());
+
+  }
+
+  /**
+   * Verify that the the query with the subquery inside a view will have the correct
+   * direct and indirect inputs.
+   * @throws Exception
+   */
+  @Test
+  public void testUnionAllInSubView() throws Exception {
+    String prefix = "tvunionallinsubview" + NAME_PREFIX;
+    final String tab1 = prefix + "t";
+    final String view1 = prefix + "v";
+    final String view2 = prefix + "v2";
+
+    int ret = driver.run("create table " + tab1 + "(id int)").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+    ret = driver.run("create view " + view1 + " as select * from " + tab1).getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    ret = driver.run("create view " + view2 + " as select * from (select * from " + view1 + " union all select * from " + view1 + ") x").getResponseCode();
+    assertEquals("Checking command success", 0, ret);
+
+    driver.compile("select * from " + view2);
+    // view entity
+    assertEquals("default@" + view2, CheckInputReadEntity.readEntities[0].getName());
+
+    // table1 and view1 as second read entity
+    assertEquals("default@" + view1, CheckInputReadEntity.readEntities[1].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[1].isDirect());
+    Set<ReadEntity> parents = CheckInputReadEntity.readEntities[1].getParents();
+    assertTrue("Table does not have parent", parents != null && parents.size() > 0);
+    assertEquals("default@" + tab1, CheckInputReadEntity.readEntities[2].getName());
+    assertFalse("Table is not direct input", CheckInputReadEntity.readEntities[2].isDirect());
 
   }
 

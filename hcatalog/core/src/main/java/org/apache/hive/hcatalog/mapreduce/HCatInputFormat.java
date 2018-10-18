@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,7 @@ import org.apache.hive.hcatalog.data.schema.HCatSchema;
  * The InputFormat to use to read data from HCatalog.
  */
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
+@InterfaceStability.Stable
 public class HCatInputFormat extends HCatBaseInputFormat {
 
   private Configuration conf;

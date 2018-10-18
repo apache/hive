@@ -1,0 +1,83 @@
+PREHOOK: query: drop table nullscan_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table nullscan_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table onerow_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table onerow_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table nullscan_table(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nullscan_table
+POSTHOOK: query: create table nullscan_table(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nullscan_table
+PREHOOK: query: create table onerow_table(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@onerow_table
+POSTHOOK: query: create table onerow_table(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@onerow_table
+PREHOOK: query: insert into table onerow_table values(0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@onerow_table
+POSTHOOK: query: insert into table onerow_table values(0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@onerow_table
+POSTHOOK: Lineage: onerow_table.i SCRIPT []
+PREHOOK: query: select (1=1) from nullscan_table group by (1=1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nullscan_table
+#### A masked pattern was here ####
+POSTHOOK: query: select (1=1) from nullscan_table group by (1=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nullscan_table
+#### A masked pattern was here ####
+PREHOOK: query: select (1=1) from onerow_table group by (1=1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@onerow_table
+#### A masked pattern was here ####
+POSTHOOK: query: select (1=1) from onerow_table group by (1=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@onerow_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select (1=1) from nullscan_table group by (1=1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nullscan_table
+#### A masked pattern was here ####
+POSTHOOK: query: select (1=1) from nullscan_table group by (1=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nullscan_table
+#### A masked pattern was here ####
+PREHOOK: query: select (1=1) from onerow_table group by (1=1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@onerow_table
+#### A masked pattern was here ####
+POSTHOOK: query: select (1=1) from onerow_table group by (1=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@onerow_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: drop table nullscan_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@nullscan_table
+PREHOOK: Output: default@nullscan_table
+POSTHOOK: query: drop table nullscan_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@nullscan_table
+POSTHOOK: Output: default@nullscan_table
+PREHOOK: query: drop table onerow_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@onerow_table
+PREHOOK: Output: default@onerow_table
+POSTHOOK: query: drop table onerow_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@onerow_table
+POSTHOOK: Output: default@onerow_table

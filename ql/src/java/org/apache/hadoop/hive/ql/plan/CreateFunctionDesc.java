@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -36,6 +37,7 @@ public class CreateFunctionDesc implements Serializable {
   private String className;
   private boolean isTemp;
   private List<ResourceUri> resources;
+  private ReplicationSpec replicationSpec;
 
   /**
    * For serialization only.
@@ -44,11 +46,12 @@ public class CreateFunctionDesc implements Serializable {
   }
   
   public CreateFunctionDesc(String functionName, boolean isTemp, String className,
-      List<ResourceUri> resources) {
+      List<ResourceUri> resources, ReplicationSpec replicationSpec) {
     this.functionName = functionName;
     this.isTemp = isTemp;
     this.className = className;
     this.resources = resources;
+    this.replicationSpec = replicationSpec;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -85,4 +88,14 @@ public class CreateFunctionDesc implements Serializable {
     this.resources = resources;
   }
 
+  /**
+   * @return what kind of replication scope this create is running under.
+   * This can result in a "CREATE IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec() {
+    if (replicationSpec == null) {
+      this.replicationSpec = new ReplicationSpec();
+    }
+    return this.replicationSpec;
+  }
 }

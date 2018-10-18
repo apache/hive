@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -62,7 +62,7 @@ public class TestZookeeperLockManager {
   @Before
   public void setup() {
     conf = new HiveConf();
-    lockObjData = new HiveLockObjectData("1", "10", "SHARED", "show tables");
+    lockObjData = new HiveLockObjectData("1", "10", "SHARED", "show tables", conf);
     hiveLock = new HiveLockObject(TABLE, lockObjData);
     zLock = new ZooKeeperHiveLock(TABLE_LOCK_PATH, hiveLock, HiveLockMode.SHARED);
 

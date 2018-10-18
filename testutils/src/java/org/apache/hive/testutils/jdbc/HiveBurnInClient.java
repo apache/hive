@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,10 +26,10 @@ import java.sql.DriverManager;
 
 
 public class HiveBurnInClient {
-  private static String driverName = "org.apache.hive.jdbc.HiveDriver";
+  private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
 
   //default 80k (runs slightly over 1 day long)
-  private final static int NUM_QUERY_ITERATIONS = 80000;
+  private static final int NUM_QUERY_ITERATIONS = 80000;
 
   /**
    * Creates 2 tables to query from

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
@@ -66,8 +66,8 @@ public class MapJoinTableContainerSerDe {
    */
   public MapJoinPersistableTableContainer load(ObjectInputStream in)
       throws HiveException {
-    SerDe keySerDe = keyContext.getSerDe();
-    SerDe valueSerDe = valueContext.getSerDe();
+    AbstractSerDe keySerDe = keyContext.getSerDe();
+    AbstractSerDe valueSerDe = valueContext.getSerDe();
     MapJoinPersistableTableContainer tableContainer;
     try {
       String name = in.readUTF();
@@ -110,18 +110,18 @@ public class MapJoinTableContainerSerDe {
     try {
 
       if (!fs.exists(folder)) {
-        return getDefaultEmptyContainer(keyContext, valueContext);
+        return getDefaultEmptyContainer(hconf, keyContext, valueContext);
       }
       if (!fs.isDirectory(folder)) {
         throw new HiveException("Error, not a directory: " + folder);
       }
       FileStatus[] fileStatuses = fs.listStatus(folder);
       if (fileStatuses == null || fileStatuses.length == 0) {
-        return getDefaultEmptyContainer(keyContext, valueContext);
+        return getDefaultEmptyContainer(hconf, keyContext, valueContext);
       }
 
-      SerDe keySerDe = keyContext.getSerDe();
-      SerDe valueSerDe = valueContext.getSerDe();
+      AbstractSerDe keySerDe = keyContext.getSerDe();
+      AbstractSerDe valueSerDe = valueContext.getSerDe();
       Writable keyContainer = keySerDe.getSerializedClass().newInstance();
       Writable valueContainer = valueSerDe.getSerializedClass().newInstance();
 
@@ -138,7 +138,7 @@ public class MapJoinTableContainerSerDe {
         InputStream is = null;
         ObjectInputStream in = null;
         try {
-          is = fs.open(filePath, 4096);
+          is = fs.open(filePath);
           in = new ObjectInputStream(is);
           String name = in.readUTF();
           Map<String, String> metaData = (Map<String, String>) in.readObject();
@@ -225,8 +225,8 @@ public class MapJoinTableContainerSerDe {
 
         FileStatus[] fileStatuses = fs.listStatus(folder);
         if (fileStatuses != null && fileStatuses.length > 0) {
-          SerDe keySerDe = keyContext.getSerDe();
-          SerDe valueSerDe = valueContext.getSerDe();
+          AbstractSerDe keySerDe = keyContext.getSerDe();
+          AbstractSerDe valueSerDe = valueContext.getSerDe();
           Writable key = keySerDe.getSerializedClass().newInstance();
           Writable value = valueSerDe.getSerializedClass().newInstance();
 
@@ -238,7 +238,7 @@ public class MapJoinTableContainerSerDe {
             InputStream is = null;
             ObjectInputStream in = null;
             try {
-              is = fs.open(filePath, 4096);
+              is = fs.open(filePath);
               in = new ObjectInputStream(is);
               // skip the name and metadata
               in.readUTF();
@@ -312,15 +312,20 @@ public class MapJoinTableContainerSerDe {
           clazz.getDeclaredConstructor(Map.class);
       return constructor.newInstance(metaData);
     } catch (Exception e) {
-      String msg = "Error while attemping to create table container" +
+      String msg = "Error while attempting to create table container" +
           " of type: " + name + ", with metaData: " + metaData;
       throw new HiveException(msg, e);
     }
   }
 
   // Get an empty container when the small table is empty.
-  private static MapJoinTableContainer getDefaultEmptyContainer(MapJoinObjectSerDeContext keyCtx,
-      MapJoinObjectSerDeContext valCtx) throws SerDeException {
+  private static MapJoinTableContainer getDefaultEmptyContainer(Configuration hconf,
+      MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx) throws SerDeException {
+    boolean useOptimizedContainer = HiveConf.getBoolVar(
+        hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+    if (useOptimizedContainer) {
+      return new MapJoinBytesTableContainer(hconf, valCtx, -1, 0);
+    }
     MapJoinTableContainer container = new HashMapWrapper();
     container.setSerde(keyCtx, valCtx);
     container.seal();

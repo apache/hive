@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -32,6 +34,7 @@ public class DropFunctionDesc implements Serializable {
 
   private String functionName;
   private boolean isTemp;
+  private ReplicationSpec replicationSpec;
 
   /**
    * For serialization only.
@@ -39,9 +42,10 @@ public class DropFunctionDesc implements Serializable {
   public DropFunctionDesc() {
   }
   
-  public DropFunctionDesc(String functionName, boolean isTemp) {
+  public DropFunctionDesc(String functionName, boolean isTemp, ReplicationSpec replicationSpec) {
     this.functionName = functionName;
     this.isTemp = isTemp;
+    this.replicationSpec = replicationSpec;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -61,4 +65,14 @@ public class DropFunctionDesc implements Serializable {
     this.isTemp = isTemp;
   }
 
+  /**
+   * @return what kind of replication scope this create is running under.
+   * This can result in a "DROP IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec() {
+    if (replicationSpec == null) {
+      this.replicationSpec = new ReplicationSpec();
+    }
+    return this.replicationSpec;
+  }
 }

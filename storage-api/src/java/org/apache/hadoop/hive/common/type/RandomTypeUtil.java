@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -57,19 +57,7 @@ public class RandomTypeUtil {
 
   private static final String DECIMAL_CHARS = "0123456789";
 
-  public static class HiveDecimalAndPrecisionScale {
-    public HiveDecimal hiveDecimal;
-    public int precision;
-    public int scale;
-
-    HiveDecimalAndPrecisionScale(HiveDecimal hiveDecimal, int precision, int scale) {
-      this.hiveDecimal = hiveDecimal;
-      this.precision = precision;
-      this.scale = scale;
-    }
-  }
-
-  public static HiveDecimalAndPrecisionScale getRandHiveDecimal(Random r) {
+  public static HiveDecimal getRandHiveDecimal(Random r) {
     int precision;
     int scale;
     while (true) {
@@ -93,18 +81,7 @@ public class RandomTypeUtil {
         sb.append(getRandString(r, DECIMAL_CHARS, scale));
       }
 
-      HiveDecimal bd = HiveDecimal.create(sb.toString());
-      precision = bd.precision();
-      scale = bd.scale();
-      if (scale > precision) {
-        // Sometimes weird decimals are produced?
-        continue;
-      }
-
-      // For now, punt.
-      precision = HiveDecimal.SYSTEM_DEFAULT_PRECISION;
-      scale = HiveDecimal.SYSTEM_DEFAULT_SCALE;
-      return new HiveDecimalAndPrecisionScale(bd, precision, scale);
+      return HiveDecimal.create(sb.toString());
     }
   }
 
@@ -125,7 +102,7 @@ public class RandomTypeUtil {
   public static final long MILLISECONDS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
   public static final long NANOSECONDS_PER_MILLISSECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
-  private static ThreadLocal<DateFormat> DATE_FORMAT =
+  private static final ThreadLocal<DateFormat> DATE_FORMAT =
       new ThreadLocal<DateFormat>() {
         @Override
         protected DateFormat initialValue() {
@@ -134,10 +111,10 @@ public class RandomTypeUtil {
       };
 
   // We've switched to Joda/Java Calendar which has a more limited time range....
-  public static int MIN_YEAR = 1900;
-  public static int MAX_YEAR = 3000;
-  private static long MIN_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("1900-01-01 00:00:00");
-  private static long MAX_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("3000-01-01 00:00:00");
+  public static final int MIN_YEAR = 1900;
+  public static final int MAX_YEAR = 3000;
+  private static final long MIN_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("1900-01-01 00:00:00");
+  private static final long MAX_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("3000-01-01 00:00:00");
 
   private static long parseToMillis(String s) {
     try {

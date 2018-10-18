@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,8 +31,8 @@ public class CastDecimalToBoolean extends FuncDecimalToLong {
     super();
   }
 
-  public CastDecimalToBoolean(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastDecimalToBoolean(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override
@@ -41,6 +41,6 @@ public class CastDecimalToBoolean extends FuncDecimalToLong {
    * Otherwise, return 1 for true.
    */
   protected void func(LongColumnVector outV, DecimalColumnVector inV,  int i) {
-    outV.vector[i] = inV.vector[i].getHiveDecimal().signum() == 0 ? 0 : 1;
+    outV.vector[i] = inV.vector[i].signum() == 0 ? 0 : 1;
   }
 }

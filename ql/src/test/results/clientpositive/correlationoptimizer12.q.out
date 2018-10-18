@@ -1,19 +1,23 @@
-PREHOOK: query: -- Currently, correlation optimizer does not support PTF operator
-EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
+PREHOOK: query: EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(x.value) OVER (PARTITION BY x.key) AS cnt FROM src x) xx
 JOIN
 (SELECT y.key as key, count(y.value) OVER (PARTITION BY y.key) AS cnt FROM src1 y) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Currently, correlation optimizer does not support PTF operator
-EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(x.value) OVER (PARTITION BY x.key) AS cnt FROM src x) xx
 JOIN
 (SELECT y.key as key, count(y.value) OVER (PARTITION BY y.key) AS cnt FROM src1 y) yy
 ON (xx.key=yy.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -26,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -36,6 +41,7 @@ STAGE PLANS:
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -59,7 +65,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: count
                         window function: GenericUDAFCountEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), count_window_0 (type: bigint)
@@ -111,6 +117,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -121,6 +128,7 @@ STAGE PLANS:
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                 value expressions: value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -144,7 +152,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: count
                         window function: GenericUDAFCountEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), count_window_0 (type: bigint)

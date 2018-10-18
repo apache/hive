@@ -84,7 +84,6 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
     warehouseDir = new Path(new Path(fs.getUri()), "/warehouse");
     fs.mkdirs(warehouseDir);
     conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehouseDir.toString());
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS, true);
 
     // Set up scratch directory
     Path scratchDir = new Path(new Path(fs.getUri()), "/scratchdir");
@@ -205,6 +204,12 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
   protected void allowDropOnTable(String tblName, String userName, String location)
       throws Exception {
     allowWriteAccessViaAcl(userName, location);
+  }
+
+  @Override
+  protected void disallowDropOnTable(String tblName, String userName, String location)
+      throws Exception {
+    disallowWriteAccessViaAcl(userName, location);
   }
 
   @Override

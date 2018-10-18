@@ -16,6 +16,7 @@
 
 ##### Remember, this is a velocity template 
 set -x
+date +"%Y-%m-%d %T.%3N"
 umask 0022
 echo $$
 ps -e -o pid,pgrp,user,args
@@ -34,10 +35,12 @@ then
   export PATH=$JAVA_HOME/bin/:$PATH
 fi
 export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=$logDir/tmp ${antEnvOpts}"
-export M2_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=$logDir/tmp ${mavenEnvOpts}"
+export MAVEN_OPTS="-Xmx1g -Djava.io.tmpdir=$logDir/tmp ${mavenEnvOpts}"
 export HADOOP_ROOT_LOGGER=INFO,console
 export HADOOP_OPTS="-Dhive.log.dir=$logDir -Dhive.query.id=hadoop -Djava.io.tmpdir=$logDir/tmp"
 cd $localDir/$instanceName/${repositoryName}-source || exit 1
+date +"%Y-%m-%d %T.%3N"
+echo "Pre test cleanup"
 if [[ -s batch.pid ]]
 then
   while read pid
@@ -51,12 +54,11 @@ then
 fi
 echo "$$" > batch.pid
 find ./ -name 'TEST-*.xml' -delete
-find ./ -name 'hive.log' -delete
-find ./ -name junit_metastore_db | xargs -r rm -rf
+date +"%Y-%m-%d %T.%3N"
+echo "Pre test cleanup done"
 ret=0
 if [[ "${buildTool}" == "maven" ]]
 then
-  testModule=$(find ./ -name '${testClass}.java' | awk -F'/' '{print $2}')
   if [[ -z "$testModule" ]]
   then
     testModule=./
@@ -64,6 +66,7 @@ then
   pushd $testModule
   timeout 40m mvn -B test -Dmaven.repo.local=$localDir/$instanceName/maven \
     $mavenArgs $mavenTestArgs $testArguments 1>$logDir/maven-test.txt 2>&1 </dev/null &
+  date +"%Y-%m-%d %T.%3N"
 #[[
   pid=$!
 ]]#
@@ -86,18 +89,20 @@ fi
 echo $pid >> batch.pid
 wait $pid
 ret=$?
-find ./ -type f -name hive.log -o -name spark.log -o -name derby.log | \
-  xargs -I {} sh -c 'f=$(basename {}); test -f ${logDir}/$f && f=$f-$(uuidgen); mv {} ${logDir}/$f'
+date +"%Y-%m-%d %T.%3N"
+mkdir ${logDir}/logs
 find ./ -type f -name 'TEST-*.xml' | \
-  xargs -I {} sh -c 'f=TEST-${batchName}-$(basename {}); test -f ${logDir}/$f && f=$f-$(uuidgen); mv {} ${logDir}/$f'
+xargs -I {} sh -c 'f=TEST-${batchName}-$(basename {}); test -f ${logDir}/$f && f=$f-$(uuidgen); mv {} ${logDir}/$f'
+find ./ -type f -name hive.log -o -name spark.log -o -name derby.log | \
+  xargs -I {} sh -c 'f=$(basename {}); test -f ${logDir}/logs/$f && f=$f-$(uuidgen); mv {} ${logDir}/logs/$f'
 find ./ -path "*/spark/work" | \
-  xargs -I {} sh -c 'mv {} ${logDir}/spark-log'
+  xargs -I {} sh -c 'mv {} ${logDir}/logs/spark-log'
 find ./ -type f -name 'syslog*' | \
-  xargs -I {} sh -c 'mkdir -p ${logDir}/syslogs; mv {} ${logDir}/syslogs'
-
+  xargs -I {} sh -c 'mkdir -p ${logDir}/logs/syslogs; mv {} ${logDir}/logs/syslogs'
+date +"%Y-%m-%d %T.%3N"
 
 if [[ -f $logDir/.log ]]
 then
-  mv $logDir/.log $logDir/dot.log
+  mv $logDir/.log $logDir/logs/dot.log
 fi
 exit $ret

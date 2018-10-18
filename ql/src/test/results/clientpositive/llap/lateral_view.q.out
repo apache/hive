@@ -1,0 +1,755 @@
+PREHOOK: query: CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_pyang_lv
+POSTHOOK: query: CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_pyang_lv
+PREHOOK: query: INSERT OVERWRITE TABLE tmp_pyang_lv SELECT key FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp_pyang_lv
+POSTHOOK: query: INSERT OVERWRITE TABLE tmp_pyang_lv SELECT key FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp_pyang_lv
+POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Lateral View Forward
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 500 Data size: 261000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Lateral View Join Operator
+                        outputColumnNames: _col0, _col1, _col5
+                        Statistics: Num rows: 1000 Data size: 289000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1000 Data size: 289000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col2 (type: int)
+                            sort order: ++
+                            Statistics: Num rows: 1000 Data size: 289000 Basic stats: COMPLETE Column stats: COMPLETE
+                            TopN Hash Memory Usage: 0.1
+                            value expressions: _col1 (type: string)
+                    Select Operator
+                      expressions: array(1,2,3) (type: array<int>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                      UDTF Operator
+                        Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col5
+                          Statistics: Num rows: 1000 Data size: 289000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
+                            outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 1000 Data size: 289000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: string), _col2 (type: int)
+                              sort order: ++
+                              Statistics: Num rows: 1000 Data size: 289000 Basic stats: COMPLETE Column stats: COMPLETE
+                              TopN Hash Memory Usage: 0.1
+                              value expressions: _col1 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 1
+                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col2 (type: int)
+                    sort order: ++
+                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col1 (type: string)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 1
+                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+      Processor Tree:
+        TableScan
+          alias: src
+          Lateral View Forward
+            Select Operator
+              Lateral View Join Operator
+                outputColumnNames: _col5
+                Select Operator
+                  expressions: _col5 (type: int)
+                  outputColumnNames: _col0
+                  Limit
+                    Number of rows: 3
+                    ListSink
+            Select Operator
+              expressions: array(1,2,3) (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col5
+                  Select Operator
+                    expressions: _col5 (type: int)
+                    outputColumnNames: _col0
+                    Limit
+                      Number of rows: 3
+                      ListSink
+
+PREHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 9
+      Processor Tree:
+        TableScan
+          alias: src
+          Lateral View Forward
+            Select Operator
+              Lateral View Join Operator
+                outputColumnNames: _col5
+                Lateral View Forward
+                  Select Operator
+                    expressions: _col5 (type: int)
+                    outputColumnNames: _col5
+                    Lateral View Join Operator
+                      outputColumnNames: _col5, _col6
+                      Select Operator
+                        expressions: _col5 (type: int), _col6 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Limit
+                          Number of rows: 9
+                          ListSink
+                  Select Operator
+                    expressions: array('a','b','c') (type: array<string>)
+                    outputColumnNames: _col0
+                    UDTF Operator
+                      function name: explode
+                      Lateral View Join Operator
+                        outputColumnNames: _col5, _col6
+                        Select Operator
+                          expressions: _col5 (type: int), _col6 (type: string)
+                          outputColumnNames: _col0, _col1
+                          Limit
+                            Number of rows: 9
+                            ListSink
+            Select Operator
+              expressions: array(1,2,3) (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col5
+                  Lateral View Forward
+                    Select Operator
+                      expressions: _col5 (type: int)
+                      outputColumnNames: _col5
+                      Lateral View Join Operator
+                        outputColumnNames: _col5, _col6
+                        Select Operator
+                          expressions: _col5 (type: int), _col6 (type: string)
+                          outputColumnNames: _col0, _col1
+                          Limit
+                            Number of rows: 9
+                            ListSink
+                    Select Operator
+                      expressions: array('a','b','c') (type: array<string>)
+                      outputColumnNames: _col0
+                      UDTF Operator
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col5, _col6
+                          Select Operator
+                            expressions: _col5 (type: int), _col6 (type: string)
+                            outputColumnNames: _col0, _col1
+                            Limit
+                              Number of rows: 9
+                              ListSink
+
+PREHOOK: query: EXPLAIN SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+      Processor Tree:
+        TableScan
+          alias: src
+          Lateral View Forward
+            Select Operator
+              Lateral View Join Operator
+                outputColumnNames: _col5
+                Lateral View Forward
+                  Select Operator
+                    Lateral View Join Operator
+                      outputColumnNames: _col6
+                      Select Operator
+                        expressions: _col6 (type: int)
+                        outputColumnNames: _col0
+                        Limit
+                          Number of rows: 3
+                          ListSink
+                  Select Operator
+                    expressions: _col5 (type: array<int>)
+                    outputColumnNames: _col0
+                    UDTF Operator
+                      function name: explode
+                      Lateral View Join Operator
+                        outputColumnNames: _col6
+                        Select Operator
+                          expressions: _col6 (type: int)
+                          outputColumnNames: _col0
+                          Limit
+                            Number of rows: 3
+                            ListSink
+            Select Operator
+              expressions: array(array(1,2,3)) (type: array<array<int>>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col5
+                  Lateral View Forward
+                    Select Operator
+                      Lateral View Join Operator
+                        outputColumnNames: _col6
+                        Select Operator
+                          expressions: _col6 (type: int)
+                          outputColumnNames: _col0
+                          Limit
+                            Number of rows: 3
+                            ListSink
+                    Select Operator
+                      expressions: _col5 (type: array<int>)
+                      outputColumnNames: _col0
+                      UDTF Operator
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col6
+                          Select Operator
+                            expressions: _col6 (type: int)
+                            outputColumnNames: _col0
+                            Limit
+                              Number of rows: 3
+                              ListSink
+
+PREHOOK: query: SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0	1
+PREHOOK: query: SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	a
+1	b
+1	c
+2	a
+2	b
+2	c
+3	a
+3	b
+3	c
+PREHOOK: query: SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: EXPLAIN
+SELECT myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_lv
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_lv
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+      Processor Tree:
+        TableScan
+          alias: tmp_pyang_lv
+          Lateral View Forward
+            Select Operator
+              Lateral View Join Operator
+                outputColumnNames: _col4
+                Select Operator
+                  expressions: _col4 (type: int)
+                  outputColumnNames: _col0
+                  Limit
+                    Number of rows: 3
+                    ListSink
+            Select Operator
+              expressions: array(1,2,3) (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col4
+                  Select Operator
+                    expressions: _col4 (type: int)
+                    outputColumnNames: _col0
+                    Limit
+                      Number of rows: 3
+                      ListSink
+
+PREHOOK: query: SELECT myCol from tmp_PYANG_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_lv
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT myCol from tmp_PYANG_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_lv
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: CREATE TABLE tmp_pyang_src_rcfile (key string, value array<string>) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_pyang_src_rcfile
+POSTHOOK: query: CREATE TABLE tmp_pyang_src_rcfile (key string, value array<string>) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_pyang_src_rcfile
+PREHOOK: query: INSERT OVERWRITE TABLE tmp_pyang_src_rcfile SELECT key, array(value) FROM src ORDER BY key LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp_pyang_src_rcfile
+POSTHOOK: query: INSERT OVERWRITE TABLE tmp_pyang_src_rcfile SELECT key, array(value) FROM src ORDER BY key LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp_pyang_src_rcfile
+POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key,value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key,value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+0	["val_0"]
+0	["val_0"]
+0	["val_0"]
+10	["val_10"]
+100	["val_100"]
+100	["val_100"]
+103	["val_103"]
+103	["val_103"]
+104	["val_104"]
+104	["val_104"]
+105	["val_105"]
+11	["val_11"]
+111	["val_111"]
+113	["val_113"]
+113	["val_113"]
+114	["val_114"]
+116	["val_116"]
+118	["val_118"]
+118	["val_118"]
+119	["val_119"]
+PREHOOK: query: SELECT myCol from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT myCol from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+val_0
+val_0
+val_0
+val_10
+val_100
+val_100
+val_103
+val_103
+val_104
+val_104
+val_105
+val_11
+val_111
+val_113
+val_113
+val_114
+val_116
+val_118
+val_118
+val_119
+PREHOOK: query: SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+0	["val_0"]	val_0
+0	["val_0"]	val_0
+0	["val_0"]	val_0
+10	["val_10"]	val_10
+100	["val_100"]	val_100
+100	["val_100"]	val_100
+103	["val_103"]	val_103
+103	["val_103"]	val_103
+104	["val_104"]	val_104
+104	["val_104"]	val_104
+105	["val_105"]	val_105
+11	["val_11"]	val_11
+111	["val_111"]	val_111
+113	["val_113"]	val_113
+113	["val_113"]	val_113
+114	["val_114"]	val_114
+116	["val_116"]	val_116
+118	["val_118"]	val_118
+118	["val_118"]	val_118
+119	["val_119"]	val_119
+PREHOOK: query: SELECT subq.key,subq.value 
+FROM (
+SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+)subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT subq.key,subq.value 
+FROM (
+SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+)subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+0	["val_0"]
+0	["val_0"]
+0	["val_0"]
+10	["val_10"]
+100	["val_100"]
+100	["val_100"]
+103	["val_103"]
+103	["val_103"]
+104	["val_104"]
+104	["val_104"]
+105	["val_105"]
+11	["val_11"]
+111	["val_111"]
+113	["val_113"]
+113	["val_113"]
+114	["val_114"]
+116	["val_116"]
+118	["val_118"]
+118	["val_118"]
+119	["val_119"]
+PREHOOK: query: SELECT subq.myCol
+FROM (
+SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+)subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT subq.myCol
+FROM (
+SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+)subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+val_0
+val_0
+val_0
+val_10
+val_100
+val_100
+val_103
+val_103
+val_104
+val_104
+val_105
+val_11
+val_111
+val_113
+val_113
+val_114
+val_116
+val_118
+val_118
+val_119
+PREHOOK: query: SELECT subq.key 
+FROM (
+SELECT key, value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+)subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT subq.key 
+FROM (
+SELECT key, value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
+)subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: EXPLAIN SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
+LATERAL VIEW explode(value) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
+LATERAL VIEW explode(value) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tmp_pyang_src_rcfile
+                  Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: array<string>)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: value[0] (type: string), key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 21040 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: array(_col0) (type: array<string>)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 10 Data size: 21040 Basic stats: COMPLETE Column stats: NONE
+                  Lateral View Forward
+                    Statistics: Num rows: 10 Data size: 21040 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: array<string>)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 10 Data size: 21040 Basic stats: COMPLETE Column stats: NONE
+                      Lateral View Join Operator
+                        outputColumnNames: _col1, _col2
+                        Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col1 (type: array<string>), _col2 (type: string)
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Select Operator
+                      expressions: _col1 (type: array<string>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 21040 Basic stats: COMPLETE Column stats: NONE
+                      UDTF Operator
+                        Statistics: Num rows: 10 Data size: 21040 Basic stats: COMPLETE Column stats: NONE
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col1, _col2
+                          Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col1 (type: array<string>), _col2 (type: string)
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 20 Data size: 42080 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
+LATERAL VIEW explode(value) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
+LATERAL VIEW explode(value) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_pyang_src_rcfile
+#### A masked pattern was here ####
+["val_100"]	val_100
+["val_10"]	val_10
+["val_111"]	val_111
+["val_113"]	val_113
+["val_103"]	val_103
+["val_104"]	val_104
+["val_105"]	val_105
+["val_11"]	val_11
+["val_114"]	val_114
+["val_118"]	val_118
+["val_0"]	val_0
+["val_116"]	val_116
+["val_119"]	val_119

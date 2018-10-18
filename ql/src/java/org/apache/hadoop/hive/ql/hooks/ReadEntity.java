@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +52,13 @@ public class ReadEntity extends Entity implements Serializable {
   // important because in that case we shouldn't acquire a lock for it or authorize the read.
   // These will be handled by the output to the table instead.
   private boolean isUpdateOrDelete = false;
+  /**
+   * https://issues.apache.org/jira/browse/HIVE-15048
+   * It is possible that the same table is used in top level query and a sub-query, e.g.
+   * select * from T where T.c in (select c from T inner join S on T.a=S.b)
+   */
+  public transient boolean isFromTopLevelQuery = true;
+
 
   // For views, the entities can be nested - by default, entities are at the top level
   // Must be deterministic order set for consistent q-test output across Java versions
@@ -102,6 +108,19 @@ public class ReadEntity extends Entity implements Serializable {
   }
 
   /**
+   * Constructor for objects represented as String. Currently applicable only
+   * for function names.
+   *
+   * @param db
+   * @param objName
+   * @param className
+   * @param type
+   */
+  public ReadEntity(Database db, String objName, String className, Type type) {
+    super(db, objName, className, type);
+  }
+
+  /**
    * Constructor given a partition.
    *
    * @param p
@@ -148,7 +167,7 @@ public class ReadEntity extends Entity implements Serializable {
 
     if (o instanceof ReadEntity) {
       ReadEntity ore = (ReadEntity) o;
-      return (toString().equalsIgnoreCase(ore.toString()));
+      return (getName().equalsIgnoreCase(ore.getName()));
     } else {
       return false;
     }

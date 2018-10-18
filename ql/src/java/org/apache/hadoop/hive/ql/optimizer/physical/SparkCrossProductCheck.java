@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,11 +36,11 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 
 /**
  * Check each MapJoin and ShuffleJoin Operator to see if they are performing a cross product.
@@ -85,18 +85,16 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
   }
 
   private void warn(String msg) {
-    SessionState.getConsole().getInfoStream().println(
-        String.format("Warning: %s", msg));
+    SessionState.getConsole().printInfo("Warning: " + msg, false);
   }
 
   private void checkShuffleJoin(SparkWork sparkWork) throws SemanticException {
     for (ReduceWork reduceWork : sparkWork.getAllReduceWork()) {
       Operator<? extends OperatorDesc> reducer = reduceWork.getReducer();
       if (reducer instanceof JoinOperator || reducer instanceof CommonMergeJoinOperator) {
-        Map<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info> rsInfo =
-            new HashMap<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info>();
+        Map<Integer, CrossProductHandler.ExtractReduceSinkInfo.Info> rsInfo = new TreeMap<Integer, CrossProductHandler.ExtractReduceSinkInfo.Info>();
         for (BaseWork parent : sparkWork.getParents(reduceWork)) {
-          rsInfo.putAll(new CrossProductCheck.ExtractReduceSinkInfo(null).analyze(parent));
+          rsInfo.putAll(new CrossProductHandler.ExtractReduceSinkInfo(null).analyze(parent));
         }
         checkForCrossProduct(reduceWork.getName(), reducer, rsInfo);
       }
@@ -105,9 +103,9 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
 
   private void checkMapJoin(SparkTask sparkTask) throws SemanticException {
     SparkWork sparkWork = sparkTask.getWork();
-    for (BaseWork baseWork : sparkWork.getAllWorkUnsorted()) {
+    for (BaseWork baseWork : sparkWork.getAllWork()) {
       List<String> warnings =
-          new CrossProductCheck.MapJoinCheck(sparkTask.toString()).analyze(baseWork);
+          new CrossProductHandler.MapJoinCheck(sparkTask.toString()).analyze(baseWork);
       for (String w : warnings) {
         warn(w);
       }
@@ -116,12 +114,12 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
 
   private void checkForCrossProduct(String workName,
       Operator<? extends OperatorDesc> reducer,
-      Map<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info> rsInfo) {
+      Map<Integer, CrossProductHandler.ExtractReduceSinkInfo.Info> rsInfo) {
     if (rsInfo.isEmpty()) {
       return;
     }
-    Iterator<CrossProductCheck.ExtractReduceSinkInfo.Info> it = rsInfo.values().iterator();
-    CrossProductCheck.ExtractReduceSinkInfo.Info info = it.next();
+    Iterator<CrossProductHandler.ExtractReduceSinkInfo.Info> it = rsInfo.values().iterator();
+    CrossProductHandler.ExtractReduceSinkInfo.Info info = it.next();
     if (info.keyCols.size() == 0) {
       List<String> iAliases = new ArrayList<String>();
       iAliases.addAll(info.inputAliases);

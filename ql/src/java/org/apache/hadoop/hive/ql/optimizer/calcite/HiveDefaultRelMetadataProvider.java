@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
@@ -71,13 +72,14 @@ public class HiveDefaultRelMetadataProvider {
                     HiveRelMdSelectivity.SOURCE,
                     HiveRelMdRowCount.SOURCE,
                     HiveRelMdUniqueKeys.SOURCE,
+                    HiveRelMdColumnUniqueness.SOURCE,
                     HiveRelMdSize.SOURCE,
                     HiveRelMdMemory.SOURCE,
                     new HiveRelMdParallelism(maxSplitSize).getMetadataProvider(),
                     HiveRelMdDistribution.SOURCE,
                     HiveRelMdCollation.SOURCE,
                     HiveRelMdPredicates.SOURCE,
-                    new DefaultRelMetadataProvider()));
+                    DefaultRelMetadataProvider.INSTANCE));
   }
 
 }

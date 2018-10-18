@@ -1,29 +1,29 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE mytable(val1 INT, val2 INT, val3 INT)
+PREHOOK: query: CREATE TABLE mytable_n1(val1 INT, val2 INT, val3 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mytable
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE mytable(val1 INT, val2 INT, val3 INT)
+PREHOOK: Output: default@mytable_n1
+POSTHOOK: query: CREATE TABLE mytable_n1(val1 INT, val2 INT, val3 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mytable
+POSTHOOK: Output: default@mytable_n1
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM mytable src1, mytable src2
+FROM mytable_n1 src1, mytable_n1 src2
 WHERE src1.val1=src2.val1
   AND src1.val2 between 2450816 and 2451500
   AND src2.val2 between 2450816 and 2451500
 PREHOOK: type: QUERY
+PREHOOK: Input: default@mytable_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM mytable src1, mytable src2
+FROM mytable_n1 src1, mytable_n1 src2
 WHERE src1.val1=src2.val1
   AND src1.val2 between 2450816 and 2451500
   AND src2.val2 between 2450816 and 2451500
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mytable_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -34,6 +34,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: (val1 is not null and val2 BETWEEN 2450816 AND 2451500) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (val1 is not null and val2 BETWEEN 2450816 AND 2451500) (type: boolean)
@@ -46,6 +47,7 @@ STAGE PLANS:
                 value expressions: val2 (type: int), val3 (type: int)
           TableScan
             alias: src2
+            filterExpr: (val1 is not null and val2 BETWEEN 2450816 AND 2451500) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (val1 is not null and val2 BETWEEN 2450816 AND 2451500) (type: boolean)

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,21 +17,26 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.LlapSerDeDataBuffer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileEstimateErrors;
-import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
-import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
-import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
 
 /**
  * Eviction dispatcher - uses double dispatch to route eviction notifications to correct caches.
  */
 public final class EvictionDispatcher implements EvictionListener {
   private final LowLevelCache dataCache;
-  private final OrcMetadataCache metadataCache;
+  private final SerDeLowLevelCacheImpl serdeCache;
+  private final MetadataCache metadataCache;
+  private final EvictionAwareAllocator allocator;
 
-  public EvictionDispatcher(LowLevelCache dataCache, OrcMetadataCache metadataCache) {
+  public EvictionDispatcher(LowLevelCache dataCache, SerDeLowLevelCacheImpl serdeCache,
+      MetadataCache metadataCache, EvictionAwareAllocator allocator) {
     this.dataCache = dataCache;
     this.metadataCache = metadataCache;
+    this.serdeCache = serdeCache;
+    this.allocator = allocator;
   }
 
   @Override
@@ -39,16 +44,20 @@ public final class EvictionDispatcher implements EvictionListener {
     buffer.notifyEvicted(this); // This will call one of the specific notifyEvicted overloads.
   }
 
+  public void notifyEvicted(LlapSerDeDataBuffer buffer) {
+    serdeCache.notifyEvicted(buffer);
+    allocator.deallocateEvicted(buffer);
+  }
+
   public void notifyEvicted(LlapDataBuffer buffer) {
     dataCache.notifyEvicted(buffer);
+    allocator.deallocateEvicted(buffer);
   }
 
-  public void notifyEvicted(OrcFileMetadata buffer) {
+  public void notifyEvicted(LlapMetadataBuffer<?> buffer) {
     metadataCache.notifyEvicted(buffer);
-  }
-
-  public void notifyEvicted(OrcStripeMetadata buffer) {
-    metadataCache.notifyEvicted(buffer);
+    // Note: the metadata cache may deallocate additional buffers, but not this one.
+    allocator.deallocateEvicted(buffer);
   }
 
   public void notifyEvicted(OrcFileEstimateErrors buffer) {

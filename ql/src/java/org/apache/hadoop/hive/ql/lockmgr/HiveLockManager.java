@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.List;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 
 /**
  * Manager for locks in Hive.  Users should not instantiate a lock manager
@@ -37,7 +38,7 @@ public interface HiveLockManager {
   public HiveLock lock(HiveLockObject key, HiveLockMode mode,
       boolean keepAlive) throws LockException;
   public List<HiveLock> lock(List<HiveLockObj> objs,
-      boolean keepAlive) throws LockException;
+      boolean keepAlive, LockedDriverState lDrvState) throws LockException;
   public void unlock(HiveLock hiveLock) throws LockException;
   public void releaseLocks(List<HiveLock> hiveLocks);
 

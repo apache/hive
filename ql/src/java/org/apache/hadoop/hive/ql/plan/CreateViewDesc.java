@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,10 +21,21 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -34,20 +45,29 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Create View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateViewDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+  private static Logger LOG = LoggerFactory.getLogger(CreateViewDesc.class);
 
   private String viewName;
-  private String inputFormat;
-  private String outputFormat;
   private String originalText;
   private String expandedText;
+  private boolean rewriteEnabled;
   private List<FieldSchema> schema;
   private Map<String, String> tblProps;
   private List<String> partColNames;
   private List<FieldSchema> partCols;
   private String comment;
   private boolean ifNotExists;
-  private boolean orReplace;
+  private boolean replace;
   private boolean isAlterViewAs;
+  private boolean isMaterialized;
+  private String inputFormat;
+  private String outputFormat;
+  private String location; // only used for materialized views
+  private String serde; // only used for materialized views
+  private String storageHandler; // only used for materialized views
+  private Map<String, String> serdeProps; // only used for materialized views
+  private Set<String> tablesUsed;  // only used for materialized views
+  private ReplicationSpec replicationSpec = null;
 
   /**
    * For serialization only.
@@ -55,21 +75,78 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   public CreateViewDesc() {
   }
 
-  public CreateViewDesc(String viewName, List<FieldSchema> schema,
-      String comment, String inputFormat,
-      String outputFormat, Map<String, String> tblProps,
-      List<String> partColNames, boolean ifNotExists,
-      boolean orReplace, boolean isAlterViewAs) {
+  /**
+   * Used to create a materialized view descriptor
+   * @param viewName
+   * @param schema
+   * @param comment
+   * @param tblProps
+   * @param partColNames
+   * @param ifNotExists
+   * @param orReplace
+   * @param isAlterViewAs
+   * @param inputFormat
+   * @param outputFormat
+   * @param location
+   * @param serName
+   * @param serde
+   * @param storageHandler
+   * @param serdeProps
+   */
+  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
+          Map<String, String> tblProps, List<String> partColNames,
+          boolean ifNotExists, boolean replace, boolean rewriteEnabled, boolean isAlterViewAs,
+          String inputFormat, String outputFormat, String location,
+          String serde, String storageHandler, Map<String, String> serdeProps) {
     this.viewName = viewName;
     this.schema = schema;
-    this.comment = comment;
-    this.inputFormat = inputFormat;
-    this.outputFormat = outputFormat;
     this.tblProps = tblProps;
     this.partColNames = partColNames;
+    this.comment = comment;
     this.ifNotExists = ifNotExists;
-    this.orReplace = orReplace;
+    this.replace = replace;
+    this.isMaterialized = true;
+    this.rewriteEnabled = rewriteEnabled;
     this.isAlterViewAs = isAlterViewAs;
+    this.inputFormat = inputFormat;
+    this.outputFormat = outputFormat;
+    this.location = location;
+    this.serde = serde;
+    this.storageHandler = storageHandler;
+    this.serdeProps = serdeProps;
+  }
+
+  /**
+   * Used to create a view descriptor
+   * @param viewName
+   * @param schema
+   * @param comment
+   * @param tblProps
+   * @param partColNames
+   * @param ifNotExists
+   * @param orReplace
+   * @param isAlterViewAs
+   * @param inputFormat
+   * @param outputFormat
+   * @param serde
+   */
+  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
+                        Map<String, String> tblProps, List<String> partColNames,
+                        boolean ifNotExists, boolean orReplace, boolean isAlterViewAs,
+                        String inputFormat, String outputFormat, String serde) {
+    this.viewName = viewName;
+    this.schema = schema;
+    this.tblProps = tblProps;
+    this.partColNames = partColNames;
+    this.comment = comment;
+    this.ifNotExists = ifNotExists;
+    this.replace = orReplace;
+    this.isAlterViewAs = isAlterViewAs;
+    this.isMaterialized = false;
+    this.rewriteEnabled = false;
+    this.inputFormat = inputFormat;
+    this.outputFormat = outputFormat;
+    this.serde = serde;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -97,6 +174,15 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setViewExpandedText(String expandedText) {
     this.expandedText = expandedText;
+  }
+
+  @Explain(displayName = "rewrite enabled", displayOnlyOnTrue = true)
+  public boolean isRewriteEnabled() {
+    return rewriteEnabled;
+  }
+
+  public void setRewriteEnabled(boolean rewriteEnabled) {
+    this.rewriteEnabled = rewriteEnabled;
   }
 
   @Explain(displayName = "columns")
@@ -160,13 +246,21 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
   }
 
-  @Explain(displayName = "or replace")
-  public boolean getOrReplace() {
-    return orReplace;
+  public Set<String> getTablesUsed() {
+    return tablesUsed;
   }
 
-  public void setOrReplace(boolean orReplace) {
-    this.orReplace = orReplace;
+  public void setTablesUsed(Set<String> tablesUsed) {
+    this.tablesUsed = tablesUsed;
+  }
+
+  @Explain(displayName = "replace", displayOnlyOnTrue = true)
+  public boolean isReplace() {
+    return replace;
+  }
+
+  public void setReplace(boolean replace) {
+    this.replace = replace;
   }
 
   @Explain(displayName = "is alter view as select", displayOnlyOnTrue = true)
@@ -194,4 +288,128 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.outputFormat = outputFormat;
   }
 
+  public boolean isMaterialized() {
+    return isMaterialized;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+  public String getLocation() {
+    return location;
+  }
+
+  public String getSerde() {
+    return serde;
+  }
+
+  public String getStorageHandler() {
+    return storageHandler;
+  }
+
+  public Map<String, String> getSerdeProps() {
+    return serdeProps;
+  }
+
+  /**
+   * @param replicationSpec Sets the replication spec governing this create.
+   * This parameter will have meaningful values only for creates happening as a result of a replication.
+   */
+  public void setReplicationSpec(ReplicationSpec replicationSpec) {
+    this.replicationSpec = replicationSpec;
+  }
+
+  /**
+   * @return what kind of replication spec this create is running under.
+   */
+  public ReplicationSpec getReplicationSpec(){
+    if (replicationSpec == null){
+      this.replicationSpec = new ReplicationSpec();
+    }
+    return this.replicationSpec;
+  }
+
+  public Table toTable(HiveConf conf) throws HiveException {
+    String[] names = Utilities.getDbTableName(getViewName());
+    String databaseName = names[0];
+    String tableName = names[1];
+
+    Table tbl = new Table(databaseName, tableName);
+    tbl.setViewOriginalText(getViewOriginalText());
+    tbl.setViewExpandedText(getViewExpandedText());
+    if (isMaterialized()) {
+      tbl.setRewriteEnabled(isRewriteEnabled());
+      tbl.setTableType(TableType.MATERIALIZED_VIEW);
+    } else {
+      tbl.setTableType(TableType.VIRTUAL_VIEW);
+    }
+    tbl.setSerializationLib(null);
+    tbl.clearSerDeInfo();
+    tbl.setFields(getSchema());
+    if (getComment() != null) {
+      tbl.setProperty("comment", getComment());
+    }
+    if (getTblProps() != null) {
+      tbl.getTTable().getParameters().putAll(getTblProps());
+    }
+
+    if (getPartCols() != null) {
+      tbl.setPartCols(getPartCols());
+    }
+
+    if (getInputFormat() != null) {
+      tbl.setInputFormatClass(getInputFormat());
+    }
+
+    if (getOutputFormat() != null) {
+      tbl.setOutputFormatClass(getOutputFormat());
+    }
+
+    if (isMaterialized()) {
+      if (getLocation() != null) {
+        tbl.setDataLocation(new Path(getLocation()));
+      }
+
+      if (getStorageHandler() != null) {
+        tbl.setProperty(
+                org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
+                getStorageHandler());
+      }
+      HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
+      /*
+       * If the user didn't specify a SerDe, we use the default.
+       */
+      String serDeClassName;
+      if (getSerde() == null) {
+        if (storageHandler == null) {
+          serDeClassName = PlanUtils.getDefaultSerDe().getName();
+          LOG.info("Default to {} for materialized view {}", serDeClassName,
+            getViewName());
+        } else {
+          serDeClassName = storageHandler.getSerDeClass().getName();
+          LOG.info("Use StorageHandler-supplied {} for materialized view {}",
+            serDeClassName, getViewName());
+        }
+      } else {
+        // let's validate that the serde exists
+        serDeClassName = getSerde();
+        DDLTask.validateSerDe(serDeClassName, conf);
+      }
+      tbl.setSerializationLib(serDeClassName);
+
+      // To remain consistent, we need to set input and output formats both
+      // at the table level and the storage handler level.
+      tbl.setInputFormatClass(getInputFormat());
+      tbl.setOutputFormatClass(getOutputFormat());
+      if (getInputFormat() != null && !getInputFormat().isEmpty()) {
+        tbl.getSd().setInputFormat(tbl.getInputFormatClass().getName());
+      }
+      if (getOutputFormat() != null && !getOutputFormat().isEmpty()) {
+        tbl.getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
+      }
+    }
+
+    return tbl;
+  }
 }

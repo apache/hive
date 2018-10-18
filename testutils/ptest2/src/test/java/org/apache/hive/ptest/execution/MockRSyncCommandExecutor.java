@@ -18,10 +18,14 @@
  */
 package org.apache.hive.ptest.execution;
 
+import java.security.SecureRandom;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hive.ptest.execution.ssh.RSyncCommand;
 import org.apache.hive.ptest.execution.ssh.RSyncCommandExecutor;
@@ -33,6 +37,7 @@ import com.google.common.collect.Maps;
 public class MockRSyncCommandExecutor extends RSyncCommandExecutor {
   private final List<String> mCommands;
   private final Map<String, Queue<Integer>> mFailures;
+  private final AtomicInteger matchCount = new AtomicInteger(0);
   public MockRSyncCommandExecutor(Logger logger) {
     super(logger, 0, null);
     mCommands = Lists.newArrayList();
@@ -62,9 +67,15 @@ public class MockRSyncCommandExecutor extends RSyncCommandExecutor {
     if(queue == null || queue.isEmpty()) {
       command.setExitCode(0);
     } else {
+      matchCount.incrementAndGet();
       command.setExitCode(queue.remove());
     }
+    //simulating dummy rsync delay of 17 msec
+    command.setElapsedTimeInMs(17L);
   }
 
+  public int getMatchCount() {
+    return matchCount.get();
+  }
 
 }

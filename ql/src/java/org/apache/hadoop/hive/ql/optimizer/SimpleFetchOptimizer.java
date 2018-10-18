@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,13 +26,24 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -46,7 +57,6 @@ import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
@@ -127,10 +137,14 @@ public class SimpleFetchOptimizer extends Transform {
 
     boolean aggressive = "more".equals(mode);
     final int limit = pctx.getQueryProperties().getOuterQueryLimit();
+    // limit = 0 means that we do not need any task.
+    if (limit == 0) {
+      return null;
+    }
     FetchData fetch = checkTree(aggressive, pctx, alias, source);
     if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();
-      FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork, pctx.getConf());
+      FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork);
       fetchWork.setSink(fetch.completed(pctx, fetchWork));
       fetchWork.setSource(source);
       fetchWork.setLimit(limit);
@@ -162,13 +176,7 @@ public class SimpleFetchOptimizer extends Transform {
         return true;
       }
     }
-    long remaining = threshold;
-    remaining -= data.getInputLength(pctx, remaining);
-    if (remaining < 0) {
-      LOG.info("Threshold " + remaining + " exceeded for pseudoMR mode");
-      return false;
-    }
-    return true;
+    return data.isDataLengthWithInThreshold(pctx, threshold);
   }
 
   // all we can handle is LimitOperator, FilterOperator SelectOperator and final FS
@@ -203,11 +211,38 @@ public class SimpleFetchOptimizer extends Transform {
         bypassFilter = !pctx.getPrunedPartitions(alias, ts).hasUnknownPartitions();
       }
     }
-    if (!aggressive && !bypassFilter) {
+
+    boolean onlyPruningFilter = bypassFilter;
+    Operator<?> op = ts;
+    while (onlyPruningFilter) {
+      if (op instanceof FileSinkOperator || op.getChildOperators() == null) {
+        break;
+      } else if (op.getChildOperators().size() != 1) {
+        onlyPruningFilter = false;
+        break;
+      } else {
+        op = op.getChildOperators().get(0);
+      }
+
+      if (op instanceof FilterOperator) {
+        ExprNodeDesc predicate = ((FilterOperator) op).getConf().getPredicate();
+        if (predicate instanceof ExprNodeConstantDesc
+                && "boolean".equals(predicate.getTypeInfo().getTypeName())) {
+          continue;
+        } else if (PartitionPruner.onlyContainsPartnCols(table, predicate)) {
+          continue;
+        } else {
+          onlyPruningFilter = false;
+        }
+      }
+    }
+
+    if (!aggressive && !onlyPruningFilter) {
       return null;
     }
+
     PrunedPartitionList partitions = pctx.getPrunedPartitions(alias, ts);
-    FetchData fetch = new FetchData(ts, parent, table, partitions, splitSample, bypassFilter);
+    FetchData fetch = new FetchData(ts, parent, table, partitions, splitSample, onlyPruningFilter);
     return checkOperators(fetch, aggressive, bypassFilter);
   }
 
@@ -318,6 +353,12 @@ public class SimpleFetchOptimizer extends Transform {
     return true;
   }
 
+  enum Status {
+    PASS,
+    FAIL,
+    UNAVAILABLE
+  }
+
   private class FetchData {
 
     // source table scan
@@ -414,61 +455,154 @@ public class SimpleFetchOptimizer extends Transform {
       return replaceFSwithLS(fileSink, work.getSerializationNullFormat());
     }
 
-    private long getInputLength(ParseContext pctx, long remaining) throws Exception {
+    private boolean isDataLengthWithInThreshold(ParseContext pctx, final long threshold)
+        throws Exception {
       if (splitSample != null && splitSample.getTotalLength() != null) {
-        return splitSample.getTotalLength();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Threshold " + splitSample.getTotalLength() + " exceeded for pseudoMR mode");
+        }
+        return (threshold - splitSample.getTotalLength()) > 0;
       }
-      if (splitSample != null) {
-        return splitSample.getTargetSize(calculateLength(pctx, splitSample.estimateSourceSize(remaining)));
-      }
-      return calculateLength(pctx, remaining);
-    }
 
-    private long calculateLength(ParseContext pctx, long remaining) throws Exception {
-      JobConf jobConf = new JobConf(pctx.getConf());
-      Utilities.setColumnNameList(jobConf, scanOp, true);
-      Utilities.setColumnTypeList(jobConf, scanOp, true);
-      HiveStorageHandler handler = table.getStorageHandler();
-      if (handler instanceof InputEstimator) {
-        InputEstimator estimator = (InputEstimator) handler;
-        TableDesc tableDesc = Utilities.getTableDesc(table);
-        PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
-        Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
-        return estimator.estimate(jobConf, scanOp, remaining).getTotalLength();
-      }
-      if (table.isNonNative()) {
-        return 0; // nothing can be done
-      }
-      if (!table.isPartitioned()) {
-        return getFileLength(jobConf, table.getPath(), table.getInputFormatClass());
-      }
-      long total = 0;
-      for (Partition partition : partsList.getNotDeniedPartns()) {
-        Path path = partition.getDataLocation();
-        total += getFileLength(jobConf, path, partition.getInputFormatClass());
-        if (total > remaining) {
-          break;
+      Status status = checkThresholdWithMetastoreStats(table, partsList, threshold);
+      if (status.equals(Status.PASS)) {
+        return true;
+      } else if (status.equals(Status.FAIL)) {
+        return false;
+      } else {
+        LOG.info("Cannot fetch stats from metastore for table: {}. Falling back to filesystem scan..",
+          table.getCompleteName());
+        // metastore stats is unavailable, fallback to old way
+        final JobConf jobConf = new JobConf(pctx.getConf());
+        Utilities.setColumnNameList(jobConf, scanOp, true);
+        Utilities.setColumnTypeList(jobConf, scanOp, true);
+        HiveStorageHandler handler = table.getStorageHandler();
+        if (handler instanceof InputEstimator) {
+          InputEstimator estimator = (InputEstimator) handler;
+          TableDesc tableDesc = Utilities.getTableDesc(table);
+          PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
+          Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
+          long len = estimator.estimate(jobConf, scanOp, threshold).getTotalLength();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Threshold " + len + " exceeded for pseudoMR mode");
+          }
+          return (threshold - len) > 0;
+        }
+        if (table.isNonNative()) {
+          return true; // nothing can be done
+        }
+        if (!table.isPartitioned()) {
+          long len = getPathLength(jobConf, table.getPath(), table.getInputFormatClass(), threshold);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Threshold " + len + " exceeded for pseudoMR mode");
+          }
+          return (threshold - len) > 0;
+        }
+        final AtomicLong total = new AtomicLong(0);
+        //TODO: use common thread pool later?
+        int threadCount = HiveConf.getIntVar(pctx.getConf(),
+          HiveConf.ConfVars.HIVE_STATS_GATHER_NUM_THREADS);
+        final ExecutorService pool = (threadCount > 0) ?
+          Executors.newFixedThreadPool(threadCount,
+            new ThreadFactoryBuilder()
+              .setDaemon(true)
+              .setNameFormat("SimpleFetchOptimizer-FileLength-%d").build()) : null;
+        try {
+          List<Future> futures = Lists.newLinkedList();
+          for (final Partition partition : partsList.getNotDeniedPartns()) {
+            final Path path = partition.getDataLocation();
+            if (pool != null) {
+              futures.add(pool.submit(new Callable<Long>() {
+                @Override
+                public Long call() throws Exception {
+                  long len = getPathLength(jobConf, path, partition.getInputFormatClass(), threshold);
+                  LOG.trace(path + ", length=" + len);
+                  return total.addAndGet(len);
+                }
+              }));
+            } else {
+              total.addAndGet(getPathLength(jobConf, path, partition.getInputFormatClass(), threshold));
+            }
+          }
+          if (pool != null) {
+            pool.shutdown();
+            for (Future<Long> future : futures) {
+              long totalLen = future.get();
+              if ((threshold - totalLen) <= 0) {
+                // early exit, as getting file lengths can be expensive in object stores.
+                return false;
+              }
+            }
+          }
+          return (threshold - total.get()) >= 0;
+        } finally {
+          LOG.info("Data set size=" + total.get() + ", threshold=" + threshold);
+          if (pool != null) {
+            pool.shutdownNow();
+          }
         }
       }
-      return total;
     }
 
-    // from Utilities.getInputSummary()
-    private long getFileLength(JobConf conf, Path path, Class<? extends InputFormat> clazz)
+    // This method gets the basic stats from metastore for table/partitions. This will make use of the statistics from
+    // AnnotateWithStatistics optimizer when available. If execution engine is tez or spark, AnnotateWithStatistics
+    // optimization is applied only during physical compilation because of DPP changing the stats. In such case, we
+    // we will get the basic stats from metastore. When statistics is absent in metastore we will use the fallback of
+    // scanning the filesystem to get file lengths.
+    private Status checkThresholdWithMetastoreStats(final Table table, final PrunedPartitionList partsList,
+      final long threshold) {
+      Status status = Status.UNAVAILABLE;
+      if (table != null && !table.isPartitioned()) {
+        long dataSize = StatsUtils.getTotalSize(table);
+        if (dataSize <= 0) {
+          LOG.warn("Cannot determine basic stats for table: {} from metastore. Falling back.", table.getCompleteName());
+          return Status.UNAVAILABLE;
+        }
+
+        status = (threshold - dataSize) >= 0 ? Status.PASS : Status.FAIL;
+      } else if (table != null && table.isPartitioned() && partsList != null) {
+        List<Long> dataSizes = StatsUtils.getBasicStatForPartitions(table, partsList.getNotDeniedPartns(),
+          StatsSetupConst.TOTAL_SIZE);
+        long totalDataSize = StatsUtils.getSumIgnoreNegatives(dataSizes);
+        if (totalDataSize <= 0) {
+          LOG.warn("Cannot determine basic stats for partitioned table: {} from metastore. Falling back.",
+            table.getCompleteName());
+          return Status.UNAVAILABLE;
+        }
+
+        status = (threshold - totalDataSize) >= 0 ? Status.PASS : Status.FAIL;
+      }
+
+      if (status == Status.PASS && MetaStoreUtils.isExternalTable(table.getTTable())) {
+        // External table should also check the underlying file size.
+        LOG.warn("Table {} is external table, falling back to filesystem scan.", table.getCompleteName());
+        status = Status.UNAVAILABLE;
+      }
+      return status;
+    }
+
+    private long getPathLength(JobConf conf, Path path,
+        Class<? extends InputFormat> clazz, long threshold)
         throws IOException {
-      ContentSummary summary;
       if (ContentSummaryInputFormat.class.isAssignableFrom(clazz)) {
         InputFormat input = HiveInputFormat.getInputFormatFromCache(clazz, conf);
-        summary = ((ContentSummaryInputFormat)input).getContentSummary(path, conf);
+        return ((ContentSummaryInputFormat)input).getContentSummary(path, conf).getLength();
       } else {
         FileSystem fs = path.getFileSystem(conf);
         try {
-          summary = fs.getContentSummary(path);
+          long length = 0;
+          RemoteIterator<LocatedFileStatus> results = fs.listFiles(path, true);
+          // No need to iterate more, when threshold is reached
+          // (beneficial especially for object stores)
+          while (length <= threshold && results.hasNext()) {
+            length += results.next().getLen();
+          }
+          LOG.trace("length=" + length + ", threshold=" + threshold);
+          return length;
         } catch (FileNotFoundException e) {
           return 0;
         }
       }
-      return summary.getLength();
     }
   }
 

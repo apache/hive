@@ -28,8 +28,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Stopwatch;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hive.ptest.execution.conf.Host;
 import org.apache.hive.ptest.execution.conf.TestBatch;
 import org.apache.hive.ptest.execution.ssh.RSyncCommand;
@@ -40,7 +42,6 @@ import org.apache.hive.ptest.execution.ssh.SSHCommand;
 import org.apache.hive.ptest.execution.ssh.SSHCommandExecutor;
 import org.apache.hive.ptest.execution.ssh.SSHExecutionException;
 import org.apache.hive.ptest.execution.ssh.SSHResult;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -66,16 +67,18 @@ class HostExecutor {
   private final File mSuccessfulTestLogDir;
   private final File mFailedTestLogDir;
   private final long mNumPollSeconds;
+  private final boolean fetchLogsForSuccessfulTests;
   private volatile boolean mShutdown;
   private int numParallelBatchesProcessed = 0;
   private int numIsolatedBatchesProcessed = 0;
+  private AtomicLong totalElapsedTimeInRsync = new AtomicLong(0L);
   
   HostExecutor(Host host, String privateKey, ListeningExecutorService executor,
       SSHCommandExecutor sshCommandExecutor,
       RSyncCommandExecutor rsyncCommandExecutor,
       ImmutableMap<String, String> templateDefaults, File scratchDir,
       File succeededLogDir, File failedLogDir, long numPollSeconds,
-      Logger logger) {
+      boolean fetchLogsForSuccessfulTests, Logger logger) {
     List<Drone> drones = Lists.newArrayList();
     String[] localDirs = host.getLocalDirectories();
     for (int index = 0; index < host.getThreads(); index++) {
@@ -93,6 +96,7 @@ class HostExecutor {
     mSuccessfulTestLogDir = succeededLogDir;
     mFailedTestLogDir = failedLogDir;
     mNumPollSeconds = numPollSeconds;
+    this.fetchLogsForSuccessfulTests  = fetchLogsForSuccessfulTests;
     mLogger = logger;
   }
 
@@ -136,6 +140,10 @@ class HostExecutor {
   }
   boolean isShutdown() {
     return mShutdown;
+  }
+
+  long getTotalRsyncTimeInMs() {
+    return totalElapsedTimeInRsync.get();
   }
   /**
    * Executes parallel test until the parallel work queue is empty. Then
@@ -240,13 +248,11 @@ class HostExecutor {
     Map<String, String> templateVariables = Maps.newHashMap(mTemplateDefaults);
     templateVariables.put("instanceName", drone.getInstanceName());
     templateVariables.put("batchName", batch.getName());
-    templateVariables.put("testClass", batch.getTestClass());
     templateVariables.put("testArguments", batch.getTestArguments());
     templateVariables.put("localDir", drone.getLocalDirectory());
     templateVariables.put("logDir", drone.getLocalLogDirectory());
-    if (!Strings.isEmpty(batch.getTestModule())) {
-      templateVariables.put("testModule", batch.getTestModule());
-    }
+    Preconditions.checkArgument(StringUtils.isNotBlank(batch.getTestModuleRelativeDir()));
+    templateVariables.put("testModule", batch.getTestModuleRelativeDir());
     String command = Templates.getTemplateResult("bash $localDir/$instanceName/scratch/" + script.getName(),
         templateVariables);
     Templates.writeTemplateResult("batch-exec.vm", script, templateVariables);
@@ -279,7 +285,7 @@ class HostExecutor {
       batchLogDir = Dirs.create(new File(mSuccessfulTestLogDir, batch.getName()));
     }
     copyFromDroneToLocal(drone, batchLogDir.getAbsolutePath(),
-        drone.getLocalLogDirectory() + "/");
+        drone.getLocalLogDirectory() + "/", fetchLogsForSuccessfulTests || !result);
     File logFile = new File(batchLogDir, String.format("%s.txt", batch.getName()));
     PrintWriter writer = new PrintWriter(logFile);
     writer.write(String.format("result = '%s'\n", sshResult.toString()));
@@ -311,6 +317,7 @@ class HostExecutor {
     if(result.getException() != null || result.getExitCode() != 0) {
       throw new SSHExecutionException(result);
     }
+    totalElapsedTimeInRsync.getAndAdd(result.getElapsedTimeInMs());
     return result;
   }
   /**
@@ -367,7 +374,7 @@ class HostExecutor {
       }
     });
   }
-  RSyncResult copyFromDroneToLocal(Drone drone, String localFile, String remoteFile)
+  RSyncResult copyFromDroneToLocal(Drone drone, String localFile, String remoteFile, boolean fetchAllLogs)
       throws SSHExecutionException, IOException {
     Map<String, String> templateVariables = Maps.newHashMap(mTemplateDefaults);
     templateVariables.put("instanceName", drone.getInstanceName());
@@ -376,10 +383,11 @@ class HostExecutor {
         drone.getHost(), drone.getInstance(),
         Templates.getTemplateResult(localFile, templateVariables),
         Templates.getTemplateResult(remoteFile, templateVariables),
-        RSyncCommand.Type.TO_LOCAL).call();
+        fetchAllLogs ? RSyncCommand.Type.TO_LOCAL : RSyncCommand.Type.TO_LOCAL_NON_RECURSIVE).call();
     if(result.getException() != null || result.getExitCode() != Constants.EXIT_CODE_SUCCESS) {
       throw new SSHExecutionException(result);
     }
+    totalElapsedTimeInRsync.getAndAdd(result.getElapsedTimeInMs());
     return result;
   }
   /**

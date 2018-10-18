@@ -63,6 +63,12 @@ enum TProtocolVersion {
 
   // V9 adds support for serializing ResultSets in SerDe
   HIVE_CLI_SERVICE_PROTOCOL_V9
+
+  // V10 adds support for in place updates via GetOperationStatus
+  HIVE_CLI_SERVICE_PROTOCOL_V10
+
+  // V11 adds timestamp with local time zone type
+  HIVE_CLI_SERVICE_PROTOCOL_V11
 }
 
 enum TTypeId {
@@ -87,7 +93,8 @@ enum TTypeId {
   VARCHAR_TYPE,
   CHAR_TYPE,
   INTERVAL_YEAR_MONTH_TYPE,
-  INTERVAL_DAY_TIME_TYPE
+  INTERVAL_DAY_TIME_TYPE,
+  TIMESTAMPLOCALTZ_TYPE
 }
 
 const set<TTypeId> PRIMITIVE_TYPES = [
@@ -107,7 +114,8 @@ const set<TTypeId> PRIMITIVE_TYPES = [
   TTypeId.VARCHAR_TYPE,
   TTypeId.CHAR_TYPE,
   TTypeId.INTERVAL_YEAR_MONTH_TYPE,
-  TTypeId.INTERVAL_DAY_TIME_TYPE
+  TTypeId.INTERVAL_DAY_TIME_TYPE,
+  TTypeId.TIMESTAMPLOCALTZ_TYPE
 ]
 
 const set<TTypeId> COMPLEX_TYPES = [
@@ -145,6 +153,7 @@ const map<TTypeId,string> TYPE_NAMES = {
   TTypeId.CHAR_TYPE: "CHAR"
   TTypeId.INTERVAL_YEAR_MONTH_TYPE: "INTERVAL_YEAR_MONTH"
   TTypeId.INTERVAL_DAY_TIME_TYPE: "INTERVAL_DAY_TIME"
+  TTypeId.TIMESTAMPLOCALTZ_TYPE: "TIMESTAMP WITH LOCAL TIME ZONE"
 }
 
 // Thrift does not support recursively defined types or forward declarations,
@@ -559,7 +568,7 @@ struct TOperationHandle {
 // which operations may be executed.
 struct TOpenSessionReq {
   // The version of the HiveServer2 protocol that the client is using.
-  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9
+  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10
 
   // Username and password for authentication.
   // Depending on the authentication scheme being used,
@@ -578,13 +587,22 @@ struct TOpenSessionResp {
   1: required TStatus status
 
   // The protocol version that the server is using.
-  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9
+  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10
 
   // Session Handle
   3: optional TSessionHandle sessionHandle
 
   // The configuration settings for this session.
   4: optional map<string, string> configuration
+}
+
+struct TSetClientInfoReq {
+  1: required TSessionHandle sessionHandle,
+  2: optional map<string, string> configuration
+}
+
+struct TSetClientInfoResp {
+  1: required TStatus status
 }
 
 
@@ -652,6 +670,7 @@ enum TGetInfoType {
   CLI_CATALOG_NAME =                     10003,
   CLI_COLLATION_SEQ =                    10004,
   CLI_MAX_IDENTIFIER_LEN =               10005,
+  CLI_ODBC_KEYWORDS =                    10006
 }
 
 union TGetInfoValue {
@@ -1019,6 +1038,8 @@ struct TGetCrossReferenceResp {
 struct TGetOperationStatusReq {
   // Session to run this request against
   1: required TOperationHandle operationHandle
+  // optional arguments to get progress information
+  2: optional bool getProgressUpdate
 }
 
 struct TGetOperationStatusResp {
@@ -1047,6 +1068,9 @@ struct TGetOperationStatusResp {
   // If the operation has the result
   9: optional bool hasResultSet
 
+  10: optional TProgressUpdateResp progressUpdateResponse
+
+  11: optional i64 numModifiedRows
 }
 
 
@@ -1202,6 +1226,29 @@ struct TRenewDelegationTokenResp {
   1: required TStatus status
 }
 
+enum TJobExecutionStatus {
+    IN_PROGRESS,
+    COMPLETE,
+    NOT_AVAILABLE
+}
+
+struct TProgressUpdateResp {
+  1: required list<string> headerNames
+  2: required list<list<string>> rows
+  3: required double progressedPercentage
+  4: required TJobExecutionStatus status
+  5: required string footerSummary
+  6: required i64 startTime
+}
+
+struct TGetQueryIdReq {
+  1: required TOperationHandle operationHandle
+}
+
+struct TGetQueryIdResp {
+  1: required string queryId
+}
+
 service TCLIService {
 
   TOpenSessionResp OpenSession(1:TOpenSessionReq req);
@@ -1245,4 +1292,8 @@ service TCLIService {
   TCancelDelegationTokenResp CancelDelegationToken(1:TCancelDelegationTokenReq req);
 
   TRenewDelegationTokenResp RenewDelegationToken(1:TRenewDelegationTokenReq req);
+
+  TGetQueryIdResp GetQueryId(1:TGetQueryIdReq req);
+
+  TSetClientInfoResp SetClientInfo(1:TSetClientInfoReq req);
 }

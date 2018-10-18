@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -70,7 +70,7 @@ public class PTFRollingPartition extends PTFPartition {
    */
   List<Object> currWindow;
 
-  protected PTFRollingPartition(Configuration cfg, SerDe serDe,
+  protected PTFRollingPartition(Configuration cfg, AbstractSerDe serDe,
       StructObjectInspector inputOI, StructObjectInspector outputOI,
       int startPos, int endPos) throws HiveException {
     super(cfg, serDe, inputOI, outputOI, false);

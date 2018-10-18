@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -61,6 +60,12 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
           (o.columns != null ? compare(columns, o.columns) : 1) :
           (o.columns != null ? -1 : 0);
     }
+    if (compare == 0) {
+      compare = className != null ?
+          (o.className != null ? className.compareTo(o.className) : 1) :
+          (o.className != null ? -1 : 0);
+    }
+
     return compare;
   }
 
@@ -90,7 +95,11 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
    * used.
    */
   public enum HivePrivilegeObjectType {
-    GLOBAL, DATABASE, TABLE_OR_VIEW, PARTITION, COLUMN, LOCAL_URI, DFS_URI, COMMAND_PARAMS, FUNCTION
+    GLOBAL, DATABASE, TABLE_OR_VIEW, PARTITION, COLUMN, LOCAL_URI, DFS_URI, COMMAND_PARAMS, FUNCTION,
+    // HIVE_SERVICE refers to a logical service name. For now hiveserver2 hostname will be
+    // used to give service actions a name. This is used by kill query command so it can
+    // be authorized specifically to a service if necessary.
+    SERVICE_NAME
   };
 
   /**
@@ -108,6 +117,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private final List<String> partKeys;
   private final List<String> columns;
   private final HivePrivObjectActionType actionType;
+  private final String className;
   // cellValueTransformers is corresponding to the columns.
   // Its size should be the same as columns.
   // For example, if a table has two columns, "key" and "value"
@@ -125,14 +135,14 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName
       , HivePrivObjectActionType actionType) {
-    this(type, dbname, objectName, null, null, actionType, null);
+    this(type, dbname, objectName, null, null, actionType, null, null);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
       List<String> partKeys, String column) {
     this(type, dbname, objectName, partKeys,
         column == null ? null : Arrays.asList(column),
-        HivePrivObjectActionType.OTHER, null);
+        HivePrivObjectActionType.OTHER, null, null);
   }
 
   /**
@@ -147,7 +157,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
     List<String> partKeys, List<String> columns, List<String> commandParams) {
-    this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams);
+    this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams, null);
   }
 
   public HivePrivilegeObject(String dbname, String objectName, List<String> columns) {
@@ -156,7 +166,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
       List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType,
-      List<String> commandParams) {
+      List<String> commandParams, String className) {
     this.type = type;
     this.dbname = dbname;
     this.objectName = objectName;
@@ -164,6 +174,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this.columns = columns;
     this.actionType = actionType;
     this.commandParams = commandParams;
+    this.className = className;
   }
 
   public HivePrivilegeObjectType getType() {
@@ -213,6 +224,14 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return columns;
   }
 
+  /**
+   * The class name when the type is {@link HivePrivilegeObjectType.FUNCTION}
+   * @return the class name
+   */
+  public String getClassName() {
+    return className;
+  }
+
   @Override
   public String toString() {
     String name = null;
@@ -238,6 +257,8 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     case COMMAND_PARAMS:
       name = commandParams.toString();
       break;
+    case SERVICE_NAME:
+      name = objectName;
     }
 
     // get the string representing action type if its non default action type

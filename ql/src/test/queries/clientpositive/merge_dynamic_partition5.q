@@ -1,3 +1,7 @@
+--! qt:dataset:srcpart
+SET hive.vectorized.execution.enabled=false;
+set hive.strict.checks.bucketing=false;
+
 set hive.mapred.mode=nonstrict;
 -- this is to test the case where some dynamic partitions are merged and some are moved
 

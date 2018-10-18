@@ -19,6 +19,8 @@ package org.apache.hive.hcatalog.streaming.mutate.worker;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -28,7 +30,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 /**
  * Implementation of a {@link BucketIdResolver} that includes the logic required to calculate a bucket id from a record
  * that is consistent with Hive's own internal computation scheme.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class BucketIdResolverImpl implements BucketIdResolver {
 
   private static final long INVALID_TRANSACTION_ID = -1L;
@@ -68,7 +72,9 @@ public class BucketIdResolverImpl implements BucketIdResolver {
   @Override
   public Object attachBucketIdToRecord(Object record) {
     int bucketId = computeBucketId(record);
-    RecordIdentifier recordIdentifier = new RecordIdentifier(INVALID_TRANSACTION_ID, bucketId, INVALID_ROW_ID);
+    int bucketProperty =
+      BucketCodec.V1.encode(new AcidOutputFormat.Options(null).bucket(bucketId));
+    RecordIdentifier recordIdentifier = new RecordIdentifier(INVALID_TRANSACTION_ID, bucketProperty, INVALID_ROW_ID);
     structObjectInspector.setStructFieldData(record, recordIdentifierField, recordIdentifier);
     return record;
   }

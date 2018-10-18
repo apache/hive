@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP VIEW xxx5;
 
 -- duplicate column names are illegal

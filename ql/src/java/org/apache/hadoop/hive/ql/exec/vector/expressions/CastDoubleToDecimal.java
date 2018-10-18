@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Cast input double to a decimal. Get target value scale from output column vector.
@@ -33,13 +34,29 @@ public class CastDoubleToDecimal extends FuncDoubleToDecimal {
     super();
   }
 
-  public CastDoubleToDecimal(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastDoubleToDecimal(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override
   protected void func(DecimalColumnVector outV, DoubleColumnVector inV, int i) {
-    String s = ((Double) inV.vector[i]).toString();
-    outV.vector[i].set(HiveDecimal.create(s));
+    HiveDecimalWritable decWritable = outV.vector[i];
+    decWritable.setFromDouble(inV.vector[i]);
+    if (!decWritable.mutateEnforcePrecisionScale(outV.precision, outV.scale)) {
+      outV.isNull[i] = true;
+      outV.noNulls = false;
+    }
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
+    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(1)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.DOUBLE)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN);
+    return b.build();
   }
 }

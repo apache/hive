@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -67,7 +68,7 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   public ExprNodeConstantDesc(TypeInfo typeInfo, Object value) {
     super(typeInfo);
-    this.value = value;
+    setValue(value);
   }
 
   public ExprNodeConstantDesc(Object value) {
@@ -77,6 +78,9 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   public void setValue(Object value) {
     // Kryo setter
+    if (value instanceof String) {
+      value = StringInternUtils.internIfNotNull((String) value);
+    }
     this.value = value;
   }
 
@@ -112,11 +116,36 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
         hexChars[j * 2 + 1] = hexArray[v & 0x0F];
       }
       return new String(hexChars);
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DATE_TYPE_NAME)) {
+      return "DATE'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+      return "TIMESTAMP'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
+      return "TIMESTAMPLOCALTZ'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TINYINT_TYPE_NAME)) {
+      return value.toString() + "Y";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+      return value.toString() + "S";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.BIGINT_TYPE_NAME)) {
+      return value.toString() + "L";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+      return value.toString() + "D";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DECIMAL_TYPE_NAME)) {
+      return value.toString() + "BD";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)
+        || typeInfo.getTypeName().equals(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME)) {
+      return "INTERVAL'" + value.toString() + "'";
     }
     return value.toString();
   }
 
   @Override
+  /**
+   * Return string representation of constant expression
+   * Beside ExplainPlan task Default constraint also make use it to deserialize constant expression
+   * to store it in metastore, which is later reparsed to generate appropriate constant expression
+   * Therefore it is necessary for this method to qualify the intervals with appropriate qualifiers
+   */
   public String getExprString() {
     if (typeInfo.getCategory() == Category.PRIMITIVE) {
       return getFormatted(typeInfo, value);

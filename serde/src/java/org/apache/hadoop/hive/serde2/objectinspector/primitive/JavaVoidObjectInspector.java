@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,7 +32,6 @@ public class JavaVoidObjectInspector extends
 
   @Override
   public Object getPrimitiveWritableObject(Object o) {
-    return NullWritable.get();
+    return o == null ? null : NullWritable.get();
   }
-
 }

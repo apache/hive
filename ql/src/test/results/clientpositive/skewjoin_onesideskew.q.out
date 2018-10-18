@@ -12,34 +12,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skewtable
 PREHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skewtable
 POSTHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skewtable
-POSTHOOK: Lineage: skewtable.key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: skewtable.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: skewtable.key SCRIPT []
+POSTHOOK: Lineage: skewtable.value SCRIPT []
 PREHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skewtable
 POSTHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skewtable
-POSTHOOK: Lineage: skewtable.key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: skewtable.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: skewtable.key SCRIPT []
+POSTHOOK: Lineage: skewtable.value SCRIPT []
 PREHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skewtable
 POSTHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skewtable
-POSTHOOK: Lineage: skewtable.key SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: skewtable.value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: skewtable.key SCRIPT []
+POSTHOOK: Lineage: skewtable.value SCRIPT []
 PREHOOK: query: DROP TABLE IF EXISTS nonskewtable
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS nonskewtable
@@ -54,30 +54,38 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nonskewtable
 PREHOOK: query: INSERT INTO TABLE nonskewtable VALUES ("1", "val_1")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@nonskewtable
 POSTHOOK: query: INSERT INTO TABLE nonskewtable VALUES ("1", "val_1")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@nonskewtable
-POSTHOOK: Lineage: nonskewtable.key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: nonskewtable.value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: nonskewtable.key SCRIPT []
+POSTHOOK: Lineage: nonskewtable.value SCRIPT []
 PREHOOK: query: INSERT INTO TABLE nonskewtable VALUES ("2", "val_2")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__5
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@nonskewtable
 POSTHOOK: query: INSERT INTO TABLE nonskewtable VALUES ("2", "val_2")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__5
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@nonskewtable
-POSTHOOK: Lineage: nonskewtable.key SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: nonskewtable.value SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: nonskewtable.key SCRIPT []
+POSTHOOK: Lineage: nonskewtable.value SCRIPT []
 PREHOOK: query: EXPLAIN
-CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
+CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@nonskewtable
+PREHOOK: Input: default@skewtable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@result_n1
 POSTHOOK: query: EXPLAIN
-CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
+CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@nonskewtable
+POSTHOOK: Input: default@skewtable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@result_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-0
@@ -93,6 +101,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -109,6 +118,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -139,7 +149,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.result
+                name: default.result_n1
 
   Stage: Stage-5
     Conditional Operator
@@ -176,7 +186,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.result
+                    name: default.result_n1
       Local Work:
         Map Reduce Local Work
 
@@ -193,30 +203,31 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.result
+          name: default.result_n1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
-PREHOOK: query: CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
+PREHOOK: query: CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@nonskewtable
 PREHOOK: Input: default@skewtable
 PREHOOK: Output: database:default
-PREHOOK: Output: default@result
-POSTHOOK: query: CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
+PREHOOK: Output: default@result_n1
+POSTHOOK: query: CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@nonskewtable
 POSTHOOK: Input: default@skewtable
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@result
-POSTHOOK: Lineage: result.key SIMPLE [(skewtable)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: result.value SIMPLE [(skewtable)a.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM result
+POSTHOOK: Output: default@result_n1
+POSTHOOK: Lineage: result_n1.key SIMPLE [(skewtable)a.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: result_n1.value SIMPLE [(skewtable)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM result_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@result
+PREHOOK: Input: default@result_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM result
+POSTHOOK: query: SELECT * FROM result_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@result
+POSTHOOK: Input: default@result_n1
 #### A masked pattern was here ####

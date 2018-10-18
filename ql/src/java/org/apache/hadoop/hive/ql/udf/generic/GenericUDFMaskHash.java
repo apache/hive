@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -47,7 +46,7 @@ class MaskHashTransformer extends AbstractTransformer {
 
   @Override
   String transform(final String value) {
-    return DigestUtils.md5Hex(value);
+    return DigestUtils.sha256Hex(value);
   }
 
   @Override

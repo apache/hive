@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,10 +37,9 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,12 +51,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests for the compactor Cleaner thread
  */
 public class TestCleaner extends CompactorTest {
-
-  static final private Logger LOG = LoggerFactory.getLogger(TestCleaner.class.getName());
-
-  public TestCleaner() throws Exception {
-    super();
-  }
 
   @Test
   public void nothing() throws Exception {
@@ -75,7 +68,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "camtc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -106,7 +99,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "campc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "campc", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
@@ -137,7 +130,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "camitc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camitc", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -175,7 +168,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "camipc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
@@ -213,7 +206,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "bblt", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "bblt", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -250,7 +243,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "bblp", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "bblp", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
@@ -295,7 +288,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "bblt", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "bblt", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -367,7 +360,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "bblt", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "bblt", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
@@ -438,7 +431,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "campcnb", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "campcnb", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
@@ -468,7 +461,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "dt", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dt", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -476,14 +469,14 @@ public class TestCleaner extends CompactorTest {
     txnHandler.markCompacted(ci);
     txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
+    // Drop table will clean the table entry from the compaction queue and hence cleaner have no effect
     ms.dropTable("default", "dt");
 
     startCleaner();
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertTrue(TxnStore.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+    Assert.assertEquals(0, rsp.getCompactsSize());
   }
 
   @Test
@@ -495,7 +488,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "dp", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dp", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
@@ -504,17 +497,22 @@ public class TestCleaner extends CompactorTest {
     txnHandler.markCompacted(ci);
     txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
+    // Drop partition will clean the partition entry from the compaction queue and hence cleaner have no effect
     ms.dropPartition("default", "dp", Collections.singletonList("today"), true);
 
     startCleaner();
 
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertTrue(TxnStore.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+    Assert.assertEquals(0, rsp.getCompactsSize());
   }
   @Override
   boolean useHive130DeltaDirName() {
     return false;
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    compactorTestCleanup();
   }
 }

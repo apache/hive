@@ -1,9 +1,13 @@
-PREHOOK: query: -- TOK_ALLCOLREF
-explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: query: explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TOK_ALLCOLREF
-explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -14,6 +18,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -30,6 +35,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -117,12 +123,16 @@ POSTHOOK: Input: default@src1
 66	66	val_66
 98	98	val_98
 98	98	val_98
-PREHOOK: query: -- DOT
-explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: query: explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- DOT
-explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from (select a.key, a.`[k].*` from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -133,6 +143,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -148,6 +159,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -235,12 +247,16 @@ POSTHOOK: Input: default@src1
 66	66
 98	98
 98	98
-PREHOOK: query: -- EXPRESSION
-explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: query: explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- EXPRESSION
-explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from (select a.key, a.key from (select * from src) a join (select * from src1) b on (a.key = b.key)) t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -251,6 +267,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -266,6 +283,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -353,3 +371,30 @@ POSTHOOK: Input: default@src1
 66	66
 98	98
 98	98
+PREHOOK: query: explain select count(*) from (select key, key from src) subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from (select key, key from src) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from (select key, key from src) subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select key, key from src) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500

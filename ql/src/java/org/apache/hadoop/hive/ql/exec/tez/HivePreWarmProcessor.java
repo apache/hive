@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -86,7 +86,7 @@ public class HivePreWarmProcessor extends AbstractLogicalIOProcessor {
     ReadaheadPool rpool = ReadaheadPool.getInstance();
     ShimLoader.getHadoopShims();
 
-    URL hiveurl = new URL("jar:"+DagUtils.getInstance().getExecJarPathLocal()+"!/");
+    URL hiveurl = new URL("jar:" + DagUtils.getInstance().getExecJarPathLocal(conf) + "!/");
     JarURLConnection hiveconn = (JarURLConnection)hiveurl.openConnection();
     JarFile hivejar = hiveconn.getJarFile();
     try {

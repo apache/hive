@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,9 +31,9 @@ public class CommonFastHashTable {
   protected static final int LARGE_CAPACITY = 8388608;
   protected static Random random;
 
-  protected static int MAX_KEY_LENGTH = 100;
+  protected static final int MAX_KEY_LENGTH = 100;
 
-  protected static int MAX_VALUE_LENGTH = 1000;
+  protected static final int MAX_VALUE_LENGTH = 1000;
 
   public static int generateLargeCount() {
     int count = 0;
@@ -47,6 +47,7 @@ public class CommonFastHashTable {
         break;
       case 2:
         count = 3;
+        break;
       case 3:
         count = 4 + random.nextInt(7);
         break;

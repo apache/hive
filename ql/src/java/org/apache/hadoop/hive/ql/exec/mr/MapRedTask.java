@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,10 +33,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -47,8 +49,9 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.hadoop.mapred.RunningJob;
+import org.json.JSONException;
 
 /**
  * Extension of ExecDriver:
@@ -136,9 +139,24 @@ public class MapRedTask extends ExecDriver implements Serializable {
       runningViaChild = conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
 
       if (!runningViaChild) {
+        // since we are running the mapred task in the same jvm, we should update the job conf
+        // in ExecDriver as well to have proper local properties.
+        if (this.isLocalMode()) {
+          // save the original job tracker
+          ctx.setOriginalTracker(ShimLoader.getHadoopShims().getJobLauncherRpcAddress(job));
+          // change it to local
+          ShimLoader.getHadoopShims().setJobLauncherRpcAddress(job, "local");
+        }
         // we are not running this mapred task via child jvm
         // so directly invoke ExecDriver
-        return super.execute(driverContext);
+        int ret = super.execute(driverContext);
+
+        // restore the previous properties for framework name, RM address etc.
+        if (this.isLocalMode()) {
+          // restore the local job tracker back to original
+          ctx.restoreOriginalTracker();
+        }
+        return ret;
       }
 
       // we need to edit the configuration to setup cmdline. clone it first
@@ -325,6 +343,15 @@ public class MapRedTask extends ExecDriver implements Serializable {
         + " environment variable must be set to \"y\" or \"n\" when debugging";
 
     if (environmentVariables.get(HIVE_DEBUG_RECURSIVE).equals("y")) {
+      // HADOOP_CLIENT_OPTS is appended to HADOOP_OPTS in HADOOP.sh, so we should remove the old
+      // HADOOP_CLIENT_OPTS which might have the main debug options from current HADOOP_OPTS. A new
+      // HADOOP_CLIENT_OPTS is created with child JVM debug options, and it will be appended to
+      // HADOOP_OPTS agina when HADOOP.sh is executed for the child process.
+      assert environmentVariables.containsKey(HADOOP_OPTS_KEY)
+        && environmentVariables.get(HADOOP_OPTS_KEY) != null: HADOOP_OPTS_KEY
+        + " environment variable must have been set.";
+      environmentVariables.put(HADOOP_OPTS_KEY, environmentVariables.get(HADOOP_OPTS_KEY)
+        .replace(environmentVariables.get(HADOOP_CLIENT_OPTS), ""));
       // swap debug options in HADOOP_CLIENT_OPTS to those that the child JVM should have
       assert environmentVariables.containsKey(HIVE_CHILD_CLIENT_DEBUG_OPTS)
           && environmentVariables.get(HIVE_CHILD_CLIENT_DEBUG_OPTS) != null : HIVE_CHILD_CLIENT_DEBUG_OPTS
@@ -369,6 +396,11 @@ public class MapRedTask extends ExecDriver implements Serializable {
   public boolean reduceDone() {
     boolean b = super.reduceDone();
     return runningViaChild ? done() : b;
+  }
+
+  @Override
+  public void updateTaskMetrics(Metrics metrics) {
+    metrics.incrementCounter(MetricsConstant.HIVE_MR_TASKS);
   }
 
   /**
@@ -465,6 +497,19 @@ public class MapRedTask extends ExecDriver implements Serializable {
       return getWork().getReduceWork() == null ? null : getWork().getReduceWork().getReducer();
     }
     return null;
+  }
+
+  public void updateWebUiStats(MapRedStats mapRedStats, RunningJob rj) {
+    if (queryDisplay != null &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_STATS) &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH) &&
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
+      try {
+        queryDisplay.updateTaskStatistics(mapRedStats, rj, getId());
+      } catch (IOException | JSONException e) {
+        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e), e);
+      }
+    }
   }
 
   @Override

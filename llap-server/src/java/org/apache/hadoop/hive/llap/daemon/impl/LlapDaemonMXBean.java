@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,6 +38,12 @@ public interface LlapDaemonMXBean {
    * @return number of executors
    */
   public int getNumExecutors();
+
+  /**
+   * Gets the number of active executors.
+   * @return number of active executors
+   */
+  public int getNumActive();
 
   /**
    * Gets the shuffle port.

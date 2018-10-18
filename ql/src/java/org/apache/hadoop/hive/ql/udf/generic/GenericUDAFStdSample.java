@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -31,7 +33,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  *
  */
 @Description(name = "stddev_samp",
-    value = "_FUNC_(x) - Returns the sample standard deviation of a set of numbers")
+    value = "_FUNC_(x) - Returns the sample standard deviation of a set of numbers.\n"
+          + "If applied to an empty set: NULL is returned.\n"
+          + "If applied to a set with a single element: NULL is returned.\n"
+          + "Otherwise it computes: sqrt(var_samp(x))")
 public class GenericUDAFStdSample extends GenericUDAFVariance {
 
   @Override
@@ -71,21 +76,33 @@ public class GenericUDAFStdSample extends GenericUDAFVariance {
    * GenericUDAFVarianceEvaluator and overriding the terminate() method of the
    * evaluator.
    */
+  @VectorizedUDAFs({
+    VectorUDAFVarLong.class, VectorUDAFVarLongComplete.class,
+    VectorUDAFVarDouble.class, VectorUDAFVarDoubleComplete.class,
+    VectorUDAFVarDecimal.class, VectorUDAFVarDecimalComplete.class,
+    VectorUDAFVarTimestamp.class, VectorUDAFVarTimestampComplete.class,
+    VectorUDAFVarPartial2.class, VectorUDAFVarFinal.class})
   public static class GenericUDAFStdSampleEvaluator extends
       GenericUDAFVarianceEvaluator {
+
+
+    /*
+     * Calculate the std result when count > 1.  Public so vectorization code can
+     * use it, etc.
+     */
+    public static double calculateStdSampleResult(double variance, long count) {
+      return Math.sqrt(variance / (count - 1));
+    }
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
       StdAgg myagg = (StdAgg) agg;
 
-      if (myagg.count == 0) { // SQL standard - return null for zero elements
+      if (myagg.count <= 1) { // SQL standard - return null for zero or one elements
         return null;
       } else {
-        if (myagg.count > 1) {
-          getResult().set(Math.sqrt(myagg.variance / (myagg.count - 1)));
-        } else { // for one element the variance is always 0
-          getResult().set(0);
-        }
+        getResult().set(
+            calculateStdSampleResult(myagg.variance, myagg.count));
         return getResult();
       }
     }

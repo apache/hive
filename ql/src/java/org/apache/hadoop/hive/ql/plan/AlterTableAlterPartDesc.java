@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,30 +20,31 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
-public class AlterTableAlterPartDesc extends DDLDesc {
-  private String tableName;
+public class AlterTableAlterPartDesc extends DDLDesc implements DDLDesc.DDLDescWithWriteId {
+  private String fqTableName;
   private FieldSchema partKeySpec;
+  private long writeId;
 
   public AlterTableAlterPartDesc() {
   }
 
   /**
-   * @param tableName
+   * @param fqTableName
    *          table containing the partition
    * @param partKeySpec
    */
-  public AlterTableAlterPartDesc(String tableName, FieldSchema partKeySpec) {
+  public AlterTableAlterPartDesc(String fqTableName, FieldSchema partKeySpec) {
     super();
-    this.tableName = tableName;
+    this.fqTableName = fqTableName;
     this.partKeySpec = partKeySpec;
   }
 
   public String getTableName() {
-    return tableName;
+    return fqTableName;
   }
 
   public void setTableName(String tableName) {
-    this.tableName = tableName;
+    this.fqTableName = tableName;
   }
 
   public FieldSchema getPartKeySpec() {
@@ -52,5 +53,20 @@ public class AlterTableAlterPartDesc extends DDLDesc {
 
   public void setPartKeySpec(FieldSchema partKeySpec) {
     this.partKeySpec = partKeySpec;
+  }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return fqTableName;
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return true; // Checked before setting as the acid desc.
   }
 }

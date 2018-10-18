@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,17 +33,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.ql.index.HiveIndex;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
@@ -118,13 +116,13 @@ public class TestHive extends TestCase {
       // create a simple table and test create, drop, get
       String tableName = "table_for_testtable";
       try {
-        hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+        hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e1) {
         e1.printStackTrace();
         assertTrue("Unable to drop table", false);
       }
 
-      Table tbl = new Table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+      Table tbl = new Table(Warehouse.DEFAULT_DATABASE_NAME, tableName);
       List<FieldSchema> fields = tbl.getCols();
 
       fields.add(new FieldSchema("col1", serdeConstants.INT_TYPE_NAME, "int -- first column"));
@@ -169,6 +167,8 @@ public class TestHive extends TestCase {
       tbl.setSerializationLib(LazySimpleSerDe.class.getName());
       tbl.setStoredAsSubDirectories(false);
 
+      tbl.setRewriteEnabled(false);
+
       // create table
       setNullCreateTableGrants();
       try {
@@ -182,9 +182,9 @@ public class TestHive extends TestCase {
       validateTable(tbl, tableName);
 
       try {
-        hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, true,
+        hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName, true,
             false);
-        Table ft2 = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+        Table ft2 = hm.getTable(Warehouse.DEFAULT_DATABASE_NAME,
             tableName, false);
         assertNull("Unable to drop table ", ft2);
       } catch (HiveException e) {
@@ -214,12 +214,12 @@ public class TestHive extends TestCase {
     String tableName = "table_for_test_thrifttable";
     try {
       try {
-        hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+        hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e1) {
         System.err.println(StringUtils.stringifyException(e1));
         assertTrue("Unable to drop table", false);
       }
-      Table tbl = new Table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+      Table tbl = new Table(Warehouse.DEFAULT_DATABASE_NAME, tableName);
       tbl.setInputFormatClass(SequenceFileInputFormat.class.getName());
       tbl.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
       tbl.setSerializationLib(ThriftDeserializer.class.getName());
@@ -227,6 +227,8 @@ public class TestHive extends TestCase {
       tbl.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT, TBinaryProtocol.class
           .getName());
       tbl.setStoredAsSubDirectories(false);
+
+      tbl.setRewriteEnabled(false);
 
       setNullCreateTableGrants();
       try {
@@ -304,7 +306,10 @@ public class TestHive extends TestCase {
       // (create table sets it to empty (non null) structures)
       tbl.getTTable().setPrivilegesIsSet(false);
 
-      ft = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+      ft = hm.getTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+      Assert.assertTrue(ft.getTTable().isSetId());
+      ft.getTTable().unsetId();
+
       assertNotNull("Unable to fetch table", ft);
       ft.checkValidity(hiveConf);
       assertEquals("Table names didn't match for table: " + tableName, tbl
@@ -314,7 +319,7 @@ public class TestHive extends TestCase {
       assertEquals("Table retention didn't match for table: " + tableName,
           tbl.getRetention(), ft.getRetention());
       assertEquals("Data location is not set correctly",
-          wh.getTablePath(hm.getDatabase(DEFAULT_DATABASE_NAME), tableName).toString(),
+          wh.getDefaultTablePath(hm.getDatabase(DEFAULT_DATABASE_NAME), tableName).toString(),
           ft.getDataLocation().toString());
       // now that URI and times are set correctly, set the original table's uri and times
       // and then compare the two tables
@@ -322,8 +327,16 @@ public class TestHive extends TestCase {
       tbl.setCreateTime(ft.getTTable().getCreateTime());
       tbl.getParameters().put(hive_metastoreConstants.DDL_TIME,
           ft.getParameters().get(hive_metastoreConstants.DDL_TIME));
-      assertTrue("Tables  doesn't match: " + tableName, ft.getTTable()
-          .equals(tbl.getTTable()));
+      // Txn stuff set by metastore
+      if (tbl.getTTable().isSetWriteId() != ft.getTTable().isSetWriteId()) {
+        // No need to compare this field.
+        ft.getTTable().setWriteId(0);
+        tbl.getTTable().setWriteId(0);
+      }
+
+      tbl.getTTable().unsetId();
+      assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
+          + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));
       assertEquals("SerializationLib is not set correctly", tbl
           .getSerializationLib(), ft.getSerializationLib());
       assertEquals("Serde is not set correctly", tbl.getDeserializer()
@@ -500,7 +513,7 @@ public class TestHive extends TestCase {
       return hm.getTable(dbName, tableName);
     }
     catch (Exception exception) {
-      fail("Unable to drop and create table " + dbName + "." + tableName
+      fail("Unable to drop and create table " + StatsUtils.getFullyQualifiedTableName(dbName, tableName)
           + " because " + StringUtils.stringifyException(exception));
       throw exception;
     }
@@ -522,7 +535,7 @@ public class TestHive extends TestCase {
    * @throws Exception on failure.
    */
   public void testDropPartitionsWithPurge() throws Exception {
-    String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
     String tableName = "table_for_testDropPartitionsWithPurge";
 
     try {
@@ -585,13 +598,13 @@ public class TestHive extends TestCase {
    */
   public void testAutoPurgeTablesAndPartitions() throws Throwable {
 
-    String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
     String tableName = "table_for_testAutoPurgeTablesAndPartitions";
     try {
 
       Table table = createPartitionedTable(dbName, tableName);
       table.getParameters().put("auto.purge", "true");
-      hm.alterTable(tableName, table, null);
+      hm.alterTable(tableName, table, false, null, true);
 
       Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
           .put("ds", "20141216")
@@ -639,7 +652,7 @@ public class TestHive extends TestCase {
     try {
       String tableName = "table_for_testpartition";
       try {
-        hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+        hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to drop table: " + tableName, false);
@@ -660,7 +673,7 @@ public class TestHive extends TestCase {
       }
       Table tbl = null;
       try {
-        tbl = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+        tbl = hm.getTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to fetch table: " + tableName, false);
@@ -675,131 +688,10 @@ public class TestHive extends TestCase {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to create parition for table: " + tableName, false);
       }
-      hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+      hm.dropTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testPartition() failed");
-      throw e;
-    }
-  }
-
-  /**
-   * Tests creating a simple index on a simple table.
-   *
-   * @throws Throwable
-   */
-  public void testIndex() throws Throwable {
-    try{
-      // create a simple table
-      String tableName = "table_for_testindex";
-      String qTableName = MetaStoreUtils.DEFAULT_DATABASE_NAME + "." + tableName;
-      try {
-        hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
-      } catch (HiveException e) {
-        e.printStackTrace();
-        assertTrue("Unable to drop table", false);
-      }
-
-      Table tbl = new Table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
-      List<FieldSchema> fields = tbl.getCols();
-
-      fields.add(new FieldSchema("col1", serdeConstants.INT_TYPE_NAME, "int -- first column"));
-      fields.add(new FieldSchema("col2", serdeConstants.STRING_TYPE_NAME,
-          "string -- second column"));
-      fields.add(new FieldSchema("col3", serdeConstants.DOUBLE_TYPE_NAME,
-          "double -- thrift column"));
-      tbl.setFields(fields);
-
-      tbl.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
-      tbl.setInputFormatClass(SequenceFileInputFormat.class);
-
-      // create table
-      try {
-        hm.createTable(tbl);
-      } catch (HiveException e) {
-        e.printStackTrace();
-        assertTrue("Unable to create table: " + tableName, false);
-      }
-
-      // Create a simple index
-      String indexName = "index_on_table_for_testindex";
-      String indexHandlerClass = HiveIndex.IndexType.COMPACT_SUMMARY_TABLE.getHandlerClsName();
-      List<String> indexedCols = new ArrayList<String>();
-      indexedCols.add("col1");
-      String indexTableName = "index_on_table_for_testindex_table";
-      String qIndexTableName = MetaStoreUtils.DEFAULT_DATABASE_NAME + "." + indexTableName;
-      boolean deferredRebuild = true;
-      String inputFormat = SequenceFileInputFormat.class.getName();
-      String outputFormat = SequenceFileOutputFormat.class.getName();
-      String serde = null;
-      String storageHandler = null;
-      String location = null;
-      String collItemDelim = null;
-      String fieldDelim = null;
-      String fieldEscape = null;
-      String lineDelim = null;
-      String mapKeyDelim = null;
-      String indexComment = null;
-      Map<String, String> indexProps = null;
-      Map<String, String> tableProps = null;
-      Map<String, String> serdeProps = new HashMap<String, String>();
-      hm.createIndex(qTableName, indexName, indexHandlerClass, indexedCols, qIndexTableName,
-          deferredRebuild, inputFormat, outputFormat, serde, storageHandler, location,
-          indexProps, tableProps, serdeProps, collItemDelim, fieldDelim, fieldEscape, lineDelim,
-          mapKeyDelim, indexComment);
-
-      // Retrieve and validate the index
-      Index index = null;
-      try {
-        index = hm.getIndex(tableName, indexName);
-        assertNotNull("Unable to fetch index", index);
-        index.validate();
-        assertEquals("Index names don't match for index: " + indexName, indexName,
-            index.getIndexName());
-        assertEquals("Table names don't match for index: " + indexName, tableName,
-            index.getOrigTableName());
-        assertEquals("Index table names didn't match for index: " + indexName, indexTableName,
-            index.getIndexTableName());
-        assertEquals("Index handler classes didn't match for index: " + indexName,
-            indexHandlerClass, index.getIndexHandlerClass());
-        assertEquals("Deferred rebuild didn't match for index: " + indexName, deferredRebuild,
-            index.isDeferredRebuild());
-
-      } catch (HiveException e) {
-        System.err.println(StringUtils.stringifyException(e));
-        assertTrue("Unable to fetch index correctly: " + indexName, false);
-      }
-
-      // Drop index
-      try {
-        hm.dropIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, indexName, false, true);
-      } catch (HiveException e) {
-        System.err.println(StringUtils.stringifyException(e));
-        assertTrue("Unable to drop index: " + indexName, false);
-      }
-
-      boolean dropIndexException = false;
-      try {
-        hm.getIndex(tableName, indexName);
-      } catch (HiveException e) {
-        // Expected since it was just dropped
-        dropIndexException = true;
-      }
-
-      assertTrue("Unable to drop index: " + indexName, dropIndexException);
-
-      // Drop table
-      try {
-        hm.dropTable(tableName);
-        Table droppedTable = hm.getTable(tableName, false);
-        assertNull("Unable to drop table " + tableName, droppedTable);
-      } catch (HiveException e) {
-        System.err.println(StringUtils.stringifyException(e));
-        assertTrue("Unable to drop table: " + tableName, false);
-      }
-    } catch (Throwable e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testIndex failed");
       throw e;
     }
   }

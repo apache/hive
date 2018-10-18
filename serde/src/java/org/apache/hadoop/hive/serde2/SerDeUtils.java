@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
@@ -63,6 +64,8 @@ public final class SerDeUtils {
   public static final char QUOTE = '"';
   public static final char COLON = ':';
   public static final char COMMA = ',';
+  // we should use '\0' for COLUMN_NAME_DELIMITER if column name contains COMMA
+  // but we should also take care of the backward compatibility
   public static final char COLUMN_COMMENTS_DELIMITER = '\0';
   public static final String LBRACKET = "[";
   public static final String RBRACKET = "]";
@@ -160,7 +163,7 @@ public final class SerDeUtils {
    * Convert a Object to a standard Java object in compliance with JDBC 3.0 (see JDBC 3.0
    * Specification, Table B-3: Mapping from JDBC Types to Java Object Types).
    *
-   * This method is kept consistent with {@link HiveResultSetMetaData#hiveTypeToSqlType}.
+   * This method is kept consistent with HiveResultSetMetaData#hiveTypeToSqlType .
    */
   public static Object toThriftPayload(Object val, ObjectInspector valOI, int version) {
     if (valOI.getCategory() == ObjectInspector.Category.PRIMITIVE) {
@@ -271,6 +274,12 @@ public final class SerDeUtils {
           sb.append('"');
           sb.append(((TimestampObjectInspector) poi)
               .getPrimitiveWritableObject(o));
+          sb.append('"');
+          break;
+        }
+        case TIMESTAMPLOCALTZ: {
+          sb.append('"');
+          sb.append(((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(o));
           sb.append('"');
           break;
         }
@@ -566,5 +575,16 @@ public final class SerDeUtils {
 
   public static Text transformTextFromUTF8(Text text, Charset targetCharset) {
     return new Text(new String(text.getBytes(), 0, text.getLength()).getBytes(targetCharset));
+  }
+
+  public static void writeLong(byte[] writeBuffer, int offset, long value) {
+    writeBuffer[offset] = (byte) ((value >> 0)  & 0xff);
+    writeBuffer[offset + 1] = (byte) ((value >> 8)  & 0xff);
+    writeBuffer[offset + 2] = (byte) ((value >> 16) & 0xff);
+    writeBuffer[offset + 3] = (byte) ((value >> 24) & 0xff);
+    writeBuffer[offset + 4] = (byte) ((value >> 32) & 0xff);
+    writeBuffer[offset + 5] = (byte) ((value >> 40) & 0xff);
+    writeBuffer[offset + 6] = (byte) ((value >> 48) & 0xff);
+    writeBuffer[offset + 7] = (byte) ((value >> 56) & 0xff);
   }
 }

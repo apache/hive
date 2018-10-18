@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,8 +31,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -43,10 +48,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -67,6 +72,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   boolean isExternal;
   List<FieldSchema> cols;
   List<FieldSchema> partCols;
+  List<String> partColNames;
   List<String> bucketCols;
   List<Order> sortCols;
   int numBuckets;
@@ -91,9 +97,19 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   boolean isTemporary = false;
   private boolean isMaterialization = false;
   private boolean replaceMode = false;
+  private ReplicationSpec replicationSpec = null;
   private boolean isCTAS = false;
   List<SQLPrimaryKey> primaryKeys;
   List<SQLForeignKey> foreignKeys;
+  List<SQLUniqueConstraint> uniqueConstraints;
+  List<SQLNotNullConstraint> notNullConstraints;
+  List<SQLDefaultConstraint> defaultConstraints;
+  List<SQLCheckConstraint> checkConstraints;
+  private Long initialMmWriteId; // Initial MM write ID for CTAS and import.
+  // The FSOP configuration for the FSOP that is going to write initial data during ctas.
+  // This is not needed beyond compilation, so it is transient.
+  private transient FileSinkDesc writer;
+  private Long replWriteId; // to be used by repl task to get the txn and valid write id list
 
   public CreateTableDesc() {
   }
@@ -108,37 +124,42 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
       boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
-      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys) {
+      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
 
     this(tableName, isExternal, isTemporary, cols, partCols,
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
         collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
         outputFormat, location, serName, storageHandler, serdeProps,
-        tblProps, ifNotExists, skewedColNames, skewedColValues, primaryKeys, foreignKeys);
+        tblProps, ifNotExists, skewedColNames, skewedColValues,
+        primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
 
     this.databaseName = databaseName;
   }
 
   public CreateTableDesc(String databaseName, String tableName, boolean isExternal, boolean isTemporary,
-                         List<FieldSchema> cols, List<FieldSchema> partCols,
-                         List<String> bucketCols, List<Order> sortCols, int numBuckets,
-                         String fieldDelim, String fieldEscape, String collItemDelim,
-                         String mapKeyDelim, String lineDelim, String comment, String inputFormat,
-                         String outputFormat, String location, String serName,
-                         String storageHandler,
-                         Map<String, String> serdeProps,
-                         Map<String, String> tblProps,
-                         boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
-                         boolean isCTAS, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys) {
-    this(databaseName, tableName, isExternal, isTemporary, cols, partCols,
-            bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
-            collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
-            outputFormat, location, serName, storageHandler, serdeProps,
-            tblProps, ifNotExists, skewedColNames, skewedColValues, primaryKeys, foreignKeys);
+      List<FieldSchema> cols, List<String> partColNames,
+      List<String> bucketCols, List<Order> sortCols, int numBuckets,
+      String fieldDelim, String fieldEscape, String collItemDelim,
+      String mapKeyDelim, String lineDelim, String comment, String inputFormat,
+      String outputFormat, String location, String serName,
+      String storageHandler,
+      Map<String, String> serdeProps,
+      Map<String, String> tblProps,
+      boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
+      boolean isCTAS, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
+    this(databaseName, tableName, isExternal, isTemporary, cols, new ArrayList<>(),
+        bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
+        collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
+        outputFormat, location, serName, storageHandler, serdeProps,
+        tblProps, ifNotExists, skewedColNames, skewedColValues,
+        primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+    this.partColNames = partColNames;
     this.isCTAS = isCTAS;
-
   }
-
 
   public CreateTableDesc(String tableName, boolean isExternal, boolean isTemporary,
       List<FieldSchema> cols, List<FieldSchema> partCols,
@@ -150,7 +171,9 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
       boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
-      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys) {
+      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.isTemporary = isTemporary;
@@ -175,16 +198,12 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
     this.skewedColNames = copyList(skewedColNames);
     this.skewedColValues = copyList(skewedColValues);
-    if (primaryKeys == null) {
-      this.primaryKeys = new ArrayList<SQLPrimaryKey>();
-    } else {
-      this.primaryKeys = new ArrayList<SQLPrimaryKey>(primaryKeys);
-    }
-    if (foreignKeys == null) {
-      this.foreignKeys = new ArrayList<SQLForeignKey>();
-    } else {
-      this.foreignKeys = new ArrayList<SQLForeignKey>(foreignKeys);
-    }
+    this.primaryKeys = copyList(primaryKeys);
+    this.foreignKeys = copyList(foreignKeys);
+    this.uniqueConstraints = copyList(uniqueConstraints);
+    this.notNullConstraints = copyList(notNullConstraints);
+    this.defaultConstraints = copyList(defaultConstraints);
+    this.checkConstraints= copyList(checkConstraints);
   }
 
   private static <T> List<T> copyList(List<T> copy) {
@@ -239,6 +258,14 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.partCols = partCols;
   }
 
+  public List<String> getPartColNames() {
+    return partColNames;
+  }
+
+  public void setPartColNames(ArrayList<String> partColNames) {
+    this.partColNames = partColNames;
+  }
+
   public List<SQLPrimaryKey> getPrimaryKeys() {
     return primaryKeys;
   }
@@ -254,6 +281,20 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   public void setForeignKeys(ArrayList<SQLForeignKey> foreignKeys) {
     this.foreignKeys = foreignKeys;
   }
+
+  public List<SQLUniqueConstraint> getUniqueConstraints() {
+    return uniqueConstraints;
+  }
+
+  public List<SQLNotNullConstraint> getNotNullConstraints() {
+    return notNullConstraints;
+  }
+
+  public List<SQLDefaultConstraint> getDefaultConstraints() {
+    return defaultConstraints;
+  }
+
+  public List<SQLCheckConstraint> getCheckConstraints() { return checkConstraints; }
 
   @Explain(displayName = "bucket columns")
   public List<String> getBucketCols() {
@@ -516,7 +557,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
           }
         }
         if (!found) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(" \'" + bucketCol + "\'"));
         }
       }
     }
@@ -536,7 +577,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
           }
         }
         if (!found) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(" \'" + sortCol + "\'"));
         }
       }
     }
@@ -646,6 +687,25 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     return replaceMode;
   }
 
+  /**
+   * @param replicationSpec Sets the replication spec governing this create.
+   * This parameter will have meaningful values only for creates happening as a result of a replication.
+   */
+  public void setReplicationSpec(ReplicationSpec replicationSpec) {
+    this.replicationSpec = replicationSpec;
+  }
+
+  /**
+   * @return what kind of replication scope this drop is running under.
+   * This can result in a "CREATE/REPLACE IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec(){
+    if (replicationSpec == null){
+      this.replicationSpec = new ReplicationSpec();
+    }
+    return this.replicationSpec;
+  }
+
   public boolean isCTAS() {
     return isCTAS;
   }
@@ -682,26 +742,24 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
     /*
-     * We use LazySimpleSerDe by default.
-     *
-     * If the user didn't specify a SerDe, and any of the columns are not simple
-     * types, we will have to use DynamicSerDe instead.
+     * If the user didn't specify a SerDe, we use the default.
      */
+    String serDeClassName;
     if (getSerName() == null) {
       if (storageHandler == null) {
-        LOG.info("Default to LazySimpleSerDe for table " + tableName);
-        tbl.setSerializationLib(LazySimpleSerDe.class.getName());
+        serDeClassName = PlanUtils.getDefaultSerDe().getName();
+        LOG.info("Default to " + serDeClassName + " for table " + tableName);
       } else {
-        String serDeClassName = storageHandler.getSerDeClass().getName();
+        serDeClassName = storageHandler.getSerDeClass().getName();
         LOG.info("Use StorageHandler-supplied " + serDeClassName
                 + " for table " + tableName);
-        tbl.setSerializationLib(serDeClassName);
       }
     } else {
       // let's validate that the serde exists
-      DDLTask.validateSerDe(getSerName(), conf);
-      tbl.setSerializationLib(getSerName());
+      serDeClassName = getSerName();
+      DDLTask.validateSerDe(serDeClassName, conf);
     }
+    tbl.setSerializationLib(serDeClassName);
 
     if (getFieldDelim() != null) {
       tbl.setSerdeParam(serdeConstants.FIELD_DELIM, getFieldDelim());
@@ -771,9 +829,9 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
     }
 
-    if (!Utilities.isDefaultNameNode(conf) && DDLTask.doesTableNeedLocation(tbl)) {
+    if (DDLTask.doesTableNeedLocation(tbl)) {
       // If location is specified - ensure that it is a full qualified name
-      DDLTask.makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tableName, conf);
+      DDLTask.makeLocationQualified(tbl.getDbName(), tbl, conf);
     }
 
     if (isExternal()) {
@@ -813,17 +871,44 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
         }
       }
     }
-    if (getLocation() == null && !this.isCTAS) {
+
+    if (!this.isCTAS && (tbl.getPath() == null || (tbl.isEmpty() && !isExternal()))) {
       if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-        StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
-            StatsSetupConst.TRUE);
+        StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
+            MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
       }
     } else {
-      StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
+      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
           StatsSetupConst.FALSE);
     }
     return tbl;
   }
 
+  public void setInitialMmWriteId(Long mmWriteId) {
+    this.initialMmWriteId = mmWriteId;
+  }
 
+  public Long getInitialMmWriteId() {
+    return initialMmWriteId;
+  }
+
+  
+
+  public FileSinkDesc getAndUnsetWriter() {
+    FileSinkDesc fsd = writer;
+    writer = null;
+    return fsd;
+  }
+
+  public void setWriter(FileSinkDesc writer) {
+    this.writer = writer;
+  }
+
+  public Long getReplWriteId() {
+    return replWriteId;
+  }
+
+  public void setReplWriteId(Long replWriteId) {
+    this.replWriteId = replWriteId;
+  }
 }

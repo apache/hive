@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,16 @@
  */
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.Map;
 
 /**
  * HCat message sent when a table is Altered.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class AlterPartitionMessage extends HCatEventMessage {
 
   protected AlterPartitionMessage() {
@@ -31,7 +36,11 @@ public abstract class AlterPartitionMessage extends HCatEventMessage {
 
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   public abstract Map<String,String> getKeyValues();
+
+  public abstract Long getWriteId();
 
   @Override
   public HCatEventMessage checkValid() {

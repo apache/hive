@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,8 @@
 
 package org.apache.hive.jdbc.authorization;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -150,6 +152,31 @@ public class TestJdbcWithSQLAuthorization {
             + "Object [type=COMMAND_PARAMS, name=[-ls, /tmp/]]]";
         assertTrue("Checking content of error message:" + e.getMessage(),
             e.getMessage().contains(msg));
+      } finally {
+        stmt.close();
+        hs2Conn.close();
+      }
+      assertTrue("Exception expected ", caughtException);
+    }
+  }
+
+  @Test
+  public void testAuthZFailureLlapCachePurge() throws Exception {
+    // using different code blocks so that jdbc variables are not accidently re-used
+    // between the actions. Different connection/statement object should be used for each action.
+    {
+      Connection hs2Conn = getConnection("user1");
+      boolean caughtException = false;
+      Statement stmt = hs2Conn.createStatement();
+      try {
+        stmt.execute("llap cache -purge");
+      } catch (SQLException e) {
+        caughtException = true;
+        String msg = "Error while processing statement: Permission denied: Principal [name=user1, type=USER] does " +
+          "not have following privileges for operation LLAP_CACHE_PURGE [[ADMIN PRIVILEGE] on Object " +
+          "[type=COMMAND_PARAMS, name=[llap, cache, -purge]], [ADMIN PRIVILEGE] on Object " +
+          "[type=SERVICE_NAME, name=localhost]]";
+        assertEquals(msg, e.getMessage());
       } finally {
         stmt.close();
         hs2Conn.close();

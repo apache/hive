@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,13 +19,14 @@
 
 package org.apache.hive.hcatalog.messaging.json;
 
-import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
 import org.apache.hive.hcatalog.messaging.AlterPartitionMessage;
 import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.CreateFunctionMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.DropFunctionMessage;
 import org.apache.hive.hcatalog.messaging.DropPartitionMessage;
 import org.apache.hive.hcatalog.messaging.DropTableMessage;
 import org.apache.hive.hcatalog.messaging.InsertMessage;
@@ -121,6 +122,26 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     }
     catch (Exception exception) {
       throw new IllegalArgumentException("Could not construct DropPartitionMessage.", exception);
+    }
+  }
+
+  @Override
+  public CreateFunctionMessage getCreateFunctionMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONCreateFunctionMessage.class);
+    }
+    catch (Exception exception) {
+      throw new IllegalArgumentException("Could not construct JSONCreateFunctionMessage.", exception);
+    }
+  }
+
+  @Override
+  public DropFunctionMessage getDropFunctionMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONDropFunctionMessage.class);
+    }
+    catch (Exception exception) {
+      throw new IllegalArgumentException("Could not construct JSONDropDatabaseMessage.", exception);
     }
   }
 

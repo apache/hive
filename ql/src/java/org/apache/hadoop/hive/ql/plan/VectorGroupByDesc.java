@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+
 /**
  * VectorGroupByDesc.
  *
@@ -28,7 +32,7 @@ package org.apache.hadoop.hive.ql.plan;
  */
 public class VectorGroupByDesc extends AbstractVectorDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   /**
    *     GLOBAL         No key.  All rows --> 1 full aggregation on end of input
@@ -57,11 +61,14 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   private ProcessingMode processingMode;
 
-  private boolean isVectorOutput;
+  private VectorExpression[] keyExpressions;
+  private VectorAggregationDesc[] vecAggrDescs;
+  private int[] projectedOutputColumns;
+  private boolean isVectorizationComplexTypesEnabled;
+  private boolean isVectorizationGroupByComplexTypesEnabled;
 
   public VectorGroupByDesc() {
     this.processingMode = ProcessingMode.NONE;
-    this.isVectorOutput = false;
   }
 
   public void setProcessingMode(ProcessingMode processingMode) {
@@ -71,12 +78,44 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
     return processingMode;
   }
 
-  public boolean isVectorOutput() {
-    return isVectorOutput;
+  public void setKeyExpressions(VectorExpression[] keyExpressions) {
+    this.keyExpressions = keyExpressions;
   }
 
-  public void setVectorOutput(boolean isVectorOutput) {
-    this.isVectorOutput = isVectorOutput;
+  public VectorExpression[] getKeyExpressions() {
+    return keyExpressions;
+  }
+
+  public void setVecAggrDescs(VectorAggregationDesc[] vecAggrDescs) {
+    this.vecAggrDescs = vecAggrDescs;
+  }
+
+  public VectorAggregationDesc[] getVecAggrDescs() {
+    return vecAggrDescs;
+  }
+
+  public void setProjectedOutputColumns(int[] projectedOutputColumns) {
+    this.projectedOutputColumns = projectedOutputColumns;
+  }
+
+  public int[] getProjectedOutputColumns() {
+    return projectedOutputColumns;
+  }
+
+  public void setIsVectorizationComplexTypesEnabled(boolean isVectorizationComplexTypesEnabled) {
+    this.isVectorizationComplexTypesEnabled = isVectorizationComplexTypesEnabled;
+  }
+
+  public boolean getIsVectorizationComplexTypesEnabled() {
+    return isVectorizationComplexTypesEnabled;
+  }
+
+  public void setIsVectorizationGroupByComplexTypesEnabled(boolean isVectorizationGroupByComplexTypesEnabled) {
+    this.isVectorizationGroupByComplexTypesEnabled = isVectorizationGroupByComplexTypesEnabled;
+  }
+
+  public boolean getIsVectorizationGroupByComplexTypesEnabled() {
+    return isVectorizationGroupByComplexTypesEnabled;
   }
 
   /**

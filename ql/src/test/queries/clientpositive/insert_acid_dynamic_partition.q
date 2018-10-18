@@ -1,3 +1,5 @@
+--! qt:dataset:alltypesorc
+SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;

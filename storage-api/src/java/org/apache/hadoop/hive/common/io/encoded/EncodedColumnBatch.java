@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,8 +18,12 @@
 
 package org.apache.hadoop.hive.common.io.encoded;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A block of data for a given section of a file, similar to VRB but in encoded form.
@@ -71,19 +75,38 @@ public class EncodedColumnBatch<BatchKey> {
     public void setIndexBaseOffset(int indexBaseOffset) {
       this.indexBaseOffset = indexBaseOffset;
     }
+
+    @Override
+    public String toString() {
+      String bufStr = "";
+      if (cacheBuffers != null) {
+        for (MemoryBuffer mb : cacheBuffers) {
+          bufStr += mb.getClass().getSimpleName() + " with " + mb.getByteBufferRaw().remaining() + " bytes, ";
+        }
+      }
+      return "ColumnStreamData [cacheBuffers=[" + bufStr
+          + "], indexBaseOffset=" + indexBaseOffset + "]";
+    }
+
   }
 
   /** The key that is used to map this batch to source location. */
   protected BatchKey batchKey;
   /**
-   * Stream data for each stream, for each included column.
-   * For each column, streams are indexed by kind, with missing elements being null.
+   * Stream data for each column that has true in the corresponding hasData position.
+   * For each column, streams are indexed by kind (for ORC), with missing elements being null.
    */
   protected ColumnStreamData[][] columnData;
-  /** Column indexes included in the batch. Correspond to columnData elements. */
-  protected int[] columnIxs;
+  /**
+   * Indicates which columns have data. This is indexed by the column ID in ORC file schema;
+   * the indices that are not included will not have data. Correspond to columnData elements.
+   */
+  protected boolean[] hasData;
 
   public void reset() {
+    if (hasData != null) {
+      Arrays.fill(hasData, false);
+    }
     if (columnData == null) return;
     for (int i = 0; i < columnData.length; ++i) {
       if (columnData[i] == null) continue;
@@ -93,37 +116,39 @@ public class EncodedColumnBatch<BatchKey> {
     }
   }
 
-  public void initColumn(int colIxMod, int colIx, int streamCount) {
-    columnIxs[colIxMod] = colIx;
-    if (columnData[colIxMod] == null || columnData[colIxMod].length != streamCount) {
-      columnData[colIxMod] = new ColumnStreamData[streamCount];
+
+  public void initColumn(int colIx, int streamCount) {
+    hasData[colIx] = true;
+    if (columnData[colIx] == null || columnData[colIx].length != streamCount) {
+      columnData[colIx] = new ColumnStreamData[streamCount];
     }
   }
 
-  public void setStreamData(int colIxMod, int streamKind, ColumnStreamData csd) {
-    columnData[colIxMod][streamKind] = csd;
-  }
-
-  public void setAllStreamsData(int colIxMod, int colIx, ColumnStreamData[] sbs) {
-    columnIxs[colIxMod] = colIx;
-    columnData[colIxMod] = sbs;
+  private static final Logger LOG = LoggerFactory.getLogger(EncodedColumnBatch.class);
+  public void setStreamData(int colIx, int streamIx, ColumnStreamData csd) {
+    assert hasData[colIx];
+    columnData[colIx][streamIx] = csd;
   }
 
   public BatchKey getBatchKey() {
     return batchKey;
   }
 
-  public ColumnStreamData[][] getColumnData() {
-    return columnData;
+  public ColumnStreamData[] getColumnData(int colIx) {
+    if (!hasData[colIx]) throw new AssertionError("No data for column " + colIx);
+    return columnData[colIx];
   }
 
-  public int[] getColumnIxs() {
-    return columnIxs;
+  public int getTotalColCount() {
+    return columnData.length; // Includes the columns that have no data
   }
 
   protected void resetColumnArrays(int columnCount) {
-    if (columnIxs != null && columnCount == columnIxs.length) return;
-    columnIxs = new int[columnCount];
+    if (hasData != null && columnCount == hasData.length) {
+      Arrays.fill(hasData, false);
+    } else {
+      hasData = new boolean[columnCount];
+    }
     ColumnStreamData[][] columnData = new ColumnStreamData[columnCount][];
     if (this.columnData != null) {
       for (int i = 0; i < Math.min(columnData.length, this.columnData.length); ++i) {
@@ -131,5 +156,9 @@ public class EncodedColumnBatch<BatchKey> {
       }
     }
     this.columnData = columnData;
+  }
+
+  public boolean hasData(int colIx) {
+    return hasData[colIx];
   }
 }

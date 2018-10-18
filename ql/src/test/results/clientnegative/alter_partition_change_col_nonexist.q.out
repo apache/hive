@@ -13,8 +13,7 @@ POSTHOOK: query: alter table alter_partition_change_col_nonexist add partition (
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@alter_partition_change_col_nonexist
 POSTHOOK: Output: default@alter_partition_change_col_nonexist@p1=abc
-PREHOOK: query: -- should fail because of nonexistent column c3
-alter table alter_partition_change_col_nonexist change c3 c4 decimal(14,4)
+PREHOOK: query: alter table alter_partition_change_col_nonexist change c3 c4 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col_nonexist
 PREHOOK: Output: default@alter_partition_change_col_nonexist

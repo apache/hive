@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+SET hive.vectorized.execution.enabled=false;
 set hive.explain.user=false;
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=true;
@@ -85,7 +87,7 @@ SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
-and agg.dim_shops_id = 1;
+and agg.dim_shops_id = 1 order by agg.amount;
 
 set hive.tez.dynamic.partition.pruning.max.event.size=1;
 set hive.tez.dynamic.partition.pruning.max.data.size=1000000;

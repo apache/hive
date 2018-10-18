@@ -66,4 +66,4 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
-FAILED: ParseException line 5:79 cannot recognize input near 'partition' '(' 'employeeSalary' in analyze statement
+FAILED: ParseException line 5:79 mismatched input 'partition' expecting KW_CACHE near ')' in analyze statement

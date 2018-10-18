@@ -1,7 +1,9 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=minimal;
-set hive.exec.submitviachild=true;
-set hive.exec.submit.local.task.via.child=true;
+set hive.exec.submitviachild=false;
+set hive.exec.submit.local.task.via.child=false;
 
 -- backward compatible (minimal)
 explain select * from src limit 10;
@@ -12,6 +14,10 @@ select * from srcpart where ds='2008-04-08' AND hr='11' limit 10;
 
 explain select key from src limit 10;
 select key from src limit 10;
+
+-- negative, filter on partition column and non-partition column
+explain select * from srcpart where ds='2008-04-08' AND key > 100 limit 10;
+select * from srcpart where ds='2008-04-08' AND key > 100 limit 10;
 
 -- negative, filter on non-partition column
 explain select * from srcpart where key > 100 limit 10;

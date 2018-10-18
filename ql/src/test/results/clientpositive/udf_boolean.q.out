@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED boolean
 POSTHOOK: type: DESCFUNCTION
 There is no documentation for function 'boolean'
+Function class:org.apache.hadoop.hive.ql.udf.UDFToBoolean
+Function type:BUILTIN

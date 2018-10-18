@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -31,6 +32,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -40,44 +43,46 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Select operator implementation.
  */
-public class VectorSelectOperator extends Operator<SelectDesc> implements
-    VectorizationContextRegion {
+public class VectorSelectOperator extends Operator<SelectDesc>
+    implements VectorizationOperator, VectorizationContextRegion {
 
   private static final long serialVersionUID = 1L;
 
-  protected VectorExpression[] vExpressions = null;
+  private VectorizationContext vContext;
+  private VectorSelectDesc vectorDesc;
 
-  private transient int [] projectedColumns = null;
+  private VectorExpression[] vExpressions = null;
+
+  private int [] projectedOutputColumns = null;
 
   private transient VectorExpressionWriter [] valueWriters = null;
 
   // Create a new outgoing vectorization context because column name map will change.
   private VectorizationContext vOutContext;
 
-  public VectorSelectOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorSelectOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc)
+          throws HiveException {
     this(ctx);
     this.conf = (SelectDesc) conf;
-    List<ExprNodeDesc> colList = this.conf.getColList();
-    vExpressions = new VectorExpression[colList.size()];
-    for (int i = 0; i < colList.size(); i++) {
-      ExprNodeDesc expr = colList.get(i);
-      VectorExpression ve = vContext.getVectorExpression(expr);
-      vExpressions[i] = ve;
-    }
+    this.vContext = vContext;
+    this.vectorDesc = (VectorSelectDesc) vectorDesc;
+    vExpressions = this.vectorDesc.getSelectExpressions();
+    projectedOutputColumns = this.vectorDesc.getProjectedOutputColumns();
 
     /**
      * Create a new vectorization context to create a new projection, but keep
      * same output column manager must be inherited to track the scratch the columns.
+     * Some of which may be the input columns for this operator.
      */
     vOutContext = new VectorizationContext(getName(), vContext);
 
+    // NOTE: We keep the TypeInfo and dataTypePhysicalVariation arrays.
     vOutContext.resetProjectionColumns();
-    for (int i=0; i < colList.size(); ++i) {
-      String columnName = this.conf.getOutputColumnNames().get(i);
-      VectorExpression ve = vExpressions[i];
-      vOutContext.addProjectionColumn(columnName,
-              ve.getOutputColumn());
+    List<String> outputColumnNames = this.conf.getOutputColumnNames();
+    for (int i=0; i < projectedOutputColumns.length; ++i) {
+      String columnName = outputColumnNames.get(i);
+      vOutContext.addProjectionColumn(columnName, projectedOutputColumns[i]);
     }
   }
 
@@ -92,12 +97,18 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   }
 
   @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
+  }
+
+  @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
       return;
     }
+    VectorExpression.doTransientInit(vExpressions);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -110,10 +121,13 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     List<String> outputFieldNames = conf.getOutputColumnNames();
     outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
         outputFieldNames, objectInspectors);
+  }
 
-    projectedColumns = new int [vExpressions.length];
-    for (int i = 0; i < projectedColumns.length; i++) {
-      projectedColumns[i] = vExpressions[i].getOutputColumn();
+  // Must send on to VectorPTFOperator...
+  @Override
+  public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
+      op.setNextVectorBatchGroupStatus(isLastGroupBatch);
     }
   }
 
@@ -122,7 +136,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
 
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
-      forward(row, inputObjInspectors[tag]);
+      vectorForward((VectorizedRowBatch) row);
       return;
     }
 
@@ -139,9 +153,9 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     // Prepare output, set the projections
     int[] originalProjections = vrg.projectedColumns;
     int originalProjectionSize = vrg.projectionSize;
-    vrg.projectionSize = vExpressions.length;
-    vrg.projectedColumns = this.projectedColumns;
-    forward(vrg, outputObjInspector);
+    vrg.projectionSize = projectedOutputColumns.length;
+    vrg.projectedColumns = this.projectedOutputColumns;
+    vectorForward((VectorizedRowBatch) row);
 
     // Revert the projected columns back, because vrg will be re-used.
     vrg.projectionSize = originalProjectionSize;
@@ -165,7 +179,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   }
 
   @Override
-  public VectorizationContext getOuputVectorizationContext() {
+  public VectorizationContext getOutputVectorizationContext() {
     return vOutContext;
   }
 
@@ -181,6 +195,11 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
 
   static public String getOperatorName() {
     return "SEL";
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 
 }

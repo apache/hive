@@ -11,6 +11,8 @@ PREHOOK: query: explain SELECT inline(
   )
 )  as (id, text) FROM SRC limit 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT inline( 
   ARRAY(
     STRUCT (1,'dude!'),
@@ -19,6 +21,8 @@ POSTHOOK: query: explain SELECT inline(
   )
 )  as (id, text) FROM SRC limit 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -37,10 +41,14 @@ STAGE PLANS:
             UDTF Operator
               Statistics: Num rows: 500 Data size: 32000 Basic stats: COMPLETE Column stats: COMPLETE
               function name: inline
-              Limit
-                Number of rows: 2
-                Statistics: Num rows: 2 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
-                ListSink
+              Select Operator
+                expressions: col1 (type: int), col2 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  ListSink
 
 PREHOOK: query: SELECT inline( 
   ARRAY(
@@ -64,8 +72,7 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1	dude!
 2	Wheres
-PREHOOK: query: -- HIVE-3475 INLINE UDTF doesn't convert types properly
-select * from (SELECT
+PREHOOK: query: select * from (SELECT
   ARRAY(
     STRUCT (1,'dude!'),
     STRUCT (2,'Wheres'),
@@ -75,8 +82,7 @@ select * from (SELECT
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- HIVE-3475 INLINE UDTF doesn't convert types properly
-select * from (SELECT
+POSTHOOK: query: select * from (SELECT
   ARRAY(
     STRUCT (1,'dude!'),
     STRUCT (2,'Wheres'),

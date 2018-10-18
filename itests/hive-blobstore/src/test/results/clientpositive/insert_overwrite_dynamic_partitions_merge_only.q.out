@@ -1,0 +1,130 @@
+PREHOOK: query: CREATE TABLE tmp_table_merge (id string, name string, dt string, pid int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_table_merge
+POSTHOOK: query: CREATE TABLE tmp_table_merge (id string, name string, dt string, pid int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_table_merge
+PREHOOK: query: INSERT INTO tmp_table_merge values ('u1','name1','2017-04-10',10000), ('u2','name2','2017-04-10',10000), ('u3','name3','2017-04-10',10000), ('u4','name4','2017-04-10',10001), ('u5','name5','2017-04-10',10001)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tmp_table_merge
+POSTHOOK: query: INSERT INTO tmp_table_merge values ('u1','name1','2017-04-10',10000), ('u2','name2','2017-04-10',10000), ('u3','name3','2017-04-10',10000), ('u4','name4','2017-04-10',10001), ('u5','name5','2017-04-10',10001)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tmp_table_merge
+POSTHOOK: Lineage: tmp_table_merge.dt SCRIPT []
+POSTHOOK: Lineage: tmp_table_merge.id SCRIPT []
+POSTHOOK: Lineage: tmp_table_merge.name SCRIPT []
+POSTHOOK: Lineage: tmp_table_merge.pid SCRIPT []
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/s3_table_merge
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s3_table_merge
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/s3_table_merge
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s3_table_merge
+PREHOOK: query: INSERT OVERWRITE TABLE s3_table_merge PARTITION (reported_date, product_id)
+SELECT
+  t.id as user_id,
+  t.name as event_name,
+  t.dt as reported_date,
+  t.pid as product_id
+FROM tmp_table_merge t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_table_merge
+PREHOOK: Output: default@s3_table_merge
+POSTHOOK: query: INSERT OVERWRITE TABLE s3_table_merge PARTITION (reported_date, product_id)
+SELECT
+  t.id as user_id,
+  t.name as event_name,
+  t.dt as reported_date,
+  t.pid as product_id
+FROM tmp_table_merge t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_table_merge
+POSTHOOK: Output: default@s3_table_merge@reported_date=2017-04-10/product_id=10000
+POSTHOOK: Output: default@s3_table_merge@reported_date=2017-04-10/product_id=10001
+POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10000).event_name SIMPLE [(tmp_table_merge)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10000).user_id SIMPLE [(tmp_table_merge)t.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10001).event_name SIMPLE [(tmp_table_merge)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10001).user_id SIMPLE [(tmp_table_merge)t.FieldSchema(name:id, type:string, comment:null), ]
+PREHOOK: query: select * from s3_table_merge order by user_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s3_table_merge
+PREHOOK: Input: default@s3_table_merge@reported_date=2017-04-10/product_id=10000
+PREHOOK: Input: default@s3_table_merge@reported_date=2017-04-10/product_id=10001
+#### A masked pattern was here ####
+POSTHOOK: query: select * from s3_table_merge order by user_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s3_table_merge
+POSTHOOK: Input: default@s3_table_merge@reported_date=2017-04-10/product_id=10000
+POSTHOOK: Input: default@s3_table_merge@reported_date=2017-04-10/product_id=10001
+#### A masked pattern was here ####
+u1	name1	2017-04-10	10000
+u2	name2	2017-04-10	10000
+u3	name3	2017-04-10	10000
+u4	name4	2017-04-10	10001
+u5	name5	2017-04-10	10001
+PREHOOK: query: INSERT OVERWRITE TABLE s3_table_merge PARTITION (reported_date, product_id)
+SELECT
+  t.id as user_id,
+  t.name as event_name,
+  t.dt as reported_date,
+  t.pid as product_id
+FROM tmp_table_merge t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_table_merge
+PREHOOK: Output: default@s3_table_merge
+POSTHOOK: query: INSERT OVERWRITE TABLE s3_table_merge PARTITION (reported_date, product_id)
+SELECT
+  t.id as user_id,
+  t.name as event_name,
+  t.dt as reported_date,
+  t.pid as product_id
+FROM tmp_table_merge t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_table_merge
+POSTHOOK: Output: default@s3_table_merge@reported_date=2017-04-10/product_id=10000
+POSTHOOK: Output: default@s3_table_merge@reported_date=2017-04-10/product_id=10001
+POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10000).event_name SIMPLE [(tmp_table_merge)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10000).user_id SIMPLE [(tmp_table_merge)t.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10001).event_name SIMPLE [(tmp_table_merge)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_merge PARTITION(reported_date=2017-04-10,product_id=10001).user_id SIMPLE [(tmp_table_merge)t.FieldSchema(name:id, type:string, comment:null), ]
+PREHOOK: query: select * from s3_table_merge order by user_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s3_table_merge
+PREHOOK: Input: default@s3_table_merge@reported_date=2017-04-10/product_id=10000
+PREHOOK: Input: default@s3_table_merge@reported_date=2017-04-10/product_id=10001
+#### A masked pattern was here ####
+POSTHOOK: query: select * from s3_table_merge order by user_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s3_table_merge
+POSTHOOK: Input: default@s3_table_merge@reported_date=2017-04-10/product_id=10000
+POSTHOOK: Input: default@s3_table_merge@reported_date=2017-04-10/product_id=10001
+#### A masked pattern was here ####
+u1	name1	2017-04-10	10000
+u2	name2	2017-04-10	10000
+u3	name3	2017-04-10	10000
+u4	name4	2017-04-10	10001
+u5	name5	2017-04-10	10001
+PREHOOK: query: DROP TABLE s3_table_merge
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@s3_table_merge
+PREHOOK: Output: default@s3_table_merge
+POSTHOOK: query: DROP TABLE s3_table_merge
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@s3_table_merge
+POSTHOOK: Output: default@s3_table_merge
+PREHOOK: query: DROP TABLE tmp_table_merge
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_table_merge
+PREHOOK: Output: default@tmp_table_merge
+POSTHOOK: query: DROP TABLE tmp_table_merge
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_table_merge
+POSTHOOK: Output: default@tmp_table_merge

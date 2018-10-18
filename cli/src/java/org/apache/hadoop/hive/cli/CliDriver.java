@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
@@ -66,19 +67,20 @@ import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +124,7 @@ public class CliDriver {
 
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
-    String cmd_trimmed = cmd.trim();
+    String cmd_trimmed = HiveStringUtils.removeComments(cmd).trim();
     String[] tokens = tokenizeCmd(cmd_trimmed);
     int ret = 0;
 
@@ -157,8 +159,8 @@ public class CliDriver {
         }
       }
     } else if (cmd_trimmed.startsWith("!")) {
-
-      String shell_cmd = cmd_trimmed.substring(1);
+      // for shell commands, use unstripped command
+      String shell_cmd = cmd.trim().substring(1);
       shell_cmd = new VariableSubstitution(new HiveVariableSource() {
         @Override
         public Map<String, String> getHiveVariable() {
@@ -180,12 +182,22 @@ public class CliDriver {
       }
     }  else { // local mode
       try {
-        CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
-        ret = processLocalCmd(cmd, proc, ss);
+
+        try (CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf)) {
+          if (proc instanceof IDriver) {
+            // Let Driver strip comments using sql parser
+            ret = processLocalCmd(cmd, proc, ss);
+          } else {
+            ret = processLocalCmd(cmd_trimmed, proc, ss);
+          }
+        }
       } catch (SQLException e) {
         console.printError("Failed processing command " + tokens[0] + " " + e.getLocalizedMessage(),
           org.apache.hadoop.util.StringUtils.stringifyException(e));
         ret = 1;
+      }
+      catch (Exception e) {
+        throw new RuntimeException(e);
       }
     }
 
@@ -213,97 +225,90 @@ public class CliDriver {
   }
 
   int processLocalCmd(String cmd, CommandProcessor proc, CliSessionState ss) {
-    int tryCount = 0;
-    boolean needRetry;
+    boolean escapeCRLF = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
     int ret = 0;
 
-    do {
-      try {
-        needRetry = false;
-        if (proc != null) {
-          if (proc instanceof Driver) {
-            Driver qp = (Driver) proc;
-            PrintStream out = ss.out;
-            long start = System.currentTimeMillis();
-            if (ss.getIsVerbose()) {
-              out.println(cmd);
+    if (proc != null) {
+      if (proc instanceof IDriver) {
+        IDriver qp = (IDriver) proc;
+        PrintStream out = ss.out;
+        long start = System.currentTimeMillis();
+        if (ss.getIsVerbose()) {
+          out.println(cmd);
+        }
+
+        // Set HDFS CallerContext to queryId and reset back to sessionId after the query is done
+        ShimLoader.getHadoopShims().setHadoopQueryContext(qp.getQueryState().getQueryId());
+        ret = qp.run(cmd).getResponseCode();
+
+        if (ret != 0) {
+          qp.close();
+          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
+          return ret;
+        }
+
+        // query has run capture the time
+        long end = System.currentTimeMillis();
+        double timeTaken = (end - start) / 1000.0;
+
+        ArrayList<String> res = new ArrayList<String>();
+
+        printHeader(qp, out);
+
+        // print the results
+        int counter = 0;
+        try {
+          if (out instanceof FetchConverter) {
+            ((FetchConverter) out).fetchStarted();
+          }
+          while (qp.getResults(res)) {
+            for (String r : res) {
+                  if (escapeCRLF) {
+                    r = EscapeCRLFHelper.escapeCRLF(r);
+                  }
+              out.println(r);
             }
-
-            qp.setTryCount(tryCount);
-            ret = qp.run(cmd).getResponseCode();
-            if (ret != 0) {
-              qp.close();
-              return ret;
+            counter += res.size();
+            res.clear();
+            if (out.checkError()) {
+              break;
             }
+          }
+        } catch (IOException e) {
+          console.printError("Failed with exception " + e.getClass().getName() + ":" + e.getMessage(),
+              "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+          ret = 1;
+        }
 
-            // query has run capture the time
-            long end = System.currentTimeMillis();
-            double timeTaken = (end - start) / 1000.0;
+        qp.close();
+        ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
 
-            ArrayList<String> res = new ArrayList<String>();
+        if (out instanceof FetchConverter) {
+          ((FetchConverter) out).fetchFinished();
+        }
 
-            printHeader(qp, out);
+        console.printInfo(
+            "Time taken: " + timeTaken + " seconds" + (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
+      } else {
+        String firstToken = tokenizeCmd(cmd.trim())[0];
+        String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());
 
-            // print the results
-            int counter = 0;
-            try {
-              if (out instanceof FetchConverter) {
-                ((FetchConverter)out).fetchStarted();
-              }
-              while (qp.getResults(res)) {
-                for (String r : res) {
-                  out.println(r);
-                }
-                counter += res.size();
-                res.clear();
-                if (out.checkError()) {
-                  break;
-                }
-              }
-            } catch (IOException e) {
-              console.printError("Failed with exception " + e.getClass().getName() + ":"
-                  + e.getMessage(), "\n"
-                  + org.apache.hadoop.util.StringUtils.stringifyException(e));
-              ret = 1;
-            }
-
-            int cret = qp.close();
-            if (ret == 0) {
-              ret = cret;
-            }
-
-            if (out instanceof FetchConverter) {
-              ((FetchConverter)out).fetchFinished();
-            }
-
-            console.printInfo("Time taken: " + timeTaken + " seconds" +
-                (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
-          } else {
-            String firstToken = tokenizeCmd(cmd.trim())[0];
-            String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());
-
-            if (ss.getIsVerbose()) {
-              ss.out.println(firstToken + " " + cmd_1);
-            }
-            CommandProcessorResponse res = proc.run(cmd_1);
-            if (res.getResponseCode() != 0) {
-              ss.out.println("Query returned non-zero code: " + res.getResponseCode() +
-                  ", cause: " + res.getErrorMessage());
-            }
-            if (res.getConsoleMessages() != null) {
-              for (String consoleMsg : res.getConsoleMessages()) {
-                console.printInfo(consoleMsg);
-              }
-            }
-            ret = res.getResponseCode();
+        if (ss.getIsVerbose()) {
+          ss.out.println(firstToken + " " + cmd_1);
+        }
+        CommandProcessorResponse res = proc.run(cmd_1);
+        if (res.getResponseCode() != 0) {
+          ss.out
+              .println("Query returned non-zero code: " + res.getResponseCode() + ", cause: " + res.getErrorMessage());
+        }
+        if (res.getConsoleMessages() != null) {
+          for (String consoleMsg : res.getConsoleMessages()) {
+            console.printInfo(consoleMsg);
           }
         }
-      } catch (CommandNeedRetryException e) {
-        console.printInfo("Retry query with a different approach...");
-        tryCount++;
-        needRetry = true;
+        ret = res.getResponseCode();
       }
-    } while (needRetry);
+    }
 
     return ret;
   }
@@ -315,7 +320,7 @@ public class CliDriver {
    * @param qp Driver that executed the command
    * @param out PrintStream which to send output to
    */
-  private void printHeader(Driver qp, PrintStream out) {
+  private void printHeader(IDriver qp, PrintStream out) {
     List<FieldSchema> fieldSchemas = qp.getSchema().getFieldSchemas();
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER)
           && fieldSchemas != null) {
@@ -384,8 +389,11 @@ public class CliDriver {
     try {
       int lastRet = 0, ret = 0;
 
+      // we can not use "split" function directly as ";" may be quoted
+      List<String> commands = splitSemiColon(line);
+
       String command = "";
-      for (String oneCmd : line.split(";")) {
+      for (String oneCmd : commands) {
 
         if (StringUtils.endsWith(oneCmd, "\\")) {
           command += StringUtils.chop(oneCmd) + ";";
@@ -402,11 +410,9 @@ public class CliDriver {
         lastRet = ret;
         boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
         if (ret != 0 && !ignoreErrors) {
-          CommandProcessorFactory.clean((HiveConf) conf);
           return ret;
         }
       }
-      CommandProcessorFactory.clean((HiveConf) conf);
       return lastRet;
     } finally {
       // Once we are done processing the line, restore the old handler
@@ -414,6 +420,58 @@ public class CliDriver {
         Signal.handle(interruptSignal, oldSignal);
       }
     }
+  }
+
+  /**
+   * Split the line by semicolon by ignoring the ones in the single/double quotes.
+   *
+   */
+  public static List<String> splitSemiColon(String line) {
+    boolean inQuotes = false;
+    boolean escape = false;
+
+    List<String> ret = new ArrayList<>();
+
+    char quoteChar = '"';
+    int beginIndex = 0;
+    for (int index = 0; index < line.length(); index++) {
+      char c = line.charAt(index);
+      switch (c) {
+      case ';':
+        if (!inQuotes) {
+          ret.add(line.substring(beginIndex, index));
+          beginIndex = index + 1;
+        }
+        break;
+      case '"':
+      case '\'':
+        if (!escape) {
+          if (!inQuotes) {
+            quoteChar = c;
+            inQuotes = !inQuotes;
+          } else {
+            if (c == quoteChar) {
+              inQuotes = !inQuotes;
+            }
+          }
+        }
+        break;
+      default:
+        break;
+      }
+
+      if (escape) {
+        escape = false;
+      } else if (c == '\\') {
+        escape = true;
+      }
+    }
+
+    if (beginIndex < line.length()) {
+      ret.add(line.substring(beginIndex));
+    }
+
+    return ret;
   }
 
   public int processReader(BufferedReader r) throws IOException {
@@ -709,6 +767,9 @@ public class CliDriver {
     }
 
     ss.updateThreadName();
+
+    // Create views registry
+    HiveMaterializedViewsRegistry.get().init();
 
     // execute cli driver work
     try {

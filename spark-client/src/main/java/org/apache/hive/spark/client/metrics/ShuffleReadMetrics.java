@@ -30,9 +30,9 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 public class ShuffleReadMetrics implements Serializable {
 
   /** Number of remote blocks fetched in shuffles by tasks. */
-  public final int remoteBlocksFetched;
+  public final long remoteBlocksFetched;
   /** Number of local blocks fetched in shuffles by tasks. */
-  public final int localBlocksFetched;
+  public final long localBlocksFetched;
   /**
    * Time tasks spent waiting for remote shuffle blocks. This only includes the
    * time blocking on shuffle input data. For instance if block B is being
@@ -42,35 +42,59 @@ public class ShuffleReadMetrics implements Serializable {
   public final long fetchWaitTime;
   /** Total number of remote bytes read from the shuffle by tasks. */
   public final long remoteBytesRead;
+  /** Shuffle data that was read from the local disk (as opposed to from a remote executor). */
+  public final long localBytesRead;
+  /** Total number of remotes bytes read to disk from the shuffle by this task. */
+  public final long remoteBytesReadToDisk;
+  /** Total number of records read from the shuffle by this task. */
+  public final long recordsRead;
 
   private ShuffleReadMetrics() {
     // For Serialization only.
-    this(0, 0, 0L, 0L);
+    this(0, 0, 0L, 0L, 0L, 0L, 0L);
   }
 
   public ShuffleReadMetrics(
-      int remoteBlocksFetched,
-      int localBlocksFetched,
+      long remoteBlocksFetched,
+      long localBlocksFetched,
       long fetchWaitTime,
-      long remoteBytesRead) {
+      long remoteBytesRead,
+      long localBytesRead,
+      long remoteBytesReadToDisk,
+      long recordsRead) {
     this.remoteBlocksFetched = remoteBlocksFetched;
     this.localBlocksFetched = localBlocksFetched;
     this.fetchWaitTime = fetchWaitTime;
     this.remoteBytesRead = remoteBytesRead;
+    this.localBytesRead = localBytesRead;
+    this.remoteBytesReadToDisk = remoteBytesReadToDisk;
+    this.recordsRead = recordsRead;
   }
 
   public ShuffleReadMetrics(TaskMetrics metrics) {
-    this(metrics.shuffleReadMetrics().get().remoteBlocksFetched(),
-      metrics.shuffleReadMetrics().get().localBlocksFetched(),
-      metrics.shuffleReadMetrics().get().fetchWaitTime(),
-      metrics.shuffleReadMetrics().get().remoteBytesRead());
+    this(metrics.shuffleReadMetrics().remoteBlocksFetched(),
+      metrics.shuffleReadMetrics().localBlocksFetched(),
+      metrics.shuffleReadMetrics().fetchWaitTime(),
+      metrics.shuffleReadMetrics().remoteBytesRead(),
+      metrics.shuffleReadMetrics().localBytesRead(),
+      metrics.shuffleReadMetrics().remoteBytesReadToDisk(),
+      metrics.shuffleReadMetrics().recordsRead());
   }
 
   /**
    * Number of blocks fetched in shuffle by tasks (remote or local).
    */
-  public int getTotalBlocksFetched() {
+  public long getTotalBlocksFetched() {
     return remoteBlocksFetched + localBlocksFetched;
   }
 
+  @Override
+  public String toString() {
+    return "ShuffleReadMetrics{" +
+            "remoteBlocksFetched=" + remoteBlocksFetched +
+            ", localBlocksFetched=" + localBlocksFetched +
+            ", fetchWaitTime=" + fetchWaitTime +
+            ", remoteBytesRead=" + remoteBytesRead +
+            '}';
+  }
 }

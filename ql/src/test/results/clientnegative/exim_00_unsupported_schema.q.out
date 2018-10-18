@@ -19,4 +19,4 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@exim_department
 #### A masked pattern was here ####
-FAILED: SemanticException Invalid path only the following file systems accepted for export/import : hdfs,pfile
+FAILED: SemanticException [Error 10320]: Error while performing IO operation : No FileSystem for scheme "nosuchschema"

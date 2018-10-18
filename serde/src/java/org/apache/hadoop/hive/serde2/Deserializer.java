@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,10 +31,9 @@ import org.apache.hadoop.io.Writable;
  * HiveDeserializer also provides the ObjectInspector which can be used to
  * inspect the internal structure of the object (that is returned by deserialize
  * function).
- * All deserializers should extend the abstract class AbstractDeserializer, and eventually
- * Deserializer interface should be removed
+ * All deserializers should extend the abstract class AbstractDeserializer.
+ * The interface is necessary for SerDes to be able to implement both Serializer and Deserializer.
  */
-@Deprecated
 public interface Deserializer {
 
   /**
@@ -69,6 +68,8 @@ public interface Deserializer {
 
   /**
    * Returns statistics collected when serializing
+   *
+   * @return {@link SerDeStats} object; or in case not supported: null
    */
   SerDeStats getSerDeStats();
 }

@@ -1,4 +1,4 @@
-PREHOOK: query: explain 
+PREHOOK: query: explain vectorization 
 select count(*) from (select c.ctinyint 
 from alltypesorc c
 left outer join alltypesorc cd
@@ -7,7 +7,9 @@ left outer join alltypesorc hd
   on hd.ctinyint = c.ctinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain 
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization 
 select count(*) from (select c.ctinyint 
 from alltypesorc c
 left outer join alltypesorc cd
@@ -16,6 +18,12 @@ left outer join alltypesorc hd
   on hd.ctinyint = c.ctinyint
 ) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
   Stage-3 depends on stages: Stage-8
@@ -35,11 +43,11 @@ STAGE PLANS:
         $hdt$_1:cd 
           TableScan
             alias: cd
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cint (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 _col1 (type: int)
@@ -47,11 +55,11 @@ STAGE PLANS:
         $hdt$_2:hd 
           TableScan
             alias: hd
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ctinyint (type: tinyint)
               outputColumnNames: _col0
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 _col0 (type: tinyint)
@@ -62,26 +70,26 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ctinyint (type: tinyint), cint (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13516 Data size: 3198793 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
-                       Left Outer Join0 to 1
+                       Left Outer Join 0 to 1
                   keys:
                     0 _col0 (type: tinyint)
                     1 _col0 (type: tinyint)
-                  Statistics: Num rows: 14867 Data size: 3196776 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 14867 Data size: 3518672 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -92,8 +100,21 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Local Work:
         Map Reduce Local Work
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

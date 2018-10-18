@@ -15,13 +15,14 @@
 
 set -e
 set -x
+date +"%Y-%m-%d %T.%3N"
 if [[ -n "/usr/java/jdk1.7" ]]
 then
   export JAVA_HOME=/usr/java/jdk1.7
   export PATH=$JAVA_HOME/bin/:$PATH
 fi
 export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128"
-export M2_OPTS="-Xmx1g -XX:MaxPermSize=256m ${mavenEnvOpts}"
+export MAVEN_OPTS="-Xmx1g ${mavenEnvOpts}"
 cd /some/working/dir/
 (
   if [[ "false" == "true" ]]
@@ -63,13 +64,15 @@ cd /some/working/dir/
     then
       git clone git:///repo1 apache-source
     fi
+    date +"%Y-%m-%d %T.%3N"
     cd apache-source
     git fetch origin
     git reset --hard HEAD && git clean -f -d
     git checkout branch-1 || git checkout -b branch-1 origin/branch-1
     git reset --hard origin/branch-1
     git merge --ff-only origin/branch-1
-    git gc
+    #git gc
+    date +"%Y-%m-%d %T.%3N"
   else
     echo "Unknown repository type '${repositoryType}'"
     exit 1
@@ -84,9 +87,12 @@ cd /some/working/dir/
   if [[ "ant" == "maven" ]]
   then
     rm -rf /some/working/dir/maven/org/apache/hive
-        mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
-    cd itests
-    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
+        mvn -B clean install -DskipTests -T 4 -q -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
+    if [[ -d "itests" ]]
+    then
+      cd itests
+      mvn -B clean install -DskipTests -T 4 -q -Dmaven.repo.local=/some/working/dir/maven $mavenArgs $mavenBuildArgs
+    fi
   elif [[ "ant" == "ant" ]]
   then
     ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy \
@@ -96,5 +102,6 @@ cd /some/working/dir/
      echo "Unknown build tool ant"
      exit 127
    fi
+   date +"%Y-%m-%d %T.%3N"
 ) 2>&1 | tee /some/log/dir/source-prep.txt
 exit ${PIPESTATUS[0]}

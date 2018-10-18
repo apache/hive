@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,6 +35,8 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 /**
  * The abstract class HCatClient containing APIs for HCatalog DDL commands.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class HCatClient {
 
   public enum DropDBMode {RESTRICT, CASCADE}

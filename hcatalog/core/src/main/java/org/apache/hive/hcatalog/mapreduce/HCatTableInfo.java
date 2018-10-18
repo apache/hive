@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
@@ -76,7 +76,7 @@ public class HCatTableInfo implements Serializable {
     HCatSchema partitionColumns,
     StorerInfo storerInfo,
     Table table) {
-    this.databaseName = (databaseName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : databaseName;
+    this.databaseName = (databaseName == null) ? Warehouse.DEFAULT_DATABASE_NAME : databaseName;
     this.tableName = tableName;
     this.dataColumns = dataColumns;
     this.table = table;

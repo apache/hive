@@ -1,10 +1,8 @@
-PREHOOK: query: -- Conversion of main primitive types to String type:
-SELECT CAST(NULL AS STRING) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(NULL AS STRING) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Conversion of main primitive types to String type:
-SELECT CAST(NULL AS STRING) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(NULL AS STRING) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -90,3 +88,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Foo
+PREHOOK: query: SELECT CAST(from_utc_timestamp(timestamp '2018-05-02 15:30:30', 'PST') - from_utc_timestamp(timestamp '1970-01-30 16:00:00', 'PST') AS STRING)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(from_utc_timestamp(timestamp '2018-05-02 15:30:30', 'PST') - from_utc_timestamp(timestamp '1970-01-30 16:00:00', 'PST') AS STRING)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+17624 00:30:30.000000000
+PREHOOK: query: SELECT CAST(interval_year_month('1-2') AS STRING)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(interval_year_month('1-2') AS STRING)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1-2

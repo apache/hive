@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,12 +20,16 @@ package org.apache.hive.hcatalog.api;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Database;
 
 
 /**
  * HCatDatabase is wrapper class around org.apache.hadoop.hive.metastore.api.Database.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatDatabase {
 
   private String dbName;

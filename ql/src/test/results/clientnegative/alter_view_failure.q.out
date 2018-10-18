@@ -12,4 +12,6 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx3
+POSTHOOK: Lineage: xxx3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: xxx3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 FAILED: SemanticException [Error 10131]: To alter a view you need to use the ALTER VIEW command.

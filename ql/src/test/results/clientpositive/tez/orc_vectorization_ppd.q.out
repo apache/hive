@@ -1,10 +1,8 @@
-PREHOOK: query: -- create table with 1000 rows
-create table srcorc(key string, value string) stored as textfile
+PREHOOK: query: create table srcorc(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcorc
-POSTHOOK: query: -- create table with 1000 rows
-create table srcorc(key string, value string) stored as textfile
+POSTHOOK: query: create table srcorc(key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcorc
@@ -28,8 +26,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@srcorc
 POSTHOOK: Lineage: srcorc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcorc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- load table with each row group having 1000 rows and stripe 1 & 2 having 5000 & 2000 rows respectively
-create table if not exists vectororc
+PREHOOK: query: create table if not exists vectororc
 (s1 string,
 s2 string,
 d double,
@@ -38,8 +35,7 @@ stored as ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="10
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vectororc
-POSTHOOK: query: -- load table with each row group having 1000 rows and stripe 1 & 2 having 5000 & 2000 rows respectively
-create table if not exists vectororc
+POSTHOOK: query: create table if not exists vectororc
 (s1 string,
 s2 string,
 d double,
@@ -48,13 +44,11 @@ stored as ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="10
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vectororc
-PREHOOK: query: -- insert creates separate orc files
-insert overwrite table vectororc select "apple", "a", rand(1), "zoo" from srcorc
+PREHOOK: query: insert overwrite table vectororc select "apple", "a", rand(1), "zoo" from srcorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcorc
 PREHOOK: Output: default@vectororc
-POSTHOOK: query: -- insert creates separate orc files
-insert overwrite table vectororc select "apple", "a", rand(1), "zoo" from srcorc
+POSTHOOK: query: insert overwrite table vectororc select "apple", "a", rand(1), "zoo" from srcorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcorc
 POSTHOOK: Output: default@vectororc
@@ -134,8 +128,7 @@ POSTHOOK: Lineage: vectororc.d EXPRESSION []
 POSTHOOK: Lineage: vectororc.s1 EXPRESSION []
 POSTHOOK: Lineage: vectororc.s2 SIMPLE []
 POSTHOOK: Lineage: vectororc.s3 SIMPLE []
-PREHOOK: query: -- since vectororc table has multiple orc file we will load them into a single file using another table
-create table if not exists testorc
+PREHOOK: query: create table if not exists testorc
 (s1 string,
 s2 string,
 d double,
@@ -144,8 +137,7 @@ stored as ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="10
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@testorc
-POSTHOOK: query: -- since vectororc table has multiple orc file we will load them into a single file using another table
-create table if not exists testorc
+POSTHOOK: query: create table if not exists testorc
 (s1 string,
 s2 string,
 d double,
@@ -166,101 +158,77 @@ POSTHOOK: Lineage: testorc.d SIMPLE [(vectororc)vectororc.FieldSchema(name:d, ty
 POSTHOOK: Lineage: testorc.s1 SIMPLE [(vectororc)vectororc.FieldSchema(name:s1, type:string, comment:null), ]
 POSTHOOK: Lineage: testorc.s2 SIMPLE [(vectororc)vectororc.FieldSchema(name:s2, type:string, comment:null), ]
 POSTHOOK: Lineage: testorc.s3 SIMPLE [(vectororc)vectororc.FieldSchema(name:s3, type:string, comment:null), ]
-PREHOOK: query: -- row group (1,4) from stripe 1 and row group (1) from stripe 2
--- PPD ONLY
-select count(*),int(sum(d)) from testorc where s1 is not null
+PREHOOK: query: select count(*),int(sum(d)) from testorc where s1 is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
-POSTHOOK: query: -- row group (1,4) from stripe 1 and row group (1) from stripe 2
--- PPD ONLY
-select count(*),int(sum(d)) from testorc where s1 is not null
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*),int(sum(d)) from testorc where s1 is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3000	1505
-PREHOOK: query: -- VECTORIZATION + PPD
-select count(*),int(sum(d)) from testorc where s1 is not null
+PREHOOK: query: select count(*),int(sum(d)) from testorc where s1 is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
-POSTHOOK: query: -- VECTORIZATION + PPD
-select count(*),int(sum(d)) from testorc where s1 is not null
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*),int(sum(d)) from testorc where s1 is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3000	1505
-PREHOOK: query: -- row group (2,3,5) from stripe 1 and row group (2) from stripe 2
--- PPD ONLY
-select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
+PREHOOK: query: select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
-POSTHOOK: query: -- row group (2,3,5) from stripe 1 and row group (2) from stripe 2
--- PPD ONLY
-select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4000	2006
-PREHOOK: query: -- VECTORIZATION + PPD
-select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
+PREHOOK: query: select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
-POSTHOOK: query: -- VECTORIZATION + PPD
-select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4000	2006
-PREHOOK: query: -- last row group of stripe 1 and first row group of stripe 2
--- PPD ONLY
-select count(*),int(sum(d)) from testorc where s3="z"
+PREHOOK: query: select count(*),int(sum(d)) from testorc where s3="z"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
-POSTHOOK: query: -- last row group of stripe 1 and first row group of stripe 2
--- PPD ONLY
-select count(*),int(sum(d)) from testorc where s3="z"
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*),int(sum(d)) from testorc where s3="z"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000	1011
-PREHOOK: query: -- VECTORIZATION + PPD
-select count(*),int(sum(d)) from testorc where s3="z"
+PREHOOK: query: select count(*),int(sum(d)) from testorc where s3="z"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
-POSTHOOK: query: -- VECTORIZATION + PPD
-select count(*),int(sum(d)) from testorc where s3="z"
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*),int(sum(d)) from testorc where s3="z"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000	1011
-PREHOOK: query: -- first row group of stripe 1 and last row group of stripe 2
--- PPD ONLY
-select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
+PREHOOK: query: select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
-POSTHOOK: query: -- first row group of stripe 1 and last row group of stripe 2
--- PPD ONLY
-select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000	1006
-PREHOOK: query: -- VECTORIZATION + PPD
-select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
+PREHOOK: query: select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
-POSTHOOK: query: -- VECTORIZATION + PPD
-select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000	1006
 PREHOOK: query: drop table srcorc
 PREHOOK: type: DROPTABLE

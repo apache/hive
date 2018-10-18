@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 CREATE TABLE parquet_create_people_staging (
   id int,
   first_name string,

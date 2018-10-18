@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,8 +27,9 @@ import java.io.Serializable;
 public class ShowCompactionsDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static final String schema = "dbname,tabname,partname,type,state,workerid," +
-      "starttime#string:string:string:string:string:string:string";
+  private static final String schema =
+      "compactionid,dbname,tabname,partname,type,state,hostname,workerid,starttime,duration,hadoopjobid#" +
+      "string:string:string:string:string:string:string:string:string:string:string";
 
   private String resFile;
 

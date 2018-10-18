@@ -1,0 +1,402 @@
+PREHOOK: query: create table n_n0(key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@n_n0
+POSTHOOK: query: create table n_n0(key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@n_n0
+PREHOOK: query: insert overwrite table n_n0 select null from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@n_n0
+POSTHOOK: query: insert overwrite table n_n0 select null from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@n_n0
+POSTHOOK: Lineage: n_n0.key EXPRESSION []
+PREHOOK: query: explain analyze table n_n0 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@n_n0
+PREHOOK: Output: default@n_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze table n_n0 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@n_n0
+POSTHOOK: Output: default@n_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: n_n0
+            Statistics: Num rows: 500 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: key
+              Statistics: Num rows: 500 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: compute_stats(key, 'fm', 16)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-1
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.n_n0
+
+PREHOOK: query: analyze table n_n0 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@n_n0
+PREHOOK: Output: default@n_n0
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table n_n0 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@n_n0
+POSTHOOK: Output: default@n_n0
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted n_n0 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@n_n0
+POSTHOOK: query: desc formatted n_n0 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@n_n0
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	0                   	 	 	 	 	 	 	 	 	 	 
+max                 	0                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	500                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: create table i_n1(key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: create table i_n1(key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@i_n1
+PREHOOK: query: insert overwrite table i_n1 select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: insert overwrite table i_n1 select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@i_n1
+POSTHOOK: Lineage: i_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain analyze table i_n1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@i_n1
+PREHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze table i_n1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: i_n1
+            Statistics: Num rows: 500 Data size: 1406 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: key
+              Statistics: Num rows: 500 Data size: 1406 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: compute_stats(key, 'fm', 16)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-1
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.i_n1
+
+PREHOOK: query: analyze table i_n1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@i_n1
+PREHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table i_n1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted i_n1 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@i_n1
+POSTHOOK: query: desc formatted i_n1 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@i_n1
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	0                   	 	 	 	 	 	 	 	 	 	 
+max                 	498                 	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	196                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: drop table i_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@i_n1
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: drop table i_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: default@i_n1
+PREHOOK: query: create table i_n1(key double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: create table i_n1(key double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@i_n1
+PREHOOK: query: insert overwrite table i_n1 select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: insert overwrite table i_n1 select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@i_n1
+POSTHOOK: Lineage: i_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: analyze table i_n1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@i_n1
+PREHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table i_n1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted i_n1 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@i_n1
+POSTHOOK: query: desc formatted i_n1 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@i_n1
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	double              	 	 	 	 	 	 	 	 	 	 
+min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
+max                 	498.0               	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	234                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: drop table i_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@i_n1
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: drop table i_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: default@i_n1
+PREHOOK: query: create table i_n1(key decimal)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: create table i_n1(key decimal)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@i_n1
+PREHOOK: query: insert overwrite table i_n1 select key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: insert overwrite table i_n1 select key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@i_n1
+POSTHOOK: Lineage: i_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: analyze table i_n1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@i_n1
+PREHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table i_n1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted i_n1 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@i_n1
+POSTHOOK: query: desc formatted i_n1 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@i_n1
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	decimal(10,0)       	 	 	 	 	 	 	 	 	 	 
+min                 	0                   	 	 	 	 	 	 	 	 	 	 
+max                 	498                 	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	180                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: drop table i_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@i_n1
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: drop table i_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: default@i_n1
+PREHOOK: query: create table i_n1(key date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: create table i_n1(key date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@i_n1
+PREHOOK: query: insert into i_n1 values ('2012-08-17')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: insert into i_n1 values ('2012-08-17')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@i_n1
+POSTHOOK: Lineage: i_n1.key SCRIPT []
+PREHOOK: query: insert into i_n1 values ('2012-08-17')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: insert into i_n1 values ('2012-08-17')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@i_n1
+POSTHOOK: Lineage: i_n1.key SCRIPT []
+PREHOOK: query: insert into i_n1 values ('2013-08-17')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: insert into i_n1 values ('2013-08-17')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@i_n1
+POSTHOOK: Lineage: i_n1.key SCRIPT []
+PREHOOK: query: insert into i_n1 values ('2012-03-17')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: insert into i_n1 values ('2012-03-17')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@i_n1
+POSTHOOK: Lineage: i_n1.key SCRIPT []
+PREHOOK: query: insert into i_n1 values ('2012-05-17')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@i_n1
+POSTHOOK: query: insert into i_n1 values ('2012-05-17')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@i_n1
+POSTHOOK: Lineage: i_n1.key SCRIPT []
+PREHOOK: query: analyze table i_n1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@i_n1
+PREHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table i_n1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: default@i_n1
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted i_n1 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@i_n1
+POSTHOOK: query: desc formatted i_n1 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@i_n1
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	date                	 	 	 	 	 	 	 	 	 	 
+min                 	2012-03-17          	 	 	 	 	 	 	 	 	 	 
+max                 	2013-08-17          	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	3                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	FM                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

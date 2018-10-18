@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 -- non agg, non corr
 
@@ -56,3 +58,19 @@ having b.p_mfgr not in
   having max(p_retailprice) - min(p_retailprice) > 600
   )
 ;
+
+--nullability tests
+CREATE TABLE t1_n145 (c1 INT, c2 CHAR(100));
+INSERT INTO t1_n145 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij');
+
+CREATE TABLE t2_n85 (c1 INT);
+INSERT INTO t2_n85 VALUES (null), (2), (100);
+
+explain SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85);
+SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85);
+
+explain SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85 where t1_n145.c1=t2_n85.c1);
+SELECT c1 FROM t1_n145 group by c1 having c1 NOT IN (SELECT c1 FROM t2_n85 where t1_n145.c1=t2_n85.c1);
+
+DROP TABLE t1_n145;
+DROP TABLE t2_n85;

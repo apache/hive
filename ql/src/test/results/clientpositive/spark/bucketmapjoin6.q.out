@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table tmp1 (a string, b string) clustered by (a) sorted by (a) into 10 buckets
+PREHOOK: query: create table tmp1 (a string, b string) clustered by (a) sorted by (a) into 10 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table tmp1 (a string, b string) clustered by (a) sorted by (a) into 10 buckets
+POSTHOOK: query: create table tmp1 (a string, b string) clustered by (a) sorted by (a) into 10 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp1
@@ -66,11 +62,11 @@ POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comme
 PREHOOK: query: select * from tmp3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tmp3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0

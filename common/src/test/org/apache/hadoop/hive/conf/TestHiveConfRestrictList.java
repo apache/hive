@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,7 +41,17 @@ public class TestHiveConfRestrictList extends TestCase {
   @Test
   public void testRestriction() throws Exception {
     verifyRestriction(ConfVars.HIVETESTMODEPREFIX.varname, "foo");
-    conf.verifyAndSet(ConfVars.HIVETESTMODE.varname, "false");
+    conf.verifyAndSet(ConfVars.HIVE_AM_SPLIT_GENERATION.varname, "false");
+  }
+
+  /**
+   * Test that configs in restrict list can't be changed
+   * @throws Exception
+   */
+  @Test
+  public void testMultipleRestrictions() throws Exception {
+    verifyRestriction(ConfVars.HIVETESTMODEPREFIX.varname, "foo");
+    verifyRestriction(ConfVars.HIVE_IN_TEST.varname, "true");
   }
 
   /**

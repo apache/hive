@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,13 +32,12 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
  */
 public class <ClassName> extends <BaseClassName> {
 
-  public <ClassName>(int colNum, byte[] value, int outputColumn) {
-    this.colNum = colNum;
-    this.value = value;
-    this.outputColumn = outputColumn;
+  public <ClassName>(int colNum, byte[] value, int outputColumnNum) {
+    super(colNum, value, outputColumnNum);
   }
 
   public <ClassName>() {
+    super();
   }
 
   @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.security;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,7 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -36,7 +37,9 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -44,9 +47,11 @@ import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventLis
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TestHiveMetastoreAuthorizationProvider. Test case for
@@ -64,9 +69,11 @@ import org.apache.hadoop.security.UserGroupInformation;
  * authorization providers like StorageBasedAuthorizationProvider
  */
 public class TestMetastoreAuthorizationProvider extends TestCase {
+  private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreAuthorizationProvider.class);
+
   protected HiveConf clientHiveConf;
   protected HiveMetaStoreClient msc;
-  protected Driver driver;
+  protected IDriver driver;
   protected UserGroupInformation ugi;
 
 
@@ -83,8 +90,6 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     super.setUp();
 
-    int port = MetaStoreUtils.findFreePort();
-
     // Turn on metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         AuthorizationPreEventListener.class.getName());
@@ -97,8 +102,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
         InjectableDummyAuthenticator.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS.varname, "");
 
-
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry();
 
     clientHiveConf = createHiveConf();
 
@@ -116,7 +120,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new Driver(clientHiveConf);
+    driver = DriverFactory.newDriver(clientHiveConf);
   }
 
   protected void setupMetaStoreReadAuthorization() {
@@ -235,6 +239,8 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     assertEquals(0,ret.getResponseCode()); // now it succeeds.
     Table tbl = msc.getTable(dbName, tblName);
+    Assert.assertTrue(tbl.isSetId());
+    tbl.unsetId();
 
     validateCreateTable(tbl,tblName, dbName);
 
@@ -300,7 +306,20 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     allowDropOnTable(tblName, userName, tbl.getSd().getLocation());
     allowDropOnDb(dbName,userName,db.getLocationUri());
-    driver.run("drop database if exists "+getTestDbName()+" cascade");
+    ret = driver.run("drop database if exists "+getTestDbName()+" cascade");
+    assertEquals(0,ret.getResponseCode());
+
+    InjectableDummyAuthenticator.injectUserName(userName);
+    InjectableDummyAuthenticator.injectGroupNames(Arrays.asList(ugi.getGroupNames()));
+    InjectableDummyAuthenticator.injectMode(true);
+    allowCreateDatabase(userName);
+    driver.run("create database " + dbName);
+    allowCreateInDb(dbName, userName, dbLocn);
+    tbl.setTableType("EXTERNAL_TABLE");
+    msc.createTable(tbl);
+    disallowDropOnTable(tblName, userName, tbl.getSd().getLocation());
+    ret = driver.run("drop table "+tbl.getTableName());
+    assertEquals(1,ret.getResponseCode());
 
   }
 
@@ -338,6 +357,11 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
   protected void allowDropOnTable(String tblName, String userName, String location)
       throws Exception {
     driver.run("grant drop on table "+tblName+" to user "+userName);
+  }
+
+  protected void disallowDropOnTable(String tblName, String userName, String location)
+      throws Exception {
+    driver.run("revoke drop on table "+tblName+" from user "+userName);
   }
 
   protected void allowDropOnDb(String dbName, String userName, String location)

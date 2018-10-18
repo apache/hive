@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,7 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +37,6 @@ import org.slf4j.LoggerFactory;
  * Hive.
  */
 public final class JavaUtils {
-
   private static final Logger LOG = LoggerFactory.getLogger(JavaUtils.class);
   private static final Method SUN_MISC_UTIL_RELEASE;
 
@@ -69,6 +69,10 @@ public final class JavaUtils {
       classLoader = JavaUtils.class.getClassLoader();
     }
     return classLoader;
+  }
+
+  public static Class loadClass(String shadePrefix, String className) throws ClassNotFoundException {
+    return loadClass(shadePrefix + "." + className);
   }
 
   public static Class loadClass(String className) throws ClassNotFoundException {
@@ -138,17 +142,18 @@ public final class JavaUtils {
 
   /**
    * Utility method for ACID to normalize logging info.  Matches
-   * {@link org.apache.hadoop.hive.metastore.api.LockRequest#toString()}
+   * org.apache.hadoop.hive.metastore.api.LockRequest#toString
    */
   public static String lockIdToString(long extLockId) {
     return "lockid:" + extLockId;
   }
-  /**
-   * Utility method for ACID to normalize logging info.  Matches
-   * {@link org.apache.hadoop.hive.metastore.api.LockResponse#toString()}
-   */
+
   public static String txnIdToString(long txnId) {
     return "txnid:" + txnId;
+  }
+
+  public static String writeIdToString(long writeId) {
+    return "writeid:" + writeId;
   }
 
   public static String txnIdsToString(List<Long> txnIds) {

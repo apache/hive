@@ -1,6 +1,7 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
-set hive.exec.submitviachild=true;
-set hive.exec.submit.local.task.via.child=true;
+set hive.exec.submitviachild=false;
+set hive.exec.submit.local.task.via.child=false;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set mapred.max.split.size=300;
 set mapred.min.split.size=300;
@@ -9,7 +10,6 @@ set mapred.min.split.size.per.rack=300;
 set hive.exec.mode.local.auto=true;
 set hive.merge.smallfiles.avgsize=1;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 -- create file inputs
 create table sih_i_part (key int, value string) partitioned by (p string);

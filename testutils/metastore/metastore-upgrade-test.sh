@@ -68,9 +68,13 @@ fi
 
 SCRIPT_PREPARE="$(pwd)/dbs/$DB_SERVER/prepare.sh"
 SCRIPT_EXECUTE="$(pwd)/dbs/$DB_SERVER/execute.sh"
+SCRIPT_VALIDATE="$(pwd)/metastore-validation-test.sh"
+DATA_VALIDATE="$(pwd)/dbs/$DB_SERVER/validate.sh"
 
 [ ! -e "$SCRIPT_PREPARE" ] && log "Error: $SCRIPT_PREPARE does not exist." && exit 1
 [ ! -e "$SCRIPT_EXECUTE" ] && log "Error: $SCRIPT_EXECUTE does not exist." && exit 1
+[ ! -e "$SCRIPT_VALIDATE" ] && log "Error: $SCRIPT_VALIDATE does not exist." && exit 1
+[ ! -e "$DATA_VALIDATE" ] && log "Error: $DATA_VALIDATE does not exist." && exit 1
 
 HMS_UPGRADE_DIR="$(pwd)/../../metastore/scripts/upgrade"
 if [ ! -d "$HMS_UPGRADE_DIR/$DB_SERVER" ]; then
@@ -91,6 +95,13 @@ if ! bash -e -x $SCRIPT_PREPARE; then
 	exit 1
 fi
 log "Server prepared."
+
+log "Calling metastore data generation script ..."
+if ! bash -e $SCRIPT_VALIDATE --db $DB_SERVER; then
+        log "Error: $SCRIPT_VALIDATE failed. (see logs)"
+        exit 1
+fi
+log "Test scripts generated."
 
 #
 # Now we execute each of the .sql scripts on the database server.
@@ -118,14 +129,34 @@ if ! execute_test $HIVE_SCHEMA_BASE; then
 	echo "Error: Cannot execute SQL file: $HIVE_SCHEMA_BASE"
 fi
 
+bash -e $DATA_VALIDATE $HIVE_SCHEMA_BASE
+
+success=$?
+
+if [[ "$success" != 0 ]];
+then
+  echo "Data verification failed!!!"
+  exit $success;
+else
+  echo "Data verification successful!!!"
+fi
+
 begin_upgrade_test="false"
 while read script
 do
-	if [ $begin_upgrade_test = "true" ] || echo upgrade-$name | grep "upgrade-$VERSION_BASE"; then
+	if [ $begin_upgrade_test = "true" ] || echo upgrade-$script | grep "upgrade-$VERSION_BASE"; then
 		begin_upgrade_test="true"
 		if ! execute_test $HMS_UPGRADE_DIR/$DB_SERVER/upgrade-$script.$DB_SERVER.sql; then
 			echo "Error: Cannot execute SQL file: $HMS_UPGRADE_DIR/$DB_SERVER/upgrade-$script.$DB_SERVER.sql"
 		fi
+                bash -e $DATA_VALIDATE $HMS_UPGRADE_DIR/$DB_SERVER/upgrade-$script.$DB_SERVER.sql
+                success=$?;
+
+                if [[ $success != 0 ]];
+                then
+                  echo "Data verification failed!!!"
+                  exit $success;
+                fi
 	fi
 done < $HMS_UPGRADE_DIR/$DB_SERVER/upgrade.order.$DB_SERVER
 

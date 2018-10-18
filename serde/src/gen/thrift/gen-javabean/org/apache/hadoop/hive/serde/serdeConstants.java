@@ -60,7 +60,7 @@ public class serdeConstants {
 
   public static final String FIELD_DELIM = "field.delim";
 
-  public static final String COLLECTION_DELIM = "colelction.delim";
+  public static final String COLLECTION_DELIM = "collection.delim";
 
   public static final String LINE_DELIM = "line.delim";
 
@@ -110,6 +110,8 @@ public class serdeConstants {
 
   public static final String INTERVAL_DAY_TIME_TYPE_NAME = "interval_day_time";
 
+  public static final String TIMESTAMPLOCALTZ_TYPE_NAME = "timestamp with local time zone";
+
   public static final String LIST_TYPE_NAME = "array";
 
   public static final String MAP_TYPE_NAME = "map";
@@ -123,6 +125,8 @@ public class serdeConstants {
   public static final String LIST_COLUMN_TYPES = "columns.types";
 
   public static final String TIMESTAMP_FORMATS = "timestamp.formats";
+
+  public static final String COLUMN_NAME_DELIMITER = "column.name.delimiter";
 
   public static final Set<String> PrimitiveTypes = new HashSet<String>();
   static {
@@ -144,6 +148,7 @@ public class serdeConstants {
     PrimitiveTypes.add("interval_day_time");
     PrimitiveTypes.add("decimal");
     PrimitiveTypes.add("binary");
+    PrimitiveTypes.add("timestamp with local time zone");
   }
 
   public static final Set<String> CollectionTypes = new HashSet<String>();

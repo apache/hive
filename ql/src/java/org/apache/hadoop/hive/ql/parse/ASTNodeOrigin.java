@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,8 @@
  */
 
 package org.apache.hadoop.hive.ql.parse;
+
+import org.apache.hadoop.hive.common.StringInternUtils;
 
 /**
  * ASTNodeOrigin contains contextual information about the object from whose
@@ -46,7 +48,7 @@ public class ASTNodeOrigin {
       String objectDefinition, String usageAlias, ASTNode usageNode) {
     this.objectType = objectType;
     this.objectName = objectName;
-    this.objectDefinition = objectDefinition;
+    this.objectDefinition = StringInternUtils.internIfNotNull(objectDefinition);
     this.usageAlias = usageAlias;
     this.usageNode = usageNode;
   }

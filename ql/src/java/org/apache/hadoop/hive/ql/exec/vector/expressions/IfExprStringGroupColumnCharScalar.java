@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
@@ -31,8 +30,8 @@ public class IfExprStringGroupColumnCharScalar extends IfExprStringGroupColumnSt
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprStringGroupColumnCharScalar(int arg1Column, int arg2Column, HiveChar arg3Scalar, int outputColumn) {
-    super(arg1Column, arg2Column, arg3Scalar.getValue().getBytes(), outputColumn);
+  public IfExprStringGroupColumnCharScalar(int arg1Column, int arg2Column, byte[] arg3Scalar, int outputColumnNum) {
+    super(arg1Column, arg2Column, arg3Scalar, outputColumnNum);
   }
 
   public IfExprStringGroupColumnCharScalar() {

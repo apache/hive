@@ -1,0 +1,728 @@
+PREHOOK: query: explain
+select   
+         w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+        ,ship_carriers
+        ,year
+ 	,sum(jan_sales) as jan_sales
+ 	,sum(feb_sales) as feb_sales
+ 	,sum(mar_sales) as mar_sales
+ 	,sum(apr_sales) as apr_sales
+ 	,sum(may_sales) as may_sales
+ 	,sum(jun_sales) as jun_sales
+ 	,sum(jul_sales) as jul_sales
+ 	,sum(aug_sales) as aug_sales
+ 	,sum(sep_sales) as sep_sales
+ 	,sum(oct_sales) as oct_sales
+ 	,sum(nov_sales) as nov_sales
+ 	,sum(dec_sales) as dec_sales
+ 	,sum(jan_sales/w_warehouse_sq_ft) as jan_sales_per_sq_foot
+ 	,sum(feb_sales/w_warehouse_sq_ft) as feb_sales_per_sq_foot
+ 	,sum(mar_sales/w_warehouse_sq_ft) as mar_sales_per_sq_foot
+ 	,sum(apr_sales/w_warehouse_sq_ft) as apr_sales_per_sq_foot
+ 	,sum(may_sales/w_warehouse_sq_ft) as may_sales_per_sq_foot
+ 	,sum(jun_sales/w_warehouse_sq_ft) as jun_sales_per_sq_foot
+ 	,sum(jul_sales/w_warehouse_sq_ft) as jul_sales_per_sq_foot
+ 	,sum(aug_sales/w_warehouse_sq_ft) as aug_sales_per_sq_foot
+ 	,sum(sep_sales/w_warehouse_sq_ft) as sep_sales_per_sq_foot
+ 	,sum(oct_sales/w_warehouse_sq_ft) as oct_sales_per_sq_foot
+ 	,sum(nov_sales/w_warehouse_sq_ft) as nov_sales_per_sq_foot
+ 	,sum(dec_sales/w_warehouse_sq_ft) as dec_sales_per_sq_foot
+ 	,sum(jan_net) as jan_net
+ 	,sum(feb_net) as feb_net
+ 	,sum(mar_net) as mar_net
+ 	,sum(apr_net) as apr_net
+ 	,sum(may_net) as may_net
+ 	,sum(jun_net) as jun_net
+ 	,sum(jul_net) as jul_net
+ 	,sum(aug_net) as aug_net
+ 	,sum(sep_net) as sep_net
+ 	,sum(oct_net) as oct_net
+ 	,sum(nov_net) as nov_net
+ 	,sum(dec_net) as dec_net
+ from (
+    (select 
+ 	w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
+       ,d_year as year
+ 	,sum(case when d_moy = 1 
+ 		then ws_sales_price* ws_quantity else 0 end) as jan_sales
+ 	,sum(case when d_moy = 2 
+ 		then ws_sales_price* ws_quantity else 0 end) as feb_sales
+ 	,sum(case when d_moy = 3 
+ 		then ws_sales_price* ws_quantity else 0 end) as mar_sales
+ 	,sum(case when d_moy = 4 
+ 		then ws_sales_price* ws_quantity else 0 end) as apr_sales
+ 	,sum(case when d_moy = 5 
+ 		then ws_sales_price* ws_quantity else 0 end) as may_sales
+ 	,sum(case when d_moy = 6 
+ 		then ws_sales_price* ws_quantity else 0 end) as jun_sales
+ 	,sum(case when d_moy = 7 
+ 		then ws_sales_price* ws_quantity else 0 end) as jul_sales
+ 	,sum(case when d_moy = 8 
+ 		then ws_sales_price* ws_quantity else 0 end) as aug_sales
+ 	,sum(case when d_moy = 9 
+ 		then ws_sales_price* ws_quantity else 0 end) as sep_sales
+ 	,sum(case when d_moy = 10 
+ 		then ws_sales_price* ws_quantity else 0 end) as oct_sales
+ 	,sum(case when d_moy = 11
+ 		then ws_sales_price* ws_quantity else 0 end) as nov_sales
+ 	,sum(case when d_moy = 12
+ 		then ws_sales_price* ws_quantity else 0 end) as dec_sales
+ 	,sum(case when d_moy = 1 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jan_net
+ 	,sum(case when d_moy = 2
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as feb_net
+ 	,sum(case when d_moy = 3 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as mar_net
+ 	,sum(case when d_moy = 4 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as apr_net
+ 	,sum(case when d_moy = 5 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as may_net
+ 	,sum(case when d_moy = 6 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jun_net
+ 	,sum(case when d_moy = 7 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jul_net
+ 	,sum(case when d_moy = 8 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as aug_net
+ 	,sum(case when d_moy = 9 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as sep_net
+ 	,sum(case when d_moy = 10 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as oct_net
+ 	,sum(case when d_moy = 11
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as nov_net
+ 	,sum(case when d_moy = 12
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as dec_net
+     from
+          web_sales
+         ,warehouse
+         ,date_dim
+         ,time_dim
+ 	  ,ship_mode
+     where
+            ws_warehouse_sk =  w_warehouse_sk
+        and ws_sold_date_sk = d_date_sk
+        and ws_sold_time_sk = t_time_sk
+ 	and ws_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2002
+ 	and t_time between 49530 and 49530+28800 
+ 	and sm_carrier in ('DIAMOND','AIRBORNE')
+     group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+       ,d_year
+ 	)
+ union all
+    (select 
+ 	w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
+       ,d_year as year
+ 	,sum(case when d_moy = 1 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jan_sales
+ 	,sum(case when d_moy = 2 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as feb_sales
+ 	,sum(case when d_moy = 3 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as mar_sales
+ 	,sum(case when d_moy = 4 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as apr_sales
+ 	,sum(case when d_moy = 5 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as may_sales
+ 	,sum(case when d_moy = 6 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jun_sales
+ 	,sum(case when d_moy = 7 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jul_sales
+ 	,sum(case when d_moy = 8 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as aug_sales
+ 	,sum(case when d_moy = 9 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as sep_sales
+ 	,sum(case when d_moy = 10 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as oct_sales
+ 	,sum(case when d_moy = 11
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as nov_sales
+ 	,sum(case when d_moy = 12
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as dec_sales
+ 	,sum(case when d_moy = 1 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jan_net
+ 	,sum(case when d_moy = 2 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as feb_net
+ 	,sum(case when d_moy = 3 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as mar_net
+ 	,sum(case when d_moy = 4 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as apr_net
+ 	,sum(case when d_moy = 5 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as may_net
+ 	,sum(case when d_moy = 6 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jun_net
+ 	,sum(case when d_moy = 7 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jul_net
+ 	,sum(case when d_moy = 8 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as aug_net
+ 	,sum(case when d_moy = 9 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as sep_net
+ 	,sum(case when d_moy = 10 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as oct_net
+ 	,sum(case when d_moy = 11
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as nov_net
+ 	,sum(case when d_moy = 12
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as dec_net
+     from
+          catalog_sales
+         ,warehouse
+         ,date_dim
+         ,time_dim
+ 	 ,ship_mode
+     where
+            cs_warehouse_sk =  w_warehouse_sk
+        and cs_sold_date_sk = d_date_sk
+        and cs_sold_time_sk = t_time_sk
+ 	and cs_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2002
+ 	and t_time between 49530 AND 49530+28800 
+ 	and sm_carrier in ('DIAMOND','AIRBORNE')
+     group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+       ,d_year
+     ) 
+ ) x
+ group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,ship_carriers
+       ,year
+ order by w_warehouse_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@ship_mode
+PREHOOK: Input: default@time_dim
+PREHOOK: Input: default@warehouse
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select   
+         w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+        ,ship_carriers
+        ,year
+ 	,sum(jan_sales) as jan_sales
+ 	,sum(feb_sales) as feb_sales
+ 	,sum(mar_sales) as mar_sales
+ 	,sum(apr_sales) as apr_sales
+ 	,sum(may_sales) as may_sales
+ 	,sum(jun_sales) as jun_sales
+ 	,sum(jul_sales) as jul_sales
+ 	,sum(aug_sales) as aug_sales
+ 	,sum(sep_sales) as sep_sales
+ 	,sum(oct_sales) as oct_sales
+ 	,sum(nov_sales) as nov_sales
+ 	,sum(dec_sales) as dec_sales
+ 	,sum(jan_sales/w_warehouse_sq_ft) as jan_sales_per_sq_foot
+ 	,sum(feb_sales/w_warehouse_sq_ft) as feb_sales_per_sq_foot
+ 	,sum(mar_sales/w_warehouse_sq_ft) as mar_sales_per_sq_foot
+ 	,sum(apr_sales/w_warehouse_sq_ft) as apr_sales_per_sq_foot
+ 	,sum(may_sales/w_warehouse_sq_ft) as may_sales_per_sq_foot
+ 	,sum(jun_sales/w_warehouse_sq_ft) as jun_sales_per_sq_foot
+ 	,sum(jul_sales/w_warehouse_sq_ft) as jul_sales_per_sq_foot
+ 	,sum(aug_sales/w_warehouse_sq_ft) as aug_sales_per_sq_foot
+ 	,sum(sep_sales/w_warehouse_sq_ft) as sep_sales_per_sq_foot
+ 	,sum(oct_sales/w_warehouse_sq_ft) as oct_sales_per_sq_foot
+ 	,sum(nov_sales/w_warehouse_sq_ft) as nov_sales_per_sq_foot
+ 	,sum(dec_sales/w_warehouse_sq_ft) as dec_sales_per_sq_foot
+ 	,sum(jan_net) as jan_net
+ 	,sum(feb_net) as feb_net
+ 	,sum(mar_net) as mar_net
+ 	,sum(apr_net) as apr_net
+ 	,sum(may_net) as may_net
+ 	,sum(jun_net) as jun_net
+ 	,sum(jul_net) as jul_net
+ 	,sum(aug_net) as aug_net
+ 	,sum(sep_net) as sep_net
+ 	,sum(oct_net) as oct_net
+ 	,sum(nov_net) as nov_net
+ 	,sum(dec_net) as dec_net
+ from (
+    (select 
+ 	w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
+       ,d_year as year
+ 	,sum(case when d_moy = 1 
+ 		then ws_sales_price* ws_quantity else 0 end) as jan_sales
+ 	,sum(case when d_moy = 2 
+ 		then ws_sales_price* ws_quantity else 0 end) as feb_sales
+ 	,sum(case when d_moy = 3 
+ 		then ws_sales_price* ws_quantity else 0 end) as mar_sales
+ 	,sum(case when d_moy = 4 
+ 		then ws_sales_price* ws_quantity else 0 end) as apr_sales
+ 	,sum(case when d_moy = 5 
+ 		then ws_sales_price* ws_quantity else 0 end) as may_sales
+ 	,sum(case when d_moy = 6 
+ 		then ws_sales_price* ws_quantity else 0 end) as jun_sales
+ 	,sum(case when d_moy = 7 
+ 		then ws_sales_price* ws_quantity else 0 end) as jul_sales
+ 	,sum(case when d_moy = 8 
+ 		then ws_sales_price* ws_quantity else 0 end) as aug_sales
+ 	,sum(case when d_moy = 9 
+ 		then ws_sales_price* ws_quantity else 0 end) as sep_sales
+ 	,sum(case when d_moy = 10 
+ 		then ws_sales_price* ws_quantity else 0 end) as oct_sales
+ 	,sum(case when d_moy = 11
+ 		then ws_sales_price* ws_quantity else 0 end) as nov_sales
+ 	,sum(case when d_moy = 12
+ 		then ws_sales_price* ws_quantity else 0 end) as dec_sales
+ 	,sum(case when d_moy = 1 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jan_net
+ 	,sum(case when d_moy = 2
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as feb_net
+ 	,sum(case when d_moy = 3 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as mar_net
+ 	,sum(case when d_moy = 4 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as apr_net
+ 	,sum(case when d_moy = 5 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as may_net
+ 	,sum(case when d_moy = 6 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jun_net
+ 	,sum(case when d_moy = 7 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jul_net
+ 	,sum(case when d_moy = 8 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as aug_net
+ 	,sum(case when d_moy = 9 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as sep_net
+ 	,sum(case when d_moy = 10 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as oct_net
+ 	,sum(case when d_moy = 11
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as nov_net
+ 	,sum(case when d_moy = 12
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as dec_net
+     from
+          web_sales
+         ,warehouse
+         ,date_dim
+         ,time_dim
+ 	  ,ship_mode
+     where
+            ws_warehouse_sk =  w_warehouse_sk
+        and ws_sold_date_sk = d_date_sk
+        and ws_sold_time_sk = t_time_sk
+ 	and ws_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2002
+ 	and t_time between 49530 and 49530+28800 
+ 	and sm_carrier in ('DIAMOND','AIRBORNE')
+     group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+       ,d_year
+ 	)
+ union all
+    (select 
+ 	w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
+       ,d_year as year
+ 	,sum(case when d_moy = 1 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jan_sales
+ 	,sum(case when d_moy = 2 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as feb_sales
+ 	,sum(case when d_moy = 3 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as mar_sales
+ 	,sum(case when d_moy = 4 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as apr_sales
+ 	,sum(case when d_moy = 5 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as may_sales
+ 	,sum(case when d_moy = 6 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jun_sales
+ 	,sum(case when d_moy = 7 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jul_sales
+ 	,sum(case when d_moy = 8 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as aug_sales
+ 	,sum(case when d_moy = 9 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as sep_sales
+ 	,sum(case when d_moy = 10 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as oct_sales
+ 	,sum(case when d_moy = 11
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as nov_sales
+ 	,sum(case when d_moy = 12
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as dec_sales
+ 	,sum(case when d_moy = 1 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jan_net
+ 	,sum(case when d_moy = 2 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as feb_net
+ 	,sum(case when d_moy = 3 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as mar_net
+ 	,sum(case when d_moy = 4 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as apr_net
+ 	,sum(case when d_moy = 5 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as may_net
+ 	,sum(case when d_moy = 6 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jun_net
+ 	,sum(case when d_moy = 7 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jul_net
+ 	,sum(case when d_moy = 8 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as aug_net
+ 	,sum(case when d_moy = 9 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as sep_net
+ 	,sum(case when d_moy = 10 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as oct_net
+ 	,sum(case when d_moy = 11
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as nov_net
+ 	,sum(case when d_moy = 12
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as dec_net
+     from
+          catalog_sales
+         ,warehouse
+         ,date_dim
+         ,time_dim
+ 	 ,ship_mode
+     where
+            cs_warehouse_sk =  w_warehouse_sk
+        and cs_sold_date_sk = d_date_sk
+        and cs_sold_time_sk = t_time_sk
+ 	and cs_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2002
+ 	and t_time between 49530 AND 49530+28800 
+ 	and sm_carrier in ('DIAMOND','AIRBORNE')
+     group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+       ,d_year
+     ) 
+ ) x
+ group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,ship_carriers
+       ,year
+ order by w_warehouse_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@ship_mode
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Reducer 11 (BROADCAST_EDGE), Reducer 19 (BROADCAST_EDGE), Reducer 22 (BROADCAST_EDGE), Reducer 25 (BROADCAST_EDGE)
+Map 27 <- Reducer 17 (BROADCAST_EDGE), Reducer 20 (BROADCAST_EDGE), Reducer 23 (BROADCAST_EDGE), Reducer 26 (BROADCAST_EDGE)
+Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE)
+Reducer 12 <- Map 10 (SIMPLE_EDGE), Map 27 (SIMPLE_EDGE)
+Reducer 13 <- Map 18 (SIMPLE_EDGE), Reducer 12 (SIMPLE_EDGE)
+Reducer 14 <- Map 21 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
+Reducer 15 <- Map 24 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
+Reducer 16 <- Reducer 15 (SIMPLE_EDGE), Union 7 (CONTAINS)
+Reducer 17 <- Map 10 (CUSTOM_SIMPLE_EDGE)
+Reducer 19 <- Map 18 (CUSTOM_SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 10 (SIMPLE_EDGE)
+Reducer 20 <- Map 18 (CUSTOM_SIMPLE_EDGE)
+Reducer 22 <- Map 21 (CUSTOM_SIMPLE_EDGE)
+Reducer 23 <- Map 21 (CUSTOM_SIMPLE_EDGE)
+Reducer 25 <- Map 24 (CUSTOM_SIMPLE_EDGE)
+Reducer 26 <- Map 24 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 18 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 21 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Map 24 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 5 (SIMPLE_EDGE), Union 7 (CONTAINS)
+Reducer 8 <- Union 7 (SIMPLE_EDGE)
+Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 9 vectorized
+      File Output Operator [FS_278]
+        Select Operator [SEL_277] (rows=100 width=135)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41","_col42","_col43"]
+          Limit [LIM_276] (rows=100 width=135)
+            Number of rows:100
+            Select Operator [SEL_275] (rows=158120068 width=135)
+              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41"]
+            <-Reducer 8 [SIMPLE_EDGE] vectorized
+              SHUFFLE [RS_274]
+                Group By Operator [GBY_273] (rows=158120068 width=135)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)","sum(VALUE._col4)","sum(VALUE._col5)","sum(VALUE._col6)","sum(VALUE._col7)","sum(VALUE._col8)","sum(VALUE._col9)","sum(VALUE._col10)","sum(VALUE._col11)","sum(VALUE._col12)","sum(VALUE._col13)","sum(VALUE._col14)","sum(VALUE._col15)","sum(VALUE._col16)","sum(VALUE._col17)","sum(VALUE._col18)","sum(VALUE._col19)","sum(VALUE._col20)","sum(VALUE._col21)","sum(VALUE._col22)","sum(VALUE._col23)","sum(VALUE._col24)","sum(VALUE._col25)","sum(VALUE._col26)","sum(VALUE._col27)","sum(VALUE._col28)","sum(VALUE._col29)","sum(VALUE._col30)","sum(VALUE._col31)","sum(VALUE._col32)","sum(VALUE._col33)","sum(VALUE._col34)","sum(VALUE._col35)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4, KEY._col5
+                <-Union 7 [SIMPLE_EDGE]
+                  <-Reducer 16 [CONTAINS] vectorized
+                    Reduce Output Operator [RS_294]
+                      PartitionCols:_col0, _col1, _col2, _col3, _col4, _col5
+                      Group By Operator [GBY_293] (rows=316240137 width=135)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41"],aggregations:["sum(_col6)","sum(_col7)","sum(_col8)","sum(_col9)","sum(_col10)","sum(_col11)","sum(_col12)","sum(_col13)","sum(_col14)","sum(_col15)","sum(_col16)","sum(_col17)","sum(_col18)","sum(_col19)","sum(_col20)","sum(_col21)","sum(_col22)","sum(_col23)","sum(_col24)","sum(_col25)","sum(_col26)","sum(_col27)","sum(_col28)","sum(_col29)","sum(_col30)","sum(_col31)","sum(_col32)","sum(_col33)","sum(_col34)","sum(_col35)","sum(_col36)","sum(_col37)","sum(_col38)","sum(_col39)","sum(_col40)","sum(_col41)"],keys:_col0, _col1, _col2, _col3, _col4, _col5
+                        Top N Key Operator [TNK_292] (rows=316240137 width=135)
+                          keys:_col0, _col1, _col2, _col3, _col4, _col5,sort order:++++++,top n:100
+                          Select Operator [SEL_291] (rows=316240137 width=135)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41"]
+                            Group By Operator [GBY_290] (rows=210822976 width=135)
+                              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)","sum(VALUE._col4)","sum(VALUE._col5)","sum(VALUE._col6)","sum(VALUE._col7)","sum(VALUE._col8)","sum(VALUE._col9)","sum(VALUE._col10)","sum(VALUE._col11)","sum(VALUE._col12)","sum(VALUE._col13)","sum(VALUE._col14)","sum(VALUE._col15)","sum(VALUE._col16)","sum(VALUE._col17)","sum(VALUE._col18)","sum(VALUE._col19)","sum(VALUE._col20)","sum(VALUE._col21)","sum(VALUE._col22)","sum(VALUE._col23)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4, KEY._col5
+                            <-Reducer 15 [SIMPLE_EDGE]
+                              SHUFFLE [RS_63]
+                                PartitionCols:_col0, _col1, _col2, _col3, _col4, _col5
+                                Group By Operator [GBY_62] (rows=421645953 width=135)
+                                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29"],aggregations:["sum(_col6)","sum(_col7)","sum(_col8)","sum(_col9)","sum(_col10)","sum(_col11)","sum(_col12)","sum(_col13)","sum(_col14)","sum(_col15)","sum(_col16)","sum(_col17)","sum(_col18)","sum(_col19)","sum(_col20)","sum(_col21)","sum(_col22)","sum(_col23)","sum(_col24)","sum(_col25)","sum(_col26)","sum(_col27)","sum(_col28)","sum(_col29)"],keys:_col0, _col1, _col2, _col3, _col4, _col5
+                                  Select Operator [SEL_60] (rows=421645953 width=135)
+                                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29"]
+                                    Merge Join Operator [MERGEJOIN_204] (rows=421645953 width=135)
+                                      Conds:RS_57._col3=RS_257._col0(Inner),Output:["_col4","_col5","_col6","_col11","_col15","_col16","_col17","_col18","_col19","_col20"]
+                                    <-Map 24 [SIMPLE_EDGE] vectorized
+                                      SHUFFLE [RS_257]
+                                        PartitionCols:_col0
+                                        Select Operator [SEL_254] (rows=27 width=1029)
+                                          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                                          Filter Operator [FIL_253] (rows=27 width=1029)
+                                            predicate:w_warehouse_sk is not null
+                                            TableScan [TS_12] (rows=27 width=1029)
+                                              default@warehouse,warehouse,Tbl:COMPLETE,Col:NONE,Output:["w_warehouse_sk","w_warehouse_name","w_warehouse_sq_ft","w_city","w_county","w_state","w_country"]
+                                    <-Reducer 14 [SIMPLE_EDGE]
+                                      SHUFFLE [RS_57]
+                                        PartitionCols:_col3
+                                        Merge Join Operator [MERGEJOIN_203] (rows=383314495 width=135)
+                                          Conds:RS_54._col2=RS_245._col0(Inner),Output:["_col3","_col4","_col5","_col6","_col11"]
+                                        <-Map 21 [SIMPLE_EDGE] vectorized
+                                          SHUFFLE [RS_245]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_242] (rows=1 width=0)
+                                              Output:["_col0"]
+                                              Filter Operator [FIL_241] (rows=1 width=0)
+                                                predicate:((sm_carrier) IN ('DIAMOND', 'AIRBORNE') and sm_ship_mode_sk is not null)
+                                                TableScan [TS_9] (rows=1 width=0)
+                                                  default@ship_mode,ship_mode,Tbl:PARTIAL,Col:NONE,Output:["sm_ship_mode_sk","sm_carrier"]
+                                        <-Reducer 13 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_54]
+                                            PartitionCols:_col2
+                                            Merge Join Operator [MERGEJOIN_202] (rows=348467716 width=135)
+                                              Conds:RS_51._col0=RS_233._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col6","_col11"]
+                                            <-Map 18 [SIMPLE_EDGE] vectorized
+                                              SHUFFLE [RS_233]
+                                                PartitionCols:_col0
+                                                Select Operator [SEL_230] (rows=36524 width=1119)
+                                                  Output:["_col0","_col2"]
+                                                  Filter Operator [FIL_229] (rows=36524 width=1119)
+                                                    predicate:((d_year = 2002) and d_date_sk is not null)
+                                                    TableScan [TS_6] (rows=73049 width=1119)
+                                                      default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
+                                            <-Reducer 12 [SIMPLE_EDGE]
+                                              SHUFFLE [RS_51]
+                                                PartitionCols:_col0
+                                                Merge Join Operator [MERGEJOIN_201] (rows=316788826 width=135)
+                                                  Conds:RS_289._col1=RS_221._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5","_col6"]
+                                                <-Map 10 [SIMPLE_EDGE] vectorized
+                                                  SHUFFLE [RS_221]
+                                                    PartitionCols:_col0
+                                                    Select Operator [SEL_218] (rows=9600 width=471)
+                                                      Output:["_col0"]
+                                                      Filter Operator [FIL_217] (rows=9600 width=471)
+                                                        predicate:(t_time BETWEEN 49530 AND 78330 and t_time_sk is not null)
+                                                        TableScan [TS_3] (rows=86400 width=471)
+                                                          default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_time"]
+                                                <-Map 27 [SIMPLE_EDGE] vectorized
+                                                  SHUFFLE [RS_289]
+                                                    PartitionCols:_col1
+                                                    Select Operator [SEL_288] (rows=287989836 width=135)
+                                                      Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                                                      Filter Operator [FIL_287] (rows=287989836 width=135)
+                                                        predicate:((cs_ship_mode_sk BETWEEN DynamicValue(RS_55_ship_mode_sm_ship_mode_sk_min) AND DynamicValue(RS_55_ship_mode_sm_ship_mode_sk_max) and in_bloom_filter(cs_ship_mode_sk, DynamicValue(RS_55_ship_mode_sm_ship_mode_sk_bloom_filter))) and (cs_sold_date_sk BETWEEN DynamicValue(RS_52_date_dim_d_date_sk_min) AND DynamicValue(RS_52_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_52_date_dim_d_date_sk_bloom_filter))) and (cs_sold_time_sk BETWEEN DynamicValue(RS_49_time_dim_t_time_sk_min) AND DynamicValue(RS_49_time_dim_t_time_sk_max) and in_bloom_filter(cs_sold_time_sk, DynamicValue(RS_49_time_dim_t_time_sk_bloom_filter))) and (cs_warehouse_sk BETWEEN DynamicValue(RS_58_warehouse_w_warehouse_sk_min) AND DynamicValue(RS_58_warehouse_w_warehouse_sk_max) and in_bloom_filter(cs_warehouse_sk, DynamicValue(RS_58_warehouse_w_warehouse_sk_bloom_filter))) and cs_ship_mode_sk is not null and cs_sold_date_sk is not null and cs_sold_time_sk is not null and cs_warehouse_sk is not null)
+                                                        TableScan [TS_33] (rows=287989836 width=135)
+                                                          default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:NONE,Output:["cs_sold_date_sk","cs_sold_time_sk","cs_ship_mode_sk","cs_warehouse_sk","cs_quantity","cs_ext_sales_price","cs_net_paid_inc_ship_tax"]
+                                                        <-Reducer 17 [BROADCAST_EDGE] vectorized
+                                                          BROADCAST [RS_280]
+                                                            Group By Operator [GBY_279] (rows=1 width=12)
+                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                            <-Map 10 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_226]
+                                                                Group By Operator [GBY_224] (rows=1 width=12)
+                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                                  Select Operator [SEL_222] (rows=9600 width=471)
+                                                                    Output:["_col0"]
+                                                                     Please refer to the previous Select Operator [SEL_218]
+                                                        <-Reducer 20 [BROADCAST_EDGE] vectorized
+                                                          BROADCAST [RS_282]
+                                                            Group By Operator [GBY_281] (rows=1 width=12)
+                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                            <-Map 18 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_238]
+                                                                Group By Operator [GBY_236] (rows=1 width=12)
+                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                                  Select Operator [SEL_234] (rows=36524 width=1119)
+                                                                    Output:["_col0"]
+                                                                     Please refer to the previous Select Operator [SEL_230]
+                                                        <-Reducer 23 [BROADCAST_EDGE] vectorized
+                                                          BROADCAST [RS_284]
+                                                            Group By Operator [GBY_283] (rows=1 width=12)
+                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                            <-Map 21 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_250]
+                                                                Group By Operator [GBY_248] (rows=1 width=12)
+                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                                  Select Operator [SEL_246] (rows=1 width=0)
+                                                                    Output:["_col0"]
+                                                                     Please refer to the previous Select Operator [SEL_242]
+                                                        <-Reducer 26 [BROADCAST_EDGE] vectorized
+                                                          BROADCAST [RS_286]
+                                                            Group By Operator [GBY_285] (rows=1 width=12)
+                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                            <-Map 24 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_262]
+                                                                Group By Operator [GBY_260] (rows=1 width=12)
+                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                                  Select Operator [SEL_258] (rows=27 width=1029)
+                                                                    Output:["_col0"]
+                                                                     Please refer to the previous Select Operator [SEL_254]
+                  <-Reducer 6 [CONTAINS] vectorized
+                    Reduce Output Operator [RS_272]
+                      PartitionCols:_col0, _col1, _col2, _col3, _col4, _col5
+                      Group By Operator [GBY_271] (rows=316240137 width=135)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41"],aggregations:["sum(_col6)","sum(_col7)","sum(_col8)","sum(_col9)","sum(_col10)","sum(_col11)","sum(_col12)","sum(_col13)","sum(_col14)","sum(_col15)","sum(_col16)","sum(_col17)","sum(_col18)","sum(_col19)","sum(_col20)","sum(_col21)","sum(_col22)","sum(_col23)","sum(_col24)","sum(_col25)","sum(_col26)","sum(_col27)","sum(_col28)","sum(_col29)","sum(_col30)","sum(_col31)","sum(_col32)","sum(_col33)","sum(_col34)","sum(_col35)","sum(_col36)","sum(_col37)","sum(_col38)","sum(_col39)","sum(_col40)","sum(_col41)"],keys:_col0, _col1, _col2, _col3, _col4, _col5
+                        Top N Key Operator [TNK_270] (rows=316240137 width=135)
+                          keys:_col0, _col1, _col2, _col3, _col4, _col5,sort order:++++++,top n:100
+                          Select Operator [SEL_269] (rows=316240137 width=135)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41"]
+                            Group By Operator [GBY_268] (rows=105417161 width=135)
+                              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)","sum(VALUE._col4)","sum(VALUE._col5)","sum(VALUE._col6)","sum(VALUE._col7)","sum(VALUE._col8)","sum(VALUE._col9)","sum(VALUE._col10)","sum(VALUE._col11)","sum(VALUE._col12)","sum(VALUE._col13)","sum(VALUE._col14)","sum(VALUE._col15)","sum(VALUE._col16)","sum(VALUE._col17)","sum(VALUE._col18)","sum(VALUE._col19)","sum(VALUE._col20)","sum(VALUE._col21)","sum(VALUE._col22)","sum(VALUE._col23)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4, KEY._col5
+                            <-Reducer 5 [SIMPLE_EDGE]
+                              SHUFFLE [RS_30]
+                                PartitionCols:_col0, _col1, _col2, _col3, _col4, _col5
+                                Group By Operator [GBY_29] (rows=210834322 width=135)
+                                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29"],aggregations:["sum(_col6)","sum(_col7)","sum(_col8)","sum(_col9)","sum(_col10)","sum(_col11)","sum(_col12)","sum(_col13)","sum(_col14)","sum(_col15)","sum(_col16)","sum(_col17)","sum(_col18)","sum(_col19)","sum(_col20)","sum(_col21)","sum(_col22)","sum(_col23)","sum(_col24)","sum(_col25)","sum(_col26)","sum(_col27)","sum(_col28)","sum(_col29)"],keys:_col0, _col1, _col2, _col3, _col4, _col5
+                                  Select Operator [SEL_27] (rows=210834322 width=135)
+                                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29"]
+                                    Merge Join Operator [MERGEJOIN_200] (rows=210834322 width=135)
+                                      Conds:RS_24._col3=RS_255._col0(Inner),Output:["_col4","_col5","_col6","_col11","_col15","_col16","_col17","_col18","_col19","_col20"]
+                                    <-Map 24 [SIMPLE_EDGE] vectorized
+                                      SHUFFLE [RS_255]
+                                        PartitionCols:_col0
+                                         Please refer to the previous Select Operator [SEL_254]
+                                    <-Reducer 4 [SIMPLE_EDGE]
+                                      SHUFFLE [RS_24]
+                                        PartitionCols:_col3
+                                        Merge Join Operator [MERGEJOIN_199] (rows=191667562 width=135)
+                                          Conds:RS_21._col2=RS_243._col0(Inner),Output:["_col3","_col4","_col5","_col6","_col11"]
+                                        <-Map 21 [SIMPLE_EDGE] vectorized
+                                          SHUFFLE [RS_243]
+                                            PartitionCols:_col0
+                                             Please refer to the previous Select Operator [SEL_242]
+                                        <-Reducer 3 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_21]
+                                            PartitionCols:_col2
+                                            Merge Join Operator [MERGEJOIN_198] (rows=174243235 width=135)
+                                              Conds:RS_18._col0=RS_231._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col6","_col11"]
+                                            <-Map 18 [SIMPLE_EDGE] vectorized
+                                              SHUFFLE [RS_231]
+                                                PartitionCols:_col0
+                                                 Please refer to the previous Select Operator [SEL_230]
+                                            <-Reducer 2 [SIMPLE_EDGE]
+                                              SHUFFLE [RS_18]
+                                                PartitionCols:_col0
+                                                Merge Join Operator [MERGEJOIN_197] (rows=158402938 width=135)
+                                                  Conds:RS_267._col1=RS_219._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5","_col6"]
+                                                <-Map 10 [SIMPLE_EDGE] vectorized
+                                                  SHUFFLE [RS_219]
+                                                    PartitionCols:_col0
+                                                     Please refer to the previous Select Operator [SEL_218]
+                                                <-Map 1 [SIMPLE_EDGE] vectorized
+                                                  SHUFFLE [RS_267]
+                                                    PartitionCols:_col1
+                                                    Select Operator [SEL_266] (rows=144002668 width=135)
+                                                      Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                                                      Filter Operator [FIL_265] (rows=144002668 width=135)
+                                                        predicate:((ws_ship_mode_sk BETWEEN DynamicValue(RS_22_ship_mode_sm_ship_mode_sk_min) AND DynamicValue(RS_22_ship_mode_sm_ship_mode_sk_max) and in_bloom_filter(ws_ship_mode_sk, DynamicValue(RS_22_ship_mode_sm_ship_mode_sk_bloom_filter))) and (ws_sold_date_sk BETWEEN DynamicValue(RS_19_date_dim_d_date_sk_min) AND DynamicValue(RS_19_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_19_date_dim_d_date_sk_bloom_filter))) and (ws_sold_time_sk BETWEEN DynamicValue(RS_16_time_dim_t_time_sk_min) AND DynamicValue(RS_16_time_dim_t_time_sk_max) and in_bloom_filter(ws_sold_time_sk, DynamicValue(RS_16_time_dim_t_time_sk_bloom_filter))) and (ws_warehouse_sk BETWEEN DynamicValue(RS_25_warehouse_w_warehouse_sk_min) AND DynamicValue(RS_25_warehouse_w_warehouse_sk_max) and in_bloom_filter(ws_warehouse_sk, DynamicValue(RS_25_warehouse_w_warehouse_sk_bloom_filter))) and ws_ship_mode_sk is not null and ws_sold_date_sk is not null and ws_sold_time_sk is not null and ws_warehouse_sk is not null)
+                                                        TableScan [TS_0] (rows=144002668 width=135)
+                                                          default@web_sales,web_sales,Tbl:COMPLETE,Col:NONE,Output:["ws_sold_date_sk","ws_sold_time_sk","ws_ship_mode_sk","ws_warehouse_sk","ws_quantity","ws_sales_price","ws_net_paid_inc_tax"]
+                                                        <-Reducer 11 [BROADCAST_EDGE] vectorized
+                                                          BROADCAST [RS_228]
+                                                            Group By Operator [GBY_227] (rows=1 width=12)
+                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                            <-Map 10 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_225]
+                                                                Group By Operator [GBY_223] (rows=1 width=12)
+                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                                  Select Operator [SEL_220] (rows=9600 width=471)
+                                                                    Output:["_col0"]
+                                                                     Please refer to the previous Select Operator [SEL_218]
+                                                        <-Reducer 19 [BROADCAST_EDGE] vectorized
+                                                          BROADCAST [RS_240]
+                                                            Group By Operator [GBY_239] (rows=1 width=12)
+                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                            <-Map 18 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_237]
+                                                                Group By Operator [GBY_235] (rows=1 width=12)
+                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                                  Select Operator [SEL_232] (rows=36524 width=1119)
+                                                                    Output:["_col0"]
+                                                                     Please refer to the previous Select Operator [SEL_230]
+                                                        <-Reducer 22 [BROADCAST_EDGE] vectorized
+                                                          BROADCAST [RS_252]
+                                                            Group By Operator [GBY_251] (rows=1 width=12)
+                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                            <-Map 21 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_249]
+                                                                Group By Operator [GBY_247] (rows=1 width=12)
+                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                                  Select Operator [SEL_244] (rows=1 width=0)
+                                                                    Output:["_col0"]
+                                                                     Please refer to the previous Select Operator [SEL_242]
+                                                        <-Reducer 25 [BROADCAST_EDGE] vectorized
+                                                          BROADCAST [RS_264]
+                                                            Group By Operator [GBY_263] (rows=1 width=12)
+                                                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                            <-Map 24 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                              SHUFFLE [RS_261]
+                                                                Group By Operator [GBY_259] (rows=1 width=12)
+                                                                  Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                                  Select Operator [SEL_256] (rows=27 width=1029)
+                                                                    Output:["_col0"]
+                                                                     Please refer to the previous Select Operator [SEL_254]
+

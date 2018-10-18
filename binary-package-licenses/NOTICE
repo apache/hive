@@ -1,0 +1,15 @@
+Binary distributions of this software contain jars that are not licensed under the
+Apache License 2.0.  Additional licenses attached to these jars are contained in the
+same directory as this NOTICE file.  
+
+Note also that some of the included jars impose additional restrictions on you if
+you modify the source code of those jars.  In particular see:
+
+* https://glassfish.dev.java.net/public/CDDLv1.0.html for information on the CDDL
+  license that glassfish is distributed under and
+
+* http://www.mozilla.org/MPL/MPL-1.1.txt for information on the Mozilla Public License
+  which jamon-runtime and rhino are distributed under.
+
+* https://opensource.org/licenses/cddl1.php for information on CDDL 1.0 which
+  transaction-api is distributed under.

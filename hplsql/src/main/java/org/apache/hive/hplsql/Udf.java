@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -60,15 +60,7 @@ public class Udf extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     if (exec == null) {
-      exec = new Exec(); 
-      String query = queryOI.getPrimitiveJavaObject(arguments[0].get());
-      String[] args = { "-e", query, "-trace" };
-      try {
-        exec.setUdfRun(true);
-        exec.init(args);
-      } catch (Exception e) {
-        throw new HiveException(e.getMessage());
-      }
+      initExec(arguments);
     }
     if (arguments.length > 1) {
       setParameters(arguments);
@@ -78,6 +70,22 @@ public class Udf extends GenericUDF {
       return result.toString();
     }
     return null;
+  }
+
+  /**
+   * init exec
+   */
+  public void initExec(DeferredObject[] arguments) throws HiveException {
+    exec = new Exec();
+    exec.enterGlobalScope();
+    String query = queryOI.getPrimitiveJavaObject(arguments[0].get());
+    String[] args = { "-e", query, "-trace" };
+    try {
+      exec.setUdfRun(true);
+      exec.init(args);
+    } catch (Exception e) {
+      throw new HiveException(e.getMessage());
+    }
   }
   
   /**

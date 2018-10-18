@@ -66,6 +66,11 @@ public class RSyncCommandExecutor {
               String.format("timeout 1h rsync -vaPe \"ssh -i %s\" --timeout 600 %s@%s:%s %s",
                   command.getPrivateKey(), command.getUser(), command.getHost(),
                   command.getRemoteFile(), command.getLocalFile()));
+        } else if (command.getType() == RSyncCommand.Type.TO_LOCAL_NON_RECURSIVE) {
+          cmd = mLocalCommandFactory.create(collector,
+              String.format("timeout 1h rsync --exclude \"*/\" -vaPe \"ssh -i %s\" --timeout 600 %s@%s:%s %s",
+                  command.getPrivateKey(), command.getUser(), command.getHost(),
+                  command.getRemoteFile(), command.getLocalFile()));
         } else if(command.getType() == RSyncCommand.Type.FROM_LOCAL) {
           cmd = mLocalCommandFactory.create(collector,
               String.format("timeout 1h rsync -vaPe \"ssh -i %s\" --timeout 600 --delete --delete-during --force %s %s@%s:%s",
@@ -88,6 +93,7 @@ public class RSyncCommandExecutor {
         }
       } while (!mShutdown && retry); // an error occurred, re-try
       command.setExitCode(cmd.getExitCode());
+      command.setElapsedTimeInMs(cmd.getElapsedTimeInMs());
     } catch (IOException e) {
       command.setException(e);
     } catch (InterruptedException e) {

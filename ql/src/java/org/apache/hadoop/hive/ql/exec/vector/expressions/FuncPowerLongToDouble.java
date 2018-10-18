@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,19 +24,21 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 /**
  * Vectorized implementation for Pow(a, power) and Power(a, power)
  */
-public class FuncPowerLongToDouble extends MathFuncLongToDouble
-    implements ISetDoubleArg {
+public class FuncPowerLongToDouble extends MathFuncLongToDouble {
   private static final long serialVersionUID = 1L;
 
-  private double power;
+  private final double power;
 
-  public FuncPowerLongToDouble(int colNum, double scalarVal, int outputColumn) {
-    super(colNum, outputColumn);
+  public FuncPowerLongToDouble(int colNum, double scalarVal, int outputColumnNum) {
+    super(colNum, outputColumnNum);
     this.power = scalarVal;
   }
 
   public FuncPowerLongToDouble() {
     super();
+
+    // Dummy final assignments.
+    power = -1;
   }
 
   @Override
@@ -46,16 +48,6 @@ public class FuncPowerLongToDouble extends MathFuncLongToDouble
 
   public double getPower() {
     return power;
-  }
-
-  public void setPower(double power) {
-    this.power = power;
-  }
-
-  // set the second argument (the power)
-  @Override
-  public void setArg(double d) {
-    this.power = d;
   }
 
   @Override

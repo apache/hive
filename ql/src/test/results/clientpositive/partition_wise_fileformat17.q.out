@@ -1,14 +1,6 @@
-PREHOOK: query: -- HIVE-5199, HIVE-5285 : CustomSerDe(1, 2, 3) are used here.
--- The final results should be all NULL columns deserialized using 
--- CustomSerDe(1, 2, 3) irrespective of the inserted values
-
-DROP TABLE PW17
+PREHOOK: query: DROP TABLE PW17
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- HIVE-5199, HIVE-5285 : CustomSerDe(1, 2, 3) are used here.
--- The final results should be all NULL columns deserialized using 
--- CustomSerDe(1, 2, 3) irrespective of the inserted values
-
-DROP TABLE PW17
+POSTHOOK: query: DROP TABLE PW17
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE PW17(`USER` STRING, COMPLEXDT ARRAY<INT>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
 PREHOOK: type: CREATETABLE
@@ -44,14 +36,12 @@ POSTHOOK: query: ALTER TABLE PW17 SET SERDE 'org.apache.hadoop.hive.serde2.Custo
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@pw17
 POSTHOOK: Output: default@pw17
-PREHOOK: query: -- Without the fix HIVE-5199, will throw cast exception via FetchOperator
-SELECT * FROM PW17
+PREHOOK: query: SELECT * FROM PW17
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pw17
 PREHOOK: Input: default@pw17@year=1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Without the fix HIVE-5199, will throw cast exception via FetchOperator
-SELECT * FROM PW17
+POSTHOOK: query: SELECT * FROM PW17
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pw17
 POSTHOOK: Input: default@pw17@year=1
@@ -60,11 +50,9 @@ NULL	NULL	1
 NULL	NULL	1
 NULL	NULL	1
 NULL	NULL	1
-PREHOOK: query: -- Test for non-parititioned table. 
-DROP TABLE PW17_2
+PREHOOK: query: DROP TABLE PW17_2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test for non-parititioned table. 
-DROP TABLE PW17_2
+POSTHOOK: query: DROP TABLE PW17_2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE PW17_2(`USER` STRING, COMPLEXDT ARRAY<INT>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
 PREHOOK: type: CREATETABLE
@@ -82,13 +70,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE P
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@pw17_2
-PREHOOK: query: -- Without the fix HIVE-5199, will throw cast exception via MapOperator
-SELECT COUNT(*) FROM PW17_2
+PREHOOK: query: SELECT COUNT(*) FROM PW17_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pw17_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- Without the fix HIVE-5199, will throw cast exception via MapOperator
-SELECT COUNT(*) FROM PW17_2
+POSTHOOK: query: SELECT COUNT(*) FROM PW17_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pw17_2
 #### A masked pattern was here ####
@@ -131,14 +117,12 @@ POSTHOOK: query: ALTER TABLE PW17_3 SET SERDE 'org.apache.hadoop.hive.serde2.Cus
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@pw17_3
 POSTHOOK: Output: default@pw17_3
-PREHOOK: query: -- Without the fix HIVE-5285, will throw cast exception via FetchOperator
-SELECT * FROM PW17
+PREHOOK: query: SELECT * FROM PW17
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pw17
 PREHOOK: Input: default@pw17@year=1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Without the fix HIVE-5285, will throw cast exception via FetchOperator
-SELECT * FROM PW17
+POSTHOOK: query: SELECT * FROM PW17
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pw17
 POSTHOOK: Input: default@pw17@year=1
@@ -167,13 +151,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE P
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@pw17_4
-PREHOOK: query: -- Without the fix HIVE-5285, will throw cast exception via MapOperator
-SELECT COUNT(*) FROM PW17_4
+PREHOOK: query: SELECT COUNT(*) FROM PW17_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pw17_4
 #### A masked pattern was here ####
-POSTHOOK: query: -- Without the fix HIVE-5285, will throw cast exception via MapOperator
-SELECT COUNT(*) FROM PW17_4
+POSTHOOK: query: SELECT COUNT(*) FROM PW17_4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pw17_4
 #### A masked pattern was here ####

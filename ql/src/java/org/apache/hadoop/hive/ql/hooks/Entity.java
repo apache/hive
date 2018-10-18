@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,7 +41,7 @@ public class Entity implements Serializable {
    * The type of the entity.
    */
   public static enum Type {
-    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR, FUNCTION
+    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR, FUNCTION, SERVICE_NAME
   }
 
   /**
@@ -71,15 +71,20 @@ public class Entity implements Serializable {
 
   /**
    * An object that is represented as a String
-   * Currently used for functions
+   * Currently used for functions and service name
    */
   private String stringObject;
+
+  /**
+   * The class name for a function
+   */
+  private String className;
 
   /**
    * This is derived from t and p, but we need to serialize this field to make
    * sure Entity.hashCode() does not need to recursively read into t and p.
    */
-  private String name;
+  private final String name;
 
   /**
    * Whether the output is complete or not. For eg, for dynamic partitions, the
@@ -97,10 +102,6 @@ public class Entity implements Serializable {
 
   public String getName() {
     return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public Database getDatabase() {
@@ -143,6 +144,14 @@ public class Entity implements Serializable {
     this.d = d;
   }
 
+  public String getClassName() {
+    return this.className;
+  }
+
+  public void setClassName(String className) {
+    this.className = className;
+  }
+
   public String getFunctionName() {
     if (typ == Type.FUNCTION) {
       return stringObject;
@@ -158,10 +167,18 @@ public class Entity implements Serializable {
     this.stringObject = funcName;
   }
 
+  public String getServiceName() {
+    if (typ == Type.SERVICE_NAME) {
+      return stringObject;
+    }
+    return null;
+  }
+
   /**
    * Only used by serialization.
    */
   public Entity() {
+    name = null;
   }
 
   /**
@@ -177,6 +194,21 @@ public class Entity implements Serializable {
     this.typ = Type.DATABASE;
     this.name = computeName();
     this.complete = complete;
+  }
+
+  /**
+   * Constructor for a entity with string object representation (eg SERVICE_NAME)
+   *
+   * @param name
+   *          Used for service that action is being authorized on.
+   *          Currently hostname is used for service name.
+   * @param t
+   *         Type of entity
+   */
+  public Entity(String name, Type t) {
+    this.stringObject = name;
+    this.typ = t;
+    this.name = computeName();
   }
 
   /**
@@ -235,15 +267,17 @@ public class Entity implements Serializable {
    * Create an entity representing a object with given name, database namespace and type
    * @param database - database namespace
    * @param strObj - object name as string
+   * @param className - function class name
    * @param type - the entity type. this constructor only supports FUNCTION type currently
    */
-  public Entity(Database database, String strObj, Type type) {
+  public Entity(Database database, String strObj, String className, Type type) {
     if (type != Type.FUNCTION) {
       throw new IllegalArgumentException("This constructor is supported only for type:"
           + Type.FUNCTION);
     }
     this.database = database;
     this.stringObject = strObj;
+    this.className = className;
     this.typ = type;
     this.complete = true;
     name = computeName();
@@ -326,10 +360,14 @@ public class Entity implements Serializable {
    */
   @Override
   public String toString() {
-    return name;
+    return getName();
   }
 
   private String computeName() {
+    return doComputeName().intern();
+  }
+
+  private String doComputeName() {
     switch (typ) {
     case DATABASE:
       return "database:" + database.getName();
@@ -343,6 +381,8 @@ public class Entity implements Serializable {
       if (database != null) {
         return database.getName() + "." + stringObject;
       }
+      return stringObject;
+    case SERVICE_NAME:
       return stringObject;
     default:
       return d.toString();
@@ -360,7 +400,7 @@ public class Entity implements Serializable {
 
     if (o instanceof Entity) {
       Entity ore = (Entity) o;
-      return (toString().equalsIgnoreCase(ore.toString()));
+      return (getName().equalsIgnoreCase(ore.getName()));
     } else {
       return false;
     }
@@ -371,7 +411,7 @@ public class Entity implements Serializable {
    */
   @Override
   public int hashCode() {
-    return toString().hashCode();
+    return getName().hashCode();
   }
 
 }

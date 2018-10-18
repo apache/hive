@@ -1,5 +1,6 @@
+--! qt:dataset:src
 -- Create a table with binary output format
-CREATE TABLE dest1(mydata STRING)
+CREATE TABLE dest1_n109(mydata STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
@@ -11,7 +12,7 @@ STORED AS
 
 -- Insert into that table using transform
 EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n109
 SELECT TRANSFORM(*)
   USING 'cat'
   AS mydata STRING
@@ -23,7 +24,7 @@ SELECT TRANSFORM(*)
     RECORDREADER 'org.apache.hadoop.hive.ql.exec.BinaryRecordReader'
 FROM src;
 
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n109
 SELECT TRANSFORM(*)
   USING 'cat'
   AS mydata STRING
@@ -36,4 +37,4 @@ SELECT TRANSFORM(*)
 FROM src;
 
 -- Test the result
-SELECT * FROM dest1;
+SELECT * FROM dest1_n109;

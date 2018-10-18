@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,7 +44,9 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
@@ -144,7 +146,7 @@ public class HiveRelFactories {
     @Override
     public RelNode createJoin(RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
         Set<String> variablesStopped, boolean semiJoinDone) {
-      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType, false);
+      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType);
     }
 
     @Override
@@ -152,7 +154,7 @@ public class HiveRelFactories {
         Set<CorrelationId> variablesSet, JoinRelType joinType, boolean semiJoinDone) {
       // According to calcite, it is going to be removed before Calcite-2.0
       // TODO: to handle CorrelationId
-      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType, semiJoinDone);
+      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType);
     }
   }
 
@@ -191,7 +193,11 @@ public class HiveRelFactories {
     public RelNode createAggregate(RelNode child, boolean indicator,
             ImmutableBitSet groupSet, ImmutableList<ImmutableBitSet> groupSets,
             List<AggregateCall> aggCalls) {
-        return new HiveAggregate(child.getCluster(), child.getTraitSet(), child, indicator,
+        if (indicator) {
+          throw new IllegalStateException("Hive does not support indicator columns but Calcite "
+                  + "created an Aggregate operator containing them");
+        }
+        return new HiveAggregate(child.getCluster(), child.getTraitSet(), child,
                 groupSet, groupSets, aggCalls);
     }
   }
@@ -199,10 +205,18 @@ public class HiveRelFactories {
   private static class HiveSetOpFactoryImpl implements SetOpFactory {
     @Override
     public RelNode createSetOp(SqlKind kind, List<RelNode> inputs, boolean all) {
-      if (kind != SqlKind.UNION) {
-        throw new IllegalStateException("Expected to get Set operator of type Union. Found : " + kind);
+      if (kind == SqlKind.UNION) {
+        return new HiveUnion(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs);
+      } else if (kind == SqlKind.INTERSECT) {
+        return new HiveIntersect(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs,
+            all);
+      } else if (kind == SqlKind.EXCEPT) {
+        return new HiveExcept(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs,
+            all);
+      } else {
+        throw new IllegalStateException("Expected to get set operator of type Union, Intersect or Except(Minus). Found : "
+            + kind);
       }
-      return new HiveUnion(inputs.get(0).getCluster(), inputs.get(0).getTraitSet(), inputs);
     }
   }
 

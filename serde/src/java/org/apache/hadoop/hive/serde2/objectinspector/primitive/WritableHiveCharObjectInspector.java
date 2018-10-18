@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,14 +18,17 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.io.Text;
-
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.BooleanWritable;
 
 public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableObjectInspector
     implements SettableHiveCharObjectInspector {
@@ -45,8 +48,11 @@ public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableOb
       return null;
     }
 
-    if (o instanceof Text) {
-      String str = ((Text)o).toString();
+    if ((o instanceof Text) || (o instanceof TimestampWritableV2)
+        || (o instanceof HiveDecimalWritable) || (o instanceof DoubleWritable)
+        || (o instanceof FloatWritable) || (o instanceof LongWritable) || (o instanceof IntWritable)
+        || (o instanceof BooleanWritable)) {
+      String str = o.toString();
       return new HiveChar(str, ((CharTypeInfo)typeInfo).getLength());
     }
 
@@ -65,8 +71,11 @@ public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableOb
       return null;
     }
 
-    if (o instanceof Text) {
-      String str = ((Text)o).toString();
+    if ((o instanceof Text) || (o instanceof TimestampWritableV2)
+        || (o instanceof HiveDecimalWritable) || (o instanceof DoubleWritable)
+        || (o instanceof FloatWritable) || (o instanceof LongWritable) || (o instanceof IntWritable)
+        || (o instanceof BooleanWritable)) {
+      String str = o.toString();
       HiveCharWritable hcw = new HiveCharWritable();
       hcw.set(str, ((CharTypeInfo)typeInfo).getLength());
       return hcw;

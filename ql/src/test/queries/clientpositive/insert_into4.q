@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.merge.smallfiles.avgsize=16000000;
 
 DROP TABLE insert_into4a;

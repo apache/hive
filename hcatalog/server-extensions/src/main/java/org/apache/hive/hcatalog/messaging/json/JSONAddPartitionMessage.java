@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,7 @@ import java.util.Map;
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table;
+  String server, servicePrincipal, db, table, tableType;
 
   @JsonProperty
   Long timestamp;
@@ -45,11 +45,17 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   public JSONAddPartitionMessage() {}
 
   public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
-                   List<Map<String,String>> partitions, Long timestamp) {
+                                 List<Map<String,String>> partitions, Long timestamp) {
+    this(server, servicePrincipal, db, table, null, partitions, timestamp);
+  }
+
+  public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
+                   String tableType, List<Map<String,String>> partitions, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
+    this.tableType = tableType;
     this.partitions = partitions;
     this.timestamp = timestamp;
     checkValid();
@@ -66,6 +72,11 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @Override
   public String getTable() { return table; }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
+  }
 
   @Override
   public Long   getTimestamp() { return timestamp; }

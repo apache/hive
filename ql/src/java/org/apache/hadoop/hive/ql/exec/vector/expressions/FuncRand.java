@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Implements vectorized rand(seed) function evaluation.
@@ -30,47 +32,68 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public class FuncRand extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int outputCol;
-  private Random random;
+  private final Random random;
 
-  public FuncRand(long seed, int outputCol) {
-    this.outputCol = outputCol;
+  public FuncRand(long seed, int outputColumnNum) {
+    super(outputColumnNum);
     this.random = new Random(seed);
   }
 
   public FuncRand() {
+    super();
+
+    // Dummy final assignments.
+    random = null;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       this.evaluateChildren(batch);
     }
 
-    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputCol];
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     double[] outputVector = outputColVector.vector;
-    outputColVector.noNulls = true;
     outputColVector.isRepeating = false;
+    boolean[] outputIsNull = outputColVector.isNull;
+
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
 
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
-    // For no-seed case, create new random number generator locally.
-    if (random == null) {
-      random = new Random();
-    }
-
     if (batch.selectedInUse) {
-      for(int j = 0; j != n; j++) {
-        int i = sel[j];
-        outputVector[i] = random.nextDouble();
+
+      // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+      if (!outputColVector.noNulls) {
+        for(int j = 0; j != n; j++) {
+         final int i = sel[j];
+         // Set isNull before call in case it changes it mind.
+         outputIsNull[i] = false;
+         outputVector[i] = random.nextDouble();
+       }
+      } else {
+        for(int j = 0; j != n; j++) {
+          final int i = sel[j];
+          outputVector[i] = random.nextDouble();
+        }
       }
     } else {
+      if (!outputColVector.noNulls) {
+
+        // Assume it is almost always a performance win to fill all of isNull so we can
+        // safely reset noNulls.
+        Arrays.fill(outputIsNull, false);
+        outputColVector.noNulls = true;
+      }
       for(int i = 0; i != n; i++) {
         outputVector[i] = random.nextDouble();
       }
@@ -78,29 +101,9 @@ public class FuncRand extends VectorExpression {
  }
 
   @Override
-  public int getOutputColumn() {
-    return outputCol;
-  }
-
-  public int getOutputCol() {
-    return outputCol;
-  }
-
-  public void setOutputCol(int outputCol) {
-    this.outputCol = outputCol;
-  }
-
-  public Random getRandom() {
-    return random;
-  }
-
-  public void setRandom(Random random) {
-    this.random = random;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "double";
+  public String vectorExpressionParameters() {
+    // No input parameters.
+    return null;
   }
 
   @Override

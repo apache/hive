@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -96,7 +97,7 @@ public class ColumnInfo implements Serializable {
     this.tabAlias = tabAlias;
     this.isVirtualCol = isVirtualCol;
     this.isHiddenVirtualCol = isHiddenVirtualCol;
-    this.typeName = getType().getTypeName();
+    setTypeName(getType().getTypeName());
   }
 
   public ColumnInfo(ColumnInfo columnInfo) {
@@ -114,7 +115,7 @@ public class ColumnInfo implements Serializable {
   }
 
   public void setTypeName(String typeName) {
-    this.typeName = typeName;
+    this.typeName = StringInternUtils.internIfNotNull(typeName);
   }
 
   public TypeInfo getType() {
@@ -160,7 +161,7 @@ public class ColumnInfo implements Serializable {
   }
 
   public void setAlias(String col_alias) {
-    alias = col_alias;
+    alias = StringInternUtils.internIfNotNull(col_alias);
   }
 
   public String getAlias() {

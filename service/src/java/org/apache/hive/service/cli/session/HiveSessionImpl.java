@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -73,9 +75,12 @@ import org.apache.hive.service.cli.operation.MetadataOperation;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
+import org.apache.hive.service.server.KillQueryImpl;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * HiveSession
@@ -97,6 +102,7 @@ public class HiveSessionImpl implements HiveSession {
   //       2) Some parts of session state, like mrStats and vars, need proper synchronization.
   private SessionState sessionState;
   private String ipAddress;
+  private List<String> forwardedAddresses;
 
   private static final String FETCH_WORK_SERDE_CLASS =
       "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
@@ -111,20 +117,21 @@ public class HiveSessionImpl implements HiveSession {
   // TODO: the control flow for this needs to be defined. Hive is supposed to be thread-local.
   private Hive sessionHive;
 
-  private volatile long lastAccessTime;
-  private volatile long lastIdleTime;
-  private volatile int activeCalls = 0;
+  private volatile long lastAccessTime = System.currentTimeMillis();
+  private volatile boolean lockedByUser;
   private final Semaphore operationLock;
 
 
   public HiveSessionImpl(SessionHandle sessionHandle, TProtocolVersion protocol,
-      String username, String password, HiveConf serverConf, String ipAddress) {
+    String username, String password, HiveConf serverConf, String ipAddress,
+    final List<String> forwardedAddresses) {
     this.username = username;
     this.password = password;
     creationTime = System.currentTimeMillis();
     this.sessionHandle = sessionHandle != null ? sessionHandle : new SessionHandle(protocol);
     this.sessionConf = new HiveConf(serverConf);
     this.ipAddress = ipAddress;
+    this.forwardedAddresses = forwardedAddresses;
     this.operationLock = serverConf.getBoolVar(
         ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION) ? null : new Semaphore(1);
     try {
@@ -145,12 +152,6 @@ public class HiveSessionImpl implements HiveSession {
     sessionConf.setInt(SerDeUtils.LIST_SINK_OUTPUT_PROTOCOL, protocol.getValue());
   }
 
-  public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
-    HiveConf serverhiveConf, String ipAddress) {
-    this(null, protocol, username, password, serverhiveConf, ipAddress);
-  }
-
-
   @Override
   /**
    * Opens a new HiveServer2 session for the client connection.
@@ -167,6 +168,14 @@ public class HiveSessionImpl implements HiveSession {
     sessionState.setIsHiveServerQuery(true);
     sessionState.setForwardedAddresses(SessionManager.getForwardedAddresses());
     sessionState.setIsUsingThriftJDBCBinarySerDe(updateIsUsingThriftJDBCBinarySerDe());
+    try {
+      if (sessionManager != null) {
+        sessionState.setHiveServer2Host(sessionManager.getHiveServer2HostName());
+      }
+    } catch (Exception e) {
+      throw new HiveSQLException(e);
+    }
+    sessionState.setKillQuery(new KillQueryImpl(operationManager));
     SessionState.start(sessionState);
     try {
       sessionState.loadAuxJars();
@@ -183,11 +192,13 @@ public class HiveSessionImpl implements HiveSession {
     }
     // Process global init file: .hiverc
     processGlobalInitFile();
+    // Set fetch size in session conf map
+    sessionConfMap = setFetchSize(sessionConfMap);
+
     if (sessionConfMap != null) {
       configureSession(sessionConfMap);
     }
     lastAccessTime = System.currentTimeMillis();
-    lastIdleTime = lastAccessTime;
   }
 
 /**
@@ -251,6 +262,22 @@ public class HiveSessionImpl implements HiveSession {
     }
   }
 
+  private Map<String, String> setFetchSize(Map<String, String> sessionConfMap) {
+    int maxFetchSize =
+      sessionConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE);
+    String confFetchSize = sessionConfMap != null ?
+      sessionConfMap.get(
+        "set:hiveconf:" + HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname) :
+        null;
+    if (confFetchSize != null && !confFetchSize.isEmpty()) {
+        int fetchSize = Integer.parseInt(confFetchSize);
+        sessionConfMap.put(
+          "set:hiveconf:" + HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
+          Integer.toString(fetchSize > maxFetchSize ? maxFetchSize : fetchSize));
+    }
+    return sessionConfMap;
+  }
+
   private void configureSession(Map<String, String> sessionConfMap) throws HiveSQLException {
     SessionState.setCurrentSessionState(sessionState);
     for (Map.Entry<String, String> entry : sessionConfMap.entrySet()) {
@@ -262,6 +289,13 @@ public class HiveSessionImpl implements HiveSession {
           throw new HiveSQLException(e);
         }
       } else if (key.startsWith("use:")) {
+        try {
+          if (sessionHive.getDatabase(entry.getValue()) == null) {
+            throw new HiveSQLException("Database " + entry.getValue() + " does not exist");
+          }
+        } catch (HiveException e) {
+          throw new HiveSQLException(e);
+        }
         SessionState.get().setCurrentDatabase(entry.getValue());
       } else {
         sessionConf.verifyAndSet(key, entry.getValue());
@@ -364,12 +398,11 @@ public class HiveSessionImpl implements HiveSession {
     sessionState.setIsUsingThriftJDBCBinarySerDe(updateIsUsingThriftJDBCBinarySerDe());
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
+      lockedByUser = true;
     }
     // set the thread name with the logging prefix.
     sessionState.updateThreadName();
     Hive.set(sessionHive);
-    activeCalls++;
-    lastIdleTime = 0;
   }
 
   /**
@@ -404,12 +437,7 @@ public class HiveSessionImpl implements HiveSession {
     }
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
-    }
-    activeCalls--;
-    // lastIdleTime is only set by the last one
-    // who calls release with empty opHandleSet.
-    if (activeCalls == 0 && opHandleSet.isEmpty()) {
-      lastIdleTime = System.currentTimeMillis();
+      lockedByUser = false;
     }
   }
 
@@ -461,6 +489,8 @@ public class HiveSessionImpl implements HiveSession {
         return new GetInfoValue(128);
       case CLI_MAX_TABLE_NAME_LEN:
         return new GetInfoValue(128);
+      case CLI_ODBC_KEYWORDS:
+        return new GetInfoValue(ParseUtils.getKeywords(ODBC_KEYWORDS));
       case CLI_TXN_CAPABLE:
       default:
         throw new HiveSQLException("Unrecognized GetInfoType value: " + getInfoType.toString());
@@ -468,6 +498,11 @@ public class HiveSessionImpl implements HiveSession {
     } finally {
       release(true, true);
     }
+  }
+
+  @Override
+  public HiveConf getSessionConf() throws HiveSQLException {
+	  return this.sessionConf;
   }
 
   @Override
@@ -495,23 +530,28 @@ public class HiveSessionImpl implements HiveSession {
   private OperationHandle executeStatementInternal(String statement,
       Map<String, String> confOverlay, boolean runAsync, long queryTimeout) throws HiveSQLException {
     acquire(true, true);
+    LOG.info("executing " +  statement);
 
-    OperationManager operationManager = getOperationManager();
-    ExecuteStatementOperation operation = operationManager.newExecuteStatementOperation(
-        getSession(), statement, confOverlay, runAsync, queryTimeout);
-    OperationHandle opHandle = operation.getHandle();
+    ExecuteStatementOperation operation = null;
+    OperationHandle opHandle = null;
     try {
-      operation.run();
+      operation = getOperationManager().newExecuteStatementOperation(getSession(), statement,
+          confOverlay, runAsync, queryTimeout);
+      opHandle = operation.getHandle();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
       // Refering to SQLOperation.java, there is no chance that a HiveSQLException throws and the
       // async background operation submits to thread pool successfully at the same time. So, Cleanup
       // opHandle directly when got HiveSQLException
-      operationManager.closeOperation(opHandle);
+      if (opHandle != null) {
+        removeOpHandle(opHandle);
+        getOperationManager().closeOperation(opHandle);
+      }
       throw e;
     } finally {
-      if (operation.getBackgroundHandle() == null) {
+      if (operation == null || operation.getBackgroundHandle() == null) {
         release(true, true); // Not async, or wasn't submitted for some reason (failure, etc.)
       } else {
         releaseBeforeOpLock(true); // Release, but keep the lock (if present).
@@ -539,10 +579,11 @@ public class HiveSessionImpl implements HiveSession {
     GetTypeInfoOperation operation = operationManager.newGetTypeInfoOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -559,10 +600,11 @@ public class HiveSessionImpl implements HiveSession {
     GetCatalogsOperation operation = operationManager.newGetCatalogsOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -580,10 +622,11 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.newGetSchemasOperation(getSession(), catalogName, schemaName);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -602,10 +645,11 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.newGetTablesOperation(getSession(), catalogName, schemaName, tableName, tableTypes);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -622,10 +666,11 @@ public class HiveSessionImpl implements HiveSession {
     GetTableTypesOperation operation = operationManager.newGetTableTypesOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -647,10 +692,11 @@ public class HiveSessionImpl implements HiveSession {
         catalogName, schemaName, tableName, columnName);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -664,6 +710,12 @@ public class HiveSessionImpl implements HiveSession {
     }
   }
 
+  private void removeOpHandle(OperationHandle opHandle) {
+    synchronized (opHandleSet) {
+      opHandleSet.remove(opHandle);
+    }
+  }
+
   @Override
   public OperationHandle getFunctions(String catalogName, String schemaName, String functionName)
       throws HiveSQLException {
@@ -674,10 +726,11 @@ public class HiveSessionImpl implements HiveSession {
         .newGetFunctionsOperation(getSession(), catalogName, schemaName, functionName);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -735,7 +788,8 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   private void cleanupSessionLogDir() {
-    if (isOperationLogEnabled) {
+    // In case of test, if we might not want to remove the log directory
+    if (isOperationLogEnabled && sessionConf.getBoolVar(ConfVars.HIVE_TESTING_REMOVE_LOGS)) {
       try {
         FileUtils.forceDelete(sessionLogDir);
         LOG.info("Operation log session directory is deleted: "
@@ -787,16 +841,18 @@ public class HiveSessionImpl implements HiveSession {
 
   @Override
   public long getNoOperationTime() {
-    return lastIdleTime > 0 ? System.currentTimeMillis() - lastIdleTime : 0;
+    boolean noMoreOpHandle = false;
+    synchronized (opHandleSet) {
+      noMoreOpHandle = opHandleSet.isEmpty();
+    }
+    return noMoreOpHandle && !lockedByUser ? System.currentTimeMillis() - lastAccessTime : 0;
   }
 
   private void closeTimedOutOperations(List<Operation> operations) {
     acquire(false, false);
     try {
       for (Operation operation : operations) {
-        synchronized (opHandleSet) {
-          opHandleSet.remove(operation.getHandle());
-        }
+        removeOpHandle(operation.getHandle());
         try {
           operation.close();
         } catch (Exception e) {
@@ -816,6 +872,11 @@ public class HiveSessionImpl implements HiveSession {
     } finally {
       release(true, false);
     }
+  }
+
+  @Override
+  public void updateQueryTag(String queryId, String queryTag) throws HiveSQLException {
+    sessionManager.getOperationManager().updateQueryTag(queryId, queryTag);
   }
 
   @Override
@@ -875,6 +936,16 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   @Override
+  public List<String> getForwardedAddresses() {
+    return forwardedAddresses;
+  }
+
+  @Override
+  public void setForwardedAddresses(final List<String> forwardedAddresses) {
+    this.forwardedAddresses = forwardedAddresses;
+  }
+
+  @Override
   public String getDelegationToken(HiveAuthFactory authFactory, String owner, String renewer)
       throws HiveSQLException {
     HiveAuthFactory.verifyProxyAccess(getUserName(), owner, getIpAddress(), getHiveConf());
@@ -912,10 +983,11 @@ public class HiveSessionImpl implements HiveSession {
         .newGetPrimaryKeysOperation(getSession(), catalog, schema, table);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -936,14 +1008,55 @@ public class HiveSessionImpl implements HiveSession {
          foreignSchema, foreignTable);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
       release(true, true);
     }
   }
+
+  @Override
+  public void setApplicationName(String value) {
+    String oldName = sessionState.getHiveVariables().put("wmapp", value);
+    if (oldName != null && !oldName.equals(value)) {
+      LOG.info("ApplicationName changed from " + oldName + " to " + value);
+    }
+  }
+
+
+  // From https://docs.microsoft.com/en-us/sql/t-sql/language-elements/reserved-keywords-transact-sql#odbc-reserved-keywords
+  private static final Set<String> ODBC_KEYWORDS = Collections.unmodifiableSet(new HashSet<>(
+      Lists.newArrayList("ABSOLUTE", "ACTION", "ADA", "ADD", "ALL", "ALLOCATE", "ALTER", "AND",
+      "ANY", "ARE", "AS", "ASC", "ASSERTION", "AT", "AUTHORIZATION", "AVG", "BEGIN", "BETWEEN",
+      "BIT_LENGTH", "BIT", "BOTH", "BY", "CASCADE", "CASCADED", "CASE", "CAST", "CATALOG",
+      "CHAR_LENGTH", "CHAR", "CHARACTER_LENGTH", "CHARACTER", "CHECK", "CLOSE", "COALESCE",
+      "COLLATE", "COLLATION", "COLUMN", "COMMIT", "CONNECT", "CONNECTION", "CONSTRAINT",
+      "CONSTRAINTS", "CONTINUE", "CONVERT", "CORRESPONDING", "COUNT", "CREATE", "CROSS",
+      "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "CURRENT", "CURSOR",
+      "DATE", "DAY", "DEALLOCATE", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DEFERRABLE",
+      "DEFERRED", "DELETE", "DESC", "DESCRIBE", "DESCRIPTOR", "DIAGNOSTICS", "DISCONNECT",
+      "DISTINCT", "DOMAIN", "DOUBLE", "DROP", "ELSE", "END", "ESCAPE", "EXCEPT", "EXCEPTION",
+      "EXEC", "EXECUTE", "EXISTS", "EXTERNAL", "EXTRACT", "FALSE", "FETCH", "FIRST", "FLOAT",
+      "FOR", "FOREIGN", "FORTRAN", "FOUND", "FROM", "FULL", "GET", "GLOBAL", "GO", "GOTO", "GRANT",
+      "GROUP", "HAVING", "HOUR", "IDENTITY", "IMMEDIATE", "IN", "INCLUDE", "INDEX", "INDICATOR",
+      "INITIALLY", "INNER", "INPUT", "INSENSITIVE", "INSERT", "INT", "INTEGER", "INTERSECT",
+      "INTERVAL", "INTO", "IS", "ISOLATION", "JOIN", "KEY", "LANGUAGE", "LAST", "LEADING", "LEFT",
+      "LEVEL", "LIKE", "LOCAL", "LOWER", "MATCH", "MAX", "MIN", "MINUTE", "MODULE", "MONTH",
+      "NAMES", "NATIONAL", "NATURAL", "NCHAR", "NEXT", "NO", "NONE", "NOT", "NULL", "NULLIF",
+      "NUMERIC", "OCTET_LENGTH", "OF", "ON", "ONLY", "OPEN", "OPTION", "OR", "ORDER", "OUTER",
+      "OUTPUT", "OVERLAPS", "PAD", "PARTIAL", "PASCAL", "POSITION", "PRECISION", "PREPARE",
+      "PRESERVE", "PRIMARY", "PRIOR", "PRIVILEGES", "PROCEDURE", "PUBLIC", "READ", "REAL",
+      "REFERENCES", "RELATIVE", "RESTRICT", "REVOKE", "RIGHT", "ROLLBACK", "ROWS", "SCHEMA",
+      "SCROLL", "SECOND", "SECTION", "SELECT", "SESSION_USER", "SESSION", "SET", "SIZE",
+      "SMALLINT", "SOME", "SPACE", "SQL", "SQLCA", "SQLCODE", "SQLERROR", "SQLSTATE", "SQLWARNING",
+      "SUBSTRING", "SUM", "SYSTEM_USER", "TABLE", "TEMPORARY", "THEN", "TIME", "TIMESTAMP",
+      "TIMEZONE_HOUR", "TIMEZONE_MINUTE", "TO", "TRAILING", "TRANSACTION", "TRANSLATE",
+      "TRANSLATION", "TRIM", "TRUE", "UNION", "UNIQUE", "UNKNOWN", "UPDATE", "UPPER", "USAGE",
+      "USER", "USING", "VALUE", "VALUES", "VARCHAR", "VARYING", "VIEW", "WHEN", "WHENEVER",
+      "WHERE", "WITH", "WORK", "WRITE", "YEAR", "ZONE")));
 }

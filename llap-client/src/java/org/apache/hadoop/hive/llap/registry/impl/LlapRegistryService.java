@@ -13,27 +13,30 @@
  */
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+
+import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
+import org.apache.hadoop.hive.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
 
 public class LlapRegistryService extends AbstractService {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRegistryService.class);
 
-  private ServiceRegistry registry = null;
+  private ServiceRegistry<LlapServiceInstance> registry = null;
   private final boolean isDaemon;
   private boolean isDynamic = false;
   private String identity = "(pending)";
@@ -58,14 +61,15 @@ public class LlapRegistryService extends AbstractService {
     LlapRegistryService registry;
     if (hosts.startsWith("@")) {
       // Caching instances only in case of the YARN registry. Each host based list will get it's own copy.
-      String name = hosts.substring(1);
-      if (yarnRegistries.containsKey(name) && yarnRegistries.get(name).isInState(STATE.STARTED)) {
-        registry = yarnRegistries.get(name);
-      } else {
+      String appName = hosts.substring(1);
+      String userName = HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, currentUser());
+      String key = appName + "-" + userName;
+      registry = yarnRegistries.get(key);
+      if (registry == null || !registry.isInState(STATE.STARTED)) {
         registry = new LlapRegistryService(false);
         registry.init(conf);
         registry.start();
-        yarnRegistries.put(name, registry);
+        yarnRegistries.put(key, registry);
       }
     } else {
       registry = new LlapRegistryService(false);
@@ -76,6 +80,9 @@ public class LlapRegistryService extends AbstractService {
     return registry;
   }
 
+  public static String currentUser() {
+    return RegistryUtils.currentUser();
+  }
 
   @Override
   public void serviceInit(Configuration conf) {
@@ -125,12 +132,16 @@ public class LlapRegistryService extends AbstractService {
     }
   }
 
-  public ServiceInstanceSet getInstances() throws IOException {
-    return this.registry.getInstances("LLAP");
+  public LlapServiceInstanceSet getInstances() throws IOException {
+    return getInstances(0);
   }
 
-  public void registerStateChangeListener(ServiceInstanceStateChangeListener listener)
-      throws IOException {
+  public LlapServiceInstanceSet getInstances(long clusterReadyTimeoutMs) throws IOException {
+    return (LlapServiceInstanceSet) this.registry.getInstances("LLAP", clusterReadyTimeoutMs);
+  }
+
+  public void registerStateChangeListener(
+      ServiceInstanceStateChangeListener<LlapServiceInstance> listener) throws IOException {
     this.registry.registerStateChangeListener(listener);
   }
 
@@ -142,5 +153,9 @@ public class LlapRegistryService extends AbstractService {
   // this is only useful for the daemons to know themselves
   public String getWorkerIdentity() {
     return identity;
+  }
+
+  public ApplicationId getApplicationId() throws IOException {
+    return registry.getApplicationId();
   }
 }

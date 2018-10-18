@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -50,13 +52,16 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -190,9 +195,22 @@ public class SortedDynPartitionOptimizer extends Transform {
         // When doing updates and deletes we always want to sort on the rowid because the ACID
         // reader will expect this sort order when doing reads.  So
         // ignore whatever comes from the table and enforce this sort order instead.
-        sortPositions = Arrays.asList(0);
-        sortOrder = Arrays.asList(1); // 1 means asc, could really use enum here in the thrift if
-        bucketColumns = new ArrayList<>(); // Bucketing column is already present in ROW__ID, which is specially handled in ReduceSink
+        sortPositions = Collections.singletonList(0);
+        sortOrder = Collections.singletonList(1); // 1 means asc, could really use enum here in the thrift if
+        bucketColumns = new ArrayList<>();
+        /**
+         * ROW__ID is always the 1st column of Insert representing Update/Delete operation
+         * (set up in {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer})
+         * and we wrap it in UDFToInteger 
+         * (in {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#getPartitionColsFromBucketColsForUpdateDelete(Operator, boolean)})
+         * which extracts bucketId from it
+         * see {@link org.apache.hadoop.hive.ql.udf.UDFToInteger#evaluate(RecordIdentifier)}*/
+        ColumnInfo ci = fsParent.getSchema().getSignature().get(0);
+        if(!VirtualColumn.ROWID.getTypeInfo().equals(ci.getType())) {
+          throw new IllegalStateException("expected 1st column to be ROW__ID but got wrong type: " + ci.toString());
+        }
+        //add a cast(ROW__ID as int) to wrap in UDFToInteger()
+        bucketColumns.add(ParseUtils.createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
       } else {
         if (!destTable.getSortCols().isEmpty()) {
           // Sort columns specified by table
@@ -247,8 +265,8 @@ public class SortedDynPartitionOptimizer extends Transform {
       }
       RowSchema selRS = new RowSchema(fsParent.getSchema());
       if (!bucketColumns.isEmpty()) {
-        descs.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, ReduceField.KEY.toString()+".'"+BUCKET_NUMBER_COL_NAME+"'", null, false));
-        colNames.add("'"+BUCKET_NUMBER_COL_NAME+"'");
+        descs.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, ReduceField.KEY.toString()+"."+BUCKET_NUMBER_COL_NAME, null, false));
+        colNames.add(BUCKET_NUMBER_COL_NAME);
         ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo, selRS.getSignature().get(0).getTabAlias(), true, true);
         selRS.getSignature().add(ci);
         fsParent.getSchema().getSignature().add(ci);
@@ -267,7 +285,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Set if partition sorted or partition bucket sorted
       fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_SORTED);
-      if (bucketColumns.size() > 0) {
+      if (!bucketColumns.isEmpty()) {
         fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_BUCKET_SORTED);
       }
 
@@ -449,7 +467,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // by default partition and bucket columns are sorted in ascending order
       Integer order = 1;
       if (sortOrder != null && !sortOrder.isEmpty()) {
-        if (sortOrder.get(0).intValue() == 0) {
+        if (sortOrder.get(0) == 0) {
           order = 0;
         }
       }
@@ -460,7 +478,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       String orderStr = "";
       for (Integer i : newSortOrder) {
-        if(i.intValue() == 1) {
+        if(i == 1) {
           orderStr += "+";
         } else {
           orderStr += "-";
@@ -471,7 +489,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // nulls come first; otherwise nulls come last
       Integer nullOrder = order == 1 ? 0 : 1;
       if (sortNullOrder != null && !sortNullOrder.isEmpty()) {
-        if (sortNullOrder.get(0).intValue() == 0) {
+        if (sortNullOrder.get(0) == 0) {
           nullOrder = 0;
         } else {
           nullOrder = 1;
@@ -484,7 +502,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       String nullOrderStr = "";
       for (Integer i : newSortNullOrder) {
-        if(i.intValue() == 0) {
+        if(i == 0) {
           nullOrderStr += "a";
         } else {
           nullOrderStr += "z";
@@ -498,9 +516,10 @@ public class SortedDynPartitionOptimizer extends Transform {
       // corresponding with bucket number and hence their OIs
       for (Integer idx : keyColsPosInVal) {
         if (idx < 0) {
-          ExprNodeConstantDesc bucketNumCol = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, BUCKET_NUMBER_COL_NAME);
-          keyCols.add(bucketNumCol);
-          colExprMap.put(Utilities.ReduceField.KEY + ".'" +BUCKET_NUMBER_COL_NAME+"'", bucketNumCol);
+          ExprNodeDesc bucketNumColUDF = ExprNodeGenericFuncDesc.newInstance(
+            FunctionRegistry.getFunctionInfo("bucket_number").getGenericUDF(), new ArrayList<>());
+          keyCols.add(bucketNumColUDF);
+          colExprMap.put(Utilities.ReduceField.KEY + "." +BUCKET_NUMBER_COL_NAME, bucketNumColUDF);
         } else {
           keyCols.add(allCols.get(idx).clone());
         }

@@ -20,6 +20,8 @@ Example:
    ELSE Asia-Pac
  END
  FROM emp_details
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT CASE
         WHEN 1=1 THEN 2
@@ -48,6 +50,8 @@ SELECT CASE
        END
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT CASE
         WHEN 1=1 THEN 2
@@ -76,6 +80,8 @@ SELECT CASE
        END
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -153,8 +159,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2	9	14	NULL	24	NULL
-PREHOOK: query: -- Allow compatible types to be used in return value
-SELECT CASE
+PREHOOK: query: SELECT CASE
         WHEN 1=1 THEN 123.0BD
         ELSE 0.0BD
        END,
@@ -172,8 +177,7 @@ FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Allow compatible types to be used in return value
-SELECT CASE
+POSTHOOK: query: SELECT CASE
         WHEN 1=1 THEN 123.0BD
         ELSE 0.0BD
        END,

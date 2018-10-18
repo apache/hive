@@ -1,0 +1,572 @@
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS partstatsdb1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:partstatsdb1
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS partstatsdb1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:partstatsdb1
+PREHOOK: query: USE partstatsdb1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:partstatsdb1
+POSTHOOK: query: USE partstatsdb1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:partstatsdb1
+PREHOOK: query: CREATE TABLE IF NOT EXISTS testtable_n0 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:partstatsdb1
+PREHOOK: Output: partstatsdb1@testtable_n0
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS testtable_n0 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:partstatsdb1
+POSTHOOK: Output: partstatsdb1@testtable_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable_n0
+POSTHOOK: Output: partstatsdb1@testtable_n0@part1=p11/part2=P12
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p21', Part2='P22')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p21', Part2='P22')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable_n0
+POSTHOOK: Output: partstatsdb1@testtable_n0@part1=p21/part2=P22
+PREHOOK: query: ANALYZE TABLE testtable_n0 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb1@testtable_n0
+PREHOOK: Input: partstatsdb1@testtable_n0@part1=p11/part2=P12
+PREHOOK: Input: partstatsdb1@testtable_n0@part1=p21/part2=P22
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable_n0
+PREHOOK: Output: partstatsdb1@testtable_n0@part1=p11/part2=P12
+PREHOOK: Output: partstatsdb1@testtable_n0@part1=p21/part2=P22
+POSTHOOK: query: ANALYZE TABLE testtable_n0 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb1@testtable_n0
+POSTHOOK: Input: partstatsdb1@testtable_n0@part1=p11/part2=P12
+POSTHOOK: Input: partstatsdb1@testtable_n0@part1=p21/part2=P22
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable_n0
+POSTHOOK: Output: partstatsdb1@testtable_n0@part1=p11/part2=P12
+POSTHOOK: Output: partstatsdb1@testtable_n0@part1=p21/part2=P22
+PREHOOK: query: ANALYZE TABLE testtable_n0 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb1@testtable_n0
+PREHOOK: Input: partstatsdb1@testtable_n0@part1=p11/part2=P12
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable_n0
+PREHOOK: Output: partstatsdb1@testtable_n0@part1=p11/part2=P12
+POSTHOOK: query: ANALYZE TABLE testtable_n0 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb1@testtable_n0
+POSTHOOK: Input: partstatsdb1@testtable_n0@part1=p11/part2=P12
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable_n0
+POSTHOOK: Output: partstatsdb1@testtable_n0@part1=p11/part2=P12
+PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:partstatsdb1
+PREHOOK: Output: partstatsdb1@TestTable1_n1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:partstatsdb1
+POSTHOOK: Output: partstatsdb1@TestTable1_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P11')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P11')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p21', Part2='P22')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p21', Part2='P22')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p21/part2=P22
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p31', Part2='P32')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p31', Part2='P32')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p31/part2=P32
+PREHOOK: query: ANALYZE TABLE TestTable1_n1 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb1@testtable1_n1
+PREHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+PREHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+PREHOOK: Input: partstatsdb1@testtable1_n1@part1=p21/part2=P22
+PREHOOK: Input: partstatsdb1@testtable1_n1@part1=p31/part2=P32
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable1_n1
+PREHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+PREHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+PREHOOK: Output: partstatsdb1@testtable1_n1@part1=p21/part2=P22
+PREHOOK: Output: partstatsdb1@testtable1_n1@part1=p31/part2=P32
+POSTHOOK: query: ANALYZE TABLE TestTable1_n1 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb1@testtable1_n1
+POSTHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+POSTHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: Input: partstatsdb1@testtable1_n1@part1=p21/part2=P22
+POSTHOOK: Input: partstatsdb1@testtable1_n1@part1=p31/part2=P32
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p21/part2=P22
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p31/part2=P32
+PREHOOK: query: ANALYZE TABLE TestTable1_n1 PARTITION (part1='p11') COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb1@testtable1_n1
+PREHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+PREHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable1_n1
+PREHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+PREHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: query: ANALYZE TABLE TestTable1_n1 PARTITION (part1='p11') COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb1@testtable1_n1
+POSTHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+POSTHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P11
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+PREHOOK: query: ANALYZE TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb1@testtable1_n1
+PREHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable1_n1
+PREHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: query: ANALYZE TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb1@testtable1_n1
+POSTHOOK: Input: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:partstatsdb1
+PREHOOK: Output: partstatsdb1@TESTTABLE2_n1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:partstatsdb1
+POSTHOOK: Output: partstatsdb1@TESTTABLE2_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable2_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable2_n1
+POSTHOOK: Output: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p21', Part2='P22')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable2_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p21', Part2='P22')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable2_n1
+POSTHOOK: Output: partstatsdb1@testtable2_n1@part1=p21/part2=P22
+PREHOOK: query: ANALYZE TABLE TESTTABLE2_n1 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb1@testtable2_n1
+PREHOOK: Input: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+PREHOOK: Input: partstatsdb1@testtable2_n1@part1=p21/part2=P22
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable2_n1
+PREHOOK: Output: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+PREHOOK: Output: partstatsdb1@testtable2_n1@part1=p21/part2=P22
+POSTHOOK: query: ANALYZE TABLE TESTTABLE2_n1 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb1@testtable2_n1
+POSTHOOK: Input: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+POSTHOOK: Input: partstatsdb1@testtable2_n1@part1=p21/part2=P22
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable2_n1
+POSTHOOK: Output: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+POSTHOOK: Output: partstatsdb1@testtable2_n1@part1=p21/part2=P22
+PREHOOK: query: ANALYZE TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb1@testtable2_n1
+PREHOOK: Input: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb1@testtable2_n1
+PREHOOK: Output: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+POSTHOOK: query: ANALYZE TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb1@testtable2_n1
+POSTHOOK: Input: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb1@testtable2_n1
+POSTHOOK: Output: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+PREHOOK: query: ALTER TABLE partstatsdb1.testtable_n0 DROP PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: partstatsdb1@testtable_n0
+PREHOOK: Output: partstatsdb1@testtable_n0@part1=p11/part2=P12
+POSTHOOK: query: ALTER TABLE partstatsdb1.testtable_n0 DROP PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: partstatsdb1@testtable_n0
+POSTHOOK: Output: partstatsdb1@testtable_n0@part1=p11/part2=P12
+PREHOOK: query: ALTER TABLE partstatsdb1.TestTable1_n1 DROP PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: partstatsdb1@testtable1_n1
+PREHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: query: ALTER TABLE partstatsdb1.TestTable1_n1 DROP PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1@part1=p11/part2=P12
+PREHOOK: query: ALTER TABLE partstatsdb1.TESTTABLE2_n1 DROP PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: partstatsdb1@testtable2_n1
+PREHOOK: Output: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+POSTHOOK: query: ALTER TABLE partstatsdb1.TESTTABLE2_n1 DROP PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: partstatsdb1@testtable2_n1
+POSTHOOK: Output: partstatsdb1@testtable2_n1@part1=p11/part2=P12
+PREHOOK: query: DROP TABLE partstatsdb1.testtable_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: partstatsdb1@testtable_n0
+PREHOOK: Output: partstatsdb1@testtable_n0
+POSTHOOK: query: DROP TABLE partstatsdb1.testtable_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: partstatsdb1@testtable_n0
+POSTHOOK: Output: partstatsdb1@testtable_n0
+PREHOOK: query: DROP TABLE partstatsdb1.TestTable1_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: partstatsdb1@testtable1_n1
+PREHOOK: Output: partstatsdb1@testtable1_n1
+POSTHOOK: query: DROP TABLE partstatsdb1.TestTable1_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: partstatsdb1@testtable1_n1
+POSTHOOK: Output: partstatsdb1@testtable1_n1
+PREHOOK: query: DROP TABLE partstatsdb1.TESTTABLE2_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: partstatsdb1@testtable2_n1
+PREHOOK: Output: partstatsdb1@testtable2_n1
+POSTHOOK: query: DROP TABLE partstatsdb1.TESTTABLE2_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: partstatsdb1@testtable2_n1
+POSTHOOK: Output: partstatsdb1@testtable2_n1
+PREHOOK: query: DROP DATABASE partstatsdb1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:partstatsdb1
+PREHOOK: Output: database:partstatsdb1
+POSTHOOK: query: DROP DATABASE partstatsdb1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:partstatsdb1
+POSTHOOK: Output: database:partstatsdb1
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS PARTSTATSDB2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:PARTSTATSDB2
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS PARTSTATSDB2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:PARTSTATSDB2
+PREHOOK: query: USE PARTSTATSDB2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:partstatsdb2
+POSTHOOK: query: USE PARTSTATSDB2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:partstatsdb2
+PREHOOK: query: CREATE TABLE IF NOT EXISTS testtable_n0 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: PARTSTATSDB2@testtable_n0
+PREHOOK: Output: database:partstatsdb2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS testtable_n0 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: PARTSTATSDB2@testtable_n0
+POSTHOOK: Output: database:partstatsdb2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable_n0
+POSTHOOK: Output: partstatsdb2@testtable_n0@part1=p11/part2=P12
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p21', Part2='P22')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable_n0 PARTITION (part1='p21', Part2='P22')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable_n0
+POSTHOOK: Output: partstatsdb2@testtable_n0@part1=p21/part2=P22
+PREHOOK: query: ANALYZE TABLE testtable_n0 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb2@testtable_n0
+PREHOOK: Input: partstatsdb2@testtable_n0@part1=p11/part2=P12
+PREHOOK: Input: partstatsdb2@testtable_n0@part1=p21/part2=P22
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable_n0
+PREHOOK: Output: partstatsdb2@testtable_n0@part1=p11/part2=P12
+PREHOOK: Output: partstatsdb2@testtable_n0@part1=p21/part2=P22
+POSTHOOK: query: ANALYZE TABLE testtable_n0 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb2@testtable_n0
+POSTHOOK: Input: partstatsdb2@testtable_n0@part1=p11/part2=P12
+POSTHOOK: Input: partstatsdb2@testtable_n0@part1=p21/part2=P22
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable_n0
+POSTHOOK: Output: partstatsdb2@testtable_n0@part1=p11/part2=P12
+POSTHOOK: Output: partstatsdb2@testtable_n0@part1=p21/part2=P22
+PREHOOK: query: ANALYZE TABLE testtable_n0 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb2@testtable_n0
+PREHOOK: Input: partstatsdb2@testtable_n0@part1=p11/part2=P12
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable_n0
+PREHOOK: Output: partstatsdb2@testtable_n0@part1=p11/part2=P12
+POSTHOOK: query: ANALYZE TABLE testtable_n0 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb2@testtable_n0
+POSTHOOK: Input: partstatsdb2@testtable_n0@part1=p11/part2=P12
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable_n0
+POSTHOOK: Output: partstatsdb2@testtable_n0@part1=p11/part2=P12
+PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: PARTSTATSDB2@TestTable1_n1
+PREHOOK: Output: database:partstatsdb2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: PARTSTATSDB2@TestTable1_n1
+POSTHOOK: Output: database:partstatsdb2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P11')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P11')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p21', Part2='P22')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p21', Part2='P22')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p21/part2=P22
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p31', Part2='P32')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n1 PARTITION (part1='p31', Part2='P32')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p31/part2=P32
+PREHOOK: query: ANALYZE TABLE TestTable1_n1 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb2@testtable1_n1
+PREHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+PREHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+PREHOOK: Input: partstatsdb2@testtable1_n1@part1=p21/part2=P22
+PREHOOK: Input: partstatsdb2@testtable1_n1@part1=p31/part2=P32
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable1_n1
+PREHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+PREHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+PREHOOK: Output: partstatsdb2@testtable1_n1@part1=p21/part2=P22
+PREHOOK: Output: partstatsdb2@testtable1_n1@part1=p31/part2=P32
+POSTHOOK: query: ANALYZE TABLE TestTable1_n1 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb2@testtable1_n1
+POSTHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+POSTHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: Input: partstatsdb2@testtable1_n1@part1=p21/part2=P22
+POSTHOOK: Input: partstatsdb2@testtable1_n1@part1=p31/part2=P32
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p21/part2=P22
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p31/part2=P32
+PREHOOK: query: ANALYZE TABLE TestTable1_n1 PARTITION (part1='p11') COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb2@testtable1_n1
+PREHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+PREHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable1_n1
+PREHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+PREHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: query: ANALYZE TABLE TestTable1_n1 PARTITION (part1='p11') COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb2@testtable1_n1
+POSTHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+POSTHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P11
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+PREHOOK: query: ANALYZE TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb2@testtable1_n1
+PREHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable1_n1
+PREHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: query: ANALYZE TABLE TestTable1_n1 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb2@testtable1_n1
+POSTHOOK: Input: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: PARTSTATSDB2@TESTTABLE2_n1
+PREHOOK: Output: database:partstatsdb2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n1 (key STRING, value STRING) PARTITIONED BY (part1 STRING, Part2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: PARTSTATSDB2@TESTTABLE2_n1
+POSTHOOK: Output: database:partstatsdb2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable2_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable2_n1
+POSTHOOK: Output: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p21', Part2='P22')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable2_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n1 PARTITION (part1='p21', Part2='P22')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable2_n1
+POSTHOOK: Output: partstatsdb2@testtable2_n1@part1=p21/part2=P22
+PREHOOK: query: ANALYZE TABLE TESTTABLE2_n1 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb2@testtable2_n1
+PREHOOK: Input: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+PREHOOK: Input: partstatsdb2@testtable2_n1@part1=p21/part2=P22
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable2_n1
+PREHOOK: Output: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+PREHOOK: Output: partstatsdb2@testtable2_n1@part1=p21/part2=P22
+POSTHOOK: query: ANALYZE TABLE TESTTABLE2_n1 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb2@testtable2_n1
+POSTHOOK: Input: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+POSTHOOK: Input: partstatsdb2@testtable2_n1@part1=p21/part2=P22
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable2_n1
+POSTHOOK: Output: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+POSTHOOK: Output: partstatsdb2@testtable2_n1@part1=p21/part2=P22
+PREHOOK: query: ANALYZE TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: partstatsdb2@testtable2_n1
+PREHOOK: Input: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+PREHOOK: Output: partstatsdb2@testtable2_n1
+PREHOOK: Output: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+POSTHOOK: query: ANALYZE TABLE TESTTABLE2_n1 PARTITION (part1='p11', Part2='P12') COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: partstatsdb2@testtable2_n1
+POSTHOOK: Input: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+#### A masked pattern was here ####
+POSTHOOK: Output: partstatsdb2@testtable2_n1
+POSTHOOK: Output: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+PREHOOK: query: ALTER TABLE PARTSTATSDB2.testtable_n0 DROP PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: partstatsdb2@testtable_n0
+PREHOOK: Output: partstatsdb2@testtable_n0@part1=p11/part2=P12
+POSTHOOK: query: ALTER TABLE PARTSTATSDB2.testtable_n0 DROP PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: partstatsdb2@testtable_n0
+POSTHOOK: Output: partstatsdb2@testtable_n0@part1=p11/part2=P12
+PREHOOK: query: ALTER TABLE PARTSTATSDB2.TestTable1_n1 DROP PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: partstatsdb2@testtable1_n1
+PREHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+POSTHOOK: query: ALTER TABLE PARTSTATSDB2.TestTable1_n1 DROP PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1@part1=p11/part2=P12
+PREHOOK: query: ALTER TABLE PARTSTATSDB2.TESTTABLE2_n1 DROP PARTITION (part1='p11', Part2='P12')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: partstatsdb2@testtable2_n1
+PREHOOK: Output: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+POSTHOOK: query: ALTER TABLE PARTSTATSDB2.TESTTABLE2_n1 DROP PARTITION (part1='p11', Part2='P12')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: partstatsdb2@testtable2_n1
+POSTHOOK: Output: partstatsdb2@testtable2_n1@part1=p11/part2=P12
+PREHOOK: query: DROP TABLE PARTSTATSDB2.testtable_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: partstatsdb2@testtable_n0
+PREHOOK: Output: partstatsdb2@testtable_n0
+POSTHOOK: query: DROP TABLE PARTSTATSDB2.testtable_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: partstatsdb2@testtable_n0
+POSTHOOK: Output: partstatsdb2@testtable_n0
+PREHOOK: query: DROP TABLE PARTSTATSDB2.TestTable1_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: partstatsdb2@testtable1_n1
+PREHOOK: Output: partstatsdb2@testtable1_n1
+POSTHOOK: query: DROP TABLE PARTSTATSDB2.TestTable1_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: partstatsdb2@testtable1_n1
+POSTHOOK: Output: partstatsdb2@testtable1_n1
+PREHOOK: query: DROP TABLE PARTSTATSDB2.TESTTABLE2_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: partstatsdb2@testtable2_n1
+PREHOOK: Output: partstatsdb2@testtable2_n1
+POSTHOOK: query: DROP TABLE PARTSTATSDB2.TESTTABLE2_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: partstatsdb2@testtable2_n1
+POSTHOOK: Output: partstatsdb2@testtable2_n1
+PREHOOK: query: DROP DATABASE PARTSTATSDB2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:partstatsdb2
+PREHOOK: Output: database:partstatsdb2
+POSTHOOK: query: DROP DATABASE PARTSTATSDB2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:partstatsdb2
+POSTHOOK: Output: database:partstatsdb2

@@ -1,0 +1,210 @@
+PREHOOK: query: CREATE TABLE DEST1_n52(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DEST1_n52
+POSTHOOK: query: CREATE TABLE DEST1_n52(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DEST1_n52
+PREHOOK: query: create table s_n129 as select * from src where key='10'
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s_n129
+POSTHOOK: query: create table s_n129 as select * from src where key='10'
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s_n129
+POSTHOOK: Lineage: s_n129.key SIMPLE []
+POSTHOOK: Lineage: s_n129.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain FROM S_n129
+INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n129
+PREHOOK: Output: default@dest1_n52
+POSTHOOK: query: explain FROM S_n129
+INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n129
+POSTHOOK: Output: default@dest1_n52
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0, Stage-3
+  Stage-3 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s_n129
+            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), substr(value, 5) (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: string)
+                sort order: +
+                Map-reduce partition columns: _col0 (type: string)
+                Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col1 (type: string)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: sum(VALUE._col0)
+          keys: KEY._col0 (type: string)
+          mode: complete
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1_n52
+            Select Operator
+              expressions: _col0 (type: int), _col1 (type: string)
+              outputColumnNames: key, value
+              Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n52
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.dest1_n52
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+              value expressions: key (type: int), value (type: string)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0, 'hll'), compute_stats(VALUE._col2, 'hll')
+          mode: complete
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+PREHOOK: query: FROM S_n129
+INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@s_n129
+PREHOOK: Output: default@dest1_n52
+POSTHOOK: query: FROM S_n129
+INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s_n129
+POSTHOOK: Output: default@dest1_n52
+POSTHOOK: Lineage: dest1_n52.key EXPRESSION [(s_n129)s_n129.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n52.value EXPRESSION [(s_n129)s_n129.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: desc formatted DEST1_n52
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest1_n52
+POSTHOOK: query: desc formatted DEST1_n52
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dest1_n52
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	7                   
+	totalSize           	8                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted DEST1_n52 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest1_n52
+POSTHOOK: query: desc formatted DEST1_n52 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dest1_n52
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	10                  	 	 	 	 	 	 	 	 	 	 
+max                 	10                  	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: desc formatted DEST1_n52 value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest1_n52
+POSTHOOK: query: desc formatted DEST1_n52 value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dest1_n52
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	1                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	4.0                 	 	 	 	 	 	 	 	 	 	 
+max_col_len         	4                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

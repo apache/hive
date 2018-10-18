@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hive.minikdc;
 import org.junit.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,8 +33,8 @@ public class TestHiveAuthFactory {
 
   @BeforeClass
   public static void setUp() throws Exception {
+    miniHiveKdc = new MiniHiveKdc();
     hiveConf = new HiveConf();
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
   }
 
   @AfterClass
@@ -46,7 +47,7 @@ public class TestHiveAuthFactory {
    */
   @Test
   public void testStartTokenManagerForMemoryTokenStore() throws Exception {
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthFactory.AuthTypes.KERBEROS.getAuthName());
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.KERBEROS.getAuthName());
     String principalName = miniHiveKdc.getFullHiveServicePrincipal();
     System.out.println("Principal: " + principalName);
 
@@ -58,7 +59,7 @@ public class TestHiveAuthFactory {
 
     HiveAuthFactory authFactory = new HiveAuthFactory(hiveConf);
     Assert.assertNotNull(authFactory);
-    Assert.assertEquals("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
+    Assert.assertEquals("org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
         authFactory.getAuthTransFactory().getClass().getName());
   }
 
@@ -68,7 +69,7 @@ public class TestHiveAuthFactory {
    */
   @Test
   public void testStartTokenManagerForDBTokenStore() throws Exception {
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthFactory.AuthTypes.KERBEROS.getAuthName());
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.KERBEROS.getAuthName());
     String principalName = miniHiveKdc.getFullHiveServicePrincipal();
     System.out.println("Principal: " + principalName);
 
@@ -78,11 +79,11 @@ public class TestHiveAuthFactory {
     Assert.assertNotNull(keyTabFile);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, keyTabFile);
 
-    hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
+    hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.metastore.security.DBTokenStore");
 
     HiveAuthFactory authFactory = new HiveAuthFactory(hiveConf);
     Assert.assertNotNull(authFactory);
-    Assert.assertEquals("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
+    Assert.assertEquals("org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
         authFactory.getAuthTransFactory().getClass().getName());
   }
 }

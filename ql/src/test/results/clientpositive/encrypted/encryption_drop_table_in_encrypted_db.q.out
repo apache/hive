@@ -1,0 +1,54 @@
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP DATABASE IF EXISTS encrypted_db
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS encrypted_db
+POSTHOOK: type: DROPDATABASE
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:encrypted_db
+PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:encrypted_db
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Encryption key created: 'key_128'
+Encryption zone created: '/build/ql/test/data/warehouse/encrypted_db.db' using key: 'key_128'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:encrypted_db
+PREHOOK: Output: encrypted_db@encrypted_table
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:encrypted_db
+POSTHOOK: Output: encrypted_db@encrypted_table
+PREHOOK: query: INSERT OVERWRITE TABLE encrypted_db.encrypted_table SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: encrypted_db@encrypted_table
+POSTHOOK: query: INSERT OVERWRITE TABLE encrypted_db.encrypted_table SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: encrypted_db@encrypted_table
+POSTHOOK: Lineage: encrypted_table.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: encrypted_table.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP TABLE encrypted_db.encrypted_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: encrypted_db@encrypted_table
+PREHOOK: Output: encrypted_db@encrypted_table
+POSTHOOK: query: DROP TABLE encrypted_db.encrypted_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: encrypted_db@encrypted_table
+POSTHOOK: Output: encrypted_db@encrypted_table
+PREHOOK: query: DROP DATABASE encrypted_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:encrypted_db
+PREHOOK: Output: database:encrypted_db
+POSTHOOK: query: DROP DATABASE encrypted_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:encrypted_db
+POSTHOOK: Output: database:encrypted_db

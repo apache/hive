@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,13 +19,15 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -38,12 +40,13 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
 
   public static final Logger LOG = LoggerFactory.getLogger(AuthorizationMetaStoreFilterHook.class);
 
-  public AuthorizationMetaStoreFilterHook(HiveConf conf) {
+  public AuthorizationMetaStoreFilterHook(Configuration conf) {
     super(conf);
   }
 
   @Override
-  public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
+  public List<String> filterTableNames(String catName, String dbName, List<String> tableList)
+      throws MetaException {
     List<HivePrivilegeObject> listObjs = getHivePrivObjects(dbName, tableList);
     return getTableNames(getFilteredObjects(listObjs));
   }
@@ -97,6 +100,18 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     }
     return objs;
   }
+
+   @Override
+   public List<TableMeta> filterTableMetas(String catName,String dbName,List<TableMeta> tableMetas) throws MetaException {
+     List<String> tableNames = new ArrayList<>();
+     for(TableMeta tableMeta: tableMetas){
+       tableNames.add(tableMeta.getTableName());
+     }
+     List<String> filteredTableNames = filterTableNames(catName,dbName,tableNames);
+     return tableMetas.stream()
+             .filter(e -> filteredTableNames.contains(e.getTableName())).collect(Collectors.toList());
+   }
+
 
 }
 

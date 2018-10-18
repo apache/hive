@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -54,6 +54,7 @@ import org.apache.pig.ResourceSchema;
 import org.apache.pig.ResourceStatistics;
 import org.apache.pig.impl.util.UDFContext;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ import org.slf4j.LoggerFactory;
  * Pig {@link org.apache.pig.LoadFunc} to read data from HCat
  */
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
+@InterfaceStability.Stable
 public class HCatLoader extends HCatBaseLoader {
   private static final Logger LOG = LoggerFactory.getLogger(HCatLoader.class);
 
@@ -262,7 +263,7 @@ public class HCatLoader extends HCatBaseLoader {
       ResourceStatistics stats = new ResourceStatistics();
       InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(
         job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
-      stats.setmBytes(getSizeInBytes(inputJobInfo) / 1024 / 1024);
+      stats.setSizeInBytes(getSizeInBytes(inputJobInfo));
       return stats;
     } catch (Exception e) {
       throw new IOException(e);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,12 +17,6 @@
  */
 package org.apache.hadoop.hive.common.metrics.common;
 
-import java.io.IOException;
-
-import org.apache.hadoop.hive.conf.HiveConf;
-
-import java.io.IOException;
-
 /**
  * Generic Metics interface.
  */
@@ -36,32 +30,28 @@ public interface Metrics {
   /**
    *
    * @param name starts a scope of a given name.  Scopes is stored as thread-local variable.
-   * @throws IOException
    */
-  public void startStoredScope(String name) throws IOException;
+  public void startStoredScope(String name);
 
   /**
    * Closes the stored scope of a given name.
    * Note that this must be called on the same thread as where the scope was started.
    * @param name
-   * @throws IOException
    */
-  public void endStoredScope(String name) throws IOException;
+  public void endStoredScope(String name);
 
   /**
    * Create scope with given name and returns it.
    * @param name
    * @return
-   * @throws IOException
    */
-  public MetricsScope createScope(String name) throws IOException;
+  public MetricsScope createScope(String name);
 
   /**
    * Close the given scope.
    * @param scope
-   * @throws IOException
    */
-  public void endScope(MetricsScope scope) throws IOException;
+  public void endScope(MetricsScope scope);
 
   //Counter-related methods
 
@@ -69,43 +59,62 @@ public interface Metrics {
    * Increments a counter of the given name by 1.
    * @param name
    * @return
-   * @throws IOException
    */
-  public Long incrementCounter(String name) throws IOException;
+  public Long incrementCounter(String name);
 
   /**
    * Increments a counter of the given name by "increment"
    * @param name
    * @param increment
    * @return
-   * @throws IOException
    */
-  public Long incrementCounter(String name, long increment) throws IOException;
+  public Long incrementCounter(String name, long increment);
 
 
   /**
    * Decrements a counter of the given name by 1.
    * @param name
    * @return
-   * @throws IOException
    */
-  public Long decrementCounter(String name) throws IOException;
+  public Long decrementCounter(String name);
 
   /**
    * Decrements a counter of the given name by "decrement"
    * @param name
    * @param decrement
    * @return
-   * @throws IOException
    */
-  public Long decrementCounter(String name, long decrement) throws IOException;
+  public Long decrementCounter(String name, long decrement);
 
 
   /**
    * Adds a metrics-gauge to track variable.  For example, number of open database connections.
    * @param name name of gauge
    * @param variable variable to track.
-   * @throws IOException
    */
-  public void addGauge(String name, final MetricsVariable variable);
+  public void addGauge(String name, final MetricsVariable<?> variable);
+
+
+  /**
+   * Removed the gauge added by addGauge.
+   * @param name name of gauge
+   */
+  public void removeGauge(String name);
+
+
+  /**
+   * Add a ratio metric to track the correlation between two variables
+   * @param name name of the ratio gauge
+   * @param numerator numerator of the ratio
+   * @param denominator denominator of the ratio
+   */
+  public void addRatio(String name, MetricsVariable<Integer> numerator,
+                           MetricsVariable<Integer> denominator);
+
+  /**
+   * Mark an event occurance for a meter. Meters measure the rate of an event and track
+   * 1/5/15 minute moving averages
+   * @param name name of the meter
+   */
+  public void markMeter(String name);
 }

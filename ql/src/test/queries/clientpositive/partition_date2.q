@@ -1,4 +1,7 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
+set hive.optimize.metadataonly=true;
+
 -- SORT_QUERY_RESULTS
 
 drop table partition_date2_1;

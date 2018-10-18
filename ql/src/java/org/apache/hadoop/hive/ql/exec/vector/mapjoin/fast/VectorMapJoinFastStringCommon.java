@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,11 +35,9 @@ public class VectorMapJoinFastStringCommon {
 
   public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastStringCommon.class);
 
-  private boolean isOuterJoin;
-
   private BinarySortableDeserializeRead keyBinarySortableDeserializeRead;
 
-  public void adaptPutRow(VectorMapJoinFastBytesHashTable hashTable,
+  public boolean adaptPutRow(VectorMapJoinFastBytesHashTable hashTable,
           BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
 
     byte[] keyBytes = currentKey.getBytes();
@@ -47,7 +45,7 @@ public class VectorMapJoinFastStringCommon {
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
     try {
       if (!keyBinarySortableDeserializeRead.readNextField()) {
-        return;
+        return false;
       }
     } catch (Exception e) {
       throw new HiveException(
@@ -61,10 +59,10 @@ public class VectorMapJoinFastStringCommon {
         keyBinarySortableDeserializeRead.currentBytesStart,
         keyBinarySortableDeserializeRead.currentBytesLength,
         currentValue);
+    return true;
   }
 
-  public VectorMapJoinFastStringCommon(boolean isOuterJoin) {
-    this.isOuterJoin = isOuterJoin;
+  public VectorMapJoinFastStringCommon() {
     PrimitiveTypeInfo[] primitiveTypeInfos = { TypeInfoFactory.stringTypeInfo };
     keyBinarySortableDeserializeRead =
         new BinarySortableDeserializeRead(

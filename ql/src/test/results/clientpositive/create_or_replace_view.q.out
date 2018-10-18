@@ -14,6 +14,10 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
+POSTHOOK: Lineage: v.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: v.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted vt.v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: vt@v
@@ -21,7 +25,6 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -33,6 +36,7 @@ Database:           	vt
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -45,16 +49,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-PREHOOK: query: -- modifying definition of unpartitioned view
-create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:vt
 PREHOOK: Output: vt@v
-POSTHOOK: query: -- modifying definition of unpartitioned view
-create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
@@ -107,13 +109,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -123,6 +123,13 @@ Database:           	vt
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -135,8 +142,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -167,14 +174,12 @@ PREHOOK: Input: vt@v
 POSTHOOK: query: show partitions vt.v
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: vt@v
-PREHOOK: query: -- altering partitioned view 1
-create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
+PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:vt
 PREHOOK: Output: vt@v
-POSTHOOK: query: -- altering partitioned view 1
-create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
+POSTHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
@@ -201,12 +206,10 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -216,6 +219,13 @@ Database:           	vt
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -228,22 +238,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select value, ds, hr from srcpart	 
-View Expanded Text: 	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+Original Query:     	select value, ds, hr from srcpart	 
+Expanded Query:     	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
 POSTHOOK: query: show partitions vt.v
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: vt@v
-PREHOOK: query: -- altering partitioned view 2
-create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
+PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:vt
 PREHOOK: Output: vt@v
-POSTHOOK: query: -- altering partitioned view 2
-create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
+POSTHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
@@ -270,13 +278,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -286,6 +292,13 @@ Database:           	vt
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -298,8 +311,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key, value, ds, hr from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+Original Query:     	select key, value, ds, hr from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -314,13 +327,11 @@ POSTHOOK: query: drop view vt.v
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: vt@v
 POSTHOOK: Output: vt@v
-PREHOOK: query: -- updating to fix view with invalid definition
-create table srcpart_temp like srcpart
+PREHOOK: query: create table srcpart_temp like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_temp
-POSTHOOK: query: -- updating to fix view with invalid definition
-create table srcpart_temp like srcpart
+POSTHOOK: query: create table srcpart_temp like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_temp
@@ -334,6 +345,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart_temp
 POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart_temp)srcpart_temp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart_temp)srcpart_temp.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table srcpart_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_temp
@@ -361,13 +374,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -377,6 +388,13 @@ Database:           	vt
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -389,8 +407,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+Original Query:     	select * from srcpart	 
+Expanded Query:     	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: drop view vt.v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: vt@v

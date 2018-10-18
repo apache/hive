@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.cost;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -54,7 +55,7 @@ public class HiveDefaultCostModel extends HiveCostModel {
   }
 
   @Override
-  public RelOptCost getScanCost(HiveTableScan ts) {
+  public RelOptCost getScanCost(HiveTableScan ts, RelMetadataQuery mq) {
     return HiveCost.FACTORY.makeZeroCost();
   }
 
@@ -84,7 +85,7 @@ public class HiveDefaultCostModel extends HiveCostModel {
 
     @Override
     public RelOptCost getCost(HiveJoin join) {
-      RelMetadataQuery mq = RelMetadataQuery.instance();
+      final RelMetadataQuery mq = join.getCluster().getMetadataQuery();
       double leftRCount = mq.getRowCount(join.getLeft());
       double rightRCount = mq.getRowCount(join.getRight());
       return HiveCost.FACTORY.makeCost(leftRCount + rightRCount, 0.0, 0.0);
@@ -92,12 +93,12 @@ public class HiveDefaultCostModel extends HiveCostModel {
 
     @Override
     public ImmutableList<RelCollation> getCollation(HiveJoin join) {
-      return null;
+      return ImmutableList.of();
     }
 
     @Override
     public RelDistribution getDistribution(HiveJoin join) {
-      return null;
+      return RelDistributions.SINGLETON;
     }
 
     @Override
@@ -117,7 +118,7 @@ public class HiveDefaultCostModel extends HiveCostModel {
 
     @Override
     public Integer getSplitCount(HiveJoin join) {
-      return null;
+      return 1;
     }
   }
 

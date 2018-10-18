@@ -1,0 +1,423 @@
+PREHOOK: query: create table non_mm0 as select key from src limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@non_mm0
+POSTHOOK: query: create table non_mm0 as select key from src limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@non_mm0
+POSTHOOK: Lineage: non_mm0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: create table mm0 tblproperties("transactional"="true", "transactional_properties"="insert_only")
+ as select key from src limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mm0
+POSTHOOK: query: create table mm0 tblproperties("transactional"="true", "transactional_properties"="insert_only")
+ as select key from src limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mm0
+POSTHOOK: Lineage: mm0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: create table acid0 (key string) stored as ORC  tblproperties("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid0
+POSTHOOK: query: create table acid0 (key string) stored as ORC  tblproperties("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid0
+PREHOOK: query: create table mm1 like non_mm0
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mm1
+POSTHOOK: query: create table mm1 like non_mm0
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mm1
+PREHOOK: query: create table mm2 like mm0
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mm2
+POSTHOOK: query: create table mm2 like mm0
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mm2
+PREHOOK: query: create table acid1_n0 like acid0
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid1_n0
+POSTHOOK: query: create table acid1_n0 like acid0
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid1_n0
+PREHOOK: query: create table mm3 as select key from src limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mm3
+POSTHOOK: query: create table mm3 as select key from src limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mm3
+POSTHOOK: Lineage: mm3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: create table mm4 (key string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mm4
+POSTHOOK: query: create table mm4 (key string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mm4
+PREHOOK: query: create table acid2_n0 (key string) stored as ORC  tblproperties("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid2_n0
+POSTHOOK: query: create table acid2_n0 (key string) stored as ORC  tblproperties("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid2_n0
+PREHOOK: query: create table non_mm1 tblproperties("transactional"="false")
+ as select key from src limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@non_mm1
+POSTHOOK: query: create table non_mm1 tblproperties("transactional"="false")
+ as select key from src limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@non_mm1
+POSTHOOK: Lineage: non_mm1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted mm1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mm1
+POSTHOOK: query: desc formatted mm1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mm1
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted mm2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mm2
+POSTHOOK: query: desc formatted mm2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mm2
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted mm3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mm3
+POSTHOOK: query: desc formatted mm3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mm3
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	3                   
+	totalSize           	4                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted mm4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mm4
+POSTHOOK: query: desc formatted mm4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mm4
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted non_mm1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@non_mm1
+POSTHOOK: query: desc formatted non_mm1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@non_mm1
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	3                   
+	totalSize           	4                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted acid1_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@acid1_n0
+POSTHOOK: query: desc formatted acid1_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@acid1_n0
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted acid2_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@acid2_n0
+POSTHOOK: query: desc formatted acid2_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@acid2_n0
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table non_mm0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@non_mm0
+PREHOOK: Output: default@non_mm0
+POSTHOOK: query: drop table non_mm0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@non_mm0
+POSTHOOK: Output: default@non_mm0
+PREHOOK: query: drop table non_mm1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@non_mm1
+PREHOOK: Output: default@non_mm1
+POSTHOOK: query: drop table non_mm1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@non_mm1
+POSTHOOK: Output: default@non_mm1
+PREHOOK: query: drop table mm0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mm0
+PREHOOK: Output: default@mm0
+POSTHOOK: query: drop table mm0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@mm0
+POSTHOOK: Output: default@mm0
+PREHOOK: query: drop table mm1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mm1
+PREHOOK: Output: default@mm1
+POSTHOOK: query: drop table mm1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@mm1
+POSTHOOK: Output: default@mm1
+PREHOOK: query: drop table mm2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mm2
+PREHOOK: Output: default@mm2
+POSTHOOK: query: drop table mm2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@mm2
+POSTHOOK: Output: default@mm2
+PREHOOK: query: drop table mm3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mm3
+PREHOOK: Output: default@mm3
+POSTHOOK: query: drop table mm3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@mm3
+POSTHOOK: Output: default@mm3
+PREHOOK: query: drop table mm4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mm4
+PREHOOK: Output: default@mm4
+POSTHOOK: query: drop table mm4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@mm4
+POSTHOOK: Output: default@mm4
+PREHOOK: query: drop table acid0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid0
+PREHOOK: Output: default@acid0
+POSTHOOK: query: drop table acid0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid0
+POSTHOOK: Output: default@acid0
+PREHOOK: query: drop table acid1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid1_n0
+PREHOOK: Output: default@acid1_n0
+POSTHOOK: query: drop table acid1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid1_n0
+POSTHOOK: Output: default@acid1_n0
+PREHOOK: query: drop table acid2_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid2_n0
+PREHOOK: Output: default@acid2_n0
+POSTHOOK: query: drop table acid2_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid2_n0
+POSTHOOK: Output: default@acid2_n0

@@ -20,43 +20,22 @@
 
 package org.apache.hive.service.auth;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Iterator;
-
-import javax.naming.NamingEnumeration;
-import javax.naming.ldap.LdapContext;
-import javax.security.sasl.AuthenticationException;
-
-import static org.apache.directory.server.integ.ServerIntegrationUtils.getWiredContext;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
-import org.apache.directory.server.core.annotations.ApplyLdifs;
+import org.apache.directory.server.core.annotations.ApplyLdifFiles;
 import org.apache.directory.server.core.annotations.ContextEntry;
 import org.apache.directory.server.core.annotations.CreateDS;
 import org.apache.directory.server.core.annotations.CreateIndex;
 import org.apache.directory.server.core.annotations.CreatePartition;
 import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
 import org.apache.directory.server.core.integ.FrameworkRunner;
-import org.apache.directory.server.ldap.LdapServer;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.After;
+import org.apache.hive.service.auth.ldap.LdapAuthenticationTestCase;
+import org.apache.hive.service.auth.ldap.User;
 import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -65,167 +44,105 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(FrameworkRunner.class)
-@CreateLdapServer(transports =
-    { @CreateTransport(protocol = "LDAP"), @CreateTransport(protocol = "LDAPS") })
-// Define the DirectoryService
-@CreateDS(
-partitions = {
-    @CreatePartition(
-        name = "example",
-        suffix = "dc=example,dc=com",
-        contextEntry = @ContextEntry(
-            entryLdif = "dn: dc=example,dc=com\n" +
-            "dc: example\n" +
-            "objectClass: top\n" +
-            "objectClass: domain\n\n"
-        ),
-        indexes = {
-            @CreateIndex( attribute = "objectClass" ),
-            @CreateIndex( attribute = "dc" ),
-            @CreateIndex( attribute = "ou"),
-            @CreateIndex( attribute = "distinguishedName")
-        } )
-    }
-)
-
-@ApplyLdifs(
-    {
-      "dn: ou=People,dc=example,dc=com",
-      "distinguishedName: ou=People,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: organizationalUnit",
-      "objectClass: ExtensibleObject",
-      "ou: People",
-      "description: Contains entries which describe persons (seamen)",
-
-      "dn: ou=Groups,dc=example,dc=com",
-      "distinguishedName: ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: organizationalUnit",
-      "objectClass: ExtensibleObject",
-      "ou: Groups",
-      "description: Contains entries which describe groups (crews, for instance)",
-
-      "dn: uid=group1,ou=Groups,dc=example,dc=com",
-      "distinguishedName: uid=group1,ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: groupOfNames",
-      "objectClass: ExtensibleObject",
-      "cn: group1",
-      "ou: Groups",
-      "sn: group1",
-      "member: uid=user1,ou=People,dc=example,dc=com",
-
-      "dn: uid=group2,ou=Groups,dc=example,dc=com",
-      "distinguishedName: uid=group2,ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: groupOfNames",
-      "objectClass: ExtensibleObject",
-      "givenName: Group2",
-      "ou: Groups",
-      "cn: group2",
-      "sn: group2",
-      "member: uid=user2,ou=People,dc=example,dc=com",
-
-      "dn: cn=group3,ou=Groups,dc=example,dc=com",
-      "distinguishedName: cn=group3,ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: groupOfNames",
-      "objectClass: ExtensibleObject",
-      "cn: group3",
-      "ou: Groups",
-      "sn: group3",
-      "member: cn=user3,ou=People,dc=example,dc=com",
-
-      "dn: cn=group4,ou=Groups,dc=example,dc=com",
-      "distinguishedName: cn=group4,ou=Groups,dc=example,dc=com",
-      "objectClass: top",
-      "objectClass: groupOfUniqueNames",
-      "objectClass: ExtensibleObject",
-      "ou: Groups",
-      "cn: group4",
-      "sn: group4",
-      "uniqueMember: cn=user4,ou=People,dc=example,dc=com",
-
-      "dn: uid=user1,ou=People,dc=example,dc=com",
-      "distinguishedName: uid=user1,ou=People,dc=example,dc=com",
-      "objectClass: inetOrgPerson",
-      "objectClass: person",
-      "objectClass: top",
-      "objectClass: ExtensibleObject",
-      "givenName: Test1",
-      "cn: Test User1",
-      "sn: user1",
-      "uid: user1",
-      "userPassword: user1",
-
-      "dn: uid=user2,ou=People,dc=example,dc=com",
-      "distinguishedName: uid=user2,ou=People,dc=example,dc=com",
-      "objectClass: inetOrgPerson",
-      "objectClass: person",
-      "objectClass: top",
-      "objectClass: ExtensibleObject",
-      "givenName: Test2",
-      "cn: Test User2",
-      "sn: user2",
-      "uid: user2",
-      "userPassword: user2",
-
-      "dn: cn=user3,ou=People,dc=example,dc=com",
-      "distinguishedName: cn=user3,ou=People,dc=example,dc=com",
-      "objectClass: inetOrgPerson",
-      "objectClass: person",
-      "objectClass: top",
-      "objectClass: ExtensibleObject",
-      "givenName: Test1",
-      "cn: Test User3",
-      "sn: user3",
-      "uid: user3",
-      "userPassword: user3",
-
-      "dn: cn=user4,ou=People,dc=example,dc=com",
-      "distinguishedName: cn=user4,ou=People,dc=example,dc=com",
-      "objectClass: inetOrgPerson",
-      "objectClass: person",
-      "objectClass: top",
-      "objectClass: ExtensibleObject",
-      "givenName: Test4",
-      "cn: Test User4",
-      "sn: user4",
-      "uid: user4",
-      "userPassword: user4"
-
+@CreateLdapServer(transports = {
+  @CreateTransport(protocol = "LDAP"),
+  @CreateTransport(protocol = "LDAPS")
 })
 
+@CreateDS(partitions = {
+  @CreatePartition(
+      name = "example",
+      suffix = "dc=example,dc=com",
+      contextEntry = @ContextEntry(entryLdif =
+          "dn: dc=example,dc=com\n" +
+          "dc: example\n" +
+          "objectClass: top\n" +
+          "objectClass: domain\n\n"
+      ),
+    indexes = {
+      @CreateIndex(attribute = "objectClass"),
+      @CreateIndex(attribute = "cn"),
+      @CreateIndex(attribute = "uid")
+    }
+  )
+})
+
+@ApplyLdifFiles({
+    "ldap/example.com.ldif",
+    "ldap/microsoft.schema.ldif",
+    "ldap/ad.example.com.ldif"
+})
 public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
-  private static String ldapUrl;
-  private static LdapServer server;
-  private static HiveConf hiveConf;
-  private static byte[] hiveConfBackup;
-  private static LdapContext ctx;
-  private static LdapAuthenticationProviderImpl ldapProvider;
+  private static final String GROUP1_NAME = "group1";
+  private static final String GROUP2_NAME = "group2";
+  private static final String GROUP3_NAME = "group3";
+  private static final String GROUP4_NAME = "group4";
 
-  static final User USER1 = new User("user1", "user1", "uid=user1,ou=People,dc=example,dc=com");
-  static final User USER2 = new User("user2", "user2", "uid=user2,ou=People,dc=example,dc=com");
-  static final User USER3 = new User("user3", "user3", "cn=user3,ou=People,dc=example,dc=com");
-  static final User USER4 = new User("user4", "user4", "cn=user4,ou=People,dc=example,dc=com");
+  private static final String GROUP_ADMINS_NAME = "admins";
+  private static final String GROUP_TEAM1_NAME = "team1";
+  private static final String GROUP_TEAM2_NAME = "team2";
+  private static final String GROUP_RESOURCE1_NAME = "resource1";
+  private static final String GROUP_RESOURCE2_NAME = "resource2";
 
-  @Before
-  public void setup() throws Exception {
-    ctx = ( LdapContext ) getWiredContext( ldapServer, null ).lookup( "dc=example,dc=com" );
-  }
+  private static final User USER1 = User.builder()
+      .id("user1")
+      .useIdForPassword()
+      .dn("uid=user1,ou=People,dc=example,dc=com")
+      .build();
 
-  @After
-  public void shutdown() throws Exception {
-  }
+  private static final User USER2 = User.builder()
+      .id("user2")
+      .useIdForPassword()
+      .dn("uid=user2,ou=People,dc=example,dc=com")
+      .build();
 
-  @BeforeClass
-  public static void init() throws Exception {
-    hiveConf = new HiveConf();
+  private static final User USER3 = User.builder()
+      .id("user3")
+      .useIdForPassword()
+      .dn("cn=user3,ou=People,dc=example,dc=com")
+      .build();
 
-    ldapProvider = new LdapAuthenticationProviderImpl(hiveConf);
-    ldapProvider.init(hiveConf);
+  private static final User USER4 = User.builder()
+      .id("user4")
+      .useIdForPassword()
+      .dn("cn=user4,ou=People,dc=example,dc=com")
+      .build();
+
+  private static final User ENGINEER_1 = User.builder()
+      .id("engineer1")
+      .dn("sAMAccountName=engineer1,ou=Engineering,dc=ad,dc=example,dc=com")
+      .password("engineer1-password")
+      .build();
+
+  private static final User ENGINEER_2 = User.builder()
+      .id("engineer2")
+      .dn("sAMAccountName=engineer2,ou=Engineering,dc=ad,dc=example,dc=com")
+      .password("engineer2-password")
+      .build();
+
+  private static final User MANAGER_1 = User.builder()
+      .id("manager1")
+      .dn("sAMAccountName=manager1,ou=Management,dc=ad,dc=example,dc=com")
+      .password("manager1-password")
+      .build();
+
+  private static final User MANAGER_2 = User.builder()
+      .id("manager2")
+      .dn("sAMAccountName=manager2,ou=Management,dc=ad,dc=example,dc=com")
+      .password("manager2-password")
+      .build();
+
+  private static final User ADMIN_1 = User.builder()
+      .id("admin1")
+      .dn("sAMAccountName=admin1,ou=Administration,dc=ad,dc=example,dc=com")
+      .password("admin1-password")
+      .build();
+
+  private LdapAuthenticationTestCase testCase;
+
+  private LdapAuthenticationTestCase.Builder defaultBuilder() {
+    return LdapAuthenticationTestCase.builder().ldapServer(ldapServer);
   }
 
   @AfterClass
@@ -235,672 +152,322 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     }
   }
 
-  private static void initLdapAtn(Map<String, String> hiveProperties)
-        throws Exception {
-    hiveConf = new HiveConf();
-
-    int port;
-    if (ldapUrl == null) {
-      port = ldapServer.getPort();
-      ldapUrl = new String("ldap://localhost:" + port);
-    }
-
-    hiveConf.set("hive.root.logger", "DEBUG,console");
-    hiveConf.set("hive.server2.authentication.ldap.url", ldapUrl);
-
-    if (hiveProperties != null) {
-      String key;
-      String value;
-      Iterator<String> iter = hiveProperties.keySet().iterator();
-      while (iter.hasNext()) {
-        key = iter.next();
-        value = hiveProperties.get(key);
-        hiveConf.set(key, value);
-      }
-    }
-
-    ldapProvider.init(hiveConf);
-  }
-
   @Test
   public void testLDAPServer() throws Exception {
-    initLdapAtn(null);
     assertTrue(ldapServer.isStarted());
     assertTrue(ldapServer.getPort() > 0);
   }
 
   @Test
-  public void testUserBindPositiveWithShortname() throws Exception {
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
-    String user;
+  public void testUserBindPositiveWithShortname() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .build();
 
-    user = USER1.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password "
-                  + USER1.getPassword() + ", expected to succeed");
-    }
-
-    user = USER2.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + USER2.getUID() + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password "
-                  + USER2.getPassword() + ", expected to succeed");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
   }
 
   @Test
-  public void testUserBindPositiveWithShortnameOldConfig() throws Exception {
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
-    String user;
+  public void testUserBindPositiveWithShortnameOldConfig() {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .build();
 
-    user = USER1.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password "
-                  + USER1.getPassword() + ", expected to succeed");
-    }
-
-    user = USER2.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + USER2.getUID() + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user + " with password "
-                  + USER2.getPassword() + ", expected to succeed");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
   }
 
   @Test
-  public void testUserBindNegativeWithShortname() throws Exception {
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+  public void testUserBindNegativeWithShortname() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .build();
 
-    try {
-      ldapProvider.Authenticate(USER1.getUID(), USER2.getPassword());
-      Assert.fail("testUserBindNegative: Authentication succeeded for " + USER1.getUID() + " with password "
-                  + USER2.getPassword() + ", expected to fail");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for " + USER1.getUID() + " as expected", true);
-    }
-
-    try {
-      ldapProvider.Authenticate(USER2.getUID(), "user");
-      Assert.fail("testUserBindNegative: Authentication failed for " + USER2.getUID() + " with password user, expected to fail");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for " + USER2.getUID() + " as expected", true);
-    }
+    testCase.assertAuthenticateFailsUsingWrongPassword(USER1.credentialsWithId());
+    testCase.assertAuthenticateFailsUsingWrongPassword(USER2.credentialsWithId());
   }
 
   @Test
-  public void testUserBindNegativeWithShortnameOldConfig() throws Exception {
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
+  public void testUserBindNegativeWithShortnameOldConfig() {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .build();
 
-    try {
-      ldapProvider.Authenticate(USER1.getUID(), USER2.getPassword());
-      Assert.fail("testUserBindNegative: Authentication succeeded for " + USER1.getUID() + " with password "
-                  + USER2.getPassword() + ", expected to fail");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for " + USER1.getUID() + " as expected", true);
-    }
-
-    try {
-      ldapProvider.Authenticate(USER2.getUID(), "user");
-      Assert.fail("testUserBindNegative: Authentication failed for " + USER2.getUID() + " with password user, expected to fail");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for " + USER2.getUID() + " as expected", true);
-    }
+    testCase.assertAuthenticateFailsUsingWrongPassword(USER1.credentialsWithId());
+    testCase.assertAuthenticateFails(
+        USER1.getDn(),
+        USER2.getPassword());
+    testCase.assertAuthenticateFailsUsingWrongPassword(USER2.credentialsWithId());
   }
 
   @Test
-  public void testUserBindPositiveWithDN() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
+  public void testUserBindPositiveWithDN() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .build();
 
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
-    assertTrue(ldapServer.getPort() > 0);
-
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER1.getPassword() + ", expected to succeed:" + e.getMessage());
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " user as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER2.getPassword() + ", expected to succeed:" + e.getMessage());
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserBindPositiveWithDNOldConfig() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
+  public void testUserBindPositiveWithDNOldConfig() {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .build();
 
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
-    assertTrue(ldapServer.getPort() > 0);
-
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER1.getPassword() + ", expected to succeed");
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER2.getPassword() + ", expected to succeed");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserBindPositiveWithDNWrongOldConfig() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
+  public void testUserBindPositiveWithDNWrongOldConfig() {
+    testCase = defaultBuilder()
+        .baseDN("ou=DummyPeople,dc=example,dc=com")
+        .build();
 
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=DummyPeople,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
-    assertTrue(ldapServer.getPort() > 0);
-
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER1.getPassword() + ", expected to succeed");
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password "
-                  + USER2.getPassword() + ", expected to succeed");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserBindPositiveWithDNWrongConfig() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
+  public void testUserBindPositiveWithDNWrongConfig() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=DummyPeople,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=DummyGroups,dc=example,dc=com")
+        .build();
 
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=DummyPeople,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=DummyGroups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
-    assertTrue(ldapServer.getPort() > 0);
-
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER1.getPassword() + ", expected to succeed");
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER2.getPassword() + ", expected to succeed");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserBindPositiveWithDNBlankConfig() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
+  public void testUserBindPositiveWithDNBlankConfig() {
+    testCase = defaultBuilder()
+        .userDNPatterns(" ")
+        .groupDNPatterns(" ")
+        .build();
 
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", " ");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", " ");
-    initLdapAtn(ldapProperties);
-    assertTrue(ldapServer.getPort() > 0);
-
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER1.getPassword() + ", expected to succeed");
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER2.getPassword() + ", expected to succeed");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
   public void testUserBindPositiveWithDNBlankOldConfig() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
+    testCase = defaultBuilder()
+        .baseDN("")
+        .build();
 
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "");
-    initLdapAtn(ldapProperties);
-    assertTrue(ldapServer.getPort() > 0);
-
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER1.getPassword() + ", expected to succeed");
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserBindPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserBindPositive: Authentication failed for user:" + user +
-                    " with password " + USER2.getPassword() + ", expected to succeed");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserBindNegativeWithDN() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
-    assertTrue(ldapServer.getPort() > 0);
+  public void testUserBindNegativeWithDN() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .build();
 
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testUserBindNegative: Authentication succeeded for " + user + " with password " +
-                   USER2.getPassword() + ", expected to fail");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, "user");
-      Assert.fail("testUserBindNegative: Authentication failed for " + user + " with password user, " +
-                    "expected to fail");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase.assertAuthenticateFailsUsingWrongPassword(USER1.credentialsWithDn());
+    testCase.assertAuthenticateFails(
+        USER1.getDn(),
+        USER2.getPassword());
+    testCase.assertAuthenticateFailsUsingWrongPassword(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserBindNegativeWithDNOldConfig() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    initLdapAtn(ldapProperties);
-    assertTrue(ldapServer.getPort() > 0);
+  public void testUserBindNegativeWithDNOldConfig() {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .build();
 
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testUserBindNegative: Authentication succeeded for " + user + " with password " +
-                   USER2.getPassword() + ", expected to fail");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, "user");
-      Assert.fail("testUserBindNegative: Authentication failed for " + user + " with password user, " +
-                    "expected to fail");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserBindNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase.assertAuthenticateFailsUsingWrongPassword(USER1.credentialsWithDn());
+    testCase.assertAuthenticateFails(
+        USER1.getDn(),
+        USER2.getPassword());
+    testCase.assertAuthenticateFailsUsingWrongPassword(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserFilterPositive() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID());
-    initLdapAtn(ldapProperties);
+  public void testUserFilterPositive() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .userFilters(USER1.getId())
+        .build();
 
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
 
-      user = USER2.getUID();
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserFilterPositive: Authentication failed for " + user + ",user expected to pass userfilter");
-    }
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .userFilters(USER2.getId())
+        .build();
 
-    ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID());
-    initLdapAtn(ldapProperties);
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
 
-    try {
-      user = USER1.getDN();
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .userFilters(
+            USER1.getId(),
+            USER2.getId())
+        .build();
 
-      user = USER1.getUID();
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserFilterPositive: Authentication failed for " + user + ",user expected to pass userfilter");
-    }
-
-    ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID() + "," + USER1.getUID());
-    initLdapAtn(ldapProperties);
-
-    try {
-      user = USER1.getDN();
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
-
-      user = USER2.getUID();
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserFilterPositive: Authentication succeeded for " + user + " as expected", true);
-
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserFilterPositive: Authentication failed for user, user is expected to pass userfilter");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserFilterNegative() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER2.getUID());
-    initLdapAtn(ldapProperties);
+  public void testUserFilterNegative() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .userFilters(USER2.getId())
+        .build();
 
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase.assertAuthenticateFails(USER1.credentialsWithId());
+    testCase.assertAuthenticateFails(USER1.credentialsWithDn());
 
-    user = USER1.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .userFilters(USER1.getId())
+        .build();
 
-    ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID());
-    initLdapAtn(ldapProperties);
+    testCase.assertAuthenticateFails(USER2.credentialsWithId());
+    testCase.assertAuthenticateFails(USER2.credentialsWithDn());
 
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .userFilters(USER3.getId())
+        .build();
 
-    user = USER2.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user is expected to fail userfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
-
-    ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER3.getUID());
-    initLdapAtn(ldapProperties);
-
-    user = USER1.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user expected to fail userfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testUserFilterNegative: Authentication succeeded for " + user + ",user expected to fail userfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase.assertAuthenticateFails(USER1.credentialsWithId());
+    testCase.assertAuthenticateFails(USER2.credentialsWithId());
   }
 
   @Test
-  public void testGroupFilterPositive() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1,group2");
-    initLdapAtn(ldapProperties);
+  public void testGroupFilterPositive() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .groupFilters(
+            GROUP1_NAME,
+            GROUP2_NAME)
+        .build();
 
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
 
-      user = USER1.getUID();
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .groupFilters(GROUP2_NAME)
+        .build();
 
-      user = USER2.getDN();
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
-    }
-
-    ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group2");
-    initLdapAtn(ldapProperties);
-
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
-    }
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testGroupFilterNegative() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1");
-    initLdapAtn(ldapProperties);
+  public void testGroupFilterNegative() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .groupFilters(GROUP2_NAME)
+        .build();
 
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testGroupFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
 
-    ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group2");
-    initLdapAtn(ldapProperties);
+    testCase.assertAuthenticateFails(USER1.credentialsWithId());
+    testCase.assertAuthenticateFails(USER1.credentialsWithDn());
 
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      Assert.fail("testGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testGroupFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
+
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .groupFilters(GROUP1_NAME)
+        .build();
+
+    testCase.assertAuthenticateFails(USER2.credentialsWithId());
+    testCase.assertAuthenticateFails(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserAndGroupFilterPositive() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID() + "," + USER2.getUID());
-    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1,group2");
-    initLdapAtn(ldapProperties);
+  public void testUserAndGroupFilterPositive() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .userFilters(
+            USER1.getId(),
+            USER2.getId())
+        .groupFilters(
+            GROUP1_NAME,
+            GROUP2_NAME)
+        .build();
 
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserAndGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-
-      user = USER1.getUID();
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testUserAndGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserAndGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
-    }
-
-    user = USER2.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      assertTrue("testUserAndGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testUserAndGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
   }
 
   @Test
-  public void testUserAndGroupFilterNegative() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "uid=%s,ou=Groups,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userFilter", USER1.getUID() + "," + USER2.getUID());
-    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group1");
-    initLdapAtn(ldapProperties);
+  public void testUserAndGroupFilterNegative() {
+    testCase = defaultBuilder()
+        .userDNPatterns("uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("uid=%s,ou=Groups,dc=example,dc=com")
+        .userFilters(
+            USER1.getId(),
+            USER2.getId())
+        .groupFilters(
+            GROUP3_NAME,
+            GROUP3_NAME)
+        .build();
 
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testUserAndGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
-
-      user = USER2.getUID();
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testUserAndGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
-
-      user = USER3.getUID();
-      ldapProvider.Authenticate(user, USER3.getPassword());
-      Assert.fail("testUserAndGroupFilterNegative: Authentication succeeded for " + user + ",user expected to fail groupfilter");
-    } catch (AuthenticationException e) {
-      assertTrue("testUserAndGroupFilterNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase.assertAuthenticateFails(USER2.credentialsWithDn());
+    testCase.assertAuthenticateFails(USER2.credentialsWithId());
+    testCase.assertAuthenticateFails(USER3.credentialsWithDn());
+    testCase.assertAuthenticateFails(USER3.credentialsWithId());
   }
 
   @Test
-  public void testCustomQueryPositive() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery", "(&(objectClass=person)(|(uid="
-                       + USER1.getUID() + ")(uid=" + USER4.getUID() + ")))");
-    initLdapAtn(ldapProperties);
+  public void testCustomQueryPositive() {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .userDNPatterns(
+            "cn=%s,ou=People,dc=example,dc=com",
+            "uid=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=People,dc=example,dc=com")
+        .customQuery(
+            String.format("(&(objectClass=person)(|(uid=%s)(uid=%s)))",
+                USER1.getId(),
+                USER4.getId()))
+        .build();
 
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
-
-      user = USER1.getUID();
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
-
-      user = USER4.getDN();
-      ldapProvider.Authenticate(user, USER4.getPassword());
-      assertTrue("testCustomQueryPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testCustomQueryPositive: Authentication failed for " + user + ",user expected to pass custom LDAP Query");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER4.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER4.credentialsWithDn());
   }
 
   @Test
-  public void testCustomQueryNegative() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "ou=People,dc=example,dc=com");
-    // ldap query will only return user1
-    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery", "(&(objectClass=person)(uid="
-                       + USER1.getUID() + "))");
-    initLdapAtn(ldapProperties);
+  public void testCustomQueryNegative() {
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .customQuery(
+            String.format("(&(objectClass=person)(uid=%s))",
+                USER1.getId()))
+        .build();
 
-    user = USER2.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
-    } catch (AuthenticationException e) {
-      assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
-    }
-
-    try {
-      user = USER2.getUID();
-      ldapProvider.Authenticate(user, USER2.getPassword());
-      Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
-    } catch (AuthenticationException e) {
-      assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase.assertAuthenticateFails(USER2.credentialsWithDn());
+    testCase.assertAuthenticateFails(USER2.credentialsWithId());
   }
 
   /**
@@ -911,167 +478,202 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
    "hive.server2.authentication.ldap.groupMembershipKey"
    */
   @Test
-  public void testCustomQueryWithGroupsPositive() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
-                         "(&(objectClass=groupOfNames)(|(cn=group1)(cn=group2)))");
-    initLdapAtn(ldapProperties);
+  public void testCustomQueryWithGroupsPositive() {
+    testCase = defaultBuilder()
+        .baseDN("dc=example,dc=com")
+        .userDNPatterns(
+            "cn=%s,ou=People,dc=example,dc=com",
+            "uid=%s,ou=People,dc=example,dc=com")
+        .customQuery(
+            String.format("(&(objectClass=groupOfNames)(|(cn=%s)(cn=%s)))",
+                GROUP1_NAME,
+                GROUP2_NAME))
+        .build();
 
-    user = USER1.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
-
-       user = USER2.getUID();
-       ldapProvider.Authenticate(user, USER2.getPassword());
-       assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testCustomQueryWithGroupsPositive: Authentication failed for " + user + ",user expected to pass custom LDAP Query");
-    }
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithDn());
 
     /* the following test uses a query that returns a group and a user entry.
        the ldap atn should use the groupMembershipKey to identify the users for the returned group
        and the authentication should succeed for the users of that group as well as the lone user4 in this case
     */
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
-    // following query should return group1 and user2
-    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
-                         "(|(&(objectClass=groupOfNames)(cn=group1))(&(objectClass=person)(sn=user4)))");
-    initLdapAtn(ldapProperties);
+    testCase = defaultBuilder()
+        .baseDN("dc=example,dc=com")
+        .userDNPatterns(
+            "cn=%s,ou=People,dc=example,dc=com",
+            "uid=%s,ou=People,dc=example,dc=com")
+        .customQuery(
+            String.format("(|(&(objectClass=groupOfNames)(cn=%s))(&(objectClass=person)(sn=%s)))",
+                GROUP1_NAME,
+                USER4.getId()))
+        .build();
 
-    user = USER1.getUID();
-    try {
-      ldapProvider.Authenticate(user, USER1.getPassword());
-      assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
+    testCase.assertAuthenticatePasses(USER4.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER4.credentialsWithDn());
 
-       user = USER4.getUID();
-       ldapProvider.Authenticate(user, USER4.getPassword());
-       assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testCustomQueryWithGroupsPositive: Authentication failed for " + user + ",user expected to pass custom LDAP Query");
-    }
 
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupMembershipKey", "uniqueMember");
-    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
-                         "(&(objectClass=groupOfUniqueNames)(cn=group4))");
-    initLdapAtn(ldapProperties);
+    testCase = defaultBuilder()
+        .baseDN("dc=example,dc=com")
+        .userDNPatterns(
+            "cn=%s,ou=People,dc=example,dc=com",
+            "uid=%s,ou=People,dc=example,dc=com")
+        .groupMembershipKey("uniqueMember")
+        .customQuery(
+            String.format("(&(objectClass=groupOfUniqueNames)(cn=%s))",
+                GROUP4_NAME))
+        .build();
 
-    user = USER4.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER4.getPassword());
-      assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
-
-      user = USER4.getUID();
-      ldapProvider.Authenticate(user, USER4.getPassword());
-      assertTrue("testCustomQueryWithGroupsPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testCustomQueryWithGroupsPositive: Authentication failed for " + user + ",user expected to pass custom LDAP Query");
-    }
+    testCase.assertAuthenticatePasses(USER4.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER4.credentialsWithDn());
   }
 
   @Test
-  public void testCustomQueryWithGroupsNegative() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.baseDN", "dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com:uid=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.customLDAPQuery",
-                         "(&(objectClass=groupOfNames)(|(cn=group1)(cn=group2)))");
-    initLdapAtn(ldapProperties);
+  public void testCustomQueryWithGroupsNegative() {
+    testCase = defaultBuilder()
+        .baseDN("dc=example,dc=com")
+        .userDNPatterns(
+            "cn=%s,ou=People,dc=example,dc=com",
+            "uid=%s,ou=People,dc=example,dc=com")
+        .customQuery(
+            String.format("(&(objectClass=groupOfNames)(|(cn=%s)(cn=%s)))",
+                GROUP1_NAME,
+                GROUP2_NAME))
+        .build();
 
-    user = USER3.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER3.getPassword());
-      Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
-    } catch (AuthenticationException e) {
-      assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
-    }
-
-    try {
-      user = USER3.getUID();
-      ldapProvider.Authenticate(user, USER3.getPassword());
-      Assert.fail("testCustomQueryNegative: Authentication succeeded for " + user + ",user expected to fail custom LDAP Query");
-    } catch (AuthenticationException e) {
-      assertTrue("testCustomQueryNegative: Authentication failed for " + user + " as expected", true);
-    }
+    testCase.assertAuthenticateFails(USER3.credentialsWithDn());
+    testCase.assertAuthenticateFails(USER3.credentialsWithId());
   }
 
   @Test
-  public void testGroupFilterPositiveWithCustomGUID() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=Groups,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.guidKey", "cn");
-    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group3");
-    initLdapAtn(ldapProperties);
+  public void testGroupFilterPositiveWithCustomGUID() {
+    testCase = defaultBuilder()
+        .userDNPatterns("cn=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Groups,dc=example,dc=com")
+        .groupFilters(GROUP3_NAME)
+        .guidKey("cn")
+        .build();
 
-    user = USER3.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER3.getPassword());
-      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-
-      user = USER3.getUID();
-      ldapProvider.Authenticate(user, USER3.getPassword());
-      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
-    }
+    testCase.assertAuthenticatePasses(USER3.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER3.credentialsWithDn());
   }
 
   @Test
-  public void testGroupFilterPositiveWithCustomAttributes() throws Exception {
-    String user;
-    Map<String, String> ldapProperties = new HashMap<String, String>();
-    ldapProperties.put("hive.server2.authentication.ldap.userDNPattern", "cn=%s,ou=People,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupDNPattern", "cn=%s,ou=Groups,dc=example,dc=com");
-    ldapProperties.put("hive.server2.authentication.ldap.groupFilter", "group4");
-    ldapProperties.put("hive.server2.authentication.ldap.guidKey", "cn");
-    ldapProperties.put("hive.server2.authentication.ldap.groupMembershipKey", "uniqueMember");
-    ldapProperties.put("hive.server2.authentication.ldap.groupClassKey", "groupOfUniqueNames");
-    initLdapAtn(ldapProperties);
+  public void testGroupFilterPositiveWithCustomAttributes() {
+    testCase = defaultBuilder()
+        .userDNPatterns("cn=%s,ou=People,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Groups,dc=example,dc=com")
+        .groupFilters(GROUP4_NAME)
+        .guidKey("cn")
+        .groupMembershipKey("uniqueMember")
+        .groupClassKey("groupOfUniqueNames")
+        .build();
 
-    user = USER4.getDN();
-    try {
-      ldapProvider.Authenticate(user, USER4.getPassword());
-      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-
-      user = USER4.getUID();
-      ldapProvider.Authenticate(user, USER4.getPassword());
-      assertTrue("testGroupFilterPositive: Authentication succeeded for " + user + " as expected", true);
-    } catch (AuthenticationException e) {
-      Assert.fail("testGroupFilterPositive: Authentication failed for " + user + ",user expected to pass groupfilter");
-    }
-
-  }
-}
-
-class User {
-  String uid;
-  String pwd;
-  String ldapDN;
-
-  User(String uid, String password, String ldapDN) {
-    this.uid    = uid;
-    this.pwd    = password;
-    this.ldapDN = ldapDN;
+    testCase.assertAuthenticatePasses(USER4.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER4.credentialsWithDn());
   }
 
-  public String getUID() {
-    return uid;
+  @Test
+  public void testDirectUserMembershipGroupFilterPositive() {
+    testCase = defaultBuilder()
+        .userDNPatterns(
+            "sAMAccountName=%s,ou=Engineering,dc=ad,dc=example,dc=com",
+            "sAMAccountName=%s,ou=Management,dc=ad,dc=example,dc=com")
+        .groupDNPatterns(
+            "sAMAccountName=%s,ou=Teams,dc=ad,dc=example,dc=com",
+            "sAMAccountName=%s,ou=Resources,dc=ad,dc=example,dc=com")
+        .groupFilters(
+            GROUP_TEAM1_NAME,
+            GROUP_TEAM2_NAME,
+            GROUP_RESOURCE1_NAME,
+            GROUP_RESOURCE2_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .build();
+
+    testCase.assertAuthenticatePasses(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticatePasses(ENGINEER_2.credentialsWithId());
+    testCase.assertAuthenticatePasses(MANAGER_1.credentialsWithId());
+    testCase.assertAuthenticatePasses(MANAGER_2.credentialsWithId());
   }
 
-  public String getPassword() {
-    return pwd;
+  @Test
+  public void testDirectUserMembershipGroupFilterNegative() {
+    testCase = defaultBuilder()
+        .userDNPatterns(
+            "sAMAccountName=%s,ou=Engineering,dc=ad,dc=example,dc=com",
+            "sAMAccountName=%s,ou=Management,dc=ad,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Teams,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_TEAM1_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .build();
+
+    testCase.assertAuthenticateFails(ENGINEER_2.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_2.credentialsWithId());
   }
 
-  public String getDN() {
-    return ldapDN;
+  @Test
+  public void testDirectUserMembershipGroupFilterNegativeWithoutUserBases() throws Exception {
+    testCase = defaultBuilder()
+        .groupDNPatterns("cn=%s,ou=Teams,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_TEAM1_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .build();
+
+    testCase.assertAuthenticateFails(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticateFails(ENGINEER_2.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_1.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_2.credentialsWithId());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterWithDNCredentials() throws Exception {
+    testCase = defaultBuilder()
+        .userDNPatterns("sAMAccountName=%s,ou=Engineering,dc=ad,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Teams,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_TEAM1_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .build();
+
+    testCase.assertAuthenticatePasses(ENGINEER_1.credentialsWithDn());
+    testCase.assertAuthenticateFails(MANAGER_1.credentialsWithDn());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterWithDifferentGroupClassKey() throws Exception {
+    testCase = defaultBuilder()
+        .userDNPatterns("sAMAccountName=%s,ou=Administration,dc=ad,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Administration,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_ADMINS_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .groupClassKey("groupOfUniqueNames")
+        .build();
+
+    testCase.assertAuthenticatePasses(ADMIN_1.credentialsWithId());
+    testCase.assertAuthenticateFails(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_1.credentialsWithDn());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterNegativeWithWrongGroupClassKey() throws Exception {
+    testCase = defaultBuilder()
+        .userDNPatterns("sAMAccountName=%s,ou=Administration,dc=ad,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Administration,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_ADMINS_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .groupClassKey("wrongClass")
+        .build();
+
+    testCase.assertAuthenticateFails(ADMIN_1.credentialsWithId());
+    testCase.assertAuthenticateFails(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_1.credentialsWithDn());
   }
 }

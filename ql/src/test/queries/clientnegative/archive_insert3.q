@@ -1,6 +1,6 @@
+--! qt:dataset:srcpart
 set hive.archive.enabled = true;
 -- Tests trying to create partition inside of archived directory.
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 
 CREATE TABLE tstsrcpart LIKE srcpart;
 

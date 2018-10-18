@@ -1,18 +1,10 @@
-PREHOOK: query: -- this test creates a Parquet table with an array of single-field structs
--- that has an ambiguous Parquet schema that is assumed to be a list of bigints
--- This is verifies compliance with the spec for this case.
-
-CREATE TABLE parquet_ambiguous_array_of_single_field_structs (
+PREHOOK: query: CREATE TABLE parquet_ambiguous_array_of_single_field_structs (
     single_element_groups ARRAY<BIGINT>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_ambiguous_array_of_single_field_structs
-POSTHOOK: query: -- this test creates a Parquet table with an array of single-field structs
--- that has an ambiguous Parquet schema that is assumed to be a list of bigints
--- This is verifies compliance with the spec for this case.
-
-CREATE TABLE parquet_ambiguous_array_of_single_field_structs (
+POSTHOOK: query: CREATE TABLE parquet_ambiguous_array_of_single_field_structs (
     single_element_groups ARRAY<BIGINT>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE

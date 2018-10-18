@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.persistence.PTFRowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -42,20 +42,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class PTFPartition {
   protected static Logger LOG = LoggerFactory.getLogger(PTFPartition.class);
 
-  SerDe serDe;
+  AbstractSerDe serDe;
   StructObjectInspector inputOI;
   StructObjectInspector outputOI;
   private final PTFRowContainer<List<Object>> elems;
 
   protected PTFPartition(Configuration cfg,
-      SerDe serDe, StructObjectInspector inputOI,
+      AbstractSerDe serDe, StructObjectInspector inputOI,
       StructObjectInspector outputOI)
       throws HiveException {
     this(cfg, serDe, inputOI, outputOI, true);
   }
   
   protected PTFPartition(Configuration cfg,
-      SerDe serDe, StructObjectInspector inputOI,
+      AbstractSerDe serDe, StructObjectInspector inputOI,
       StructObjectInspector outputOI,
       boolean createElemContainer)
       throws HiveException {
@@ -76,7 +76,7 @@ public class PTFPartition {
     elems.clearRows();
   }
 
-  public SerDe getSerDe() {
+  public AbstractSerDe getSerDe() {
     return serDe;
   }
 
@@ -182,14 +182,14 @@ public class PTFPartition {
     @Override
     public Object lead(int amt) throws HiveException {
       int i = idx + amt;
-      i = i >= end ? end - 1 : i;
+      i = i >= createTimeSz ? createTimeSz - 1 : i; // Lead on the whole partition not the iterator range
       return getAt(i);
     }
 
     @Override
     public Object lag(int amt) throws HiveException {
       int i = idx - amt;
-      i = i < start ? start : i;
+      i = i < 0 ? 0 : i; // Lag on the whole partition not the iterator range
       return getAt(i);
     }
 
@@ -215,7 +215,7 @@ public class PTFPartition {
   };
 
   /*
-   * provide an Iterator on the rows in a Partiton.
+   * provide an Iterator on the rows in a Partition.
    * Iterator exposes the index of the next location.
    * Client can invoke lead/lag relative to the next location.
    */
@@ -239,7 +239,7 @@ public class PTFPartition {
   }
 
   public static PTFPartition create(Configuration cfg,
-      SerDe serDe,
+      AbstractSerDe serDe,
       StructObjectInspector inputOI,
       StructObjectInspector outputOI)
       throws HiveException {
@@ -247,7 +247,7 @@ public class PTFPartition {
   }
   
   public static PTFRollingPartition createRolling(Configuration cfg,
-      SerDe serDe,
+      AbstractSerDe serDe,
       StructObjectInspector inputOI,
       StructObjectInspector outputOI,
       int precedingSpan,
@@ -256,7 +256,7 @@ public class PTFPartition {
     return new PTFRollingPartition(cfg, serDe, inputOI, outputOI, precedingSpan, followingSpan);
   }
 
-  public static StructObjectInspector setupPartitionOutputOI(SerDe serDe,
+  public static StructObjectInspector setupPartitionOutputOI(AbstractSerDe serDe,
       StructObjectInspector tblFnOI) throws SerDeException {
     return (StructObjectInspector) ObjectInspectorUtils.getStandardObjectInspector(tblFnOI,
         ObjectInspectorCopyOption.WRITABLE);

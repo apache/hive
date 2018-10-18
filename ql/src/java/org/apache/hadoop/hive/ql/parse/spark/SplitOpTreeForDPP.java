@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -38,73 +38,74 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import com.google.common.base.Preconditions;
 
+
 /**
  * This processor triggers on SparkPartitionPruningSinkOperator. For a operator tree like
  * this:
  *
  * Original Tree:
- *     TS    TS
- *      |     |
- *     FIL   FIL
- *      |     | \
- *     RS     RS SEL
- *       \   /    |
- *        JOIN   GBY
- *                |
- *               SPARKPRUNINGSINK
+ *     TS1       TS2
+ *      |          |
+ *      FIL       FIL
+ *      |          |
+ *      RS      /   \   \
+ *      |      |    \    \
+ *      |     RS  SEL  SEL
+ *      \   /      |     |
+ *      JOIN      GBY   GBY
+ *                  |    |
+ *                  |  SPARKPRUNINGSINK
+ *                  |
+ *              SPARKPRUNINGSINK
  *
  * It removes the branch containing SPARKPRUNINGSINK from the original operator tree, and splits it into
  * two separate trees:
- *
- * Tree #1:                 Tree #2:
- *     TS    TS               TS
- *      |     |                |
- *     FIL   FIL              FIL
- *      |     |                |
- *     RS     RS              SEL
- *       \   /                 |
- *       JOIN                 GBY
- *                             |
- *                            SPARKPRUNINGSINK
- *
+ * Tree #1:                       Tree #2
+ *      TS1    TS2                 TS2
+ *      |      |                    |
+ *      FIL    FIL                 FIL
+ *      |       |                   |_____
+ *      RS     SEL                  |     \
+ *      |       |                   SEL    SEL
+ *      |     RS                    |      |
+ *      \   /                       GBY    GBY
+ *      JOIN                        |      |
+ *                                  |    SPARKPRUNINGSINK
+ *                                 SPARKPRUNINGSINK
+
  * For MapJoinOperator, this optimizer will not do anything - it should be executed within
  * the same SparkTask.
  */
 public class SplitOpTreeForDPP implements NodeProcessor {
+
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                         Object... nodeOutputs) throws SemanticException {
     SparkPartitionPruningSinkOperator pruningSinkOp = (SparkPartitionPruningSinkOperator) nd;
     GenSparkProcContext context = (GenSparkProcContext) procCtx;
 
-    // Locate the op where the branch starts
-    // This is guaranteed to succeed since the branch always follow the pattern
-    // as shown in the first picture above.
-    Operator<?> filterOp = pruningSinkOp;
-    Operator<?> selOp = null;
-    while (filterOp != null) {
-      if (filterOp.getNumChild() > 1) {
-        break;
-      } else {
-        selOp = filterOp;
-        filterOp = filterOp.getParentOperators().get(0);
+    for (Operator<?> op : context.pruningSinkSet) {
+      if (pruningSinkOp.getOperatorId().equals(op.getOperatorId())) {
+        return null;
       }
     }
 
-    // Check if this is a MapJoin. If so, do not split.
-    for (Operator<?> childOp : filterOp.getChildOperators()) {
-      if (childOp instanceof ReduceSinkOperator &&
-          childOp.getChildOperators().get(0) instanceof MapJoinOperator) {
-        context.pruningSinkSet.add(pruningSinkOp);
-        return null;
-      }
+    // If pruning sink operator is with map join, then pruning sink need not be split to a
+    // separate tree.  Add the pruning sink operator to context and return
+    if (pruningSinkOp.isWithMapjoin()) {
+      context.pruningSinkSet.add(pruningSinkOp);
+      return null;
     }
 
     List<Operator<?>> roots = new LinkedList<Operator<?>>();
     collectRoots(roots, pruningSinkOp);
 
-    List<Operator<?>> savedChildOps = filterOp.getChildOperators();
-    filterOp.setChildOperators(Utilities.makeList(selOp));
+    Operator<?> branchingOp = pruningSinkOp.getBranchingOp();
+    String marker = "SPARK_DPP_BRANCH_POINT_" + branchingOp.getOperatorId();
+    branchingOp.setMarker(marker);
+    List<Operator<?>> savedChildOps = branchingOp.getChildOperators();
+    List<Operator<?>> firstNodesOfPruningBranch = findFirstNodesOfPruningBranch(branchingOp);
+    branchingOp.setChildOperators(null);
 
     // Now clone the tree above selOp
     List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
@@ -115,27 +116,42 @@ public class SplitOpTreeForDPP implements NodeProcessor {
     }
     context.clonedPruningTableScanSet.addAll(newRoots);
 
-    // Restore broken links between operators, and remove the branch from the original tree
-    filterOp.setChildOperators(savedChildOps);
-    filterOp.removeChild(selOp);
-
-    // Find the cloned PruningSink and add it to pruningSinkSet
-    Set<Operator<?>> sinkSet = new HashSet<Operator<?>>();
-    for (Operator<?> root : newRoots) {
-      SparkUtilities.collectOp(sinkSet, root, SparkPartitionPruningSinkOperator.class);
+    Operator newBranchingOp = null;
+    for (int i = 0; i < newRoots.size() && newBranchingOp == null; i++) {
+      newBranchingOp = OperatorUtils.findOperatorByMarker(newRoots.get(i), marker);
     }
-    Preconditions.checkArgument(sinkSet.size() == 1,
-        "AssertionError: expected to only contain one SparkPartitionPruningSinkOperator," +
-            " but found " + sinkSet.size());
-    SparkPartitionPruningSinkOperator clonedPruningSinkOp =
-        (SparkPartitionPruningSinkOperator) sinkSet.iterator().next();
-    clonedPruningSinkOp.getConf().setTableScan(pruningSinkOp.getConf().getTableScan());
-    context.pruningSinkSet.add(clonedPruningSinkOp);
+    Preconditions.checkNotNull(newBranchingOp,
+        "Cannot find the branching operator in cloned tree.");
+    newBranchingOp.setChildOperators(firstNodesOfPruningBranch);
 
+    // Restore broken links between operators, and remove the branch from the original tree
+    branchingOp.setChildOperators(savedChildOps);
+    for (Operator selOp : firstNodesOfPruningBranch) {
+      branchingOp.removeChild(selOp);
+    }
+
+    Set<Operator<?>> sinkSet = new LinkedHashSet<>();
+    for (Operator<?> sel : firstNodesOfPruningBranch) {
+      SparkUtilities.collectOp(sinkSet, sel, SparkPartitionPruningSinkOperator.class);
+      sel.setParentOperators(Utilities.makeList(newBranchingOp));
+    }
+    context.pruningSinkSet.addAll(sinkSet);
     return null;
   }
 
-  /**
+  //find operators which are the children of specified filterOp and there are SparkPartitionPruningSink in these
+  //branches.
+  private List<Operator<?>> findFirstNodesOfPruningBranch(Operator<?> branchingOp) {
+    List<Operator<?>> res = new ArrayList<>();
+    for (Operator child : branchingOp.getChildOperators()) {
+      if (SparkUtilities.isDirectDPPBranch(child)) {
+        res.add(child);
+      }
+    }
+    return res;
+  }
+
+    /**
    * Recursively collect all roots (e.g., table scans) that can be reached via this op.
    * @param result contains all roots can be reached via op
    * @param op the op to examine.

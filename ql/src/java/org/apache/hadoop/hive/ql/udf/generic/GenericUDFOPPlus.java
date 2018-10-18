@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 
@@ -34,11 +35,22 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
  */
 @Description(name = "+", value = "a _FUNC_ b - Returns a+b")
 @VectorizedExpressions({LongColAddLongColumn.class, LongColAddDoubleColumn.class,
+  LongColAddLongColumnChecked.class, LongColAddDoubleColumnChecked.class,
   DoubleColAddLongColumn.class, DoubleColAddDoubleColumn.class, LongColAddLongScalar.class,
+  DoubleColAddLongColumnChecked.class, DoubleColAddDoubleColumnChecked.class, LongColAddLongScalarChecked.class,
   LongColAddDoubleScalar.class, DoubleColAddLongScalar.class, DoubleColAddDoubleScalar.class,
+  LongColAddDoubleScalarChecked.class, DoubleColAddLongScalarChecked.class, DoubleColAddDoubleScalarChecked.class,
   LongScalarAddLongColumn.class, LongScalarAddDoubleColumn.class, DoubleScalarAddLongColumn.class,
-  DoubleScalarAddDoubleColumn.class, DecimalScalarAddDecimalColumn.class, DecimalColAddDecimalColumn.class,
+  LongScalarAddLongColumnChecked.class, LongScalarAddDoubleColumnChecked.class, DoubleScalarAddLongColumnChecked.class,
+  DoubleScalarAddDoubleColumn.class,
+  DoubleScalarAddDoubleColumnChecked.class,
+
+  DecimalScalarAddDecimalColumn.class, DecimalColAddDecimalColumn.class,
   DecimalColAddDecimalScalar.class,
+
+  Decimal64ScalarAddDecimal64Column.class, Decimal64ColAddDecimal64Column.class,
+  Decimal64ColAddDecimal64Scalar.class,
+
   IntervalYearMonthColAddIntervalYearMonthColumn.class,
   IntervalYearMonthColAddIntervalYearMonthScalar.class,
   IntervalYearMonthScalarAddIntervalYearMonthColumn.class,
@@ -70,6 +82,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
   TimestampScalarAddIntervalYearMonthColumn.class,
   TimestampColAddIntervalYearMonthScalar.class
 })
+@VectorizedExpressionsSupportDecimal64()
 public class GenericUDFOPPlus extends GenericUDFBaseArithmetic {
 
   public GenericUDFOPPlus() {

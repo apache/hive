@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,7 +28,7 @@ public abstract class ElapsedTimeLoggingWrapper<T> {
   public abstract T invokeInternal() throws Exception;
 
   public T invoke(String message, Logger LOG, boolean toStdErr) throws Exception {
-    Stopwatch sw = new Stopwatch().start();
+    Stopwatch sw = Stopwatch.createStarted();
     try {
       T retVal = invokeInternal();
       return retVal;

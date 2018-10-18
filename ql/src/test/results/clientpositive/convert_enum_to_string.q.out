@@ -1,6 +1,4 @@
-PREHOOK: query: -- Ensure Enum fields are converted to strings (instead of struct<value:int>)
-
-create table convert_enum_to_string
+PREHOOK: query: create table convert_enum_to_string
   partitioned by (b string)
   row format serde "org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer"
     with serdeproperties (
@@ -9,9 +7,7 @@ create table convert_enum_to_string
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@convert_enum_to_string
-POSTHOOK: query: -- Ensure Enum fields are converted to strings (instead of struct<value:int>)
-
-create table convert_enum_to_string
+POSTHOOK: query: create table convert_enum_to_string
   partitioned by (b string)
   row format serde "org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer"
     with serdeproperties (
@@ -50,5 +46,4 @@ b                   	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	string              	                    

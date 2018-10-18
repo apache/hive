@@ -1,40 +1,40 @@
-PREHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
+PREHOOK: query: create table src_rc_merge_test_n2(key int, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_rc_merge_test
-POSTHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
+PREHOOK: Output: default@src_rc_merge_test_n2
+POSTHOOK: query: create table src_rc_merge_test_n2(key int, value string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_rc_merge_test
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test
+POSTHOOK: Output: default@src_rc_merge_test_n2
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_rc_merge_test
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test
+PREHOOK: Output: default@src_rc_merge_test_n2
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_rc_merge_test
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test
+POSTHOOK: Output: default@src_rc_merge_test_n2
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_rc_merge_test
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test
+PREHOOK: Output: default@src_rc_merge_test_n2
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_rc_merge_test
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test
+POSTHOOK: Output: default@src_rc_merge_test_n2
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_rc_merge_test
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test
+PREHOOK: Output: default@src_rc_merge_test_n2
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_rc_merge_test
-PREHOOK: query: show table extended like `src_rc_merge_test`
+POSTHOOK: Output: default@src_rc_merge_test_n2
+PREHOOK: query: show table extended like `src_rc_merge_test_n2`
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like `src_rc_merge_test`
+POSTHOOK: query: show table extended like `src_rc_merge_test_n2`
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:src_rc_merge_test
+tableName:src_rc_merge_test_n2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
@@ -47,37 +47,37 @@ maxFileSize:222
 minFileSize:206
 #### A masked pattern was here ####
 
-PREHOOK: query: select count(1) from src_rc_merge_test
+PREHOOK: query: select count(1) from src_rc_merge_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Input: default@src_rc_merge_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from src_rc_merge_test
+POSTHOOK: query: select count(1) from src_rc_merge_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Input: default@src_rc_merge_test_n2
 #### A masked pattern was here ####
 15
-PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Input: default@src_rc_merge_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Input: default@src_rc_merge_test_n2
 #### A masked pattern was here ####
 214	-7678496319
-PREHOOK: query: alter table src_rc_merge_test concatenate
+PREHOOK: query: alter table src_rc_merge_test_n2 concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
-PREHOOK: Input: default@src_rc_merge_test
-PREHOOK: Output: default@src_rc_merge_test
-POSTHOOK: query: alter table src_rc_merge_test concatenate
+PREHOOK: Input: default@src_rc_merge_test_n2
+PREHOOK: Output: default@src_rc_merge_test_n2
+POSTHOOK: query: alter table src_rc_merge_test_n2 concatenate
 POSTHOOK: type: ALTER_TABLE_MERGE
-POSTHOOK: Input: default@src_rc_merge_test
-POSTHOOK: Output: default@src_rc_merge_test
-PREHOOK: query: show table extended like `src_rc_merge_test`
+POSTHOOK: Input: default@src_rc_merge_test_n2
+POSTHOOK: Output: default@src_rc_merge_test_n2
+PREHOOK: query: show table extended like `src_rc_merge_test_n2`
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like `src_rc_merge_test`
+POSTHOOK: query: show table extended like `src_rc_merge_test_n2`
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:src_rc_merge_test
+tableName:src_rc_merge_test_n2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
@@ -90,68 +90,68 @@ maxFileSize:239
 minFileSize:239
 #### A masked pattern was here ####
 
-PREHOOK: query: select count(1) from src_rc_merge_test
+PREHOOK: query: select count(1) from src_rc_merge_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Input: default@src_rc_merge_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from src_rc_merge_test
+POSTHOOK: query: select count(1) from src_rc_merge_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Input: default@src_rc_merge_test_n2
 #### A masked pattern was here ####
 15
-PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Input: default@src_rc_merge_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Input: default@src_rc_merge_test_n2
 #### A masked pattern was here ####
 214	-7678496319
-PREHOOK: query: create table src_rc_merge_test_part(key int, value string) partitioned by (ds string) stored as rcfile
+PREHOOK: query: create table src_rc_merge_test_part_n0(key int, value string) partitioned by (ds string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_rc_merge_test_part
-POSTHOOK: query: create table src_rc_merge_test_part(key int, value string) partitioned by (ds string) stored as rcfile
+PREHOOK: Output: default@src_rc_merge_test_part_n0
+POSTHOOK: query: create table src_rc_merge_test_part_n0(key int, value string) partitioned by (ds string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_rc_merge_test_part
-PREHOOK: query: alter table src_rc_merge_test_part add partition (ds='2011')
+POSTHOOK: Output: default@src_rc_merge_test_part_n0
+PREHOOK: query: alter table src_rc_merge_test_part_n0 add partition (ds='2011')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@src_rc_merge_test_part
-POSTHOOK: query: alter table src_rc_merge_test_part add partition (ds='2011')
+PREHOOK: Output: default@src_rc_merge_test_part_n0
+POSTHOOK: query: alter table src_rc_merge_test_part_n0 add partition (ds='2011')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@src_rc_merge_test_part
-POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_part partition (ds='2011')
+POSTHOOK: Output: default@src_rc_merge_test_part_n0
+POSTHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_part_n0 partition (ds='2011')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_rc_merge_test_part@ds=2011
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_part partition (ds='2011')
+PREHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_part_n0 partition (ds='2011')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_part partition (ds='2011')
+POSTHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_part_n0 partition (ds='2011')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_rc_merge_test_part@ds=2011
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_part partition (ds='2011')
+PREHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_part_n0 partition (ds='2011')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_part partition (ds='2011')
+POSTHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_part_n0 partition (ds='2011')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_rc_merge_test_part@ds=2011
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_part partition (ds='2011')
+PREHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_part_n0 partition (ds='2011')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
-PREHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
+POSTHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+PREHOOK: query: show table extended like `src_rc_merge_test_part_n0` partition (ds='2011')
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
+POSTHOOK: query: show table extended like `src_rc_merge_test_part_n0` partition (ds='2011')
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:src_rc_merge_test_part
+tableName:src_rc_merge_test_part_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
@@ -164,41 +164,41 @@ maxFileSize:222
 minFileSize:206
 #### A masked pattern was here ####
 
-PREHOOK: query: select count(1) from src_rc_merge_test_part
+PREHOOK: query: select count(1) from src_rc_merge_test_part_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_rc_merge_test_part
-PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
+PREHOOK: Input: default@src_rc_merge_test_part_n0
+PREHOOK: Input: default@src_rc_merge_test_part_n0@ds=2011
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from src_rc_merge_test_part
+POSTHOOK: query: select count(1) from src_rc_merge_test_part_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_rc_merge_test_part
-POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: Input: default@src_rc_merge_test_part_n0
+POSTHOOK: Input: default@src_rc_merge_test_part_n0@ds=2011
 #### A masked pattern was here ####
 15
-PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_rc_merge_test_part
-PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
+PREHOOK: Input: default@src_rc_merge_test_part_n0
+PREHOOK: Input: default@src_rc_merge_test_part_n0@ds=2011
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_rc_merge_test_part
-POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: Input: default@src_rc_merge_test_part_n0
+POSTHOOK: Input: default@src_rc_merge_test_part_n0@ds=2011
 #### A masked pattern was here ####
 214	-7678496319
-PREHOOK: query: alter table src_rc_merge_test_part partition (ds='2011') concatenate
+PREHOOK: query: alter table src_rc_merge_test_part_n0 partition (ds='2011') concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-PREHOOK: Input: default@src_rc_merge_test_part
-PREHOOK: Output: default@src_rc_merge_test_part@ds=2011
-POSTHOOK: query: alter table src_rc_merge_test_part partition (ds='2011') concatenate
+PREHOOK: Input: default@src_rc_merge_test_part_n0
+PREHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+POSTHOOK: query: alter table src_rc_merge_test_part_n0 partition (ds='2011') concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: Input: default@src_rc_merge_test_part
-POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
-PREHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
+POSTHOOK: Input: default@src_rc_merge_test_part_n0
+POSTHOOK: Output: default@src_rc_merge_test_part_n0@ds=2011
+PREHOOK: query: show table extended like `src_rc_merge_test_part_n0` partition (ds='2011')
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
+POSTHOOK: query: show table extended like `src_rc_merge_test_part_n0` partition (ds='2011')
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:src_rc_merge_test_part
+tableName:src_rc_merge_test_part_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
@@ -211,41 +211,41 @@ maxFileSize:239
 minFileSize:239
 #### A masked pattern was here ####
 
-PREHOOK: query: select count(1) from src_rc_merge_test_part
+PREHOOK: query: select count(1) from src_rc_merge_test_part_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_rc_merge_test_part
-PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
+PREHOOK: Input: default@src_rc_merge_test_part_n0
+PREHOOK: Input: default@src_rc_merge_test_part_n0@ds=2011
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from src_rc_merge_test_part
+POSTHOOK: query: select count(1) from src_rc_merge_test_part_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_rc_merge_test_part
-POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: Input: default@src_rc_merge_test_part_n0
+POSTHOOK: Input: default@src_rc_merge_test_part_n0@ds=2011
 #### A masked pattern was here ####
 15
-PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_rc_merge_test_part
-PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
+PREHOOK: Input: default@src_rc_merge_test_part_n0
+PREHOOK: Input: default@src_rc_merge_test_part_n0@ds=2011
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_rc_merge_test_part
-POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: Input: default@src_rc_merge_test_part_n0
+POSTHOOK: Input: default@src_rc_merge_test_part_n0@ds=2011
 #### A masked pattern was here ####
 214	-7678496319
-PREHOOK: query: drop table src_rc_merge_test
+PREHOOK: query: drop table src_rc_merge_test_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_rc_merge_test
-PREHOOK: Output: default@src_rc_merge_test
-POSTHOOK: query: drop table src_rc_merge_test
+PREHOOK: Input: default@src_rc_merge_test_n2
+PREHOOK: Output: default@src_rc_merge_test_n2
+POSTHOOK: query: drop table src_rc_merge_test_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_rc_merge_test
-POSTHOOK: Output: default@src_rc_merge_test
-PREHOOK: query: drop table src_rc_merge_test_part
+POSTHOOK: Input: default@src_rc_merge_test_n2
+POSTHOOK: Output: default@src_rc_merge_test_n2
+PREHOOK: query: drop table src_rc_merge_test_part_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_rc_merge_test_part
-PREHOOK: Output: default@src_rc_merge_test_part
-POSTHOOK: query: drop table src_rc_merge_test_part
+PREHOOK: Input: default@src_rc_merge_test_part_n0
+PREHOOK: Output: default@src_rc_merge_test_part_n0
+POSTHOOK: query: drop table src_rc_merge_test_part_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_rc_merge_test_part
-POSTHOOK: Output: default@src_rc_merge_test_part
+POSTHOOK: Input: default@src_rc_merge_test_part_n0
+POSTHOOK: Output: default@src_rc_merge_test_part_n0

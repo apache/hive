@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * simply have to extend UDFBaseNumericOp class. For the default resolution the
  * UDF implementation simply needs to extend the UDF class.
  */
+@Deprecated
 public interface UDFMethodResolver {
 
   /**

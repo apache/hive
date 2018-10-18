@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -59,7 +59,7 @@ public class HiveSortRemoveRule extends RelOptRule {
 
     // Finally, if we do not reduce the size input enough, we bail out
     int limit = RexLiteral.intValue(sortLimit.fetch);
-    Double rowCount = RelMetadataQuery.instance().getRowCount(sortLimit.getInput());
+    Double rowCount = call.getMetadataQuery().getRowCount(sortLimit.getInput());
     if (rowCount != null && limit <= reductionProportion * rowCount &&
             rowCount - limit >= reductionTuples) {
       return false;

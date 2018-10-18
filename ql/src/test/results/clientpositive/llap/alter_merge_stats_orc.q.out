@@ -48,9 +48,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:7545
-maxFileSize:2515
-minFileSize:2515
+totalFileSize:7590
+maxFileSize:2530
+minFileSize:2530
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended src_orc_merge_test_stat
@@ -78,7 +78,6 @@ POSTHOOK: query: desc formatted  src_orc_merge_test_stat
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
@@ -89,11 +88,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7545                
+	totalSize           	7590                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -129,7 +129,6 @@ POSTHOOK: query: desc formatted src_orc_merge_test_stat
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
@@ -141,10 +140,11 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7198                
+	totalSize           	7214                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -214,9 +214,9 @@ columns:struct columns { i32 key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds}
 totalNumberFiles:3
-totalFileSize:7545
-maxFileSize:2515
-minFileSize:2515
+totalFileSize:7590
+maxFileSize:2530
+minFileSize:2530
 #### A masked pattern was here ####
 
 PREHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
@@ -226,13 +226,11 @@ POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -241,11 +239,11 @@ Database:           	default
 Table:              	src_orc_merge_test_part_stat	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7545                
+	totalSize           	7590                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -275,13 +273,11 @@ POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -290,11 +286,11 @@ Database:           	default
 Table:              	src_orc_merge_test_part_stat	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7545                
+	totalSize           	7590                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -332,13 +328,11 @@ POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -351,7 +345,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7198                
+	totalSize           	7214                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

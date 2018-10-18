@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.exec.compress.output = true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set mapred.min.split.size=256;
@@ -6,6 +7,8 @@ set mapred.min.split.size.per.rack=256;
 set mapred.max.split.size=256;
 
 set mapred.output.compression.codec=org.apache.hadoop.io.compress.GzipCodec;
+
+set hive.stats.column.autogather=false;
 
 -- SORT_QUERY_RESULTS
 

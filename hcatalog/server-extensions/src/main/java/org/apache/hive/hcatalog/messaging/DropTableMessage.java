@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,9 +19,14 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * HCat message sent when a Table is dropped in HCatalog.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class DropTableMessage extends HCatEventMessage {
 
   protected DropTableMessage() {
@@ -33,6 +38,7 @@ public abstract class DropTableMessage extends HCatEventMessage {
    * @return Table-name (String).
    */
   public abstract String getTable();
+  public abstract String getTableType();
 
   @Override
   public HCatEventMessage checkValid() {

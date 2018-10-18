@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * ObjectInspector helps us to look into the internal structure of a complex
  * object.
@@ -35,6 +38,8 @@ package org.apache.hadoop.hive.serde2.objectinspector;
  * also makes sure hashCode() and equals() methods of java.lang.Object directly
  * works for ObjectInspector as well.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface ObjectInspector extends Cloneable {
 
   /**
@@ -50,7 +55,7 @@ public interface ObjectInspector extends Cloneable {
    * ObjectInspector. This is used to display the type information to the user.
    *
    * For primitive types, the type name is standardized. For other types, the
-   * type name can be something like "list<int>", "map<int,string>", java class
+   * type name can be something like "list&lt;int&gt;", "map&lt;int,string&gt;", java class
    * names, or user-defined type names similar to typedef.
    */
   String getTypeName();

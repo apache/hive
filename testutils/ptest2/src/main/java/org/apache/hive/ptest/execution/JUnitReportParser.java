@@ -20,6 +20,7 @@ package org.apache.hive.ptest.execution;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 
 import javax.xml.parsers.SAXParser;
@@ -34,53 +35,53 @@ import com.google.common.collect.Sets;
 
 
 public class JUnitReportParser {
+
   private final File directory;
   private final Logger logger;
   private final Set<String> executedTests;
   private final Set<String> failedTests;
+  private final Set<String> testClassesWithAvailableReports;
+  private final Set<File> testOutputFiles;
   private boolean parsed;
   public JUnitReportParser(Logger logger, File directory) throws Exception {
     this.logger = logger;
     this.directory = directory;
     executedTests = Sets.newHashSet();
     failedTests =  Sets.newHashSet();
+    testOutputFiles = Sets.newHashSet();
+    testClassesWithAvailableReports = Sets.newHashSet();
     parsed = false;
   }
 
-  private Set<File> getFiles(File directory) {
-    Set<File> result = Sets.newHashSet();
-    File[] files = directory.listFiles();
-    if(files != null) {
-      for(File file : files) {
-        if(file.isFile()) {
-          String name = file.getName();
-          if(name.startsWith("TEST-") && name.endsWith(".xml")) {
-            result.add(file);
-          }
-        }
-      }
-    }
-    return result;
-  }
-  public Set<String> getExecutedTests() {
-    if(!parsed) {
-      parse();
-      parsed = true;
-    }
+  public Set<String> getAllExecutedTests() {
+    parseIfRequired();
     return executedTests;
   }
-  public Set<String> getFailedTests() {
-    if(!parsed) {
+
+  public Set<String> getAllFailedTests() {
+    parseIfRequired();
+    return failedTests;
+  }
+
+  public Set<String> getTestClassesWithReportAvailable() {
+    return Collections.unmodifiableSet(testClassesWithAvailableReports);
+  }
+
+  public int getNumAttemptedTests() {
+    parseIfRequired();
+    return getAllExecutedTests().size() + getAllFailedTests().size();
+  }
+
+  private void parseIfRequired() {
+    if (!parsed) {
       parse();
       parsed = true;
     }
-    return failedTests;
   }
-  public int getNumAttemptedTests() {
-    return getExecutedTests().size() + getFailedTests().size();
-  }
+
   private void parse() {
-    for(File file : getFiles(directory)) {
+    populateTestFileList(directory);
+    for(File file : testOutputFiles) {
       FileInputStream stream = null;
       try {
         stream = new FileInputStream(file);
@@ -127,6 +128,25 @@ public class JUnitReportParser {
             stream.close();
           } catch (IOException e) {
             logger.warn("Error closing file " + file, e);
+          }
+        }
+      }
+    }
+  }
+
+  private void populateTestFileList(File directory) {
+    File[] files = directory.listFiles();
+    if(files != null) {
+      for(File file : files) {
+        if(file.isFile()) {
+          String name = file.getName();
+          if(name.startsWith("TEST-") && name.endsWith(".xml")) {
+            testOutputFiles.add(file);
+            int idx = name.lastIndexOf("TEST-");
+            name = name.substring(idx + "TEST-".length());
+            String parts[] = name.split("\\.");
+            String testClass = parts[parts.length-2];
+            testClassesWithAvailableReports.add(testClass);
           }
         }
       }

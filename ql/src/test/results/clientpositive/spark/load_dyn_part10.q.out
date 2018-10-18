@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-show partitions srcpart
+PREHOOK: query: show partitions srcpart
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-show partitions srcpart
+POSTHOOK: query: show partitions srcpart
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
@@ -33,7 +29,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -42,10 +37,17 @@ PREHOOK: query: explain
 from srcpart
 insert overwrite table nzhang_part10 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@nzhang_part10@ds=2008-12-31
 POSTHOOK: query: explain
 from srcpart
 insert overwrite table nzhang_part10 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -60,6 +62,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: (ds > '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), hr (type: string)
@@ -73,6 +76,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.nzhang_part10
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator
@@ -88,7 +92,8 @@ STAGE PLANS:
               name: default.nzhang_part10
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from srcpart
 insert overwrite table nzhang_part10 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'

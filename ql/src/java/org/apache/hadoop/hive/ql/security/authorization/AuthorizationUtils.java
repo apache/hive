@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -99,6 +99,8 @@ public class AuthorizationUtils {
       return HivePrivilegeObjectType.PARTITION;
     case FUNCTION:
       return HivePrivilegeObjectType.FUNCTION;
+    case SERVICE_NAME:
+      return HivePrivilegeObjectType.SERVICE_NAME;
     default:
       return null;
     }

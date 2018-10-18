@@ -17,23 +17,39 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.collect.Multimap;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+import java.util.Map.Entry;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Aggregate.Group;
+import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories;
+import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexFieldAccess;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -314,12 +330,12 @@ public class HiveRelOptUtil extends RelOptUtil {
    *
    * <p>Optimizes if the fields are the identity projection.
    *
-   * @param factory ProjectFactory
+   * @param relBuilder RelBuilder
    * @param child Input relational expression
    * @param posList Source of each projected field
    * @return Relational expression that projects given fields
    */
-  public static RelNode createProject(final RelFactories.ProjectFactory factory,
+  public static RelNode createProject(final RelBuilder relBuilder,
       final RelNode child, final List<Integer> posList) {
     RelDataType rowType = child.getRowType();
     final List<String> fieldNames = rowType.getFieldNames();
@@ -344,7 +360,168 @@ public class HiveRelOptUtil extends RelOptUtil {
             final int pos = posList.get(index);
             return fieldNames.get(pos);
           }
-        }, true, factory);
+        }, true, relBuilder);
   }
 
+  public static RexNode splitCorrelatedFilterCondition(
+      Filter filter,
+      List<RexNode> joinKeys,
+      List<RexNode> correlatedJoinKeys,
+      boolean extractCorrelatedFieldAccess) {
+    final List<RexNode> nonEquiList = new ArrayList<>();
+
+    splitCorrelatedFilterCondition(
+        filter,
+        filter.getCondition(),
+        joinKeys,
+        correlatedJoinKeys,
+        nonEquiList,
+        extractCorrelatedFieldAccess);
+
+    // Convert the remainders into a list that are AND'ed together.
+    return RexUtil.composeConjunction(
+        filter.getCluster().getRexBuilder(), nonEquiList, true);
+  }
+
+  private static void splitCorrelatedFilterCondition(
+      Filter filter,
+      RexNode condition,
+      List<RexNode> joinKeys,
+      List<RexNode> correlatedJoinKeys,
+      List<RexNode> nonEquiList,
+      boolean extractCorrelatedFieldAccess) {
+    if (condition instanceof RexCall) {
+      RexCall call = (RexCall) condition;
+      if (call.getOperator().getKind() == SqlKind.AND) {
+        for (RexNode operand : call.getOperands()) {
+          splitCorrelatedFilterCondition(
+              filter,
+              operand,
+              joinKeys,
+              correlatedJoinKeys,
+              nonEquiList,
+              extractCorrelatedFieldAccess);
+        }
+        return;
+      }
+
+      if (call.getOperator().getKind() == SqlKind.EQUALS) {
+        final List<RexNode> operands = call.getOperands();
+        RexNode op0 = operands.get(0);
+        RexNode op1 = operands.get(1);
+
+        if (extractCorrelatedFieldAccess) {
+          if (!RexUtil.containsFieldAccess(op0)
+              && (op1 instanceof RexFieldAccess)) {
+            joinKeys.add(op0);
+            correlatedJoinKeys.add(op1);
+            return;
+          } else if (
+              (op0 instanceof RexFieldAccess)
+                  && !RexUtil.containsFieldAccess(op1)) {
+            correlatedJoinKeys.add(op0);
+            joinKeys.add(op1);
+            return;
+          }
+        } else {
+          if (!(RexUtil.containsInputRef(op0))
+              && (op1 instanceof RexInputRef)) {
+            correlatedJoinKeys.add(op0);
+            joinKeys.add(op1);
+            return;
+          } else if (
+              (op0 instanceof RexInputRef)
+                  && !(RexUtil.containsInputRef(op1))) {
+            joinKeys.add(op0);
+            correlatedJoinKeys.add(op1);
+            return;
+          }
+        }
+      }
+    }
+
+    // The operator is not of RexCall type
+    // So we fail. Fall through.
+    // Add this condition to the list of non-equi-join conditions.
+    nonEquiList.add(condition);
+  }
+
+  /**
+   * Creates a LogicalAggregate that removes all duplicates from the result of
+   * an underlying relational expression.
+   *
+   * @param rel underlying rel
+   * @return rel implementing SingleValueAgg
+   */
+  public static RelNode createSingleValueAggRel(
+      RelOptCluster cluster,
+      RelNode rel,
+      RelFactories.AggregateFactory aggregateFactory) {
+    // assert (rel.getRowType().getFieldCount() == 1);
+    final int aggCallCnt = rel.getRowType().getFieldCount();
+    final List<AggregateCall> aggCalls = new ArrayList<>();
+
+    for (int i = 0; i < aggCallCnt; i++) {
+      aggCalls.add(
+          AggregateCall.create(
+              SqlStdOperatorTable.SINGLE_VALUE, false, false,
+              ImmutableList.of(i), -1, 0, rel, null, null));
+    }
+
+    return aggregateFactory.createAggregate(rel, false, ImmutableBitSet.of(), null, aggCalls);
+  }
+
+  /**
+   * Given a RelNode, it checks whether there is any filtering condition
+   * below. Basically we check whether the operators
+   * below altered the PK cardinality in any way
+   */
+  public static boolean isRowFilteringPlan(final RelMetadataQuery mq, RelNode operator) {
+    final Multimap<Class<? extends RelNode>, RelNode> nodesBelowNonFkInput =
+        mq.getNodeTypes(operator);
+    for (Entry<Class<? extends RelNode>, Collection<RelNode>> e :
+        nodesBelowNonFkInput.asMap().entrySet()) {
+      if (e.getKey() == TableScan.class) {
+        if (e.getValue().size() > 1) {
+          // Bail out as we may not have more than one TS on non-FK side
+          return true;
+        }
+      } else if (e.getKey() == Project.class) {
+        // We check there is no windowing expression
+        for (RelNode node : e.getValue()) {
+          Project p = (Project) node;
+          for (RexNode expr : p.getChildExps()) {
+            if (expr instanceof RexOver) {
+              // Bail out as it may change cardinality
+              return true;
+            }
+          }
+        }
+      } else if (e.getKey() == Aggregate.class) {
+        // We check there is are not grouping sets
+        for (RelNode node : e.getValue()) {
+          Aggregate a = (Aggregate) node;
+          if (a.getGroupType() != Group.SIMPLE) {
+            // Bail out as it may change cardinality
+            return true;
+          }
+        }
+      } else if (e.getKey() == Sort.class) {
+        // We check whether there is a limit clause
+        for (RelNode node : e.getValue()) {
+          Sort s = (Sort) node;
+          if (s.fetch != null || s.offset != null) {
+            // Bail out as it may change cardinality
+            return true;
+          }
+        }
+      } else {
+        // Bail out, we cannot rewrite the expression if non-fk side cardinality
+        // is being altered
+        return true;
+      }
+    }
+    // It passed all the tests
+    return false;
+  }
 }

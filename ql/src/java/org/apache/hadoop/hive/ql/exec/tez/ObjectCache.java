@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -54,6 +54,11 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
     registry = staticRegistry;
   }
 
+  public static boolean isObjectRegistryConfigured() {
+    return (staticRegistry != null);
+  }
+
+
   public static void setupObjectRegistry(ObjectRegistry objectRegistry) {
     staticRegistry = objectRegistry;
     staticPool = Executors.newCachedThreadPool();
@@ -63,6 +68,22 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   public void release(String key) {
     // nothing to do
     LOG.info("Releasing key: " + key);
+  }
+
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> T retrieve(String key) throws HiveException {
+    T value = null;
+    try {
+      value = (T) registry.get(key);
+      if ( value != null) {
+        LOG.info("Found " + key + " in cache with value: " + value);
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return value;
   }
 
   @SuppressWarnings("unchecked")

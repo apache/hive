@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,6 @@ import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -94,11 +93,6 @@ public class CompileProcessor implements CommandProcessor {
     runCount = new AtomicInteger(0);
   }
 
-  @Override
-  public void init() {
-    //no init needed
-  }
-
   /**
    * User supplies dynamic code in this format:
    * COMPILE ` some code here ` AS groovy NAMED something.groovy;
@@ -109,7 +103,7 @@ public class CompileProcessor implements CommandProcessor {
    * @return CommandProcessorResponse with 0 for success and 1 for failure
    */
   @Override
-  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     this.command = command;
 
@@ -314,5 +308,9 @@ public class CompileProcessor implements CommandProcessor {
     CompileProcessorException(String s) {
       super(s);
     }
+  }
+
+  @Override
+  public void close() throws Exception {
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,10 +26,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
 /** The class used to serialize and store the output related information  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class OutputJobInfo implements Serializable {
 
   /** The db and table names. */
@@ -91,7 +95,7 @@ public class OutputJobInfo implements Serializable {
   private OutputJobInfo(String databaseName,
               String tableName,
               Map<String, String> partitionValues) {
-    this.databaseName = (databaseName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : databaseName;
+    this.databaseName = (databaseName == null) ? Warehouse.DEFAULT_DATABASE_NAME : databaseName;
     this.tableName = tableName;
     this.partitionValues = partitionValues;
     this.properties = new Properties();

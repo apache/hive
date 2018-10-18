@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,8 +25,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URI;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -77,7 +75,7 @@ public class TestRCFileCat {
     writer.close();
 
     RCFileCat fileCat = new RCFileCat();
-    RCFileCat.test=true;
+    fileCat.test=true;
     fileCat.setConf(new Configuration());
 
     // set fake input and output streams

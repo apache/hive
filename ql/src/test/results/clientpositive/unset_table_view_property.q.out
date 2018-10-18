@@ -16,19 +16,19 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET TABLE PROPERTIES
-ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+PREHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: vt@testtable
 PREHOOK: Output: vt@testtable
-POSTHOOK: query: -- UNSET TABLE PROPERTIES
-ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+POSTHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: vt@testtable
 POSTHOOK: Output: vt@testtable
@@ -36,21 +36,22 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 c	3
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET all the properties
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'c')
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'c')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: vt@testtable
 PREHOOK: Output: vt@testtable
-POSTHOOK: query: -- UNSET all the properties
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'c')
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'c')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: vt@testtable
 POSTHOOK: Output: vt@testtable
@@ -58,8 +59,11 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -76,22 +80,23 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 c	3
 d	4
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET a subset of the properties
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'd')
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'd')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: vt@testtable
 PREHOOK: Output: vt@testtable
-POSTHOOK: query: -- UNSET a subset of the properties
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'd')
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'd')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: vt@testtable
 POSTHOOK: Output: vt@testtable
@@ -99,20 +104,21 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
 c	3
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
 #### A masked pattern was here ####
-PREHOOK: query: -- the same property being UNSET multiple times
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: vt@testtable
 PREHOOK: Output: vt@testtable
-POSTHOOK: query: -- the same property being UNSET multiple times
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: vt@testtable
 POSTHOOK: Output: vt@testtable
@@ -120,8 +126,11 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -138,23 +147,24 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
 b	2
+bucketing_version	2
 c	3
 d	4
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: vt@testtable
 PREHOOK: Output: vt@testtable
-POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: vt@testtable
 POSTHOOK: Output: vt@testtable
@@ -162,21 +172,22 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 c	3
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: vt@testtable
 PREHOOK: Output: vt@testtable
-POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
-ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: vt@testtable
 POSTHOOK: Output: vt@testtable
@@ -184,9 +195,12 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 totalSize	0
@@ -199,18 +213,17 @@ POSTHOOK: query: DROP TABLE vt.testTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: vt@testtable
 POSTHOOK: Output: vt@testtable
-PREHOOK: query: -- UNSET VIEW PROPERTIES
-CREATE VIEW vt.testView AS SELECT value FROM src WHERE key=86
+PREHOOK: query: CREATE VIEW vt.testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:vt
 PREHOOK: Output: vt@testView
-POSTHOOK: query: -- UNSET VIEW PROPERTIES
-CREATE VIEW vt.testView AS SELECT value FROM src WHERE key=86
+POSTHOOK: query: CREATE VIEW vt.testView AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@testView
+POSTHOOK: Lineage: testView.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: vt@testview
@@ -223,17 +236,16 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 propB	200
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET all the properties
-ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propB')
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propB')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: vt@testview
 PREHOOK: Output: vt@testview
-POSTHOOK: query: -- UNSET all the properties
-ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propB')
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propB')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: vt@testview
 POSTHOOK: Output: vt@testview
@@ -241,6 +253,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propC'='300', 'propD'='400')
 PREHOOK: type: ALTERVIEW_PROPERTIES
@@ -254,18 +267,17 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 propC	300
 propD	400
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET a subset of the properties
-ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propC')
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propC')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: vt@testview
 PREHOOK: Output: vt@testview
-POSTHOOK: query: -- UNSET a subset of the properties
-ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propC')
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propC')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: vt@testview
 POSTHOOK: Output: vt@testview
@@ -273,16 +285,15 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propD	400
 #### A masked pattern was here ####
-PREHOOK: query: -- the same property being UNSET multiple times
-ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: vt@testview
 PREHOOK: Output: vt@testview
-POSTHOOK: query: -- the same property being UNSET multiple times
-ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: vt@testview
 POSTHOOK: Output: vt@testview
@@ -290,6 +301,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propB' = '200', 'propC'='300', 'propD'='400')
 PREHOOK: type: ALTERVIEW_PROPERTIES
@@ -303,19 +315,18 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 propB	200
 propC	300
 propD	400
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
-ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: vt@testview
 PREHOOK: Output: vt@testview
-POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
-ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: vt@testview
 POSTHOOK: Output: vt@testview
@@ -323,17 +334,16 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 propB	200
 #### A masked pattern was here ####
-PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
-ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: vt@testview
 PREHOOK: Output: vt@testview
-POSTHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
-ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
 POSTHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: Input: vt@testview
 POSTHOOK: Output: vt@testview
@@ -341,6 +351,7 @@ PREHOOK: query: SHOW TBLPROPERTIES vt.testView
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 #### A masked pattern was here ####
 propA	100
 #### A masked pattern was here ####

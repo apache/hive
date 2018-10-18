@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,10 +17,9 @@
  */
 package org.apache.hadoop.hive.shims;
 
-import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
@@ -29,8 +28,8 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,11 +37,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
 import javax.security.auth.Subject;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.crypto.CipherSuite;
 import org.apache.hadoop.crypto.key.KeyProvider;
 import org.apache.hadoop.crypto.key.KeyProvider.Options;
 import org.apache.hadoop.crypto.key.KeyProviderCryptoExtension;
@@ -67,10 +66,12 @@ import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.ipc.CallerContext;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -79,6 +80,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.WebHCatJTShim23;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
+import org.apache.hadoop.mapreduce.FileSystemCounter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -98,6 +100,9 @@ import org.apache.hadoop.tools.DistCpOptions;
 import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairSchedulerConfiguration;
+import org.apache.tez.dag.api.TezConfiguration;
+import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import org.apache.tez.test.MiniTezCluster;
 
 /**
@@ -296,6 +301,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       JobConf jConf = new JobConf(conf);
       jConf.set("yarn.scheduler.capacity.root.queues", "default");
       jConf.set("yarn.scheduler.capacity.root.default.capacity", "100");
+      jConf.setInt(MRJobConfig.MAP_MEMORY_MB, 512);
+      jConf.setInt(MRJobConfig.REDUCE_MEMORY_MB, 512);
+      jConf.setInt(MRJobConfig.MR_AM_VMEM_MB, 128);
+      jConf.setInt(YarnConfiguration.YARN_MINICLUSTER_NM_PMEM_MB, 512);
+      jConf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 128);
+      jConf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 512);
 
       mr = new MiniMRCluster(numberOfTaskTrackers, nameNode, numDir, null, null, jConf);
     }
@@ -323,6 +334,54 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       for (Map.Entry<String, String> pair: jConf) {
         conf.set(pair.getKey(), pair.getValue());
       }
+      conf.setInt(MRJobConfig.MAP_MEMORY_MB, 512);
+      conf.setInt(MRJobConfig.REDUCE_MEMORY_MB, 512);
+      conf.setInt(MRJobConfig.MR_AM_VMEM_MB, 128);
+    }
+  }
+
+  @Override
+  public HadoopShims.MiniMrShim getLocalMiniTezCluster(Configuration conf, boolean usingLlap) {
+    return new MiniTezLocalShim(conf, usingLlap);
+  }
+
+  public class MiniTezLocalShim extends Hadoop23Shims.MiniMrShim {
+    private final Configuration conf;
+    private final boolean isLlap;
+
+    public MiniTezLocalShim(Configuration conf, boolean usingLlap) {
+      this.conf = conf;
+      this.isLlap = usingLlap;
+      setupConfiguration(conf);
+    }
+
+    @Override
+    public int getJobTrackerPort() throws UnsupportedOperationException {
+      throw new UnsupportedOperationException("No JobTracker port for local mode");
+    }
+
+    @Override
+    public void setupConfiguration(Configuration conf) {
+      conf.setBoolean(TezConfiguration.TEZ_LOCAL_MODE, true);
+
+      conf.setBoolean(TezRuntimeConfiguration.TEZ_RUNTIME_OPTIMIZE_LOCAL_FETCH, true);
+
+      conf.setBoolean(TezConfiguration.TEZ_IGNORE_LIB_URIS, true);
+
+      // TODO Force fs to file://, setup staging dir?
+      //      conf.set("fs.defaultFS", "file:///");
+      //      conf.set(TezConfiguration.TEZ_AM_STAGING_DIR, "/tmp");
+
+      if (!isLlap) { // Conf for non-llap
+        conf.setBoolean("hive.llap.io.enabled", false);
+      } else { // Conf for llap
+        conf.set("hive.llap.execution.mode", "only");
+      }
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+      // Nothing to do
     }
   }
 
@@ -331,8 +390,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-      String nameNode) throws IOException {
-    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode);
+      String nameNode, boolean usingLlap) throws IOException {
+    return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, usingLlap);
   }
 
   /**
@@ -342,15 +401,28 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     private final MiniTezCluster mr;
     private final Configuration conf;
+    private final boolean isLlap;
 
-    public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode) throws IOException {
+    public MiniTezShim(Configuration conf, int numberOfTaskTrackers, String nameNode,
+                       boolean usingLlap) throws IOException {
       mr = new MiniTezCluster("hive", numberOfTaskTrackers);
+      conf.setInt(YarnConfiguration.YARN_MINICLUSTER_NM_PMEM_MB, 512);
+      conf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 128);
+      conf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 512);
+      // Overrides values from the hive/tez-site.
+      conf.setInt("hive.tez.container.size", 128);
+      conf.setInt(TezConfiguration.TEZ_AM_RESOURCE_MEMORY_MB, 128);
+      conf.setInt(TezConfiguration.TEZ_TASK_RESOURCE_MEMORY_MB, 128);
+      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB, 24);
+      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_UNORDERED_OUTPUT_BUFFER_SIZE_MB, 10);
+      conf.setFloat(TezRuntimeConfiguration.TEZ_RUNTIME_SHUFFLE_FETCH_BUFFER_PERCENT, 0.4f);
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");
       conf.set(MRJobConfig.MR_AM_STAGING_DIR, "/apps_staging_dir");
       mr.init(conf);
       mr.start();
       this.conf = mr.getConfig();
+      this.isLlap = usingLlap;
     }
 
     @Override
@@ -376,19 +448,15 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       for (Map.Entry<String, String> pair: config) {
         conf.set(pair.getKey(), pair.getValue());
       }
-
-      Path jarPath = new Path("hdfs:///user/hive");
-      Path hdfsPath = new Path("hdfs:///user/");
-      try {
-        FileSystem fs = cluster.getFileSystem();
-        jarPath = fs.makeQualified(jarPath);
-        conf.set("hive.jar.directory", jarPath.toString());
-        fs.mkdirs(jarPath);
-        hdfsPath = fs.makeQualified(hdfsPath);
-        conf.set("hive.user.install.directory", hdfsPath.toString());
-        fs.mkdirs(hdfsPath);
-      } catch (Exception e) {
-        e.printStackTrace();
+      // Overrides values from the hive/tez-site.
+      conf.setInt("hive.tez.container.size", 128);
+      conf.setInt(TezConfiguration.TEZ_AM_RESOURCE_MEMORY_MB, 128);
+      conf.setInt(TezConfiguration.TEZ_TASK_RESOURCE_MEMORY_MB, 128);
+      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB, 24);
+      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_UNORDERED_OUTPUT_BUFFER_SIZE_MB, 10);
+      conf.setFloat(TezRuntimeConfiguration.TEZ_RUNTIME_SHUFFLE_FETCH_BUFFER_PERCENT, 0.4f);
+      if (isLlap) {
+        conf.set("hive.llap.execution.mode", "all");
       }
     }
   }
@@ -414,6 +482,21 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return new MiniSparkShim(conf, numberOfTaskTrackers, nameNode, numDir);
   }
 
+  @Override
+  public void setHadoopCallerContext(String callerContext) {
+    CallerContext.setCurrent(new CallerContext.Builder(callerContext).build());
+  }
+
+  @Override
+  public void setHadoopQueryContext(String queryId) {
+    setHadoopCallerContext("hive_queryId_" + queryId);
+  }
+
+  @Override
+  public void setHadoopSessionContext(String sessionId) {
+    setHadoopCallerContext("hive_sessionId_" + sessionId);
+  }
+
   /**
    * Shim for MiniSparkOnYARNCluster
    */
@@ -429,6 +512,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
       // disable resource monitoring, although it should be off by default
       conf.setBoolean(YarnConfiguration.YARN_MINICLUSTER_CONTROL_RESOURCE_MONITORING, false);
+      conf.setInt(YarnConfiguration.YARN_MINICLUSTER_NM_PMEM_MB, 2048);
+      conf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 512);
+      conf.setInt(FairSchedulerConfiguration.RM_SCHEDULER_INCREMENT_ALLOCATION_MB, 512);
+      conf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 2048);
       configureImpersonation(conf);
       mr.init(conf);
       mr.start();
@@ -457,20 +544,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       Configuration config = mr.getConfig();
       for (Map.Entry<String, String> pair : config) {
         conf.set(pair.getKey(), pair.getValue());
-      }
-
-      Path jarPath = new Path("hdfs:///user/hive");
-      Path hdfsPath = new Path("hdfs:///user/");
-      try {
-        FileSystem fs = cluster.getFileSystem();
-        jarPath = fs.makeQualified(jarPath);
-        conf.set("hive.jar.directory", jarPath.toString());
-        fs.mkdirs(jarPath);
-        hdfsPath = fs.makeQualified(hdfsPath);
-        conf.set("hive.user.install.directory", hdfsPath.toString());
-        fs.mkdirs(hdfsPath);
-      } catch (Exception e) {
-        e.printStackTrace();
       }
     }
   }
@@ -684,6 +757,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     @Override
     public Long getFileId() {
+      if (fileId == HdfsConstants.GRANDFATHER_INODE_ID) {
+        return null;
+      }
       return fileId;
     }
   }
@@ -988,7 +1064,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
-
   public static class StoragePolicyShim implements HadoopShims.StoragePolicyShim {
 
     private final DistributedFileSystem dfs;
@@ -1032,16 +1107,56 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
-  @Override
-  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
+  private static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
-    DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
-    options.setSyncFolder(true);
-    options.setSkipCRC(true);
-    options.preserve(FileAttribute.BLOCKSIZE);
+  List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) {
+    List<String> params = new ArrayList<String>();
+    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
+      String distCpOption = entry.getKey();
+      String distCpVal = entry.getValue();
+      params.add("-" + distCpOption);
+      if ((distCpVal != null) && (!distCpVal.isEmpty())){
+        params.add(distCpVal);
+      }
+    }
+    if (params.size() == 0){
+      // if no entries were added via conf, we initiate our defaults
+      params.add("-update");
+      params.add("-pbx");
+    }
+    for (Path src : srcPaths) {
+      params.add(src.toString());
+    }
+    params.add(dst.toString());
+    return params;
+  }
+
+  @Override
+  public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, String doAsUser) throws IOException {
+    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
+        doAsUser, UserGroupInformation.getLoginUser());
+    try {
+      return proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
+        @Override
+        public Boolean run() throws Exception {
+          return runDistCp(srcPaths, dst, conf);
+        }
+      });
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
+       DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
+        .withSyncFolder(true)
+        .withCRC(true)
+        .preserve(FileAttribute.BLOCKSIZE)
+        .build();
 
     // Creates the command-line parameters for distcp
-    String[] params = {"-update", "-skipcrccheck", src.toString(), dst.toString()};
+    List<String> params = constructDistCpParams(srcPaths, dst, conf);
 
     try {
       conf.setBoolean("mapred.mapper.new-api", true);
@@ -1049,7 +1164,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
       // added by HADOOP-10459
-      if (distcp.run(params) == 0) {
+      if (distcp.run(params.toArray(new String[0])) == 0) {
         return true;
       } else {
         return false;
@@ -1114,18 +1229,24 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       if(!"hdfs".equalsIgnoreCase(path.toUri().getScheme())) {
         return false;
       }
-      try {
-        return (hdfsAdmin.getEncryptionZoneForPath(fullPath) != null);
-      } catch (FileNotFoundException fnfe) {
-        LOG.debug("Failed to get EZ for non-existent path: "+ fullPath, fnfe);
-        return false;
-      }
+
+      return (getEncryptionZoneForPath(fullPath) != null);
+    }
+
+    private EncryptionZone getEncryptionZoneForPath(Path path) throws IOException {
+      if (path.getFileSystem(conf).exists(path)) {
+        return hdfsAdmin.getEncryptionZoneForPath(path);
+      } else if (!path.getParent().equals(path)) {
+        return getEncryptionZoneForPath(path.getParent());
+      } else {
+        return null;
+       }
     }
 
     @Override
     public boolean arePathsOnSameEncryptionZone(Path path1, Path path2) throws IOException {
-      return equivalentEncryptionZones(hdfsAdmin.getEncryptionZoneForPath(path1),
-                                       hdfsAdmin.getEncryptionZoneForPath(path2));
+      return equivalentEncryptionZones(getEncryptionZoneForPath(path1),
+                                       getEncryptionZoneForPath(path2));
     }
 
     private boolean equivalentEncryptionZones(EncryptionZone zone1, EncryptionZone zone2) {
@@ -1151,12 +1272,20 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           ((HdfsEncryptionShim)encryptionShim2).hdfsAdmin.getEncryptionZoneForPath(path2));
     }
 
+    /**
+     * Compares two encryption key strengths.
+     *
+     * @param path1 First  path to compare
+     * @param path2 Second path to compare
+     * @return 1 if path1 is stronger; 0 if paths are equals; -1 if path1 is weaker.
+     * @throws IOException If an error occurred attempting to get key metadata
+     */
     @Override
     public int comparePathKeyStrength(Path path1, Path path2) throws IOException {
       EncryptionZone zone1, zone2;
 
-      zone1 = hdfsAdmin.getEncryptionZoneForPath(path1);
-      zone2 = hdfsAdmin.getEncryptionZoneForPath(path2);
+      zone1 = getEncryptionZoneForPath(path1);
+      zone2 = getEncryptionZoneForPath(path2);
 
       if (zone1 == null && zone2 == null) {
         return 0;
@@ -1166,7 +1295,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         return 1;
       }
 
-      return compareKeyStrength(zone1.getKeyName(), zone2.getKeyName());
+      return compareKeyStrength(zone1, zone2);
     }
 
     @Override
@@ -1218,28 +1347,28 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     /**
      * Compares two encryption key strengths.
      *
-     * @param keyname1 Keyname to compare
-     * @param keyname2 Keyname to compare
-     * @return 1 if path1 is stronger; 0 if paths are equals; -1 if path1 is weaker.
+     * @param zone1 First  EncryptionZone to compare
+     * @param zone2 Second EncryptionZone to compare
+     * @return 1 if zone1 is stronger; 0 if zones are equal; -1 if zone1 is weaker.
      * @throws IOException If an error occurred attempting to get key metadata
      */
-    private int compareKeyStrength(String keyname1, String keyname2) throws IOException {
-      KeyProvider.Metadata meta1, meta2;
+    private int compareKeyStrength(EncryptionZone zone1, EncryptionZone zone2) throws IOException {
 
-      if (keyProvider == null) {
-        throw new IOException("HDFS security key provider is not configured on your server.");
-      }
+      // zone1, zone2 should already have been checked for nulls.
+      assert zone1 != null && zone2 != null : "Neither EncryptionZone under comparison can be null.";
 
-      meta1 = keyProvider.getMetadata(keyname1);
-      meta2 = keyProvider.getMetadata(keyname2);
+      CipherSuite suite1 = zone1.getSuite();
+      CipherSuite suite2 = zone2.getSuite();
 
-      if (meta1.getBitLength() < meta2.getBitLength()) {
-        return -1;
-      } else if (meta1.getBitLength() == meta2.getBitLength()) {
+      if (suite1 == null && suite2 == null) {
         return 0;
-      } else {
+      } else if (suite1 == null) {
+        return -1;
+      } else if (suite2 == null) {
         return 1;
       }
+
+      return Integer.compare(suite1.getAlgorithmBlockSize(), suite2.getAlgorithmBlockSize());
     }
   }
 
@@ -1334,4 +1463,181 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return set;
   }
   
+  private static Boolean hdfsErasureCodingSupport;
+
+  /**
+   * @return true if the runtime version of hdfs supports erasure coding
+   */
+  private static synchronized boolean isHdfsErasureCodingSupported() {
+    if (hdfsErasureCodingSupport == null) {
+      Method m = null;
+
+      try {
+        m = HdfsAdmin.class.getMethod("getErasureCodingPolicies");
+      } catch (NoSuchMethodException e) {
+        // This version of Hadoop does not support HdfsAdmin.getErasureCodingPolicies().
+        // Hadoop 3.0.0 introduces this new method.
+      }
+      hdfsErasureCodingSupport = (m != null);
+    }
+
+    return hdfsErasureCodingSupport;
+  }
+
+  /**
+   * Returns a new instance of the HdfsErasureCoding shim.
+   *
+   * @param fs a FileSystem object
+   * @param conf a Configuration object
+   * @return a new instance of the HdfsErasureCoding shim.
+   * @throws IOException If an error occurred while creating the instance.
+   */
+  @Override
+  public HadoopShims.HdfsErasureCodingShim createHdfsErasureCodingShim(FileSystem fs,
+      Configuration conf) throws IOException {
+    if (isHdfsErasureCodingSupported()) {
+      URI uri = fs.getUri();
+      if ("hdfs".equals(uri.getScheme())) {
+        return new HdfsErasureCodingShim(uri, conf);
+      }
+    }
+    return new HadoopShims.NoopHdfsErasureCodingShim();
+  }
+
+  /**
+   * Information about an Erasure Coding Policy.
+   */
+  private static class HdfsFileErasureCodingPolicyImpl implements HdfsFileErasureCodingPolicy {
+    private final String name;
+    private final String status;
+
+    HdfsFileErasureCodingPolicyImpl(String name, String status) {
+      this.name = name;
+      this.status = status;
+    }
+
+    HdfsFileErasureCodingPolicyImpl(String name) {
+     this(name, null);
+    }
+
+    @Override
+    public String getName() {
+      return name;
+    }
+
+    @Override
+    public String getStatus() {
+      return status;
+    }
+  }
+
+  /**
+   * This class encapsulates methods used to get Erasure Coding information from
+   * HDFS paths in order to to provide commands similar to those provided by the hdfs ec command.
+   * https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HDFSErasureCoding.html
+   */
+  public static class HdfsErasureCodingShim implements HadoopShims.HdfsErasureCodingShim {
+    /**
+     * Gets information about HDFS encryption zones.
+     */
+    private HdfsAdmin hdfsAdmin = null;
+
+    private final Configuration conf;
+
+    HdfsErasureCodingShim(URI uri, Configuration conf) throws IOException {
+      this.conf = conf;
+      this.hdfsAdmin = new HdfsAdmin(uri, conf);
+    }
+
+    /**
+     * Lists all (enabled, disabled and removed) erasure coding policies registered in HDFS.
+     * @return a list of erasure coding policies
+     */
+    @Override
+    public List<HdfsFileErasureCodingPolicy> getAllErasureCodingPolicies() throws IOException {
+      ErasureCodingPolicyInfo[] erasureCodingPolicies = hdfsAdmin.getErasureCodingPolicies();
+      List<HdfsFileErasureCodingPolicy> policies = new ArrayList<>(erasureCodingPolicies.length);
+      for (ErasureCodingPolicyInfo erasureCodingPolicy : erasureCodingPolicies) {
+        policies.add(new HdfsFileErasureCodingPolicyImpl(erasureCodingPolicy.getPolicy().getName(),
+            erasureCodingPolicy.getState().toString()));
+      }
+      return policies;
+    }
+
+
+    /**
+     * Enable an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    @Override
+    public void enableErasureCodingPolicy(String ecPolicyName)  throws IOException {
+      hdfsAdmin.enableErasureCodingPolicy(ecPolicyName);
+    }
+
+    /**
+     * Sets an erasure coding policy on a directory at the specified path.
+     * @param path a directory in HDFS
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    @Override
+    public void setErasureCodingPolicy(Path path, String ecPolicyName) throws IOException {
+      hdfsAdmin.setErasureCodingPolicy(path, ecPolicyName);
+    }
+
+    /**
+     * Get details of the erasure coding policy of a file or directory at the specified path.
+     * @param path an hdfs file or directory
+     * @return an erasure coding policy
+     */
+    @Override
+    public HdfsFileErasureCodingPolicy getErasureCodingPolicy(Path path) throws IOException {
+      ErasureCodingPolicy erasureCodingPolicy = hdfsAdmin.getErasureCodingPolicy(path);
+      if (erasureCodingPolicy == null) {
+        return null;
+      }
+      return new HdfsFileErasureCodingPolicyImpl(erasureCodingPolicy.getName());
+    }
+
+    /**
+     * Unset an erasure coding policy set by a previous call to setPolicy on a directory.
+     * @param path a directory in HDFS
+     */
+    @Override
+    public void unsetErasureCodingPolicy(Path path) throws IOException {
+      hdfsAdmin.unsetErasureCodingPolicy(path);
+    }
+
+    /**
+     * Remove an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    @Override
+    public void removeErasureCodingPolicy(String ecPolicyName) throws IOException {
+      hdfsAdmin.removeErasureCodingPolicy(ecPolicyName);
+    }
+
+    /**
+     * Disable an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    @Override
+    public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
+      hdfsAdmin.disableErasureCodingPolicy(ecPolicyName);
+    }
+
+    /**
+     * @return true if if the runtime MR stat for Erasure Coding is available.
+     */
+    @Override
+    public boolean isMapReduceStatAvailable() {
+      // Look for FileSystemCounter.BYTES_READ_EC, this is present in hadoop 3.2
+      Field field = null;
+      try {
+        field = FileSystemCounter.class.getField("BYTES_READ_EC");
+      } catch (NoSuchFieldException e) {
+        // This version of Hadoop does not support EC stats for MR
+      }
+      return (field != null);
+    }
+  }
 }

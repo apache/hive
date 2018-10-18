@@ -1,6 +1,4 @@
-PREHOOK: query: -- a simple test to test sorted/clustered syntax
-
-CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
+PREHOOK: query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
                        page_url STRING, referrer_url STRING, 
                        friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,
                        ip STRING COMMENT 'IP Address of the User') 
@@ -10,9 +8,7 @@ CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@INPUTDDL4
-POSTHOOK: query: -- a simple test to test sorted/clustered syntax
-
-CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
+POSTHOOK: query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
                        page_url STRING, referrer_url STRING, 
                        friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,
                        ip STRING COMMENT 'IP Address of the User') 
@@ -40,7 +36,6 @@ country             	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 country             	string              	                    
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL4
@@ -61,7 +56,6 @@ country             	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 country             	string              	                    
 	 	 

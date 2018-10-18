@@ -1,0 +1,43 @@
+PREHOOK: query: CREATE TABLE avro_extschema
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "ext_schema",
+  "type": "record",
+  "fields": [
+    { "name":"number", "type":"int" },
+    { "name":"first_name", "type":"string" },
+    { "name":"last_name", "type":"string" }
+  ] }')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema
+POSTHOOK: query: CREATE TABLE avro_extschema
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "ext_schema",
+  "type": "record",
+  "fields": [
+    { "name":"number", "type":"int" },
+    { "name":"first_name", "type":"string" },
+    { "name":"last_name", "type":"string" }
+  ] }')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema
+PREHOOK: query: DESCRIBE avro_extschema
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema
+POSTHOOK: query: DESCRIBE avro_extschema
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema
+number              	int                 	                    
+first_name          	string              	                    
+last_name           	string              	                    
+PREHOOK: query: ALTER TABLE avro_extschema
+CHANGE COLUMN number number bigint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@avro_extschema
+PREHOOK: Output: default@avro_extschema
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Not allowed to alter schema of Avro stored table having external schema. Consider removing avro.schema.literal or avro.schema.url from table properties.

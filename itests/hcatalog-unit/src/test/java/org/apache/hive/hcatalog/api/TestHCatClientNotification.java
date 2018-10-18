@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,28 +18,34 @@
  */
 package org.apache.hive.hcatalog.api;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.Assert;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
+import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.CreateTableMessage;
+import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.DropPartitionMessage;
+import org.apache.hive.hcatalog.messaging.DropTableMessage;
+import org.apache.hive.hcatalog.messaging.MessageDeserializer;
+import org.apache.hive.hcatalog.messaging.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
-import org.apache.hive.hcatalog.messaging.HCatEventMessage;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +60,7 @@ public class TestHCatClientNotification {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatClientNotification.class.getName());
   private static HCatClient hCatClient;
+  private static MessageDeserializer md = null;
   private int startTime;
   private long firstEventId;
 
@@ -62,6 +69,7 @@ public class TestHCatClientNotification {
     HiveConf conf = new HiveConf(); conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
         DbNotificationListener.class.getName());
     hCatClient = HCatClient.create(conf);
+    md = MessageFactory.getInstance().getDeserializer();
   }
 
   @Before
@@ -85,8 +93,8 @@ public class TestHCatClientNotification {
     assertEquals(HCatConstants.HCAT_CREATE_DATABASE_EVENT, event.getEventType());
     assertEquals("myhcatdb", event.getDbName());
     assertNull(event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"CREATE_DATABASE\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"myhcatdb\",\"timestamp\":[0-9]+}"));
+    CreateDatabaseMessage createDatabaseMessage = md.getCreateDatabaseMessage(event.getMessage());
+    assertEquals("myhcatdb", createDatabaseMessage.getDB());
   }
 
   @Test
@@ -104,8 +112,8 @@ public class TestHCatClientNotification {
     assertEquals(HCatConstants.HCAT_DROP_DATABASE_EVENT, event.getEventType());
     assertEquals(dbname, event.getDbName());
     assertNull(event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"DROP_DATABASE\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"hcatdropdb\",\"timestamp\":[0-9]+}"));
+    DropDatabaseMessage dropDatabaseMessage = md.getDropDatabaseMessage(event.getMessage());
+    assertEquals(dbname, dropDatabaseMessage.getDB());
   }
 
   @Test
@@ -125,8 +133,16 @@ public class TestHCatClientNotification {
     assertEquals(HCatConstants.HCAT_CREATE_TABLE_EVENT, event.getEventType());
     assertEquals(dbName, event.getDbName());
     assertEquals("hcatcreatetable", event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"CREATE_TABLE\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":\"hcatcreatetable\",\"timestamp\":[0-9]+}"));
+
+    // Parse the message field
+    CreateTableMessage createTableMessage = md.getCreateTableMessage(event.getMessage());
+    assertEquals(dbName, createTableMessage.getDB());
+    assertEquals(tableName, createTableMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), createTableMessage.getTableType());
+
+    // fetch the table marked by the message and compare
+    HCatTable createdTable = hCatClient.getTable(dbName,tableName);
+    assertTrue(createdTable.diff(table).equals(HCatTable.NO_DIFF));
   }
 
   // TODO - Currently no way to test alter table, as this interface doesn't support alter table
@@ -149,9 +165,11 @@ public class TestHCatClientNotification {
     assertEquals(HCatConstants.HCAT_DROP_TABLE_EVENT, event.getEventType());
     assertEquals(dbName, event.getDbName());
     assertEquals(tableName, event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"DROP_TABLE\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
-        "\"hcatdroptable\",\"timestamp\":[0-9]+}"));
+
+    DropTableMessage dropTableMessage = md.getDropTableMessage(event.getMessage());
+    assertEquals(dbName, dropTableMessage.getDB());
+    assertEquals(tableName, dropTableMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropTableMessage.getTableType());
   }
 
   @Test
@@ -166,11 +184,8 @@ public class TestHCatClientNotification {
     String partName = "testpart";
     Map<String, String> partSpec = new HashMap<String, String>(1);
     partSpec.put(partColName, partName);
-    hCatClient.addPartition(
-        HCatAddPartitionDesc.create(
-            new HCatPartition(table, partSpec, null)
-        ).build()
-    );
+    HCatPartition part = new HCatPartition(table, partSpec, null);
+    hCatClient.addPartition(HCatAddPartitionDesc.create(part).build());
 
     List<HCatNotificationEvent> events = hCatClient.getNextNotification(firstEventId, 0, null);
     assertEquals(2, events.size());
@@ -181,9 +196,23 @@ public class TestHCatClientNotification {
     assertEquals(HCatConstants.HCAT_ADD_PARTITION_EVENT, event.getEventType());
     assertEquals("default", event.getDbName());
     assertEquals(tableName, event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"ADD_PARTITION\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
-        "\"hcataddparttable\",\"timestamp\":[0-9]+,\"partitions\":\\[\\{\"pc\":\"testpart\"}]}"));
+
+    // Parse the message field
+    AddPartitionMessage addPartitionMessage = md.getAddPartitionMessage(event.getMessage());
+    assertEquals(dbName, addPartitionMessage.getDB());
+    assertEquals(tableName, addPartitionMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), addPartitionMessage.getTableType());
+    List<Map<String,String>> ptndescs = addPartitionMessage.getPartitions();
+
+    // fetch the partition referred to by the message and compare
+    HCatPartition addedPart = hCatClient.getPartition(dbName, tableName, ptndescs.get(0));
+
+    assertEquals(part.getDatabaseName(), addedPart.getDatabaseName());
+    assertEquals(part.getTableName(), addedPart.getTableName());
+    assertEquals(part.getValues(), addedPart.getValues());
+    assertEquals(part.getColumns(), addedPart.getColumns());
+    assertEquals(part.getPartColumns(), addedPart.getPartColumns());
+    assertEquals(part.getLocation(), addedPart.getLocation());
   }
 
   // TODO - currently no way to test alter partition, as HCatClient doesn't support it.
@@ -213,11 +242,18 @@ public class TestHCatClientNotification {
     assertEquals(firstEventId + 3, event.getEventId());
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(HCatConstants.HCAT_DROP_PARTITION_EVENT, event.getEventType());
-    assertEquals("default", event.getDbName());
+    assertEquals(dbName, event.getDbName());
     assertEquals(tableName, event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"DROP_PARTITION\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
-        "\"hcatdropparttable\",\"timestamp\":[0-9]+,\"partitions\":\\[\\{\"pc\":\"testpart\"}]}"));
+
+    // Parse the message field
+    DropPartitionMessage dropPartitionMessage = md.getDropPartitionMessage(event.getMessage());
+    assertEquals(dbName, dropPartitionMessage.getDB());
+    assertEquals(tableName, dropPartitionMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropPartitionMessage.getTableType());
+    List<Map<String, String>> droppedPartSpecs = dropPartitionMessage.getPartitions();
+    assertNotNull(droppedPartSpecs);
+    assertEquals(1,droppedPartSpecs.size());
+    assertEquals(partSpec,droppedPartSpecs.get(0));
   }
 
   @Test
@@ -265,4 +301,5 @@ public class TestHCatClientNotification {
     assertEquals(1, events.size());
     assertEquals(firstEventId + 1, events.get(0).getEventId());
   }
+
 }

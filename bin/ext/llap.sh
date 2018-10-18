@@ -17,7 +17,7 @@ THISSERVICE=llap
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 llap () {
-  TMPDIR=$(mktemp -d /tmp/staging-slider-XXXXXX)
+  TMPDIR=$(mktemp -d /tmp/staging-yarn-XXXXXX)
   CLASS=org.apache.hadoop.hive.llap.cli.LlapServiceDriver;
   if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
     echo "Missing Hive CLI Jar"
@@ -30,14 +30,14 @@ llap () {
 
   set -e;
 
-  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=llap-cli-log4j2.properties "
+  export HADOOP_CLIENT_OPTS=" -Dproc_llapcli $HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=llap-cli-log4j2.properties "
   # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
   $HADOOP $CLASS $HIVE_OPTS -directory $TMPDIR "$@"
   
   # check for config files
   test -f $TMPDIR/config.json
 
-  python $HIVE_HOME/scripts/llap/slider/package.py --input $TMPDIR "$@"
+  python $HIVE_HOME/scripts/llap/yarn/package.py --input $TMPDIR "$@"
 
   # remove temp files
   rm -rf $TMPDIR

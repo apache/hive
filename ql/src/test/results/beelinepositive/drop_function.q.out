@@ -1,7 +1,0 @@
-Saving all output to "!!{outputDirectory}!!/drop_function.q.raw". Enter "record" with no arguments to stop it.
->>>  !run !!{qFileDirectory}!!/drop_function.q
->>>  SET hive.exec.drop.ignorenonexistent=false;
-No rows affected 
->>>  DROP TEMPORARY FUNCTION IF EXISTS UnknownFunction;
-No rows affected 
->>>  !record

@@ -17,7 +17,10 @@
  */
 package org.apache.hive.hcatalog.streaming.mutate.worker;
 
-/** Computes and appends bucket ids to records that are due to be inserted. */
+/** Computes and appends bucket ids to records that are due to be inserted.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public interface BucketIdResolver {
 
   Object attachBucketIdToRecord(Object record);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,6 +33,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.AfterClass;
@@ -56,10 +60,13 @@ public abstract class SkeletonHBaseTest {
    */
   protected static Configuration testConf = null;
 
-  protected void createTable(String tableName, String[] families) {
+  protected void createTable(String tableName, String[] families) throws IOException {
+    Connection connection = null;
+    Admin admin = null;
     try {
-      HBaseAdmin admin = new HBaseAdmin(getHbaseConf());
-      HTableDescriptor tableDesc = new HTableDescriptor(tableName);
+      connection = ConnectionFactory.createConnection(getHbaseConf());
+      admin = connection.getAdmin();
+      HTableDescriptor tableDesc = new HTableDescriptor(TableName.valueOf(tableName));
       for (String family : families) {
         HColumnDescriptor columnDescriptor = new HColumnDescriptor(family);
         tableDesc.addFamily(columnDescriptor);
@@ -68,8 +75,14 @@ public abstract class SkeletonHBaseTest {
     } catch (Exception e) {
       e.printStackTrace();
       throw new IllegalStateException(e);
+    } finally {
+      if (admin != null) {
+        admin.close();
+      }
+      if (connection != null) {
+        connection.close();
+      }
     }
-
   }
 
   protected String newTableName(String prefix) {
@@ -90,6 +103,9 @@ public abstract class SkeletonHBaseTest {
    */
   @BeforeClass
   public static void setup() {
+    // Fix needed due to dependency for hbase-mapreduce module
+    System.setProperty("org.apache.hadoop.hbase.shaded.io.netty.packagePrefix",
+        "org.apache.hadoop.hbase.shaded.");
     if (!contextMap.containsKey(getContextHandle()))
       contextMap.put(getContextHandle(), new Context(getContextHandle()));
 

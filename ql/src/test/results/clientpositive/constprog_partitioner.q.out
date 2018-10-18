@@ -3,10 +3,14 @@ PREHOOK: query: EXPLAIN
 SELECT src1.key, src1.key + 1, src2.value
        FROM srcbucket src1 join srcbucket src2 ON src1.key = src2.key AND src1.key = 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.key, src1.key + 1, src2.value
        FROM srcbucket src1 join srcbucket src2 ON src1.key = src2.key AND src1.key = 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -17,6 +21,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: (key = 100) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 100) (type: boolean)
@@ -28,9 +33,10 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src2
+            filterExpr: (key = 100) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (100 = key) (type: boolean)
+              predicate: (key = 100) (type: boolean)
               Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -73,12 +79,16 @@ FROM lineitem li
 WHERE li.l_linenumber = 1 AND
  li.l_orderkey IN (SELECT l_orderkey FROM lineitem WHERE l_shipmode = 'AIR' AND l_linenumber = li.l_linenumber)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT l_partkey, l_suppkey
 FROM lineitem li
 WHERE li.l_linenumber = 1 AND
  li.l_orderkey IN (SELECT l_orderkey FROM lineitem WHERE l_shipmode = 'AIR' AND l_linenumber = li.l_linenumber)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -89,6 +99,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: li
+            filterExpr: ((l_linenumber = 1) and l_orderkey is not null) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((l_linenumber = 1) and l_orderkey is not null) (type: boolean)
@@ -105,9 +116,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: int)
           TableScan
             alias: lineitem
+            filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
+              predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
               Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_orderkey (type: int), 1 (type: int)

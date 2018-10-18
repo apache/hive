@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,8 +27,9 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.parquet.write.ParquetRecordWriterWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.NullWritable;
@@ -54,7 +55,7 @@ import org.apache.hive.hcatalog.data.HCatRecord;
 abstract class FileRecordWriterContainer extends RecordWriterContainer {
 
   protected final HiveStorageHandler storageHandler;
-  protected final SerDe serDe;
+  protected final AbstractSerDe serDe;
   protected final ObjectInspector objectInspector;
 
   private final List<Integer> partColsToDel;
@@ -110,17 +111,17 @@ abstract class FileRecordWriterContainer extends RecordWriterContainer {
     LocalFileWriter localFileWriter = getLocalFileWriter(value);
     RecordWriter localWriter = localFileWriter.getLocalWriter();
     ObjectInspector localObjectInspector = localFileWriter.getLocalObjectInspector();
-    SerDe localSerDe = localFileWriter.getLocalSerDe();
+    AbstractSerDe localSerDe = localFileWriter.getLocalSerDe();
     OutputJobInfo localJobInfo = localFileWriter.getLocalJobInfo();
 
     for (Integer colToDel : partColsToDel) {
       value.remove(colToDel);
     }
 
-    // The key given by user is ignored
     try {
-      localWriter.write(NullWritable.get(),
-          localSerDe.serialize(value.getAll(), localObjectInspector));
+      // The key given by user is ignored - in case of Parquet we need to supply null
+      Object keyToWrite = localWriter instanceof ParquetRecordWriterWrapper ? null : NullWritable.get();
+      localWriter.write(keyToWrite, localSerDe.serialize(value.getAll(), localObjectInspector));
     } catch (SerDeException e) {
       throw new IOException("Failed to serialize object", e);
     }
@@ -129,11 +130,11 @@ abstract class FileRecordWriterContainer extends RecordWriterContainer {
   class LocalFileWriter {
     private RecordWriter localWriter;
     private ObjectInspector localObjectInspector;
-    private SerDe localSerDe;
+    private AbstractSerDe localSerDe;
     private OutputJobInfo localJobInfo;
 
     public LocalFileWriter(RecordWriter localWriter, ObjectInspector localObjectInspector,
-        SerDe localSerDe, OutputJobInfo localJobInfo) {
+        AbstractSerDe localSerDe, OutputJobInfo localJobInfo) {
       this.localWriter = localWriter;
       this.localObjectInspector = localObjectInspector;
       this.localSerDe = localSerDe;
@@ -148,7 +149,7 @@ abstract class FileRecordWriterContainer extends RecordWriterContainer {
       return localObjectInspector;
     }
 
-    public SerDe getLocalSerDe() {
+    public AbstractSerDe getLocalSerDe() {
       return localSerDe;
     }
 

@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tinyint
 POSTHOOK: type: DESCFUNCTION
 There is no documentation for function 'tinyint'
+Function class:org.apache.hadoop.hive.ql.udf.UDFToByte
+Function type:BUILTIN

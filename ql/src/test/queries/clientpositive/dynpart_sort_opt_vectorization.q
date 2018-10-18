@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
@@ -10,7 +11,7 @@ set hive.vectorized.execution.enabled=true;
 
 
 
-create table over1k(
+create table over1k_n1(
            t tinyint,
            si smallint,
            i int,
@@ -20,16 +21,16 @@ create table over1k(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../../data/files/over1k' into table over1k;
+load data local inpath '../../data/files/over1k' into table over1k_n1;
 
-create table over1k_orc like over1k;
+create table over1k_orc like over1k_n1;
 alter table over1k_orc set fileformat orc;
-insert overwrite table over1k_orc select * from over1k;
+insert overwrite table over1k_orc select * from over1k_n1;
 
 create table over1k_part_orc(
            si smallint,
@@ -175,3 +176,30 @@ explain select * from over1k_part_buck_sort2_orc;
 select * from over1k_part_buck_sort2_orc;
 explain select count(*) from over1k_part_buck_sort2_orc;
 select count(*) from over1k_part_buck_sort2_orc;
+
+set hive.mapred.mode=nonstrict;
+set hive.optimize.ppd=true;
+set hive.optimize.index.filter=true;
+set hive.tez.bucket.pruning=true;
+set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.vectorized.execution.reduce.enabled=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+create table addcolumns_vectorization_true_disallowincompatible_true_fileformat_orc_tinyint
+(i int,si smallint)
+partitioned by (s string)
+clustered by (si) into 2 buckets
+stored as orc tblproperties ('transactional'='true');
+
+set hive.optimize.sort.dynamic.partition=true;
+explain insert into table addcolumns_vectorization_true_disallowincompatible_true_fileformat_orc_tinyint partition (s)
+  select cint,csmallint, cstring1 from alltypesorc limit 10;
+
+insert into table addcolumns_vectorization_true_disallowincompatible_true_fileformat_orc_tinyint partition (s)
+  select cint,csmallint, cstring1 from alltypesorc limit 10;
+
+select cint, csmallint, cstring1 from alltypesorc limit 10;
+select * from addcolumns_vectorization_true_disallowincompatible_true_fileformat_orc_tinyint;

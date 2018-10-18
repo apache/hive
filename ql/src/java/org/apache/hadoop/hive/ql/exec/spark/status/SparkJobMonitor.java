@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,136 +18,70 @@
 
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
+import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 abstract class SparkJobMonitor {
 
   protected static final String CLASS_NAME = SparkJobMonitor.class.getName();
   protected static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  protected static SessionState.LogHelper console = new SessionState.LogHelper(LOG);
+  protected transient final SessionState.LogHelper console;
   protected final PerfLogger perfLogger = SessionState.getPerfLogger();
   protected final int checkInterval = 1000;
-  protected final long monitorTimeoutInteval;
+  protected final long monitorTimeoutInterval;
+  final RenderStrategy.UpdateFunction updateFunction;
+  protected long startTime;
 
-  private final Set<String> completed = new HashSet<String>();
-  private final int printInterval = 3000;
-  private long lastPrintTime;
+  protected enum StageState {
+    PENDING, RUNNING, FINISHED
+  }
+
+  protected final boolean inPlaceUpdate;
 
   protected SparkJobMonitor(HiveConf hiveConf) {
-    monitorTimeoutInteval = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT, TimeUnit.SECONDS);
+    monitorTimeoutInterval = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT, TimeUnit.SECONDS);
+    inPlaceUpdate = InPlaceUpdate.canRenderInPlace(hiveConf) && !SessionState.getConsole().getIsSilent();
+    console = new SessionState.LogHelper(LOG);
+    updateFunction = updateFunction();
   }
 
   public abstract int startMonitor();
 
-  protected void printStatus(Map<String, SparkStageProgress> progressMap,
-    Map<String, SparkStageProgress> lastProgressMap) {
-
-    // do not print duplicate status while still in middle of print interval.
-    boolean isDuplicateState = isSameAsPreviousProgress(progressMap, lastProgressMap);
-    boolean isPassedInterval = System.currentTimeMillis() <= lastPrintTime + printInterval;
-    if (isDuplicateState && isPassedInterval) {
-      return;
+  protected int getTotalTaskCount(Map<SparkStage, SparkStageProgress> progressMap) {
+    int totalTasks = 0;
+    for (SparkStageProgress progress : progressMap.values()) {
+      totalTasks += progress.getTotalTaskCount();
     }
 
-    StringBuilder reportBuffer = new StringBuilder();
-    SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
-    String currentDate = dt.format(new Date());
-    reportBuffer.append(currentDate + "\t");
-
-    SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
-    for (String s : keys) {
-      SparkStageProgress progress = progressMap.get(s);
-      final int complete = progress.getSucceededTaskCount();
-      final int total = progress.getTotalTaskCount();
-      final int running = progress.getRunningTaskCount();
-      final int failed = progress.getFailedTaskCount();
-      String stageName = "Stage-" + s;
-      if (total <= 0) {
-        reportBuffer.append(String.format("%s: -/-\t", stageName));
-      } else {
-        if (complete == total && !completed.contains(s)) {
-          completed.add(s);
-
-          if (!perfLogger.startTimeHasMethod(PerfLogger.SPARK_RUN_STAGE + s)) {
-            perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_STAGE);
-          }
-          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_STAGE);
-        }
-        if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
-          /* stage is started, but not complete */
-          if (!perfLogger.startTimeHasMethod(PerfLogger.SPARK_RUN_STAGE + s)) {
-            perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_STAGE + s);
-          }
-          if (failed > 0) {
-            reportBuffer.append(
-              String.format(
-                "%s: %d(+%d,-%d)/%d\t", stageName, complete, running, failed, total));
-          } else {
-            reportBuffer.append(
-              String.format("%s: %d(+%d)/%d\t", stageName, complete, running, total));
-          }
-        } else {
-          /* stage is waiting for input/slots or complete */
-          if (failed > 0) {
-            /* tasks finished but some failed */
-            reportBuffer.append(
-              String.format(
-                "%s: %d(-%d)/%d Finished with failed tasks\t",
-                stageName, complete, failed, total));
-          } else {
-            if (complete == total) {
-              reportBuffer.append(
-                String.format("%s: %d/%d Finished\t", stageName, complete, total));
-            } else {
-              reportBuffer.append(String.format("%s: %d/%d\t", stageName, complete, total));
-            }
-          }
-        }
-      }
-    }
-
-    lastPrintTime = System.currentTimeMillis();
-    console.printInfo(reportBuffer.toString());
+    return totalTasks;
   }
 
-  private boolean isSameAsPreviousProgress(
-    Map<String, SparkStageProgress> progressMap,
-    Map<String, SparkStageProgress> lastProgressMap) {
-
-    if (lastProgressMap == null) {
-      return false;
-    }
-
-    if (progressMap.isEmpty()) {
-      return lastProgressMap.isEmpty();
-    } else {
-      if (lastProgressMap.isEmpty()) {
-        return false;
-      } else {
-        if (progressMap.size() != lastProgressMap.size()) {
-          return false;
-        }
-        for (String key : progressMap.keySet()) {
-          if (!lastProgressMap.containsKey(key)
-            || !progressMap.get(key).equals(lastProgressMap.get(key))) {
-            return false;
-          }
-        }
+  protected int getStageMaxTaskCount(Map<SparkStage, SparkStageProgress> progressMap) {
+    int stageMaxTasks = 0;
+    for (SparkStageProgress progress : progressMap.values()) {
+      int tasks = progress.getTotalTaskCount();
+      if (tasks > stageMaxTasks) {
+        stageMaxTasks = tasks;
       }
     }
-    return true;
+
+    return stageMaxTasks;
+  }
+
+  ProgressMonitor getProgressMonitor(Map<SparkStage, SparkStageProgress> progressMap) {
+    return new SparkProgressMonitor(progressMap, startTime);
+  }
+
+  private RenderStrategy.UpdateFunction updateFunction() {
+    return inPlaceUpdate && !SessionState.get().isHiveServerQuery() ? new RenderStrategy.InPlaceUpdateFunction(
+        this) : new RenderStrategy.LogToFileFunction(this);
   }
 }

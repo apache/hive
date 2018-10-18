@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -84,9 +84,9 @@ public class TestBytesBytesMultiHashMap {
     map.put(kv2, -1);
     key[0] = (byte)(key[0] + 1);
     BytesBytesMultiHashMap.Result hashMapResult = new BytesBytesMultiHashMap.Result();
-    map.getValueResult(key, 0, key.length, hashMapResult);
+    map.getValueResult(key, 0, key.length, hashMapResult, null);
     assertTrue(!hashMapResult.hasRows());
-    map.getValueResult(key, 0, 0, hashMapResult);
+    map.getValueResult(key, 0, 0, hashMapResult, null);
     assertTrue(!hashMapResult.hasRows());
   }
 
@@ -104,7 +104,7 @@ public class TestBytesBytesMultiHashMap {
     assertEquals(CAPACITY, map.getCapacity());
     // Get of non-existent key should terminate..
     BytesBytesMultiHashMap.Result hashMapResult = new BytesBytesMultiHashMap.Result();
-    map.getValueResult(new byte[0], 0, 0, hashMapResult);
+    map.getValueResult(new byte[0], 0, 0, hashMapResult, null);
   }
 
   @Test
@@ -123,7 +123,7 @@ public class TestBytesBytesMultiHashMap {
 
   private void verifyHashMapResult(BytesBytesMultiHashMap map, byte[] key, byte[]... values) {
     BytesBytesMultiHashMap.Result hashMapResult = new BytesBytesMultiHashMap.Result();
-    byte state = map.getValueResult(key, 0, key.length, hashMapResult);
+    byte state = map.getValueResult(key, 0, key.length, hashMapResult, null);
     HashSet<ByteBuffer> hs = new HashSet<ByteBuffer>();
     int count = 0;
     if (hashMapResult.hasRows()) {

@@ -1,21 +1,21 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN FROM 
+PREHOOK: query: EXPLAIN FROM 
 (SELECT src.* FROM src) x
 JOIN 
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 SELECT Y.*
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN FROM 
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN FROM 
 (SELECT src.* FROM src) x
 JOIN 
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 SELECT Y.*
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -26,6 +26,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -41,6 +42,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

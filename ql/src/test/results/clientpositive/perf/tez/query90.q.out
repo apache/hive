@@ -1,0 +1,259 @@
+Warning: Shuffle Join MERGEJOIN[152][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 6' is a cross product
+PREHOOK: query: explain
+select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
+ from ( select count(*) amc
+       from web_sales, household_demographics , time_dim, web_page
+       where ws_sold_time_sk = time_dim.t_time_sk
+         and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
+         and ws_web_page_sk = web_page.wp_web_page_sk
+         and time_dim.t_hour between 6 and 6+1
+         and household_demographics.hd_dep_count = 8
+         and web_page.wp_char_count between 5000 and 5200) at,
+      ( select count(*) pmc
+       from web_sales, household_demographics , time_dim, web_page
+       where ws_sold_time_sk = time_dim.t_time_sk
+         and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
+         and ws_web_page_sk = web_page.wp_web_page_sk
+         and time_dim.t_hour between 14 and 14+1
+         and household_demographics.hd_dep_count = 8
+         and web_page.wp_char_count between 5000 and 5200) pt
+ order by am_pm_ratio
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@time_dim
+PREHOOK: Input: default@web_page
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
+ from ( select count(*) amc
+       from web_sales, household_demographics , time_dim, web_page
+       where ws_sold_time_sk = time_dim.t_time_sk
+         and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
+         and ws_web_page_sk = web_page.wp_web_page_sk
+         and time_dim.t_hour between 6 and 6+1
+         and household_demographics.hd_dep_count = 8
+         and web_page.wp_char_count between 5000 and 5200) at,
+      ( select count(*) pmc
+       from web_sales, household_demographics , time_dim, web_page
+       where ws_sold_time_sk = time_dim.t_time_sk
+         and ws_ship_hdemo_sk = household_demographics.hd_demo_sk
+         and ws_web_page_sk = web_page.wp_web_page_sk
+         and time_dim.t_hour between 14 and 14+1
+         and household_demographics.hd_dep_count = 8
+         and web_page.wp_char_count between 5000 and 5200) pt
+ order by am_pm_ratio
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Input: default@web_page
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Reducer 16 (BROADCAST_EDGE), Reducer 19 (BROADCAST_EDGE), Reducer 9 (BROADCAST_EDGE)
+Map 21 <- Reducer 14 (BROADCAST_EDGE), Reducer 17 (BROADCAST_EDGE), Reducer 20 (BROADCAST_EDGE)
+Reducer 10 <- Map 21 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+Reducer 11 <- Map 15 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
+Reducer 12 <- Map 18 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
+Reducer 13 <- Reducer 12 (CUSTOM_SIMPLE_EDGE)
+Reducer 14 <- Map 8 (CUSTOM_SIMPLE_EDGE)
+Reducer 16 <- Map 15 (CUSTOM_SIMPLE_EDGE)
+Reducer 17 <- Map 15 (CUSTOM_SIMPLE_EDGE)
+Reducer 19 <- Map 18 (CUSTOM_SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+Reducer 20 <- Map 18 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 15 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 18 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
+Reducer 6 <- Reducer 13 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
+Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:100
+    Stage-1
+      Reducer 7 vectorized
+      File Output Operator [FS_209]
+        Limit [LIM_208] (rows=1 width=17)
+          Number of rows:100
+          Select Operator [SEL_207] (rows=1 width=17)
+            Output:["_col0"]
+          <-Reducer 6 [SIMPLE_EDGE]
+            SHUFFLE [RS_56]
+              Select Operator [SEL_55] (rows=1 width=17)
+                Output:["_col0"]
+                Merge Join Operator [MERGEJOIN_152] (rows=1 width=17)
+                  Conds:(Inner),Output:["_col0","_col1"]
+                <-Reducer 13 [CUSTOM_SIMPLE_EDGE] vectorized
+                  PARTITION_ONLY_SHUFFLE [RS_206]
+                    Group By Operator [GBY_205] (rows=1 width=8)
+                      Output:["_col0"],aggregations:["count(VALUE._col0)"]
+                    <-Reducer 12 [CUSTOM_SIMPLE_EDGE]
+                      PARTITION_ONLY_SHUFFLE [RS_49]
+                        Group By Operator [GBY_48] (rows=1 width=8)
+                          Output:["_col0"],aggregations:["count()"]
+                          Merge Join Operator [MERGEJOIN_151] (rows=191667562 width=135)
+                            Conds:RS_44._col1=RS_183._col0(Inner)
+                          <-Map 18 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_183]
+                              PartitionCols:_col0
+                              Select Operator [SEL_180] (rows=3600 width=107)
+                                Output:["_col0"]
+                                Filter Operator [FIL_179] (rows=3600 width=107)
+                                  predicate:((hd_dep_count = 8) and hd_demo_sk is not null)
+                                  TableScan [TS_9] (rows=7200 width=107)
+                                    default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_dep_count"]
+                          <-Reducer 11 [SIMPLE_EDGE]
+                            SHUFFLE [RS_44]
+                              PartitionCols:_col1
+                              Merge Join Operator [MERGEJOIN_150] (rows=174243235 width=135)
+                                Conds:RS_41._col0=RS_171._col0(Inner),Output:["_col1"]
+                              <-Map 15 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_171]
+                                  PartitionCols:_col0
+                                  Select Operator [SEL_168] (rows=86400 width=471)
+                                    Output:["_col0"]
+                                    Filter Operator [FIL_166] (rows=86400 width=471)
+                                      predicate:(t_hour BETWEEN 14 AND 15 and t_time_sk is not null)
+                                      TableScan [TS_6] (rows=86400 width=471)
+                                        default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour"]
+                              <-Reducer 10 [SIMPLE_EDGE]
+                                SHUFFLE [RS_41]
+                                  PartitionCols:_col0
+                                  Merge Join Operator [MERGEJOIN_149] (rows=158402938 width=135)
+                                    Conds:RS_204._col2=RS_157._col0(Inner),Output:["_col0","_col1"]
+                                  <-Map 8 [SIMPLE_EDGE] vectorized
+                                    PARTITION_ONLY_SHUFFLE [RS_157]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_154] (rows=511 width=585)
+                                        Output:["_col0"]
+                                        Filter Operator [FIL_153] (rows=511 width=585)
+                                          predicate:(wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null)
+                                          TableScan [TS_3] (rows=4602 width=585)
+                                            default@web_page,web_page,Tbl:COMPLETE,Col:NONE,Output:["wp_web_page_sk","wp_char_count"]
+                                  <-Map 21 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_204]
+                                      PartitionCols:_col2
+                                      Select Operator [SEL_203] (rows=144002668 width=135)
+                                        Output:["_col0","_col1","_col2"]
+                                        Filter Operator [FIL_202] (rows=144002668 width=135)
+                                          predicate:((ws_ship_hdemo_sk BETWEEN DynamicValue(RS_45_household_demographics_hd_demo_sk_min) AND DynamicValue(RS_45_household_demographics_hd_demo_sk_max) and in_bloom_filter(ws_ship_hdemo_sk, DynamicValue(RS_45_household_demographics_hd_demo_sk_bloom_filter))) and (ws_sold_time_sk BETWEEN DynamicValue(RS_42_time_dim_t_time_sk_min) AND DynamicValue(RS_42_time_dim_t_time_sk_max) and in_bloom_filter(ws_sold_time_sk, DynamicValue(RS_42_time_dim_t_time_sk_bloom_filter))) and (ws_web_page_sk BETWEEN DynamicValue(RS_39_web_page_wp_web_page_sk_min) AND DynamicValue(RS_39_web_page_wp_web_page_sk_max) and in_bloom_filter(ws_web_page_sk, DynamicValue(RS_39_web_page_wp_web_page_sk_bloom_filter))) and ws_ship_hdemo_sk is not null and ws_sold_time_sk is not null and ws_web_page_sk is not null)
+                                          TableScan [TS_26] (rows=144002668 width=135)
+                                            default@web_sales,web_sales,Tbl:COMPLETE,Col:NONE,Output:["ws_sold_time_sk","ws_ship_hdemo_sk","ws_web_page_sk"]
+                                          <-Reducer 14 [BROADCAST_EDGE] vectorized
+                                            BROADCAST [RS_197]
+                                              Group By Operator [GBY_196] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                              <-Map 8 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                PARTITION_ONLY_SHUFFLE [RS_162]
+                                                  Group By Operator [GBY_160] (rows=1 width=12)
+                                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                    Select Operator [SEL_158] (rows=511 width=585)
+                                                      Output:["_col0"]
+                                                       Please refer to the previous Select Operator [SEL_154]
+                                          <-Reducer 17 [BROADCAST_EDGE] vectorized
+                                            BROADCAST [RS_199]
+                                              Group By Operator [GBY_198] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                              <-Map 15 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                SHUFFLE [RS_176]
+                                                  Group By Operator [GBY_174] (rows=1 width=12)
+                                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                    Select Operator [SEL_172] (rows=86400 width=471)
+                                                      Output:["_col0"]
+                                                       Please refer to the previous Select Operator [SEL_168]
+                                          <-Reducer 20 [BROADCAST_EDGE] vectorized
+                                            BROADCAST [RS_201]
+                                              Group By Operator [GBY_200] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                              <-Map 18 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                SHUFFLE [RS_188]
+                                                  Group By Operator [GBY_186] (rows=1 width=12)
+                                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                    Select Operator [SEL_184] (rows=3600 width=107)
+                                                      Output:["_col0"]
+                                                       Please refer to the previous Select Operator [SEL_180]
+                <-Reducer 5 [CUSTOM_SIMPLE_EDGE] vectorized
+                  PARTITION_ONLY_SHUFFLE [RS_195]
+                    Group By Operator [GBY_194] (rows=1 width=8)
+                      Output:["_col0"],aggregations:["count(VALUE._col0)"]
+                    <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
+                      PARTITION_ONLY_SHUFFLE [RS_23]
+                        Group By Operator [GBY_22] (rows=1 width=8)
+                          Output:["_col0"],aggregations:["count()"]
+                          Merge Join Operator [MERGEJOIN_148] (rows=191667562 width=135)
+                            Conds:RS_18._col1=RS_181._col0(Inner)
+                          <-Map 18 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_181]
+                              PartitionCols:_col0
+                               Please refer to the previous Select Operator [SEL_180]
+                          <-Reducer 3 [SIMPLE_EDGE]
+                            SHUFFLE [RS_18]
+                              PartitionCols:_col1
+                              Merge Join Operator [MERGEJOIN_147] (rows=174243235 width=135)
+                                Conds:RS_15._col0=RS_169._col0(Inner),Output:["_col1"]
+                              <-Map 15 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_169]
+                                  PartitionCols:_col0
+                                  Select Operator [SEL_167] (rows=86400 width=471)
+                                    Output:["_col0"]
+                                    Filter Operator [FIL_165] (rows=86400 width=471)
+                                      predicate:(t_hour BETWEEN 6 AND 7 and t_time_sk is not null)
+                                       Please refer to the previous TableScan [TS_6]
+                              <-Reducer 2 [SIMPLE_EDGE]
+                                SHUFFLE [RS_15]
+                                  PartitionCols:_col0
+                                  Merge Join Operator [MERGEJOIN_146] (rows=158402938 width=135)
+                                    Conds:RS_193._col2=RS_155._col0(Inner),Output:["_col0","_col1"]
+                                  <-Map 8 [SIMPLE_EDGE] vectorized
+                                    PARTITION_ONLY_SHUFFLE [RS_155]
+                                      PartitionCols:_col0
+                                       Please refer to the previous Select Operator [SEL_154]
+                                  <-Map 1 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_193]
+                                      PartitionCols:_col2
+                                      Select Operator [SEL_192] (rows=144002668 width=135)
+                                        Output:["_col0","_col1","_col2"]
+                                        Filter Operator [FIL_191] (rows=144002668 width=135)
+                                          predicate:((ws_ship_hdemo_sk BETWEEN DynamicValue(RS_19_household_demographics_hd_demo_sk_min) AND DynamicValue(RS_19_household_demographics_hd_demo_sk_max) and in_bloom_filter(ws_ship_hdemo_sk, DynamicValue(RS_19_household_demographics_hd_demo_sk_bloom_filter))) and (ws_sold_time_sk BETWEEN DynamicValue(RS_16_time_dim_t_time_sk_min) AND DynamicValue(RS_16_time_dim_t_time_sk_max) and in_bloom_filter(ws_sold_time_sk, DynamicValue(RS_16_time_dim_t_time_sk_bloom_filter))) and (ws_web_page_sk BETWEEN DynamicValue(RS_13_web_page_wp_web_page_sk_min) AND DynamicValue(RS_13_web_page_wp_web_page_sk_max) and in_bloom_filter(ws_web_page_sk, DynamicValue(RS_13_web_page_wp_web_page_sk_bloom_filter))) and ws_ship_hdemo_sk is not null and ws_sold_time_sk is not null and ws_web_page_sk is not null)
+                                          TableScan [TS_0] (rows=144002668 width=135)
+                                            default@web_sales,web_sales,Tbl:COMPLETE,Col:NONE,Output:["ws_sold_time_sk","ws_ship_hdemo_sk","ws_web_page_sk"]
+                                          <-Reducer 16 [BROADCAST_EDGE] vectorized
+                                            BROADCAST [RS_178]
+                                              Group By Operator [GBY_177] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                              <-Map 15 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                SHUFFLE [RS_175]
+                                                  Group By Operator [GBY_173] (rows=1 width=12)
+                                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                    Select Operator [SEL_170] (rows=86400 width=471)
+                                                      Output:["_col0"]
+                                                       Please refer to the previous Select Operator [SEL_167]
+                                          <-Reducer 19 [BROADCAST_EDGE] vectorized
+                                            BROADCAST [RS_190]
+                                              Group By Operator [GBY_189] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                              <-Map 18 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                SHUFFLE [RS_187]
+                                                  Group By Operator [GBY_185] (rows=1 width=12)
+                                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                    Select Operator [SEL_182] (rows=3600 width=107)
+                                                      Output:["_col0"]
+                                                       Please refer to the previous Select Operator [SEL_180]
+                                          <-Reducer 9 [BROADCAST_EDGE] vectorized
+                                            BROADCAST [RS_164]
+                                              Group By Operator [GBY_163] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                              <-Map 8 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                PARTITION_ONLY_SHUFFLE [RS_161]
+                                                  Group By Operator [GBY_159] (rows=1 width=12)
+                                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                    Select Operator [SEL_156] (rows=511 width=585)
+                                                      Output:["_col0"]
+                                                       Please refer to the previous Select Operator [SEL_154]
+

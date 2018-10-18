@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -93,6 +95,10 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
       // create map and fetch operators
       MapWork mrwork = Utilities.getMapWork(job);
+      for (PartitionDesc part : mrwork.getAliasToPartnInfo().values()) {
+        TableDesc tableDesc = part.getTableDesc();
+        Utilities.copyJobSecretToTableProperties(tableDesc);
+      }
 
       CompilationOpContext runtimeCtx = new CompilationOpContext();
       if (mrwork.getVectorMode()) {
@@ -141,13 +147,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   @Override
   public void map(Object key, Object value, OutputCollector output,
       Reporter reporter) throws IOException {
-    if (oc == null) {
-      oc = output;
-      rp = reporter;
-      OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
-      mo.setReporter(rp);
-      MapredContext.get().setReporter(reporter);
-    }
+    ensureOutputInitialize(output, reporter);
     // reset the execContext for each new row
     execContext.resetRow();
 
@@ -168,6 +168,16 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         l4j.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  public void ensureOutputInitialize(OutputCollector output, Reporter reporter) {
+    if (oc == null) {
+      oc = output;
+      rp = reporter;
+      OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
+      mo.setReporter(rp);
+      MapredContext.get().setReporter(reporter);
     }
   }
 

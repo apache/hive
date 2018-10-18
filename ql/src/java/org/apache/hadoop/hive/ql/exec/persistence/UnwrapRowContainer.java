@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 
 /**
@@ -70,6 +71,8 @@ public class UnwrapRowContainer
     return unwrap(iterator.next());
   }
 
+  private static final ShortWritable ALL_ALIAS_FILTER_SHORT_WRITABLE = new ShortWritable((byte) 0xff);
+
   private List<Object> unwrap(List<Object> values) {
     if (values == null) {
       return null;
@@ -90,7 +93,14 @@ public class UnwrapRowContainer
       }
     }
     if (tagged) {
-      unwrapped.add(values.get(values.size() - 1)); // append filter tag
+
+      // Append filter tag.
+      final int size = values.size();
+      if (size == 0) {
+        unwrapped.add(ALL_ALIAS_FILTER_SHORT_WRITABLE);
+      } else {
+        unwrapped.add(values.get(size - 1));
+      }
     }
     return unwrapped;
   }

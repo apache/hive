@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create database avc
+PREHOOK: query: create database avc
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:avc
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create database avc
+POSTHOOK: query: create database avc
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:avc
 PREHOOK: query: create table avc.alter_varchar_1 (key string, value string)
@@ -41,23 +37,19 @@ POSTHOOK: Input: avc@alter_varchar_1
 0	val_0
 10	val_10
 100	val_100
-PREHOOK: query: -- change column to varchar
-alter table avc.alter_varchar_1 change column value value varchar(20)
+PREHOOK: query: alter table avc.alter_varchar_1 change column value value varchar(20)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: avc@alter_varchar_1
 PREHOOK: Output: avc@alter_varchar_1
-POSTHOOK: query: -- change column to varchar
-alter table avc.alter_varchar_1 change column value value varchar(20)
+POSTHOOK: query: alter table avc.alter_varchar_1 change column value value varchar(20)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: avc@alter_varchar_1
 POSTHOOK: Output: avc@alter_varchar_1
-PREHOOK: query: -- contents should still look the same
-select * from avc.alter_varchar_1
+PREHOOK: query: select * from avc.alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: avc@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- contents should still look the same
-select * from avc.alter_varchar_1
+POSTHOOK: query: select * from avc.alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: avc@alter_varchar_1
 #### A masked pattern was here ####
@@ -66,23 +58,19 @@ POSTHOOK: Input: avc@alter_varchar_1
 0	val_0
 10	val_10
 100	val_100
-PREHOOK: query: -- change column to smaller varchar
-alter table avc.alter_varchar_1 change column value value varchar(3)
+PREHOOK: query: alter table avc.alter_varchar_1 change column value value varchar(3)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: avc@alter_varchar_1
 PREHOOK: Output: avc@alter_varchar_1
-POSTHOOK: query: -- change column to smaller varchar
-alter table avc.alter_varchar_1 change column value value varchar(3)
+POSTHOOK: query: alter table avc.alter_varchar_1 change column value value varchar(3)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: avc@alter_varchar_1
 POSTHOOK: Output: avc@alter_varchar_1
-PREHOOK: query: -- value column should be truncated now
-select * from avc.alter_varchar_1
+PREHOOK: query: select * from avc.alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: avc@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- value column should be truncated now
-select * from avc.alter_varchar_1
+POSTHOOK: query: select * from avc.alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: avc@alter_varchar_1
 #### A masked pattern was here ####
@@ -91,23 +79,19 @@ POSTHOOK: Input: avc@alter_varchar_1
 0	val
 10	val
 100	val
-PREHOOK: query: -- change back to bigger varchar
-alter table avc.alter_varchar_1 change column value value varchar(20)
+PREHOOK: query: alter table avc.alter_varchar_1 change column value value varchar(20)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: avc@alter_varchar_1
 PREHOOK: Output: avc@alter_varchar_1
-POSTHOOK: query: -- change back to bigger varchar
-alter table avc.alter_varchar_1 change column value value varchar(20)
+POSTHOOK: query: alter table avc.alter_varchar_1 change column value value varchar(20)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: avc@alter_varchar_1
 POSTHOOK: Output: avc@alter_varchar_1
-PREHOOK: query: -- column values should be full size again
-select * from avc.alter_varchar_1
+PREHOOK: query: select * from avc.alter_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: avc@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- column values should be full size again
-select * from avc.alter_varchar_1
+POSTHOOK: query: select * from avc.alter_varchar_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: avc@alter_varchar_1
 #### A masked pattern was here ####
@@ -116,13 +100,11 @@ POSTHOOK: Input: avc@alter_varchar_1
 0	val_0
 10	val_10
 100	val_100
-PREHOOK: query: -- add varchar column
-alter table avc.alter_varchar_1 add columns (key2 int, value2 varchar(10))
+PREHOOK: query: alter table avc.alter_varchar_1 add columns (key2 int, value2 varchar(10))
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: avc@alter_varchar_1
 PREHOOK: Output: avc@alter_varchar_1
-POSTHOOK: query: -- add varchar column
-alter table avc.alter_varchar_1 add columns (key2 int, value2 varchar(10))
+POSTHOOK: query: alter table avc.alter_varchar_1 add columns (key2 int, value2 varchar(10))
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: avc@alter_varchar_1
 POSTHOOK: Output: avc@alter_varchar_1

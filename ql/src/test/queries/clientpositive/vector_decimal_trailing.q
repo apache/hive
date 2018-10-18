@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 DROP TABLE IF EXISTS DECIMAL_TRAILING_txt;
 DROP TABLE IF EXISTS DECIMAL_TRAILING;
@@ -25,6 +25,8 @@ STORED AS ORC;
 
 INSERT OVERWRITE TABLE DECIMAL_TRAILING SELECT * FROM DECIMAL_TRAILING_txt;
 
+EXPLAIN VECTORIZATION DETAIL
+SELECT * FROM DECIMAL_TRAILING ORDER BY id;
 SELECT * FROM DECIMAL_TRAILING ORDER BY id;
 
 DROP TABLE DECIMAL_TRAILING_txt;

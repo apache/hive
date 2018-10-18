@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -48,7 +47,8 @@ public class TableMask {
   private HiveAuthzContext queryContext;
   private HiveConf conf;
 
-  public TableMask(SemanticAnalyzer analyzer, HiveConf conf, Context ctx) throws SemanticException {
+  public TableMask(SemanticAnalyzer analyzer, HiveConf conf, boolean skipTableMasking)
+          throws SemanticException {
     try {
       authorizer = SessionState.get().getAuthorizerV2();
       this.conf = conf;
@@ -59,7 +59,7 @@ public class TableMask {
       ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
       ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
       queryContext = ctxBuilder.build();
-      if (authorizer != null && needTransform() && !ctx.isSkipTableMasking()) {
+      if (authorizer != null && needTransform() && !skipTableMasking) {
         enable = true;
         translator = new UnparseTranslator(conf);
         translator.enable();
@@ -83,26 +83,43 @@ public class TableMask {
     return authorizer.needTransform();
   }
 
-  public String create(HivePrivilegeObject privObject, MaskAndFilterInfo maskAndFilterInfo)
+  public boolean needsMaskingOrFiltering(HivePrivilegeObject privObject)
       throws SemanticException {
-    boolean doColumnMasking = false;
-    boolean doRowFiltering = false;
-    StringBuilder sb = new StringBuilder();
-    sb.append("(SELECT ");
-    boolean firstOne = true;
+    String filter = privObject.getRowFilterExpression();
+    if (filter != null) {
+      return true;
+    }
     List<String> exprs = privObject.getCellValueTransformers();
     if (exprs != null) {
       if (exprs.size() != privObject.getColumns().size()) {
         throw new SemanticException("Expect " + privObject.getColumns().size() + " columns in "
             + privObject.getObjectName() + ", but only find " + exprs.size());
       }
-      List<String> colTypes = maskAndFilterInfo.colTypes;
       for (int index = 0; index < exprs.size(); index++) {
         String expr = exprs.get(index);
         if (expr == null) {
           throw new SemanticException("Expect string type CellValueTransformer in "
               + privObject.getObjectName() + ", but only find null");
         }
+        String colName = privObject.getColumns().get(index);
+        if (!expr.equals(colName)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public String create(HivePrivilegeObject privObject, MaskAndFilterInfo maskAndFilterInfo) {
+    boolean doColumnMasking = false;
+    StringBuilder sb = new StringBuilder();
+    sb.append("(SELECT ");
+    boolean firstOne = true;
+    List<String> exprs = privObject.getCellValueTransformers();
+    if (exprs != null) {
+      List<String> colTypes = maskAndFilterInfo.colTypes;
+      for (int index = 0; index < exprs.size(); index++) {
+        String expr = exprs.get(index);
         if (!firstOne) {
           sb.append(", ");
         } else {
@@ -124,7 +141,7 @@ public class TableMask {
       sb.append("(SELECT *");
     }
 
-    if (!maskAndFilterInfo.isView) {
+    if (!maskAndFilterInfo.isView && !maskAndFilterInfo.isNonNative) {
       // put all virtual columns in RowResolver.
       Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
       while (vcs.hasNext()) {
@@ -141,17 +158,11 @@ public class TableMask {
     String filter = privObject.getRowFilterExpression();
     if (filter != null) {
       sb.append(" WHERE " + filter);
-      doRowFiltering = true;
     }
     sb.append(")" + HiveUtils.unparseIdentifier(maskAndFilterInfo.alias, conf));
     
-    if (!doColumnMasking && !doRowFiltering) {
-      // nothing to do
-      return null;
-    } else {
-      LOG.debug("TableMask creates `" + sb.toString() + "`");
-      return sb.toString();
-    }
+    LOG.debug("TableMask creates `" + sb.toString() + "`");
+    return sb.toString();
   }
 
   void addTranslation(ASTNode node, String replacementText) throws SemanticException {

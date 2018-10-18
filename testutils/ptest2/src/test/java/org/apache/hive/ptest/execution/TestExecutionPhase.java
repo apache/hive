@@ -20,9 +20,12 @@ package org.apache.hive.ptest.execution;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hive.ptest.execution.conf.QFileTestBatch;
@@ -70,18 +73,34 @@ public class TestExecutionPhase extends AbstractTestPhase {
     testDir = Dirs.create( new File(baseDir, "test"));
     Assert.assertTrue(new File(testDir, QFILENAME).createNewFile());
     testBatch =
-        new QFileTestBatch("testcase", DRIVER, "qfile", Sets.newHashSet(QFILENAME), isParallel,
+        new QFileTestBatch(new AtomicInteger(1), "testcase", DRIVER, "qfile", Sets.newHashSet(QFILENAME), isParallel,
             "testModule");
     testBatches = Collections.singletonList(testBatch);
   }
   private void setupUnitTest() throws Exception {
-    testBatch = new UnitTestBatch("testcase", DRIVER, false);
+    testBatch = new UnitTestBatch(new AtomicInteger(1), "testcase", Arrays.asList(DRIVER), "fakemodule", false);
+    testBatches = Collections.singletonList(testBatch);
+  }
+  private void setupUnitTest(int nTests) throws Exception {
+    List<String> testList = new ArrayList<>();
+    for (int i = 0 ; i < nTests ; i++) {
+      testList.add("TestClass-" + i);
+    }
+    testBatch = new UnitTestBatch(new AtomicInteger(1), "testcase", testList, "fakemodule", false);
     testBatches = Collections.singletonList(testBatch);
   }
   private void copyTestOutput(String resource, File directory, String name) throws Exception {
     String junitOutput = Templates.readResource(resource);
     File junitOutputFile = new File(Dirs.create(
         new File(directory, name)), "TEST-SomeTest.xml");
+    Files.write(junitOutput.getBytes(Charsets.UTF_8), junitOutputFile);
+  }
+
+  private void copyTestOutput(String resource, File directory, String batchName,
+                              String outputName) throws Exception {
+    String junitOutput = Templates.readResource(resource);
+    File junitOutputFile = new File(Dirs.create(
+        new File(directory, batchName)), outputName);
     Files.write(junitOutput.getBytes(Charsets.UTF_8), junitOutputFile);
   }
   @After
@@ -101,12 +120,13 @@ public class TestExecutionPhase extends AbstractTestPhase {
   public void testFailingQFile() throws Throwable {
     setupQFile(true);
     sshCommandExecutor.putFailure("bash " + LOCAL_DIR + "/" + HOST + "-" + USER +
-        "-0/scratch/hiveptest-" + DRIVER + "-" + QFILENAME + ".sh", 1);
+        "-0/scratch/hiveptest-" + "1-" + DRIVER + "-" + QFILENAME + ".sh", 1);
     copyTestOutput("SomeTest-failure.xml", failedLogDir, testBatch.getName());
     getPhase().execute();
+    Assert.assertEquals(1, sshCommandExecutor.getMatchCount());
     Approvals.verify(getExecutedCommands());
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
-    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), failedTests);
+    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME + " (batchId=1)"), failedTests);
   }
   @Test
   public void testPassingUnitTest() throws Throwable {
@@ -121,11 +141,50 @@ public class TestExecutionPhase extends AbstractTestPhase {
   public void testFailingUnitTest() throws Throwable {
     setupUnitTest();
     sshCommandExecutor.putFailure("bash " + LOCAL_DIR + "/" + HOST + "-" + USER +
-        "-0/scratch/hiveptest-" + DRIVER + ".sh", 1);
+        "-0/scratch/hiveptest-" + testBatch.getBatchId() + "_" + DRIVER + ".sh", 1);
     copyTestOutput("SomeTest-failure.xml", failedLogDir, testBatch.getName());
     getPhase().execute();
+    Assert.assertEquals(1, sshCommandExecutor.getMatchCount());
     Approvals.verify(getExecutedCommands());
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
-    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), failedTests);
+    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME + " (batchId=1)"), failedTests);
+  }
+
+  @Test
+  public void testPerfMetrics() throws Throwable {
+    //when test is successful
+    setupUnitTest();
+    copyTestOutput("SomeTest-success.xml", succeededLogDir, testBatch.getName());
+    Phase phase = getPhase();
+    phase.execute();
+    Assert.assertNotNull("Perf metrics should have been initialized", phase.getPerfMetrics());
+    Assert.assertNotNull(ExecutionPhase.TOTAL_RSYNC_TIME + " should have been initialized",
+        phase.getPerfMetrics().get(ExecutionPhase.TOTAL_RSYNC_TIME));
+    Assert.assertTrue("Total Rsync Elapsed time should have been greater than 0",
+        phase.getPerfMetrics().get(ExecutionPhase.TOTAL_RSYNC_TIME) > 0);
+
+    //when test fails
+    setupUnitTest();
+    sshCommandExecutor.putFailure("bash " + LOCAL_DIR + "/" + HOST + "-" + USER +
+        "-0/scratch/hiveptest-" + testBatch.getBatchId() + "_" + DRIVER + ".sh", 1);
+    copyTestOutput("SomeTest-failure.xml", failedLogDir, testBatch.getName());
+    phase = getPhase();
+    phase.execute();
+    Assert.assertNotNull("Perf metrics should have been initialized", phase.getPerfMetrics());
+    Assert.assertNotNull(ExecutionPhase.TOTAL_RSYNC_TIME + " should have been initialized",
+        phase.getPerfMetrics().get(ExecutionPhase.TOTAL_RSYNC_TIME));
+    Assert.assertTrue("Total Rsync Elapsed time should have been greater than 0",
+        phase.getPerfMetrics().get(ExecutionPhase.TOTAL_RSYNC_TIME) > 0);
+  }
+
+  @Test(timeout = 20000)
+  public void testTimedOutUnitTest() throws Throwable {
+    setupUnitTest(3);
+    copyTestOutput("SomeTest-success.xml", succeededLogDir, testBatch.getName(), "TEST-TestClass-0.xml");
+    copyTestOutput("SomeTest-success.xml", succeededLogDir, testBatch.getName(), "TEST-TestClass-1.xml");
+    getPhase().execute();
+    Approvals.verify(getExecutedCommands());
+    Assert.assertEquals(1, failedTests.size());
+    Assert.assertEquals("TestClass-2 - did not produce a TEST-*.xml file (likely timed out) (batchId=1)", failedTests.iterator().next());
   }
 }

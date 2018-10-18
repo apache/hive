@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringScalar;
-
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.Test;
 
 /**
@@ -175,7 +175,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testLongColumnColumnIfExpr()  {
+  public void testLongColumnColumnIfExpr() throws HiveException {
     VectorizedRowBatch batch = getBatch4LongVectors();
     VectorExpression expr = new IfExprLongColumnLongColumn(0, 1, 2, 3);
     expr.evaluate(batch);
@@ -188,7 +188,6 @@ public class TestVectorConditionalExpressions {
     assertEquals(2, r.vector[1]);
     assertEquals(-3, r.vector[2]);
     assertEquals(-4, r.vector[3]);
-    assertEquals(true, r.noNulls);
     assertEquals(false, r.isRepeating);
 
     // verify when first argument (boolean flags) is repeating
@@ -230,7 +229,6 @@ public class TestVectorConditionalExpressions {
     assertEquals(2, r.vector[1]);
     assertEquals(3, r.vector[2]);
     assertEquals(-4, r.vector[3]);
-    assertEquals(true, r.noNulls);
     assertEquals(false, r.isRepeating);
 
     // test when second argument has nulls
@@ -292,7 +290,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testDoubleColumnColumnIfExpr()  {
+  public void testDoubleColumnColumnIfExpr() throws HiveException {
     // Just spot check because we already checked the logic for long.
     // The code is from the same template file.
 
@@ -308,12 +306,11 @@ public class TestVectorConditionalExpressions {
     assertEquals(true, 2d == r.vector[1]);
     assertEquals(true, -3d == r.vector[2]);
     assertEquals(true, -4d == r.vector[3]);
-    assertEquals(true, r.noNulls);
     assertEquals(false, r.isRepeating);
   }
 
   @Test
-  public void testLongColumnScalarIfExpr() {
+  public void testLongColumnScalarIfExpr() throws HiveException {
     VectorizedRowBatch batch = getBatch4LongVectors();
     VectorExpression expr = new IfExprLongColumnLongScalar(0, 1, 100, 3);
     LongColumnVector r = (LongColumnVector) batch.cols[3];
@@ -325,7 +322,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testLongScalarColumnIfExpr() {
+  public void testLongScalarColumnIfExpr() throws HiveException {
     VectorizedRowBatch batch = getBatch4LongVectors();
     VectorExpression expr = new IfExprLongScalarLongColumn(0, 100, 2, 3);
     LongColumnVector r = (LongColumnVector) batch.cols[3];
@@ -337,7 +334,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testLongScalarScalarIfExpr() {
+  public void testLongScalarScalarIfExpr() throws HiveException {
     VectorizedRowBatch batch = getBatch4LongVectors();
     VectorExpression expr = new IfExprLongScalarLongScalar(0, 100, 200, 3);
     LongColumnVector r = (LongColumnVector) batch.cols[3];
@@ -349,7 +346,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testDoubleScalarScalarIfExpr() {
+  public void testDoubleScalarScalarIfExpr() throws HiveException {
     VectorizedRowBatch batch = getBatch1Long3DoubleVectors();
     VectorExpression expr = new IfExprDoubleScalarDoubleScalar(0, 100.0d, 200.0d, 3);
     DoubleColumnVector r = (DoubleColumnVector) batch.cols[3];
@@ -361,7 +358,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testDoubleScalarColumnIfExpr() {
+  public void testDoubleScalarColumnIfExpr() throws HiveException {
     VectorizedRowBatch batch = getBatch1Long3DoubleVectors();
     VectorExpression expr = new IfExprDoubleScalarDoubleColumn(0, 100.0d, 2, 3);
     DoubleColumnVector r = (DoubleColumnVector) batch.cols[3];
@@ -373,7 +370,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testDoubleColumnScalarIfExpr() {
+  public void testDoubleColumnScalarIfExpr() throws HiveException {
     VectorizedRowBatch batch = getBatch1Long3DoubleVectors();
     VectorExpression expr = new IfExprDoubleColumnDoubleScalar(0, 1, 200d, 3);
     DoubleColumnVector r = (DoubleColumnVector) batch.cols[3];
@@ -385,7 +382,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testIfExprStringColumnStringColumn() {
+  public void testIfExprStringColumnStringColumn() throws HiveException {
     VectorizedRowBatch batch = getBatch1Long3BytesVectors();
     VectorExpression expr = new IfExprStringGroupColumnStringGroupColumn(0, 1, 2, 3);
     BytesColumnVector r = (BytesColumnVector) batch.cols[3];
@@ -470,7 +467,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testIfExprStringColumnStringScalar() {
+  public void testIfExprStringColumnStringScalar() throws HiveException {
     VectorizedRowBatch batch = getBatch1Long3BytesVectors();
     byte[] scalar = getUTF8Bytes("scalar");
     VectorExpression expr = new IfExprStringGroupColumnStringScalar(0, 1, scalar, 3);
@@ -480,7 +477,6 @@ public class TestVectorConditionalExpressions {
     assertTrue(getString(r, 1).equals("scalar"));
     assertTrue(getString(r, 2).equals("arg2_2"));
     assertTrue(getString(r, 3).equals("arg2_3"));
-    assertTrue(r.noNulls);
 
     // test for null input strings
     batch = getBatch1Long3BytesVectors();
@@ -494,7 +490,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testIfExprStringScalarStringColumn() {
+  public void testIfExprStringScalarStringColumn() throws HiveException {
     VectorizedRowBatch batch = getBatch1Long3BytesVectors();
     byte[] scalar = getUTF8Bytes("scalar");
     VectorExpression expr = new IfExprStringScalarStringGroupColumn(0,scalar, 2, 3);
@@ -504,7 +500,6 @@ public class TestVectorConditionalExpressions {
     assertTrue(getString(r, 1).equals("arg3_1"));
     assertTrue(getString(r, 2).equals("scalar"));
     assertTrue(getString(r, 3).equals("scalar"));
-    assertTrue(r.noNulls);
 
     // test for null input strings
     batch = getBatch1Long3BytesVectors();
@@ -518,7 +513,7 @@ public class TestVectorConditionalExpressions {
   }
 
   @Test
-  public void testIfExprStringScalarStringScalar() {
+  public void testIfExprStringScalarStringScalar() throws HiveException {
 
     // standard case
     VectorizedRowBatch batch = getBatch1Long3BytesVectors();

@@ -1,0 +1,2150 @@
+PREHOOK: query: drop table intermediate_n0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermediate_n0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table intermediate_n0(key int) partitioned by (p int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermediate_n0
+POSTHOOK: query: create table intermediate_n0(key int) partitioned by (p int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermediate_n0
+PREHOOK: query: insert into table intermediate_n0 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate_n0@p=455
+POSTHOOK: query: insert into table intermediate_n0 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate_n0@p=455
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: insert into table intermediate_n0 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate_n0@p=456
+POSTHOOK: query: insert into table intermediate_n0 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate_n0@p=456
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: insert into table intermediate_n0 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate_n0@p=457
+POSTHOOK: query: insert into table intermediate_n0 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate_n0@p=457
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: drop table part_mm_n0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table part_mm_n0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table part_mm_n0(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_mm_n0
+POSTHOOK: query: create table part_mm_n0(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_mm_n0
+PREHOOK: query: explain insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: query: explain insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@part_mm_n0@key_mm=455
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: intermediate_n0
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.part_mm_n0
+                Write Type: INSERT
+              Select Operator
+                expressions: _col0 (type: int), UDFToInteger('455') (type: int)
+                outputColumnNames: key, key_mm
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(key, 'hll')
+                  keys: key_mm (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            key_mm 455
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.part_mm_n0
+          micromanaged table: true
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.part_mm_n0
+
+  Stage: Stage-3
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
+      merge level: stripe
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-5
+    Merge File Operator
+      Map Operator Tree:
+          ORC File Merge Operator
+      merge level: stripe
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-6
+    Dependency Collection
+
+PREHOOK: query: insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: query: insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: insert into table part_mm_n0 partition(key_mm=456) select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@part_mm_n0@key_mm=456
+POSTHOOK: query: insert into table part_mm_n0 partition(key_mm=456) select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@part_mm_n0@key_mm=456
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: query: insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from part_mm_n0 order by key, key_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_mm_n0
+PREHOOK: Input: default@part_mm_n0@key_mm=455
+PREHOOK: Input: default@part_mm_n0@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_mm_n0 order by key, key_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_mm_n0
+POSTHOOK: Input: default@part_mm_n0@key_mm=455
+POSTHOOK: Input: default@part_mm_n0@key_mm=456
+#### A masked pattern was here ####
+0	455
+0	455
+0	456
+10	455
+10	455
+10	456
+97	455
+97	455
+97	456
+98	455
+98	455
+98	456
+100	455
+100	455
+100	456
+103	455
+103	455
+103	456
+PREHOOK: query: select * from part_mm_n0 order by key, key_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_mm_n0
+PREHOOK: Input: default@part_mm_n0@key_mm=455
+PREHOOK: Input: default@part_mm_n0@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_mm_n0 order by key, key_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_mm_n0
+POSTHOOK: Input: default@part_mm_n0@key_mm=455
+POSTHOOK: Input: default@part_mm_n0@key_mm=456
+#### A masked pattern was here ####
+0	455
+0	455
+0	456
+10	455
+10	455
+10	456
+97	455
+97	455
+97	456
+98	455
+98	455
+98	456
+100	455
+100	455
+100	456
+103	455
+103	455
+103	456
+PREHOOK: query: truncate table part_mm_n0
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@part_mm_n0@key_mm=455
+PREHOOK: Output: default@part_mm_n0@key_mm=456
+POSTHOOK: query: truncate table part_mm_n0
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: Output: default@part_mm_n0@key_mm=456
+PREHOOK: query: select * from part_mm_n0 order by key, key_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_mm_n0
+PREHOOK: Input: default@part_mm_n0@key_mm=455
+PREHOOK: Input: default@part_mm_n0@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_mm_n0 order by key, key_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_mm_n0
+POSTHOOK: Input: default@part_mm_n0@key_mm=455
+POSTHOOK: Input: default@part_mm_n0@key_mm=456
+#### A masked pattern was here ####
+PREHOOK: query: drop table part_mm_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_mm_n0
+PREHOOK: Output: default@part_mm_n0
+POSTHOOK: query: drop table part_mm_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_mm_n0
+POSTHOOK: Output: default@part_mm_n0
+PREHOOK: query: drop table simple_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table simple_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table simple_mm(key int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: create table simple_mm(key int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@simple_mm
+PREHOOK: query: insert into table simple_mm select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: insert into table simple_mm select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@simple_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from simple_mm order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_mm order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+0
+10
+97
+98
+100
+103
+PREHOOK: query: insert into table simple_mm select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: insert into table simple_mm select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@simple_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from simple_mm order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_mm order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+0
+0
+10
+10
+97
+97
+98
+98
+100
+100
+103
+103
+PREHOOK: query: truncate table simple_mm
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: truncate table simple_mm
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@simple_mm
+PREHOOK: query: select * from simple_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_mm
+#### A masked pattern was here ####
+PREHOOK: query: drop table simple_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@simple_mm
+PREHOOK: Output: default@simple_mm
+POSTHOOK: query: drop table simple_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@simple_mm
+POSTHOOK: Output: default@simple_mm
+PREHOOK: query: drop table dp_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dp_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
+  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dp_mm
+POSTHOOK: query: create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
+  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dp_mm
+PREHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@dp_mm@key1=123
+POSTHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@dp_mm@key1=123/key2=0
+POSTHOOK: Output: default@dp_mm@key1=123/key2=10
+POSTHOOK: Output: default@dp_mm@key1=123/key2=100
+POSTHOOK: Output: default@dp_mm@key1=123/key2=103
+POSTHOOK: Output: default@dp_mm@key1=123/key2=97
+POSTHOOK: Output: default@dp_mm@key1=123/key2=98
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from dp_mm order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dp_mm
+PREHOOK: Input: default@dp_mm@key1=123/key2=0
+PREHOOK: Input: default@dp_mm@key1=123/key2=10
+PREHOOK: Input: default@dp_mm@key1=123/key2=100
+PREHOOK: Input: default@dp_mm@key1=123/key2=103
+PREHOOK: Input: default@dp_mm@key1=123/key2=97
+PREHOOK: Input: default@dp_mm@key1=123/key2=98
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dp_mm order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dp_mm
+POSTHOOK: Input: default@dp_mm@key1=123/key2=0
+POSTHOOK: Input: default@dp_mm@key1=123/key2=10
+POSTHOOK: Input: default@dp_mm@key1=123/key2=100
+POSTHOOK: Input: default@dp_mm@key1=123/key2=103
+POSTHOOK: Input: default@dp_mm@key1=123/key2=97
+POSTHOOK: Input: default@dp_mm@key1=123/key2=98
+#### A masked pattern was here ####
+0	123	0
+10	123	10
+97	123	97
+98	123	98
+100	123	100
+103	123	103
+PREHOOK: query: drop table dp_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dp_mm
+PREHOOK: Output: default@dp_mm
+POSTHOOK: query: drop table dp_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dp_mm
+POSTHOOK: Output: default@dp_mm
+PREHOOK: query: create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_mm
+POSTHOOK: query: create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_mm
+PREHOOK: query: insert into table union_mm 
+select temps.p from (
+select key as p from intermediate_n0 
+union all 
+select key + 1 as p from intermediate_n0 ) temps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@union_mm
+POSTHOOK: query: insert into table union_mm 
+select temps.p from (
+select key as p from intermediate_n0 
+union all 
+select key + 1 as p from intermediate_n0 ) temps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@union_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from union_mm order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union_mm order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_mm
+#### A masked pattern was here ####
+0
+1
+10
+11
+97
+98
+98
+99
+100
+101
+103
+104
+PREHOOK: query: insert into table union_mm 
+select p from
+(
+select key + 1 as p from intermediate_n0
+union all
+select key from intermediate_n0
+) tab group by p
+union all
+select key + 2 as p from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@union_mm
+POSTHOOK: query: insert into table union_mm 
+select p from
+(
+select key + 1 as p from intermediate_n0
+union all
+select key from intermediate_n0
+) tab group by p
+union all
+select key + 2 as p from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@union_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from union_mm order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union_mm order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_mm
+#### A masked pattern was here ####
+0
+0
+1
+1
+2
+10
+10
+11
+11
+12
+97
+97
+98
+98
+98
+99
+99
+99
+100
+100
+100
+101
+101
+102
+103
+103
+104
+104
+105
+PREHOOK: query: insert into table union_mm
+SELECT p FROM
+(
+  SELECT key + 1 as p FROM intermediate_n0
+  UNION ALL
+  SELECT key as p FROM ( 
+    SELECT distinct key FROM (
+      SELECT key FROM (
+        SELECT key + 2 as key FROM intermediate_n0
+        UNION ALL
+        SELECT key FROM intermediate_n0
+      )t1 
+    group by key)t2
+  )t3
+)t4
+group by p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@union_mm
+POSTHOOK: query: insert into table union_mm
+SELECT p FROM
+(
+  SELECT key + 1 as p FROM intermediate_n0
+  UNION ALL
+  SELECT key as p FROM ( 
+    SELECT distinct key FROM (
+      SELECT key FROM (
+        SELECT key + 2 as key FROM intermediate_n0
+        UNION ALL
+        SELECT key FROM intermediate_n0
+      )t1 
+    group by key)t2
+  )t3
+)t4
+group by p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@union_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from union_mm order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union_mm order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_mm
+#### A masked pattern was here ####
+0
+0
+0
+1
+1
+1
+2
+2
+10
+10
+10
+11
+11
+11
+12
+12
+97
+97
+97
+98
+98
+98
+98
+99
+99
+99
+99
+100
+100
+100
+100
+101
+101
+101
+102
+102
+103
+103
+103
+104
+104
+104
+105
+105
+PREHOOK: query: drop table union_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_mm
+PREHOOK: Output: default@union_mm
+POSTHOOK: query: drop table union_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_mm
+POSTHOOK: Output: default@union_mm
+PREHOOK: query: create table partunion_mm(id int) partitioned by (key int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partunion_mm
+POSTHOOK: query: create table partunion_mm(id int) partitioned by (key int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partunion_mm
+PREHOOK: query: insert into table partunion_mm partition(key)
+select temps.* from (
+select key as p, key from intermediate_n0 
+union all 
+select key + 1 as p, key + 1 from intermediate_n0 ) temps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@partunion_mm
+POSTHOOK: query: insert into table partunion_mm partition(key)
+select temps.* from (
+select key as p, key from intermediate_n0 
+union all 
+select key + 1 as p, key + 1 from intermediate_n0 ) temps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@partunion_mm@key=0
+POSTHOOK: Output: default@partunion_mm@key=1
+POSTHOOK: Output: default@partunion_mm@key=10
+POSTHOOK: Output: default@partunion_mm@key=100
+POSTHOOK: Output: default@partunion_mm@key=101
+POSTHOOK: Output: default@partunion_mm@key=103
+POSTHOOK: Output: default@partunion_mm@key=104
+POSTHOOK: Output: default@partunion_mm@key=11
+POSTHOOK: Output: default@partunion_mm@key=97
+POSTHOOK: Output: default@partunion_mm@key=98
+POSTHOOK: Output: default@partunion_mm@key=99
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from partunion_mm order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partunion_mm
+PREHOOK: Input: default@partunion_mm@key=0
+PREHOOK: Input: default@partunion_mm@key=1
+PREHOOK: Input: default@partunion_mm@key=10
+PREHOOK: Input: default@partunion_mm@key=100
+PREHOOK: Input: default@partunion_mm@key=101
+PREHOOK: Input: default@partunion_mm@key=103
+PREHOOK: Input: default@partunion_mm@key=104
+PREHOOK: Input: default@partunion_mm@key=11
+PREHOOK: Input: default@partunion_mm@key=97
+PREHOOK: Input: default@partunion_mm@key=98
+PREHOOK: Input: default@partunion_mm@key=99
+#### A masked pattern was here ####
+POSTHOOK: query: select * from partunion_mm order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partunion_mm
+POSTHOOK: Input: default@partunion_mm@key=0
+POSTHOOK: Input: default@partunion_mm@key=1
+POSTHOOK: Input: default@partunion_mm@key=10
+POSTHOOK: Input: default@partunion_mm@key=100
+POSTHOOK: Input: default@partunion_mm@key=101
+POSTHOOK: Input: default@partunion_mm@key=103
+POSTHOOK: Input: default@partunion_mm@key=104
+POSTHOOK: Input: default@partunion_mm@key=11
+POSTHOOK: Input: default@partunion_mm@key=97
+POSTHOOK: Input: default@partunion_mm@key=98
+POSTHOOK: Input: default@partunion_mm@key=99
+#### A masked pattern was here ####
+0	0
+1	1
+10	10
+11	11
+97	97
+98	98
+98	98
+99	99
+100	100
+101	101
+103	103
+104	104
+PREHOOK: query: drop table partunion_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partunion_mm
+PREHOOK: Output: default@partunion_mm
+POSTHOOK: query: drop table partunion_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partunion_mm
+POSTHOOK: Output: default@partunion_mm
+PREHOOK: query: create table skew_mm(k1 int, k2 int, k4 int) skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3))
+ stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@skew_mm
+POSTHOOK: query: create table skew_mm(k1 int, k2 int, k4 int) skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3))
+ stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@skew_mm
+PREHOOK: query: insert into table skew_mm 
+select key, key, key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@skew_mm
+POSTHOOK: query: insert into table skew_mm 
+select key, key, key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@skew_mm
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from skew_mm order by k2, k1, k4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skew_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from skew_mm order by k2, k1, k4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skew_mm
+#### A masked pattern was here ####
+0	0	0
+10	10	10
+97	97	97
+98	98	98
+100	100	100
+103	103	103
+PREHOOK: query: drop table skew_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@skew_mm
+PREHOOK: Output: default@skew_mm
+POSTHOOK: query: drop table skew_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@skew_mm
+POSTHOOK: Output: default@skew_mm
+PREHOOK: query: create table skew_dp_union_mm(k1 int, k2 int, k4 int) partitioned by (k3 int) 
+skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3)) stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@skew_dp_union_mm
+POSTHOOK: query: create table skew_dp_union_mm(k1 int, k2 int, k4 int) partitioned by (k3 int) 
+skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3)) stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@skew_dp_union_mm
+PREHOOK: query: insert into table skew_dp_union_mm partition (k3)
+select key as i, key as j, key as k, key as l from intermediate_n0
+union all 
+select key +1 as i, key +2 as j, key +3 as k, key +4 as l from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@skew_dp_union_mm
+POSTHOOK: query: insert into table skew_dp_union_mm partition (k3)
+select key as i, key as j, key as k, key as l from intermediate_n0
+union all 
+select key +1 as i, key +2 as j, key +3 as k, key +4 as l from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@skew_dp_union_mm@k3=0
+POSTHOOK: Output: default@skew_dp_union_mm@k3=10
+POSTHOOK: Output: default@skew_dp_union_mm@k3=100
+POSTHOOK: Output: default@skew_dp_union_mm@k3=101
+POSTHOOK: Output: default@skew_dp_union_mm@k3=102
+POSTHOOK: Output: default@skew_dp_union_mm@k3=103
+POSTHOOK: Output: default@skew_dp_union_mm@k3=104
+POSTHOOK: Output: default@skew_dp_union_mm@k3=107
+POSTHOOK: Output: default@skew_dp_union_mm@k3=14
+POSTHOOK: Output: default@skew_dp_union_mm@k3=4
+POSTHOOK: Output: default@skew_dp_union_mm@k3=97
+POSTHOOK: Output: default@skew_dp_union_mm@k3=98
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from skew_dp_union_mm order by k2, k1, k4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skew_dp_union_mm
+PREHOOK: Input: default@skew_dp_union_mm@k3=0
+PREHOOK: Input: default@skew_dp_union_mm@k3=10
+PREHOOK: Input: default@skew_dp_union_mm@k3=100
+PREHOOK: Input: default@skew_dp_union_mm@k3=101
+PREHOOK: Input: default@skew_dp_union_mm@k3=102
+PREHOOK: Input: default@skew_dp_union_mm@k3=103
+PREHOOK: Input: default@skew_dp_union_mm@k3=104
+PREHOOK: Input: default@skew_dp_union_mm@k3=107
+PREHOOK: Input: default@skew_dp_union_mm@k3=14
+PREHOOK: Input: default@skew_dp_union_mm@k3=4
+PREHOOK: Input: default@skew_dp_union_mm@k3=97
+PREHOOK: Input: default@skew_dp_union_mm@k3=98
+#### A masked pattern was here ####
+POSTHOOK: query: select * from skew_dp_union_mm order by k2, k1, k4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skew_dp_union_mm
+POSTHOOK: Input: default@skew_dp_union_mm@k3=0
+POSTHOOK: Input: default@skew_dp_union_mm@k3=10
+POSTHOOK: Input: default@skew_dp_union_mm@k3=100
+POSTHOOK: Input: default@skew_dp_union_mm@k3=101
+POSTHOOK: Input: default@skew_dp_union_mm@k3=102
+POSTHOOK: Input: default@skew_dp_union_mm@k3=103
+POSTHOOK: Input: default@skew_dp_union_mm@k3=104
+POSTHOOK: Input: default@skew_dp_union_mm@k3=107
+POSTHOOK: Input: default@skew_dp_union_mm@k3=14
+POSTHOOK: Input: default@skew_dp_union_mm@k3=4
+POSTHOOK: Input: default@skew_dp_union_mm@k3=97
+POSTHOOK: Input: default@skew_dp_union_mm@k3=98
+#### A masked pattern was here ####
+0	0	0	0
+1	2	3	4
+10	10	10	10
+11	12	13	14
+97	97	97	97
+98	98	98	98
+98	99	100	101
+99	100	101	102
+100	100	100	100
+101	102	103	104
+103	103	103	103
+104	105	106	107
+PREHOOK: query: drop table skew_dp_union_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@skew_dp_union_mm
+PREHOOK: Output: default@skew_dp_union_mm
+POSTHOOK: query: drop table skew_dp_union_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@skew_dp_union_mm
+POSTHOOK: Output: default@skew_dp_union_mm
+PREHOOK: query: create table merge0_mm (id int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge0_mm
+POSTHOOK: query: create table merge0_mm (id int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge0_mm
+PREHOOK: query: insert into table merge0_mm select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@merge0_mm
+POSTHOOK: query: insert into table merge0_mm select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge0_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from merge0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge0_mm
+#### A masked pattern was here ####
+98
+97
+0
+10
+100
+103
+PREHOOK: query: insert into table merge0_mm select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@merge0_mm
+POSTHOOK: query: insert into table merge0_mm select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge0_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from merge0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge0_mm
+#### A masked pattern was here ####
+98
+97
+0
+10
+100
+103
+98
+97
+0
+10
+100
+103
+PREHOOK: query: drop table merge0_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@merge0_mm
+PREHOOK: Output: default@merge0_mm
+POSTHOOK: query: drop table merge0_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@merge0_mm
+POSTHOOK: Output: default@merge0_mm
+PREHOOK: query: create table merge2_mm (id int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge2_mm
+POSTHOOK: query: create table merge2_mm (id int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge2_mm
+PREHOOK: query: insert into table merge2_mm select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@merge2_mm
+POSTHOOK: query: insert into table merge2_mm select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge2_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from merge2_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge2_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge2_mm
+#### A masked pattern was here ####
+98
+97
+0
+10
+100
+103
+PREHOOK: query: insert into table merge2_mm select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@merge2_mm
+POSTHOOK: query: insert into table merge2_mm select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge2_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from merge2_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge2_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge2_mm
+#### A masked pattern was here ####
+98
+97
+0
+10
+100
+103
+98
+97
+0
+10
+100
+103
+PREHOOK: query: drop table merge2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@merge2_mm
+PREHOOK: Output: default@merge2_mm
+POSTHOOK: query: drop table merge2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@merge2_mm
+POSTHOOK: Output: default@merge2_mm
+PREHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge1_mm
+POSTHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge1_mm
+PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@merge1_mm
+POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge1_mm@key=0
+POSTHOOK: Output: default@merge1_mm@key=10
+POSTHOOK: Output: default@merge1_mm@key=100
+POSTHOOK: Output: default@merge1_mm@key=103
+POSTHOOK: Output: default@merge1_mm@key=97
+POSTHOOK: Output: default@merge1_mm@key=98
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from merge1_mm order by id, key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge1_mm
+PREHOOK: Input: default@merge1_mm@key=0
+PREHOOK: Input: default@merge1_mm@key=10
+PREHOOK: Input: default@merge1_mm@key=100
+PREHOOK: Input: default@merge1_mm@key=103
+PREHOOK: Input: default@merge1_mm@key=97
+PREHOOK: Input: default@merge1_mm@key=98
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge1_mm order by id, key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge1_mm
+POSTHOOK: Input: default@merge1_mm@key=0
+POSTHOOK: Input: default@merge1_mm@key=10
+POSTHOOK: Input: default@merge1_mm@key=100
+POSTHOOK: Input: default@merge1_mm@key=103
+POSTHOOK: Input: default@merge1_mm@key=97
+POSTHOOK: Input: default@merge1_mm@key=98
+#### A masked pattern was here ####
+0	0
+10	10
+97	97
+98	98
+100	100
+103	103
+PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@merge1_mm
+POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge1_mm@key=0
+POSTHOOK: Output: default@merge1_mm@key=10
+POSTHOOK: Output: default@merge1_mm@key=100
+POSTHOOK: Output: default@merge1_mm@key=103
+POSTHOOK: Output: default@merge1_mm@key=97
+POSTHOOK: Output: default@merge1_mm@key=98
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from merge1_mm order by id, key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge1_mm
+PREHOOK: Input: default@merge1_mm@key=0
+PREHOOK: Input: default@merge1_mm@key=10
+PREHOOK: Input: default@merge1_mm@key=100
+PREHOOK: Input: default@merge1_mm@key=103
+PREHOOK: Input: default@merge1_mm@key=97
+PREHOOK: Input: default@merge1_mm@key=98
+#### A masked pattern was here ####
+POSTHOOK: query: select * from merge1_mm order by id, key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge1_mm
+POSTHOOK: Input: default@merge1_mm@key=0
+POSTHOOK: Input: default@merge1_mm@key=10
+POSTHOOK: Input: default@merge1_mm@key=100
+POSTHOOK: Input: default@merge1_mm@key=103
+POSTHOOK: Input: default@merge1_mm@key=97
+POSTHOOK: Input: default@merge1_mm@key=98
+#### A masked pattern was here ####
+0	0
+0	0
+10	10
+10	10
+97	97
+97	97
+98	98
+98	98
+100	100
+100	100
+103	103
+103	103
+PREHOOK: query: drop table merge1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@merge1_mm
+PREHOOK: Output: default@merge1_mm
+POSTHOOK: query: drop table merge1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@merge1_mm
+POSTHOOK: Output: default@merge1_mm
+PREHOOK: query: drop table ctas0_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ctas0_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate_n0
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas0_mm
+POSTHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate_n0
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas0_mm
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from ctas0_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas0_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas0_mm
+#### A masked pattern was here ####
+98	455
+97	455
+0	456
+10	456
+100	457
+103	457
+PREHOOK: query: drop table ctas0_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas0_mm
+PREHOOK: Output: default@ctas0_mm
+POSTHOOK: query: drop table ctas0_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas0_mm
+POSTHOOK: Output: default@ctas0_mm
+PREHOOK: query: drop table ctas1_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ctas1_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table ctas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as
+  select * from intermediate_n0 union all select * from intermediate_n0
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas1_mm
+POSTHOOK: query: create table ctas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as
+  select * from intermediate_n0 union all select * from intermediate_n0
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas1_mm
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from ctas1_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas1_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas1_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas1_mm
+#### A masked pattern was here ####
+98	455
+98	455
+97	455
+97	455
+0	456
+0	456
+10	456
+10	456
+100	457
+100	457
+103	457
+103	457
+PREHOOK: query: drop table ctas1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas1_mm
+PREHOOK: Output: default@ctas1_mm
+POSTHOOK: query: drop table ctas1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas1_mm
+POSTHOOK: Output: default@ctas1_mm
+PREHOOK: query: drop table multi0_1_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table multi0_1_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table multi0_2_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table multi0_2_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi0_1_mm
+POSTHOOK: query: create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi0_1_mm
+PREHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi0_2_mm
+POSTHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi0_2_mm
+PREHOOK: query: from intermediate_n0
+insert overwrite table multi0_1_mm select key, p
+insert overwrite table multi0_2_mm select p, key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@multi0_1_mm
+PREHOOK: Output: default@multi0_2_mm
+POSTHOOK: query: from intermediate_n0
+insert overwrite table multi0_1_mm select key, p
+insert overwrite table multi0_2_mm select p, key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi0_1_mm
+POSTHOOK: Output: default@multi0_2_mm
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from multi0_1_mm order by key, key2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi0_1_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi0_1_mm order by key, key2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi0_1_mm
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: select * from multi0_2_mm order by key, key2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi0_2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi0_2_mm order by key, key2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi0_2_mm
+#### A masked pattern was here ####
+455	97
+455	98
+456	0
+456	10
+457	100
+457	103
+PREHOOK: query: from intermediate_n0
+insert into table multi0_1_mm select p, key
+insert overwrite table multi0_2_mm select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@multi0_1_mm
+PREHOOK: Output: default@multi0_2_mm
+POSTHOOK: query: from intermediate_n0
+insert into table multi0_1_mm select p, key
+insert overwrite table multi0_2_mm select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi0_1_mm
+POSTHOOK: Output: default@multi0_2_mm
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from multi0_1_mm order by key, key2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi0_1_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi0_1_mm order by key, key2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi0_1_mm
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+455	97
+455	98
+456	0
+456	10
+457	100
+457	103
+PREHOOK: query: select * from multi0_2_mm order by key, key2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi0_2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi0_2_mm order by key, key2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi0_2_mm
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table multi0_1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multi0_1_mm
+PREHOOK: Output: default@multi0_1_mm
+POSTHOOK: query: drop table multi0_1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multi0_1_mm
+POSTHOOK: Output: default@multi0_1_mm
+PREHOOK: query: drop table multi0_2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multi0_2_mm
+PREHOOK: Output: default@multi0_2_mm
+POSTHOOK: query: drop table multi0_2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multi0_2_mm
+POSTHOOK: Output: default@multi0_2_mm
+PREHOOK: query: drop table multi1_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table multi1_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi1_mm
+POSTHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi1_mm
+PREHOOK: query: from intermediate_n0
+insert into table multi1_mm partition(p=1) select p, key
+insert into table multi1_mm partition(p=2) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@multi1_mm@p=1
+PREHOOK: Output: default@multi1_mm@p=2
+POSTHOOK: query: from intermediate_n0
+insert into table multi1_mm partition(p=1) select p, key
+insert into table multi1_mm partition(p=2) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi1_mm@p=1
+POSTHOOK: Output: default@multi1_mm@p=2
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from multi1_mm order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi1_mm
+PREHOOK: Input: default@multi1_mm@p=1
+PREHOOK: Input: default@multi1_mm@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi1_mm order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi1_mm
+POSTHOOK: Input: default@multi1_mm@p=1
+POSTHOOK: Input: default@multi1_mm@p=2
+#### A masked pattern was here ####
+0	456	2
+10	456	2
+97	455	2
+98	455	2
+100	457	2
+103	457	2
+455	97	1
+455	98	1
+456	0	1
+456	10	1
+457	100	1
+457	103	1
+PREHOOK: query: from intermediate_n0
+insert into table multi1_mm partition(p=2) select p, key
+insert overwrite table multi1_mm partition(p=1) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@multi1_mm@p=1
+PREHOOK: Output: default@multi1_mm@p=2
+POSTHOOK: query: from intermediate_n0
+insert into table multi1_mm partition(p=2) select p, key
+insert overwrite table multi1_mm partition(p=1) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi1_mm@p=1
+POSTHOOK: Output: default@multi1_mm@p=2
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select * from multi1_mm order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi1_mm
+PREHOOK: Input: default@multi1_mm@p=1
+PREHOOK: Input: default@multi1_mm@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi1_mm order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi1_mm
+POSTHOOK: Input: default@multi1_mm@p=1
+POSTHOOK: Input: default@multi1_mm@p=2
+#### A masked pattern was here ####
+0	456	1
+0	456	2
+10	456	1
+10	456	2
+97	455	1
+97	455	2
+98	455	1
+98	455	2
+100	457	1
+100	457	2
+103	457	1
+103	457	2
+455	97	2
+455	98	2
+456	0	2
+456	10	2
+457	100	2
+457	103	2
+PREHOOK: query: from intermediate_n0
+insert into table multi1_mm partition(p) select p, key, p
+insert into table multi1_mm partition(p=1) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@multi1_mm
+PREHOOK: Output: default@multi1_mm@p=1
+POSTHOOK: query: from intermediate_n0
+insert into table multi1_mm partition(p) select p, key, p
+insert into table multi1_mm partition(p=1) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi1_mm@p=1
+POSTHOOK: Output: default@multi1_mm@p=455
+POSTHOOK: Output: default@multi1_mm@p=456
+POSTHOOK: Output: default@multi1_mm@p=457
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi1_mm
+PREHOOK: Input: default@multi1_mm@p=1
+PREHOOK: Input: default@multi1_mm@p=2
+PREHOOK: Input: default@multi1_mm@p=455
+PREHOOK: Input: default@multi1_mm@p=456
+PREHOOK: Input: default@multi1_mm@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi1_mm
+POSTHOOK: Input: default@multi1_mm@p=1
+POSTHOOK: Input: default@multi1_mm@p=2
+POSTHOOK: Input: default@multi1_mm@p=455
+POSTHOOK: Input: default@multi1_mm@p=456
+POSTHOOK: Input: default@multi1_mm@p=457
+#### A masked pattern was here ####
+0	456	1
+0	456	1
+0	456	2
+10	456	1
+10	456	1
+10	456	2
+97	455	1
+97	455	1
+97	455	2
+98	455	1
+98	455	1
+98	455	2
+100	457	1
+100	457	1
+100	457	2
+103	457	1
+103	457	1
+103	457	2
+455	97	2
+455	97	455
+455	98	2
+455	98	455
+456	0	2
+456	0	456
+456	10	2
+456	10	456
+457	100	2
+457	100	457
+457	103	2
+457	103	457
+PREHOOK: query: from intermediate_n0
+insert into table multi1_mm partition(p) select p, key, 1
+insert into table multi1_mm partition(p=1) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@multi1_mm
+PREHOOK: Output: default@multi1_mm@p=1
+POSTHOOK: query: from intermediate_n0
+insert into table multi1_mm partition(p) select p, key, 1
+insert into table multi1_mm partition(p=1) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi1_mm@p=1
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi1_mm
+PREHOOK: Input: default@multi1_mm@p=1
+PREHOOK: Input: default@multi1_mm@p=2
+PREHOOK: Input: default@multi1_mm@p=455
+PREHOOK: Input: default@multi1_mm@p=456
+PREHOOK: Input: default@multi1_mm@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi1_mm
+POSTHOOK: Input: default@multi1_mm@p=1
+POSTHOOK: Input: default@multi1_mm@p=2
+POSTHOOK: Input: default@multi1_mm@p=455
+POSTHOOK: Input: default@multi1_mm@p=456
+POSTHOOK: Input: default@multi1_mm@p=457
+#### A masked pattern was here ####
+0	456	1
+0	456	1
+0	456	1
+0	456	2
+10	456	1
+10	456	1
+10	456	1
+10	456	2
+97	455	1
+97	455	1
+97	455	1
+97	455	2
+98	455	1
+98	455	1
+98	455	1
+98	455	2
+100	457	1
+100	457	1
+100	457	1
+100	457	2
+103	457	1
+103	457	1
+103	457	1
+103	457	2
+455	97	1
+455	97	2
+455	97	455
+455	98	1
+455	98	2
+455	98	455
+456	0	1
+456	0	2
+456	0	456
+456	10	1
+456	10	2
+456	10	456
+457	100	1
+457	100	2
+457	100	457
+457	103	1
+457	103	2
+457	103	457
+PREHOOK: query: drop table multi1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multi1_mm
+PREHOOK: Output: default@multi1_mm
+POSTHOOK: query: drop table multi1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multi1_mm
+POSTHOOK: Output: default@multi1_mm
+PREHOOK: query: drop table stats_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table stats_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table stats_mm(key int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_mm
+POSTHOOK: query: create table stats_mm(key int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_mm
+PREHOOK: query: insert into table stats_mm  select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@stats_mm
+POSTHOOK: query: insert into table stats_mm  select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@stats_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: desc formatted stats_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_mm
+POSTHOOK: query: desc formatted stats_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_mm
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	6                   
+	rawDataSize         	13                  
+	totalSize           	19                  
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table stats_mm  select key from intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@stats_mm
+POSTHOOK: query: insert into table stats_mm  select key from intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@stats_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: desc formatted stats_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_mm
+POSTHOOK: query: desc formatted stats_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_mm
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	2                   
+	numRows             	12                  
+	rawDataSize         	26                  
+	totalSize           	38                  
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table stats_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_mm
+PREHOOK: Output: default@stats_mm
+POSTHOOK: query: drop table stats_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_mm
+POSTHOOK: Output: default@stats_mm
+PREHOOK: query: drop table stats2_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table stats2_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table stats2_mm tblproperties("transactional"="true", "transactional_properties"="insert_only") as select array(key, value) from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats2_mm
+POSTHOOK: query: create table stats2_mm tblproperties("transactional"="true", "transactional_properties"="insert_only") as select array(key, value) from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats2_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: desc formatted stats2_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats2_mm
+POSTHOOK: query: desc formatted stats2_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats2_mm
+# col_name            	data_type           	comment             
+_c0                 	array<string>       	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table stats2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats2_mm
+PREHOOK: Output: default@stats2_mm
+POSTHOOK: query: drop table stats2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats2_mm
+POSTHOOK: Output: default@stats2_mm
+PREHOOK: query: CREATE TABLE skewjoin_mm(key INT, value STRING) STORED AS TEXTFILE tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@skewjoin_mm
+POSTHOOK: query: CREATE TABLE skewjoin_mm(key INT, value STRING) STORED AS TEXTFILE tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@skewjoin_mm
+PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) INSERT into TABLE skewjoin_mm SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@skewjoin_mm
+POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) INSERT into TABLE skewjoin_mm SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@skewjoin_mm
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select count(distinct key) from skewjoin_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skewjoin_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct key) from skewjoin_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skewjoin_mm
+#### A masked pattern was here ####
+309
+PREHOOK: query: drop table skewjoin_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@skewjoin_mm
+PREHOOK: Output: default@skewjoin_mm
+POSTHOOK: query: drop table skewjoin_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@skewjoin_mm
+POSTHOOK: Output: default@skewjoin_mm
+PREHOOK: query: CREATE TABLE parquet1_mm(id INT) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet1_mm
+POSTHOOK: query: CREATE TABLE parquet1_mm(id INT) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet1_mm
+PREHOOK: query: INSERT INTO parquet1_mm VALUES(1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet1_mm
+POSTHOOK: query: INSERT INTO parquet1_mm VALUES(1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet1_mm
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: CREATE TABLE parquet2_mm(id INT, value STRING) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet2_mm
+POSTHOOK: query: CREATE TABLE parquet2_mm(id INT, value STRING) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet2_mm
+PREHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet2_mm
+POSTHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet2_mm
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet2_mm
+POSTHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet2_mm
+POSTHOOK: Lineage: ###Masked###
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: select parquet1_mm.id, t1.value, t2.value FROM parquet1_mm
+  JOIN parquet2_mm t1 ON parquet1_mm.id=t1.id
+  JOIN parquet2_mm t2 ON parquet1_mm.id=t2.id
+where t1.value = 'value1' and t2.value = 'value2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet1_mm
+PREHOOK: Input: default@parquet2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select parquet1_mm.id, t1.value, t2.value FROM parquet1_mm
+  JOIN parquet2_mm t1 ON parquet1_mm.id=t1.id
+  JOIN parquet2_mm t2 ON parquet1_mm.id=t2.id
+where t1.value = 'value1' and t2.value = 'value2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet1_mm
+POSTHOOK: Input: default@parquet2_mm
+#### A masked pattern was here ####
+1	value1	value2
+PREHOOK: query: drop table parquet1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet1_mm
+PREHOOK: Output: default@parquet1_mm
+POSTHOOK: query: drop table parquet1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet1_mm
+POSTHOOK: Output: default@parquet1_mm
+PREHOOK: query: drop table parquet2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet2_mm
+PREHOOK: Output: default@parquet2_mm
+POSTHOOK: query: drop table parquet2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet2_mm
+POSTHOOK: Output: default@parquet2_mm
+PREHOOK: query: DROP TABLE IF EXISTS temp1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS temp1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TEMPORARY TABLE temp1 (a int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp1
+POSTHOOK: query: CREATE TEMPORARY TABLE temp1 (a int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp1
+PREHOOK: query: INSERT INTO temp1 SELECT key FROM intermediate_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@temp1
+POSTHOOK: query: INSERT INTO temp1 SELECT key FROM intermediate_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@temp1
+POSTHOOK: Lineage: ###Masked###
+PREHOOK: query: DESC EXTENDED temp1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@temp1
+POSTHOOK: query: DESC EXTENDED temp1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@temp1
+a                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM temp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM temp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp1
+#### A masked pattern was here ####
+98
+97
+0
+10
+100
+103
+PREHOOK: query: drop table intermediate_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Output: default@intermediate_n0
+POSTHOOK: query: drop table intermediate_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Output: default@intermediate_n0

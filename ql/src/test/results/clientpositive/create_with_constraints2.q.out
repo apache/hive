@@ -1,0 +1,122 @@
+PREHOOK: query: CREATE TABLE table1_n11 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1_n11
+POSTHOOK: query: CREATE TABLE table1_n11 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1_n11
+PREHOOK: query: CREATE TABLE table2_n7 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED RELY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2_n7
+POSTHOOK: query: CREATE TABLE table2_n7 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED RELY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2_n7
+PREHOOK: query: DESCRIBE EXTENDED table1_n11
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table1_n11
+POSTHOOK: query: DESCRIBE EXTENDED table1_n11
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table1_n11
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Primary Key for default.table1_n11:[a], Constraint Name: #### A masked pattern was here ####	 
+PREHOOK: query: DESCRIBE EXTENDED table2_n7
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table2_n7
+POSTHOOK: query: DESCRIBE EXTENDED table2_n7
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table2_n7
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Primary Key for default.table2_n7:[a], Constraint Name: #### A masked pattern was here ####	 
+PREHOOK: query: DESCRIBE FORMATTED table1_n11
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table1_n11
+POSTHOOK: query: DESCRIBE FORMATTED table1_n11
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table1_n11
+# col_name            	data_type           	comment             
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.table1_n11  	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Names:       	a                   	 
+PREHOOK: query: DESCRIBE FORMATTED table2_n7
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table2_n7
+POSTHOOK: query: DESCRIBE FORMATTED table2_n7
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table2_n7
+# col_name            	data_type           	comment             
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.table2_n7   	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Names:       	a                   	 

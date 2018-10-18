@@ -1,0 +1,849 @@
+PREHOOK: query: DROP TABLE dest1_n148
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest1_n148
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE dest1_n148(a array<int>, b array<string>, c map<string,string>, d int, e string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '1'
+COLLECTION ITEMS TERMINATED BY '2'
+MAP KEYS TERMINATED BY '3'
+LINES TERMINATED BY '10'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: CREATE TABLE dest1_n148(a array<int>, b array<string>, c map<string,string>, d int, e string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '1'
+COLLECTION ITEMS TERMINATED BY '2'
+MAP KEYS TERMINATED BY '3'
+LINES TERMINATED BY '10'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n148
+PREHOOK: query: EXPLAIN
+FROM src_thrift
+INSERT OVERWRITE TABLE dest1_n148 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+INSERT OVERWRITE TABLE dest1_n148 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1_n148
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src_thrift
+            Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: lint (type: array<int>), lstring (type: array<string>), mstringstring (type: map<string,string>), aint (type: int), astring (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4
+              Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Map-reduce partition columns: 1 (type: int)
+                Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: array<int>), _col1 (type: array<string>), _col2 (type: map<string,string>), _col3 (type: int), _col4 (type: string)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: array<int>), VALUE._col1 (type: array<string>), VALUE._col2 (type: map<string,string>), VALUE._col3 (type: int), VALUE._col4 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.dest1_n148
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n148
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: FROM src_thrift
+INSERT OVERWRITE TABLE dest1_n148 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: FROM src_thrift
+INSERT OVERWRITE TABLE dest1_n148 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1_n148
+POSTHOOK: Lineage: dest1_n148.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n148.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n148.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n148.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n148.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
+PREHOOK: query: SELECT dest1_n148.* FROM dest1_n148 CLUSTER BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n148
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest1_n148.* FROM dest1_n148 CLUSTER BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n148
+#### A masked pattern was here ####
+NULL	NULL	NULL	0	NULL
+[0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
+[1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
+[2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
+[3,6,9]	["30","300","3000"]	{"key_3":"value_3"}	477111222	record_3
+[4,8,12]	["40","400","4000"]	{"key_4":"value_4"}	-734328909	record_4
+[5,10,15]	["50","500","5000"]	{"key_5":"value_5"}	-1952710710	record_5
+[6,12,18]	["60","600","6000"]	{"key_6":"value_6"}	1244525190	record_6
+[7,14,21]	["70","700","7000"]	{"key_7":"value_7"}	-1461153973	record_7
+[8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
+[9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
+PREHOOK: query: SELECT dest1_n148.a[0], dest1_n148.b[0], dest1_n148.c['key2'], dest1_n148.d, dest1_n148.e FROM dest1_n148 CLUSTER BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n148
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest1_n148.a[0], dest1_n148.b[0], dest1_n148.c['key2'], dest1_n148.d, dest1_n148.e FROM dest1_n148 CLUSTER BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n148
+#### A masked pattern was here ####
+0	0	NULL	1712634731	record_0
+1	10	NULL	465985200	record_1
+2	20	NULL	-751827638	record_2
+3	30	NULL	477111222	record_3
+4	40	NULL	-734328909	record_4
+5	50	NULL	-1952710710	record_5
+6	60	NULL	1244525190	record_6
+7	70	NULL	-1461153973	record_7
+8	80	NULL	1638581578	record_8
+9	90	NULL	336964413	record_9
+NULL	NULL	NULL	0	NULL
+PREHOOK: query: DROP TABLE dest1_n148
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1_n148
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: DROP TABLE dest1_n148
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1_n148
+POSTHOOK: Output: default@dest1_n148
+PREHOOK: query: CREATE TABLE dest1_n148(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: CREATE TABLE dest1_n148(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n148
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n148 SELECT src_thrift.lint FROM src_thrift DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n148 SELECT src_thrift.lint FROM src_thrift DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1_n148
+POSTHOOK: Lineage: dest1_n148.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+PREHOOK: query: SELECT * from dest1_n148
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n148
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from dest1_n148
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n148
+#### A masked pattern was here ####
+NULL
+[0,0,0]
+[1,2,3]
+[2,4,6]
+[3,6,9]
+[4,8,12]
+[5,10,15]
+[6,12,18]
+[7,14,21]
+[8,16,24]
+[9,18,27]
+PREHOOK: query: DROP TABLE dest1_n148
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1_n148
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: DROP TABLE dest1_n148
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1_n148
+POSTHOOK: Output: default@dest1_n148
+PREHOOK: query: CREATE TABLE dest1_n148(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: CREATE TABLE dest1_n148(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n148
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n148 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1_n148
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n148 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1_n148
+POSTHOOK: Lineage: dest1_n148.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
+PREHOOK: query: SELECT * from dest1_n148
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n148
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from dest1_n148
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n148
+#### A masked pattern was here ####
+NULL
+{"key_0":"value_0"}
+{"key_1":"value_1"}
+{"key_2":"value_2"}
+{"key_3":"value_3"}
+{"key_4":"value_4"}
+{"key_5":"value_5"}
+{"key_6":"value_6"}
+{"key_7":"value_7"}
+{"key_8":"value_8"}
+{"key_9":"value_9"}
+PREHOOK: query: CREATE TABLE destBin_n0(a UNIONTYPE<int, double, array<string>, struct<col1:int,col2:string>>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@destBin_n0
+POSTHOOK: query: CREATE TABLE destBin_n0(a UNIONTYPE<int, double, array<string>, struct<col1:int,col2:string>>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@destBin_n0
+PREHOOK: query: INSERT OVERWRITE TABLE destBin_n0 SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0D, array("one","two"), struct(5,"five")) FROM srcbucket2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket2
+PREHOOK: Output: default@destbin_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE destBin_n0 SELECT create_union( CASE WHEN key < 100 THEN 0 WHEN key < 200 THEN 1 WHEN key < 300 THEN 2 WHEN key < 400 THEN 3 ELSE 0 END, key, 2.0D, array("one","two"), struct(5,"five")) FROM srcbucket2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket2
+POSTHOOK: Output: default@destbin_n0
+POSTHOOK: Lineage: destbin_n0.a EXPRESSION [(srcbucket2)srcbucket2.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: SELECT * from destBin_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@destbin_n0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from destBin_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@destbin_n0
+#### A masked pattern was here ####
+{0:0}
+{0:0}
+{0:0}
+{0:10}
+{0:11}
+{0:12}
+{0:12}
+{0:15}
+{0:15}
+{0:17}
+{0:18}
+{0:18}
+{0:19}
+{0:20}
+{0:24}
+{0:24}
+{0:26}
+{0:26}
+{0:27}
+{0:28}
+{0:2}
+{0:30}
+{0:33}
+{0:34}
+{0:35}
+{0:35}
+{0:35}
+{0:37}
+{0:37}
+{0:400}
+{0:401}
+{0:401}
+{0:401}
+{0:401}
+{0:401}
+{0:402}
+{0:403}
+{0:403}
+{0:403}
+{0:404}
+{0:404}
+{0:406}
+{0:406}
+{0:406}
+{0:406}
+{0:407}
+{0:409}
+{0:409}
+{0:409}
+{0:411}
+{0:413}
+{0:413}
+{0:414}
+{0:414}
+{0:417}
+{0:417}
+{0:417}
+{0:418}
+{0:419}
+{0:41}
+{0:421}
+{0:424}
+{0:424}
+{0:427}
+{0:429}
+{0:429}
+{0:42}
+{0:42}
+{0:430}
+{0:430}
+{0:430}
+{0:431}
+{0:431}
+{0:431}
+{0:432}
+{0:435}
+{0:436}
+{0:437}
+{0:438}
+{0:438}
+{0:438}
+{0:439}
+{0:439}
+{0:43}
+{0:443}
+{0:444}
+{0:446}
+{0:448}
+{0:449}
+{0:44}
+{0:452}
+{0:453}
+{0:454}
+{0:454}
+{0:454}
+{0:455}
+{0:457}
+{0:458}
+{0:458}
+{0:459}
+{0:459}
+{0:460}
+{0:462}
+{0:462}
+{0:463}
+{0:463}
+{0:466}
+{0:466}
+{0:466}
+{0:467}
+{0:468}
+{0:468}
+{0:468}
+{0:468}
+{0:469}
+{0:469}
+{0:469}
+{0:469}
+{0:469}
+{0:470}
+{0:472}
+{0:475}
+{0:477}
+{0:478}
+{0:478}
+{0:479}
+{0:47}
+{0:480}
+{0:480}
+{0:480}
+{0:481}
+{0:482}
+{0:483}
+{0:484}
+{0:485}
+{0:487}
+{0:489}
+{0:489}
+{0:489}
+{0:489}
+{0:490}
+{0:491}
+{0:492}
+{0:492}
+{0:493}
+{0:494}
+{0:495}
+{0:496}
+{0:497}
+{0:498}
+{0:498}
+{0:498}
+{0:4}
+{0:51}
+{0:51}
+{0:53}
+{0:54}
+{0:57}
+{0:58}
+{0:58}
+{0:5}
+{0:5}
+{0:5}
+{0:64}
+{0:65}
+{0:66}
+{0:67}
+{0:67}
+{0:69}
+{0:70}
+{0:70}
+{0:70}
+{0:72}
+{0:72}
+{0:74}
+{0:76}
+{0:76}
+{0:77}
+{0:78}
+{0:80}
+{0:82}
+{0:83}
+{0:83}
+{0:84}
+{0:84}
+{0:85}
+{0:86}
+{0:87}
+{0:8}
+{0:90}
+{0:90}
+{0:90}
+{0:92}
+{0:95}
+{0:95}
+{0:96}
+{0:97}
+{0:97}
+{0:98}
+{0:98}
+{0:9}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{1:2.0}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{2:["one","two"]}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+{3:{"col1":5,"col2":"five"}}
+PREHOOK: query: DROP TABLE destBin_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@destbin_n0
+PREHOOK: Output: default@destbin_n0
+POSTHOOK: query: DROP TABLE destBin_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@destbin_n0
+POSTHOOK: Output: default@destbin_n0
+PREHOOK: query: DROP TABLE dest2_n38
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest2_n38
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE dest3_n6
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest3_n6
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE dest2_n38 (a map<string,map<string,map<string,uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>>>>)
+  ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2_n38
+POSTHOOK: query: CREATE TABLE dest2_n38 (a map<string,map<string,map<string,uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>>>>)
+  ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest2_n38
+PREHOOK: query: INSERT OVERWRITE TABLE dest2_n38 SELECT src_thrift.attributes FROM src_thrift
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest2_n38
+POSTHOOK: query: INSERT OVERWRITE TABLE dest2_n38 SELECT src_thrift.attributes FROM src_thrift
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest2_n38
+POSTHOOK: Lineage: dest2_n38.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:attributes, type:map<string,map<string,map<string,uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>>>>, comment:from deserializer), ]
+PREHOOK: query: SELECT a from dest2_n38 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2_n38
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a from dest2_n38 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2_n38
+#### A masked pattern was here ####
+{"key_0":{"erVal0":{"value_0":{3:1.0}}}}
+{"key_1":{"erVal1":{"value_1":{3:1.0}}}}
+{"key_2":{"erVal2":{"value_2":{3:1.0}}}}
+{"key_3":{"erVal3":{"value_3":{3:1.0}}}}
+{"key_4":{"erVal4":{"value_4":{3:1.0}}}}
+{"key_5":{"erVal5":{"value_5":{3:1.0}}}}
+{"key_6":{"erVal6":{"value_6":{3:1.0}}}}
+{"key_7":{"erVal7":{"value_7":{3:1.0}}}}
+{"key_8":{"erVal8":{"value_8":{3:1.0}}}}
+{"key_9":{"erVal9":{"value_9":{3:1.0}}}}
+PREHOOK: query: CREATE TABLE dest3_n6 (
+unionfield1 uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>,
+unionfield2 uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>,
+unionfield3 uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>
+) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest3_n6
+POSTHOOK: query: CREATE TABLE dest3_n6 (
+unionfield1 uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>,
+unionfield2 uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>,
+unionfield3 uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>
+) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest3_n6
+PREHOOK: query: INSERT OVERWRITE TABLE dest3_n6 SELECT src_thrift.unionField1,src_thrift.unionField2,src_thrift.unionField3 from src_thrift
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest3_n6
+POSTHOOK: query: INSERT OVERWRITE TABLE dest3_n6 SELECT src_thrift.unionField1,src_thrift.unionField2,src_thrift.unionField3 from src_thrift
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest3_n6
+POSTHOOK: Lineage: dest3_n6.unionfield1 SIMPLE [(src_thrift)src_thrift.FieldSchema(name:unionfield1, type:uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest3_n6.unionfield2 SIMPLE [(src_thrift)src_thrift.FieldSchema(name:unionfield2, type:uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest3_n6.unionfield3 SIMPLE [(src_thrift)src_thrift.FieldSchema(name:unionfield3, type:uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>, comment:from deserializer), ]
+PREHOOK: query: SELECT unionfield1, unionField2, unionfield3 from dest3_n6 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest3_n6
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT unionfield1, unionField2, unionfield3 from dest3_n6 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest3_n6
+#### A masked pattern was here ####
+{2:"test0"}	{6:{"key_0":"value_0"}}	{5:["0","0","0"]}
+{2:"test1"}	{6:{"key_1":"value_1"}}	{5:["10","100","1000"]}
+{2:"test2"}	{6:{"key_2":"value_2"}}	{5:["20","200","2000"]}
+{2:"test3"}	{6:{"key_3":"value_3"}}	{5:["30","300","3000"]}
+{2:"test4"}	{6:{"key_4":"value_4"}}	{5:["40","400","4000"]}
+{2:"test5"}	{6:{"key_5":"value_5"}}	{5:["50","500","5000"]}
+{2:"test6"}	{6:{"key_6":"value_6"}}	{5:["60","600","6000"]}
+{2:"test7"}	{6:{"key_7":"value_7"}}	{5:["70","700","7000"]}
+{2:"test8"}	{6:{"key_8":"value_8"}}	{5:["80","800","8000"]}
+{2:"test9"}	{6:{"key_9":"value_9"}}	{5:["90","900","9000"]}

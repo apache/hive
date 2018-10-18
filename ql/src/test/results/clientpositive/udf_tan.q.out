@@ -11,6 +11,8 @@ tan(x) - returns the tangent of x (x is in radians)
 Example:
    > SELECT tan(0) FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.UDFTan
+Function type:BUILTIN
 PREHOOK: query: SELECT tan(null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -46,6 +48,8 @@ tan(x) - returns the tangent of x (x is in radians)
 Example:
    > SELECT tan(0) FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.UDFTan
+Function type:BUILTIN
 PREHOOK: query: SELECT tan(null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

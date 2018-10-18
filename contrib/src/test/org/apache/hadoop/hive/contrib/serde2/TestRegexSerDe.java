@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -36,7 +36,7 @@ import org.apache.hadoop.io.Text;
  */
 public class TestRegexSerDe extends TestCase {
 
-  private SerDe createSerDe(String fieldNames, String fieldTypes,
+  private AbstractSerDe createSerDe(String fieldNames, String fieldTypes,
       String inputRegex, String outputFormatString) throws Throwable {
     Properties schema = new Properties();
     schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
@@ -55,7 +55,7 @@ public class TestRegexSerDe extends TestCase {
   public void testRegexSerDe() throws Throwable {
     try {
       // Create the SerDe
-      SerDe serDe = createSerDe(
+      AbstractSerDe serDe = createSerDe(
           "host,identity,user,time,request,status,size,referer,agent",
           "string,string,string,string,string,string,string,string,string",
           "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") " 

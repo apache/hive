@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -55,7 +56,16 @@ public interface Reader extends org.apache.orc.Reader {
    * @throws IOException
    */
   RecordReader rowsOptions(Options options) throws IOException;
-  
+
+  /**
+   * Create a RecordReader that reads everything with the given options.
+   * @param options the options to use
+   * @param conf conf object
+   * @return a new RecordReader
+   * @throws IOException
+   */
+  RecordReader rowsOptions(Options options, Configuration conf) throws IOException;
+
   /**
    * Create a RecordReader that will scan the entire file.
    * This is a legacy method and rowsOptions is preferred.

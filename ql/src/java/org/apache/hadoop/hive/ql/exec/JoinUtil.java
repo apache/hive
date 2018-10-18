@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -121,14 +121,14 @@ public class JoinUtil {
   }
 
   public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
-      Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias) throws HiveException {
-    return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias);
+      Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias, Configuration conf) throws HiveException {
+    return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias, conf);
   }
 
   public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
       Map<Byte, List<ExprNodeDesc>> inputMap,
       Byte[] order,
-      int posBigTableAlias) throws HiveException {
+      int posBigTableAlias, Configuration conf) throws HiveException {
     int total = 0;
     for (Entry<Byte, List<ExprNodeDesc>> e : inputMap.entrySet()) {
       if (e.getValue() == null) {
@@ -140,7 +140,7 @@ public class JoinUtil {
         if (key == (byte) posBigTableAlias) {
           valueFields.add(null);
         } else {
-          valueFields.add(ExprNodeEvaluatorFactory.get(expr));
+          valueFields.add(expr == null ? null : ExprNodeEvaluatorFactory.get(expr, conf));
         }
       }
       outMap[key] = valueFields;
@@ -233,6 +233,23 @@ public class JoinUtil {
   /**
    * Returns true if the row does not pass through filters.
    */
+  protected static boolean isFiltered(Object row, List<ExprNodeEvaluator> filters,
+          List<ObjectInspector> filtersOIs) throws HiveException {
+    for (int i = 0; i < filters.size(); i++) {
+      ExprNodeEvaluator evaluator = filters.get(i);
+      Object condition = evaluator.evaluate(row);
+      Boolean result = (Boolean) ((PrimitiveObjectInspector) filtersOIs.get(i)).
+              getPrimitiveJavaObject(condition);
+      if (result == null || !result) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the row does not pass through filters.
+   */
   protected static short isFiltered(Object row, List<ExprNodeEvaluator> filters,
       List<ObjectInspector> ois, int[] filterMap) throws HiveException {
     // apply join filters on the row.
@@ -276,13 +293,13 @@ public class JoinUtil {
     return spillTableDesc[alias];
   }
 
-  public static SerDe getSpillSerDe(byte alias, TableDesc[] spillTableDesc,
+  public static AbstractSerDe getSpillSerDe(byte alias, TableDesc[] spillTableDesc,
       JoinDesc conf, boolean noFilter) {
     TableDesc desc = getSpillTableDesc(alias, spillTableDesc, conf, noFilter);
     if (desc == null) {
       return null;
     }
-    SerDe sd = (SerDe) ReflectionUtil.newInstance(desc.getDeserializerClass(),
+    AbstractSerDe sd = (AbstractSerDe) ReflectionUtil.newInstance(desc.getDeserializerClass(),
         null);
     try {
       SerDeUtils.initializeSerDe(sd, null, desc.getProperties(), null);
@@ -344,7 +361,7 @@ public class JoinUtil {
       JoinDesc conf,boolean noFilter, Reporter reporter) throws HiveException {
 
     TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noFilter);
-    SerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf, noFilter);
+    AbstractSerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf, noFilter);
 
     if (serde == null) {
       containerSize = -1;

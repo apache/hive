@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,7 @@ import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager;
 import org.apache.hadoop.security.token.delegation.DelegationKey;
+import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,9 +107,9 @@ public class TestLlapSignerImpl {
   private FakeSecretManager rollKey(FakeSecretManager fsm, int idToPreserve) throws IOException {
     // Adding keys is PITA - there's no way to plug into timed rolling; just create a new fsm.
     DelegationKey dk = fsm.getDelegationKey(idToPreserve), curDk = fsm.getCurrentKey();
-    if (curDk.getKeyId() != idToPreserve) {
+    if (curDk == null || curDk.getKeyId() != idToPreserve) {
       LOG.warn("The current key is not the one we expect; key rolled in background? Signed with "
-          + idToPreserve + " but got " + curDk.getKeyId());
+          + idToPreserve + " but got " + (curDk == null ? "null" : curDk.getKeyId()));
     }
     // Regardless of the above, we should have the key we've signed with.
     assertNotNull(dk);
@@ -182,7 +183,25 @@ public class TestLlapSignerImpl {
 
     @Override
     public DelegationKey getCurrentKey() {
-      return getDelegationKey(getCurrentKeyId());
+      // We cannot synchronize properly with the internal thread (or something is weird about
+      // the parent class internal state) and occasionally get null keys; loop until we can get
+      // the key.
+      long endTimeMs = System.nanoTime() + 3 * 1000000000L; // Wait for at most 3 sec.
+      int keyId = -1;
+      do {
+        keyId = getCurrentKeyId();
+        DelegationKey key = getDelegationKey(keyId);
+        if (key != null) return key;
+        if (keyId > 0 && keyId == getCurrentKeyId()) {
+          throw new AssertionError("The ID didn't change but we couldn't get the key " + keyId);
+        }
+        try {
+          Thread.sleep(1);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      } while ((endTimeMs - System.nanoTime()) > 0);
+      throw new AssertionError("Cannot get a key from the base class; the last ID was " + keyId);
     }
 
     @Override

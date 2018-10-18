@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.7.0_05" class="java.beans.XMLDecoder">
+	<object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc">
+		<void property="children">
+			<object class="java.util.ArrayList">
+				<void method="add">
+					<object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc">
+						<void property="children">
+							<object class="java.util.ArrayList">
+								<void method="add">
+									<object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc">
+										<void property="column">
+											<string>visitor_id</string>
+										</void>
+										<void property="tabAlias">
+											<string>mysql_test</string>
+										</void>
+										<void property="typeInfo">
+											<object
+												class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"
+												id="PrimitiveTypeInfo0">
+												<void property="typeName">
+													<string>string</string>
+												</void>
+											</object>
+										</void>
+									</object>
+								</void>
+								<void method="add">
+									<object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc">
+										<void property="typeInfo">
+											<object idref="PrimitiveTypeInfo0" />
+										</void>
+										<void property="value">
+											<string>x</string>
+										</void>
+									</object>
+								</void>
+							</object>
+						</void>
+						<void property="genericUDF">
+							<object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual" />
+						</void>
+						<void property="typeInfo">
+							<object
+								class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"
+								id="PrimitiveTypeInfo1">
+								<void property="typeName">
+									<string>boolean</string>
+								</void>
+							</object>
+						</void>
+					</object>
+				</void>
+				<void method="add">
+					<object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc">
+						<void property="children">
+							<object class="java.util.ArrayList">
+								<void method="add">
+									<object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc">
+										<void property="column">
+											<string>sentiment</string>
+										</void>
+										<void property="tabAlias">
+											<string>mysql_test</string>
+										</void>
+										<void property="typeInfo">
+											<object idref="PrimitiveTypeInfo0" />
+										</void>
+									</object>
+								</void>
+								<void method="add">
+									<object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc">
+										<void property="typeInfo">
+											<object idref="PrimitiveTypeInfo0" />
+										</void>
+										<void property="value">
+											<string>y</string>
+										</void>
+									</object>
+								</void>
+							</object>
+						</void>
+						<void property="genericUDF">
+							<object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual" />
+						</void>
+						<void property="typeInfo">
+							<object idref="PrimitiveTypeInfo1" />
+						</void>
+					</object>
+				</void>
+			</object>
+		</void>
+		<void property="genericUDF">
+			<object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd" />
+		</void>
+		<void property="typeInfo">
+			<object idref="PrimitiveTypeInfo1" />
+		</void>
+	</object>
+</java>

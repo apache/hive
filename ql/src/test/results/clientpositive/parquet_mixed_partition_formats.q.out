@@ -48,13 +48,11 @@ MAP KEYS TERMINATED BY ':'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_mixed_partition_formats
-PREHOOK: query: ---- partition dateint=20140330 is stored as TEXTFILE
-LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_mixed_partition_formats PARTITION (dateint=20140330)
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_mixed_partition_formats PARTITION (dateint=20140330)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@parquet_mixed_partition_formats
-POSTHOOK: query: ---- partition dateint=20140330 is stored as TEXTFILE
-LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_mixed_partition_formats PARTITION (dateint=20140330)
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_mixed_partition_formats PARTITION (dateint=20140330)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@parquet_mixed_partition_formats
@@ -98,7 +96,6 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_mixed_partition_formats PARTITION (d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_mixed_partition_formats
 # col_name            	data_type           	comment             
-	 	 
 cint                	int                 	                    
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
@@ -116,7 +113,6 @@ d                   	date
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dateint             	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -140,13 +136,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
-	colelction.delim    	,                   
+	collection.delim    	,                   
 	field.delim         	|                   
 	mapkey.delim        	:                   
 	serialization.format	|                   
-PREHOOK: query: ---change table serde and file format to PARQUET----
-
-ALTER TABLE parquet_mixed_partition_formats
+PREHOOK: query: ALTER TABLE parquet_mixed_partition_formats
      SET FILEFORMAT
      INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
      OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
@@ -154,9 +148,7 @@ ALTER TABLE parquet_mixed_partition_formats
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@parquet_mixed_partition_formats
 PREHOOK: Output: default@parquet_mixed_partition_formats
-POSTHOOK: query: ---change table serde and file format to PARQUET----
-
-ALTER TABLE parquet_mixed_partition_formats
+POSTHOOK: query: ALTER TABLE parquet_mixed_partition_formats
      SET FILEFORMAT
      INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
      OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
@@ -171,7 +163,6 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_mixed_partition_formats
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_mixed_partition_formats
 # col_name            	data_type           	comment             
-	 	 
 cint                	int                 	                    
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
@@ -189,7 +180,6 @@ d                   	date
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dateint             	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -199,6 +189,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numPartitions       	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	2521                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -210,7 +207,7 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
-	colelction.delim    	,                   
+	collection.delim    	,                   
 	field.delim         	|                   
 	mapkey.delim        	:                   
 	serialization.format	|                   
@@ -221,7 +218,6 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_mixed_partition_formats PARTITION (d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_mixed_partition_formats
 # col_name            	data_type           	comment             
-	 	 
 cint                	int                 	                    
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
@@ -239,7 +235,6 @@ d                   	date
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dateint             	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -263,7 +258,7 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
-	colelction.delim    	,                   
+	collection.delim    	,                   
 	field.delim         	|                   
 	mapkey.delim        	:                   
 	serialization.format	|                   

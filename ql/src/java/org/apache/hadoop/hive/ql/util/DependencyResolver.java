@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -81,7 +81,7 @@ public class DependencyResolver {
     if (authority == null) {
       throw new URISyntaxException(authority, "Invalid url: Expected 'org:module:version', found null");
     }
-    String[] authorityTokens = authority.toLowerCase().split(":");
+    String[] authorityTokens = authority.split(":");
 
     if (authorityTokens.length != 3) {
       throw new URISyntaxException(authority, "Invalid url: Expected 'org:module:version', found " + authority);

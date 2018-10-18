@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,8 @@ public class OperationStatus {
   private final long operationCompleted;
   private final boolean hasResultSet;
   private final HiveSQLException operationException;
+  private JobProgressUpdate jobProgressUpdate;
+  private long numModifiedRows;
 
   public OperationStatus(OperationState state, String taskStatus, long operationStarted, long operationCompleted, boolean hasResultSet, HiveSQLException operationException) {
     this.state = state;
@@ -64,4 +66,19 @@ public class OperationStatus {
     return operationException;
   }
 
+  void setJobProgressUpdate(JobProgressUpdate jobProgressUpdate){
+    this.jobProgressUpdate = jobProgressUpdate;
+  }
+
+  public JobProgressUpdate jobProgressUpdate(){
+    return jobProgressUpdate;
+  }
+
+  public long getNumModifiedRows() {
+    return numModifiedRows;
+  }
+
+  void setNumModifiedRows(long numRows) {
+    this.numModifiedRows = numRows;
+  }
 }

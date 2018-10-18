@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,9 @@ import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistribution.Type;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
@@ -173,11 +175,8 @@ public class HiveOpConverter {
       return visit((HiveMultiJoin) rn);
     } else if (rn instanceof HiveJoin) {
       return visit((HiveJoin) rn);
-    } else if (rn instanceof HiveSemiJoin) {
-      HiveSemiJoin sj = (HiveSemiJoin) rn;
-      HiveJoin hj = HiveJoin.getJoin(sj.getCluster(), sj.getLeft(), sj.getRight(),
-          sj.getCondition(), sj.getJoinType(), true);
-      return visit(hj);
+    } else if (rn instanceof SemiJoin) {
+      return visit((SemiJoin)rn);
     } else if (rn instanceof HiveFilter) {
       return visit((HiveFilter) rn);
     } else if (rn instanceof HiveSortLimit) {
@@ -265,6 +264,11 @@ public class HiveOpConverter {
     TableScanOperator ts = (TableScanOperator) OperatorFactory.get(
         semanticAnalyzer.getOpContext(), tsd, new RowSchema(colInfos));
 
+    //now that we let Calcite process subqueries we might have more than one
+    // tablescan with same alias.
+    if(topOps.get(tableAlias) != null) {
+      tableAlias = tableAlias +  this.uniqueCounter ;
+    }
     topOps.put(tableAlias, ts);
 
     if (LOG.isDebugEnabled()) {
@@ -328,6 +332,11 @@ public class HiveOpConverter {
     return translateJoin(joinRel);
   }
 
+
+  OpAttr visit(SemiJoin joinRel) throws SemanticException {
+    return translateJoin(joinRel);
+  }
+
   private String getHiveDerivedTableAlias() {
     return "$hdt$_" + (this.uniqueCounter++);
   }
@@ -337,6 +346,7 @@ public class HiveOpConverter {
     // through Hive
     String[] baseSrc = new String[joinRel.getInputs().size()];
     String tabAlias = getHiveDerivedTableAlias();
+
     // 1. Convert inputs
     OpAttr[] inputs = new OpAttr[joinRel.getInputs().size()];
     List<Operator<?>> children = new ArrayList<Operator<?>>(joinRel.getInputs().size());
@@ -356,7 +366,7 @@ public class HiveOpConverter {
     Set<Integer> newVcolsInCalcite = new HashSet<Integer>();
     newVcolsInCalcite.addAll(inputs[0].vcolsInCalcite);
     if (joinRel instanceof HiveMultiJoin ||
-            extractJoinType((HiveJoin)joinRel) != JoinType.LEFTSEMI) {
+            !(joinRel instanceof SemiJoin)) {
       int shift = inputs[0].inputs.get(0).getSchema().getSignature().size();
       for (int i = 1; i < inputs.length; i++) {
         newVcolsInCalcite.addAll(HiveCalciteUtil.shiftVColsSet(inputs[i].vcolsInCalcite, shift));
@@ -381,8 +391,12 @@ public class HiveOpConverter {
     List<RexNode> joinFilters;
     if (joinRel instanceof HiveJoin) {
       joinFilters = ImmutableList.of(((HiveJoin)joinRel).getJoinFilter());
-    } else {
+    } else if (joinRel instanceof HiveMultiJoin){
       joinFilters = ((HiveMultiJoin)joinRel).getJoinFilters();
+    } else if (joinRel instanceof HiveSemiJoin){
+      joinFilters = ImmutableList.of(((HiveSemiJoin)joinRel).getJoinFilter());
+    } else {
+      throw new SemanticException ("Can't handle join type: " + joinRel.getClass().getName());
     }
     List<List<ExprNodeDesc>> filterExpressions = Lists.newArrayList();
     for (int i = 0; i< joinFilters.size(); i++) {
@@ -711,7 +725,7 @@ public class HiveOpConverter {
       List<String> keepColNames) throws SemanticException {
     // 1. Generate RS operator
     // 1.1 Prune the tableNames, only count the tableNames that are not empty strings
-	// as empty string in table aliases is only allowed for virtual columns.
+  // as empty string in table aliases is only allowed for virtual columns.
     String tableAlias = null;
     Set<String> tableNames = input.getSchema().getTableNames();
     for (String tableName : tableNames) {
@@ -870,7 +884,8 @@ public class HiveOpConverter {
 
   private static JoinOperator genJoin(RelNode join, ExprNodeDesc[][] joinExpressions,
       List<List<ExprNodeDesc>> filterExpressions, List<Operator<?>> children,
-      String[] baseSrc, String tabAlias) throws SemanticException {
+      String[] baseSrc, String tabAlias)
+          throws SemanticException {
 
     // 1. Extract join type
     JoinCondDesc[] joinCondns;
@@ -889,9 +904,14 @@ public class HiveOpConverter {
       noOuterJoin = !hmj.isOuterJoin();
     } else {
       joinCondns = new JoinCondDesc[1];
-      JoinType joinType = extractJoinType((HiveJoin)join);
+      semiJoin = join instanceof SemiJoin;
+      JoinType joinType;
+      if (semiJoin) {
+        joinType = JoinType.LEFTSEMI;
+      } else {
+        joinType = extractJoinType((Join)join);
+      }
       joinCondns[0] = new JoinCondDesc(new JoinCond(0, 1, joinType));
-      semiJoin = joinType == JoinType.LEFTSEMI;
       noOuterJoin = joinType != JoinType.FULLOUTER && joinType != JoinType.LEFTOUTER
               && joinType != JoinType.RIGHTOUTER;
     }
@@ -917,9 +937,7 @@ public class HiveOpConverter {
       }
       Operator<?> parent = inputRS.getParentOperators().get(0);
       ReduceSinkDesc rsDesc = inputRS.getConf();
-
       int[] index = inputRS.getValueIndex();
-
       Byte tag = (byte) rsDesc.getTag();
 
       // 2.1.1. If semijoin...
@@ -929,10 +947,9 @@ public class HiveOpConverter {
         continue;
       }
 
+      posToAliasMap.put(pos, new HashSet<String>(inputRS.getSchema().getTableNames()));
       List<String> keyColNames = rsDesc.getOutputKeyColumnNames();
       List<String> valColNames = rsDesc.getOutputValueColumnNames();
-
-      posToAliasMap.put(pos, new HashSet<String>(inputRS.getSchema().getTableNames()));
 
       Map<String, ExprNodeDesc> descriptors = buildBacktrackFromReduceSinkForJoin(outputPos,
           outputColumnNames, keyColNames, valColNames, index, parent, baseSrc[pos]);
@@ -993,7 +1010,7 @@ public class HiveOpConverter {
 
     // 4. We create the join operator with its descriptor
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, noOuterJoin, joinCondns,
-            filters, joinExpressions);
+            filters, joinExpressions, null);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(filterMap);
 
@@ -1080,11 +1097,7 @@ public class HiveOpConverter {
     }
   }
 
-  private static JoinType extractJoinType(HiveJoin join) {
-    // SEMIJOIN
-    if (join.isLeftSemiJoin()) {
-      return JoinType.LEFTSEMI;
-    }
+  private static JoinType extractJoinType(Join join) {
     // OUTER AND INNER JOINS
     JoinType resultJoinType;
     switch (join.getJoinType()) {

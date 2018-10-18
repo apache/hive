@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BinaryComparable;
 
 /**
- * LazyBinaryStruct is serialized as follows: start A B A B A B end bytes[] ->
+ * LazyBinaryStruct is serialized as follows: start A B A B A B end bytes[] -&gt;
  * |-----|---------|--- ... ---|-----|---------|
  *
  * Section A is one null-byte, corresponding to eight struct fields in Section
@@ -174,7 +174,7 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
     // Missing fields?
     if (!missingFieldWarned && lastFieldByteEnd > structByteEnd) {
       missingFieldWarned = true;
-      LOG.info("Missing fields! Expected " + fields.length + " fields but " +
+      LOG.warn("Missing fields! Expected " + fields.length + " fields but " +
               "only got " + fieldId + "! " +
           "Last field end " + lastFieldByteEnd + " and serialize buffer end " + structByteEnd + ". " +
           "Ignoring similar problems.");

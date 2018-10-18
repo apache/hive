@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,14 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.mapred.JobConf;
 
 // Plugin interface for storage handler which supports input estimation
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface InputEstimator {
 
   /**

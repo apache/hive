@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,6 +38,8 @@ public class WriteEntity extends Entity implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(WriteEntity.class);
 
   private boolean isTempURI = false;
+  private transient boolean isDynamicPartitionWrite = false;
+  private transient boolean isTxnAnalyze = false;
 
   public static enum WriteType {
     DDL_EXCLUSIVE, // for use in DDL statements that require an exclusive lock,
@@ -62,7 +64,7 @@ public class WriteEntity extends Entity implements Serializable {
 
   public WriteEntity(Database database, WriteType type) {
     super(database, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -73,12 +75,12 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public WriteEntity(Table t, WriteType type) {
     super(t, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   public WriteEntity(Table t, WriteType type, boolean complete) {
     super(t, complete);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -86,11 +88,12 @@ public class WriteEntity extends Entity implements Serializable {
    * Currently applicable only for function names.
    * @param db
    * @param objName
+   * @param className
    * @param type
    * @param writeType
    */
-  public WriteEntity(Database db, String objName, Type type, WriteType writeType) {
-    super(db, objName, type);
+  public WriteEntity(Database db, String objName, String className, Type type, WriteType writeType) {
+    super(db, objName, className, type);
     this.writeType = writeType;
   }
 
@@ -102,12 +105,12 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public WriteEntity(Partition p, WriteType type) {
     super(p, true);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   public WriteEntity(DummyPartition p, WriteType type, boolean complete) {
     super(p, complete);
-    writeType = type;
+    setWriteTypeInternal(type);
   }
 
   /**
@@ -138,6 +141,11 @@ public class WriteEntity extends Entity implements Serializable {
     this.writeType = WriteType.PATH_WRITE;
   }
 
+  public WriteEntity(String name, Type t) {
+    super(name, t);
+    this.writeType = WriteType.DDL_NO_LOCK;
+  }
+
   /**
    * Determine which type of write this is.  This is needed by the lock
    * manager so it can understand what kind of lock to acquire.
@@ -154,6 +162,9 @@ public class WriteEntity extends Entity implements Serializable {
    * @param type new operation type
    */
   public void setWriteType(WriteType type) {
+    setWriteTypeInternal(type);
+  }
+  private void setWriteTypeInternal(WriteType type) {
     writeType = type;
   }
 
@@ -168,10 +179,14 @@ public class WriteEntity extends Entity implements Serializable {
 
     if (o instanceof WriteEntity) {
       WriteEntity ore = (WriteEntity) o;
-      return (toString().equalsIgnoreCase(ore.toString()));
+      return (getName().equalsIgnoreCase(ore.getName())) && this.writeType == ore.writeType;
     } else {
       return false;
     }
+  }
+
+  public String toStringDetail() {
+    return "WriteEntity(" + toString() + ") Type=" + getType() + " WriteType=" + getWriteType();
   }
 
   public boolean isTempURI() {
@@ -208,7 +223,9 @@ public class WriteEntity extends Entity implements Serializable {
 
       case ADDPARTITION:
       case ADDSERDEPROPS:
-      case ADDPROPS: return WriteType.DDL_SHARED;
+      case ADDPROPS:
+      case UPDATESTATS:
+        return WriteType.DDL_SHARED;
 
       case COMPACT:
       case TOUCH: return WriteType.DDL_NO_LOCK;
@@ -217,5 +234,21 @@ public class WriteEntity extends Entity implements Serializable {
         throw new RuntimeException("Unknown operation " + op.toString());
     }
   }
+  public boolean isDynamicPartitionWrite() {
+    return isDynamicPartitionWrite;
+  }
+  public void setDynamicPartitionWrite(boolean t) {
+    isDynamicPartitionWrite = t;
+  }
+  public String toDetailedString() {
+    return toString() + " Type=" + getTyp() + " WriteType=" + getWriteType() + " isDP=" + isDynamicPartitionWrite();
+  }
 
+  public boolean isTxnAnalyze() {
+    return isTxnAnalyze;
+  }
+
+  public void setTxnAnalyze(boolean isTxnAnalyze) {
+    this.isTxnAnalyze = isTxnAnalyze;
+  }
 }

@@ -1,17 +1,9 @@
-PREHOOK: query: -- Tests that CTAS queries in non-default databases use the location of the database
--- not the hive.metastore.warehouse.dir for intermediate files (FileSinkOperator output).
--- If hive.metastore.warehouse.dir were used this would fail because the scheme is invalid.
-
-CREATE DATABASE db1
+PREHOOK: query: CREATE DATABASE db1
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Tests that CTAS queries in non-default databases use the location of the database
--- not the hive.metastore.warehouse.dir for intermediate files (FileSinkOperator output).
--- If hive.metastore.warehouse.dir were used this would fail because the scheme is invalid.
-
-CREATE DATABASE db1
+POSTHOOK: query: CREATE DATABASE db1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db1
@@ -24,8 +16,14 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:db1
 PREHOOK: query: EXPLAIN CREATE TABLE table_db1 AS SELECT * FROM default.src
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@table_db1
 POSTHOOK: query: EXPLAIN CREATE TABLE table_db1 AS SELECT * FROM default.src
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@table_db1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -56,6 +54,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: db1.table_db1
+      Execution mode: vectorized
 
   Stage: Stage-7
     Conditional Operator
@@ -82,7 +81,8 @@ STAGE PLANS:
           name: db1.table_db1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Map Reduce
@@ -133,7 +133,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table_db1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@table_db1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -145,6 +144,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                

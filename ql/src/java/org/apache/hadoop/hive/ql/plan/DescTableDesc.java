@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,11 +45,6 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   boolean isExt;
   boolean isFormatted;
 
-  /** Show pretty output?  This has more human-readable formatting than
-   * isFormatted mode.
-   */
-  private boolean isPretty;
-
   /**
    * table name for the result of describe table.
    */
@@ -59,8 +54,8 @@ public class DescTableDesc extends DDLDesc implements Serializable {
    */
   private static final String schema = "col_name,data_type,comment#string:string:string";
   private static final String colStatsSchema = "col_name,data_type,min,max,num_nulls,"
-      + "distinct_count,avg_col_len,max_col_len,num_trues,num_falses,comment"
-      + "#string:string:string:string:string:string:string:string:string:string:string";
+      + "distinct_count,avg_col_len,max_col_len,num_trues,num_falses,bitVector,comment"
+      + "#string:string:string:string:string:string:string:string:string:string:string:string";
 
   public DescTableDesc() {
   }
@@ -74,7 +69,6 @@ public class DescTableDesc extends DDLDesc implements Serializable {
       Map<String, String> partSpec, String colPath) {
     this.isExt = false;
     this.isFormatted = false;
-    this.isPretty = false;
     this.partSpec = partSpec;
     this.resFile = resFile.toString();
     this.tableName = tableName;
@@ -120,14 +114,6 @@ public class DescTableDesc extends DDLDesc implements Serializable {
    */
   public void setFormatted(boolean isFormat) {
     this.isFormatted = isFormat;
-  }
-
-  public boolean isPretty() {
-    return this.isPretty;
-  }
-
-  public void setPretty(boolean isPretty) {
-    this.isPretty = isPretty;
   }
 
   /**

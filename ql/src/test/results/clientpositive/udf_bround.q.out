@@ -12,6 +12,8 @@ Banker's rounding. The value is rounded to the nearest even number. Also known a
 Example:
   > SELECT bround(12.25, 1);
   12.2
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFBRound
+Function type:BUILTIN
 PREHOOK: query: select
 bround(2.5),
 bround(3.5),

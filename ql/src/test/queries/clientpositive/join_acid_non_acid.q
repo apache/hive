@@ -22,3 +22,13 @@ SET hive.doing.acid=false;
 
 SELECT t1.*, t2.* FROM orc_table t1
 JOIN orc_update_table t2 ON t1.k1=t2.k1 ORDER BY t1.k1;
+
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.enforce.bucketing=true;
+set hive.auto.convert.join=false;
+set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+
+select t1.k1, t1.f1 from orc_table t1
+                     union all
+select t2.k1, t2.f1 from orc_update_table t2;

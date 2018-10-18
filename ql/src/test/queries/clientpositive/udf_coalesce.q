@@ -1,3 +1,5 @@
+--! qt:dataset:src_thrift
+--! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
 DESCRIBE FUNCTION coalesce;
@@ -54,3 +56,5 @@ SELECT COALESCE(src_thrift.lint[1], 999),
        COALESCE(src_thrift.lintstring[0].mystring, '999'),
        COALESCE(src_thrift.mstringstring['key_2'], '999')
 FROM src_thrift;
+
+SELECT COALESCE(COALESCE(null), 'TEST');

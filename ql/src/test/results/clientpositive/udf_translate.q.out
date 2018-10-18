@@ -20,13 +20,13 @@ If the same character is present multiple times in the input string, the first o
 For example,
 
 translate('abcdef', 'ada', '192') returns '1bc9ef' replaces 'a' with '1' and 'd' with '9' ignoring the second occurence of 'a' in the from string mapping it to '2'
-PREHOOK: query: -- Create some tables to serve some input data
-CREATE TABLE table_input(input STRING)
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTranslate
+Function type:BUILTIN
+PREHOOK: query: CREATE TABLE table_input(input STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_input
-POSTHOOK: query: -- Create some tables to serve some input data
-CREATE TABLE table_input(input STRING)
+POSTHOOK: query: CREATE TABLE table_input(input STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_input
@@ -58,53 +58,45 @@ POSTHOOK: Output: default@table_translate
 POSTHOOK: Lineage: table_translate.from_string SIMPLE []
 POSTHOOK: Lineage: table_translate.input_string SIMPLE []
 POSTHOOK: Lineage: table_translate.to_string SIMPLE []
-PREHOOK: query: -- Run some queries on constant input parameters
-SELECT  translate('abcd', 'ab', '12'),
+PREHOOK: query: SELECT  translate('abcd', 'ab', '12'),
         translate('abcd', 'abc', '12') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries on constant input parameters
-SELECT  translate('abcd', 'ab', '12'),
+POSTHOOK: query: SELECT  translate('abcd', 'ab', '12'),
         translate('abcd', 'abc', '12') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 12cd	12d
-PREHOOK: query: -- Run some queries where first parameter being a table column while the other two being constants
-SELECT translate(table_input.input, 'ab', '12'),
+PREHOOK: query: SELECT translate(table_input.input, 'ab', '12'),
        translate(table_input.input, 'abc', '12') FROM table_input tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_input
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where first parameter being a table column while the other two being constants
-SELECT translate(table_input.input, 'ab', '12'),
+POSTHOOK: query: SELECT translate(table_input.input, 'ab', '12'),
        translate(table_input.input, 'abc', '12') FROM table_input tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_input
 #### A masked pattern was here ####
 12cd	12d
-PREHOOK: query: -- Run some queries where all parameters are coming from table columns
-SELECT translate(input_string, from_string, to_string) FROM table_translate tablesample (1 rows)
+PREHOOK: query: SELECT translate(input_string, from_string, to_string) FROM table_translate tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_translate
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where all parameters are coming from table columns
-SELECT translate(input_string, from_string, to_string) FROM table_translate tablesample (1 rows)
+POSTHOOK: query: SELECT translate(input_string, from_string, to_string) FROM table_translate tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_translate
 #### A masked pattern was here ####
 1bc
-PREHOOK: query: -- Run some queries where some parameters are NULL
-SELECT translate(NULL, 'ab', '12'),
+PREHOOK: query: SELECT translate(NULL, 'ab', '12'),
        translate('abcd', NULL, '12'),
        translate('abcd', 'ab', NULL),
        translate(NULL, NULL, NULL) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where some parameters are NULL
-SELECT translate(NULL, 'ab', '12'),
+POSTHOOK: query: SELECT translate(NULL, 'ab', '12'),
        translate('abcd', NULL, '12'),
        translate('abcd', 'ab', NULL),
        translate(NULL, NULL, NULL) FROM src tablesample (1 rows)
@@ -112,50 +104,42 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL
-PREHOOK: query: -- Run some queries where the same character appears several times in the from string (2nd argument) of the UDF
-SELECT translate('abcd', 'aba', '123'),
+PREHOOK: query: SELECT translate('abcd', 'aba', '123'),
        translate('abcd', 'aba', '12') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where the same character appears several times in the from string (2nd argument) of the UDF
-SELECT translate('abcd', 'aba', '123'),
+POSTHOOK: query: SELECT translate('abcd', 'aba', '123'),
        translate('abcd', 'aba', '12') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 12cd	12cd
-PREHOOK: query: -- Run some queries for the ignorant case when the 3rd parameter has more characters than the second one
-SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows)
+PREHOOK: query: SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries for the ignorant case when the 3rd parameter has more characters than the second one
-SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 123d
-PREHOOK: query: -- Test proper function over UTF-8 characters
-SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows)
+PREHOOK: query: SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test proper function over UTF-8 characters
-SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Ãbcd
-PREHOOK: query: -- Run some queries where the arguments are not strings but chars and varchars
-SELECT translate(CAST('abcd' AS CHAR(5)), CAST('aba' AS VARCHAR(5)), CAST('123' AS CHAR(5))),
+PREHOOK: query: SELECT translate(CAST('abcd' AS CHAR(5)), CAST('aba' AS VARCHAR(5)), CAST('123' AS CHAR(5))),
        translate(CAST('abcd' AS VARCHAR(9)), CAST('aba' AS CHAR(9)), CAST('12' AS VARCHAR(9)))
        FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Run some queries where the arguments are not strings but chars and varchars
-SELECT translate(CAST('abcd' AS CHAR(5)), CAST('aba' AS VARCHAR(5)), CAST('123' AS CHAR(5))),
+POSTHOOK: query: SELECT translate(CAST('abcd' AS CHAR(5)), CAST('aba' AS VARCHAR(5)), CAST('123' AS CHAR(5))),
        translate(CAST('abcd' AS VARCHAR(9)), CAST('aba' AS CHAR(9)), CAST('12' AS VARCHAR(9)))
        FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY

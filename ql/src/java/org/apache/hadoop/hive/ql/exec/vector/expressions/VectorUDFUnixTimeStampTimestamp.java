@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,9 +33,9 @@ public final class VectorUDFUnixTimeStampTimestamp extends VectorUDFTimestampFie
     return timestampColVector.asScratchTimestamp(elementNum).getTime() / 1000;
   }
 
-  public VectorUDFUnixTimeStampTimestamp(int colNum, int outputColumn) {
+  public VectorUDFUnixTimeStampTimestamp(int colNum, int outputColumnNum) {
     /* not a real field */
-    super(-1, colNum, outputColumn);
+    super(-1, colNum, outputColumnNum);
   }
 
   public VectorUDFUnixTimeStampTimestamp() {

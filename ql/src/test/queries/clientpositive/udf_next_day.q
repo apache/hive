@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
 DESCRIBE FUNCTION next_day;
@@ -41,6 +42,5 @@ SELECT next_day(cast(null as string), 'MO'),
 FROM src tablesample (1 rows);
 
 SELECT next_day('2015-02-02', 'VT'),
-       next_day('2015-02-30', 'WE'),
-       next_day('02/15/2015', 'WE')
+       next_day('2015-02-15', 'WE')
 FROM src tablesample (1 rows);

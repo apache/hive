@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,8 +28,8 @@ public final class VectorUDFYearDate extends VectorUDFTimestampFieldDate {
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFYearDate(int colNum, int outputColumn) {
-    super(Calendar.YEAR, colNum, outputColumn);
+  public VectorUDFYearDate(int colNum, int outputColumnNum) {
+    super(Calendar.YEAR, colNum, outputColumnNum);
   }
 
   public VectorUDFYearDate() {

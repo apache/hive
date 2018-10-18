@@ -43,13 +43,14 @@ public class FadvisedFileRegion extends DefaultFileRegion {
   private final int shuffleBufferSize;
   private final boolean shuffleTransferToAllowed;
   private final FileChannel fileChannel;
+  private final boolean canEvictAfterTransfer;
   
   private ReadaheadRequest readaheadRequest;
 
   public FadvisedFileRegion(RandomAccessFile file, long position, long count,
       boolean manageOsCache, int readaheadLength, ReadaheadPool readaheadPool,
       String identifier, int shuffleBufferSize, 
-      boolean shuffleTransferToAllowed) throws IOException {
+      boolean shuffleTransferToAllowed, boolean canEvictAfterTransfer) throws IOException {
     super(file.getChannel(), position, count);
     this.manageOsCache = manageOsCache;
     this.readaheadLength = readaheadLength;
@@ -61,6 +62,8 @@ public class FadvisedFileRegion extends DefaultFileRegion {
     this.position = position;
     this.shuffleBufferSize = shuffleBufferSize;
     this.shuffleTransferToAllowed = shuffleTransferToAllowed;
+    // To indicate whether the pages should be thrown away or not.
+    this.canEvictAfterTransfer = canEvictAfterTransfer;
   }
 
   @Override
@@ -149,9 +152,12 @@ public class FadvisedFileRegion extends DefaultFileRegion {
   public void transferSuccessful() {
     if (manageOsCache && getCount() > 0) {
       try {
-        NativeIO.POSIX.getCacheManipulator().posixFadviseIfPossible(identifier,
-           fd, getPosition(), getCount(),
-           NativeIO.POSIX.POSIX_FADV_DONTNEED);
+        if (canEvictAfterTransfer) {
+          LOG.debug("shuffleBufferSize: {}, path: {}", shuffleBufferSize, identifier);
+          NativeIO.POSIX.getCacheManipulator().posixFadviseIfPossible(identifier,
+              fd, getPosition(), getCount(),
+              NativeIO.POSIX.POSIX_FADV_DONTNEED);
+        }
       } catch (Throwable t) {
         LOG.warn("Failed to manage OS cache for " + identifier, t);
       }

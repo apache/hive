@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,13 +41,15 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
 
 
   private static MiniHS2 miniHS2 = null;
-  private static MiniHiveKdc miniHiveKdc = null;
+  private static MiniHiveKdc miniHiveKdc;
   private Connection hs2Conn;
-  protected static HiveConf hiveConf = new HiveConf();
 
-  public static void beforeTestBase() throws Exception {
-    System.err.println("Testing using HS2 mode:"
-        + hiveConf.getVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE));
+  public static void beforeTestBase(String transportMode) throws Exception {
+    miniHiveKdc = new MiniHiveKdc();
+
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
+    System.err.println("Testing using HS2 mode:" + transportMode);
 
     Class.forName(MiniHS2.getJdbcDriverName());
     hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -58,7 +60,6 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
 
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(new HashMap<String, String>());
 
@@ -97,6 +98,8 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
 
       Statement stmt = hs2Conn.createStatement();
 
+      stmt.execute("drop table if exists " + tableName1);
+      stmt.execute("drop table if exists " + tableName2);
       // create tables
       stmt.execute("create table " + tableName1 + "(i int) ");
       stmt.execute("create table " + tableName2 + "(i int) ");

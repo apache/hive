@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,16 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.Map;
 
 /**
  * An interface for any possible implementation for publishing statics.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface StatsPublisher {
 
   /**

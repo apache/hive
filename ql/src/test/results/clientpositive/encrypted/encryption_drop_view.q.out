@@ -4,12 +4,12 @@ POSTHOOK: query: DROP TABLE IF EXISTS dve_encrypted_table PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dve_encrypted_table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dve_encrypted_table
 Encryption key created: 'key_128'
@@ -24,6 +24,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@dve_encrypted_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dve_view
+POSTHOOK: Lineage: dve_view.key SIMPLE [(dve_encrypted_table)dve_encrypted_table.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dve_view.value SIMPLE [(dve_encrypted_table)dve_encrypted_table.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DROP VIEW dve_view
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@dve_view

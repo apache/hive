@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 set hive.exec.infer.bucket.sort=true;
 
@@ -12,6 +14,7 @@ CREATE TABLE test_table_out_2 (key STRING, value STRING, grouping_key STRING, ag
 -- Test rollup, should not be bucketed or sorted because its missing the grouping ID
 EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH ROLLUP;
+SELECT key, value, count(1) FROM src GROUP BY ROLLUP (key, value);
 
 INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH ROLLUP;
@@ -22,6 +25,7 @@ DESCRIBE FORMATTED test_table_out PARTITION (part = '1');
 
 INSERT OVERWRITE TABLE test_table_out_2 PARTITION (part = '1') 
 SELECT key, value, GROUPING__ID, count(1) FROM src GROUP BY key, value WITH ROLLUP;
+SELECT key, value, GROUPING__ID, count(1) FROM src GROUP BY ROLLUP (key, value);
 
 DESCRIBE FORMATTED test_table_out_2 PARTITION (part = '1');
 

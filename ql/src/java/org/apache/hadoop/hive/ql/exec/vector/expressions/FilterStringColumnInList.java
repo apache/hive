@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Evaluate an IN filter on a batch for a vector of strings.
@@ -51,7 +55,7 @@ public class FilterStringColumnInList extends VectorExpression implements IStrin
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -150,19 +154,8 @@ public class FilterStringColumnInList extends VectorExpression implements IStrin
     }
   }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
   public void setInputColumn(int inputCol) {
     this.inputCol = inputCol;
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
   }
 
   @Override
@@ -178,5 +171,15 @@ public class FilterStringColumnInList extends VectorExpression implements IStrin
 
   public void setInListValues(byte [][] a) {
     this.inListValues = a;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("col ");
+    sb.append(inputCol);
+    sb.append(", values ");
+    sb.append(displayArrayOfUtf8ByteArrays(inListValues));
+    return sb.toString();
   }
 }

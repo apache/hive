@@ -1,0 +1,17 @@
+PREHOOK: query: create table external1 (col1 int, col2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@external1
+POSTHOOK: query: create table external1 (col1 int, col2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@external1
+PREHOOK: query: alter table external1 set tblproperties ('EXTERNAL'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@external1
+PREHOOK: Output: default@external1
+POSTHOOK: query: alter table external1 set tblproperties ('EXTERNAL'='true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@external1
+POSTHOOK: Output: default@external1
+FAILED: SemanticException [Error 10146]: Cannot truncate non-managed table external1.

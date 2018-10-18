@@ -9,3 +9,5 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED std
 POSTHOOK: type: DESCFUNCTION
 std(x) - Returns the standard deviation of a set of numbers
 Synonyms: stddev, stddev_pop
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStd
+Function type:BUILTIN

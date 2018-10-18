@@ -1,10 +1,10 @@
 /some/working/dir/ivy /some/local/dir/somehost-someuser-0
 /some/working/dir/maven /some/local/dir/somehost-someuser-0
 /some/working/dir/repositoryName-source /some/local/dir/somehost-someuser-0
-/tmp/hive-ptest-units/TestExecutionPhase/logs/succeeded/driver /some/local/dir/somehost-someuser-0/logs/
-/tmp/hive-ptest-units/TestExecutionPhase/scratch/hiveptest-driver.sh /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver.sh
-bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver.sh
-killall -q -9 -f java || true
+/tmp/hive-ptest-units/TestExecutionPhase/logs/succeeded/1_driver /some/local/dir/somehost-someuser-0/logs/
+/tmp/hive-ptest-units/TestExecutionPhase/scratch/hiveptest-1_driver.sh /some/local/dir/somehost-someuser-0/scratch/hiveptest-1_driver.sh
+bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-1_driver.sh
+killall -q -9 java || true
 mkdir -p /some/local/dir/somehost-someuser-0/logs /some/local/dir/somehost-someuser-0/maven /some/local/dir/somehost-someuser-0/scratch /some/local/dir/somehost-someuser-0/ivy /some/local/dir/somehost-someuser-0/repositoryName-source
 mkdir -p /some/local/dir/somehost-someuser-1/logs /some/local/dir/somehost-someuser-1/maven /some/local/dir/somehost-someuser-1/scratch /some/local/dir/somehost-someuser-1/ivy /some/local/dir/somehost-someuser-1/repositoryName-source
 rm -rf /some/local/dir/somehost-someuser-0/scratch /some/local/dir/somehost-someuser-0/logs

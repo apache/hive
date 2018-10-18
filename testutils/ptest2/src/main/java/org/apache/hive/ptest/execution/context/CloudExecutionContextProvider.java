@@ -34,12 +34,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hive.ptest.execution.Constants;
 import org.apache.hive.ptest.execution.Dirs;
+import org.apache.hive.ptest.execution.LocalCommandFactory;
 import org.apache.hive.ptest.execution.conf.Context;
 import org.apache.hive.ptest.execution.conf.Host;
 import org.apache.hive.ptest.execution.ssh.SSHCommand;
 import org.apache.hive.ptest.execution.ssh.SSHCommandExecutor;
 import org.jclouds.compute.RunNodesException;
 import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.domain.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,16 +57,24 @@ import com.google.common.collect.Sets;
 public class CloudExecutionContextProvider implements ExecutionContextProvider {
   private static final Logger LOG = LoggerFactory
       .getLogger(CloudExecutionContextProvider.class);
-  public static final String DATA_DIR = "dataDir";
+  public static final String CLOUD_PROVIDER = "cloudProvider";
+
+  // GCE settings
+  public static final String GCE_JSON_CREDS_FILE = "gceJsonFile";
+  
+  // AWS settings
   public static final String API_KEY = "apiKey";
   public static final String ACCESS_KEY = "accessKey";
+  public static final String KEY_PAIR = "keyPair";
+  public static final String MAX_BID = "maxBid";
+  
+  // Generic settings
+  public static final String DATA_DIR = "dataDir";
   public static final String NUM_HOSTS = "numHosts";
   public static final String MAX_HOSTS_PER_CREATE_REQUEST = "maxHostsPerCreateRequest";
   public static final String GROUP_NAME = "groupName";
   public static final String IMAGE_ID = "imageId";
-  public static final String KEY_PAIR = "keyPair";
   public static final String SECURITY_GROUP = "securityGroup";
-  public static final String MAX_BID = "maxBid";
   public static final String SLAVE_LOCAL_DIRECTORIES = "localDirs";
   public static final String USERNAME = "user";
   public static final String INSTANCE_TYPE = "instanceType";
@@ -213,6 +223,16 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       LOG.info("Attempting to create " + numRequired + " nodes");
       try {
         result.addAll(mCloudComputeService.createNodes(Math.min(mMaxHostsPerCreateRequest, numRequired)));
+
+        Set<String> newAddresses = new HashSet<String>();
+        for (NodeMetadata node : result) {
+          newAddresses.addAll(node.getPublicAddresses());
+        }
+        synchronized (mTerminatedHosts) {
+          for (String newAddress : newAddresses) {
+            mTerminatedHosts.remove(newAddress);
+          }
+        }
       } catch (RunNodesException e) {
         error = true;
         LOG.warn("Error creating nodes", e);
@@ -304,6 +324,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
           LOG.error("Verify command still executing on a host after 10 minutes");
         }
       } catch (InterruptedException e) {
+        terminateInternal(result);
         throw new CreateHostsFailedException("Interrupted while trying to create hosts", e);
       } finally {
         if(!executorService.isShutdown()) {
@@ -321,6 +342,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     synchronized (mTerminatedHosts) {
       terminatedHosts.putAll(mTerminatedHosts);
     }
+    LOG.info("Currently tracked terminated hosts: {}", terminatedHosts.keySet().toString());
     for (NodeMetadata node : getRunningNodes()) {
       String ip = publicIpOrHostname(node);
       if (terminatedHosts.containsKey(ip)) {
@@ -418,29 +440,79 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       return create(context, workingDirectory);
     }
   }
+  
+  private static CloudComputeService createAwsService(final Context context) {
+    String apiKey = Preconditions.checkNotNull(context.getString(API_KEY), API_KEY + " is required");
+    String accessKey = Preconditions.checkNotNull(context.getString(ACCESS_KEY), ACCESS_KEY + " is required");
+    String imageId = Preconditions.checkNotNull(context.getString(IMAGE_ID), IMAGE_ID + " is required");
+    String keyPair = Preconditions.checkNotNull(context.getString(KEY_PAIR), KEY_PAIR + " is required");
+    String securityGroup = Preconditions.checkNotNull(context.getString(SECURITY_GROUP), SECURITY_GROUP + " is required");
+
+    Float maxBid = context.getFloat(MAX_BID);
+    Preconditions.checkArgument(maxBid == null || maxBid > 0, MAX_BID + " must be null or greater than zero");
+
+    String instanceType = context.getString(INSTANCE_TYPE, "c1.xlarge");
+    String groupName = context.getString(GROUP_NAME, "hive-ptest-slaves");
+
+    CloudComputeService.CloudComputeConfig config =
+            new CloudComputeService.CloudComputeConfig(CloudComputeService.CloudComputeConfig.CloudComputeProvider.AWS);
+
+    config.setCredentials(apiKey, accessKey);
+    config.setInstanceType(instanceType);
+    config.setGroupName(groupName);
+    config.setImageId(imageId);
+    config.setmKeyPairName(keyPair);
+    config.setSecurityGroup(securityGroup);
+    config.setMaxBid(maxBid);
+    config.setUserMetaData(context.getSubProperties(USER_METADATA + "."));
+
+    return new CloudComputeService(config);
+  }
+  
+  private static CloudComputeService createGceService(final Context context) throws IOException {
+    String gceJsonFile = Preconditions.checkNotNull(context.getString(GCE_JSON_CREDS_FILE), GCE_JSON_CREDS_FILE + " is required");
+    String imageId = Preconditions.checkNotNull(context.getString(IMAGE_ID), IMAGE_ID + " is required");
+    String securityGroup = Preconditions.checkNotNull(context.getString(SECURITY_GROUP), SECURITY_GROUP + " is required");
+    String instanceType = Preconditions.checkNotNull(context.getString(INSTANCE_TYPE, ""), INSTANCE_TYPE + " is required");
+
+    String groupName = context.getString(GROUP_NAME, "hive-ptest-slaves");
+
+    CloudComputeService.CloudComputeConfig config =
+            new CloudComputeService.CloudComputeConfig(CloudComputeService.CloudComputeConfig.CloudComputeProvider.GCE);
+
+    Credentials creds = 
+            CloudComputeService.getCredentialsFromJsonKeyFile(gceJsonFile);
+
+    config.setCredentials(creds.identity, creds.credential);
+    config.setInstanceType(instanceType);
+    config.setGroupName(groupName);
+    config.setImageId(imageId);
+    config.setSecurityGroup(securityGroup);
+    config.setUserMetaData(context.getSubProperties(USER_METADATA + "."));
+
+    return new CloudComputeService(config);
+  }
+
+  private static CloudComputeService createService(final Context context) throws IOException {
+    String cloudProvider = context.getString(CLOUD_PROVIDER, "aws-ec2");
+    
+    if (cloudProvider.equalsIgnoreCase("aws-ec2")) {
+      return createAwsService(context);
+    } else if (cloudProvider.equalsIgnoreCase("google-compute-engine")) {
+      return createGceService(context);
+    } else {
+      throw new IllegalArgumentException("Unknown cloud provider name: " + cloudProvider);
+    }
+  }
 
   private static CloudExecutionContextProvider create(Context context,
       String workingDirectory) throws IOException {
     String dataDir = Preconditions.checkNotNull(context.getString(DATA_DIR),
         DATA_DIR + " is required");
-    String apiKey = Preconditions.checkNotNull(context.getString(API_KEY),
-        API_KEY + " is required");
-    String accessKey = Preconditions.checkNotNull(
-        context.getString(ACCESS_KEY), ACCESS_KEY + " is required");
     int maxHostsPerCreateRequest = context.getInteger(MAX_HOSTS_PER_CREATE_REQUEST, 2);
     Integer numHosts = context.getInteger(NUM_HOSTS, 8);
     Preconditions.checkArgument(numHosts > 0, NUM_HOSTS
         + " must be greater than zero");
-    String groupName = context.getString(GROUP_NAME, "hive-ptest-slaves");
-    String imageId = Preconditions.checkNotNull(context.getString(IMAGE_ID),
-        IMAGE_ID + " is required");
-    String keyPair = Preconditions.checkNotNull(context.getString(KEY_PAIR),
-        KEY_PAIR + " is required");
-    String securityGroup = Preconditions.checkNotNull(
-        context.getString(SECURITY_GROUP), SECURITY_GROUP + " is required");
-    Float maxBid = context.getFloat(MAX_BID);
-    Preconditions.checkArgument(maxBid == null || maxBid > 0, MAX_BID
-        + " must be null or greater than zero");
     String privateKey = Preconditions.checkNotNull(
         context.getString(PRIVATE_KEY), PRIVATE_KEY + " is required");
     String user = context.getString(USERNAME, "hiveptest");
@@ -448,12 +520,12 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
         .split(context.getString(SLAVE_LOCAL_DIRECTORIES, "/home/hiveptest/")),
         String.class);
     Integer numThreads = context.getInteger(NUM_THREADS, 3);
-    String instanceType = context.getString(INSTANCE_TYPE, "c1.xlarge");
-    CloudComputeService cloudComputeService = new CloudComputeService(apiKey, accessKey,
-        instanceType, groupName, imageId, keyPair, securityGroup, maxBid, context.getSubProperties(USER_METADATA + "."));
+    
+    CloudComputeService cloudComputeService = createService(context);
     CloudExecutionContextProvider service = new CloudExecutionContextProvider(
-        dataDir, numHosts, cloudComputeService, new SSHCommandExecutor(LOG), workingDirectory,
-        privateKey, user, localDirs, numThreads, 60, maxHostsPerCreateRequest);
+        dataDir, numHosts, cloudComputeService,
+        new SSHCommandExecutor(LOG, new LocalCommandFactory(LOG), "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"),
+        workingDirectory, privateKey, user, localDirs, numThreads, 60, maxHostsPerCreateRequest);
     return service;
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -70,10 +70,14 @@ public abstract class HivePairFlatMapFunction<T, K, V> implements PairFlatMapFun
       taskAttemptIdBuilder.append("r_");
     }
 
-    // Spark task attempt id is increased by Spark context instead of task, which may introduce
-    // unstable qtest output, since non Hive features depends on this, we always set it to 0 here.
+    // Hive requires this TaskAttemptId to be unique. MR's TaskAttemptId is composed
+    // of "attempt_timestamp_jobNum_m/r_taskNum_attemptNum". The counterpart for
+    // Spark should be "attempt_timestamp_stageNum_m/r_partitionId_attemptNum".
+    // When there're multiple attempts for a task, Hive will rely on the partitionId
+    // to figure out if the data are duplicate or not when collecting the final outputs
+    // (see org.apache.hadoop.hive.ql.exec.Utils.removeTempOrDuplicateFiles)
     taskAttemptIdBuilder.append(taskIdFormat.format(TaskContext.get().partitionId()))
-      .append("_0");
+      .append("_").append(TaskContext.get().attemptNumber());
 
     String taskAttemptIdStr = taskAttemptIdBuilder.toString();
     jobConf.set("mapred.task.id", taskAttemptIdStr);

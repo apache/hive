@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 
 /*
  * The interface for a single long key hash map lookup method.
@@ -43,4 +44,16 @@ public interface VectorMapJoinLongHashMap
    */
   JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult) throws IOException;
 
+  /*
+   * A version of lookup with match tracking.
+   * ...
+   * @param matchTracker
+   *        Optional key match tracking.
+   *
+   *        NOTE: Since the hash table can be shared, the matchTracker serves as the non-shared
+   *        private object for tracking our key matches in the hash table.
+   * ...
+   */
+  JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult,
+      MatchTracker matchTracker) throws IOException;
 }

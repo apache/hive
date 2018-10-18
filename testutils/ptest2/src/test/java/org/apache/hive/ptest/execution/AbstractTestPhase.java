@@ -106,7 +106,8 @@ public abstract class AbstractTestPhase {
 
   protected void createHostExecutor() {
     hostExecutor = new HostExecutor(host, PRIVATE_KEY, executor, sshCommandExecutor,
-        rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 1, logger);
+        rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 1, true,
+        logger);
     hostExecutors = ImmutableList.of(hostExecutor);
   }
 

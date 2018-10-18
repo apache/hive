@@ -1,6 +1,7 @@
+--! qt:dataset:src
 
 
-select * 
+select *
 from src b 
 where not exists 
   (select sum(1)

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,7 +35,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class HiveIOExceptionHandlerChain {
 
-  public static String HIVE_IO_EXCEPTION_HANDLE_CHAIN = "hive.io.exception.handlers";
+  public static final String HIVE_IO_EXCEPTION_HANDLE_CHAIN = "hive.io.exception.handlers";
 
   @SuppressWarnings("unchecked")
   public static HiveIOExceptionHandlerChain getHiveIOExceptionHandlerChain(

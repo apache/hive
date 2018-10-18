@@ -26,7 +26,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@dest_sp
-POSTHOOK: Lineage: dest_sp.cnt EXPRESSION []
+POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null, ]
 PREHOOK: query: select * from dest_sp x order by x.cnt limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_sp

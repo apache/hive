@@ -1,0 +1,267 @@
+PREHOOK: query: explain
+with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 10 <- Map 14 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
+Reducer 3 <- Map 13 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 14 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 11 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+Reducer 8 <- Map 1 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
+Reducer 9 <- Map 13 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 7 vectorized
+      File Output Operator [FS_232]
+        Select Operator [SEL_231] (rows=13756683 width=15)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
+        <-Reducer 6 [SIMPLE_EDGE]
+          SHUFFLE [RS_60]
+            Merge Join Operator [MERGEJOIN_202] (rows=13756683 width=15)
+              Conds:RS_225._col0, _col1=RS_230._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
+            <-Reducer 11 [SIMPLE_EDGE] vectorized
+              SHUFFLE [RS_230]
+                PartitionCols:_col0, _col1
+                Select Operator [SEL_229] (rows=12506076 width=15)
+                  Output:["_col0","_col1","_col2","_col3"]
+                  Filter Operator [FIL_228] (rows=12506076 width=15)
+                    predicate:CASE WHEN (((UDFToDouble(_col3) / _col4) = 0)) THEN (false) ELSE (((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4)) > 1.0D)) END
+                    Select Operator [SEL_227] (rows=25012152 width=15)
+                      Output:["_col0","_col1","_col3","_col4","_col5","_col6"]
+                      Group By Operator [GBY_226] (rows=25012152 width=15)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0, KEY._col1, KEY._col2
+                      <-Reducer 10 [SIMPLE_EDGE]
+                        SHUFFLE [RS_52]
+                          PartitionCols:_col0, _col1, _col2
+                          Group By Operator [GBY_51] (rows=50024305 width=15)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(_col3)","count(_col3)","sum(_col5)","sum(_col4)"],keys:_col1, _col2, _col0
+                            Select Operator [SEL_49] (rows=50024305 width=15)
+                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                              Merge Join Operator [MERGEJOIN_201] (rows=50024305 width=15)
+                                Conds:RS_46._col2=RS_220._col0(Inner),Output:["_col3","_col7","_col8","_col9"]
+                              <-Map 14 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_220]
+                                  PartitionCols:_col0
+                                  Select Operator [SEL_218] (rows=27 width=1029)
+                                    Output:["_col0","_col1"]
+                                    Filter Operator [FIL_217] (rows=27 width=1029)
+                                      predicate:w_warehouse_sk is not null
+                                      TableScan [TS_9] (rows=27 width=1029)
+                                        default@warehouse,warehouse,Tbl:COMPLETE,Col:NONE,Output:["w_warehouse_sk","w_warehouse_name"]
+                              <-Reducer 9 [SIMPLE_EDGE]
+                                SHUFFLE [RS_46]
+                                  PartitionCols:_col2
+                                  Merge Join Operator [MERGEJOIN_200] (rows=45476640 width=15)
+                                    Conds:RS_43._col1=RS_216._col0(Inner),Output:["_col2","_col3","_col7"]
+                                  <-Map 13 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_216]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_214] (rows=462000 width=1436)
+                                        Output:["_col0"]
+                                        Filter Operator [FIL_213] (rows=462000 width=1436)
+                                          predicate:i_item_sk is not null
+                                          TableScan [TS_6] (rows=462000 width=1436)
+                                            default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk"]
+                                  <-Reducer 8 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_43]
+                                      PartitionCols:_col1
+                                      Merge Join Operator [MERGEJOIN_199] (rows=41342400 width=15)
+                                        Conds:RS_206._col0=RS_212._col0(Inner),Output:["_col1","_col2","_col3"]
+                                      <-Map 1 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_206]
+                                          PartitionCols:_col0
+                                          Select Operator [SEL_204] (rows=37584000 width=15)
+                                            Output:["_col0","_col1","_col2","_col3"]
+                                            Filter Operator [FIL_203] (rows=37584000 width=15)
+                                              predicate:(inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null)
+                                              TableScan [TS_0] (rows=37584000 width=15)
+                                                default@inventory,inventory,Tbl:COMPLETE,Col:NONE,Output:["inv_date_sk","inv_item_sk","inv_warehouse_sk","inv_quantity_on_hand"]
+                                      <-Map 12 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_212]
+                                          PartitionCols:_col0
+                                          Select Operator [SEL_210] (rows=18262 width=1119)
+                                            Output:["_col0"]
+                                            Filter Operator [FIL_208] (rows=18262 width=1119)
+                                              predicate:((d_moy = 5) and (d_year = 1999) and d_date_sk is not null)
+                                              TableScan [TS_3] (rows=73049 width=1119)
+                                                default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
+            <-Reducer 5 [SIMPLE_EDGE] vectorized
+              SHUFFLE [RS_225]
+                PartitionCols:_col0, _col1
+                Select Operator [SEL_224] (rows=12506076 width=15)
+                  Output:["_col0","_col1","_col2","_col3"]
+                  Filter Operator [FIL_223] (rows=12506076 width=15)
+                    predicate:CASE WHEN (((UDFToDouble(_col3) / _col4) = 0)) THEN (false) ELSE (((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4)) > 1.0D)) END
+                    Select Operator [SEL_222] (rows=25012152 width=15)
+                      Output:["_col0","_col1","_col3","_col4","_col5","_col6"]
+                      Group By Operator [GBY_221] (rows=25012152 width=15)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0, KEY._col1, KEY._col2
+                      <-Reducer 4 [SIMPLE_EDGE]
+                        SHUFFLE [RS_24]
+                          PartitionCols:_col0, _col1, _col2
+                          Group By Operator [GBY_23] (rows=50024305 width=15)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(_col3)","count(_col3)","sum(_col5)","sum(_col4)"],keys:_col1, _col2, _col0
+                            Select Operator [SEL_21] (rows=50024305 width=15)
+                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                              Merge Join Operator [MERGEJOIN_198] (rows=50024305 width=15)
+                                Conds:RS_18._col2=RS_219._col0(Inner),Output:["_col3","_col7","_col8","_col9"]
+                              <-Map 14 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_219]
+                                  PartitionCols:_col0
+                                   Please refer to the previous Select Operator [SEL_218]
+                              <-Reducer 3 [SIMPLE_EDGE]
+                                SHUFFLE [RS_18]
+                                  PartitionCols:_col2
+                                  Merge Join Operator [MERGEJOIN_197] (rows=45476640 width=15)
+                                    Conds:RS_15._col1=RS_215._col0(Inner),Output:["_col2","_col3","_col7"]
+                                  <-Map 13 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_215]
+                                      PartitionCols:_col0
+                                       Please refer to the previous Select Operator [SEL_214]
+                                  <-Reducer 2 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_15]
+                                      PartitionCols:_col1
+                                      Merge Join Operator [MERGEJOIN_196] (rows=41342400 width=15)
+                                        Conds:RS_205._col0=RS_211._col0(Inner),Output:["_col1","_col2","_col3"]
+                                      <-Map 1 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_205]
+                                          PartitionCols:_col0
+                                           Please refer to the previous Select Operator [SEL_204]
+                                      <-Map 12 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_211]
+                                          PartitionCols:_col0
+                                          Select Operator [SEL_209] (rows=18262 width=1119)
+                                            Output:["_col0"]
+                                            Filter Operator [FIL_207] (rows=18262 width=1119)
+                                              predicate:((d_moy = 4) and (d_year = 1999) and d_date_sk is not null)
+                                               Please refer to the previous TableScan [TS_3]
+
+PREHOOK: query: with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+  and inv1.cov > 1.5
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: with inv as
+(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+       ,stdev,mean, case mean when 0 then null else stdev/mean end cov
+ from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
+            ,stddev_samp(inv_quantity_on_hand) stdev,avg(inv_quantity_on_hand) mean
+      from inventory
+          ,item
+          ,warehouse
+          ,date_dim
+      where inv_item_sk = i_item_sk
+        and inv_warehouse_sk = w_warehouse_sk
+        and inv_date_sk = d_date_sk
+        and d_year =1999
+      group by w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy) foo
+ where case mean when 0 then 0 else stdev/mean end > 1)
+select inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean, inv1.cov
+        ,inv2.w_warehouse_sk,inv2.i_item_sk,inv2.d_moy,inv2.mean, inv2.cov
+from inv inv1,inv inv2
+where inv1.i_item_sk = inv2.i_item_sk
+  and inv1.w_warehouse_sk =  inv2.w_warehouse_sk
+  and inv1.d_moy=4
+  and inv2.d_moy=4+1
+  and inv1.cov > 1.5
+order by inv1.w_warehouse_sk,inv1.i_item_sk,inv1.d_moy,inv1.mean,inv1.cov
+        ,inv2.d_moy,inv2.mean, inv2.cov
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###

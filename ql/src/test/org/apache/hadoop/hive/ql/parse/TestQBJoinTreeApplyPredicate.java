@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,7 +38,8 @@ public class TestQBJoinTreeApplyPredicate {
 
   @BeforeClass
   public static void initialize() {
-    queryState = new QueryState(new HiveConf(SemanticAnalyzer.class));
+    queryState =
+        new QueryState.Builder().withHiveConf(new HiveConf(SemanticAnalyzer.class)).build();
     conf = queryState.getConf();
     SessionState.start(conf);
   }

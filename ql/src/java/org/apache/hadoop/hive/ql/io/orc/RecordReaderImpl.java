@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,11 +19,15 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
@@ -34,13 +38,13 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -59,9 +63,15 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
   private long baseRow;
 
   protected RecordReaderImpl(ReaderImpl fileReader,
-                             Reader.Options options) throws IOException {
+    Reader.Options options, final Configuration conf) throws IOException {
     super(fileReader, options);
-    batch = this.schema.createRowBatch();
+    final boolean useDecimal64ColumnVectors = conf != null && HiveConf.getVar(conf,
+      HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+    if (useDecimal64ColumnVectors){
+      batch = this.schema.createRowBatchV2();
+    } else {
+      batch = this.schema.createRowBatch();
+    }
     rowInBatch = 0;
   }
 
@@ -79,8 +89,8 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     return true;
   }
 
-  public VectorizedRowBatch createRowBatch() {
-    return this.schema.createRowBatch();
+  public VectorizedRowBatch createRowBatch(boolean useDecimal64) {
+    return useDecimal64 ? this.schema.createRowBatchV2() : this.schema.createRowBatch();
   }
 
   @Override
@@ -137,6 +147,12 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
   public boolean nextBatch(VectorizedRowBatch theirBatch) throws IOException {
     // If the user hasn't been reading by row, use the fast path.
     if (rowInBatch >= batch.size) {
+      if (batch.size > 0) {
+        // the local batch has been consumed entirely, reset it
+        batch.reset();
+      }
+      baseRow = super.getRowNumber();
+      rowInBatch = 0;
       return super.nextBatch(theirBatch);
     }
     copyIntoBatch(theirBatch, batch, rowInBatch);
@@ -392,25 +408,30 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       } else {
         result = (HiveDecimalWritable) previous;
       }
-      result.set(((DecimalColumnVector) vector).vector[row]);
+      if (vector instanceof Decimal64ColumnVector) {
+        long value = ((Decimal64ColumnVector) vector).vector[row];
+        result.deserialize64(value, ((Decimal64ColumnVector) vector).scale);
+      } else {
+        result.set(((DecimalColumnVector) vector).vector[row]);
+      }
       return result;
     } else {
       return null;
     }
   }
 
-  static DateWritable nextDate(ColumnVector vector,
-                               int row,
-                               Object previous) {
+  static DateWritableV2 nextDate(ColumnVector vector,
+                                 int row,
+                                 Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
     if (vector.noNulls || !vector.isNull[row]) {
-      DateWritable result;
-      if (previous == null || previous.getClass() != DateWritable.class) {
-        result = new DateWritable();
+      DateWritableV2 result;
+      if (previous == null || previous.getClass() != DateWritableV2.class) {
+        result = new DateWritableV2();
       } else {
-        result = (DateWritable) previous;
+        result = (DateWritableV2) previous;
       }
       int date = (int) ((LongColumnVector) vector).vector[row];
       result.set(date);
@@ -420,18 +441,18 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static TimestampWritable nextTimestamp(ColumnVector vector,
-                                         int row,
-                                         Object previous) {
+  static TimestampWritableV2 nextTimestamp(ColumnVector vector,
+                                           int row,
+                                           Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
     if (vector.noNulls || !vector.isNull[row]) {
-      TimestampWritable result;
-      if (previous == null || previous.getClass() != TimestampWritable.class) {
-        result = new TimestampWritable();
+      TimestampWritableV2 result;
+      if (previous == null || previous.getClass() != TimestampWritableV2.class) {
+        result = new TimestampWritableV2();
       } else {
-        result = (TimestampWritable) previous;
+        result = (TimestampWritableV2) previous;
       }
       TimestampColumnVector tcv = (TimestampColumnVector) vector;
       result.setInternal(tcv.time[row], tcv.nanos[row]);
@@ -534,10 +555,10 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static HashMap<Object,Object> nextMap(ColumnVector vector,
-                                        int row,
-                                        TypeDescription schema,
-                                        Object previous) {
+  static Map<Object,Object> nextMap(ColumnVector vector,
+                                    int row,
+                                    TypeDescription schema,
+                                    Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
@@ -547,11 +568,11 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       int offset = (int) map.offsets[row];
       TypeDescription keyType = schema.getChildren().get(0);
       TypeDescription valueType = schema.getChildren().get(1);
-      HashMap<Object,Object> result;
-      if (previous == null || previous.getClass() != HashMap.class) {
-        result = new HashMap<Object,Object>(length);
+      LinkedHashMap<Object,Object> result;
+      if (previous == null || previous.getClass() != LinkedHashMap.class) {
+        result = new LinkedHashMap<Object,Object>(length);
       } else {
-        result = (HashMap<Object,Object>) previous;
+        result = (LinkedHashMap<Object,Object>) previous;
         // I couldn't think of a good way to reuse the keys and value objects
         // without even more allocations, so take the easy and safe approach.
         result.clear();

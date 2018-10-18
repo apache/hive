@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,7 +25,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Properties;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.service.server.HiveServer2;
@@ -98,6 +99,7 @@ public class TestHs2Hooks {
   public static class SemanticAnalysisHook implements HiveSemanticAnalyzerHook {
     public static String userName;
     public static String command;
+    public static HiveOperation commandType;
     public static String ipAddress;
     public static Throwable preAnalyzeError;
     public static Throwable postAnalyzeError;
@@ -109,6 +111,7 @@ public class TestHs2Hooks {
         userName = context.getUserName();
         ipAddress = context.getIpAddress();
         command = context.getCommand();
+        commandType = context.getHiveOperation();
       } catch (Throwable t) {
         LOG.error("Error in semantic analysis hook preAnalyze: " + t, t);
         preAnalyzeError = t;
@@ -123,6 +126,7 @@ public class TestHs2Hooks {
         userName = context.getUserName();
         ipAddress = context.getIpAddress();
         command = context.getCommand();
+        commandType = context.getHiveOperation();
       } catch (Throwable t) {
         LOG.error("Error in semantic analysis hook postAnalyze: " + t, t);
         postAnalyzeError = t;
@@ -170,6 +174,7 @@ public class TestHs2Hooks {
     SemanticAnalysisHook.userName = null;
     SemanticAnalysisHook.ipAddress = null;
     SemanticAnalysisHook.command = null;
+    SemanticAnalysisHook.commandType = null;
     SemanticAnalysisHook.preAnalyzeError = null;
     SemanticAnalysisHook.postAnalyzeError = null;
   }
@@ -182,6 +187,7 @@ public class TestHs2Hooks {
     Properties connProp = new Properties();
     connProp.setProperty("user", System.getProperty("user.name"));
     connProp.setProperty("password", "");
+
     HiveConnection connection = new HiveConnection("jdbc:hive2://localhost:10000/default", connProp);
     Statement stmt = connection.createStatement();
     stmt.executeQuery("show databases");
@@ -203,9 +209,9 @@ public class TestHs2Hooks {
     Assert.assertEquals("SHOWTABLES", PostExecHook.operation);
 
     Assert.assertEquals(System.getProperty("user.name"), PreExecHook.userName);
-    Assert.assertNotNull(PreExecHook.ipAddress, "ipaddress is null");
-    Assert.assertNotNull(PreExecHook.userName, "userName is null");
-    Assert.assertNotNull(PreExecHook.operation , "operation is null");
+    Assert.assertNotNull("ipaddress is null", PreExecHook.ipAddress);
+    Assert.assertNotNull("userName is null", PreExecHook.userName);
+    Assert.assertNotNull("operation is null", PreExecHook.operation);
     Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains("127.0.0.1"));
     Assert.assertEquals("SHOWTABLES", PreExecHook.operation);
 
@@ -218,14 +224,51 @@ public class TestHs2Hooks {
       throw error;
     }
 
-    Assert.assertNotNull(SemanticAnalysisHook.ipAddress,
-        "semantic hook context ipaddress is null");
-    Assert.assertNotNull(SemanticAnalysisHook.userName,
-        "semantic hook context userName is null");
-    Assert.assertNotNull(SemanticAnalysisHook.command ,
-        "semantic hook context command is null");
+    Assert.assertNotNull("semantic hook context ipaddress is null",
+        SemanticAnalysisHook.ipAddress);
+    Assert.assertNotNull("semantic hook context userName is null",
+        SemanticAnalysisHook.userName);
+    Assert.assertNotNull("semantic hook context command is null",
+        SemanticAnalysisHook.command);
+    Assert.assertNotNull("semantic hook context commandType is null",
+        SemanticAnalysisHook.commandType);
     Assert.assertTrue(SemanticAnalysisHook.ipAddress,
         SemanticAnalysisHook.ipAddress.contains("127.0.0.1"));
     Assert.assertEquals("show tables", SemanticAnalysisHook.command);
+
+    stmt.close();
+    connection.close();
+  }
+
+  @Test
+  public void testPostAnalysisHookContexts() throws Throwable {
+    Properties connProp = new Properties();
+    connProp.setProperty("user", System.getProperty("user.name"));
+    connProp.setProperty("password", "");
+
+    HiveConnection connection = new HiveConnection("jdbc:hive2://localhost:10000/default", connProp);
+    Statement stmt = connection.createStatement();
+    stmt.execute("create table testPostAnalysisHookContexts as select '3'");
+    Throwable error = PostExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+    error = PreExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+
+    Assert.assertEquals(HiveOperation.CREATETABLE_AS_SELECT, SemanticAnalysisHook.commandType);
+
+    error = SemanticAnalysisHook.preAnalyzeError;
+    if (error != null) {
+      throw error;
+    }
+    error = SemanticAnalysisHook.postAnalyzeError;
+    if (error != null) {
+      throw error;
+    }
+    stmt.close();
+    connection.close();
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * To be used to cast timestamp to decimal.
@@ -33,17 +31,15 @@ public class CastTimestampToDate extends FuncTimestampToLong {
 
   public CastTimestampToDate() {
     super();
-    this.outputType = "date";
   }
 
-  public CastTimestampToDate(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
-    this.outputType = "date";
+  public CastTimestampToDate(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override
   protected void func(LongColumnVector outV, TimestampColumnVector inV, int i) {
 
-    outV.vector[i] = DateWritable.millisToDays(inV.getTime(i));
+    outV.vector[i] = DateWritableV2.millisToDays(inV.getTime(i));
   }
 }

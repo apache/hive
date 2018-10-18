@@ -1,3 +1,3 @@
 PREHOOK: query: grant role public to user hive_test_user
 PREHOOK: type: GRANT_ROLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:No user can be added to public. Since all users implictly belong to public role.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:No user can be added to public. Since all users implicitly belong to public role.)

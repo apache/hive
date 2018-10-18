@@ -1,0 +1,47 @@
+Ln:1 SUMMARY
+
+Column      	Type       	Rows       	NonNull    	Unique     	Avg        	Min        	Max        	StdDev     	p05        	p25        	p50        	p75        	p95        
+KEY         	string     	500        	500        	309        	260.18     	0          	98         	143.07     	26.00      	146.00     	255.50     	395.00     	479.00     
+VALUE       	string     	500        	500        	309        	null       	val_0      	val_98     	null       	null       	null       	null       	null       	null       
+Ln:3 SUMMARY
+
+Column      	Type       	Rows       	NonNull    	Unique     	Avg        	Min        	Max        	StdDev     	p05        	p25        	p50        	p75        	p95        
+KEY         	string     	500        	500        	309        	260.18     	0          	98         	143.07     	26.00      	145.50     	255.50     	394.50     	479.00     
+VALUE       	string     	500        	500        	309        	null       	val_0      	val_98     	null       	null       	null       	null       	null       	null       
+Ln:5 SUMMARY
+
+Column      	Type       	Rows       	NonNull    	Unique     	Avg        	Min        	Max        	StdDev     	p05        	p25        	p50        	p75        	p95        
+KEY         	string     	100        	100        	94         	272.11     	0          	98         	135.01     	27.00      	165.00     	266.00     	396.00     	482.00     
+VALUE       	string     	100        	100        	94         	null       	val_0      	val_98     	null       	null       	null       	null       	null       	null       
+Ln:7 SUMMARY
+
+Column        	Type       	Rows       	NonNull    	Unique     	Avg        	Min        	Max        	StdDev     	p05        	p25        	p50        	p75        	p95        
+CODE          	string     	823        	823        	823        	null       	00-0000    	53-7199    	null       	null       	null       	null       	null       	null       
+DESCRIPTION   	string     	823        	823        	823        	null       	Accountants and auditors	Zoologists and wildlife biologists	null       	null       	null       	null       	null       	null       
+TOTAL_EMP     	int        	823        	823        	806        	489748.24  	340        	134354250  	4858790.94 	4054.50    	17270.00   	49335.00   	162662.50  	1238941.00 
+SALARY        	int        	823        	819        	759        	47963.63   	16700      	192780     	25706.09   	21860.00   	30547.50   	40700.00   	58747.50   	92025.50   
+Ln:9 SUMMARY
+
+Column      	Type       	Rows       	NonNull    	Unique     	Avg        	Min        	Max        	StdDev     	p05        	p25        	p50        	p75        	p95        
+code        	string     	823        	823        	823        	null       	00-0000    	53-7199    	null       	null       	null       	null       	null       	null       
+total_emp   	int        	823        	823        	806        	489748.24  	340        	134354250  	4858790.94 	4054.50    	17270.00   	49335.00   	162662.50  	1238941.00 
+salary      	int        	823        	819        	759        	47963.63   	16700      	192780     	25706.09   	21860.00   	30547.50   	40700.00   	58747.50   	92025.50   
+Ln:11 SUMMARY
+
+KEY              	VALUE                
+348   5          	val_230   5          
+469   5          	val_348   5          
+401   5          	val_401   5          
+230   5          	val_469   5          
+Ln:13 SUMMARY
+
+CODE                 	DESCRIPTION                                             	TOTAL_EMP              	SALARY              
+53-7199   1          	Aircraft mechanics and service technicians   1          	25500       2          	null     4          
+00-0000   1          	Aircraft cargo handling supervisors          1          	9910        2          	34220    3          
+11-0000   1          	Agricultural workers, all other              1          	112300      2          	35470    3          
+Ln:15 SUMMARY
+
+code                 	description                                             	total_emp              	salary              
+53-7199   1          	Aircraft mechanics and service technicians   1          	25500       2          	null     4          
+00-0000   1          	Aircraft cargo handling supervisors          1          	9910        2          	34220    3          
+11-0000   1          	Agricultural workers, all other              1          	112300      2          	35470    3

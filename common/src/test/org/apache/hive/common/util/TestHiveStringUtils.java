@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hive.common.util;
 
+import static org.apache.hive.common.util.HiveStringUtils.removeComments;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
@@ -60,5 +61,55 @@ public class TestHiveStringUtils {
     String[] testResults = HiveStringUtils.splitAndUnEscape(testValue);
     assertTrue(Arrays.toString(expectedResults) + " == " + Arrays.toString(testResults),
         Arrays.equals(expectedResults, testResults));
+  }
+
+  @Test
+  public void testStripComments() throws Exception {
+    assertNull(removeComments(null));
+    assertUnchanged("foo");
+    assertUnchanged("select 1");
+    assertUnchanged("insert into foo (values('-----')");
+    assertUnchanged("insert into foo (values('abc\n\'xyz')");
+    assertUnchanged("create database if not exists testDB; set hive.cli.print.current.db=true;use\ntestDB;\nuse default;drop if exists testDB;");
+
+    assertEquals("foo", removeComments("foo\n"));
+    assertEquals("foo", removeComments("\nfoo"));
+    assertEquals("foo", removeComments("\n\nfoo\n\n"));
+    assertEquals("insert into foo (values('-----')", removeComments("--comment\ninsert into foo (values('-----')"));
+    assertEquals("insert into foo (values('----''-')", removeComments("--comment\ninsert into foo (values('----''-')"));
+    assertEquals("insert into foo (values(\"----''-\")", removeComments("--comment\ninsert into foo (values(\"----''-\")"));
+    assertEquals("insert into foo (values(\"----\"\"-\")", removeComments("--comment\ninsert into foo (values(\"----\"\"-\")"));
+    assertEquals("insert into foo (values('-\n--\n--')", removeComments("--comment\ninsert into foo (values('-\n--\n--')"));
+    assertEquals("insert into foo (values('-\n--\n--')", removeComments("--comment\n\ninsert into foo (values('-\n--\n--')"));
+    assertEquals("insert into foo (values(\"-\n--\n--\")", removeComments("--comment\n\ninsert into foo (values(\"-\n--\n--\")"));
+    assertEquals("insert into foo (values(\"-\n--\n--\")", removeComments("\n\n--comment\n\ninsert into foo (values(\"-\n--\n--\")\n\n"));
+    assertEquals("insert into foo (values('abc');\ninsert into foo (values('def');", removeComments( "insert into foo (values('abc');\n--comment\ninsert into foo (values('def');"));
+  }
+
+  @Test
+  public void testLinesEndingWithComments() {
+    int[] escape = {-1};
+    assertEquals("show tables;", removeComments("show tables;",escape));
+    assertEquals("show tables;", removeComments("show tables; --comments",escape));
+    assertEquals("show tables;", removeComments("show tables; -------comments",escape));
+    assertEquals("show tables;", removeComments("show tables; -------comments;one;two;three;;;;",escape));
+    assertEquals("show", removeComments("show-- tables; -------comments",escape));
+    assertEquals("show", removeComments("show --tables; -------comments",escape));
+    assertEquals("s", removeComments("s--how --tables; -------comments",escape));
+    assertEquals("", removeComments("-- show tables; -------comments",escape));
+
+    assertEquals("\"show tables\"", removeComments("\"show tables\" --comments",escape));
+    assertEquals("\"show --comments tables\"", removeComments("\"show --comments tables\" --comments",escape));
+    assertEquals("\"'show --comments' tables\"", removeComments("\"'show --comments' tables\" --comments",escape));
+    assertEquals("'show --comments tables'", removeComments("'show --comments tables' --comments",escape));
+    assertEquals("'\"show --comments tables\"'", removeComments("'\"show --comments tables\"' --comments",escape));
+  }
+
+  /**
+   * check that statement is unchanged after stripping
+   */
+  private void assertUnchanged(String statement) {
+    assertEquals("statement should not have been affected by stripping commnents", statement,
+        removeComments(statement));
   }
 }

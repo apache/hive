@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,9 +44,7 @@ public class LazyBinaryHiveDecimal extends
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    LazyBinarySerDe.setFromBytes(bytes.getData(), start, length, data);
-    HiveDecimal dec = data.getHiveDecimal(precision, scale);
-    data = dec == null ? null : new HiveDecimalWritable(dec);
+    LazyBinarySerDe.setFromBigIntegerBytesAndScale(bytes.getData(), start, length, data);
+    data.mutateEnforcePrecisionScale(precision, scale);
   }
-
 }

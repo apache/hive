@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,13 +20,14 @@
 package org.apache.hive.hcatalog.mapreduce;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -141,7 +142,7 @@ class InternalUtil {
 
   //TODO this has to find a better home, it's also hardcoded as default in hive would be nice
   // if the default was decided by the serde
-  static void initializeOutputSerDe(SerDe serDe, Configuration conf, OutputJobInfo jobInfo)
+  static void initializeOutputSerDe(AbstractSerDe serDe, Configuration conf, OutputJobInfo jobInfo)
     throws SerDeException {
     SerDeUtils.initializeSerDe(serDe, conf,
                                getSerdeProperties(jobInfo.getTableInfo(),
@@ -162,6 +163,8 @@ class InternalUtil {
     List<FieldSchema> fields = HCatUtil.getFieldSchemaList(s.getFields());
     props.setProperty(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS,
       MetaStoreUtils.getColumnNamesFromFieldSchema(fields));
+    props.setProperty(serdeConstants.COLUMN_NAME_DELIMITER,
+        MetaStoreUtils.getColumnNameDelimiter(fields));
     props.setProperty(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
       MetaStoreUtils.getColumnTypesFromFieldSchema(fields));
     props.setProperty("columns.comments",

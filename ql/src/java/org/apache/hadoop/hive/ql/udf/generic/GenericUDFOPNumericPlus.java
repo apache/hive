@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -87,22 +87,21 @@ public class GenericUDFOPNumericPlus extends GenericUDFBaseNumeric {
 
   @Override
   protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
-    HiveDecimal dec = left.add(right);
-
-    if (dec == null) {
-      return null;
-    }
-
-    decimalWritable.set(dec);
+    decimalWritable.set(left);
+    decimalWritable.mutateAdd(right);
     return decimalWritable;
   }
 
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
+    // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
+    // e1 + e2
+    // Precision: max(s1, s2) + max(p1-s1, p2-s2) + 1
+    // Scale: max(s1, s2)
     int intPart = Math.max(prec1 - scale1, prec2 - scale2);
     int scale = Math.max(scale1, scale2);
-    int prec =  Math.min(intPart + scale + 1, HiveDecimal.MAX_PRECISION);
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+    int prec =  intPart + scale + 1;
+    return adjustPrecScale(prec, scale);
   }
 
 }

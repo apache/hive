@@ -1,0 +1,115 @@
+PREHOOK: query: create table a1(KEHHAO string, START_DT string) partitioned by (END_DT string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@a1
+POSTHOOK: query: create table a1(KEHHAO string, START_DT string) partitioned by (END_DT string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@a1
+PREHOOK: query: create table a2(KEHHAO string, START_DT string) partitioned by (END_DT string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@a2
+POSTHOOK: query: create table a2(KEHHAO string, START_DT string) partitioned by (END_DT string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@a2
+PREHOOK: query: alter table a1 add partition(END_DT='20161020')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@a1
+POSTHOOK: query: alter table a1 add partition(END_DT='20161020')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@a1
+POSTHOOK: Output: default@a1@end_dt=20161020
+PREHOOK: query: alter table a1 add partition(END_DT='20161021')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@a1
+POSTHOOK: query: alter table a1 add partition(END_DT='20161021')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@a1
+POSTHOOK: Output: default@a1@end_dt=20161021
+PREHOOK: query: insert into table a1 partition(END_DT='20161020') values('2000721360','20161001')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@a1@end_dt=20161020
+POSTHOOK: query: insert into table a1 partition(END_DT='20161020') values('2000721360','20161001')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@a1@end_dt=20161020
+POSTHOOK: Lineage: a1 PARTITION(end_dt=20161020).kehhao SCRIPT []
+POSTHOOK: Lineage: a1 PARTITION(end_dt=20161020).start_dt SCRIPT []
+PREHOOK: query: SELECT T1.KEHHAO,COUNT(1) FROM (
+SELECT KEHHAO FROM a1 T
+WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
+UNION ALL
+SELECT KEHHAO FROM a2 T
+WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
+) T1
+GROUP BY T1.KEHHAO
+HAVING COUNT(1)>1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@a1
+PREHOOK: Input: default@a1@end_dt=20161020
+PREHOOK: Input: default@a1@end_dt=20161021
+PREHOOK: Input: default@a2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT T1.KEHHAO,COUNT(1) FROM (
+SELECT KEHHAO FROM a1 T
+WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
+UNION ALL
+SELECT KEHHAO FROM a2 T
+WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
+) T1
+GROUP BY T1.KEHHAO
+HAVING COUNT(1)>1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a1
+POSTHOOK: Input: default@a1@end_dt=20161020
+POSTHOOK: Input: default@a1@end_dt=20161021
+POSTHOOK: Input: default@a2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT T1.KEHHAO,COUNT(1) FROM (
+SELECT KEHHAO FROM a1 T
+WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
+UNION ALL
+SELECT KEHHAO FROM a1 T
+WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
+) T1
+GROUP BY T1.KEHHAO
+HAVING COUNT(1)>1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@a1
+PREHOOK: Input: default@a1@end_dt=20161020
+PREHOOK: Input: default@a1@end_dt=20161021
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT T1.KEHHAO,COUNT(1) FROM (
+SELECT KEHHAO FROM a1 T
+WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
+UNION ALL
+SELECT KEHHAO FROM a1 T
+WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
+) T1
+GROUP BY T1.KEHHAO
+HAVING COUNT(1)>1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a1
+POSTHOOK: Input: default@a1@end_dt=20161020
+POSTHOOK: Input: default@a1@end_dt=20161021
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2000721360	2
+PREHOOK: query: DROP TABLE a1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@a1
+PREHOOK: Output: default@a1
+POSTHOOK: query: DROP TABLE a1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@a1
+POSTHOOK: Output: default@a1
+PREHOOK: query: DROP TABLE a2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@a2
+PREHOOK: Output: default@a2
+POSTHOOK: query: DROP TABLE a2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@a2
+POSTHOOK: Output: default@a2

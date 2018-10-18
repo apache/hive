@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,16 @@
  */
 package org.apache.hive.hcatalog.common;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.io.IOException;
 
 /**
  * Class representing exceptions thrown by HCat.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatException extends IOException {
 
   private static final long serialVersionUID = 1L;

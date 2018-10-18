@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,30 +23,31 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import com.google.common.collect.Lists;
 
 public class ResetProcessor implements CommandProcessor {
-
-  @Override
-  public void init() {
-  }
 
   private final static String DEFAULT_ARG = "-d";
 
   @Override
-  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
-    SessionState ss = SessionState.get();
+  public CommandProcessorResponse run(String command) {
+    return run(SessionState.get(), command);
+  }
 
+  @VisibleForTesting
+  CommandProcessorResponse run(SessionState ss, String command) {
     CommandProcessorResponse authErrResp =
         CommandUtil.authorizeCommand(ss, HiveOperationType.RESET, Arrays.asList(command));
     if (authErrResp != null) {
@@ -62,7 +63,9 @@ public class ResetProcessor implements CommandProcessor {
     boolean isDefault = false;
     List<String> varnames = new ArrayList<>(parts.length);
     for (String part : parts) {
-      if (part.isEmpty()) continue;
+      if (part.isEmpty()) {
+        continue;
+      }
       if (DEFAULT_ARG.equals(part)) {
         isDefault = true;
       } else {
@@ -88,8 +91,10 @@ public class ResetProcessor implements CommandProcessor {
         ? Lists.newArrayList("Resetting " + message + " to default values") : null);
   }
 
-  private void resetOverridesOnly(SessionState ss) {
-    if (ss.getOverriddenConfigurations().isEmpty()) return;
+  private static void resetOverridesOnly(SessionState ss) {
+    if (ss.getOverriddenConfigurations().isEmpty()) {
+      return;
+    }
     HiveConf conf = new HiveConf();
     for (String key : ss.getOverriddenConfigurations().keySet()) {
       setSessionVariableFromConf(ss, key, conf);
@@ -97,21 +102,22 @@ public class ResetProcessor implements CommandProcessor {
     ss.getOverriddenConfigurations().clear();
   }
 
-  private void resetOverrideOnly(SessionState ss, String varname) {
-    if (!ss.getOverriddenConfigurations().containsKey(varname)) return;
+  private static void resetOverrideOnly(SessionState ss, String varname) {
+    if (!ss.getOverriddenConfigurations().containsKey(varname)) {
+      return;
+    }
     setSessionVariableFromConf(ss, varname, new HiveConf());
     ss.getOverriddenConfigurations().remove(varname);
   }
 
-  private void setSessionVariableFromConf(SessionState ss, String varname,
-      HiveConf conf) {
+  private static void setSessionVariableFromConf(SessionState ss, String varname, HiveConf conf) {
     String value = conf.get(varname);
     if (value != null) {
-      ss.getConf().set(varname, value);
+      SetProcessor.setConf(ss, varname, varname, value, false);
     }
   }
 
-  private CommandProcessorResponse resetToDefault(SessionState ss, String varname) {
+  private static CommandProcessorResponse resetToDefault(SessionState ss, String varname) {
     varname = varname.trim();
     try {
       String nonErrorMessage = null;
@@ -145,7 +151,13 @@ public class ResetProcessor implements CommandProcessor {
 
   private static HiveConf.ConfVars getConfVar(String propName) {
     HiveConf.ConfVars confVars = HiveConf.getConfVars(propName);
-    if (confVars == null) throw new IllegalArgumentException(propName + " not found");
+    if (confVars == null) {
+      throw new IllegalArgumentException(propName + " not found");
+    }
     return confVars;
+  }
+
+  @Override
+  public void close() throws Exception {
   }
 }

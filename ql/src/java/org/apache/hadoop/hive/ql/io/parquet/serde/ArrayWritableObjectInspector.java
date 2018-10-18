@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.io.parquet.serde.primitive.ParquetPrimitiveInspectorFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -49,25 +48,51 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
   private final List<StructField> fields;
   private final HashMap<String, StructFieldImpl> fieldsByName;
 
-  public ArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
+  // Whether this OI is for the column-level schema (as opposed to nested column fields).
+  private final boolean isRoot;
 
-    typeInfo = rowTypeInfo;
-    fieldNames = rowTypeInfo.getAllStructFieldNames();
-    fieldInfos = rowTypeInfo.getAllStructFieldTypeInfos();
-    fields = new ArrayList<StructField>(fieldNames.size());
-    fieldsByName = new HashMap<String, StructFieldImpl>();
+  public ArrayWritableObjectInspector(final StructTypeInfo rowTypeInfo) {
+    this(true, rowTypeInfo, null);
+  }
+
+  public ArrayWritableObjectInspector(StructTypeInfo originalTypeInfo, StructTypeInfo prunedTypeInfo) {
+    this(true, originalTypeInfo, prunedTypeInfo);
+  }
+
+  public ArrayWritableObjectInspector(boolean isRoot,
+      StructTypeInfo originalTypeInfo, StructTypeInfo prunedTypeInfo) {
+    this.isRoot = isRoot;
+    typeInfo = originalTypeInfo;
+    fieldNames = originalTypeInfo.getAllStructFieldNames();
+    fieldInfos = originalTypeInfo.getAllStructFieldTypeInfos();
+    fields = new ArrayList<>(fieldNames.size());
+    fieldsByName = new HashMap<>();
 
     for (int i = 0; i < fieldNames.size(); ++i) {
       final String name = fieldNames.get(i);
       final TypeInfo fieldInfo = fieldInfos.get(i);
 
-      final StructFieldImpl field = new StructFieldImpl(name, getObjectInspector(fieldInfo), i);
+      StructFieldImpl field = null;
+      if (prunedTypeInfo != null) {
+        for (int idx = 0; idx < prunedTypeInfo.getAllStructFieldNames().size(); ++idx) {
+          if (prunedTypeInfo.getAllStructFieldNames().get(idx).equalsIgnoreCase(name)) {
+            TypeInfo prunedFieldInfo = prunedTypeInfo.getAllStructFieldTypeInfos().get(idx);
+            field = new StructFieldImpl(name, getObjectInspector(fieldInfo, prunedFieldInfo), i, idx);
+            break;
+          }
+        }
+      }
+      if (field == null) {
+        field = new StructFieldImpl(name, getObjectInspector(fieldInfo, null), i, i);
+      }
+
       fields.add(field);
       fieldsByName.put(name.toLowerCase(), field);
     }
   }
 
-  private ObjectInspector getObjectInspector(final TypeInfo typeInfo) {
+  private ObjectInspector getObjectInspector(
+      TypeInfo typeInfo, TypeInfo prunedTypeInfo) {
     if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
       return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
     } else if (typeInfo.equals(TypeInfoFactory.booleanTypeInfo)) {
@@ -83,18 +108,20 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     }  else if (typeInfo instanceof DecimalTypeInfo) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
-      return new ArrayWritableObjectInspector((StructTypeInfo) typeInfo);
+      return new ArrayWritableObjectInspector(false, (StructTypeInfo) typeInfo, (StructTypeInfo) prunedTypeInfo);
     } else if (typeInfo.getCategory().equals(Category.LIST)) {
       final TypeInfo subTypeInfo = ((ListTypeInfo) typeInfo).getListElementTypeInfo();
-      return new ParquetHiveArrayInspector(getObjectInspector(subTypeInfo));
+      return new ParquetHiveArrayInspector(getObjectInspector(subTypeInfo, null));
     } else if (typeInfo.getCategory().equals(Category.MAP)) {
       final TypeInfo keyTypeInfo = ((MapTypeInfo) typeInfo).getMapKeyTypeInfo();
       final TypeInfo valueTypeInfo = ((MapTypeInfo) typeInfo).getMapValueTypeInfo();
       if (keyTypeInfo.equals(TypeInfoFactory.stringTypeInfo) || keyTypeInfo.equals(TypeInfoFactory.byteTypeInfo)
               || keyTypeInfo.equals(TypeInfoFactory.shortTypeInfo)) {
-        return new DeepParquetHiveMapInspector(getObjectInspector(keyTypeInfo), getObjectInspector(valueTypeInfo));
+        return new DeepParquetHiveMapInspector(getObjectInspector(keyTypeInfo, null),
+            getObjectInspector(valueTypeInfo, null));
       } else {
-        return new StandardParquetHiveMapInspector(getObjectInspector(keyTypeInfo), getObjectInspector(valueTypeInfo));
+        return new StandardParquetHiveMapInspector(getObjectInspector(keyTypeInfo, null),
+            getObjectInspector(valueTypeInfo, null));
       }
     } else if (typeInfo.equals(TypeInfoFactory.byteTypeInfo)) {
       return ParquetPrimitiveInspectorFactory.parquetByteInspector;
@@ -139,8 +166,9 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     if (data instanceof ArrayWritable) {
       final ArrayWritable arr = (ArrayWritable) data;
       final StructFieldImpl structField = (StructFieldImpl) fieldRef;
-      if (structField.getIndex() < arr.get().length) {
-        return arr.get()[structField.getIndex()];
+      int index = isRoot ? structField.getIndex() : structField.adjustedIndex;
+      if (index < arr.get().length) {
+        return arr.get()[index];
       } else {
         return null;
       }
@@ -170,7 +198,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     if (data instanceof ArrayWritable) {
       final ArrayWritable arr = (ArrayWritable) data;
       final Object[] arrWritable = arr.get();
-      return new ArrayList<Object>(Arrays.asList(arrWritable));
+      return new ArrayList<>(Arrays.asList(arrWritable));
     }
 
     //since setStructFieldData and create return a list, getStructFieldData should be able to
@@ -200,37 +228,57 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
+
+    ArrayWritableObjectInspector that = (ArrayWritableObjectInspector) o;
+
+    if (isRoot != that.isRoot ||
+      (typeInfo != null ? !typeInfo.equals(that.typeInfo) : that.typeInfo != null) ||
+      (fieldInfos != null ? !fieldInfos.equals(that.fieldInfos) : that.fieldInfos != null) ||
+      (fieldNames != null ? !fieldNames.equals(that.fieldNames) : that.fieldNames != null) ||
+      (fields != null ? !fields.equals(that.fields) : that.fields != null)) {
       return false;
     }
-    final ArrayWritableObjectInspector other = (ArrayWritableObjectInspector) obj;
-    if (this.typeInfo != other.typeInfo && (this.typeInfo == null || !this.typeInfo.equals(other.typeInfo))) {
-      return false;
-    }
-    return true;
+
+    return fieldsByName != null ? fieldsByName.equals(that.fieldsByName) : that.fieldsByName == null;
   }
 
   @Override
   public int hashCode() {
-    int hash = 5;
-    hash = 29 * hash + (this.typeInfo != null ? this.typeInfo.hashCode() : 0);
-    return hash;
+    int result = typeInfo != null ? typeInfo.hashCode() : 0;
+    result = 31 * result + (fieldInfos != null ? fieldInfos.hashCode() : 0);
+    result = 31 * result + (fieldNames != null ? fieldNames.hashCode() : 0);
+    result = 31 * result + (fields != null ? fields.hashCode() : 0);
+    result = 31 * result + (fieldsByName != null ? fieldsByName.hashCode() : 0);
+    result = 31 * result + (isRoot ? 1 : 0);
+    return result;
   }
 
-  class StructFieldImpl implements StructField {
-
+  private class StructFieldImpl implements StructField {
     private final String name;
     private final ObjectInspector inspector;
     private final int index;
 
-    public StructFieldImpl(final String name, final ObjectInspector inspector, final int index) {
+    // This is the adjusted index after nested column pruning.
+    // For instance, given the struct type: s:<struct<a:int, b:boolean>>
+    // If only 's.b' is used, the pruned type is: s:<struct<b:boolean>>.
+    // Here, the index of field 'b' is changed from 1 to 0.
+    // When we look up the data from Parquet, index needs to be adjusted accordingly.
+    // Note: currently this is only used in the read path.
+    final int adjustedIndex;
+
+    public StructFieldImpl(final String name, final ObjectInspector inspector,
+        final int index, int adjustedIndex) {
       this.name = name;
       this.inspector = inspector;
       this.index = index;
+      this.adjustedIndex = adjustedIndex;
     }
 
     @Override
@@ -255,6 +303,38 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     @Override
     public int getFieldID() {
       return index;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      StructFieldImpl that = (StructFieldImpl) o;
+
+      if (index != that.index) {
+        return false;
+      }
+      if (adjustedIndex != that.adjustedIndex) {
+        return false;
+      }
+      if (name != null ? !name.equals(that.name) : that.name != null) {
+        return false;
+      }
+      return inspector != null ? inspector.equals(that.inspector) : that.inspector == null;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = name != null ? name.hashCode() : 0;
+      result = 31 * result + (inspector != null ? inspector.hashCode() : 0);
+      result = 31 * result + index;
+      result = 31 * result + adjustedIndex;
+      return result;
     }
   }
 }

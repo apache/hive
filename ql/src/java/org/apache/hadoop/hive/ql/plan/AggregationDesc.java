@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -152,6 +152,13 @@ public class AggregationDesc implements java.io.Serializable {
       }
       sb.append(exp.getExprString());
     }
+
+    String evaluatorExpr = getGenericUDAFEvaluator().getExprString();
+    if (evaluatorExpr != null && !evaluatorExpr.isEmpty()) {
+      sb.append(", ");
+      sb.append(evaluatorExpr);
+    }
+
     sb.append(")");
     return sb.toString();
   }

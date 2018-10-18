@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -255,13 +256,13 @@ public final class GenMRSkewJoinProcessor {
         Operator<? extends OperatorDesc> ts =
             GenMapRedUtils.createTemporaryTableScanOperator(
                 joinOp.getCompilationOpContext(), rowSchemaList.get((byte)k));
-        ((TableScanOperator)ts).setTableDesc(tableDescList.get((byte)k));
+        ((TableScanOperator)ts).setTableDescSkewJoin(tableDescList.get((byte)k));
         parentOps[k] = ts;
       }
       Operator<? extends OperatorDesc> tblScan_op = parentOps[i];
 
       ArrayList<String> aliases = new ArrayList<String>();
-      String alias = src.toString();
+      String alias = src.toString().intern();
       aliases.add(alias);
       Path bigKeyDirPath = bigKeysDirMap.get(src);
       newPlan.addPathToAlias(bigKeyDirPath, aliases);
@@ -280,10 +281,12 @@ public final class GenMRSkewJoinProcessor {
       MapJoinDesc mapJoinDescriptor = new MapJoinDesc(newJoinKeys, keyTblDesc,
           newJoinValues, newJoinValueTblDesc, newJoinValueTblDesc,joinDescriptor
           .getOutputColumnNames(), i, joinDescriptor.getConds(),
-          joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix);
+          joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix,
+          joinDescriptor.getMemoryMonitorInfo(), joinDescriptor.getInMemoryDataSize());
       mapJoinDescriptor.setTagOrder(tags);
       mapJoinDescriptor.setHandleSkewJoin(false);
       mapJoinDescriptor.setNullSafes(joinDescriptor.getNullSafes());
+      mapJoinDescriptor.setColumnExprMap(joinDescriptor.getColumnExprMap());
 
       MapredLocalWork localPlan = new MapredLocalWork(
           new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
@@ -328,7 +331,7 @@ public final class GenMRSkewJoinProcessor {
       MapredWork w = new MapredWork();
       w.setMapWork(newPlan);
 
-      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(w, jc);
+      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(w);
       skewJoinMapJoinTask.setFetchSource(currTask.isFetchSource());
 
       bigKeysDirToTaskMap.put(bigKeyDirPath, skewJoinMapJoinTask);
@@ -351,7 +354,7 @@ public final class GenMRSkewJoinProcessor {
         new ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, children);
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
     cndTsk.setResolver(new ConditionalResolverSkewJoin());
     cndTsk.setResolverCtx(context);
@@ -382,25 +385,28 @@ public final class GenMRSkewJoinProcessor {
     return true;
   }
 
-  private static String skewJoinPrefix = "hive_skew_join";
-  private static String UNDERLINE = "_";
-  private static String BIGKEYS = "bigkeys";
-  private static String SMALLKEYS = "smallkeys";
-  private static String RESULTS = "results";
+  private static final String skewJoinPrefix = "hive_skew_join";
+  private static final String UNDERLINE = "_";
+  private static final String BIGKEYS = "bigkeys";
+  private static final String SMALLKEYS = "smallkeys";
+  private static final String RESULTS = "results";
 
   static Path getBigKeysDir(Path baseDir, Byte srcTbl) {
-    return new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS + UNDERLINE + srcTbl);
+    return StringInternUtils.internUriStringsInPath(
+        new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS + UNDERLINE + srcTbl));
   }
 
   static Path getBigKeysSkewJoinResultDir(Path baseDir, Byte srcTbl) {
-    return new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS
-        + UNDERLINE + RESULTS + UNDERLINE + srcTbl);
+    return StringInternUtils.internUriStringsInPath(
+        new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS
+        + UNDERLINE + RESULTS + UNDERLINE + srcTbl));
   }
 
   static Path getSmallKeysDir(Path baseDir, Byte srcTblBigTbl,
       Byte srcTblSmallTbl) {
-    return new Path(baseDir, skewJoinPrefix + UNDERLINE + SMALLKEYS
-        + UNDERLINE + srcTblBigTbl + UNDERLINE + srcTblSmallTbl);
+    return StringInternUtils.internUriStringsInPath(
+        new Path(baseDir, skewJoinPrefix + UNDERLINE + SMALLKEYS
+        + UNDERLINE + srcTblBigTbl + UNDERLINE + srcTblSmallTbl));
   }
 
 }

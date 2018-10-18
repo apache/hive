@@ -34,44 +34,66 @@ import org.apache.accumulo.core.client.admin.TableOperations;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
  * Start and stop an AccumuloMiniCluster for testing purposes
  */
-public class AccumuloTestSetup  {
+public class AccumuloTestSetup extends QTestUtil.QTestSetup {
+
   public static final String PASSWORD = "password";
   public static final String TABLE_NAME = "accumuloHiveTable";
 
-  protected MiniAccumuloCluster miniCluster;
+  private MiniAccumuloCluster miniCluster;
 
   public AccumuloTestSetup() {
   }
 
-  protected void setupWithHiveConf(HiveConf conf) throws Exception {
+  @Override
+  public void preTest(HiveConf conf) throws Exception {
+    super.preTest(conf);
+    setupWithHiveConf(conf);
+  }
+
+  private void setupWithHiveConf(HiveConf conf) throws Exception {
     if (null == miniCluster) {
       String testTmpDir = System.getProperty("test.tmp.dir");
       File tmpDir = new File(testTmpDir, "accumulo");
+
+      if (tmpDir.exists()) {
+        FileUtils.deleteDirectory(tmpDir);
+      }
 
       MiniAccumuloConfig cfg = new MiniAccumuloConfig(tmpDir, PASSWORD);
       cfg.setNumTservers(1);
 
       miniCluster = new MiniAccumuloCluster(cfg);
-
       miniCluster.start();
 
       createAccumuloTable(miniCluster.getConnector("root", PASSWORD));
     }
 
+    updateConf(conf);
+  }
+
+  /**
+   * Update hiveConf with the Accumulo specific parameters
+   * @param conf The hiveconf to update
+   */
+  private void updateConf(HiveConf conf) {
     // Setup connection information
     conf.set(AccumuloConnectionParameters.USER_NAME, "root");
     conf.set(AccumuloConnectionParameters.USER_PASS, PASSWORD);
-    conf.set(AccumuloConnectionParameters.ZOOKEEPERS, miniCluster.getZooKeepers());
-    conf.set(AccumuloConnectionParameters.INSTANCE_NAME, miniCluster.getInstanceName());
+    if (miniCluster != null) {
+      conf.set(AccumuloConnectionParameters.ZOOKEEPERS, miniCluster.getZooKeepers());
+      conf.set(AccumuloConnectionParameters.INSTANCE_NAME, miniCluster.getInstanceName());
+    }
   }
 
-  protected void createAccumuloTable(Connector conn) throws TableExistsException,
+  private void createAccumuloTable(Connector conn) throws TableExistsException,
       TableNotFoundException, AccumuloException, AccumuloSecurityException {
     TableOperations tops = conn.tableOperations();
     if (tops.exists(TABLE_NAME)) {
@@ -116,10 +138,12 @@ public class AccumuloTestSetup  {
     }
   }
 
+  @Override
   public void tearDown() throws Exception {
     if (null != miniCluster) {
       miniCluster.stop();
       miniCluster = null;
     }
+    super.tearDown();
   }
 }

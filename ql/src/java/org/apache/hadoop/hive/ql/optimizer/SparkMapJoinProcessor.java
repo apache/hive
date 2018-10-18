@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -64,6 +64,9 @@ public class SparkMapJoinProcessor extends MapJoinProcessor {
     MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf,
         op, op.getConf().isLeftInputJoin(), op.getConf().getBaseSrc(),
         op.getConf().getMapAliases(), bigTablePos, noCheckOuterJoin);
+    if (mapJoinOp == null) {
+      return null;
+    }
 
     // 1. remove RS as parent for the big table branch
     // 2. remove old join op from child set of all the RSs

@@ -1,10 +1,6 @@
-PREHOOK: query: -- verify that we can write a nullable union type column with both nullable and non-nullable data
-
-DROP TABLE IF EXISTS union_nullable_test_text
+PREHOOK: query: DROP TABLE IF EXISTS union_nullable_test_text
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- verify that we can write a nullable union type column with both nullable and non-nullable data
-
-DROP TABLE IF EXISTS union_nullable_test_text
+POSTHOOK: query: DROP TABLE IF EXISTS union_nullable_test_text
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE union_nullable_test_text (id int, value uniontype<int,double>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ':' STORED AS textfile
 PREHOOK: type: CREATETABLE
@@ -71,13 +67,9 @@ POSTHOOK: query: DROP TABLE union_nullable_test_text
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_nullable_test_text
 POSTHOOK: Output: default@union_nullable_test_text
-PREHOOK: query: -- verify that we can write a non nullable union type column with non-nullable data
-
-DROP TABLE IF EXISTS union_non_nullable_test_text
+PREHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_text
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- verify that we can write a non nullable union type column with non-nullable data
-
-DROP TABLE IF EXISTS union_non_nullable_test_text
+POSTHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_text
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE union_non_nullable_test_text (id int, value uniontype<int,double>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ':' STORED AS textfile
 PREHOOK: type: CREATETABLE

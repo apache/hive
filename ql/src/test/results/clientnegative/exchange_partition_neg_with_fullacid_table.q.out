@@ -1,0 +1,45 @@
+PREHOOK: query: DROP TABLE IF EXISTS t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE t1 (a int) PARTITIONED BY (d1 int) STORED AS ORC TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1 (a int) PARTITIONED BY (d1 int) STORED AS ORC TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: CREATE TABLE t2 (a int) PARTITIONED BY (d1 int) STORED AS ORC TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: CREATE TABLE t2 (a int) PARTITIONED BY (d1 int) STORED AS ORC TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: INSERT INTO TABLE t1 PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1@d1=1
+POSTHOOK: query: INSERT INTO TABLE t1 PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1@d1=1
+POSTHOOK: Lineage: t1 PARTITION(d1=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@d1=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@d1=1
+#### A masked pattern was here ####
+100	1
+FAILED: SemanticException [Error 10236]: Exchange partition is not allowed with transactional tables. Alternatively, shall use load data or insert overwrite to move partitions.

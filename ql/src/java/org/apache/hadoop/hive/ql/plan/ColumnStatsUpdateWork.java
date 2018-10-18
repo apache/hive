@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +19,9 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
+
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -33,27 +34,33 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * ('maxColLen'='4444','avgColLen'='44.4');
  */
 @Explain(displayName = "Column Stats Update Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ColumnStatsUpdateWork implements Serializable {
+public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
   private static final long serialVersionUID = 1L;
-  private ColumnStatsDesc colStats;
-  private String partName;
-  private Map<String, String> mapProp;
+  private final String partName;
+  private final Map<String, String> mapProp;
+  private final String dbName;
+  private final String tableName;
+  private final String colName;
+  private final String colType;
+  private long writeId;
 
-  public ColumnStatsUpdateWork(ColumnStatsDesc colStats, String partName,
-      Map<String, String> mapProp) {
+  public ColumnStatsUpdateWork(String partName,
+      Map<String, String> mapProp,
+      String dbName,
+      String tableName,
+      String colName,
+      String colType) {
     this.partName = partName;
-    this.colStats = colStats;
     this.mapProp = mapProp;
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.colName = colName;
+    this.colType = colType;
   }
 
   @Override
   public String toString() {
     return null;
-  }
-
-  @Explain(displayName = "Column Stats Desc")
-  public ColumnStatsDesc getColStats() {
-    return colStats;
   }
 
   public String getPartName() {
@@ -64,4 +71,34 @@ public class ColumnStatsUpdateWork implements Serializable {
     return mapProp;
   }
 
+  public String dbName() {
+    return dbName;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
+
+  public String getColName() {
+    return colName;
+  }
+
+  public String getColType() {
+    return colType;
+  }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return dbName + "." + tableName;
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return true; // Checked at setup time; if this is called, the table is transactional.
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,6 +43,7 @@ import org.apache.hive.service.rpc.thrift.TColumnDesc;
 import org.apache.hive.service.rpc.thrift.TFetchOrientation;
 import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
 import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
+import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataReq;
 import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataResp;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
@@ -76,6 +78,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   private boolean emptyResultSet = false;
   private boolean isScrollable = false;
   private boolean fetchFirst = false;
+  private TGetOperationStatusResp operationStatus = null;
 
   private final TProtocolVersion protocol;
 
@@ -316,6 +319,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     stmtHandle = null;
     sessHandle = null;
     isClosed = true;
+    operationStatus = null;
   }
 
   private void closeOperationHandle(TOperationHandle stmtHandle) throws SQLException {
@@ -347,13 +351,15 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return false;
     }
 
-    /**
+    /*
      * Poll on the operation status, till the operation is complete.
      * We need to wait only for HiveStatement to complete.
      * HiveDatabaseMetaData which also uses this ResultSet returns only after the RPC is complete.
      */
-    if ((statement != null) && (statement instanceof HiveStatement)) {
-      ((HiveStatement) statement).waitForOperationToComplete();
+    // when isHasResultSet is set, the query transitioned from running -> complete and is not expected go back to
+    // running state when fetching results (implicit state transition)
+    if ((statement instanceof HiveStatement) && (operationStatus == null || !operationStatus.isHasResultSet())) {
+      operationStatus = ((HiveStatement) statement).waitForOperationToComplete();
     }
 
     try {
@@ -377,7 +383,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         fetchedRowsItr = fetchedRows.iterator();
       }
 
-      String rowStr = "";
       if (fetchedRowsItr.hasNext()) {
         row = fetchedRowsItr.next();
       } else {
@@ -385,17 +390,13 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       }
 
       rowsFetched++;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Fetched row string: " + rowStr);
-      }
-
     } catch (SQLException eS) {
       throw eS;
     } catch (Exception ex) {
       ex.printStackTrace();
       throw new SQLException("Error retrieving next row", ex);
     }
-    // NOTE: fetchOne dosn't throw new SQLException("Method not supported").
+    // NOTE: fetchOne doesn't throw new SQLFeatureNotSupportedException("Method not supported").
     return true;
   }
 
@@ -437,12 +438,12 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   public <T> T getObject(String columnLabel, Class<T> type)  throws SQLException {
     //JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public <T> T getObject(int columnIndex, Class<T> type)  throws SQLException {
     //JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /**

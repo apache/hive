@@ -17,6 +17,8 @@ Example:
   'ebook'
   > SELECT substr('Facebook', 5, 1) FROM src LIMIT 1;
   'b'
+Function class:org.apache.hadoop.hive.ql.udf.UDFSubstr
+Function type:BUILTIN
 PREHOOK: query: SELECT
   substr(null, 1), substr(null, 1, 1),
   substr('ABC', null), substr('ABC', null, 1),
@@ -118,8 +120,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	
-PREHOOK: query: -- substring() is a synonim of substr(), so just perform some basic tests
-SELECT
+PREHOOK: query: SELECT
   substring('ABCDEFG', 3, 4), substring('ABCDEFG', -5, 4),
   substring('ABCDEFG', 3), substring('ABCDEFG', -5),
   substring('ABC', 0), substring('ABC', 1), substring('ABC', 2), substring('ABC', 3),
@@ -129,8 +130,7 @@ FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- substring() is a synonim of substr(), so just perform some basic tests
-SELECT
+POSTHOOK: query: SELECT
   substring('ABCDEFG', 3, 4), substring('ABCDEFG', -5, 4),
   substring('ABCDEFG', 3), substring('ABCDEFG', -5),
   substring('ABC', 0), substring('ABC', 1), substring('ABC', 2), substring('ABC', 3),
@@ -141,8 +141,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CDEF	CDEF	CDEFG	CDEFG	ABC	ABC	BC	C	ABC	BC	A	A	A
-PREHOOK: query: -- test for binary substr
-SELECT
+PREHOOK: query: SELECT
   substr(null, 1), substr(null, 1, 1),
   substr(ABC, null), substr(ABC, null, 1),
   substr(ABC, 1, null),
@@ -161,8 +160,7 @@ FROM (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- test for binary substr
-SELECT
+POSTHOOK: query: SELECT
   substr(null, 1), substr(null, 1, 1),
   substr(ABC, null), substr(ABC, null, 1),
   substr(ABC, 1, null),
@@ -182,8 +180,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	A	AB	ABC	ABC	A	AB	ABC	ABC	B	BC	BC	BC	C	C	C	C		C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	
-PREHOOK: query: -- test UTF-8 substr
-SELECT
+PREHOOK: query: SELECT
   substr("玩", 1),
   substr("abc 玩", 5),
   substr("abc 玩玩玩 abc", 5),
@@ -192,8 +189,7 @@ FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- test UTF-8 substr
-SELECT
+POSTHOOK: query: SELECT
   substr("玩", 1),
   substr("abc 玩", 5),
   substr("abc 玩玩玩 abc", 5),

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,10 +41,6 @@ public class AddResourceProcessor implements CommandProcessor {
   public static final LogHelper console = new LogHelper(LOG);
 
   @Override
-  public void init() {
-  }
-
-  @Override
   public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     command = new VariableSubstitution(new HiveVariableSource() {
@@ -77,6 +73,10 @@ public class AddResourceProcessor implements CommandProcessor {
       return CommandProcessorResponse.create(e);
     }
     return new CommandProcessorResponse(0);
+  }
+
+  @Override
+  public void close() throws Exception {
   }
 
 }

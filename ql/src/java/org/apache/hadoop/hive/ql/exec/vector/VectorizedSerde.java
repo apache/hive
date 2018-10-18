@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -25,11 +26,10 @@ import org.apache.hadoop.io.Writable;
 /**
  * Serdes that support vectorized {@link VectorizedRowBatch} must implement this interface.
  */
-public interface VectorizedSerde {
+public abstract class VectorizedSerde extends AbstractSerDe {
+  public abstract Writable serializeVector(
+      VectorizedRowBatch vrg, ObjectInspector objInspector) throws SerDeException;
 
-  Writable serializeVector(VectorizedRowBatch vrg, ObjectInspector objInspector)
-      throws SerDeException;
-
-  void deserializeVector(Object rowBlob, int rowsInBlob, VectorizedRowBatch reuseBatch)
-      throws SerDeException;
+  public abstract void deserializeVector(
+      Object rowBlob, int rowsInBlob, VectorizedRowBatch reuseBatch) throws SerDeException;
 }

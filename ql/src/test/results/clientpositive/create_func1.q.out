@@ -1,10 +1,8 @@
-PREHOOK: query: -- qtest_get_java_boolean should already be created during test initialization
-select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
+PREHOOK: query: select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- qtest_get_java_boolean should already be created during test initialization
-select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
+POSTHOOK: query: select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -15,6 +13,8 @@ POSTHOOK: query: describe function extended qtest_get_java_boolean
 POSTHOOK: type: DESCFUNCTION
 qtest_get_java_boolean(str) - GenericUDF to return native Java's boolean type
 Synonyms: default.qtest_get_java_boolean
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean
+Function type:PERSISTENT
 PREHOOK: query: create database mydb
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:mydb
@@ -43,6 +43,8 @@ Synonyms: upper, ucase
 Example:
   > SELECT mydb.func1('Facebook') FROM src LIMIT 1;
   'FACEBOOK'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+Function type:PERSISTENT
 PREHOOK: query: select mydb.func1('abc') from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -60,19 +62,15 @@ POSTHOOK: query: drop function mydb.func1
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:mydb
 POSTHOOK: Output: mydb.func1
-PREHOOK: query: -- function should now be gone
-show functions mydb.func1
+PREHOOK: query: show functions mydb.func1
 PREHOOK: type: SHOWFUNCTIONS
-POSTHOOK: query: -- function should now be gone
-show functions mydb.func1
+POSTHOOK: query: show functions mydb.func1
 POSTHOOK: type: SHOWFUNCTIONS
-PREHOOK: query: -- To test function name resolution
-create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: query: create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:mydb
 PREHOOK: Output: mydb.qtest_get_java_boolean
-POSTHOOK: query: -- To test function name resolution
-create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: query: create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: database:mydb
 POSTHOOK: Output: mydb.qtest_get_java_boolean
@@ -82,13 +80,11 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: -- unqualified function should resolve to one in default db
-select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+PREHOOK: query: select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- unqualified function should resolve to one in default db
-select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+POSTHOOK: query: select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -99,13 +95,11 @@ PREHOOK: Input: database:mydb
 POSTHOOK: query: use mydb
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:mydb
-PREHOOK: query: -- unqualified function should resolve to one in mydb db
-select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+PREHOOK: query: select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- unqualified function should resolve to one in mydb db
-select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+POSTHOOK: query: select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

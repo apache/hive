@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,10 +45,23 @@ public class ObjectCacheFactory {
    * Returns the appropriate cache
    */
   public static ObjectCache getCache(Configuration conf, String queryId, boolean isPlanCache) {
+    // LLAP cache can be disabled via config or isPlanCache
+    return getCache(conf, queryId, isPlanCache, false);
+  }
+
+  /**
+   * Returns the appropriate cache
+   * @param conf
+   * @param queryId
+   * @param isPlanCache
+   * @param llapCacheAlwaysEnabled  Whether to always return LLAP cache regardless
+   *        of config settings disabling LLAP cache. Valid only if running LLAP.
+   * @return
+   */
+  public static ObjectCache getCache(Configuration conf, String queryId, boolean isPlanCache, boolean llapCacheAlwaysEnabled) {
     if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       if (LlapProxy.isDaemon()) { // daemon
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OBJECT_CACHE_ENABLED)
-            && !isPlanCache) {
+        if (isLlapCacheEnabled(conf, isPlanCache, llapCacheAlwaysEnabled)) {
           // LLAP object cache, unlike others, does not use globals. Thus, get the existing one.
           return getLlapObjectCache(queryId);
         } else { // no cache
@@ -56,13 +69,23 @@ public class ObjectCacheFactory {
               new org.apache.hadoop.hive.ql.exec.mr.ObjectCache(), queryId);
         }
       } else { // container
-        return new ObjectCacheWrapper(
-            new org.apache.hadoop.hive.ql.exec.tez.ObjectCache(), queryId);
+        if (org.apache.hadoop.hive.ql.exec.tez.ObjectCache.isObjectRegistryConfigured()) {
+          return new ObjectCacheWrapper(
+              new org.apache.hadoop.hive.ql.exec.tez.ObjectCache(), queryId);
+        } else {
+          // Tez processor needs to configure object registry first.
+          return null;
+        }
       }
     } else { // mr or spark
       return new ObjectCacheWrapper(
           new  org.apache.hadoop.hive.ql.exec.mr.ObjectCache(), queryId);
     }
+  }
+
+  private static boolean isLlapCacheEnabled(Configuration conf, boolean isPlanCache, boolean llapCacheAlwaysEnabled) {
+    return (llapCacheAlwaysEnabled ||
+        (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OBJECT_CACHE_ENABLED) && !isPlanCache));
   }
 
   private static ObjectCache getLlapObjectCache(String queryId) {

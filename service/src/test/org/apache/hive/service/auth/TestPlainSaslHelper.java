@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,7 +42,7 @@ public class TestPlainSaslHelper extends TestCase {
         hconf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS));
 
 
-    CLIService cliService = new CLIService(null);
+    CLIService cliService = new CLIService(null, true);
     cliService.init(hconf);
     ThriftCLIService tcliService = new ThriftBinaryCLIService(cliService, null);
     tcliService.init(hconf);

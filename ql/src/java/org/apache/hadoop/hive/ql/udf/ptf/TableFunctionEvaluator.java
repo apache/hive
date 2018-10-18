@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -93,6 +93,15 @@ public abstract class TableFunctionEvaluator {
   boolean transformsRawInput;
   transient protected PTFPartition outputPartition;
   transient protected boolean canAcceptInputAsStream;
+  protected boolean nullsLast;
+
+  public boolean getNullsLast() {
+    return nullsLast;
+  }
+
+  public void setNullsLast(boolean nullsLast) {
+    this.nullsLast = nullsLast;
+  }
 
   public StructObjectInspector getOutputOI() {
     return OI;
@@ -140,7 +149,7 @@ public abstract class TableFunctionEvaluator {
       return transformRawInput(iPart);
     }
     PTFPartitionIterator<Object> pItr = iPart.iterator();
-    PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
+    PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc.getLlInfo(), pItr);
 
     if ( outputPartition == null ) {
       outputPartition = PTFPartition.create(ptfDesc.getCfg(),

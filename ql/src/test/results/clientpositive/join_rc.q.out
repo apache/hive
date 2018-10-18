@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table join_rc1(key string, value string) stored as RCFile
+PREHOOK: query: create table join_rc1(key string, value string) stored as RCFile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@join_rc1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table join_rc1(key string, value string) stored as RCFile
+POSTHOOK: query: create table join_rc1(key string, value string) stored as RCFile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@join_rc1
@@ -42,10 +38,16 @@ PREHOOK: query: explain
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@join_rc1
+PREHOOK: Input: default@join_rc2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@join_rc1
+POSTHOOK: Input: default@join_rc2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -56,6 +58,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: join_rc1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -71,6 +74,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: join_rc2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

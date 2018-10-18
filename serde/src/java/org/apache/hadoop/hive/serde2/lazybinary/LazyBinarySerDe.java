@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -34,11 +37,12 @@ import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -94,10 +98,10 @@ public class LazyBinarySerDe extends AbstractSerDe {
   // The object for storing row data
   LazyBinaryStruct cachedLazyBinaryStruct;
 
-  private int serializedSize;
-  private SerDeStats stats;
-  private boolean lastOperationSerialize;
-  private boolean lastOperationDeserialize;
+  int serializedSize;
+  SerDeStats stats;
+  boolean lastOperationSerialize;
+  boolean lastOperationDeserialize;
 
   /**
    * Initialize the SerDe with configuration and table information.
@@ -107,11 +111,13 @@ public class LazyBinarySerDe extends AbstractSerDe {
       throws SerDeException {
     // Get column names and types
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
-      columnNames = Arrays.asList(columnNameProperty.split(","));
+      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     }
     if (columnTypeProperty.length() == 0) {
       columnTypes = new ArrayList<TypeInfo>();
@@ -291,7 +297,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     serialize(byteStream, uoi.getField(obj), uoi.getObjectInspectors().get(tag), false, warnedOnceNullMapKey);
   }
 
-  private static void serializeText(
+  protected static void serializeText(
       RandomAccessOutput byteStream, Text t, boolean skipLengthPrefix) {
     /* write byte size of the string which is a vint */
     int length = t.getLength();
@@ -311,12 +317,12 @@ public class LazyBinarySerDe extends AbstractSerDe {
     public boolean value;
   }
 
-  private static void writeDateToByteStream(RandomAccessOutput byteStream,
-                                            DateWritable date) {
+  public static void writeDateToByteStream(RandomAccessOutput byteStream,
+                                            DateWritableV2 date) {
     LazyBinaryUtils.writeVInt(byteStream, date.getDays());
   }
 
-  public static void setFromBytes(byte[] bytes, int offset, int length,
+  public static void setFromBigIntegerBytesAndScale(byte[] bytes, int offset, int length,
                                   HiveDecimalWritable dec) {
     LazyBinaryUtils.VInt vInt = new LazyBinaryUtils.VInt();
     LazyBinaryUtils.readVInt(bytes, offset, vInt);
@@ -324,20 +330,69 @@ public class LazyBinarySerDe extends AbstractSerDe {
     offset += vInt.length;
     LazyBinaryUtils.readVInt(bytes, offset, vInt);
     offset += vInt.length;
-    byte[] internalStorage = dec.getInternalStorage();
-    if (internalStorage.length != vInt.value) {
-      internalStorage = new byte[vInt.value];
-    }
-    System.arraycopy(bytes, offset, internalStorage, 0, vInt.value);
-    dec.set(internalStorage, scale);
+    dec.setFromBigIntegerBytesAndScale(bytes, offset, vInt.value, scale);
   }
 
   public static void writeToByteStream(RandomAccessOutput byteStream,
-                                       HiveDecimalWritable dec) {
-    LazyBinaryUtils.writeVInt(byteStream, dec.getScale());
-    byte[] internalStorage = dec.getInternalStorage();
-    LazyBinaryUtils.writeVInt(byteStream, internalStorage.length);
-    byteStream.write(internalStorage, 0, internalStorage.length);
+                                       HiveDecimalWritable decWritable) {
+    LazyBinaryUtils.writeVInt(byteStream, decWritable.scale());
+
+    // NOTE: This writes into a scratch buffer within HiveDecimalWritable.
+    //
+    int byteLength = decWritable.bigIntegerBytesInternalScratch();
+
+    LazyBinaryUtils.writeVInt(byteStream, byteLength);
+    byteStream.write(decWritable.bigIntegerBytesInternalScratchBuffer(), 0, byteLength);
+  }
+
+  /**
+   *
+   * Allocate scratchLongs with HiveDecimal.SCRATCH_LONGS_LEN longs.
+   * And, allocate scratch buffer with HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes.
+   *
+   * @param byteStream
+   * @param dec
+   * @param scratchLongs
+   * @param scratchBytes
+   */
+  public static void writeToByteStream(
+      RandomAccessOutput byteStream,
+      HiveDecimal dec,
+      long[] scratchLongs, byte[] scratchBytes) {
+    LazyBinaryUtils.writeVInt(byteStream, dec.scale());
+
+    // Convert decimal into the scratch buffer without allocating a byte[] each time
+    // for better performance.
+    int byteLength = 
+        dec.bigIntegerBytes(
+            scratchLongs, scratchBytes);
+    if (byteLength == 0) {
+      throw new RuntimeException("Decimal to binary conversion failed");
+    }
+    LazyBinaryUtils.writeVInt(byteStream, byteLength);
+    byteStream.write(scratchBytes, 0, byteLength);
+  }
+
+  /**
+  *
+  * Allocate scratchLongs with HiveDecimal.SCRATCH_LONGS_LEN longs.
+  * And, allocate scratch buffer with HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes.
+  *
+  * @param byteStream
+  * @param decWritable
+  * @param scratchLongs
+  * @param scratchBytes
+  */
+  public static void writeToByteStream(
+      RandomAccessOutput byteStream,
+      HiveDecimalWritable decWritable,
+      long[] scratchLongs, byte[] scratchBytes) {
+    LazyBinaryUtils.writeVInt(byteStream, decWritable.scale());
+    int byteLength =
+        decWritable.bigIntegerBytes(
+            scratchLongs, scratchBytes);
+    LazyBinaryUtils.writeVInt(byteStream, byteLength);
+    byteStream.write(scratchBytes, 0, byteLength);
   }
 
   /**
@@ -450,13 +505,18 @@ public class LazyBinarySerDe extends AbstractSerDe {
       }
 
       case DATE: {
-        DateWritable d = ((DateObjectInspector) poi).getPrimitiveWritableObject(obj);
+        DateWritableV2 d = ((DateObjectInspector) poi).getPrimitiveWritableObject(obj);
         writeDateToByteStream(byteStream, d);
         return;
       }
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
-        TimestampWritable t = toi.getPrimitiveWritableObject(obj);
+        TimestampWritableV2 t = toi.getPrimitiveWritableObject(obj);
+        t.writeToByteStream(byteStream);
+        return;
+      }
+      case TIMESTAMPLOCALTZ: {
+        TimestampLocalTZWritable t = ((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(obj);
         t.writeToByteStream(byteStream);
         return;
       }
@@ -632,7 +692,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     }
   }
 
-  private static void writeSizeAtOffset(
+  protected static void writeSizeAtOffset(
       RandomAccessOutput byteStream, int byteSizeStart, int size) {
     byteStream.writeInt(byteSizeStart, size);
   }

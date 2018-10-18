@@ -21,12 +21,14 @@ package org.apache.hive.ptest.execution.ssh;
 public class RSyncResult extends AbstractSSHResult {
   private final String localFile;
   private final String remoteFile;
+  private final long elapsedTimeInMs;
   public RSyncResult(String user, String host, int instance,
       String localFile, String remoteFile, int exitCode,
-      Exception exception, String output) {
+      Exception exception, String output, long elapsedTimeInMs) {
     super(user, host, instance, exitCode, exception, output);
     this.localFile = localFile;
     this.remoteFile = remoteFile;
+    this.elapsedTimeInMs = elapsedTimeInMs;
   }
   public String getLocalFile() {
     return localFile;
@@ -34,6 +36,7 @@ public class RSyncResult extends AbstractSSHResult {
   public String getRemoteFile() {
     return remoteFile;
   }
+  public long getElapsedTimeInMs() { return elapsedTimeInMs; }
   @Override
   public String toString() {
     return "RSyncResult [localFile=" + localFile + ", remoteFile="

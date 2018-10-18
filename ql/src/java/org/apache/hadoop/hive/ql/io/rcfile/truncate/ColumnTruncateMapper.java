@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -236,7 +236,9 @@ public class ColumnTruncateMapper extends MapReduceBase implements
     Path backupPath = backupOutputPath(fs, outputPath, job);
     Utilities.mvFileToFinalPath(outputPath, job, success, LOG, dynPartCtx, null,
       reporter);
-    fs.delete(backupPath, true);
+    if (backupPath != null) {
+      fs.delete(backupPath, true);
+    }
   }
 
 }

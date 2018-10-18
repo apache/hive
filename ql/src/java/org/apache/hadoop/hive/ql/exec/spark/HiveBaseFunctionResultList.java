@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,26 +38,18 @@ import com.google.common.base.Preconditions;
  *     through Iterator interface.
  */
 @SuppressWarnings("rawtypes")
-public abstract class HiveBaseFunctionResultList<T> implements
-    Iterable, OutputCollector<HiveKey, BytesWritable>, Serializable {
+public abstract class HiveBaseFunctionResultList<T>
+  implements Iterator, OutputCollector<HiveKey, BytesWritable>, Serializable {
   private static final long serialVersionUID = -1L;
   private final Iterator<T> inputIterator;
   private boolean isClosed = false;
 
   // Contains results from last processed input record.
   private final HiveKVResultCache lastRecordOutput;
-  private boolean iteratorAlreadyCreated = false;
 
   public HiveBaseFunctionResultList(Iterator<T> inputIterator) {
     this.inputIterator = inputIterator;
     this.lastRecordOutput = new HiveKVResultCache();
-  }
-
-  @Override
-  public Iterator iterator() {
-    Preconditions.checkState(!iteratorAlreadyCreated, "Iterator can only be created once.");
-    iteratorAlreadyCreated = true;
-    return new ResultIterator();
   }
 
   @Override
@@ -77,57 +69,55 @@ public abstract class HiveBaseFunctionResultList<T> implements
   /** Close the record processor. */
   protected abstract void closeRecordProcessor();
 
-  /** Implement Iterator interface. */
-  public class ResultIterator implements Iterator {
-    @Override
-    public boolean hasNext(){
-      // Return remaining records (if any) from last processed input record.
-      if (lastRecordOutput.hasNext()) {
-        return true;
-      }
+  @Override
+  public boolean hasNext() {
+    // Return remaining records (if any) from last processed input record.
+    if (lastRecordOutput.hasNext()) {
+      return true;
+    }
 
-      // Process the records in the input iterator until
-      //  - new output records are available for serving downstream operator,
-      //  - input records are exhausted or
-      //  - processing is completed.
-      while (inputIterator.hasNext() && !processingDone()) {
-        try {
-          processNextRecord(inputIterator.next());
-          if (lastRecordOutput.hasNext()) {
-            return true;
-          }
-        } catch (IOException ex) {
-          throw new IllegalStateException("Error while processing input.", ex);
+    // Process the records in the input iterator until
+    //  - new output records are available for serving downstream operator,
+    //  - input records are exhausted or
+    //  - processing is completed.
+    while (inputIterator.hasNext() && !processingDone()) {
+      try {
+        processNextRecord(inputIterator.next());
+        if (lastRecordOutput.hasNext()) {
+          return true;
         }
+      } catch (IOException ex) {
+        throw new IllegalStateException("Error while processing input.", ex);
       }
-
-      // At this point we are done processing the input. Close the record processor
-      if (!isClosed) {
-        closeRecordProcessor();
-        isClosed = true;
-      }
-
-      // It is possible that some operators add records after closing the processor, so make sure
-      // to check the lastRecordOutput
-      if (lastRecordOutput.hasNext()) {
-        return true;
-      }
-
-      lastRecordOutput.clear();
-      return false;
     }
 
-    @Override
-    public Tuple2<HiveKey, BytesWritable> next() {
-      if (hasNext()) {
-        return lastRecordOutput.next();
-      }
-      throw new NoSuchElementException("There are no more elements");
+    // At this point we are done processing the input. Close the record processor
+    if (!isClosed) {
+      closeRecordProcessor();
+      isClosed = true;
     }
 
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException("Iterator.remove() is not supported");
+    // It is possible that some operators add records after closing the processor, so make sure
+    // to check the lastRecordOutput
+    if (lastRecordOutput.hasNext()) {
+      return true;
     }
+
+    lastRecordOutput.clear();
+    return false;
   }
+
+  @Override
+  public Tuple2<HiveKey, BytesWritable> next() {
+    if (hasNext()) {
+      return lastRecordOutput.next();
+    }
+    throw new NoSuchElementException("There are no more elements");
+  }
+
+  @Override
+  public void remove() {
+    throw new UnsupportedOperationException("Iterator.remove() is not supported");
+  }
+
 }

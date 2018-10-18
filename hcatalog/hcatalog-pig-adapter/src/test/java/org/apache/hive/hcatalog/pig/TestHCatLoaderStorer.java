@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,6 @@ package org.apache.hive.hcatalog.pig;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecJob;
 import org.apache.pig.data.DataType;
@@ -58,15 +57,15 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     Assert.assertTrue(dataDir.mkdir());
     final String INPUT_FILE_NAME = dataDir + "/inputtrw.data";
 
-    TestHCatLoader.dropTable(tblName, driver);
+    AbstractHCatLoaderTest.dropTable(tblName, driver);
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, new String[]{"40\t1"});
 
-    TestHCatLoader.executeStatementOnDriver("create external table " + tblName +
+    AbstractHCatLoaderTest.executeStatementOnDriver("create external table " + tblName +
       " (my_small_int smallint, my_tiny_int tinyint)" +
       " row format delimited fields terminated by '\t' stored as textfile location '" +
       dataDir.toURI().getPath() + "'", driver);
-    TestHCatLoader.dropTable(tblName2, driver);
-    TestHCatLoader.createTable(tblName2, "my_small_int smallint, my_tiny_int tinyint", null, driver,
+    AbstractHCatLoaderTest.dropTable(tblName2, driver);
+    AbstractHCatLoaderTest.createTable(tblName2, "my_small_int smallint, my_tiny_int tinyint", null, driver,
       "textfile");
 
     LOG.debug("File=" + INPUT_FILE_NAME);
@@ -84,7 +83,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
       logAndRegister(server, "store b into '" + tblName2 +
         "' using org.apache.hive.hcatalog.pig.HCatStorer();", queryNumber);
       //perform simple checksum here; make sure nothing got turned to NULL
-      TestHCatLoader.executeStatementOnDriver("select my_small_int from " + tblName2, driver);
+      AbstractHCatLoaderTest.executeStatementOnDriver("select my_small_int from " + tblName2, driver);
       ArrayList l = new ArrayList();
       driver.getResults(l);
       for(Object t : l) {
@@ -127,7 +126,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     Assert.assertEquals(0, driver.run("load data local inpath '" +
       dataDir.getPath().replaceAll("\\\\", "/") + "' into table " + readTblName).getResponseCode());
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.registerQuery(
       "data = load '" + readTblName + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
 
@@ -186,7 +185,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     Assert.assertEquals(0, driver.run("create table test_tbl" +
       " (my_small_int smallint, my_tiny_int tinyint) stored as rcfile").getResponseCode());
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     server.registerQuery("data = load '" + data +
       "' using PigStorage('\t') as (my_small_int:int, my_tiny_int:int);");

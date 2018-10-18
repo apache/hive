@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,14 +20,15 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.all;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.auto;
+import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.only;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.map;
 import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.none;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -46,8 +48,9 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -70,6 +73,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,19 +98,29 @@ public class LlapDecider implements PhysicalPlanResolver {
 
   public enum LlapMode {
     map, // map operators only
-    all, // all operators
+    all, // all operators. Launch containers if user code etc prevents running inside llap.
     none, // no operators
+    only, // Try running everything in llap, fail if that is not possible (non blessed user code, script, etc)
     auto // please hive, choose for me
   }
 
   private LlapMode mode;
+  private final LlapClusterStateForCompile clusterState;
+
+  public LlapDecider(LlapClusterStateForCompile clusterState) {
+    this.clusterState = clusterState;
+  }
+
 
   class LlapDecisionDispatcher implements Dispatcher {
     private final HiveConf conf;
     private final boolean doSkipUdfCheck;
     private final boolean arePermanentFnsAllowed;
     private final boolean shouldUber;
+    private final float minReducersPerExec;
+    private final int executorsPerNode;
     private List<MapJoinOperator> mapJoinOpList;
+    private final Map<Rule, NodeProcessor> rules;
 
     public LlapDecisionDispatcher(PhysicalContext pctx, LlapMode mode) {
       conf = pctx.getConf();
@@ -114,7 +128,11 @@ public class LlapDecider implements PhysicalPlanResolver {
       arePermanentFnsAllowed = HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOW_PERMANENT_FNS);
       // Don't user uber in "all" mode - everything can go into LLAP, which is better than uber.
       shouldUber = HiveConf.getBoolVar(conf, ConfVars.LLAP_AUTO_ALLOW_UBER) && (mode != all);
+      minReducersPerExec = HiveConf.getFloatVar(
+          conf, ConfVars.TEZ_LLAP_MIN_REDUCER_PER_EXECUTOR);
+      executorsPerNode = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
       mapJoinOpList = new ArrayList<MapJoinOperator>();
+      rules = getRules();
     }
 
     @Override
@@ -131,20 +149,57 @@ public class LlapDecider implements PhysicalPlanResolver {
       return null;
     }
 
-    private void handleWork(TezWork tezWork, BaseWork work)
-      throws SemanticException {
+    private void handleWork(TezWork tezWork, BaseWork work) throws SemanticException {
       boolean workCanBeDoneInLlap = evaluateWork(tezWork, work);
       LOG.debug(
           "Work " + work + " " + (workCanBeDoneInLlap ? "can" : "cannot") + " be done in LLAP");
       if (workCanBeDoneInLlap) {
         for (MapJoinOperator graceMapJoinOp : mapJoinOpList) {
-          LOG.debug(
-              "Disabling hybrid grace hash join in case of LLAP and non-dynamic partition hash join.");
+          LOG.debug("Disabling hybrid grace hash join in case of LLAP "
+              + "and non-dynamic partition hash join.");
           graceMapJoinOp.getConf().setHybridHashJoin(false);
         }
+        adjustAutoParallelism(work);
+        
         convertWork(tezWork, work);
       }
       mapJoinOpList.clear();
+    }
+
+    private void adjustAutoParallelism(BaseWork work) {
+      if (minReducersPerExec <= 0 || !(work instanceof ReduceWork)) return;
+      ReduceWork reduceWork = (ReduceWork)work;
+      if (reduceWork.isAutoReduceParallelism() == false && reduceWork.isUniformDistribution() == false) {
+        return; // Not based on ARP and cannot assume uniform distribution, bail.
+      }
+      clusterState.initClusterInfo();
+      int targetCount = 0;
+      if (!clusterState.hasClusterInfo()) {
+        LOG.warn("Cannot determine LLAP cluster information");
+        targetCount = (int)Math.ceil(minReducersPerExec * 1 * executorsPerNode);
+      } else {
+        targetCount = (int)Math.ceil(minReducersPerExec * (clusterState.getKnownExecutorCount()
+            + clusterState.getNodeCountWithUnknownExecutors() * executorsPerNode));
+      }
+      // We only increase the targets here.
+      if (reduceWork.isAutoReduceParallelism()) {
+        // Do not exceed the configured max reducers.
+        int newMin = Math.min(conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS),
+            Math.max(reduceWork.getMinReduceTasks(), targetCount));
+        if (newMin < reduceWork.getMaxReduceTasks()) {
+          reduceWork.setMinReduceTasks(newMin);
+          reduceWork.getEdgePropRef().setAutoReduce(conf, true, newMin,
+              reduceWork.getMaxReduceTasks(), conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER));
+        } else {
+          reduceWork.setAutoReduceParallelism(false);
+          reduceWork.setNumReduceTasks(newMin);
+          // TODO: is this correct? based on the same logic as HIVE-14200
+          reduceWork.getEdgePropRef().setAutoReduce(null, false, 0, 0, 0);
+        }
+      } else {
+        // UNIFORM || AUTOPARALLEL (maxed out)
+        reduceWork.setNumReduceTasks(Math.max(reduceWork.getNumReduceTasks(), targetCount));
+      }
     }
 
 
@@ -156,6 +211,7 @@ public class LlapDecider implements PhysicalPlanResolver {
         if (tezWork.getChildren(work).isEmpty()
             && work instanceof ReduceWork
             && ((ReduceWork) work).getNumReduceTasks() == 1) {
+          LOG.info("Converting work to uber: {}", work);
           work.setUberMode(true);
         }
       }
@@ -174,6 +230,7 @@ public class LlapDecider implements PhysicalPlanResolver {
         return false;
       }
 
+
       // first we check if we *can* run in llap. If we need to use
       // user code to do so (script/udf) we don't.
       /*if (work instanceof MapWork && ((MapWork)work).isUseOneNullRowInputFormat()) {
@@ -183,14 +240,19 @@ public class LlapDecider implements PhysicalPlanResolver {
 
       if (!evaluateOperators(work)) {
         LOG.info("some operators cannot be run in llap");
+        if (mode == only) {
+          throw new RuntimeException("Cannot run all parts of query in llap. Failing since " +
+              ConfVars.LLAP_EXECUTION_MODE.varname + " is set to " + only.name());
+        }
+
         return false;
       }
 
       // --- From here on out we choose whether we *want* to run in llap
 
       // if mode is all just run it
-      if (mode == all) {
-        LOG.info("LLAP mode set to 'all' so can convert any work.");
+      if (EnumSet.of(all, only).contains(mode)) {
+        LOG.info("LLAP mode set to '" + mode + "' so can convert any work.");
         return true;
       }
 
@@ -200,7 +262,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       }
 
       // --- From here we evaluate the auto mode
-      assert mode == auto;
+      assert mode == auto : "Mode must be " + auto.name() + " at this point";
 
       // if parents aren't in llap neither should the child
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_AUTO_ENFORCE_TREE)
@@ -387,7 +449,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     private boolean evaluateOperators(BaseWork work) throws SemanticException {
       // lets take a look at the operators. we're checking for user
       // code in those. we will not run that in llap.
-      Dispatcher disp = new DefaultRuleDispatcher(null, getRules(), null);
+      Dispatcher disp = new DefaultRuleDispatcher(null, rules, null);
       GraphWalker ogw = new DefaultGraphWalker(disp);
 
       ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -399,7 +461,6 @@ public class LlapDecider implements PhysicalPlanResolver {
       for (Node n : nodeOutput.keySet()) {
         if (nodeOutput.get(n) != null) {
           if (!((Boolean)nodeOutput.get(n))) {
-            LOG.info("Cannot run in LLAP mode.");
             return false;
           }
         }
@@ -418,14 +479,17 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     private boolean checkInputsVectorized(MapWork mapWork) {
-      for( PartitionDesc pd : mapWork.getPathToPartitionInfo().values()) {
-        List<Class<?>> interfaceList =
-          Arrays.asList(pd.getInputFileFormatClass().getInterfaces());
-        if (!interfaceList.contains(VectorizedInputFormatInterface.class)) {
-          LOG.info("Input format: " + pd.getInputFileFormatClassName()
-            + ", doesn't provide vectorized input");
-          return false;
+      boolean mayWrap = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED);
+      Collection<Class<?>> excludedInputFormats = Utilities.getClassNamesFromConfig(conf, ConfVars.HIVE_VECTORIZATION_VECTORIZED_INPUT_FILE_FORMAT_EXCLUDES);
+      for (PartitionDesc pd : mapWork.getPathToPartitionInfo().values()) {
+        if ((Utilities.isInputFileFormatVectorized(pd) && !excludedInputFormats
+            .contains(pd.getInputFileFormatClass())) || (mayWrap && HiveInputFormat
+            .canWrapForLlap(pd.getInputFileFormatClass(), true))) {
+          continue;
         }
+        LOG.info("Input format: " + pd.getInputFileFormatClassName()
+          + ", doesn't provide vectorized input");
+        return false;
       }
       return true;
     }
@@ -471,6 +535,8 @@ public class LlapDecider implements PhysicalPlanResolver {
     this.conf = pctx.getConf();
 
     this.mode = LlapMode.valueOf(HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_EXECUTION_MODE));
+    Preconditions.checkState(this.mode != null, "Unrecognized LLAP mode configuration: " +
+        HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_EXECUTION_MODE));
     LOG.info("llap mode: " + this.mode);
 
     if (mode == none) {

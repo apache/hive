@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class FilterConstantBooleanVectorExpression extends ConstantVectorExpression {
 
@@ -28,8 +30,8 @@ public class FilterConstantBooleanVectorExpression extends ConstantVectorExpress
     super();
   }
 
-  public FilterConstantBooleanVectorExpression(long value) {
-    super(-1, value);
+  public FilterConstantBooleanVectorExpression(long value) throws HiveException {
+    super(-1, value, TypeInfoFactory.booleanTypeInfo);
   }
 
   @Override

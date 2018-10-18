@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,9 +43,9 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
    * Each field of RecordIdentifier which should be part of ROWID should be in this enum... which 
    * really means that it should be part of VirtualColumn (so make a subclass for rowid).
    */
-  public static enum Field {
+  public enum Field {
     //note the enum names match field names in the struct
-    transactionId(TypeInfoFactory.longTypeInfo,
+    writeId(TypeInfoFactory.longTypeInfo,
       PrimitiveObjectInspectorFactory.javaLongObjectInspector),
     bucketId(TypeInfoFactory.intTypeInfo, PrimitiveObjectInspectorFactory.javaIntObjectInspector),
     rowId(TypeInfoFactory.longTypeInfo, PrimitiveObjectInspectorFactory.javaLongObjectInspector);
@@ -88,33 +88,33 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
         Arrays.fill(struct, null);
         return;
       }
-      struct[Field.transactionId.ordinal()] = ri.getTransactionId();
-      struct[Field.bucketId.ordinal()] = ri.getBucketId();
+      struct[Field.writeId.ordinal()] = ri.getWriteId();
+      struct[Field.bucketId.ordinal()] = ri.getBucketProperty();
       struct[Field.rowId.ordinal()] = ri.getRowId();
     }
   }
   
-  private long transactionId;
+  private long writeId;
   private int bucketId;
   private long rowId;
 
   public RecordIdentifier() {
   }
 
-  public RecordIdentifier(long transactionId, int bucket, long rowId) {
-    this.transactionId = transactionId;
+  public RecordIdentifier(long writeId, int bucket, long rowId) {
+    this.writeId = writeId;
     this.bucketId = bucket;
     this.rowId = rowId;
   }
 
   /**
    * Set the identifier.
-   * @param transactionId the transaction id
+   * @param writeId the write id
    * @param bucketId the bucket id
    * @param rowId the row id
    */
-  public void setValues(long transactionId, int bucketId, long rowId) {
-    this.transactionId = transactionId;
+  public void setValues(long writeId, int bucketId, long rowId) {
+    this.writeId = writeId;
     this.bucketId = bucketId;
     this.rowId = rowId;
   }
@@ -124,7 +124,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
    * @param other the object to copy from
    */
   public void set(RecordIdentifier other) {
-    this.transactionId = other.transactionId;
+    this.writeId = other.writeId;
     this.bucketId = other.bucketId;
     this.rowId = other.rowId;
   }
@@ -134,18 +134,18 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
   }
 
   /**
-   * What was the original transaction id for the last row?
-   * @return the transaction id
+   * What was the original write id for the last row?
+   * @return the write id
    */
-  public long getTransactionId() {
-    return transactionId;
+  public long getWriteId() {
+    return writeId;
   }
 
   /**
-   * What was the original bucket id for the last row?
-   * @return the bucket id
+   * See {@link BucketCodec} for details
+   * @return the bucket value;
    */
-  public int getBucketId() {
+  public int getBucketProperty() {
     return bucketId;
   }
 
@@ -161,8 +161,8 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
     if (other == null) {
       return -1;
     }
-    if (transactionId != other.transactionId) {
-      return transactionId < other.transactionId ? -1 : 1;
+    if (writeId != other.writeId) {
+      return writeId < other.writeId ? -1 : 1;
     }
     if (bucketId != other.bucketId) {
       return bucketId < other.bucketId ? - 1 : 1;
@@ -176,6 +176,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
   @Override
   public int compareTo(RecordIdentifier other) {
     if (other.getClass() != RecordIdentifier.class) {
+      //WTF?  assumes that other instanceof OrcRawRecordMerger.ReaderKey???
       return -other.compareTo(this);
     }
     return compareToInternal(other);
@@ -183,32 +184,51 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
 
   @Override
   public void write(DataOutput dataOutput) throws IOException {
-    dataOutput.writeLong(transactionId);
+    dataOutput.writeLong(writeId);
     dataOutput.writeInt(bucketId);
     dataOutput.writeLong(rowId);
   }
 
   @Override
   public void readFields(DataInput dataInput) throws IOException {
-    transactionId = dataInput.readLong();
+    writeId = dataInput.readLong();
     bucketId = dataInput.readInt();
     rowId = dataInput.readLong();
   }
 
   @Override
   public boolean equals(Object other) {
+    if(other == this) {
+      return true;
+    }
     if (other == null || other.getClass() != getClass()) {
       return false;
     }
     RecordIdentifier oth = (RecordIdentifier) other;
-    return oth.transactionId == transactionId &&
+    return oth.writeId == writeId &&
         oth.bucketId == bucketId &&
         oth.rowId == rowId;
+  }
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + (int)(writeId ^ (writeId >>> 32));
+    result = 31 * result + bucketId;
+    result = 31 * result + (int)(rowId ^ (rowId >>> 32));
+    return result;
   }
 
   @Override
   public String toString() {
-    return "{originalTxn: " + transactionId + ", bucket: " +
-        bucketId + ", row: " + getRowId() + "}";
+    return "RecordIdentifier(" + writeId + ", " + bucketToString(bucketId) + ","
+        + getRowId() +")";
+  }
+  public static String bucketToString(int bucketId) {
+    if (bucketId == -1) return "" + bucketId;
+    BucketCodec codec =
+      BucketCodec.determineVersion(bucketId);
+    return  bucketId + "(" + codec.getVersion() + "." +
+        codec.decodeWriterId(bucketId) + "." +
+        codec.decodeStatementId(bucketId) + ")";
   }
 }

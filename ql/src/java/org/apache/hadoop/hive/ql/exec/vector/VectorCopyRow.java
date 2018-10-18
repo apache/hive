@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -210,12 +210,14 @@ public class VectorCopyRow {
 
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, 0, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
@@ -237,12 +239,14 @@ public class VectorCopyRow {
 
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, 0, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
@@ -255,15 +259,27 @@ public class VectorCopyRow {
   private CopyRow[] subRowToBatchCopiersByReference;
 
   public void init(VectorColumnMapping columnMapping) throws HiveException {
-    int count = columnMapping.getCount();
+    init(
+        columnMapping.getInputColumns(),
+        columnMapping.getOutputColumns(),
+        columnMapping.getTypeInfos());
+  }
+
+  public void init(int[] columnMap, TypeInfo[] typeInfos) throws HiveException {
+    init(columnMap, columnMap, typeInfos);
+  }
+
+  public void init(int[] inputColumnMap, int[] outputColumnMap, TypeInfo[] typeInfos)
+      throws HiveException {
+
+    final int count = inputColumnMap.length;
     subRowToBatchCopiersByValue = new CopyRow[count];
     subRowToBatchCopiersByReference = new CopyRow[count];
 
     for (int i = 0; i < count; i++) {
-      int inputColumn = columnMapping.getInputColumns()[i];
-      int outputColumn = columnMapping.getOutputColumns()[i];
-      String typeName = columnMapping.getTypeNames()[i].toLowerCase();
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+      int inputColumn = inputColumnMap[i];
+      int outputColumn = outputColumnMap[i];
+      TypeInfo typeInfo = typeInfos[i];
       Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
 
       CopyRow copyRowByValue = null;

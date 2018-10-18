@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 -- This test verifies that if the tables location changes, renaming a table will not change
 -- the table location scheme
 
@@ -15,3 +17,5 @@ set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyOutputTableLocati
 -- an exception related to the source and destination file systems not matching
 
 ALTER TABLE rename_partition_table RENAME TO rename_partition_table_renamed;
+
+reset hive.exec.post.hooks;

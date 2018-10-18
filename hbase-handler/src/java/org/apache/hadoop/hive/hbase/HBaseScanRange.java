@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.io.BytesWritable;
-
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 public class HBaseScanRange implements Serializable {
 
@@ -59,12 +59,20 @@ public class HBaseScanRange implements Serializable {
   }
 
   public void setup(Scan scan, Configuration conf) throws Exception {
-    if (startRow != null) {
-      scan.setStartRow(startRow);
+    setup(scan, conf, false);
+  }
+
+  public void setup(Scan scan, Configuration conf, boolean filterOnly) throws Exception {
+    if (!filterOnly) {
+      // Set the start and stop rows only if asked to
+      if (startRow != null) {
+        scan.setStartRow(startRow);
+      }
+      if (stopRow != null) {
+        scan.setStopRow(stopRow);
+      }
     }
-    if (stopRow != null) {
-      scan.setStopRow(stopRow);
-    }
+
     if (filterDescs.isEmpty()) {
       return;
     }

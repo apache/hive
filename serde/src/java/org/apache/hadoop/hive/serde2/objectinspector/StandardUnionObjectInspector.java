@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -79,6 +79,31 @@ public class StandardUnionObjectInspector extends SettableUnionObjectInspector {
     public String toString() {
       return tag + ":" + object;
     }
+
+    @Override
+    public int hashCode() {
+      if (object == null) {
+        return tag;
+      } else {
+        return object.hashCode() ^ tag;
+      }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof StandardUnion)) {
+        return false;
+      }
+      StandardUnion that = (StandardUnion) obj;
+      if (this.object == null || that.object == null) {
+        return this.tag == that.tag && this.object == that.object;
+      } else {
+        return this.tag == that.tag && this.object.equals(that.object);
+      }
+    }
   }
 
   /**
@@ -119,15 +144,19 @@ public class StandardUnionObjectInspector extends SettableUnionObjectInspector {
 
   @Override
   public Object create() {
-    ArrayList<Object> a = new ArrayList<Object>();
-    return a;
+    return new StandardUnion();
   }
 
   @Override
-  public Object addField(Object union, Object field) {
-    ArrayList<Object> a = (ArrayList<Object>) union;
-    a.add(field);
-    return a;
+  public Object setFieldAndTag(Object union, Object field, byte tag) {
+    StandardUnion unionObject = (StandardUnion) union;
+    unionObject.setObject(field);
+    if (field == null) {
+      unionObject.setTag((byte) -1);
+    } else {
+      unionObject.setTag(tag);
+    }
+    return unionObject;
   }
 
 }

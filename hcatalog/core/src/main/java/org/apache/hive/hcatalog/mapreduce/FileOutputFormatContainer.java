@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,13 +23,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -82,8 +82,8 @@ class FileOutputFormatContainer extends OutputFormatContainer {
     StorerInfo storeInfo = jobInfo.getTableInfo().getStorerInfo();
     HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(
       context.getConfiguration(), storeInfo);
-    Class<? extends SerDe> serde = storageHandler.getSerDeClass();
-    SerDe sd = (SerDe) ReflectionUtils.newInstance(serde,
+    Class<? extends AbstractSerDe> serde = storageHandler.getSerDeClass();
+    AbstractSerDe sd = (AbstractSerDe) ReflectionUtils.newInstance(serde,
       context.getConfiguration());
     context.getConfiguration().set("mapred.output.value.class",
       sd.getSerializedClass().getName());
@@ -202,7 +202,7 @@ class FileOutputFormatContainer extends OutputFormatContainer {
       Path tablePath = new Path(table.getTTable().getSd().getLocation());
       FileSystem fs = tablePath.getFileSystem(context.getConfiguration());
 
-      if (!MetaStoreUtils.isDirEmpty(fs,tablePath)){
+      if (!FileUtils.isDirEmpty(fs,tablePath)){
         throw new HCatException(ErrorType.ERROR_NON_EMPTY_TABLE,
             table.getDbName() + "." + table.getTableName());
       }

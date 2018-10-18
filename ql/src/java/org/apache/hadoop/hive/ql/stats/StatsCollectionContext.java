@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,14 +23,19 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.exec.Task;
 
+
+@InterfaceAudience.Public
+@InterfaceStability.Unstable
 public class StatsCollectionContext {
 
   private final Configuration hiveConf;
   private Task task;
   private List<String> statsTmpDirs;
-  private int indexForTezUnion;
+  private String contextSuffix;
 
   public List<String> getStatsTmpDirs() {
     return statsTmpDirs;
@@ -62,11 +67,11 @@ public class StatsCollectionContext {
     this.task = task;
   }
 
-  public int getIndexForTezUnion() {
-    return indexForTezUnion;
+  public void setContextSuffix(String suffix) {
+    this.contextSuffix = suffix;
   }
 
-  public void setIndexForTezUnion(int indexForTezUnion) {
-    this.indexForTezUnion = indexForTezUnion;
+  public String getContextSuffix() {
+    return contextSuffix;
   }
 }

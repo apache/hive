@@ -23,19 +23,18 @@ dist: trusty
 # that requires full git history, enable this
 # before_install: git fetch --unshallow
 
-# parallel builds on jdk7 and jdk8
 language: java
 jdk:
-  - oraclejdk7
   - oraclejdk8
 
-cache:
-  directories:
-  - $HOME/.m2
+# disabling cache for /home/travis/.m2/repository/org/apache/hive/hive-jdbc/3.0.0-SNAPSHOT/hive-jdbc-3.0.0-SNAPSHOT-standalone.jar (Permission denied)
+#cache:
+#  directories:
+#  - $HOME/.m2
 
 env:
   MAVEN_SKIP_RC=true
-  MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M"
+  MAVEN_OPTS="-Xmx2g"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
@@ -44,4 +43,4 @@ before_install:
 
 install: true
 
-script: mvn clean install -DskipTests -T 4 -q -Pitests
+script: mvn clean install -DskipTests -q -Pitests

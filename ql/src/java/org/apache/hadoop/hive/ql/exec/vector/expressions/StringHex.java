@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.udf.UDFHex;
 
 // Implement vectorized function Hex(string) returning string
 public class StringHex extends StringUnaryUDF {
-  StringHex(int colNum, int outputColumn) {
-    super(colNum, outputColumn, (IUDFUnaryString) new UDFHex());
+  StringHex(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, (IUDFUnaryString) new UDFHex());
   }
 }

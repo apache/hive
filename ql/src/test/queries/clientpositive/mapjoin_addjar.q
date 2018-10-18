@@ -1,14 +1,15 @@
-
+SET hive.vectorized.execution.enabled=false;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.use.nonstaged=false;
 
-add jar ${system:maven.local.repository}/org/apache/hive/hcatalog/hive-hcatalog-core/${system:hive.version}/hive-hcatalog-core-${system:hive.version}.jar;
+ADD JAR ${system:maven.local.repository}/org/apache/hive/hive-it-test-serde/${system:hive.version}/hive-it-test-serde-${system:hive.version}.jar;
 
-CREATE TABLE t1 (a string, b string)
-ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
-;
-LOAD DATA LOCAL INPATH "../../data/files/sample.json" INTO TABLE t1;
-select * from src join t1 on src.key =t1.a;
-drop table t1;
+CREATE TABLE t1_n66(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' STORED AS TEXTFILE;
+LOAD DATA LOCAL INPATH '../../data/files/kv1_cb.txt' INTO TABLE t1_n66;
+
+select * from t1_n66 l join t1_n66 r on l.key =r.key;
+
+drop table t1_n66;
+DELETE JAR ${system:maven.local.repository}/org/apache/hive/hive-it-test-serde/${system:hive.version}/hive-it-test-serde-${system:hive.version}.jar;
 set hive.auto.convert.join=false;
 

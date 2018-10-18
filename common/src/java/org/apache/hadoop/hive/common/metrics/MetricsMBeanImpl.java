@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.common.metrics;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +24,7 @@ import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.InvalidAttributeValueException;
+import javax.management.JMException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanConstructorInfo;
 import javax.management.MBeanException;
@@ -137,7 +137,7 @@ public class MetricsMBeanImpl implements  MetricsMBean {
     }
 
     @Override
-    public void put(String name, Object value) throws IOException {
+    public void put(String name, Object value) {
       synchronized(metricsMap) {
         if (!metricsMap.containsKey(name)) {
           dirtyAttributeInfoCache = true;
@@ -147,16 +147,8 @@ public class MetricsMBeanImpl implements  MetricsMBean {
     }
 
     @Override
-    public Object get(String name) throws IOException {
-        try {
-          return getAttribute(name);
-        } catch (AttributeNotFoundException e) {
-            throw new IOException(e);
-        } catch (MBeanException e) {
-            throw new IOException(e);
-        } catch (ReflectionException e) {
-            throw new IOException(e);
-        }
+    public Object get(String name) throws JMException {
+      return getAttribute(name);
     }
 
     public void reset() {

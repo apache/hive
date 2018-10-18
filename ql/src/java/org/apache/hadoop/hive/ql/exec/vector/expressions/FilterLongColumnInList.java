@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -36,8 +36,11 @@ import java.util.regex.Pattern;
 public class FilterLongColumnInList extends VectorExpression implements ILongInExpr {
 
   private static final long serialVersionUID = 1L;
-  private int inputCol;
-  private long[] inListValues;
+
+  protected final int inputCol;
+  protected long[] inListValues;
+
+  // Transient members initialized by transientInit method.
 
   // The set object containing the IN list. This is optimized for lookup
   // of the data type of the column.
@@ -45,27 +48,32 @@ public class FilterLongColumnInList extends VectorExpression implements ILongInE
 
   public FilterLongColumnInList() {
     super();
-    inSet = null;
+
+    // Dummy final assignments.
+    inputCol = -1;
   }
 
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
   public FilterLongColumnInList(int colNum) {
+    super();
     this.inputCol = colNum;
-    inSet = null;
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
+    inSet = new CuckooSetLong(inListValues.length);
+    inSet.load(inListValues);
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
-    }
-
-    if (inSet == null) {
-      inSet = new CuckooSetLong(inListValues.length);
-      inSet.load(inListValues);
     }
 
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputCol];
@@ -152,17 +160,6 @@ public class FilterLongColumnInList extends VectorExpression implements ILongInE
     }
   }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
   @Override
   public Descriptor getDescriptor() {
 
@@ -177,4 +174,11 @@ public class FilterLongColumnInList extends VectorExpression implements ILongInE
   public void setInListValues(long [] a) {
     this.inListValues = a;
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return getColumnParamString(0, inputCol) + ", values " + Arrays.toString(inListValues);
+  }
+
+
 }
