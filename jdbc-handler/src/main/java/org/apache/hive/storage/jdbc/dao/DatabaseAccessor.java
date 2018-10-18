@@ -14,8 +14,10 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 
 import java.util.List;
@@ -24,11 +26,15 @@ public interface DatabaseAccessor {
 
   List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
-  List<String> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException;
-
   int getTotalNumberOfRecords(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
   JdbcRecordIterator
-    getRecordIterator(Configuration conf, int limit, int offset) throws HiveJdbcDatabaseAccessException;
+    getRecordIterator(Configuration conf, String partitionColumn, String lowerBound, String upperBound, int limit, int
+          offset) throws
+          HiveJdbcDatabaseAccessException;
 
+  Pair<String, String> getBounds(Configuration conf, String partitionColumn, boolean lower, boolean upper) throws
+          HiveJdbcDatabaseAccessException;
+
+  boolean needColumnQuote();
 }

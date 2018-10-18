@@ -1,0 +1,319 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: dboutput
+POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: dboutput
+PREHOOK: query: FROM src
+SELECT
+#### A masked pattern was here ####
+'CREATE TABLE EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "chkey" VARCHAR(20), "dekey" DECIMAL(6,4), "dtkey" DATE, "tkey" TIMESTAMP)' ),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','1','1000','20.0','40.0','aaa','3.1415','2010-01-01','2018-01-01 12:00:00.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','5','9000',null,'10.0','bbb','2.7182','2018-01-01','2010-06-01 14:00:00.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','3','4000','120.0','25.4','hello','2.7182','2017-06-05','2011-11-10 18:00:08.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','8','3000','180.0','35.8','world','3.1415','2014-03-03','2016-07-04 13:00:00.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','4','8000','120.4','31.3','ccc',null,'2014-03-04','2018-07-08 11:00:00.000000000')
+limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src
+SELECT
+#### A masked pattern was here ####
+'CREATE TABLE EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "chkey" VARCHAR(20), "dekey" DECIMAL(6,4), "dtkey" DATE, "tkey" TIMESTAMP)' ),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','1','1000','20.0','40.0','aaa','3.1415','2010-01-01','2018-01-01 12:00:00.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','5','9000',null,'10.0','bbb','2.7182','2018-01-01','2010-06-01 14:00:00.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','3','4000','120.0','25.4','hello','2.7182','2017-06-05','2011-11-10 18:00:08.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','8','3000','180.0','35.8','world','3.1415','2014-03-03','2016-07-04 13:00:00.000000000'),
+#### A masked pattern was here ####
+'INSERT INTO EXTERNAL_JDBC_PARTITION_TABLE1 ("ikey","bkey","fkey","dkey","chkey","dekey","dtkey","tkey") VALUES (?,?,?,?,?,?,?,?)','4','8000','120.4','31.3','ccc',null,'2014-03-04','2018-07-08 11:00:00.000000000')
+limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	0	0	0	0	0
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_partition_table1
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double,
+ chkey string,
+ dekey decimal(5,3),
+ dtkey date,
+ tkey timestamp
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_PARTITION_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1",
+                "hive.sql.partitionColumn" = "ikey",
+                "hive.sql.numPartitions" = "2"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_partition_table1
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_partition_table1
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double,
+ chkey string,
+ dekey decimal(5,3),
+ dtkey date,
+ tkey timestamp
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_PARTITION_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1",
+                "hive.sql.partitionColumn" = "ikey",
+                "hive.sql.numPartitions" = "2"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_partition_table1
+PREHOOK: query: SELECT * FROM jdbc_partition_table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_partition_table1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_partition_table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_partition_table1
+#### A masked pattern was here ####
+1	1000	20.0	40.0	aaa	3.142	2010-01-01	2018-01-01 20:00:00
+3	4000	120.0	25.4	hello	2.718	2017-06-05	2011-11-11 02:00:08
+4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 18:00:00
+5	9000	NULL	10.0	bbb	2.718	2018-01-01	2010-06-01 21:00:00
+8	3000	180.0	35.8	world	3.142	2014-03-03	2016-07-04 20:00:00
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_partition_table2
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double,
+ chkey string,
+ dekey decimal(5,3),
+ dtkey date,
+ tkey timestamp
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_PARTITION_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1",
+                "hive.sql.partitionColumn" = "dekey",
+                "hive.sql.numPartitions" = "2"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_partition_table2
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_partition_table2
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double,
+ chkey string,
+ dekey decimal(5,3),
+ dtkey date,
+ tkey timestamp
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_PARTITION_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1",
+                "hive.sql.partitionColumn" = "dekey",
+                "hive.sql.numPartitions" = "2"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_partition_table2
+PREHOOK: query: SELECT * FROM jdbc_partition_table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_partition_table2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_partition_table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_partition_table2
+#### A masked pattern was here ####
+5	9000	NULL	10.0	bbb	2.718	2018-01-01	2010-06-01 21:00:00
+3	4000	120.0	25.4	hello	2.718	2017-06-05	2011-11-11 02:00:08
+4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 18:00:00
+1	1000	20.0	40.0	aaa	3.142	2010-01-01	2018-01-01 20:00:00
+8	3000	180.0	35.8	world	3.142	2014-03-03	2016-07-04 20:00:00
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_partition_table3
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double,
+ chkey string,
+ dekey decimal(5,3),
+ dtkey date,
+ tkey timestamp
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_PARTITION_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1",
+                "hive.sql.partitionColumn" = "fkey",
+                "hive.sql.lowerBound" = "0",
+                "hive.sql.upperBound" = "200",
+                "hive.sql.partitionColumn" = "fkey",
+                "hive.sql.numPartitions" = "2"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_partition_table3
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_partition_table3
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double,
+ chkey string,
+ dekey decimal(5,3),
+ dtkey date,
+ tkey timestamp
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.table" = "EXTERNAL_JDBC_PARTITION_TABLE1",
+                "hive.sql.dbcp.maxActive" = "1",
+                "hive.sql.partitionColumn" = "fkey",
+                "hive.sql.lowerBound" = "0",
+                "hive.sql.upperBound" = "200",
+                "hive.sql.partitionColumn" = "fkey",
+                "hive.sql.numPartitions" = "2"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_partition_table3
+PREHOOK: query: SELECT * FROM jdbc_partition_table3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_partition_table3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_partition_table3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_partition_table3
+#### A masked pattern was here ####
+1	1000	20.0	40.0	aaa	3.142	2010-01-01	2018-01-01 20:00:00
+5	9000	NULL	10.0	bbb	2.718	2018-01-01	2010-06-01 21:00:00
+3	4000	120.0	25.4	hello	2.718	2017-06-05	2011-11-11 02:00:08
+8	3000	180.0	35.8	world	3.142	2014-03-03	2016-07-04 20:00:00
+4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 18:00:00
+PREHOOK: query: SELECT ikey+1 FROM jdbc_partition_table3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_partition_table3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ikey+1 FROM jdbc_partition_table3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_partition_table3
+#### A masked pattern was here ####
+2
+6
+4
+9
+5
+PREHOOK: query: CREATE EXTERNAL TABLE jdbc_partition_table4
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.query" = "SELECT \"ikey\",\"bkey\",\"fkey\",\"dkey\" FROM EXTERNAL_JDBC_PARTITION_TABLE1 WHERE \"ikey\">1",
+                "hive.sql.dbcp.maxActive" = "1",
+                "hive.sql.partitionColumn" = "fkey",
+                "hive.sql.lowerBound" = "0",
+                "hive.sql.upperBound" = "200",
+                "hive.sql.partitionColumn" = "fkey",
+                "hive.sql.numPartitions" = "2"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jdbc_partition_table4
+POSTHOOK: query: CREATE EXTERNAL TABLE jdbc_partition_table4
+(
+ ikey int,
+ bkey bigint,
+ fkey float,
+ dkey double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+                "hive.sql.dbcp.username" = "user",
+                "hive.sql.dbcp.password" = "passwd",
+                "hive.sql.query" = "SELECT \"ikey\",\"bkey\",\"fkey\",\"dkey\" FROM EXTERNAL_JDBC_PARTITION_TABLE1 WHERE \"ikey\">1",
+                "hive.sql.dbcp.maxActive" = "1",
+                "hive.sql.partitionColumn" = "fkey",
+                "hive.sql.lowerBound" = "0",
+                "hive.sql.upperBound" = "200",
+                "hive.sql.partitionColumn" = "fkey",
+                "hive.sql.numPartitions" = "2"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jdbc_partition_table4
+PREHOOK: query: SELECT * FROM jdbc_partition_table4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@jdbc_partition_table4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM jdbc_partition_table4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@jdbc_partition_table4
+#### A masked pattern was here ####
+5	9000	NULL	10.0
+3	4000	120.0	25.4
+8	3000	180.0	35.8
+4	8000	120.4	31.3
