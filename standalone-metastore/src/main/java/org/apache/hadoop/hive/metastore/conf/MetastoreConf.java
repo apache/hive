@@ -623,12 +623,12 @@ public class MetastoreConf {
         "javax.jdo.option.NonTransactionalRead", true,
         "Reads outside of transactions"),
     NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES("metastore.notification.sequence.lock.max.retries",
-        "hive.notification.sequence.lock.max.retries", 5,
+        "hive.notification.sequence.lock.max.retries", 10,
         "Number of retries required to acquire a lock when getting the next notification sequential ID for entries "
             + "in the NOTIFICATION_LOG table."),
     NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL(
         "metastore.notification.sequence.lock.retry.sleep.interval",
-        "hive.notification.sequence.lock.retry.sleep.interval", 500, TimeUnit.MILLISECONDS,
+        "hive.notification.sequence.lock.retry.sleep.interval", 10, TimeUnit.SECONDS,
         "Sleep interval between retries to acquire a notification lock as described part of property "
             + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
     ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("metastore.orm.retrieveMapNullsAsEmptyStrings",
