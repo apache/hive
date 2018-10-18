@@ -60,24 +60,14 @@ enum MetadataColumn {
   /**
    * Record Timestamp column name, added as extra meta column of type long.
    */
-  TIMESTAMP("__timestamp", TypeInfoFactory.longTypeInfo),
-  /**
-   * Start offset given by the input split, this will reflect the actual start of TP or start given by split pruner.
-   */
-  // @TODO To be removed next PR it is here to make review easy
-  START_OFFSET("__start_offset", TypeInfoFactory.longTypeInfo),
-  /**
-   * End offset given by input split at run time.
-   */
-  // @TODO To be removed next PR it is here to make review easy
-  END_OFFSET("__end_offset", TypeInfoFactory.longTypeInfo);
+  TIMESTAMP("__timestamp", TypeInfoFactory.longTypeInfo);
 
   /**
    * Kafka metadata columns list that indicates the order of appearance for each column in final row.
    */
   private static final List<MetadataColumn>
       KAFKA_METADATA_COLUMNS =
-      Arrays.asList(KEY, PARTITION, OFFSET, TIMESTAMP, START_OFFSET, END_OFFSET);
+      Arrays.asList(KEY, PARTITION, OFFSET, TIMESTAMP);
 
   static final List<ObjectInspector>
       KAFKA_METADATA_INSPECTORS =

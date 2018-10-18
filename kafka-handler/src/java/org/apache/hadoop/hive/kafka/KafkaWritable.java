@@ -34,8 +34,7 @@ import java.util.Objects;
 /**
  * Writable implementation of Kafka ConsumerRecord.
  * Serialized in the form:
- * {@code timestamp} long| {@code partition} (int) | {@code offset} (long) |
- * {@code startOffset} (long) | {@code endOffset} (long) | {@code value.size()} (int) |
+ * {@code timestamp} long| {@code partition} (int) | {@code offset} (long) | {@code value.size()} (int) |
  * {@code value} (byte []) | {@code recordKey.size()}| {@code recordKey (byte [])}
  */
 public class KafkaWritable implements Writable {
@@ -46,43 +45,24 @@ public class KafkaWritable implements Writable {
   private byte[] value;
   private byte[] recordKey;
 
-  /**
-   * Fist offset given by the input split used to pull the event {@link KafkaInputSplit#getStartOffset()}.
-   */
-  private long startOffset;
-  /**
-   * Last Offset given by the input split used to pull the event {@link KafkaInputSplit#getEndOffset()}.
-   */
-  private long endOffset;
-
-  void set(ConsumerRecord<byte[], byte[]> consumerRecord, long startOffset, long endOffset) {
+  void set(ConsumerRecord<byte[], byte[]> consumerRecord) {
     this.partition = consumerRecord.partition();
     this.timestamp = consumerRecord.timestamp();
     this.offset = consumerRecord.offset();
     this.value = consumerRecord.value();
     this.recordKey = consumerRecord.key();
-    this.startOffset = startOffset;
-    this.endOffset = endOffset;
   }
 
-  KafkaWritable(int partition,
-      long offset,
-      long timestamp,
-      byte[] value,
-      long startOffset,
-      long endOffset,
-      @Nullable byte[] recordKey) {
+  KafkaWritable(int partition, long offset, long timestamp, byte[] value, @Nullable byte[] recordKey) {
     this.partition = partition;
     this.offset = offset;
     this.timestamp = timestamp;
     this.value = value;
     this.recordKey = recordKey;
-    this.startOffset = startOffset;
-    this.endOffset = endOffset;
   }
 
   KafkaWritable(int partition, long timestamp, byte[] value, @Nullable byte[] recordKey) {
-    this(partition, -1, timestamp, value, -1, -1, recordKey);
+    this(partition, -1, timestamp, value, recordKey);
   }
 
   @SuppressWarnings("WeakerAccess") public KafkaWritable() {
@@ -92,8 +72,6 @@ public class KafkaWritable implements Writable {
     dataOutput.writeLong(timestamp);
     dataOutput.writeInt(partition);
     dataOutput.writeLong(offset);
-    dataOutput.writeLong(startOffset);
-    dataOutput.writeLong(endOffset);
     dataOutput.writeInt(value.length);
     dataOutput.write(value);
     if (recordKey != null) {
@@ -108,8 +86,6 @@ public class KafkaWritable implements Writable {
     timestamp = dataInput.readLong();
     partition = dataInput.readInt();
     offset = dataInput.readLong();
-    startOffset = dataInput.readLong();
-    endOffset = dataInput.readLong();
     int dataSize = dataInput.readInt();
     if (dataSize > 0) {
       value = new byte[dataSize];
@@ -142,14 +118,6 @@ public class KafkaWritable implements Writable {
     return value;
   }
 
-  @SuppressWarnings("WeakerAccess") long getStartOffset() {
-    return startOffset;
-  }
-
-  @SuppressWarnings("WeakerAccess") long getEndOffset() {
-    return endOffset;
-  }
-
   @Nullable byte[] getRecordKey() {
     return recordKey;
   }
@@ -164,15 +132,13 @@ public class KafkaWritable implements Writable {
     KafkaWritable writable = (KafkaWritable) o;
     return partition == writable.partition
         && offset == writable.offset
-        && startOffset == writable.startOffset
-        && endOffset == writable.endOffset
         && timestamp == writable.timestamp
         && Arrays.equals(value, writable.value)
         && Arrays.equals(recordKey, writable.recordKey);
   }
 
   @Override public int hashCode() {
-    int result = Objects.hash(partition, offset, startOffset, endOffset, timestamp);
+    int result = Objects.hash(partition, offset, timestamp);
     result = 31 * result + Arrays.hashCode(value);
     result = 31 * result + Arrays.hashCode(recordKey);
     return result;
@@ -184,10 +150,6 @@ public class KafkaWritable implements Writable {
         + partition
         + ", offset="
         + offset
-        + ", startOffset="
-        + startOffset
-        + ", endOffset="
-        + endOffset
         + ", timestamp="
         + timestamp
         + ", value="
@@ -207,10 +169,6 @@ public class KafkaWritable implements Writable {
       return new LongWritable(getTimestamp());
     case KEY:
       return getRecordKey() == null ? null : new BytesWritable(getRecordKey());
-    case START_OFFSET:
-      return new LongWritable(getStartOffset());
-    case END_OFFSET:
-      return new LongWritable(getEndOffset());
     default:
       throw new IllegalArgumentException("Unknown metadata column [" + metadataColumn.getName() + "]");
     }

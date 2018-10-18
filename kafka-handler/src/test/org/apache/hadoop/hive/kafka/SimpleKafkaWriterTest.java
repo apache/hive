@@ -71,8 +71,7 @@ import java.util.stream.IntStream;
   }
 
   @Parameterized.Parameters public static Iterable<Object[]> data() {
-    return Arrays.asList(new Object[][] {{KafkaOutputFormat.WriteSemantic.BEST_EFFORT},
-        {KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE}});
+    return Arrays.asList(new Object[][] {{KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE}});
   }
 
   @BeforeClass public static void setupCluster() throws Throwable {
@@ -110,9 +109,7 @@ import java.util.stream.IntStream;
 
   @Test(expected = IllegalStateException.class) public void testMissingBrokerString() {
     new SimpleKafkaWriter("t",
-        null,
-        writeSemantic.equals(KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE),
-        new Properties());
+        null, new Properties());
   }
 
   @Test public void testCheckWriterId() {
@@ -121,9 +118,7 @@ import java.util.stream.IntStream;
     SimpleKafkaWriter
         writer =
         new SimpleKafkaWriter("t",
-            null,
-            writeSemantic.equals(KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE),
-            properties);
+            null, properties);
     Assert.assertNotNull(writer.getWriterId());
   }
 
@@ -135,12 +130,7 @@ import java.util.stream.IntStream;
     properties.setProperty("metadata.max.age.ms", "100");
     properties.setProperty("max.block.ms", "1000");
     KafkaWritable record = new KafkaWritable(-1, -1, "value".getBytes(), null);
-    SimpleKafkaWriter writer = new SimpleKafkaWriter("t", null, false, properties);
-    writer.write(record);
-    writer.close(false);
-    Assert.assertEquals("Expect sent records not matching", 1, writer.getSentRecords());
-    Assert.assertEquals("Expect lost records is not matching", 1, writer.getLostRecords());
-    writer = new SimpleKafkaWriter("t", null, true, properties);
+    SimpleKafkaWriter writer = new SimpleKafkaWriter("t", null, properties);
     Exception exception = null;
     try {
       writer.write(record);
@@ -160,9 +150,7 @@ import java.util.stream.IntStream;
     SimpleKafkaWriter
         writer =
         new SimpleKafkaWriter(topic,
-            null,
-            writeSemantic.equals(KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE),
-            properties);
+            null, properties);
     RECORDS_WRITABLES.forEach(kafkaRecordWritable -> {
       try {
         writer.write(kafkaRecordWritable);

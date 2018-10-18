@@ -126,8 +126,8 @@ left join wiki_kafka_hive as future_activity on
 | hive.kafka.poll.timeout.ms          | Parameter indicating Kafka Consumer poll timeout period in millis.  FYI this is independent from internal Kafka consumer timeouts. | No        | 5000 (5 Seconds)                        |
 | hive.kafka.max.retries              | Number of retries for Kafka metadata fetch operations.                                                                             | No        | 6                                       |
 | hive.kafka.metadata.poll.timeout.ms | Number of milliseconds before consumer timeout on fetching Kafka metadata.                                                         | No        | 30000 (30 Seconds)                      |
-| kafka.write.semantic                | Writer semantic, allowed values (BEST_EFFORT, AT_LEAST_ONCE, EXACTLY_ONCE)                                                         | No        | AT_LEAST_ONCE                           |
-| hive.kafka.optimistic.commit        | Boolean value indicate the if the producer should commit during task or delegate the commit to HS2.                                | No        | true                                    |
+| kafka.write.semantic                | Writer semantics, allowed values (AT_LEAST_ONCE, EXACTLY_ONCE)                                                         | No        | AT_LEAST_ONCE                           |
+
 
 ### Setting Extra Consumer/Producer properties.
 User can inject custom Kafka consumer/producer properties via the Table properties.
@@ -213,5 +213,5 @@ Then insert data into the table. Keep in mind that Kafka is an append only, thus
 ```sql
 insert into table moving_avg_wiki_kafka_hive select `channel`, `namespace`, `page`, `timestamp`, 
 avg(delta) over (order by `timestamp` asc rows between  60 preceding and current row) as avg_delta, 
-null as `__key`, null as `__partition`, -1, -1,-1, -1 from l15min_wiki;
+null as `__key`, null as `__partition`, -1, -1 from l15min_wiki;
 ```

@@ -49,6 +49,7 @@ enum KafkaTableProperties {
    * {@link KafkaOutputFormat.WriteSemantic}.
    */
   WRITE_SEMANTIC_PROPERTY("kafka.write.semantic", KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE.name()),
+
   /**
    * Table property that indicates if we should commit within the task or delay it to the Metadata Hook Commit call.
    */

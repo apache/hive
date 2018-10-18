@@ -49,18 +49,15 @@ public class KafkaOutputFormat implements HiveOutputFormat<NullWritable, KafkaWr
       Properties tableProperties,
       Progressable progress) {
     final String topic = jc.get(KafkaTableProperties.HIVE_KAFKA_TOPIC.getName());
-    final Boolean optimisticCommit = jc.getBoolean(KafkaTableProperties.HIVE_KAFKA_OPTIMISTIC_COMMIT.getName(), true);
+    final Boolean optimisticCommit = jc.getBoolean(KafkaTableProperties.HIVE_KAFKA_OPTIMISTIC_COMMIT.getName(), false);
     final WriteSemantic
         writeSemantic =
         WriteSemantic.valueOf(jc.get(KafkaTableProperties.WRITE_SEMANTIC_PROPERTY.getName()));
     final Properties producerProperties = KafkaUtils.producerProperties(jc);
     final FileSinkOperator.RecordWriter recordWriter;
     switch (writeSemantic) {
-    case BEST_EFFORT:
-      recordWriter = new SimpleKafkaWriter(topic, Utilities.getTaskId(jc), false, producerProperties);
-      break;
     case AT_LEAST_ONCE:
-      recordWriter = new SimpleKafkaWriter(topic, Utilities.getTaskId(jc), true, producerProperties);
+      recordWriter = new SimpleKafkaWriter(topic, Utilities.getTaskId(jc), producerProperties);
       break;
     case EXACTLY_ONCE:
       FileSystem fs;
@@ -98,11 +95,6 @@ public class KafkaOutputFormat implements HiveOutputFormat<NullWritable, KafkaWr
    * Possible write semantic supported by the Record Writer.
    */
   enum WriteSemantic {
-    /**
-     * Best effort delivery with no guarantees at all, user can set Producer properties as they wish,
-     * will carry on when possible unless it is a fatal exception.
-     */
-    BEST_EFFORT,
     /**
      * Deliver all the record at least once unless the job fails.
      * Therefore duplicates can be introduced due to lost ACKs or Tasks retries.
