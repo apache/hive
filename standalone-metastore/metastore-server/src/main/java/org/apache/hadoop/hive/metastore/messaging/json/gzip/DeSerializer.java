@@ -40,7 +40,7 @@ public class DeSerializer extends JSONMessageDeserializer {
   private static final Logger LOG = LoggerFactory.getLogger(Serializer.class.getName());
 
   private static String deCompress(String messageBody) {
-    byte[] decodedBytes = Base64.getDecoder().decode(messageBody.getBytes());
+    byte[] decodedBytes = Base64.getDecoder().decode(messageBody.getBytes(StandardCharsets.UTF_8));
     try (
         ByteArrayInputStream in = new ByteArrayInputStream(decodedBytes);
         GZIPInputStream is = new GZIPInputStream(in)

@@ -422,7 +422,7 @@ public class MessageBuilder {
         new com.google.common.base.Function<JsonNode, String>() {
           @Nullable
 
-          public String apply(@Nullable JsonNode input) {
+          public String apply(JsonNode input) {
             return input.asText();
           }
         };

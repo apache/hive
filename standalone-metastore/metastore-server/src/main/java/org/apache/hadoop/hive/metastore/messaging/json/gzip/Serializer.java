@@ -19,7 +19,7 @@ class Serializer implements MessageSerializer {
     String messageAsString = MessageSerializer.super.serialize(message);
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       GZIPOutputStream gout = new GZIPOutputStream(baos);
-      gout.write(messageAsString.getBytes());
+      gout.write(messageAsString.getBytes(StandardCharsets.UTF_8));
       gout.close();
       byte[] compressed = baos.toByteArray();
       return new String(Base64.getEncoder().encode(compressed), StandardCharsets.UTF_8);
