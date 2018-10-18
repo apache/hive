@@ -15,23 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump.events;
+package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
-
-abstract class AbstractConstraintEventHandler<T extends EventMessage> extends AbstractEventHandler<T> {
-  AbstractConstraintEventHandler(NotificationEvent event) {
-    super(event);
-  }
-
-  boolean shouldReplicate(Context withinContext) {
-    return Utils.shouldReplicate(
-        event,
-        withinContext.replicationSpec,
-        withinContext.db,
-        withinContext.hiveConf
-    );
+public interface MessageSerializer {
+  default String serialize(EventMessage message) {
+    return message.toString();
   }
 }

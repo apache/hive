@@ -40,10 +40,15 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-class CommitTxnHandler extends AbstractEventHandler {
+class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   CommitTxnHandler(NotificationEvent event) {
     super(event);
+  }
+
+  @Override
+  CommitTxnMessage eventMessage(String stringRepresentation) {
+    return deserializer.getCommitTxnMessage(stringRepresentation);
   }
 
   private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
@@ -97,23 +102,22 @@ class CommitTxnHandler extends AbstractEventHandler {
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} COMMIT_TXN message : {}", fromEventId(), event.getMessage());
-    String payload = event.getMessage();
+    LOG.info("Processing#{} COMMIT_TXN message : {}", fromEventId(), eventMessageAsJSON);
+    String payload = eventMessageAsJSON;
 
     if (!withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
-      CommitTxnMessage commitTxnMessage = deserializer.getCommitTxnMessage(event.getMessage());
 
       String contextDbName =  withinContext.dbName == null ? null :
               StringUtils.normalizeIdentifier(withinContext.dbName);
       String contextTableName =  withinContext.tableName == null ? null :
               StringUtils.normalizeIdentifier(withinContext.tableName);
       List<WriteEventInfo> writeEventInfoList = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf).
-              getAllWriteEventInfo(commitTxnMessage.getTxnId(), contextDbName, contextTableName);
+          getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, contextTableName);
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
-        commitTxnMessage.addWriteEventInfo(writeEventInfoList);
-        payload = commitTxnMessage.toString();
-        LOG.debug("payload for commit txn event : " + payload);
+        eventMessage.addWriteEventInfo(writeEventInfoList);
+        payload = jsonMessageEncoder.getSerializer().serialize(eventMessage);
+        LOG.debug("payload for commit txn event : " + eventMessageAsJSON);
       }
 
       org.apache.hadoop.hive.ql.metadata.Table qlMdTablePrev = null;
@@ -128,7 +132,7 @@ class CommitTxnHandler extends AbstractEventHandler {
       // combination as primary key, so the entries with same table will come together. Only basic table metadata is
       // used during import, so we need not dump the latest table metadata.
       for (int idx = 0; idx < numEntry; idx++) {
-        qlMdTable = new org.apache.hadoop.hive.ql.metadata.Table(commitTxnMessage.getTableObj(idx));
+        qlMdTable = new org.apache.hadoop.hive.ql.metadata.Table(eventMessage.getTableObj(idx));
         if (qlMdTablePrev == null) {
           qlMdTablePrev = qlMdTable;
         }
@@ -141,13 +145,13 @@ class CommitTxnHandler extends AbstractEventHandler {
           qlMdTablePrev = qlMdTable;
         }
 
-        if (qlMdTable.isPartitioned() && (null != commitTxnMessage.getPartitionObj(idx))) {
+        if (qlMdTable.isPartitioned() && (null != eventMessage.getPartitionObj(idx))) {
           qlPtns.add(new org.apache.hadoop.hive.ql.metadata.Partition(qlMdTable,
-                  commitTxnMessage.getPartitionObj(idx)));
+              eventMessage.getPartitionObj(idx)));
         }
 
         filesTobeAdded.add(Lists.newArrayList(
-                ReplChangeManager.getListFromSeparatedString(commitTxnMessage.getFiles(idx))));
+            ReplChangeManager.getListFromSeparatedString(eventMessage.getFiles(idx))));
       }
 
       //Dump last table in the list

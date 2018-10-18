@@ -15,23 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump.events;
+package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
 
-abstract class AbstractConstraintEventHandler<T extends EventMessage> extends AbstractEventHandler<T> {
-  AbstractConstraintEventHandler(NotificationEvent event) {
-    super(event);
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class TestReplWithJsonMessageFormat extends TestReplicationScenarios {
+  @Rule
+  public TestRule replV1BackwardCompatibleRule =
+      new ReplicationV1CompatRule(metaStoreClient, hconf,
+          new ArrayList<>(Collections.singletonList("testEventFilters")));
+
+  @BeforeClass
+  public static void setUpBeforeClass() throws Exception {
+    internalBeforeClassSetup(Collections.emptyMap());
   }
 
-  boolean shouldReplicate(Context withinContext) {
-    return Utils.shouldReplicate(
-        event,
-        withinContext.replicationSpec,
-        withinContext.db,
-        withinContext.hiveConf
-    );
-  }
 }
