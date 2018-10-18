@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -29,23 +28,29 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class LlapStatusOptionsProcessor {
 
   private static final String LLAPSTATUS_CONSTANT = "llapstatus";
 
-  private static final long FIND_YARN_APP_TIMEOUT_MS = 20 * 1000l; // 20seconds to wait for app to be visible
-
-  private static final long DEFAULT_STATUS_REFRESH_INTERVAL_MS = 1 * 1000l; // 1 seconds wait until subsequent status
-  private static final long DEFAULT_WATCH_MODE_TIMEOUT_MS = 5 * 60 * 1000l; // 5 minutes timeout for watch mode
-  private static final float DEFAULT_RUNNING_NODES_THRESHOLD = 1.0f;
+  @VisibleForTesting
+  public static final long FIND_YARN_APP_TIMEOUT_MS = 20 * 1000l; // 20seconds to wait for app to be visible
+  @VisibleForTesting
+  public static final long DEFAULT_STATUS_REFRESH_INTERVAL_MS = 1 * 1000l; // 1 seconds wait until subsequent status
+  @VisibleForTesting
+  public static final long DEFAULT_WATCH_MODE_TIMEOUT_MS = 5 * 60 * 1000l; // 5 minutes timeout for watch mode
+  @VisibleForTesting
+  public static final float DEFAULT_RUNNING_NODES_THRESHOLD = 1.0f;
 
   // TODO: why doesn't this use one of the existing options implementations?!
   enum OptionConstants {
 
     NAME("name", 'n', "LLAP cluster name", true),
     FIND_APP_TIMEOUT("findAppTimeout", 'f',
-        "Amount of time(s) that the tool will sleep to wait for the YARN application to start. negative values=wait forever, 0=Do not wait. default=" +
-            TimeUnit.SECONDS.convert(FIND_YARN_APP_TIMEOUT_MS, TimeUnit.MILLISECONDS) + "s", true),
+        "Amount of time(s) that the tool will sleep to wait for the YARN application to start. negative values=wait " +
+        "forever, 0=Do not wait. default=" + TimeUnit.SECONDS.convert(FIND_YARN_APP_TIMEOUT_MS, TimeUnit.MILLISECONDS) +
+        "s", true),
     OUTPUT_FILE("outputFile", 'o', "File to which output should be written (Default stdout)", true),
     WATCH_MODE("watch", 'w', "Watch mode waits until all LLAP daemons are running or subset of the nodes are " +
       "running (threshold can be specified via -r option) (Default wait until all nodes are running)", false),
@@ -59,7 +64,8 @@ public class LlapStatusOptionsProcessor {
       " in watch mode. Valid only for watch mode. (Default " +
       TimeUnit.SECONDS.convert(DEFAULT_STATUS_REFRESH_INTERVAL_MS, TimeUnit.MILLISECONDS) + "s)", true),
     WATCH_MODE_TIMEOUT("watchTimeout", 't', "Exit watch mode if the desired state is not attained until the specified" +
-      " timeout. (Default " + TimeUnit.SECONDS.convert(DEFAULT_WATCH_MODE_TIMEOUT_MS, TimeUnit.MILLISECONDS) +"s)", true),
+      " timeout. (Default " + TimeUnit.SECONDS.convert(DEFAULT_WATCH_MODE_TIMEOUT_MS, TimeUnit.MILLISECONDS) +"s)",
+      true),
     HIVECONF("hiveconf", null, "Use value for given property. Overridden by explicit parameters", "property=value", 2),
     HELP("help", 'H', "Print help information", false);
 
@@ -238,7 +244,7 @@ public class LlapStatusOptionsProcessor {
       }
       watchTimeoutMs = TimeUnit.MILLISECONDS.convert(watchTimeoutSec, TimeUnit.SECONDS);
     }
- 
+
     boolean isLaunched = !commandLine.hasOption(OptionConstants.NOT_LAUNCHED.getLongOpt());
 
     float runningNodesThreshold = DEFAULT_RUNNING_NODES_THRESHOLD;
