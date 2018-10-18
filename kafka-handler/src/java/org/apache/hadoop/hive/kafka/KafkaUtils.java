@@ -24,8 +24,11 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -40,6 +43,8 @@ import org.apache.kafka.common.errors.SecurityDisabledException;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.errors.UnknownServerException;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -55,6 +60,9 @@ import java.util.stream.Collectors;
  * Utils class for Kafka Storage handler plus some Constants.
  */
 final class KafkaUtils {
+  private final static Logger log = LoggerFactory.getLogger(KafkaUtils.class);
+  private static final String JAAS_TEMPLATE = "com.sun.security.auth.module.Krb5LoginModule required "
+      + "useKeyTab=true storeKey=true keyTab=\"%s\" principal=\"%s\";";
 
   private KafkaUtils() {
   }
@@ -103,6 +111,10 @@ final class KafkaUtils {
     props.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokerEndPoint);
     props.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
     props.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
+    //case Kerberos is On
+    if (UserGroupInformation.isSecurityEnabled()) {
+      addKerberosJaasConf(configuration, props);
+    }
     // user can always override stuff
     props.putAll(extractExtraProperties(configuration, CONSUMER_CONFIGURATION_PREFIX));
     return props;
@@ -131,18 +143,21 @@ final class KafkaUtils {
           + KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName());
     }
     properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokerEndPoint);
+    //case Kerberos is On
+    if (UserGroupInformation.isSecurityEnabled()) {
+      addKerberosJaasConf(configuration, properties);
+    }
+
     // user can always override stuff
     properties.putAll(extractExtraProperties(configuration, PRODUCER_CONFIGURATION_PREFIX));
     String taskId = configuration.get("mapred.task.id", null);
     properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG,
         taskId == null ? "random_" + UUID.randomUUID().toString() : taskId);
     switch (writeSemantic) {
-    case BEST_EFFORT:
-      break;
     case AT_LEAST_ONCE:
       properties.setProperty(ProducerConfig.RETRIES_CONFIG, String.valueOf(Integer.MAX_VALUE));
       //The number of acknowledgments the producer requires the leader to have received before considering a request as
-      // complete, all means from all replicas.
+      //complete. Here all means from all replicas.
       properties.setProperty(ProducerConfig.ACKS_CONFIG, "all");
       break;
     case EXACTLY_ONCE:
@@ -251,5 +266,38 @@ final class KafkaUtils {
     }
     return id;
   }
+
+  /**
+   * Helper method that add Kerberos Jaas configs to the properties.
+   * @param configuration Hive config containing kerberos key and principal
+   * @param props properties to be populated
+   */
+  static void addKerberosJaasConf(Configuration configuration, Properties props) {
+    //based on this https://kafka.apache.org/documentation/#security_jaas_client
+    props.setProperty("security.protocol", "SASL_PLAINTEXT");
+    props.setProperty("sasl.mechanism", "GSSAPI");
+    props.setProperty("sasl.kerberos.service.name", "kafka");
+
+    //Construct the principal/keytab
+    String principalHost = HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
+    String keyTab = HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+    // back to use LLAP keys if HS2 conf are not set or visible for the Task.
+    if (principalHost == null || principalHost.isEmpty() || keyTab == null || keyTab.isEmpty()) {
+      keyTab = HiveConf.getVar(configuration, HiveConf.ConfVars.LLAP_FS_KERBEROS_KEYTAB_FILE);
+      principalHost = HiveConf.getVar(configuration, HiveConf.ConfVars.LLAP_FS_KERBEROS_PRINCIPAL);
+    }
+
+    String principal;
+    try {
+      principal = SecurityUtil.getServerPrincipal(principalHost, "0.0.0.0");
+    } catch (IOException e) {
+      log.error("Can not construct kerberos principal", e);
+      throw new RuntimeException(e);
+    }
+    final String jaasConf = String.format(JAAS_TEMPLATE, keyTab, principal);
+    props.setProperty("sasl.jaas.config", jaasConf);
+    log.info("Kafka client running with following JAAS = [{}]", jaasConf);
+  }
+
 
 }

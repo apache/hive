@@ -67,9 +67,7 @@ public class KafkaUtilsTest {
   @Test public void testMetadataEnumLookupMapper() {
     int partition = 1;
     long offset = 5L;
-    long ts = System.currentTimeMillis();
-    long startOffset = 0L;
-    long endOffset = 200L;
+    long ts = 1000000L;
     byte[] value = "value".getBytes();
     byte[] key = "key".getBytes();
     // ORDER MATTERS here.
@@ -78,10 +76,8 @@ public class KafkaUtilsTest {
         Arrays.asList(new BytesWritable(key),
             new IntWritable(partition),
             new LongWritable(offset),
-            new LongWritable(ts),
-            new LongWritable(startOffset),
-            new LongWritable(endOffset));
-    KafkaWritable kafkaWritable = new KafkaWritable(partition, offset, ts, value, startOffset, endOffset, key);
+            new LongWritable(ts));
+    KafkaWritable kafkaWritable = new KafkaWritable(partition, offset, ts, value, key);
 
     List<Writable>
         actual =

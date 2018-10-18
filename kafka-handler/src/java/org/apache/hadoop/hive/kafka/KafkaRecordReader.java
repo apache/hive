@@ -50,8 +50,6 @@ import java.util.Properties;
   private long consumedRecords = 0L;
   private long readBytes = 0L;
   private volatile boolean started = false;
-  private long startOffset = -1L;
-  private long endOffset = Long.MAX_VALUE;
 
   @SuppressWarnings("WeakerAccess") public KafkaRecordReader() {
   }
@@ -75,13 +73,11 @@ import java.util.Properties;
   private synchronized void initialize(KafkaInputSplit inputSplit, Configuration jobConf) {
     if (!started) {
       this.config = jobConf;
-      startOffset = inputSplit.getStartOffset();
-      endOffset = inputSplit.getEndOffset();
+      long startOffset = inputSplit.getStartOffset();
+      long endOffset = inputSplit.getEndOffset();
       TopicPartition topicPartition = new TopicPartition(inputSplit.getTopic(), inputSplit.getPartition());
       Preconditions.checkState(startOffset >= 0 && startOffset <= endOffset,
-          "Start [%s] has to be positive and less or equal than End [%s]",
-          startOffset,
-          endOffset);
+          "Start [%s] has to be positive and Less than or equal to End [%s]", startOffset, endOffset);
       totalNumberRecords += endOffset - startOffset;
       initConsumer();
       long
@@ -103,7 +99,7 @@ import java.util.Properties;
   @Override public boolean next(NullWritable nullWritable, KafkaWritable bytesWritable) {
     if (started && recordsCursor.hasNext()) {
       ConsumerRecord<byte[], byte[]> record = recordsCursor.next();
-      bytesWritable.set(record, startOffset, endOffset);
+      bytesWritable.set(record);
       consumedRecords += 1;
       readBytes += record.serializedValueSize();
       return true;

@@ -42,10 +42,7 @@ import java.util.Arrays;
         new KafkaWritable(record.partition(),
             record.offset(),
             record.timestamp(),
-            record.value(),
-            0L,
-            100L,
-            null);
+            record.value(), null);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream w = new DataOutputStream(baos);
     kafkaWritable.write(w);
@@ -65,10 +62,7 @@ import java.util.Arrays;
         new KafkaWritable(record.partition(),
             record.offset(),
             record.timestamp(),
-            record.value(),
-            0L,
-            100L,
-            "thisKey".getBytes());
+            record.value(), "thisKey".getBytes());
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream w = new DataOutputStream(baos);
     kafkaWritable.write(w);
@@ -85,10 +79,7 @@ import java.util.Arrays;
     KafkaWritable kafkaWritable = new KafkaWritable(5,
         1000L,
         1L,
-        "value".getBytes(),
-        0L,
-        10000L,
-        "key".getBytes());
+        "value".getBytes(), "key".getBytes());
     Arrays.stream(MetadataColumn.values()).forEach(kafkaWritable::getHiveWritable);
   }
 }
