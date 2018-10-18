@@ -301,6 +301,17 @@ public class TestSparkClient {
     });
   }
 
+  @Test
+  public void testErrorParsing() {
+    assertTrue(SparkClientUtilities.containsErrorKeyword("Error.. Test"));
+    assertTrue(SparkClientUtilities.containsErrorKeyword("This line has error.."));
+    assertTrue(SparkClientUtilities.containsErrorKeyword("Test that line has ExcePtion.."));
+    assertTrue(SparkClientUtilities.containsErrorKeyword("Here is eRRor in line.."));
+    assertTrue(SparkClientUtilities.containsErrorKeyword("Here is ExceptioNn in line.."));
+    assertTrue(SparkClientUtilities.containsErrorKeyword("Here is ERROR and Exception in line.."));
+    assertFalse(SparkClientUtilities.containsErrorKeyword("No problems in this line"));
+  }
+
   private static final Logger LOG = LoggerFactory.getLogger(TestSparkClient.class);
 
   private <T extends Serializable> JobHandle.Listener<T> newListener() {

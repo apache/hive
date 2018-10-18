@@ -34,8 +34,6 @@ import java.util.concurrent.FutureTask;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.hadoop.hive.common.log.LogRedirector;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,6 +42,7 @@ import org.apache.hive.spark.client.rpc.RpcServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hive.spark.client.SparkClientUtilities.containsErrorKeyword;
 
 /**
  * Extends the {@link AbstractSparkClient} and launches a child process to run Spark's {@code
@@ -228,7 +227,7 @@ class SparkSubmitSparkClient extends AbstractSparkClient {
           List<String> errorMessages = new ArrayList<>();
           synchronized (childErrorLog) {
             for (String line : childErrorLog) {
-              if (StringUtils.containsIgnoreCase(line, "Error")) {
+              if (containsErrorKeyword(line)) {
                 errorMessages.add("\"" + line + "\"");
               }
             }
