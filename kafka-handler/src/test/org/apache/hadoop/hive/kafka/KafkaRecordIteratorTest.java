@@ -166,10 +166,7 @@ import java.util.stream.IntStream;
             .map((consumerRecord) -> new KafkaWritable(consumerRecord.partition(),
                 consumerRecord.offset(),
                 consumerRecord.timestamp(),
-                consumerRecord.value(),
-                50L,
-                100L,
-                consumerRecord.key()))
+                consumerRecord.value(), consumerRecord.key()))
             .collect(Collectors.toList());
     KafkaRecordReader recordReader = new KafkaRecordReader();
     TaskAttemptContext context = new TaskAttemptContextImpl(this.conf, new TaskAttemptID());

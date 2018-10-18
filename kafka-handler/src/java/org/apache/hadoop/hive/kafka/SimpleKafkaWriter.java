@@ -63,7 +63,7 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
 
   private final String topic;
   private final String writerId;
-  private final KafkaOutputFormat.WriteSemantic writeSemantic;
+  private final KafkaOutputFormat.WriteSemantic writeSemantic = KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE;;
   private final KafkaProducer<byte[], byte[]> producer;
   private final Callback callback;
   private final AtomicReference<Exception> sendExceptionRef = new AtomicReference<>();
@@ -73,12 +73,9 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
   /**
    * @param topic Kafka Topic.
    * @param writerId Writer Id use for logging.
-   * @param atLeastOnce true if the desired delivery semantic is at least once.
    * @param properties Kafka Producer properties.
    */
-  SimpleKafkaWriter(String topic, @Nullable String writerId, boolean atLeastOnce, Properties properties) {
-    this.writeSemantic =
-        atLeastOnce ? KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE : KafkaOutputFormat.WriteSemantic.BEST_EFFORT;
+  SimpleKafkaWriter(String topic, @Nullable String writerId, Properties properties) {
     this.writerId = writerId == null ? UUID.randomUUID().toString() : writerId;
     this.topic = Preconditions.checkNotNull(topic, "Topic can not be null");
     Preconditions.checkState(properties.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG) != null,
@@ -88,21 +85,13 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
     this.callback = (metadata, exception) -> {
       if (exception != null) {
         lostRecords.getAndIncrement();
-        switch (writeSemantic) {
-        case BEST_EFFORT:
-          LOG.warn(ACTION_CARRY_ON, getWriterId(), topic, writeSemantic);
-          break;
-        case AT_LEAST_ONCE:
-          LOG.error(ACTION_ABORT, getWriterId(), topic, writeSemantic, exception.getMessage());
-          sendExceptionRef.compareAndSet(null, exception);
-          break;
-        default:
-              throw new IllegalArgumentException("Unsupported delivery semantic " + writeSemantic);
-        }
+        LOG.error(ACTION_ABORT, getWriterId(), topic, writeSemantic, exception.getMessage());
+        sendExceptionRef.compareAndSet(null, exception);
       }
     };
     LOG.info("Starting WriterId [{}], Delivery Semantic [{}], Target Kafka Topic [{}]",
-        writerId, writeSemantic,
+        writerId,
+        writeSemantic,
         topic);
   }
 
@@ -126,12 +115,8 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
       LOG.error(String.format(ABORT_MSG, writerId, kafkaException.getMessage(), topic, -1L));
       sendExceptionRef.compareAndSet(null, kafkaException);
     } else {
-      if (writeSemantic == KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE) {
-        LOG.error(ACTION_ABORT, writerId, topic, writeSemantic, kafkaException.getMessage());
-        sendExceptionRef.compareAndSet(null, kafkaException);
-      } else {
-        LOG.warn(ACTION_CARRY_ON, writerId, topic, writeSemantic);
-      }
+      LOG.error(ACTION_ABORT, writerId, topic, writeSemantic, kafkaException.getMessage());
+      sendExceptionRef.compareAndSet(null, kafkaException);
     }
   }
 

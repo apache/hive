@@ -14,32 +14,32 @@ TBLPROPERTIES
 
 DESCRIBE EXTENDED kafka_table;
 
-Select `__partition` ,`__start_offset`,`__end_offset`, `__offset`,`__key`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition` , `__offset`,`__key`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta FROM kafka_table;
 
 Select count(*) FROM kafka_table;
 
-Select `__partition`, `__offset`,`__start_offset`,`__end_offset`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition`, `__offset`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 1533960760123;
-Select `__partition`, `__offset` ,`__start_offset`,`__end_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition`, `__offset` ,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 533960760123;
 
-Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+Select `__partition`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where (`__offset` > 7 and `__partition` = 0 and `__offset` <9 ) OR
 `__offset` = 4 and `__partition` = 0 OR (`__offset` <= 1 and `__partition` = 0 and `__offset` > 0);
 
-Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5;
+Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5;
 
-Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5;
+Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5;
 
-Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5;
+Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5;
 
 -- Timestamp filter
 
-Select `__partition`,`__start_offset`,`__end_offset`, `__offset`, `user`  from kafka_table where
+Select `__partition`, `__offset`, `user`  from kafka_table where
 `__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS) ;
 
 -- non existing partition
@@ -232,7 +232,8 @@ TBLPROPERTIES
 describe extended wiki_kafka_avro_table;
 
 
-select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table;
+select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+ `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table;
 
 select count(*) from wiki_kafka_avro_table;
 
@@ -241,7 +242,7 @@ select count(distinct `user`) from  wiki_kafka_avro_table;
 select sum(deltabucket), min(commentlength) from wiki_kafka_avro_table;
 
 select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
-`__partition`, `__start_offset`,`__end_offset`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
+`__partition`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
 `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090;
 
 
@@ -255,11 +256,11 @@ TBLPROPERTIES
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.JsonSerDe")
 ;
 
-insert into table kafka_table_insert (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test1',5, 4.999,'key',null ,-1,1536449552290,-1,null );
+insert into table kafka_table_insert (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test1',5, 4.999,'key',null ,-1,1536449552290);
 
-insert into table kafka_table_insert (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test2',15, 14.9996666, null ,null ,-1,1536449552285,-1,-1 );
+insert into table kafka_table_insert (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test2',15, 14.9996666, null ,null ,-1,1536449552285);
 
 select * from kafka_table_insert;
 
@@ -268,10 +269,11 @@ insert into table wiki_kafka_avro_table select
 isrobot as isrobot, channel as channel,`timestamp` as `timestamp`,  flags as flags,  isunpatrolled as isunpatrolled, page as page,
 diffurl as diffurl, added as added, comment as comment, commentlength as commentlength, isnew as isnew, isminor as isminor,
 delta as delta, isanonymous as isanonymous, `user` as `user`,  deltabucket as detlabucket, deleted as deleted, namespace as namespace,
-`__key`, `__partition`, -1 as `__offset`,`__timestamp`, -1 as `__start_offset`, -1 as `__end_offset`
+`__key`, `__partition`, -1 as `__offset`,`__timestamp`
 from wiki_kafka_avro_table;
 
-select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table;
+select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+`page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table;
 
 select `__key`, count(1)  FROM wiki_kafka_avro_table group by `__key` order by `__key`;
 
@@ -287,12 +289,12 @@ TBLPROPERTIES
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.OpenCSVSerde");
 
 ALTER TABLE kafka_table_csv SET TBLPROPERTIES ("hive.kafka.optimistic.commit"="false", "kafka.write.semantic"="EXACTLY_ONCE");
-insert into table kafka_table_csv select c_name, c_int, c_float, `__key`, `__partition`, -1 as `__offset`, `__timestamp`, -1, -1 from kafka_table_insert;
+insert into table kafka_table_csv select c_name, c_int, c_float, `__key`, `__partition`, -1 as `__offset`, `__timestamp` from kafka_table_insert;
 
-insert into table kafka_table_csv (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test4',-5, -4.999,'key-2',null ,-1,1536449552291,-1,null );
+insert into table kafka_table_csv (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test4',-5, -4.999,'key-2',null ,-1,1536449552291);
 
-insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284,-1,-1 );
+insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284);
 
 select * from kafka_table_csv;

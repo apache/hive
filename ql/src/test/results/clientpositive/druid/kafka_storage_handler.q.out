@@ -48,32 +48,30 @@ __key               	binary              	from deserializer
 __partition         	int                 	from deserializer   
 __offset            	bigint              	from deserializer   
 __timestamp         	bigint              	from deserializer   
-__start_offset      	bigint              	from deserializer   
-__end_offset        	bigint              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 StorageHandlerInfo	 	 
 Partition(topic = test-topic, partition = 0, leader = 1, replicas = [1], isr = [1], offlineReplicas = []) [start offset = [0], end offset = [10]]	 	 
-PREHOOK: query: Select `__partition` ,`__start_offset`,`__end_offset`, `__offset`,`__key`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+PREHOOK: query: Select `__partition` , `__offset`,`__key`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta FROM kafka_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__partition` ,`__start_offset`,`__end_offset`, `__offset`,`__key`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+POSTHOOK: query: Select `__partition` , `__offset`,`__key`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta FROM kafka_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	10	0	key	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	0	10	1	key	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	0	10	2	key	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	0	10	3	key	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	0	10	4	key	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	0	10	5	key	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	0	10	6	key	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	0	10	7	key	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	0	10	8	key	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	0	10	9	key	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	0	key	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	key	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	key	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	key	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	key	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	key	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	key	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	key	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	key	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	key	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 PREHOOK: query: Select count(*) FROM kafka_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
@@ -83,121 +81,121 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
-PREHOOK: query: Select `__partition`, `__offset`,`__start_offset`,`__end_offset`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+PREHOOK: query: Select `__partition`, `__offset`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 1533960760123
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__partition`, `__offset`,`__start_offset`,`__end_offset`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+POSTHOOK: query: Select `__partition`, `__offset`, `__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 1533960760123
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	0	10	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	0	10	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	0	10	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	3	0	10	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	4	0	10	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	5	0	10	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	6	0	10	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	7	0	10	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	8	0	10	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	9	0	10	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-PREHOOK: query: Select `__partition`, `__offset` ,`__start_offset`,`__end_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+PREHOOK: query: Select `__partition`, `__offset` ,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 533960760123
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__partition`, `__offset` ,`__start_offset`,`__end_offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+POSTHOOK: query: Select `__partition`, `__offset` ,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 533960760123
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	0	10	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	0	10	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	0	10	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	3	0	10	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	4	0	10	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	5	0	10	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	6	0	10	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	7	0	10	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	8	0	10	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	9	0	10	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-PREHOOK: query: Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+PREHOOK: query: Select `__partition`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where (`__offset` > 7 and `__partition` = 0 and `__offset` <9 ) OR
 `__offset` = 4 and `__partition` = 0 OR (`__offset` <= 1 and `__partition` = 0 and `__offset` > 0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
+POSTHOOK: query: Select `__partition`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where (`__offset` > 7 and `__partition` = 0 and `__offset` <9 ) OR
 `__offset` = 4 and `__partition` = 0 OR (`__offset` <= 1 and `__partition` = 0 and `__offset` > 0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	1	9	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	1	9	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	1	9	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-PREHOOK: query: Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5
+0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+PREHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5
+POSTHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-key	0	5	6	5	NULL	Gypsy Danger	nuclear
-PREHOOK: query: Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5
+key	0	5	NULL	Gypsy Danger	nuclear
+PREHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5
+POSTHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-key	0	0	5	0	NULL	Gypsy Danger	nuclear
-key	0	0	5	1	NULL	Striker Eureka	speed
-key	0	0	5	2	NULL	Cherno Alpha	masterYi
-key	0	0	5	3	NULL	Crimson Typhoon	triplets
-key	0	0	5	4	NULL	Coyote Tango	stringer
-PREHOOK: query: Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5
+key	0	0	NULL	Gypsy Danger	nuclear
+key	0	1	NULL	Striker Eureka	speed
+key	0	2	NULL	Cherno Alpha	masterYi
+key	0	3	NULL	Crimson Typhoon	triplets
+key	0	4	NULL	Coyote Tango	stringer
+PREHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__key`,`__partition`,`__start_offset`,`__end_offset`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5
+POSTHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-key	0	6	10	6	NULL	Striker Eureka	speed
-key	0	6	10	7	NULL	Cherno Alpha	masterYi
-key	0	6	10	8	NULL	Crimson Typhoon	triplets
-key	0	6	10	9	NULL	Coyote Tango	stringer
-PREHOOK: query: Select `__partition`,`__start_offset`,`__end_offset`, `__offset`, `user`  from kafka_table where
+key	0	6	NULL	Striker Eureka	speed
+key	0	7	NULL	Cherno Alpha	masterYi
+key	0	8	NULL	Crimson Typhoon	triplets
+key	0	9	NULL	Coyote Tango	stringer
+PREHOOK: query: Select `__partition`, `__offset`, `user`  from kafka_table where
 `__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__partition`,`__start_offset`,`__end_offset`, `__offset`, `user`  from kafka_table where
+POSTHOOK: query: Select `__partition`, `__offset`, `user`  from kafka_table where
 `__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	10	0	nuclear
-0	0	10	1	speed
-0	0	10	2	masterYi
-0	0	10	3	triplets
-0	0	10	4	stringer
-0	0	10	5	nuclear
-0	0	10	6	speed
-0	0	10	7	masterYi
-0	0	10	8	triplets
-0	0	10	9	stringer
+0	0	nuclear
+0	1	speed
+0	2	masterYi
+0	3	triplets
+0	4	stringer
+0	5	nuclear
+0	6	speed
+0	7	masterYi
+0	8	triplets
+0	9	stringer
 PREHOOK: query: Select  count(*) from kafka_table where `__partition` = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
@@ -635,17 +633,17 @@ POSTHOOK: query: SELECT * FROM wiki_kafka_avro_table_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table_1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-key-0	0	0	1534736225090	0	11
-key-1	0	1	1534739825090	0	11
-key-2	0	2	1534743425090	0	11
-key-3	0	3	1534747025090	0	11
-key-4	0	4	1534750625090	0	11
-key-5	0	5	1534754225090	0	11
-key-6	0	6	1534757825090	0	11
-key-7	0	7	1534761425090	0	11
-key-8	0	8	1534765025090	0	11
-key-9	0	9	1534768625090	0	11
-key-10	0	10	1534772225090	0	11
+key-0	0	0	1534736225090
+key-1	0	1	1534739825090
+key-2	0	2	1534743425090
+key-3	0	3	1534747025090
+key-4	0	4	1534750625090
+key-5	0	5	1534754225090
+key-6	0	6	1534757825090
+key-7	0	7	1534761425090
+key-8	0	8	1534765025090
+key-9	0	9	1534768625090
+key-10	0	10	1534772225090
 PREHOOK: query: SELECT  COUNT (*) from wiki_kafka_avro_table_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table_1
@@ -825,17 +823,17 @@ __key               	binary              	from deserializer
 __partition         	int                 	from deserializer   
 __offset            	bigint              	from deserializer   
 __timestamp         	bigint              	from deserializer   
-__start_offset      	bigint              	from deserializer   
-__end_offset        	bigint              	from deserializer   
 	 	 
 #### A masked pattern was here ####
 StorageHandlerInfo	 	 
 Partition(topic = wiki_kafka_avro_table, partition = 0, leader = 1, replicas = [1], isr = [1], offlineReplicas = []) [start offset = [0], end offset = [11]]	 	 
-PREHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
+PREHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+ `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
+POSTHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+ `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -878,23 +876,23 @@ POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5522.000000000001	0
 PREHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
-`__partition`, `__start_offset`,`__end_offset`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
+`__partition`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
 `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
-`__partition`, `__start_offset`,`__end_offset`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
+`__partition`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
 `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2018-08-20 08:37:05.09	1534754225090	0	5	11	key-5	5	08/20/2018 01:37:05	test-user-5	page is 500	-5	502.0	true	5
-2018-08-20 09:37:05.09	1534757825090	0	5	11	key-6	6	08/20/2018 02:37:05	test-user-6	page is 600	-6	602.4000000000001	false	6
-2018-08-20 10:37:05.09	1534761425090	0	5	11	key-7	7	08/20/2018 03:37:05	test-user-7	page is 700	-7	702.8000000000001	true	7
-2018-08-20 11:37:05.09	1534765025090	0	5	11	key-8	8	08/20/2018 04:37:05	test-user-8	page is 800	-8	803.2	true	8
-2018-08-20 12:37:05.09	1534768625090	0	5	11	key-9	9	08/20/2018 05:37:05	test-user-9	page is 900	-9	903.6	false	9
-2018-08-20 13:37:05.09	1534772225090	0	5	11	key-10	10	08/20/2018 06:37:05	test-user-10	page is 1000	-10	1004.0	true	10
+2018-08-20 08:37:05.09	1534754225090	0	key-5	5	08/20/2018 01:37:05	test-user-5	page is 500	-5	502.0	true	5
+2018-08-20 09:37:05.09	1534757825090	0	key-6	6	08/20/2018 02:37:05	test-user-6	page is 600	-6	602.4000000000001	false	6
+2018-08-20 10:37:05.09	1534761425090	0	key-7	7	08/20/2018 03:37:05	test-user-7	page is 700	-7	702.8000000000001	true	7
+2018-08-20 11:37:05.09	1534765025090	0	key-8	8	08/20/2018 04:37:05	test-user-8	page is 800	-8	803.2	true	8
+2018-08-20 12:37:05.09	1534768625090	0	key-9	9	08/20/2018 05:37:05	test-user-9	page is 900	-9	903.6	false	9
+2018-08-20 13:37:05.09	1534772225090	0	key-10	10	08/20/2018 06:37:05	test-user-10	page is 1000	-10	1004.0	true	10
 PREHOOK: query: CREATE EXTERNAL TABLE kafka_table_insert
 (c_name string, c_int int, c_float float)
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
@@ -917,23 +915,23 @@ TBLPROPERTIES
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kafka_table_insert
-PREHOOK: query: insert into table kafka_table_insert (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test1',5, 4.999,'key',null ,-1,1536449552290,-1,null )
+PREHOOK: query: insert into table kafka_table_insert (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test1',5, 4.999,'key',null ,-1,1536449552290)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@kafka_table_insert
-POSTHOOK: query: insert into table kafka_table_insert (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test1',5, 4.999,'key',null ,-1,1536449552290,-1,null )
+POSTHOOK: query: insert into table kafka_table_insert (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test1',5, 4.999,'key',null ,-1,1536449552290)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@kafka_table_insert
-PREHOOK: query: insert into table kafka_table_insert (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test2',15, 14.9996666, null ,null ,-1,1536449552285,-1,-1 )
+PREHOOK: query: insert into table kafka_table_insert (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test2',15, 14.9996666, null ,null ,-1,1536449552285)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@kafka_table_insert
-POSTHOOK: query: insert into table kafka_table_insert (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test2',15, 14.9996666, null ,null ,-1,1536449552285,-1,-1 )
+POSTHOOK: query: insert into table kafka_table_insert (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test2',15, 14.9996666, null ,null ,-1,1536449552285)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@kafka_table_insert
@@ -945,13 +943,13 @@ POSTHOOK: query: select * from kafka_table_insert
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table_insert
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-test1	5	4.999	key	0	0	1536449552290	0	2
-test2	15	14.999666	NULL	0	1	1536449552285	0	2
+test1	5	4.999	key	0	0	1536449552290
+test2	15	14.999666	NULL	0	1	1536449552285
 PREHOOK: query: insert into table wiki_kafka_avro_table select
 isrobot as isrobot, channel as channel,`timestamp` as `timestamp`,  flags as flags,  isunpatrolled as isunpatrolled, page as page,
 diffurl as diffurl, added as added, comment as comment, commentlength as commentlength, isnew as isnew, isminor as isminor,
 delta as delta, isanonymous as isanonymous, `user` as `user`,  deltabucket as detlabucket, deleted as deleted, namespace as namespace,
-`__key`, `__partition`, -1 as `__offset`,`__timestamp`, -1 as `__start_offset`, -1 as `__end_offset`
+`__key`, `__partition`, -1 as `__offset`,`__timestamp`
 from wiki_kafka_avro_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
@@ -960,16 +958,18 @@ POSTHOOK: query: insert into table wiki_kafka_avro_table select
 isrobot as isrobot, channel as channel,`timestamp` as `timestamp`,  flags as flags,  isunpatrolled as isunpatrolled, page as page,
 diffurl as diffurl, added as added, comment as comment, commentlength as commentlength, isnew as isnew, isminor as isminor,
 delta as delta, isanonymous as isanonymous, `user` as `user`,  deltabucket as detlabucket, deleted as deleted, namespace as namespace,
-`__key`, `__partition`, -1 as `__offset`,`__timestamp`, -1 as `__start_offset`, -1 as `__end_offset`
+`__key`, `__partition`, -1 as `__offset`,`__timestamp`
 from wiki_kafka_avro_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: default@wiki_kafka_avro_table
-PREHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
+PREHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+`page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
+POSTHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+`page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -1061,31 +1061,31 @@ POSTHOOK: query: ALTER TABLE kafka_table_csv SET TBLPROPERTIES ("hive.kafka.opti
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@kafka_table_csv
 POSTHOOK: Output: default@kafka_table_csv
-PREHOOK: query: insert into table kafka_table_csv select c_name, c_int, c_float, `__key`, `__partition`, -1 as `__offset`, `__timestamp`, -1, -1 from kafka_table_insert
+PREHOOK: query: insert into table kafka_table_csv select c_name, c_int, c_float, `__key`, `__partition`, -1 as `__offset`, `__timestamp` from kafka_table_insert
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table_insert
 PREHOOK: Output: default@kafka_table_csv
-POSTHOOK: query: insert into table kafka_table_csv select c_name, c_int, c_float, `__key`, `__partition`, -1 as `__offset`, `__timestamp`, -1, -1 from kafka_table_insert
+POSTHOOK: query: insert into table kafka_table_csv select c_name, c_int, c_float, `__key`, `__partition`, -1 as `__offset`, `__timestamp` from kafka_table_insert
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table_insert
 POSTHOOK: Output: default@kafka_table_csv
-PREHOOK: query: insert into table kafka_table_csv (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test4',-5, -4.999,'key-2',null ,-1,1536449552291,-1,null )
+PREHOOK: query: insert into table kafka_table_csv (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test4',-5, -4.999,'key-2',null ,-1,1536449552291)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@kafka_table_csv
-POSTHOOK: query: insert into table kafka_table_csv (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test4',-5, -4.999,'key-2',null ,-1,1536449552291,-1,null )
+POSTHOOK: query: insert into table kafka_table_csv (c_name,c_int, c_float,`__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test4',-5, -4.999,'key-2',null ,-1,1536449552291)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@kafka_table_csv
-PREHOOK: query: insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284,-1,-1 )
+PREHOOK: query: insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@kafka_table_csv
-POSTHOOK: query: insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`, `__start_offset`, `__end_offset`)
-values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284,-1,-1 )
+POSTHOOK: query: insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`, `__offset`, `__timestamp`)
+values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@kafka_table_csv
@@ -1097,7 +1097,7 @@ POSTHOOK: query: select * from kafka_table_csv
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table_csv
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-test1	5	4.999	key	0	0	1536449552290	0	7
-test2	15	14.999666	NULL	0	1	1536449552285	0	7
-test4	-5	-4.999	key-2	0	3	1536449552291	0	7
-test5	-15	-14.9996666	key-3	0	5	1536449552284	0	7
+test1	5	4.999	key	0	0	1536449552290
+test2	15	14.999666	NULL	0	1	1536449552285
+test4	-5	-4.999	key-2	0	3	1536449552291
+test5	-15	-14.9996666	key-3	0	5	1536449552284

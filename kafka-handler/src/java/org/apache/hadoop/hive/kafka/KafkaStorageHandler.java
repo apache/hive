@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -172,6 +173,9 @@ import java.util.function.Predicate;
     properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
     properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokers);
     properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG, Utilities.getTaskId(getConf()));
+    if (UserGroupInformation.isSecurityEnabled()) {
+      KafkaUtils.addKerberosJaasConf(getConf(), properties);
+    }
     table.getParameters()
         .entrySet()
         .stream()
@@ -197,6 +201,9 @@ import java.util.function.Predicate;
     properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
     properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
     properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokers);
+    if (UserGroupInformation.isSecurityEnabled()) {
+      KafkaUtils.addKerberosJaasConf(getConf(), properties);
+    }
     table.getParameters()
         .entrySet()
         .stream()

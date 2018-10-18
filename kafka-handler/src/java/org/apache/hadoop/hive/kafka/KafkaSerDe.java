@@ -360,12 +360,12 @@ import java.util.stream.Collectors;
   }
 
   private static class TextBytesConverter implements BytesConverter<Text> {
-    Text text = new Text();
+    final private Text text = new Text();
     @Override public byte[] getBytes(Text writable) {
       //@TODO  There is no reason to decode then encode the string to bytes really
       //@FIXME this issue with CTRL-CHAR ^0 added by Text at the end of string and Json serd does not like that.
       try {
-        return writable.decode(writable.getBytes(), 0, writable.getLength()).getBytes(Charset.forName("UTF-8"));
+        return Text.decode(writable.getBytes(), 0, writable.getLength()).getBytes(Charset.forName("UTF-8"));
       } catch (CharacterCodingException e) {
         throw new RuntimeException(e);
       }
