@@ -384,6 +384,13 @@ class RecordReaderImpl implements RecordReader {
       return TruthValue.YES_NO_NULL;
     }
 
+    // TODO: Enabling PPD for timestamp requires ORC-101 and ORC-135
+    if (min != null && min instanceof Date) {
+      LOG.warn("Not using predication pushdown on " + predicate.getColumnName() + " because it doesn't " +
+        "include ORC-135.");
+      return TruthValue.YES_NO_NULL;
+    }
+
     TruthValue result;
     Object baseObj = predicate.getLiteral();
     try {
