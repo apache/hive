@@ -55,7 +55,8 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
       LOGGER.trace("JdbcRecordReader.next called");
       if (dbAccessor == null) {
         dbAccessor = DatabaseAccessorFactory.getAccessor(conf);
-        iterator = dbAccessor.getRecordIterator(conf, split.getLimit(), split.getOffset());
+        iterator = dbAccessor.getRecordIterator(conf, split.getPartitionColumn(), split.getLowerBound(), split
+                        .getUpperBound(), split.getLimit(), split.getOffset());
       }
 
       if (iterator.hasNext()) {

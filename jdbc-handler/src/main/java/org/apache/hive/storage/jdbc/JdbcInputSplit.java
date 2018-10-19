@@ -28,6 +28,9 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
 
   private int limit = 0;
   private int offset = 0;
+  private String partitionColumn = null;
+  private String lowerBound = null;
+  private String upperBound = null;
 
 
   public JdbcInputSplit() {
@@ -54,12 +57,26 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
     this.offset = offset;
   }
 
+  public JdbcInputSplit(String partitionColumn, String lowerBound, String upperBound) {
+    super(null, 0, 0, EMPTY_ARRAY);
+    this.partitionColumn = partitionColumn;
+    this.lowerBound = lowerBound;
+    this.upperBound = upperBound;
+  }
 
   @Override
   public void write(DataOutput out) throws IOException {
     super.write(out);
     out.writeInt(limit);
     out.writeInt(offset);
+    if (partitionColumn != null) {
+      out.writeBoolean(true);
+      out.writeUTF(partitionColumn);
+      out.writeUTF(lowerBound);
+      out.writeUTF(upperBound);
+    } else {
+      out.writeBoolean(false);
+    }
   }
 
 
@@ -68,6 +85,12 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
     super.readFields(in);
     limit = in.readInt();
     offset = in.readInt();
+    boolean partitionColumnExists = in.readBoolean();
+    if (partitionColumnExists) {
+      partitionColumn = in.readUTF();
+      lowerBound = in.readUTF();
+      upperBound = in.readUTF();
+    }
   }
 
 
@@ -102,4 +125,35 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
     this.offset = offset;
   }
 
+  public String getPartitionColumn() {
+    return this.partitionColumn;
+  }
+
+  public String getLowerBound() {
+    return this.lowerBound;
+  }
+
+  public String getUpperBound() {
+    return this.upperBound;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    if (partitionColumn != null) {
+      sb.append("interval:");
+      sb.append(partitionColumn).append("[");
+      if (lowerBound != null) {
+        sb.append(lowerBound);
+      }
+      sb.append(",");
+      if (upperBound != null) {
+        sb.append(upperBound);
+      }
+      sb.append(")");
+    } else {
+      sb.append("limit:" + limit + ", offset:" + offset);
+    }
+    return sb.toString();
+  }
 }

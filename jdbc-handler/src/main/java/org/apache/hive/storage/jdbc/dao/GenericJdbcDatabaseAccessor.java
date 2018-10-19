@@ -14,11 +14,15 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -43,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A data accessor that should in theory work with all JDBC compliant database drivers.
@@ -53,6 +59,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   protected static final int DEFAULT_FETCH_SIZE = 1000;
   protected static final Logger LOGGER = LoggerFactory.getLogger(GenericJdbcDatabaseAccessor.class);
   protected DataSource dbcpDataSource = null;
+  static final Pattern fromPattern = Pattern.compile("(.*?\\sfrom\\s)(.*+)", Pattern.CASE_INSENSITIVE);
 
 
   public GenericJdbcDatabaseAccessor() {
@@ -67,7 +74,8 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
-      String metadataQuery = getMetaDataQuery(conf);
+      String query = JdbcStorageConfigManager.getOrigQueryToExecute(conf);
+      String metadataQuery = getMetaDataQuery(query);
       LOGGER.debug("Query to execute is [{}]", metadataQuery);
 
       conn = dbcpDataSource.getConnection();
@@ -94,73 +102,9 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   }
 
 
-  protected String getMetaDataQuery(Configuration conf) {
-    String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
-    String metadataQuery = addLimitToQuery(sql, 1);
-    return metadataQuery;
+  protected String getMetaDataQuery(String sql) {
+    return addLimitToQuery(sql, 1);
   }
-
-  @Override
-  public List<String> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException {
-    Connection conn = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-
-    try {
-      initializeDatabaseConnection(conf);
-      String metadataQuery = getMetaDataQuery(conf);
-      LOGGER.debug("Query to execute is [{}]", metadataQuery);
-
-      conn = dbcpDataSource.getConnection();
-      ps = conn.prepareStatement(metadataQuery);
-      rs = ps.executeQuery();
-
-      ResultSetMetaData metadata = rs.getMetaData();
-      int numColumns = metadata.getColumnCount();
-      List<String> columnTypes = new ArrayList<String>(numColumns);
-      for (int i = 0; i < numColumns; i++) {
-        switch (metadata.getColumnType(i + 1)) {
-        case Types.CHAR:
-          columnTypes.add(serdeConstants.STRING_TYPE_NAME);
-          break;
-        case Types.INTEGER:
-          columnTypes.add(serdeConstants.INT_TYPE_NAME);
-          break;
-        case Types.BIGINT:
-          columnTypes.add(serdeConstants.BIGINT_TYPE_NAME);
-          break;
-        case Types.DECIMAL:
-          columnTypes.add(serdeConstants.DECIMAL_TYPE_NAME);
-          break;
-        case Types.FLOAT:
-        case Types.REAL:
-          columnTypes.add(serdeConstants.FLOAT_TYPE_NAME);
-          break;
-        case Types.DOUBLE:
-          columnTypes.add(serdeConstants.DOUBLE_TYPE_NAME);
-          break;
-        case Types.DATE:
-          columnTypes.add(serdeConstants.DATE_TYPE_NAME);
-          break;
-        case Types.TIMESTAMP:
-          columnTypes.add(serdeConstants.TIMESTAMP_TYPE_NAME);
-          break;
-
-        default:
-          columnTypes.add(metadata.getColumnTypeName(i+1));
-          break;
-        }
-      }
-
-      return columnTypes;
-    } catch (Exception e) {
-      LOGGER.error("Error while trying to get column names.", e);
-      throw new HiveJdbcDatabaseAccessException("Error while trying to get column names: " + e.getMessage(), e);
-    } finally {
-      cleanupResources(conn, ps, rs);
-    }
-  }
-
 
   @Override
   public int getTotalNumberOfRecords(Configuration conf) throws HiveJdbcDatabaseAccessException {
@@ -200,7 +144,9 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
   @Override
   public JdbcRecordIterator
-    getRecordIterator(Configuration conf, int limit, int offset) throws HiveJdbcDatabaseAccessException {
+    getRecordIterator(Configuration conf, String partitionColumn, String lowerBound, String upperBound, int limit, int
+          offset) throws
+          HiveJdbcDatabaseAccessException {
 
     Connection conn = null;
     PreparedStatement ps = null;
@@ -208,16 +154,22 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
     try {
       initializeDatabaseConnection(conf);
+      String tableName = conf.get(Constants.JDBC_TABLE);
       String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
-      String limitQuery = addLimitAndOffsetToQuery(sql, limit, offset);
-      LOGGER.info("Query to execute is [{}]", limitQuery);
+      String partitionQuery;
+      if (partitionColumn != null) {
+        partitionQuery = addBoundaryToQuery(tableName, sql, partitionColumn, lowerBound, upperBound);
+      } else {
+        partitionQuery = addLimitAndOffsetToQuery(sql, limit, offset);
+      }
+      LOGGER.info("Query to execute is [{}]", partitionQuery);
 
       conn = dbcpDataSource.getConnection();
-      ps = conn.prepareStatement(limitQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+      ps = conn.prepareStatement(partitionQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
       ps.setFetchSize(getFetchSize(conf));
       rs = ps.executeQuery();
 
-      return new JdbcRecordIterator(conn, ps, rs);
+      return new JdbcRecordIterator(conn, ps, rs, conf);
     }
     catch (Exception e) {
       LOGGER.error("Caught exception while trying to execute query", e);
@@ -245,7 +197,6 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     }
   }
 
-
   /*
    * Uses generic JDBC escape functions to add a limit clause to a query string
    */
@@ -256,6 +207,54 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     return sql + " {LIMIT " + limit + "}";
   }
 
+  protected String addBoundaryToQuery(String tableName, String sql, String partitionColumn, String lowerBound,
+          String upperBound) {
+    String boundaryQuery;
+    if (tableName != null) {
+      boundaryQuery = "SELECT * FROM " + tableName + " WHERE ";
+    } else {
+      boundaryQuery = "SELECT * FROM (" + sql + ") tmptable WHERE ";
+    }
+    if (lowerBound != null) {
+      boundaryQuery += quote() + partitionColumn + quote() + " >= " + lowerBound;
+    }
+    if (upperBound != null) {
+      if (lowerBound != null) {
+        boundaryQuery += " AND ";
+      }
+      boundaryQuery += quote() + partitionColumn + quote() + " < " + upperBound;
+    }
+    if (lowerBound == null && upperBound != null) {
+      boundaryQuery += " OR " + quote() + partitionColumn + quote() + " IS NULL";
+    }
+    String result;
+    if (tableName != null) {
+      // Looking for table name in from clause, replace with the boundary query
+      // TODO consolidate this
+      // Currently only use simple string match, this should be improved by looking
+      // for only table name in from clause
+      String tableString = null;
+      Matcher m = fromPattern.matcher(sql);
+      Preconditions.checkArgument(m.matches());
+      String queryBeforeFrom = m.group(1);
+      String queryAfterFrom = m.group(2);
+
+      Character[] possibleDelimits = new Character[] {'`', '\"', ' '};
+      for (Character possibleDelimit : possibleDelimits) {
+        if (queryAfterFrom.contains(possibleDelimit + tableName + possibleDelimit)) {
+          tableString = possibleDelimit + tableName + possibleDelimit;
+          break;
+        }
+      }
+      if (tableString == null) {
+        throw new RuntimeException("Cannot find " + tableName + " in sql query " + sql);
+      }
+      result = queryBeforeFrom + queryAfterFrom.replace(tableString, " (" + boundaryQuery + ") " + tableName + " ");
+    } else {
+      result = boundaryQuery;
+    }
+    return result;
+  }
 
   protected void cleanupResources(Connection conn, PreparedStatement ps, ResultSet rs) {
     try {
@@ -343,5 +342,76 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
   protected int getFetchSize(Configuration conf) {
     return conf.getInt(JdbcStorageConfig.JDBC_FETCH_SIZE.getPropertyName(), DEFAULT_FETCH_SIZE);
+  }
+
+  @Override
+  public Pair<String, String> getBounds(Configuration conf, String partitionColumn, boolean retrieveMin, boolean
+          retrieveMax) throws HiveJdbcDatabaseAccessException {
+    Connection conn = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+
+    try {
+      Preconditions.checkArgument(retrieveMin || retrieveMax);
+      initializeDatabaseConnection(conf);
+      String sql = JdbcStorageConfigManager.getOrigQueryToExecute(conf);
+      String minClause = "MIN(" + quote() + partitionColumn  + quote() + ")";
+      String maxClause = "MAX(" + quote() + partitionColumn  + quote() + ")";
+      String countQuery = "SELECT ";
+      if (retrieveMin) {
+        countQuery += minClause;
+      }
+      if (retrieveMax) {
+        if (retrieveMin) {
+          countQuery += ",";
+        }
+        countQuery += maxClause;
+      }
+      countQuery += " FROM (" + sql + ") tmptable " + "WHERE " + quote() + partitionColumn + quote() + " IS NOT NULL";
+
+      LOGGER.debug("MIN/MAX Query to execute is [{}]", countQuery);
+
+      conn = dbcpDataSource.getConnection();
+      ps = conn.prepareStatement(countQuery);
+      rs = ps.executeQuery();
+      String lower = null, upper = null;
+      int pos = 1;
+      if (rs.next()) {
+        if (retrieveMin) {
+          lower = rs.getString(pos);
+          pos++;
+        }
+        if (retrieveMax) {
+          upper = rs.getString(pos);
+        }
+        return new ImmutablePair<>(lower, upper);
+      }
+      else {
+        LOGGER.warn("The count query did not return any results.", countQuery);
+        throw new HiveJdbcDatabaseAccessException("MIN/MAX query did not return any results.");
+      }
+    }
+    catch (HiveJdbcDatabaseAccessException he) {
+      throw he;
+    }
+    catch (Exception e) {
+      LOGGER.error("Caught exception while trying to get MIN/MAX of " + partitionColumn, e);
+      throw new HiveJdbcDatabaseAccessException(e);
+    }
+    finally {
+      cleanupResources(conn, ps, rs);
+    }
+  }
+
+  private String quote() {
+    if (needColumnQuote()) {
+      return "\"";
+    } else {
+      return "";
+    }
+  }
+  @Override
+  public boolean needColumnQuote() {
+    return true;
   }
 }
