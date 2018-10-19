@@ -427,6 +427,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       final String reason = killCtx.reason;
       LOG.info("Killing query for {}", toKill);
       workPool.submit(() -> {
+        SessionState ss = new SessionState(new HiveConf());
+        ss.setIsHiveServerQuery(true);
+        SessionState.start(ss);
         // Note: we get query ID here, rather than in the caller, where it would be more correct
         //       because we know which exact query we intend to kill. This is valid because we
         //       are not expecting query ID to change - we never reuse the session for which a

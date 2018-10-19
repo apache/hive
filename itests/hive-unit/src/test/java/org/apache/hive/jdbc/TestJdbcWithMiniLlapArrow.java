@@ -41,8 +41,8 @@ import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +57,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
   private static final String tableName = "testJdbcMinihs2Tbl";
   private static String dataFileDir;
   private static final String testDbName = "testJdbcMinihs2";
+  private static final String tag = "mytag";
 
   private static class ExceptionHolder {
     Throwable throwable;
@@ -66,6 +67,12 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
   public static void beforeTest() throws Exception {
     HiveConf conf = defaultConf();
     conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
+    conf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, "org.apache.hadoop.hive.ql.security" +
+            ".SessionStateUserAuthenticator");
+    conf.setVar(ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
+    conf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
+    conf.setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST_APPEND, ConfVars.HIVE_SUPPORT_CONCURRENCY
+            .varname + "|" + ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname);
     MiniHS2.cleanupLocalDir();
     miniHS2 = BaseJdbcWithMiniLlap.beforeTest(conf);
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
@@ -73,8 +80,19 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     Connection conDefault = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(),
             System.getProperty("user.name"), "bar");
     Statement stmt = conDefault.createStatement();
+    String tblName = testDbName + "." + tableName;
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
+    String udfName = SleepMsUDF.class.getName();
     stmt.execute("drop database if exists " + testDbName + " cascade");
     stmt.execute("create database " + testDbName);
+    stmt.execute("set role admin");
+    stmt.execute("dfs -put " + dataFilePath.toString() + " " + "kv1.txt");
+    stmt.execute("use " + testDbName);
+    stmt.execute("create table " + tblName + " (int_col int, value string) ");
+    stmt.execute("load data inpath 'kv1.txt' into table " + tblName);
+    stmt.execute("create function sleepMsUDF as '" + udfName + "'");
+    stmt.execute("grant select on table " + tblName + " to role public");
+
     stmt.close();
     conDefault.close();
   }
@@ -291,29 +309,16 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
    * that runs for a sufficiently long time.
    * @throws Exception
    */
-  @Test
-  public void testKillQuery() throws Exception {
-    Connection con = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(testDbName),
-            System.getProperty("user.name"), "bar");
+  private void testKillQueryInternal(String user, String killUser, boolean useTag, final
+      ExceptionHolder stmtHolder, final ExceptionHolder tKillHolder) throws Exception {
+    Connection con1 = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(testDbName),
+            user, "bar");
     Connection con2 = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(testDbName),
-            System.getProperty("user.name"), "bar");
+            killUser, "bar");
 
-    String udfName = SleepMsUDF.class.getName();
-    Statement stmt1 = con.createStatement();
     final Statement stmt2 = con2.createStatement();
-    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
-
-    String tblName = testDbName + "." + tableName;
-
-    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
-    stmt1.execute("create table " + tblName + " (int_col int, value string) ");
-    stmt1.execute("load data local inpath '" + dataFilePath.toString() + "' into table " + tblName);
-
-
-    stmt1.close();
-    final Statement stmt = con.createStatement();
-    final ExceptionHolder tExecuteHolder = new ExceptionHolder();
-    final ExceptionHolder tKillHolder = new ExceptionHolder();
+    final HiveStatement stmt = (HiveStatement)con1.createStatement();
+    final StringBuffer stmtQueryId = new StringBuffer();
 
     // Thread executing the query
     Thread tExecute = new Thread(new Runnable() {
@@ -323,46 +328,104 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
           System.out.println("Executing query: ");
           stmt.execute("set hive.llap.execution.mode = none");
 
+          if (useTag) {
+            stmt.execute("set hive.query.tag = " + tag);
+          }
           // The test table has 500 rows, so total query time should be ~ 500*500ms
-          stmt.executeQuery("select sleepMsUDF(t1.int_col, 100), t1.int_col, t2.int_col " +
+          stmt.executeAsync("select sleepMsUDF(t1.int_col, 100), t1.int_col, t2.int_col " +
                   "from " + tableName + " t1 join " + tableName + " t2 on t1.int_col = t2.int_col");
+          stmtQueryId.append(stmt.getQueryId());
+          stmt.getUpdateCount();
         } catch (SQLException e) {
-          tExecuteHolder.throwable = e;
-        }
-      }
-    });
-    // Thread killing the query
-    Thread tKill = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(5000);
-          String queryId = ((HiveStatement) stmt).getQueryId();
-          System.out.println("Killing query: " + queryId);
-          stmt2.execute("kill query '" + queryId + "'");
-          stmt2.close();
-        } catch (Exception e) {
-          tKillHolder.throwable = e;
+          stmtHolder.throwable = e;
         }
       }
     });
 
     tExecute.start();
-    tKill.start();
+
+    // wait for other thread to create the stmt handle
+    int count = 0;
+    while (count < 10) {
+      try {
+        tKillHolder.throwable = null;
+        Thread.sleep(2000);
+        String queryId;
+        if (useTag) {
+          queryId = tag;
+        } else {
+          if (stmtQueryId.length() != 0) {
+            queryId = stmtQueryId.toString();
+          } else {
+            continue;
+          }
+        }
+        System.out.println("Killing query: " + queryId);
+        if (killUser.equals(System.getProperty("user.name"))) {
+          stmt2.execute("set role admin");
+        }
+        stmt2.execute("kill query '" + queryId + "'");
+        stmt2.close();
+        break;
+      } catch (SQLException e) {
+        count++;
+        LOG.warn("Exception when kill query", e);
+        tKillHolder.throwable = e;
+      }
+    }
+
     tExecute.join();
-    tKill.join();
     try {
       stmt.close();
+      con1.close();
       con2.close();
-      con.close();
-      // We check the result
-      assertNotNull("tExecute", tExecuteHolder.throwable);
-      assertNull("tCancel", tKillHolder.throwable);
     } catch (Exception e) {
       // ignore error
-      LOG.error("Exception in testKillQuery", e);
+      LOG.warn("Exception when close stmt and con", e);
     }
   }
 
+  @Test
+  @Override
+  public void testKillQuery() throws Exception {
+    testKillQueryById();
+    testKillQueryByTagNegative();
+    testKillQueryByTagAdmin();
+    testKillQueryByTagOwner();
+  }
+
+  public void testKillQueryById() throws Exception {
+    ExceptionHolder tExecuteHolder = new ExceptionHolder();
+    ExceptionHolder tKillHolder = new ExceptionHolder();
+    testKillQueryInternal(System.getProperty("user.name"), System.getProperty("user.name"), false,
+            tExecuteHolder, tKillHolder);
+    assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertNull("tCancel", tKillHolder.throwable);
+  }
+
+  public void testKillQueryByTagNegative() throws Exception {
+    ExceptionHolder tExecuteHolder = new ExceptionHolder();
+    ExceptionHolder tKillHolder = new ExceptionHolder();
+    testKillQueryInternal("user1", "user2", true, tExecuteHolder, tKillHolder);
+    assertNull("tExecute", tExecuteHolder.throwable);
+    assertNotNull("tCancel", tKillHolder.throwable);
+    assertTrue(tKillHolder.throwable.getMessage(), tKillHolder.throwable.getMessage().contains("No privilege"));
+  }
+
+  public void testKillQueryByTagAdmin() throws Exception {
+    ExceptionHolder tExecuteHolder = new ExceptionHolder();
+    ExceptionHolder tKillHolder = new ExceptionHolder();
+    testKillQueryInternal("user1", System.getProperty("user.name"), true, tExecuteHolder, tKillHolder);
+    assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertNull("tCancel", tKillHolder.throwable);
+  }
+
+  public void testKillQueryByTagOwner() throws Exception {
+    ExceptionHolder tExecuteHolder = new ExceptionHolder();
+    ExceptionHolder tKillHolder = new ExceptionHolder();
+    testKillQueryInternal("user1", "user1", true, tExecuteHolder, tKillHolder);
+    assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertNull("tCancel", tKillHolder.throwable);
+  }
 }
 

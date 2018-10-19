@@ -22,12 +22,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -62,7 +68,8 @@ public class OperationManager extends AbstractService {
       new ConcurrentHashMap<OperationHandle, Operation>();
   private final ConcurrentHashMap<String, Operation> queryIdOperation =
       new ConcurrentHashMap<String, Operation>();
-  private final ConcurrentHashMap<String, String> queryTagToIdMap = new ConcurrentHashMap<>();
+  private final SetMultimap<String, String> queryTagToIdMap =
+          Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
   //Following fields for displaying queries on WebUI
   private Object webuiLock = new Object();
@@ -205,12 +212,7 @@ public class OperationManager extends AbstractService {
   public void updateQueryTag(String queryId, String queryTag) {
     Operation operation = queryIdOperation.get(queryId);
     if (operation != null) {
-      String queryIdTemp = queryTagToIdMap.get(queryTag);
-      if (queryIdTemp != null) {
-        throw new RuntimeException("tag " + queryTag + " is already applied for query " + queryIdTemp);
-      }
       queryTagToIdMap.put(queryTag, queryId);
-      LOG.info("Query " + queryId + " is updated with tag " + queryTag);
       return;
     }
     LOG.info("Query id is missing during query tag updation");
@@ -225,7 +227,7 @@ public class OperationManager extends AbstractService {
     queryIdOperation.remove(queryId);
     String queryTag = operation.getQueryTag();
     if (queryTag != null) {
-      queryTagToIdMap.remove(queryTag);
+      queryTagToIdMap.remove(queryTag, queryId);
     }
     LOG.info("Removed queryId: {} corresponding to operation: {} with tag: {}", queryId, opHandle, queryTag);
     if (operation instanceof SQLOperation) {
@@ -442,11 +444,14 @@ public class OperationManager extends AbstractService {
     return queryIdOperation.get(queryId);
   }
 
-  public Operation getOperationByQueryTag(String queryTag) {
-    String queryId = queryTagToIdMap.get(queryTag);
-    if (queryId != null) {
-      return getOperationByQueryId(queryId);
+  public Set<Operation> getOperationsByQueryTag(String queryTag) {
+    Set<String> queryIds = queryTagToIdMap.get(queryTag);
+    Set<Operation> result = new HashSet<Operation>();
+    for (String queryId : queryIds) {
+      if (queryId != null && getOperationByQueryId(queryId) != null) {
+        result.add(getOperationByQueryId(queryId));
+      }
     }
-    return null;
+    return result;
   }
 }
