@@ -208,12 +208,12 @@ public class LoadTable {
   private String location(ImportTableDesc tblDesc, Database parentDb)
       throws MetaException, SemanticException {
 
+
     if (tblDesc.tableType().equals(TableType.EXTERNAL_TABLE)) {
       // For an external table, we need to use the path specified in the source table but the
       // scheme, authority and root path of the target file system.
       return context.warehouse.getDnsPath(tblDesc.getTableLocationPath()).toString();
-    }
-    else if (!tableContext.waitOnPrecursor()) {
+    } else if (!tableContext.waitOnPrecursor()) {
       return context.warehouse.getDefaultTablePath(
           parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString();
     } else {

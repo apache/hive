@@ -387,7 +387,7 @@ public class WarehouseInstance implements Closeable {
   }
 
   /**
-   * Verify that the given table is an external table with the given location
+   * Verify that the given table is an external table with the given location.
    * @return this
    * @throws IOException, Exception
    */

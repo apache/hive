@@ -411,7 +411,7 @@ PREHOOK: Input: default@ext_t_r_imported
 POSTHOOK: query: show create table ext_t_r_imported
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@ext_t_r_imported
-CREATE TABLE `ext_t_r_imported`(
+CREATE EXTERNAL TABLE `ext_t_r_imported`(
   `emp_id` int COMMENT 'employee id')
 PARTITIONED BY ( 
   `emp_country` string, 
@@ -425,7 +425,6 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-  'EXTERNAL'='FALSE', 
   'bucketing_version'='2', 
   'discover.partitions'='true', 
   'repl.last.id'='0', 

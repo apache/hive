@@ -1517,8 +1517,13 @@ public class TestReplicationScenariosAcrossInstances {
             .run("use " + replicatedDbName)
             .run("show tables like 't3'")
             .verifyResult("t3")
+            .verifyExternalTable(replicatedDbName, "t3",
+                    primary.getTableLocation(primaryDbName, "t3"))
             .run("select id from t3 where id = 10")
-            .verifyFailure(new String[] {"10"});
+            // Since both the external tables point to the same location as they share the same
+            // file system, the data in external table on the primary is also visible through the
+            // external table on the replica.
+            .verifyResult("10");
   }
 
   @Test
@@ -1587,11 +1592,11 @@ public class TestReplicationScenariosAcrossInstances {
             .run("select id from " + extTabName2)
             .verifyResult("5")
             .verifyExternalTable(replicatedDbName, "t3",
-                    primary.getTableLocation(primaryDbName,"t3"))
+                    primary.getTableLocation(primaryDbName, "t3"))
             .verifyExternalTable(replicatedDbName, "t4",
-                    primary.getTableLocation(primaryDbName,"t4"))
+                    primary.getTableLocation(primaryDbName, "t4"))
             .verifyExternalTable(replicatedDbName, extTabName2,
-                    primary.getTableLocation(primaryDbName,extTabName2));
+                    primary.getTableLocation(primaryDbName, extTabName2));
 
     // Insert a row in the external table on primary and it should show up on replica as well
     // since both of them share the same file system and the external tables on both point to the
