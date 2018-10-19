@@ -51,8 +51,12 @@ POSTHOOK: Lineage: druid_table_n3.cstring2 SIMPLE [(alltypesorc)alltypesorc.Fiel
 POSTHOOK: Lineage: druid_table_n3.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: explain select count(*) FROM druid_table_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(*) FROM druid_table_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -85,9 +89,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), SUM(cfloat), SUM(cdouble), SUM(ctinyint), SUM(csmallint),SUM(cint), SUM(cbigint)
 FROM druid_table_n3 GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT floor_year(`__time`), SUM(cfloat), SUM(cdouble), SUM(ctinyint), SUM(csmallint),SUM(cint), SUM(cbigint)
 FROM druid_table_n3 GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -122,9 +130,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
 FROM druid_table_n3 GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
 FROM druid_table_n3 GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -159,9 +171,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
 FROM druid_table_n3 GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
 FROM druid_table_n3 GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -195,8 +211,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-01-01 00:00:00.0 US/Pacific	769.16394	1.95655179778E7	-45	-8101	1276572707	4923772860
 PREHOOK: query: EXPLAIN SELECT cstring1, SUM(cdouble) as s FROM druid_table_n3 GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT cstring1, SUM(cdouble) as s FROM druid_table_n3 GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -237,8 +257,12 @@ yv1js	NULL
 ytpx1RL8F2I	NULL
 PREHOOK: query: EXPLAIN SELECT cstring2, MAX(cdouble) FROM druid_table_n3 GROUP BY cstring2 ORDER BY cstring2 ASC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT cstring2, MAX(cdouble) FROM druid_table_n3 GROUP BY cstring2 ORDER BY cstring2 ASC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -281,10 +305,14 @@ PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_n3 ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_n3 ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -364,11 +392,15 @@ SELECT `__time`
 FROM druid_table_n3
 WHERE `__time` < '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_n3
 WHERE `__time` < '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -450,11 +482,15 @@ SELECT `__time`
 FROM druid_table_n3
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_n3
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -537,12 +573,16 @@ FROM druid_table_n3
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_n3
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -626,11 +666,15 @@ SELECT `__time`
 FROM druid_table_n3
 WHERE `__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_n3
 WHERE `__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -713,12 +757,16 @@ FROM druid_table_n3
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_n3
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -799,8 +847,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 PREHOOK: query: explain select (cstring1 is null ) AS is_null, (cint is not null ) as isnotnull FROM druid_table_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select (cstring1 is null ) AS is_null, (cint is not null ) as isnotnull FROM druid_table_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -823,8 +875,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select substring(to_date(`__time`), 4) from druid_table_n3 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select substring(to_date(`__time`), 4) from druid_table_n3 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -860,8 +916,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 9-12-31
 PREHOOK: query: explain select substring(cast(to_date(`__time`) as string), 4) from druid_table_n3 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select substring(cast(to_date(`__time`) as string), 4) from druid_table_n3 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

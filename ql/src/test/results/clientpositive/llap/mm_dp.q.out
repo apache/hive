@@ -106,9 +106,22 @@ POSTHOOK: Output: default@dp_mm
 PREHOOK: query: explain 
 insert overwrite table dp_mm partition (val) select key, p, r, val from intermediate_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Input: default@intermediate_n0@p=458
+PREHOOK: Input: default@intermediate_n0@p=459
+PREHOOK: Output: default@dp_mm
 POSTHOOK: query: explain 
 insert overwrite table dp_mm partition (val) select key, p, r, val from intermediate_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Input: default@intermediate_n0@p=458
+POSTHOOK: Input: default@intermediate_n0@p=459
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

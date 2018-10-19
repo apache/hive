@@ -80,19 +80,19 @@ Stage-0
     Stage-1
       Reducer 7 vectorized
       File Output Operator [FS_136]
-        Select Operator [SEL_135] (rows=13756683 width=15)
+        Select Operator [SEL_135] (rows=4585561 width=15)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
         <-Reducer 6 [SIMPLE_EDGE]
           SHUFFLE [RS_60]
-            Merge Join Operator [MERGEJOIN_106] (rows=13756683 width=15)
+            Merge Join Operator [MERGEJOIN_106] (rows=4585561 width=15)
               Conds:RS_129._col0, _col1=RS_134._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
             <-Reducer 11 [SIMPLE_EDGE] vectorized
               SHUFFLE [RS_134]
                 PartitionCols:_col0, _col1
-                Select Operator [SEL_133] (rows=12506076 width=15)
+                Select Operator [SEL_133] (rows=4168692 width=15)
                   Output:["_col0","_col1","_col2","_col3"]
-                  Filter Operator [FIL_132] (rows=12506076 width=15)
-                    predicate:CASE WHEN (((UDFToDouble(_col3) / _col4) = 0)) THEN (false) ELSE (((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4)) > 1.0D)) END
+                  Filter Operator [FIL_132] (rows=4168692 width=15)
+                    predicate:(((UDFToDouble(_col3) / _col4) = 0) is not true and ((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4)) > 1.0D))
                     Select Operator [SEL_131] (rows=25012152 width=15)
                       Output:["_col0","_col1","_col3","_col4","_col5","_col6"]
                       Group By Operator [GBY_130] (rows=25012152 width=15)
@@ -155,10 +155,10 @@ Stage-0
             <-Reducer 5 [SIMPLE_EDGE] vectorized
               SHUFFLE [RS_129]
                 PartitionCols:_col0, _col1
-                Select Operator [SEL_128] (rows=12506076 width=15)
+                Select Operator [SEL_128] (rows=4168692 width=15)
                   Output:["_col0","_col1","_col2","_col3"]
-                  Filter Operator [FIL_127] (rows=12506076 width=15)
-                    predicate:CASE WHEN (((UDFToDouble(_col3) / _col4) = 0)) THEN (false) ELSE (((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4)) > 1.0D)) END
+                  Filter Operator [FIL_127] (rows=4168692 width=15)
+                    predicate:(((UDFToDouble(_col3) / _col4) = 0) is not true and ((power(((_col5 - ((_col6 * _col6) / _col4)) / CASE WHEN ((_col4 = 1L)) THEN (null) ELSE ((_col4 - 1)) END), 0.5) / (UDFToDouble(_col3) / _col4)) > 1.0D))
                     Select Operator [SEL_126] (rows=25012152 width=15)
                       Output:["_col0","_col1","_col3","_col4","_col5","_col6"]
                       Group By Operator [GBY_125] (rows=25012152 width=15)
