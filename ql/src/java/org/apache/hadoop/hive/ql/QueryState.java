@@ -57,6 +57,7 @@ public class QueryState {
    */
   private long numModifiedRows = 0;
 
+  static public final String USERID_TAG = "userid";
   /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
@@ -133,7 +134,7 @@ public class QueryState {
       jobTag = jobTag.concat("," + queryTag);
     }
     if (SessionState.get() != null) {
-      jobTag = jobTag.concat("," + "userid=" + SessionState.get().getUserName());
+      jobTag = jobTag.concat("," + USERID_TAG + "=" + SessionState.get().getUserName());
     }
     queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
     queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);

@@ -21,6 +21,7 @@ package org.apache.hive.service.server;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
@@ -54,6 +55,7 @@ public class KillQueryImpl implements KillQuery {
   private final static Logger LOG = LoggerFactory.getLogger(KillQueryImpl.class);
 
   private final OperationManager operationManager;
+  private enum TagOrId {TAG, ID, UNKNOWN};
 
   public KillQueryImpl(OperationManager operationManager) {
     this.operationManager = operationManager;
@@ -69,7 +71,8 @@ public class KillQueryImpl implements KillQuery {
     GetApplicationsResponse apps = proxy.getApplications(gar);
     List<ApplicationReport> appsList = apps.getApplicationList();
     for(ApplicationReport appReport : appsList) {
-      if (isAdmin() || appReport.getApplicationTags().contains("userid=" + SessionState.get().getUserName())) {
+      if (isAdmin() || appReport.getApplicationTags().contains(QueryState.USERID_TAG + "=" + SessionState.get()
+              .getUserName())) {
         childYarnJobs.add(appReport.getApplicationId());
       }
     }
@@ -88,6 +91,7 @@ public class KillQueryImpl implements KillQuery {
       if (tag == null) {
         return;
       }
+      LOG.info("Killing yarn jobs using query tag:" + tag);
       Set<ApplicationId> childYarnJobs = getChildYarnJobs(conf, tag);
       if (!childYarnJobs.isEmpty()) {
         YarnClient yarnClient = YarnClient.createYarnClient();
@@ -107,7 +111,8 @@ public class KillQueryImpl implements KillQuery {
     if (SessionState.get().getAuthorizerV2() != null) {
       try {
         SessionState.get().getAuthorizerV2().checkPrivileges(HiveOperationType.KILL_QUERY,
-                new ArrayList<>(), new ArrayList<>(), new HiveAuthzContext.Builder().build());
+                new ArrayList<HivePrivilegeObject>(), new ArrayList<HivePrivilegeObject>(),
+                new HiveAuthzContext.Builder().build());
         isAdmin = true;
       } catch (Exception e) {
       }
@@ -115,48 +120,75 @@ public class KillQueryImpl implements KillQuery {
     return isAdmin;
   }
 
+  private boolean cancelOperation(Operation operation, boolean isAdmin, String errMsg) throws
+          HiveSQLException {
+    if (isAdmin || operation.getParentSession().getUserName().equals(SessionState.get()
+            .getAuthenticator().getUserName())) {
+      OperationHandle handle = operation.getHandle();
+      operationManager.cancelOperation(handle, errMsg);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   @Override
-  public void killQuery(
-      String queryId, String errMsg, HiveConf conf, boolean isYarn) throws HiveException {
+  public void killQuery(String queryIdOrTag, String errMsg, HiveConf conf, boolean isYarn) throws HiveException {
     try {
-      String queryTag = null;
-
-      Operation operation = operationManager.getOperationByQueryId(queryId);
-      if (operation == null) {
-        // Check if user has passed the query tag to kill the operation. This is possible if the application
-        // restarts and it does not have the proper query id. The tag can be used in that case to kill the query.
-        operation = operationManager.getOperationByQueryTag(queryId);
-        if (operation == null) {
-          LOG.info("Query not found: " + queryId);
-        }
+      TagOrId tagOrId = TagOrId.UNKNOWN;
+      Set<Operation> operationsToKill = new HashSet<Operation>();
+      if (operationManager.getOperationByQueryId(queryIdOrTag) != null) {
+        operationsToKill.add(operationManager.getOperationByQueryId(queryIdOrTag));
+        tagOrId = TagOrId.ID;
       } else {
-        // This is the normal flow, where the query is tagged and user wants to kill the query using the query id.
-        queryTag = operation.getQueryTag();
-      }
-
-      if (queryTag == null) {
-        //use query id as tag if user wanted to kill only the yarn jobs after hive server restart. The yarn jobs are
-        //tagged with query id by default. This will cover the case where the application after restarts wants to kill
-        //the yarn jobs with query tag. The query tag can be passed as query id.
-        queryTag = queryId;
-      }
-
-      if (isAdmin() || operation ==null || operation.getParentSession().getUserName().equals(SessionState.get()
-              .getAuthenticator().getUserName())) {
-        if (isYarn) {
-          LOG.info("Killing yarn jobs for query id : " + queryId + " using tag :" + queryTag);
-          killChildYarnJobs(conf, queryTag);
+        operationsToKill.addAll(operationManager.getOperationsByQueryTag(queryIdOrTag));
+        if (!operationsToKill.isEmpty()) {
+          tagOrId = TagOrId.TAG;
         }
-
-        if (operation != null) {
-          OperationHandle handle = operation.getHandle();
-          operationManager.cancelOperation(handle, errMsg);
-        }
-      } else {
-        throw new HiveSQLException("No privilege");
+      }
+      if (operationsToKill.isEmpty()) {
+        LOG.info("Query not found: " + queryIdOrTag);
+      }
+      boolean admin = isAdmin();
+      switch(tagOrId) {
+        case ID:
+          Operation operation = operationsToKill.iterator().next();
+          boolean canceled = cancelOperation(operation, admin, errMsg);
+          if (canceled) {
+            String queryTag = operation.getQueryTag();
+            if (queryTag == null) {
+              queryTag = queryIdOrTag;
+            }
+            if (isYarn) {
+              killChildYarnJobs(conf, queryTag);
+            }
+          } else {
+            // no privilege to cancel
+            throw new HiveSQLException("No privilege");
+          }
+          break;
+        case TAG:
+          int numCanceled = 0;
+          for (Operation operationToKill : operationsToKill) {
+            if (cancelOperation(operationToKill, admin, errMsg)) {
+              numCanceled++;
+            }
+          }
+          if (isYarn) {
+            killChildYarnJobs(conf, queryIdOrTag);
+          }
+          if (numCanceled == 0) {
+            throw new HiveSQLException("No privilege");
+          }
+          break;
+        case UNKNOWN:
+          if (isYarn) {
+            killChildYarnJobs(conf, queryIdOrTag);
+          }
+          break;
       }
     } catch (HiveSQLException e) {
-      LOG.error("Kill query failed for query " + queryId, e);
+      LOG.error("Kill query failed for query " + queryIdOrTag, e);
       throw new HiveException(e.getMessage(), e);
     }
   }
