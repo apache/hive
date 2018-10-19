@@ -124,6 +124,22 @@ public class JdbcStorageConfigManager {
     return config.get(key.getPropertyName());
   }
 
+  public static String getOrigQueryToExecute(Configuration config) {
+    String query;
+    String tableName = config.get(Constants.JDBC_TABLE);
+    if (tableName != null) {
+      // We generate query as select *
+      query = "select * from " + tableName;
+      String hiveFilterCondition = QueryConditionBuilder.getInstance().buildCondition(config);
+      if ((hiveFilterCondition != null) && (!hiveFilterCondition.trim().isEmpty())) {
+        query = query + " WHERE " + hiveFilterCondition;
+      }
+    } else {
+      query = config.get(Constants.JDBC_QUERY);
+    }
+
+    return query;
+  }
 
   public static String getQueryToExecute(Configuration config) {
     String query = config.get(Constants.JDBC_QUERY);
