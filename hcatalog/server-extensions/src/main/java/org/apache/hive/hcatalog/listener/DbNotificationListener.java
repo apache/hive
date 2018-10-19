@@ -907,24 +907,30 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       params.add(event.getMessageFormat());
 
       // Database name, optional
-      if (event.getDbName() != null) {
+      String dbName = event.getDbName();
+      if (dbName != null) {
+        assert dbName.equals(dbName.toLowerCase());
         columns = columns + ", \"DB_NAME\"";
         insertVal = insertVal + ", ?";
-        params.add(event.getDbName());
+        params.add(dbName);
       }
 
       // Table name, optional
-      if (event.getTableName() != null) {
+      String tableName = event.getTableName();
+      if (tableName != null) {
+        assert tableName.equals(tableName.toLowerCase());
         columns = columns + ", \"TBL_NAME\"";
         insertVal = insertVal + ", ?";
-        params.add(event.getTableName());
+        params.add(tableName);
       }
 
       // Catalog name, optional
-      if (event.getCatName() != null) {
+      String catName = event.getCatName();
+      if (catName != null) {
+        assert catName.equals(catName.toLowerCase());
         columns = columns + ", \"CAT_NAME\"";
         insertVal = insertVal + ", ?";
-        params.add(event.getCatName());
+        params.add(catName);
       }
 
       s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";

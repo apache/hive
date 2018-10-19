@@ -82,12 +82,18 @@ public class EventUtils {
     public long getDbNotificationEventsCount(long fromEventId, String dbName, Long toEventId,
                                              int limit) throws IOException {
       try {
+        // Number of events is always bounded by limit, which when non-positive, will result
+        // in no events being counted..
+        if (limit <= 0) {
+          return 0;
+        }
+
         NotificationEventsCountRequest rqst
                 = new NotificationEventsCountRequest(fromEventId, dbName);
-        if (toEventId != null)
+        if (toEventId != null) {
           rqst.setToEventId(toEventId);
-        if (limit > 0)
-          rqst.setLimit(limit);
+        }
+        rqst.setLimit(limit);
         return hiveDb.getMSC().getNotificationEventsCount(rqst).getEventsCount();
       } catch (TException e) {
         throw new IOException(e);

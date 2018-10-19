@@ -470,36 +470,26 @@ public class TestReplicationScenariosAcidTables {
   @Test
   public void testOpenTxnEvent() throws Throwable {
     String tableName = testName.getMethodName();
-    // Bootstrap load causes 4 events: 2 for open and commit transaction and 2 alter database events
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
-    // Load will start and commit a transaction, thus producing 2 events apart from the events
-    // corresponding to other load activities.
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    // create table will start and commit the transaction, thus producing 3 events
     primary.run("use " + primaryDbName)
            .run("CREATE TABLE " + tableName +
             " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')")
             .run("SHOW TABLES LIKE '" + tableName + "'")
             .verifyResult(tableName)
-            // insert will start and commit transaction along with adding and altering a
-            // partition, thus producing total 5 events
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-01') VALUES (1, 1)")
-            // select will start and commit a transaction, producing 2 events
             .run("select key from " + tableName)
             .verifyResult("1");
 
     WarehouseInstance.Tuple incrementalDump =
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
 
-    // Test number of events. We expect total 17 events as follows
-    // 4 for dump + 2 for load + 3 for create table + 5 for insert + 2 for select + 1 for open
-    // transaction of incremental dump.
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 17);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 20);
 
     // Test load
     replica.load(replicatedDbName, incrementalDump.dumpLocation)

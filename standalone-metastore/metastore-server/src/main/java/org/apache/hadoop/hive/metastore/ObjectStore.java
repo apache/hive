@@ -10258,6 +10258,10 @@ public class ObjectStore implements RawStore, Configurable {
       String paramSpecs;
       List<Object> paramVals = new ArrayList<Object>();
 
+      // We store a catalog name in lower case in metastore and also use the same way everywhere in
+      // hive.
+      assert catName.equals(catName.toLowerCase());
+
       // Build the query to count events, part by part
       String queryStr = "select count(eventId) from " + MNotificationLog.class.getName();
       // count fromEventId onwards events
@@ -10265,12 +10269,21 @@ public class ObjectStore implements RawStore, Configurable {
       paramSpecs = "java.lang.Long fromEventId";
       paramVals.add(new Long(fromEventId));
 
-      // dbName and catalogName could be NULL in case of transaction related events. These events
-      // are required to be processed for transaction consistency.
-      queryStr = queryStr + " && (dbName == inputDbName || dbName == null)";
-      paramSpecs = paramSpecs + ", java.lang.String inputDbName";
-      paramVals.add(inputDbName);
+      // Input database name can be a database name or a *. In the first case we add a filter
+      // condition on dbName column, but not in the second case, since a * means all the
+      // databases. In case we support more elaborate database name patterns in future, we will
+      // have to apply a method similar to getNextNotification() method of MetaStoreClient.
+      if (!inputDbName.equals("*")) {
+        // dbName could be NULL in case of transaction related events, which also need to be
+        // counted.
+        queryStr = queryStr + " && (dbName == inputDbName || dbName == null)";
+        paramSpecs = paramSpecs + ", java.lang.String inputDbName";
+        // We store a database name in lower case in metastore.
+        paramVals.add(inputDbName.toLowerCase());
+      }
 
+      // catName could be NULL in case of transaction related events, which also need to be
+      // counted.
       queryStr = queryStr + " && (catalogName == catName || catalogName == null)";
       paramSpecs = paramSpecs +", java.lang.String catName";
       paramVals.add(catName);
@@ -10290,8 +10303,9 @@ public class ObjectStore implements RawStore, Configurable {
 
       // Cap the event count by limit if specified.
       long  eventCount = result.longValue();
-      if (rqst.isSetLimit() && eventCount > rqst.getLimit())
+      if (rqst.isSetLimit() && eventCount > rqst.getLimit()) {
         eventCount = rqst.getLimit();
+      }
 
       return new NotificationEventsCountResponse(eventCount);
     } finally {
