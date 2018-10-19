@@ -385,7 +385,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (key.equalsIgnoreCase(HIVEQUERYID.varname)) {
           String queryTag = config.getValue();
           if (!StringUtils.isEmpty(queryTag)) {
-            QueryState.setMapReduceJobTag(conf, queryTag);
+            QueryState.setApplicationTag(conf, queryTag);
           }
           queryState.setQueryTag(queryTag);
         } else {
