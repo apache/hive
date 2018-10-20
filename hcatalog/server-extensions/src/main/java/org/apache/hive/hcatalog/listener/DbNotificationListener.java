@@ -148,6 +148,19 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(),
           MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, TimeUnit.SECONDS));
     }
+
+    if (key.equals(ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL.toString()) ||
+            key.equals(ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL.getHiveName())) {
+      // This weirdness of setting it in our conf and then reading back does two things.
+      // One, it handles the conversion of the TimeUnit.  Two, it keeps the value around for
+      // later in case we need it again.
+      long time = MetastoreConf.convertTimeStr(tableEvent.getNewValue(), TimeUnit.SECONDS,
+              TimeUnit.SECONDS);
+      MetastoreConf.setTimeVar(getConf(), MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, time,
+              TimeUnit.SECONDS);
+      cleaner.setCleanupInterval(MetastoreConf.getTimeVar(getConf(),
+              MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, TimeUnit.MILLISECONDS));
+    }
   }
 
   /**
@@ -913,13 +926,15 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private static class CleanerThread extends Thread {
     private RawStore rs;
     private int ttl;
-    static private long sleepTime = 60000;
+    private long sleepTime;
 
     CleanerThread(Configuration conf, RawStore rs) {
       super("DB-Notification-Cleaner");
       this.rs = rs;
       setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
           TimeUnit.SECONDS));
+      setCleanupInterval(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL,
+              TimeUnit.MILLISECONDS));
       setDaemon(true);
     }
 
@@ -953,6 +968,10 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       } else {
         ttl = (int)configTtl;
       }
+    }
+
+    public void setCleanupInterval(long configInterval) {
+      sleepTime = configInterval;
     }
 
   }
