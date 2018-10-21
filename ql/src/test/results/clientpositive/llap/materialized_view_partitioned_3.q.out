@@ -60,7 +60,6 @@ STAGE PLANS:
                         key expressions: _col1 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 55 Data size: 19268 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -70,7 +69,6 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY._col1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 55 Data size: 19268 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Dp Sort State: PARTITION_SORTED

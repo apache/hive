@@ -169,6 +169,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     List<String> cmds = getConfigs();
     cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.optimize.sort.dynamic.partition.threshold=-1");
     Expression expression = ExpressionFactory.fromString("CREATED_FILES > 5");
     Trigger trigger = new ExecutionTrigger("high_read_ops", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
@@ -193,6 +194,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     cmds.add("create table src2 (key int) partitioned by (value string)");
     cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.optimize.sort.dynamic.partition.threshold=-1");
     // query will get cancelled before creating 57 partitions
     String query =
       "insert overwrite table src2 partition (value) select * from " + tableName + " where under_col < 100";
@@ -237,6 +239,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     cmds.add("create table src3 (key int) partitioned by (value string)");
     cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.optimize.sort.dynamic.partition.threshold=-1");
     String query =
       "from " + tableName +
         " insert overwrite table src2 partition (value) select * where under_col < 100 " +
@@ -254,6 +257,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     cmds.add("create table src2 (key int) partitioned by (value string)");
     cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.optimize.sort.dynamic.partition.threshold=-1");
     // query will get cancelled before creating 57 partitions
     String query =
       "insert overwrite table src2 partition (value) " +

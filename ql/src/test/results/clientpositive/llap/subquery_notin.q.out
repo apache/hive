@@ -2594,24 +2594,16 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint), _col1 (type: bigint)
-                Select Operator
-                  expressions: _col1 (type: double)
-                  outputColumnNames: _col1
-                  Statistics: Num rows: 13 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: floor(_col1) (type: bigint)
+                  Group By Operator
+                    keys: _col0 (type: bigint)
+                    mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 13 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: _col0 (type: bigint)
-                      mode: hash
-                      outputColumnNames: _col0
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
                       Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
