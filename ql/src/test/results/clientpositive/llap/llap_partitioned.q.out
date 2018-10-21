@@ -1916,7 +1916,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: oft
-                  Statistics: Num rows: 12288 Data size: 1884148 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 13243096 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1937,7 +1937,7 @@ STAGE PLANS:
                     outputColumnNames: _col1, _col6, _col7, _col10
                     input vertices:
                       1 Map 2
-                    Statistics: Num rows: 960 Data size: 4040 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 960 Data size: 240494 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: _col10 (type: tinyint), _col1 (type: int), _col6 (type: char(255)), _col7 (type: varchar(255))
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -1945,13 +1945,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [10, 1, 6, 7]
-                      Statistics: Num rows: 960 Data size: 4040 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 960 Data size: 240494 Basic stats: COMPLETE Column stats: PARTIAL
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 960 Data size: 4040 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 960 Data size: 240494 Basic stats: COMPLETE Column stats: PARTIAL
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

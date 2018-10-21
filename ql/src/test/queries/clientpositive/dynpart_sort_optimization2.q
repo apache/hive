@@ -5,8 +5,7 @@ set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions=1000;
 set hive.exec.max.dynamic.partitions.pernode=1000;
 set hive.exec.dynamic.partition.mode=nonstrict;
-
-
+set hive.optimize.sort.dynamic.partition.threshold=1;
 
 -- SORT_QUERY_RESULTS
 
@@ -77,7 +76,7 @@ select * from ss_part where ss_sold_date_sk=2452617;
 desc formatted ss_part partition(ss_sold_date_sk=2452638);
 select * from ss_part where ss_sold_date_sk=2452638;
 
-set hive.optimize.sort.dynamic.partition=false;
+set hive.optimize.sort.dynamic.partition.threshold=-1;
 -- SORT DYNAMIC PARTITION DISABLED
 
 explain insert overwrite table ss_part partition (ss_sold_date_sk)
@@ -209,7 +208,7 @@ create table if not exists hive13_dp1 (
 PARTITIONED BY(`day` string)
 STORED AS ORC;
 
-set hive.optimize.sort.dynamic.partition=false;
+set hive.optimize.sort.dynamic.partition.threshold=-1;
 explain insert overwrite table `hive13_dp1` partition(`day`)
 select
     key k1,
@@ -227,7 +226,7 @@ from src
 group by "day", key;
 select * from hive13_dp1 order by k1, k2 limit 5;
 
-set hive.optimize.sort.dynamic.partition=true;
+set hive.optimize.sort.dynamic.partition.threshold=1;
 explain insert overwrite table `hive13_dp1` partition(`day`)
 select
     key k1,

@@ -7,6 +7,7 @@ set hive.fetch.task.conversion=none;
 set hive.map.aggr=false;
 -- disabling map side aggregation as that can lead to different intermediate record counts
 set hive.tez.exec.print.summary=true;
+set hive.optimize.sort.dynamic.partition.threshold=-1;
 
 create table testpart (k int) partitioned by (v string);
 insert overwrite table testpart partition(v) select * from src;
