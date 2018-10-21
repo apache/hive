@@ -1,6 +1,7 @@
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions.pernode=200;
 set hive.exec.max.dynamic.partitions=200;
+set hive.optimize.sort.dynamic.partition.threshold=-1;
 
 drop table src2_n3;
 create table src2_n3 (key int) partitioned by (value string);

@@ -3,6 +3,7 @@ set hive.exec.max.dynamic.partitions.pernode=200;
 set hive.exec.max.dynamic.partitions=200;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.optimize.sort.dynamic.partition.threshold=-1;
 
 drop table src2_n5;
 create table src2_n5 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only");
