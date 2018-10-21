@@ -517,6 +517,7 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF("to_epoch_milli", GenericUDFEpochMilli.class);
     system.registerGenericUDF("bucket_number", GenericUDFBucketNumber.class);
+    system.registerGenericUDF("tumbling_window", GenericUDFTumbledWindow.class);
 
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);

@@ -263,6 +263,7 @@ to_utc_timestamp
 translate
 trim
 trunc
+tumbling_window
 ucase
 udftoboolean
 udftobyte
