@@ -76,52 +76,28 @@ STAGE PLANS:
                     expressions: UDFToInteger(key) (type: int), value (type: string), (hash(key) pmod 2) (type: int)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.orcfile_merge1
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
-                      outputColumnNames: key, value, ds, part
-                      Statistics: Num rows: 500 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        keys: ds (type: string), part (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string), _col1 (type: string)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                          Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+                    Reduce Output Operator
+                      key expressions: _col2 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: int)
+                      value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-                keys: KEY._col0 (type: string), KEY._col1 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY._col2 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.orcfile_merge1
 
   Stage: Stage-2
     Dependency Collection
@@ -164,10 +140,8 @@ POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).key EXPRESSION [(src)sr
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Found 3 items
--rw-r--r--   3 ### USER ### ### GROUP ###        947 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        875 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        856 ### HDFS DATE ### hdfs://### HDFS PATH ###
+Found 1 items
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       1754 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -209,52 +183,28 @@ STAGE PLANS:
                     expressions: UDFToInteger(key) (type: int), value (type: string), (hash(key) pmod 2) (type: int)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.orcfile_merge1b
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
-                      outputColumnNames: key, value, ds, part
-                      Statistics: Num rows: 500 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        keys: ds (type: string), part (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string), _col1 (type: string)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                          Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+                    Reduce Output Operator
+                      key expressions: _col2 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: int)
+                      value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-                keys: KEY._col0 (type: string), KEY._col1 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY._col2 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.orcfile_merge1b
 
   Stage: Stage-8
     Conditional Operator
@@ -385,52 +335,28 @@ STAGE PLANS:
                     expressions: UDFToInteger(key) (type: int), value (type: string), (hash(key) pmod 2) (type: int)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.orcfile_merge1c
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
-                      outputColumnNames: key, value, ds, part
-                      Statistics: Num rows: 500 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
-                        keys: ds (type: string), part (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string), _col1 (type: string)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                          Statistics: Num rows: 250 Data size: 283250 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+                    Reduce Output Operator
+                      key expressions: _col2 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: int)
+                      value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
-              Group By Operator
-                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
-                keys: KEY._col0 (type: string), KEY._col1 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 250 Data size: 287250 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY._col2 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 500 Data size: 49500 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.orcfile_merge1c
 
   Stage: Stage-8
     Conditional Operator
@@ -511,7 +437,7 @@ POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).value SIMPLE [(src)src
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       2409 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       1754 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1 WHERE ds='1'
@@ -618,7 +544,7 @@ POSTHOOK: type: ALTER_PARTITION_MERGE
 POSTHOOK: Input: default@orcfile_merge1
 POSTHOOK: Output: default@orcfile_merge1@ds=1/part=0
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       2409 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       1754 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1c WHERE ds='1'
@@ -698,80 +624,41 @@ Type: struct<key:int,value:string>
 
 Stripe Statistics:
   Stripe 1:
-    Column 0: count: 90 hasNull: false
-    Column 1: count: 90 hasNull: false bytesOnDisk: 185 min: 0 max: 495 sum: 22736
-    Column 2: count: 90 hasNull: false bytesOnDisk: 428 min: val_0 max: val_86 sum: 612
-  Stripe 2:
-    Column 0: count: 78 hasNull: false
-    Column 1: count: 78 hasNull: false bytesOnDisk: 161 min: 0 max: 497 sum: 18371
-    Column 2: count: 78 hasNull: false bytesOnDisk: 380 min: val_0 max: val_95 sum: 529
-  Stripe 3:
-    Column 0: count: 74 hasNull: false
-    Column 1: count: 74 hasNull: false bytesOnDisk: 153 min: 2 max: 493 sum: 19663
-    Column 2: count: 74 hasNull: false bytesOnDisk: 363 min: val_105 max: val_97 sum: 505
+    Column 0: count: 242 hasNull: false
+    Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
+    Column 2: count: 242 hasNull: false bytesOnDisk: 910 min: val_0 max: val_97 sum: 1646
 
 File Statistics:
   Column 0: count: 242 hasNull: false
-  Column 1: count: 242 hasNull: false bytesOnDisk: 499 min: 0 max: 497 sum: 60770
-  Column 2: count: 242 hasNull: false bytesOnDisk: 1171 min: val_0 max: val_97 sum: 1646
+  Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
+  Column 2: count: 242 hasNull: false bytesOnDisk: 910 min: val_0 max: val_97 sum: 1646
 
 Stripes:
-  Stripe: offset: 3 data: 613 rows: 90 tail: 61 index: 76
-    Stream: column 0 section ROW_INDEX start: 3 length 11
-    Stream: column 1 section ROW_INDEX start: 14 length 27
-    Stream: column 2 section ROW_INDEX start: 41 length 38
-    Stream: column 1 section DATA start: 79 length 185
-    Stream: column 2 section DATA start: 264 length 377
-    Stream: column 2 section LENGTH start: 641 length 51
+  Stripe: offset: 3 data: 1399 rows: 242 tail: 73 index: 77
+    Stream: column 0 section ROW_INDEX start: 3 length 12
+    Stream: column 1 section ROW_INDEX start: 15 length 28
+    Stream: column 2 section ROW_INDEX start: 43 length 37
+    Stream: column 1 section DATA start: 80 length 489
+    Stream: column 2 section DATA start: 569 length 247
+    Stream: column 2 section LENGTH start: 816 length 71
+    Stream: column 2 section DICTIONARY_DATA start: 887 length 592
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
-    Encoding column 2: DIRECT_V2
+    Encoding column 2: DICTIONARY_V2[153]
     Row group indices for column 0:
-      Entry 0: count: 90 hasNull: false positions: 
+      Entry 0: count: 242 hasNull: false positions: 
     Row group indices for column 1:
-      Entry 0: count: 90 hasNull: false min: 0 max: 495 sum: 22736 positions: 0,0,0
+      Entry 0: count: 242 hasNull: false min: 0 max: 497 sum: 60770 positions: 0,0,0
     Row group indices for column 2:
-      Entry 0: count: 90 hasNull: false min: val_0 max: val_86 sum: 612 positions: 0,0,0,0,0
-  Stripe: offset: 753 data: 541 rows: 78 tail: 61 index: 76
-    Stream: column 0 section ROW_INDEX start: 753 length 11
-    Stream: column 1 section ROW_INDEX start: 764 length 27
-    Stream: column 2 section ROW_INDEX start: 791 length 38
-    Stream: column 1 section DATA start: 829 length 161
-    Stream: column 2 section DATA start: 990 length 332
-    Stream: column 2 section LENGTH start: 1322 length 48
-    Encoding column 0: DIRECT
-    Encoding column 1: DIRECT_V2
-    Encoding column 2: DIRECT_V2
-    Row group indices for column 0:
-      Entry 0: count: 78 hasNull: false positions: 
-    Row group indices for column 1:
-      Entry 0: count: 78 hasNull: false min: 0 max: 497 sum: 18371 positions: 0,0,0
-    Row group indices for column 2:
-      Entry 0: count: 78 hasNull: false min: val_0 max: val_95 sum: 529 positions: 0,0,0,0,0
-  Stripe: offset: 1431 data: 516 rows: 74 tail: 61 index: 78
-    Stream: column 0 section ROW_INDEX start: 1431 length 11
-    Stream: column 1 section ROW_INDEX start: 1442 length 27
-    Stream: column 2 section ROW_INDEX start: 1469 length 40
-    Stream: column 1 section DATA start: 1509 length 153
-    Stream: column 2 section DATA start: 1662 length 331
-    Stream: column 2 section LENGTH start: 1993 length 32
-    Encoding column 0: DIRECT
-    Encoding column 1: DIRECT_V2
-    Encoding column 2: DIRECT_V2
-    Row group indices for column 0:
-      Entry 0: count: 74 hasNull: false positions: 
-    Row group indices for column 1:
-      Entry 0: count: 74 hasNull: false min: 2 max: 493 sum: 19663 positions: 0,0,0
-    Row group indices for column 2:
-      Entry 0: count: 74 hasNull: false min: val_105 max: val_97 sum: 505 positions: 0,0,0,0,0
+      Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
 
-File length: 2409 bytes
+File length: 1754 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
 
 -- END ORC FILE DUMP --
-86	val_86	1	0
+2	val_2	1	0
 PREHOOK: query: select * from orcfile_merge1c where ds='1' and part='0' limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1c
@@ -787,80 +674,41 @@ Type: struct<key:int,value:string>
 
 Stripe Statistics:
   Stripe 1:
-    Column 0: count: 90 hasNull: false
-    Column 1: count: 90 hasNull: false bytesOnDisk: 185 min: 0 max: 495 sum: 22736
-    Column 2: count: 90 hasNull: false bytesOnDisk: 428 min: val_0 max: val_86 sum: 612
-  Stripe 2:
-    Column 0: count: 78 hasNull: false
-    Column 1: count: 78 hasNull: false bytesOnDisk: 161 min: 0 max: 497 sum: 18371
-    Column 2: count: 78 hasNull: false bytesOnDisk: 380 min: val_0 max: val_95 sum: 529
-  Stripe 3:
-    Column 0: count: 74 hasNull: false
-    Column 1: count: 74 hasNull: false bytesOnDisk: 153 min: 2 max: 493 sum: 19663
-    Column 2: count: 74 hasNull: false bytesOnDisk: 363 min: val_105 max: val_97 sum: 505
+    Column 0: count: 242 hasNull: false
+    Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
+    Column 2: count: 242 hasNull: false bytesOnDisk: 910 min: val_0 max: val_97 sum: 1646
 
 File Statistics:
   Column 0: count: 242 hasNull: false
-  Column 1: count: 242 hasNull: false bytesOnDisk: 499 min: 0 max: 497 sum: 60770
-  Column 2: count: 242 hasNull: false bytesOnDisk: 1171 min: val_0 max: val_97 sum: 1646
+  Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
+  Column 2: count: 242 hasNull: false bytesOnDisk: 910 min: val_0 max: val_97 sum: 1646
 
 Stripes:
-  Stripe: offset: 3 data: 613 rows: 90 tail: 61 index: 76
-    Stream: column 0 section ROW_INDEX start: 3 length 11
-    Stream: column 1 section ROW_INDEX start: 14 length 27
-    Stream: column 2 section ROW_INDEX start: 41 length 38
-    Stream: column 1 section DATA start: 79 length 185
-    Stream: column 2 section DATA start: 264 length 377
-    Stream: column 2 section LENGTH start: 641 length 51
+  Stripe: offset: 3 data: 1399 rows: 242 tail: 73 index: 77
+    Stream: column 0 section ROW_INDEX start: 3 length 12
+    Stream: column 1 section ROW_INDEX start: 15 length 28
+    Stream: column 2 section ROW_INDEX start: 43 length 37
+    Stream: column 1 section DATA start: 80 length 489
+    Stream: column 2 section DATA start: 569 length 247
+    Stream: column 2 section LENGTH start: 816 length 71
+    Stream: column 2 section DICTIONARY_DATA start: 887 length 592
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
-    Encoding column 2: DIRECT_V2
+    Encoding column 2: DICTIONARY_V2[153]
     Row group indices for column 0:
-      Entry 0: count: 90 hasNull: false positions: 
+      Entry 0: count: 242 hasNull: false positions: 
     Row group indices for column 1:
-      Entry 0: count: 90 hasNull: false min: 0 max: 495 sum: 22736 positions: 0,0,0
+      Entry 0: count: 242 hasNull: false min: 0 max: 497 sum: 60770 positions: 0,0,0
     Row group indices for column 2:
-      Entry 0: count: 90 hasNull: false min: val_0 max: val_86 sum: 612 positions: 0,0,0,0,0
-  Stripe: offset: 753 data: 541 rows: 78 tail: 61 index: 76
-    Stream: column 0 section ROW_INDEX start: 753 length 11
-    Stream: column 1 section ROW_INDEX start: 764 length 27
-    Stream: column 2 section ROW_INDEX start: 791 length 38
-    Stream: column 1 section DATA start: 829 length 161
-    Stream: column 2 section DATA start: 990 length 332
-    Stream: column 2 section LENGTH start: 1322 length 48
-    Encoding column 0: DIRECT
-    Encoding column 1: DIRECT_V2
-    Encoding column 2: DIRECT_V2
-    Row group indices for column 0:
-      Entry 0: count: 78 hasNull: false positions: 
-    Row group indices for column 1:
-      Entry 0: count: 78 hasNull: false min: 0 max: 497 sum: 18371 positions: 0,0,0
-    Row group indices for column 2:
-      Entry 0: count: 78 hasNull: false min: val_0 max: val_95 sum: 529 positions: 0,0,0,0,0
-  Stripe: offset: 1431 data: 516 rows: 74 tail: 61 index: 78
-    Stream: column 0 section ROW_INDEX start: 1431 length 11
-    Stream: column 1 section ROW_INDEX start: 1442 length 27
-    Stream: column 2 section ROW_INDEX start: 1469 length 40
-    Stream: column 1 section DATA start: 1509 length 153
-    Stream: column 2 section DATA start: 1662 length 331
-    Stream: column 2 section LENGTH start: 1993 length 32
-    Encoding column 0: DIRECT
-    Encoding column 1: DIRECT_V2
-    Encoding column 2: DIRECT_V2
-    Row group indices for column 0:
-      Entry 0: count: 74 hasNull: false positions: 
-    Row group indices for column 1:
-      Entry 0: count: 74 hasNull: false min: 2 max: 493 sum: 19663 positions: 0,0,0
-    Row group indices for column 2:
-      Entry 0: count: 74 hasNull: false min: val_105 max: val_97 sum: 505 positions: 0,0,0,0,0
+      Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
 
-File length: 2409 bytes
+File length: 1754 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
 
 -- END ORC FILE DUMP --
-86	val_86	1	0
+2	val_2	1	0
 PREHOOK: query: DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1

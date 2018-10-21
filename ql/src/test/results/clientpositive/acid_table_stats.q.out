@@ -97,7 +97,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-	totalSize           	4063                
+	totalSize           	4542                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -184,7 +184,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-	totalSize           	4063                
+	totalSize           	4542                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -235,7 +235,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	0                   
-	totalSize           	4063                
+	totalSize           	4542                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -331,7 +331,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	0                   
-	totalSize           	8126                
+	totalSize           	9085                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -380,7 +380,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	0                   
-	totalSize           	8126                
+	totalSize           	9085                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -455,11 +455,11 @@ STAGE PLANS:
           TableScan
             alias: acid
             filterExpr: (ds = '2008-04-08') (type: boolean)
-            Statistics: Num rows: 2000 Data size: 81260 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 90850 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 2000 Data size: 81260 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2000 Data size: 90850 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(key)
                 mode: hash
@@ -591,7 +591,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	176000              
-	totalSize           	3008                
+	totalSize           	3485                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

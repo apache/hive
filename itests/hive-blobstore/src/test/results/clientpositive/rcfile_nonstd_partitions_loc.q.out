@@ -143,7 +143,7 @@ POSTHOOK: query: SELECT COUNT(*) FROM rcfile_events
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_events
 #### A masked pattern was here ####
-200
+0
 PREHOOK: query: ALTER TABLE rcfile_events ADD PARTITION (run_date=201211, game_id=39, event_name='hq_change')
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -193,7 +193,7 @@ POSTHOOK: query: SELECT COUNT(*) FROM rcfile_events
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_events
 #### A masked pattern was here ####
-300
+100
 PREHOOK: query: INSERT INTO TABLE rcfile_events PARTITION (run_date=201211, game_id=39, event_name='hq_change')
 SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid FROM src_events
 WHERE SUBSTR(run_date,1,6)='201211'
@@ -232,7 +232,7 @@ POSTHOOK: query: SELECT COUNT(*) FROM rcfile_events
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_events
 #### A masked pattern was here ####
-400
+200
 PREHOOK: query: ALTER TABLE rcfile_events ADD PARTITION (run_date=201209, game_id=39, event_name='hq_change')
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
