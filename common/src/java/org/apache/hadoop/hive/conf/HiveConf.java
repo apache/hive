@@ -2942,7 +2942,7 @@ public class HiveConf extends Configuration {
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
-    HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile,file,s3,s3a",
+    HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile,file,s3,s3a,gs",
         "A comma separated list of acceptable URI schemes for import and export."),
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
     // deployment. It has not been documented in hive-default.xml intentionally, this should be removed
