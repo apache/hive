@@ -25,23 +25,26 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
-import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-class CreateTableHandler extends AbstractEventHandler {
+class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
 
   CreateTableHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  CreateTableMessage eventMessage(String stringRepresentation) {
+    return deserializer.getCreateTableMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    CreateTableMessage ctm = deserializer.getCreateTableMessage(event.getMessage());
-    LOG.info("Processing#{} CREATE_TABLE message : {}", fromEventId(), event.getMessage());
-    org.apache.hadoop.hive.metastore.api.Table tobj = ctm.getTableObj();
+    LOG.info("Processing#{} CREATE_TABLE message : {}", fromEventId(), eventMessageAsJSON);
+    org.apache.hadoop.hive.metastore.api.Table tobj = eventMessage.getTableObj();
 
     if (tobj == null) {
       LOG.debug("Event#{} was a CREATE_TABLE_EVENT with no table listed");
@@ -68,7 +71,7 @@ class CreateTableHandler extends AbstractEventHandler {
         withinContext.hiveConf);
 
     Path dataPath = new Path(withinContext.eventRoot, "data");
-    Iterable<String> files = ctm.getFiles();
+    Iterable<String> files = eventMessage.getFiles();
     if (files != null) {
       // encoded filename/checksum of files, write into _files
       try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
