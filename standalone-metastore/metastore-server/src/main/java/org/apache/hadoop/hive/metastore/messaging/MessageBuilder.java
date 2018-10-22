@@ -27,12 +27,10 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.PatternSyntaxException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -41,7 +39,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -337,16 +334,6 @@ public class MessageBuilder {
     return serializer.toString(functionObj, "UTF-8");
   }
 
-  private static ObjectNode getJsonTree(NotificationEvent event) throws Exception {
-    return getJsonTree(event.getMessage());
-  }
-
-  private static ObjectNode getJsonTree(String eventMessage) throws Exception {
-    JsonParser jsonParser = (new JsonFactory()).createJsonParser(eventMessage);
-    ObjectMapper mapper = new ObjectMapper();
-    return mapper.readValue(jsonParser, ObjectNode.class);
-  }
-
   public static Table getTableObj(ObjectNode jsonTree) throws Exception {
     TDeserializer deSerializer = new TDeserializer(new TJSONProtocol.Factory());
     Table tableObj = new Table();
@@ -418,15 +405,7 @@ public class MessageBuilder {
       ObjectNode jsonTree, String objRefListName, final Class<? extends TBase> objClass)
       throws Exception {
     Iterable<JsonNode> jsonArrayIterator = jsonTree.get(objRefListName);
-    com.google.common.base.Function<JsonNode, String> textExtractor =
-        new com.google.common.base.Function<JsonNode, String>() {
-          @Nullable
-
-          public String apply(JsonNode input) {
-            return input.asText();
-          }
-        };
-    return getTObjs(Iterables.transform(jsonArrayIterator, textExtractor), objClass);
+    return getTObjs(Iterables.transform(jsonArrayIterator, JsonNode::asText), objClass);
   }
 
   public static Map<String, String> getPartitionKeyValues(Table table, Partition partition) {
