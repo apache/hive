@@ -69,7 +69,8 @@ public class UnManagedSingleTransaction extends AbstractStreamingTransaction {
   }
 
   @Override
-  public void commitWithPartitions(Set<String> partitions) throws StreamingException {
+  public void commit(Set<String> partitions, String key, String value)
+      throws StreamingException {
     checkIsClosed();
     boolean success = false;
     try {

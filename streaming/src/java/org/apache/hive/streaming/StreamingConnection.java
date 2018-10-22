@@ -66,13 +66,26 @@ public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
   void commitTransaction() throws StreamingException;
 
   /**
-   * Commit a transaction to make the writes visible for readers. Include
-   * other partitions that may have been added independently.
-   *
+   * Commits the transaction together with a key value atomically.
    * @param partitions - extra partitions to commit.
-   * @throws StreamingException - if there are errors when committing the open transaction.
+   * @param key - key to commit.
+   * @param value - value to commit.
+   * @throws StreamingException - if there are errors when committing
+   * the open transaction.
    */
-  default void commitTransactionWithPartition(@Nullable Set<String> partitions)
+  default void commitTransaction(@Nullable Set<String> partitions,
+      @Nullable String key, @Nullable String value) throws StreamingException {
+    throw new UnsupportedOperationException();
+  }
+
+    /**
+     * Commit a transaction to make the writes visible for readers. Include
+     * other partitions that may have been added independently.
+     *
+     * @param partitions - extra partitions to commit.
+     * @throws StreamingException - if there are errors when committing the open transaction.
+     */
+  default void commitTransaction(@Nullable Set<String> partitions)
       throws StreamingException {
     throw new UnsupportedOperationException();
   }

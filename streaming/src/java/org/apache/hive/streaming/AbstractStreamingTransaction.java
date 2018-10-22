@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -151,6 +152,9 @@ abstract class AbstractStreamingTransaction
   }
 
   public void commit() throws StreamingException {
-    commitWithPartitions(null);
+    commit(null);
+  }
+  public void commit(Set<String> partitions) throws StreamingException {
+    commit(partitions, null, null);
   }
 }
