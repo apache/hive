@@ -19,6 +19,8 @@
 package org.apache.hive.streaming;
 
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +47,17 @@ public interface StreamingTransaction {
    * @param partitions to commit.
    * @throws StreamingException
    */
-  void commitWithPartitions(Set<String> partitions) throws StreamingException;
+  void commit(@Nullable Set<String> partitions) throws StreamingException;
+
+  /**
+   * Commits atomically together with a key and a value.
+   * @param partitions to commit.
+   * @param key to commit.
+   * @param value to commit.
+   * @throws StreamingException
+   */
+  void commit(@Nullable Set<String> partitions, @Nullable String key,
+      @Nullable String value) throws StreamingException;
 
   /**
    * Abort a transaction.

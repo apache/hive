@@ -80,6 +80,11 @@ public class TransactionBatch extends AbstractStreamingTransaction {
 
   private String agentInfo;
   private int numTxns;
+
+  /**
+   * Id of the table from the streaming connection.
+   */
+  private final long tableId;
   /**
    * Tracks the state of each transaction.
    */
@@ -107,6 +112,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
       this.recordWriter = conn.getRecordWriter();
       this.agentInfo = conn.getAgentInfo();
       this.numTxns = conn.getTransactionBatchSize();
+      this.tableId = conn.getTable().getTTable().getId();
 
       setupHeartBeatThread();
 
@@ -244,19 +250,26 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     }
   }
 
-  public void commitWithPartitions(Set<String> partitions) throws StreamingException {
+  public void commit(Set<String> partitions, String key, String value)
+      throws StreamingException {
     checkIsClosed();
     boolean success = false;
     try {
-      commitImpl(partitions);
+      commitImpl(partitions, key, value);
       success = true;
     } finally {
       markDead(success);
     }
   }
 
-  private void commitImpl(Set<String> partitions) throws StreamingException {
+  private void commitImpl(Set<String> partitions, String key, String value)
+      throws StreamingException {
     try {
+      if ((key == null && value != null) || (key != null && value == null)) {
+        throw new StreamingException(String.format(
+            "If key is set, the value should be as well and vice versa,"
+                + " key, value = %s, %s", key, value));
+      }
       recordWriter.flush();
       TxnToWriteId txnToWriteId = txnToWriteIds.get(currentTxnIndex);
       if (conn.isDynamicPartitioning()) {
@@ -274,7 +287,12 @@ public class TransactionBatch extends AbstractStreamingTransaction {
       }
       transactionLock.lock();
       try {
-        conn.getMSC().commitTxn(txnToWriteId.getTxnId());
+        if (key != null) {
+          conn.getMSC().commitTxnWithKeyValue(txnToWriteId.getTxnId(),
+              tableId, key, value);
+        } else {
+          conn.getMSC().commitTxn(txnToWriteId.getTxnId());
+        }
         // increment the min txn id so that heartbeat thread will heartbeat only from the next open transaction.
         // the current transaction is going to committed or fail, so don't need heartbeat for current transaction.
         if (currentTxnIndex + 1 < txnToWriteIds.size()) {

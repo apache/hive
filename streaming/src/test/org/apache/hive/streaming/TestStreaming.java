@@ -439,6 +439,43 @@ public class TestStreaming {
   }
 
   @Test
+  public void testCommitWithKeyValue() throws Exception {
+    queryTable(driver, "drop table if exists default.keyvalue");
+    queryTable(driver, "create table default.keyvalue (a string, b string) stored as orc " +
+        "TBLPROPERTIES('transactional'='true')");
+    queryTable(driver, "insert into default.keyvalue values('foo','bar')");
+    queryTable(driver, "ALTER TABLE default.keyvalue SET TBLPROPERTIES('_metamykey' = 'myvalue')");
+    List<String> rs = queryTable(driver, "select * from default.keyvalue");
+    Assert.assertEquals(1, rs.size());
+    Assert.assertEquals("foo\tbar", rs.get(0));
+    StrictDelimitedInputWriter wr = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+        .withDatabase("Default")
+        .withTable("keyvalue")
+        .withAgentInfo("UT_" + Thread.currentThread().getName())
+        .withTransactionBatchSize(2)
+        .withRecordWriter(wr)
+        .withHiveConf(conf)
+        .connect();
+    connection.beginTransaction();
+    connection.write("a1,b2".getBytes());
+    connection.write("a3,b4".getBytes());
+    connection.commitTransaction(null,  "_metamykey", "myvalue");
+    connection.close();
+
+    rs = queryTable(driver, "select ROW__ID, a, b, INPUT__FILE__NAME from default.keyvalue order by ROW__ID");
+    Assert.assertTrue(rs.get(1), rs.get(1).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\ta1\tb2"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("keyvalue/delta_0000002_0000003/bucket_00000"));
+    Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\ta3\tb4"));
+    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("keyvalue/delta_0000002_0000003/bucket_00000"));
+
+    rs = queryTable(driver, "SHOW TBLPROPERTIES default.keyvalue('_metamykey')");
+    Assert.assertEquals(rs.get(0), "_metamykey\tmyvalue", rs.get(0));
+  }
+
+  @Test
   public void testConnectionWithWriteId() throws Exception {
     queryTable(driver, "drop table if exists default.writeidconnection");
     queryTable(driver, "create table default.writeidconnection (a string, b string) stored as orc " +
@@ -1139,7 +1176,7 @@ public class TestStreaming {
       Assert.fail("Partition shouldn't exist so a NoSuchObjectException should have been raised");
     } catch (NoSuchObjectException e) {}
 
-    transactionConnection.commitTransactionWithPartition(partitions);
+    transactionConnection.commitTransaction(partitions);
 
     // Ensure partition is present
     Partition p = msClient.getPartition(dbName, tblName, newPartVals);
@@ -1217,7 +1254,7 @@ public class TestStreaming {
 
     partitionsOne.addAll(partitionsTwo);
     Set<String> allPartitions = partitionsOne;
-    transactionConnection.commitTransactionWithPartition(allPartitions);
+    transactionConnection.commitTransaction(allPartitions);
 
     // Ensure partition is present
     for (String partition : allPartitions) {

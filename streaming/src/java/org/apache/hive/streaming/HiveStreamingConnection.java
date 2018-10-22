@@ -146,6 +146,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   private boolean manageTransactions;
   private int countTransactions = 0;
   private Set<String> partitions;
+  private Long tableId;
 
   private HiveStreamingConnection(Builder builder) throws StreamingException {
     this.database = builder.database.toLowerCase();
@@ -574,12 +575,18 @@ public class HiveStreamingConnection implements StreamingConnection {
 
   @Override
   public void commitTransaction() throws StreamingException {
-    commitTransactionWithPartition(null);
+    commitTransaction(null);
   }
 
   @Override
-  public void commitTransactionWithPartition(Set<String> partitions)
+  public void commitTransaction(Set<String> partitions)
       throws StreamingException {
+    commitTransaction(partitions, null, null);
+  }
+
+  @Override
+  public void commitTransaction(Set<String> partitions, String key,
+      String value) throws StreamingException {
     checkState();
 
     Set<String> createdPartitions = new HashSet<>();
@@ -598,7 +605,7 @@ public class HiveStreamingConnection implements StreamingConnection {
       connectionStats.incrementTotalPartitions(partitions.size());
     }
 
-    currentTransactionBatch.commitWithPartitions(createdPartitions);
+    currentTransactionBatch.commit(createdPartitions, key, value);
     this.partitions.addAll(
         currentTransactionBatch.getPartitions());
     connectionStats.incrementCreatedPartitions(createdPartitions.size());
