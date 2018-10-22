@@ -423,10 +423,12 @@ public class WarehouseInstance implements Closeable {
                                long expectedCount) throws Exception {
     NotificationEventsCountRequest rqst = new NotificationEventsCountRequest(fromEventId, dbName);
 
-    if (toEventId != null)
+    if (toEventId != null) {
       rqst.setToEventId(toEventId);
-    if (limit != null)
+    }
+    if (limit != null) {
       rqst.setLimit(limit);
+    }
 
     assertEquals(expectedCount, client.getNotificationEventsCount(rqst).getEventsCount());
   }

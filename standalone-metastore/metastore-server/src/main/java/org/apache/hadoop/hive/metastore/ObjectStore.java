@@ -10267,7 +10267,7 @@ public class ObjectStore implements RawStore, Configurable {
       // count fromEventId onwards events
       queryStr = queryStr + " where eventId > fromEventId";
       paramSpecs = "java.lang.Long fromEventId";
-      paramVals.add(new Long(fromEventId));
+      paramVals.add(Long.valueOf(fromEventId));
 
       // Input database name can be a database name or a *. In the first case we add a filter
       // condition on dbName column, but not in the second case, since a * means all the
@@ -10293,7 +10293,7 @@ public class ObjectStore implements RawStore, Configurable {
         toEventId = rqst.getToEventId();
         queryStr = queryStr + " && eventId <= toEventId";
         paramSpecs = paramSpecs + ", java.lang.Long toEventId";
-        paramVals.add(new Long(toEventId));
+        paramVals.add(Long.valueOf(toEventId));
       }
 
       query = pm.newQuery(queryStr);

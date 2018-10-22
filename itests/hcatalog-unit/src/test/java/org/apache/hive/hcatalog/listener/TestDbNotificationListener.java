@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
@@ -298,10 +297,12 @@ public class TestDbNotificationListener {
                                long expectedCount) throws Exception {
     NotificationEventsCountRequest rqst = new NotificationEventsCountRequest(fromEventId, dbName);
 
-    if (toEventId != null)
+    if (toEventId != null) {
       rqst.setToEventId(toEventId);
-    if (limit != null)
+    }
+    if (limit != null) {
       rqst.setLimit(limit);
+    }
 
     assertEquals(expectedCount, msClient.getNotificationEventsCount(rqst).getEventsCount());
   }
@@ -348,7 +349,7 @@ public class TestDbNotificationListener {
     assertEquals(1, rsp.getEventsSize());
 
     // There's only one event corresponding to CREATE DATABASE
-	testEventCounts(dbName, firstEventId, null, null, 1);
+    testEventCounts(dbName, firstEventId, null, null, 1);
     testEventCounts(dbName2, firstEventId, null, null, 0);
   }
 
@@ -398,7 +399,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
-    testEventCounts(dbName2, firstEventId, null, null,1);
+    testEventCounts(dbName2, firstEventId, null, null, 1);
   }
 
   @Test
