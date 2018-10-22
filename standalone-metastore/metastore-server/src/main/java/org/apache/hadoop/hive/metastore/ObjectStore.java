@@ -9052,21 +9052,27 @@ public class ObjectStore implements RawStore, Configurable {
         return null;
       }
 
-      MTable table = getMTable(catName, dbName, tblName);
+      Table table = getTable(catName, dbName, tblName);
       boolean isTxn = TxnUtils.isTransactionalTable(table.getParameters());
       if (isTxn && !areTxnStatsSupported) {
         return null;
       }
+      GetPartitionsFilterSpec fs = new GetPartitionsFilterSpec();
+      fs.setFilterMode(PartitionFilterMode.BY_NAMES);
+      fs.setFilters(partNames);
+      GetPartitionsProjectionSpec ps = new GetPartitionsProjectionSpec();
+      ps.setIncludeParamKeyPattern(StatsSetupConst.COLUMN_STATS_ACCURATE + '%');
+      ps.setFieldList(Lists.newArrayList("writeId", "parameters", "values"));
+      List<Partition> parts = getPartitionSpecsByFilterAndProjection(table, ps, fs);
 
       // Loop through the given "partNames" list
       // checking isolation-level-compliance of each partition column stats.
-      for (String partName : partNames) {
-        MPartition mpart = getMPartition(
-            catName, dbName, tblName, Warehouse.getPartValuesFromPartName(partName));
-        if (!isCurrentStatsValidForTheQuery(mpart, writeIdList, false)) {
-          LOG.debug("The current metastore transactional partition column statistics " +
-                  "for " + dbName + "." + tblName + "." + mpart.getPartitionName() + " is not valid " +
-                  "for the current query.");
+      for (Partition part : parts) {
+
+        if (!isCurrentStatsValidForTheQuery(part, part.getWriteId(), writeIdList, false)) {
+          String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+          LOG.debug("The current metastore transactional partition column statistics for " + dbName
+              + "." + tblName + "." + partName + " is not valid for the current query");
           return null;
         }
       }

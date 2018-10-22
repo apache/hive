@@ -26,6 +26,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -369,8 +371,8 @@ public class PartitionProjectionEvaluator {
     int numColumns = buildQueryForSingleValuedFields(partitionIds, queryTextBuilder);
     String queryText = queryTextBuilder.toString();
 
-    try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-
+    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try {
       long start = LOG.isDebugEnabled() ? System.nanoTime() : 0;
       List<Object> sqlResult = MetastoreDirectSqlUtils.executeWithArray(query, null, queryText);
       long queryTime = LOG.isDebugEnabled() ? System.nanoTime() : 0;
@@ -456,6 +458,8 @@ public class PartitionProjectionEvaluator {
     } catch (Exception e) {
       LOG.error("Exception received while getting partitions using projected fields", e);
       throw new MetaException(e.getMessage());
+    } finally {
+      query.closeAll();
     }
   }
 
