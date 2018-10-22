@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
@@ -30,7 +30,7 @@ abstract class AbstractMessageHandler implements MessageHandler {
   final HashSet<ReadEntity> readEntitySet = new HashSet<>();
   final HashSet<WriteEntity> writeEntitySet = new HashSet<>();
   final UpdatedMetaDataTracker updatedMetadata = new UpdatedMetaDataTracker();
-  final MessageDeserializer deserializer = MessageFactory.getInstance().getDeserializer();
+  final MessageDeserializer deserializer = JSONMessageEncoder.getInstance().getDeserializer();
 
   @Override
   public Set<ReadEntity> readEntities() {

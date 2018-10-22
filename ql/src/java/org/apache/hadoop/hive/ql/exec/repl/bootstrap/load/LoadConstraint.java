@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.ConstraintEvent;
@@ -63,7 +63,7 @@ public class LoadConstraint {
   private final ConstraintEvent event;
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
-  private final MessageDeserializer deserializer = MessageFactory.getInstance().getDeserializer();
+  private final MessageDeserializer deserializer = JSONMessageEncoder.getInstance().getDeserializer();
 
   public LoadConstraint(Context context, ConstraintEvent event, String dbNameToLoadIn,
       TaskTracker existingTracker) {

@@ -19,21 +19,27 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 
+import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class DropPartitionHandler extends AbstractEventHandler {
+class DropPartitionHandler extends AbstractEventHandler<DropPartitionMessage> {
 
   DropPartitionHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  DropPartitionMessage eventMessage(String stringRepresentation) {
+    return deserializer.getDropPartitionMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} DROP_PARTITION message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} DROP_PARTITION message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 
