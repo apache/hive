@@ -63,7 +63,7 @@ public class SettableConfigUpdater {
     // if admin has already customized this list, honor that
     String curBlackList = hiveConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST);
     if (curBlackList == null || curBlackList.trim().isEmpty()) {
-      hiveConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect,reflect2,java_method");
+      hiveConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect,reflect2,java_method,in_file");
     }
   }
 
