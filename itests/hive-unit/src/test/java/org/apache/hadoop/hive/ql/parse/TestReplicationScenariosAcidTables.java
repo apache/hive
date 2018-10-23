@@ -482,7 +482,6 @@ public class TestReplicationScenariosAcidTables {
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    // create table will start and coomit the transaction
     primary.run("use " + primaryDbName)
            .run("CREATE TABLE " + tableName +
             " (key int, value int) PARTITIONED BY (load_date date) " +
@@ -495,6 +494,11 @@ public class TestReplicationScenariosAcidTables {
 
     WarehouseInstance.Tuple incrementalDump =
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+
+    long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 20);
+
+    // Test load
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId);
