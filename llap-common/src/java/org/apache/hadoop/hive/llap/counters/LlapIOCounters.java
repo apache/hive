@@ -36,7 +36,9 @@ public enum LlapIOCounters {
   TOTAL_IO_TIME_NS(false),
   DECODE_TIME_NS(false),
   HDFS_TIME_NS(false),
-  CONSUMER_TIME_NS(false);
+  CONSUMER_TIME_NS(false),
+  IO_CPU_NS(false),
+  IO_USER_NS(false);
 
   // flag to indicate if these counters are subject to change across different test runs
   private boolean testSafe;

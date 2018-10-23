@@ -1688,7 +1688,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private void recordReaderTime(long startTime) {
-    counters.incrTimeCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
+    counters.incrWallClockCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
   }
 
   private boolean processStop() {

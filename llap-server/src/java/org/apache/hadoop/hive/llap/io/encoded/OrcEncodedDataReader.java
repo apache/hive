@@ -445,7 +445,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private void recordReaderTime(long startTime) {
-    counters.incrTimeCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
+    counters.incrWallClockCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
   }
 
   private void validateFileMetadata() throws IOException {
@@ -522,7 +522,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
     orcReader = EncodedOrcFile.createReader(path, opts);
-    counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
+    counters.incrWallClockCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
   }
 
   /**
@@ -680,7 +680,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     DiskRangeList footerRange = rawDataReader.readFileData(
         new DiskRangeList(offset, offset + si.getFooterLength()), 0, false);
     // LOG.error("Got " + RecordReaderUtils.stringifyDiskRanges(footerRange));
-    counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
+    counters.incrWallClockCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
     assert footerRange.next == null; // Can only happens w/zcr for a single input buffer.
     if (hasCache) {
       LlapBufferOrBuffers cacheBuf = metadataCache.putStripeTail(
@@ -719,7 +719,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       if (!isRawDataReaderOpen && isOpen) {
         long startTime = counters.startTimeCounter();
         rawDataReader.open();
-        counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
+        counters.incrWallClockCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
       }
       return;
     }
@@ -737,7 +737,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       rawDataReader.open();
       isRawDataReaderOpen = true;
     }
-    counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
+    counters.incrWallClockCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
   }
 
   @Override
