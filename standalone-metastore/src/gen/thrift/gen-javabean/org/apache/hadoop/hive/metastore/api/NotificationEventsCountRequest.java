@@ -14,6 +14,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField FROM_EVENT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("fromEventId", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField TO_EVENT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("toEventId", org.apache.thrift.protocol.TType.I64, (short)4);
+  private static final org.apache.thrift.protocol.TField LIMIT_FIELD_DESC = new org.apache.thrift.protocol.TField("limit", org.apache.thrift.protocol.TType.I64, (short)5);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new NotificationEventsCountRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new NotificationEventsCountRequestTupleSchemeFactory();
@@ -21,88 +23,47 @@ package org.apache.hadoop.hive.metastore.api;
   private long fromEventId; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
-
-  /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    FROM_EVENT_ID((short)1, "fromEventId"),
-    DB_NAME((short)2, "dbName"),
-    CAT_NAME((short)3, "catName");
-
-    private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
-
-    static {
-      for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
-        byName.put(field.getFieldName(), field);
-      }
-    }
-
-    /**
-     * Find the _Fields constant that matches fieldId, or null if its not found.
-     */
-    @org.apache.thrift.annotation.Nullable
-    public static _Fields findByThriftId(int fieldId) {
-      switch(fieldId) {
-        case 1: // FROM_EVENT_ID
-          return FROM_EVENT_ID;
-        case 2: // DB_NAME
-          return DB_NAME;
-        case 3: // CAT_NAME
-          return CAT_NAME;
-        default:
-          return null;
-      }
-    }
-
-    /**
-     * Find the _Fields constant that matches fieldId, throwing an exception
-     * if it is not found.
-     */
-    public static _Fields findByThriftIdOrThrow(int fieldId) {
-      _Fields fields = findByThriftId(fieldId);
-      if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-      return fields;
-    }
-
-    /**
-     * Find the _Fields constant that matches name, or null if its not found.
-     */
-    @org.apache.thrift.annotation.Nullable
-    public static _Fields findByName(java.lang.String name) {
-      return byName.get(name);
-    }
-
-    private final short _thriftId;
-    private final java.lang.String _fieldName;
-
-    _Fields(short thriftId, java.lang.String fieldName) {
-      _thriftId = thriftId;
-      _fieldName = fieldName;
-    }
-
-    public short getThriftFieldId() {
-      return _thriftId;
-    }
-
-    public java.lang.String getFieldName() {
-      return _fieldName;
-    }
-  }
+  private static final int __TOEVENTID_ISSET_ID = 1;
+  private static final int __LIMIT_ISSET_ID = 2;
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.TO_EVENT_ID,_Fields.LIMIT};
 
   // isset id assignments
   private static final int __FROMEVENTID_ISSET_ID = 0;
-  private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME};
-  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.FROM_EVENT_ID, new org.apache.thrift.meta_data.FieldMetaData("fromEventId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.FROM_EVENT_ID, new org.apache.thrift.meta_data.FieldMetaData("fromEventId", org.apache.thrift.TFieldRequirementType.REQUIRED,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TO_EVENT_ID, new org.apache.thrift.meta_data.FieldMetaData("toEventId", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.LIMIT, new org.apache.thrift.meta_data.FieldMetaData("limit", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(NotificationEventsCountRequest.class, metaDataMap);
+  }
+
+  private long toEventId; // optional
+  private byte __isset_bitfield = 0;
+  private long limit; // optional
+  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public NotificationEventsCountRequest(NotificationEventsCountRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
+    this.fromEventId = other.fromEventId;
+    if (other.isSetDbName()) {
+      this.dbName = other.dbName;
+    }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
+    this.toEventId = other.toEventId;
+    this.limit = other.limit;
   }
 
   public NotificationEventsCountRequest() {
@@ -118,30 +79,24 @@ package org.apache.hadoop.hive.metastore.api;
     this.dbName = dbName;
   }
 
-  /**
-   * Performs a deep copy on <i>other</i>.
-   */
-  public NotificationEventsCountRequest(NotificationEventsCountRequest other) {
-    __isset_bitfield = other.__isset_bitfield;
-    this.fromEventId = other.fromEventId;
-    if (other.isSetDbName()) {
-      this.dbName = other.dbName;
-    }
-    if (other.isSetCatName()) {
-      this.catName = other.catName;
-    }
-  }
-
-  public NotificationEventsCountRequest deepCopy() {
-    return new NotificationEventsCountRequest(this);
-  }
-
   @Override
   public void clear() {
     setFromEventIdIsSet(false);
     this.fromEventId = 0;
     this.dbName = null;
     this.catName = null;
+    setToEventIdIsSet(false);
+    this.toEventId = 0;
+    setLimitIsSet(false);
+    this.limit = 0;
+  }
+
+  public NotificationEventsCountRequest deepCopy() {
+    return new NotificationEventsCountRequest(this);
+  }
+
+  public long getToEventId() {
+    return this.toEventId;
   }
 
   public long getFromEventId() {
@@ -214,6 +169,46 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public void setToEventId(long toEventId) {
+    this.toEventId = toEventId;
+    setToEventIdIsSet(true);
+  }
+
+  public void unsetToEventId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOEVENTID_ISSET_ID);
+  }
+
+  /** Returns true if field toEventId is set (has been assigned a value) and false otherwise */
+  public boolean isSetToEventId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOEVENTID_ISSET_ID);
+  }
+
+  public void setToEventIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOEVENTID_ISSET_ID, value);
+  }
+
+  public long getLimit() {
+    return this.limit;
+  }
+
+  public void setLimit(long limit) {
+    this.limit = limit;
+    setLimitIsSet(true);
+  }
+
+  public void unsetLimit() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __LIMIT_ISSET_ID);
+  }
+
+  /** Returns true if field limit is set (has been assigned a value) and false otherwise */
+  public boolean isSetLimit() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __LIMIT_ISSET_ID);
+  }
+
+  public void setLimitIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LIMIT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case FROM_EVENT_ID:
@@ -240,6 +235,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case TO_EVENT_ID:
+      if (value == null) {
+        unsetToEventId();
+      } else {
+        setToEventId((java.lang.Long)value);
+      }
+      break;
+
+    case LIMIT:
+      if (value == null) {
+        unsetLimit();
+      } else {
+        setLimit((java.lang.Long)value);
+      }
+      break;
+
     }
   }
 
@@ -254,6 +265,12 @@ package org.apache.hadoop.hive.metastore.api;
 
     case CAT_NAME:
       return getCatName();
+
+    case TO_EVENT_ID:
+      return getToEventId();
+
+    case LIMIT:
+      return getLimit();
 
     }
     throw new java.lang.IllegalStateException();
@@ -272,17 +289,12 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetDbName();
     case CAT_NAME:
       return isSetCatName();
+    case TO_EVENT_ID:
+      return isSetToEventId();
+    case LIMIT:
+      return isSetLimit();
     }
     throw new java.lang.IllegalStateException();
-  }
-
-  @Override
-  public boolean equals(java.lang.Object that) {
-    if (that == null)
-      return false;
-    if (that instanceof NotificationEventsCountRequest)
-      return this.equals((NotificationEventsCountRequest)that);
-    return false;
   }
 
   public boolean equals(NotificationEventsCountRequest that) {
@@ -318,7 +330,34 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_toEventId = true && this.isSetToEventId();
+    boolean that_present_toEventId = true && that.isSetToEventId();
+    if (this_present_toEventId || that_present_toEventId) {
+      if (!(this_present_toEventId && that_present_toEventId))
+        return false;
+      if (this.toEventId != that.toEventId)
+        return false;
+    }
+
+    boolean this_present_limit = true && this.isSetLimit();
+    boolean that_present_limit = true && that.isSetLimit();
+    if (this_present_limit || that_present_limit) {
+      if (!(this_present_limit && that_present_limit))
+        return false;
+      if (this.limit != that.limit)
+        return false;
+    }
+
     return true;
+  }
+
+  @Override
+  public boolean equals(java.lang.Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof NotificationEventsCountRequest)
+      return this.equals((NotificationEventsCountRequest)that);
+    return false;
   }
 
   @Override
@@ -334,6 +373,14 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
     if (isSetCatName())
       hashCode = hashCode * 8191 + catName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetToEventId()) ? 131071 : 524287);
+    if (isSetToEventId())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(toEventId);
+
+    hashCode = hashCode * 8191 + ((isSetLimit()) ? 131071 : 524287);
+    if (isSetLimit())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(limit);
 
     return hashCode;
   }
@@ -376,20 +423,27 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetToEventId()).compareTo(other.isSetToEventId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetToEventId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.toEventId, other.toEventId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetLimit()).compareTo(other.isSetLimit());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLimit()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.limit, other.limit);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public _Fields fieldForId(int fieldId) {
-    return _Fields.findByThriftId(fieldId);
-  }
-
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-    scheme(iprot).read(iprot, this);
-  }
-
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-    scheme(oprot).write(oprot, this);
   }
 
   @Override
@@ -418,8 +472,105 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetToEventId()) {
+      if (!first) sb.append(", ");
+      sb.append("toEventId:");
+      sb.append(this.toEventId);
+      first = false;
+    }
+    if (isSetLimit()) {
+      if (!first) sb.append(", ");
+      sb.append("limit:");
+      sb.append(this.limit);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
+  }
+
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    scheme(iprot).read(iprot, this);
+  }
+
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    scheme(oprot).write(oprot, this);
+  }
+
+  /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    FROM_EVENT_ID((short)1, "fromEventId"),
+    DB_NAME((short)2, "dbName"),
+    CAT_NAME((short)3, "catName"),
+    TO_EVENT_ID((short)4, "toEventId"),
+    LIMIT((short)5, "limit");
+
+    private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
+
+    static {
+      for (_Fields field : java.util.EnumSet.allOf(_Fields.class)) {
+        byName.put(field.getFieldName(), field);
+      }
+    }
+
+    /**
+     * Find the _Fields constant that matches fieldId, or null if its not found.
+     */
+    @org.apache.thrift.annotation.Nullable
+    public static _Fields findByThriftId(int fieldId) {
+      switch(fieldId) {
+        case 1: // FROM_EVENT_ID
+          return FROM_EVENT_ID;
+        case 2: // DB_NAME
+          return DB_NAME;
+        case 3: // CAT_NAME
+          return CAT_NAME;
+        case 4: // TO_EVENT_ID
+          return TO_EVENT_ID;
+        case 5: // LIMIT
+          return LIMIT;
+        default:
+          return null;
+      }
+    }
+
+    /**
+     * Find the _Fields constant that matches fieldId, throwing an exception
+     * if it is not found.
+     */
+    public static _Fields findByThriftIdOrThrow(int fieldId) {
+      _Fields fields = findByThriftId(fieldId);
+      if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+      return fields;
+    }
+
+    /**
+     * Find the _Fields constant that matches name, or null if its not found.
+     */
+    @org.apache.thrift.annotation.Nullable
+    public static _Fields findByName(java.lang.String name) {
+      return byName.get(name);
+    }
+
+    private final short _thriftId;
+    private final java.lang.String _fieldName;
+
+    _Fields(short thriftId, java.lang.String fieldName) {
+      _thriftId = thriftId;
+      _fieldName = fieldName;
+    }
+
+    public short getThriftFieldId() {
+      return _thriftId;
+    }
+
+    public java.lang.String getFieldName() {
+      return _fieldName;
+    }
   }
 
   public void validate() throws org.apache.thrift.TException {
@@ -495,6 +646,22 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // TO_EVENT_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.toEventId = iprot.readI64();
+              struct.setToEventIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // LIMIT
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.limit = iprot.readI64();
+              struct.setLimitIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -523,6 +690,16 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetToEventId()) {
+        oprot.writeFieldBegin(TO_EVENT_ID_FIELD_DESC);
+        oprot.writeI64(struct.toEventId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetLimit()) {
+        oprot.writeFieldBegin(LIMIT_FIELD_DESC);
+        oprot.writeI64(struct.limit);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -546,9 +723,21 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCatName()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetToEventId()) {
+        optionals.set(1);
+      }
+      if (struct.isSetLimit()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
+      }
+      if (struct.isSetToEventId()) {
+        oprot.writeI64(struct.toEventId);
+      }
+      if (struct.isSetLimit()) {
+        oprot.writeI64(struct.limit);
       }
     }
 
@@ -559,10 +748,18 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setFromEventIdIsSet(true);
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.toEventId = iprot.readI64();
+        struct.setToEventIdIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.limit = iprot.readI64();
+        struct.setLimitIsSet(true);
       }
     }
   }

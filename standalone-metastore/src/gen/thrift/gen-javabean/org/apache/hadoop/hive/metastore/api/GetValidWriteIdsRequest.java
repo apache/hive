@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetValidWriteIdsRequestTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> fullTableNames; // required
-  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  // isset id assignments
+  private static final int __WRITEID_ISSET_ID = 0;
+  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.WRITE_ID};
 
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -35,17 +37,15 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   private @org.apache.thrift.annotation.Nullable java.lang.String validTxnList; // optional
-
-  // isset id assignments
-  private static final int __WRITEID_ISSET_ID = 0;
   private long writeId; // optional
-  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.WRITE_ID};
   private byte __isset_bitfield = 0;
-  public GetValidWriteIdsRequest() {
-  }
+  public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
 
   public GetValidWriteIdsRequest deepCopy() {
     return new GetValidWriteIdsRequest(this);
+  }
+
+  public GetValidWriteIdsRequest() {
   }
 
   public GetValidWriteIdsRequest(
@@ -336,14 +336,6 @@ package org.apache.hadoop.hive.metastore.api;
     return 0;
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-    scheme(iprot).read(iprot, this);
-  }
-
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-    scheme(oprot).write(oprot, this);
-  }
-
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
@@ -352,6 +344,14 @@ package org.apache.hadoop.hive.metastore.api;
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
     }
+  }
+
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    scheme(iprot).read(iprot, this);
+  }
+
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    scheme(oprot).write(oprot, this);
   }
 
   @Override

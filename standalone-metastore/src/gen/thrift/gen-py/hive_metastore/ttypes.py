@@ -13818,14 +13818,18 @@ class NotificationEventsCountRequest(object):
      - fromEventId
      - dbName
      - catName
+     - toEventId
+     - limit
 
     """
 
 
-    def __init__(self, fromEventId=None, dbName=None, catName=None,):
+    def __init__(self, fromEventId=None, dbName=None, catName=None, toEventId=None, limit=None,):
         self.fromEventId = fromEventId
         self.dbName = dbName
         self.catName = catName
+        self.toEventId = toEventId
+        self.limit = limit
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -13851,6 +13855,16 @@ class NotificationEventsCountRequest(object):
                     self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I64:
+                    self.toEventId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.limit = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -13872,6 +13886,14 @@ class NotificationEventsCountRequest(object):
         if self.catName is not None:
             oprot.writeFieldBegin('catName', TType.STRING, 3)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.toEventId is not None:
+            oprot.writeFieldBegin('toEventId', TType.I64, 4)
+            oprot.writeI64(self.toEventId)
+            oprot.writeFieldEnd()
+        if self.limit is not None:
+            oprot.writeFieldBegin('limit', TType.I64, 5)
+            oprot.writeI64(self.limit)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -22376,6 +22398,8 @@ NotificationEventsCountRequest.thrift_spec = (
     (1, TType.I64, 'fromEventId', None, None, ),  # 1
     (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'catName', 'UTF8', None, ),  # 3
+    (4, TType.I64, 'toEventId', None, None, ),  # 4
+    (5, TType.I64, 'limit', None, None, ),  # 5
 )
 all_structs.append(NotificationEventsCountResponse)
 NotificationEventsCountResponse.thrift_spec = (

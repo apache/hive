@@ -36,6 +36,16 @@ class NotificationEventsCountRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        4 => array(
+            'var' => 'toEventId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
+        5 => array(
+            'var' => 'limit',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -50,6 +60,14 @@ class NotificationEventsCountRequest
      * @var string
      */
     public $catName = null;
+    /**
+     * @var int
+     */
+    public $toEventId = null;
+    /**
+     * @var int
+     */
+    public $limit = null;
 
     public function __construct($vals = null)
     {
@@ -62,6 +80,12 @@ class NotificationEventsCountRequest
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['toEventId'])) {
+                $this->toEventId = $vals['toEventId'];
+            }
+            if (isset($vals['limit'])) {
+                $this->limit = $vals['limit'];
             }
         }
     }
@@ -106,6 +130,20 @@ class NotificationEventsCountRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 4:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->toEventId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 5:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->limit);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -133,6 +171,16 @@ class NotificationEventsCountRequest
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 3);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->toEventId !== null) {
+            $xfer += $output->writeFieldBegin('toEventId', TType::I64, 4);
+            $xfer += $output->writeI64($this->toEventId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->limit !== null) {
+            $xfer += $output->writeFieldBegin('limit', TType::I64, 5);
+            $xfer += $output->writeI64($this->limit);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
