@@ -308,7 +308,22 @@ public class SyntheticJoinPredicate extends Transform {
       CommonJoinOperator<JoinDesc> joinOp = (CommonJoinOperator) currentOp;
 
       // 2. Backtrack expression to join output
-      final ExprNodeDesc joinExprNode = ExprNodeDescUtils.backtrack(currentNode, op, joinOp);
+      ExprNodeDesc expr = currentNode;
+      if (currentOp != op) {
+        if (expr instanceof ExprNodeColumnDesc) {
+          // Expression refers to output of current operator, but backtrack methods works
+          // from the input columns, hence we need to make resolution for current operator
+          // here. If the operator was already the join, there is nothing to do
+          if (op.getColumnExprMap() != null) {
+            expr = op.getColumnExprMap().get(((ExprNodeColumnDesc) expr).getColumn());
+          }
+        } else {
+          // TODO: We can extend to other expression types
+          // We are done
+          return true;
+        }
+      }
+      final ExprNodeDesc joinExprNode = ExprNodeDescUtils.backtrack(expr, op, joinOp);
       if (joinExprNode == null || !(joinExprNode instanceof ExprNodeColumnDesc)) {
         // TODO: We can extend to other expression types
         // We are done
