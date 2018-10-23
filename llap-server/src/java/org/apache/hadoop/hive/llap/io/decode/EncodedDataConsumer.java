@@ -17,19 +17,26 @@
  */
 package org.apache.hadoop.hive.llap.io.decode;
 
+import java.lang.management.ThreadMXBean;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.TypeDescription;
+import org.apache.tez.common.counters.FileSystemCounter;
+import org.apache.tez.common.counters.TezCounters;
+import org.apache.tez.runtime.task.TaskRunner2Callable;
 
 public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedColumnBatch<BatchKey>>
   implements Consumer<BatchType>, ReadPipeline {
@@ -41,11 +48,14 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   // Note that the pool is per EDC - within EDC, CVBs are expected to have the same schema.
   private static final int CVB_POOL_SIZE = 128;
   protected final FixedSizedObjectPool<ColumnVectorBatch> cvbPool;
+  protected final QueryFragmentCounters counters;
+  private final ThreadMXBean mxBean;
 
   public EncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, final int colCount,
-      LlapDaemonIOMetrics ioMetrics) {
+      LlapDaemonIOMetrics ioMetrics, QueryFragmentCounters counters) {
     this.downstreamConsumer = consumer;
     this.ioMetrics = ioMetrics;
+    this.mxBean = LlapUtil.initThreadMxBean();
     cvbPool = new FixedSizedObjectPool<ColumnVectorBatch>(CVB_POOL_SIZE,
         new Pool.PoolObjectHelper<ColumnVectorBatch>() {
           @Override
@@ -57,12 +67,41 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
             // Don't reset anything, we are reusing column vectors.
           }
         });
+    this.counters = counters;
+  }
+
+  // Implementing TCS is needed for StatsRecordingThreadPool.
+  private class CpuRecordingCallable implements Callable<Void>, TezCounterSource {
+    private final Callable<Void> readCallable;
+
+    public CpuRecordingCallable(Callable<Void> readCallable) {
+      this.readCallable = readCallable;
+    }
+
+    @Override
+    public Void call() throws Exception {
+      long cpuTime = mxBean.getCurrentThreadCpuTime(),
+          userTime = mxBean.getCurrentThreadUserTime();
+      try {
+        return readCallable.call();
+      } finally {
+        counters.recordThreadTimes(mxBean.getCurrentThreadCpuTime() - cpuTime,
+            mxBean.getCurrentThreadUserTime() - userTime);
+      }
+    }
+
+    @Override
+    public TezCounters getTezCounters() {
+      return (readCallable instanceof TezCounterSource)
+          ? ((TezCounterSource) readCallable).getTezCounters() : null;
+    }
+
   }
 
   public void init(ConsumerFeedback<BatchType> upstreamFeedback,
       Callable<Void> readCallable) {
     this.upstreamFeedback = upstreamFeedback;
-    this.readCallable = readCallable;
+    this.readCallable = mxBean == null ? readCallable : new CpuRecordingCallable(readCallable);
   }
 
   @Override
