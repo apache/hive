@@ -14,6 +14,8 @@
 package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -365,5 +367,20 @@ public class LlapUtil {
   private static boolean isSomeHiveDir(String p) {
     return p.startsWith(BASE_PREFIX) || p.startsWith(DELTA_PREFIX) || p.startsWith(BUCKET_PREFIX)
         || p.startsWith(UNION_SUDBIR_PREFIX) || p.startsWith(DELETE_DELTA_PREFIX);
+  }
+
+
+  public static ThreadMXBean initThreadMxBean() {
+    ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
+    if (mxBean != null) {
+      if (!mxBean.isCurrentThreadCpuTimeSupported()) {
+        LOG.warn("Thread CPU monitoring is not supported");
+        return null;
+      } else if (!mxBean.isThreadCpuTimeEnabled()) {
+        LOG.warn("Thread CPU monitoring is not enabled");
+        return null;
+      }
+    }
+    return mxBean;
   }
 }
