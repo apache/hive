@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField FROM_EVENT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("fromEventId", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField TO_EVENT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("toEventId", org.apache.thrift.protocol.TType.I64, (short)4);
+  private static final org.apache.thrift.protocol.TField LIMIT_FIELD_DESC = new org.apache.thrift.protocol.TField("limit", org.apache.thrift.protocol.TType.I64, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +53,16 @@ import org.slf4j.LoggerFactory;
   private long fromEventId; // required
   private String dbName; // required
   private String catName; // optional
+  private long toEventId; // optional
+  private long limit; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     FROM_EVENT_ID((short)1, "fromEventId"),
     DB_NAME((short)2, "dbName"),
-    CAT_NAME((short)3, "catName");
+    CAT_NAME((short)3, "catName"),
+    TO_EVENT_ID((short)4, "toEventId"),
+    LIMIT((short)5, "limit");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +83,10 @@ import org.slf4j.LoggerFactory;
           return DB_NAME;
         case 3: // CAT_NAME
           return CAT_NAME;
+        case 4: // TO_EVENT_ID
+          return TO_EVENT_ID;
+        case 5: // LIMIT
+          return LIMIT;
         default:
           return null;
       }
@@ -118,8 +128,10 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __FROMEVENTID_ISSET_ID = 0;
+  private static final int __TOEVENTID_ISSET_ID = 1;
+  private static final int __LIMIT_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.TO_EVENT_ID,_Fields.LIMIT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -129,6 +141,10 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TO_EVENT_ID, new org.apache.thrift.meta_data.FieldMetaData("toEventId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.LIMIT, new org.apache.thrift.meta_data.FieldMetaData("limit", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(NotificationEventsCountRequest.class, metaDataMap);
   }
@@ -158,6 +174,8 @@ import org.slf4j.LoggerFactory;
     if (other.isSetCatName()) {
       this.catName = other.catName;
     }
+    this.toEventId = other.toEventId;
+    this.limit = other.limit;
   }
 
   public NotificationEventsCountRequest deepCopy() {
@@ -170,6 +188,10 @@ import org.slf4j.LoggerFactory;
     this.fromEventId = 0;
     this.dbName = null;
     this.catName = null;
+    setToEventIdIsSet(false);
+    this.toEventId = 0;
+    setLimitIsSet(false);
+    this.limit = 0;
   }
 
   public long getFromEventId() {
@@ -240,6 +262,50 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public long getToEventId() {
+    return this.toEventId;
+  }
+
+  public void setToEventId(long toEventId) {
+    this.toEventId = toEventId;
+    setToEventIdIsSet(true);
+  }
+
+  public void unsetToEventId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TOEVENTID_ISSET_ID);
+  }
+
+  /** Returns true if field toEventId is set (has been assigned a value) and false otherwise */
+  public boolean isSetToEventId() {
+    return EncodingUtils.testBit(__isset_bitfield, __TOEVENTID_ISSET_ID);
+  }
+
+  public void setToEventIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TOEVENTID_ISSET_ID, value);
+  }
+
+  public long getLimit() {
+    return this.limit;
+  }
+
+  public void setLimit(long limit) {
+    this.limit = limit;
+    setLimitIsSet(true);
+  }
+
+  public void unsetLimit() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __LIMIT_ISSET_ID);
+  }
+
+  /** Returns true if field limit is set (has been assigned a value) and false otherwise */
+  public boolean isSetLimit() {
+    return EncodingUtils.testBit(__isset_bitfield, __LIMIT_ISSET_ID);
+  }
+
+  public void setLimitIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LIMIT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case FROM_EVENT_ID:
@@ -266,6 +332,22 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case TO_EVENT_ID:
+      if (value == null) {
+        unsetToEventId();
+      } else {
+        setToEventId((Long)value);
+      }
+      break;
+
+    case LIMIT:
+      if (value == null) {
+        unsetLimit();
+      } else {
+        setLimit((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -279,6 +361,12 @@ import org.slf4j.LoggerFactory;
 
     case CAT_NAME:
       return getCatName();
+
+    case TO_EVENT_ID:
+      return getToEventId();
+
+    case LIMIT:
+      return getLimit();
 
     }
     throw new IllegalStateException();
@@ -297,6 +385,10 @@ import org.slf4j.LoggerFactory;
       return isSetDbName();
     case CAT_NAME:
       return isSetCatName();
+    case TO_EVENT_ID:
+      return isSetToEventId();
+    case LIMIT:
+      return isSetLimit();
     }
     throw new IllegalStateException();
   }
@@ -341,6 +433,24 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_toEventId = true && this.isSetToEventId();
+    boolean that_present_toEventId = true && that.isSetToEventId();
+    if (this_present_toEventId || that_present_toEventId) {
+      if (!(this_present_toEventId && that_present_toEventId))
+        return false;
+      if (this.toEventId != that.toEventId)
+        return false;
+    }
+
+    boolean this_present_limit = true && this.isSetLimit();
+    boolean that_present_limit = true && that.isSetLimit();
+    if (this_present_limit || that_present_limit) {
+      if (!(this_present_limit && that_present_limit))
+        return false;
+      if (this.limit != that.limit)
+        return false;
+    }
+
     return true;
   }
 
@@ -362,6 +472,16 @@ import org.slf4j.LoggerFactory;
     list.add(present_catName);
     if (present_catName)
       list.add(catName);
+
+    boolean present_toEventId = true && (isSetToEventId());
+    list.add(present_toEventId);
+    if (present_toEventId)
+      list.add(toEventId);
+
+    boolean present_limit = true && (isSetLimit());
+    list.add(present_limit);
+    if (present_limit)
+      list.add(limit);
 
     return list.hashCode();
   }
@@ -400,6 +520,26 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetCatName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetToEventId()).compareTo(other.isSetToEventId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetToEventId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.toEventId, other.toEventId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetLimit()).compareTo(other.isSetLimit());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLimit()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.limit, other.limit);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -443,6 +583,18 @@ import org.slf4j.LoggerFactory;
       } else {
         sb.append(this.catName);
       }
+      first = false;
+    }
+    if (isSetToEventId()) {
+      if (!first) sb.append(", ");
+      sb.append("toEventId:");
+      sb.append(this.toEventId);
+      first = false;
+    }
+    if (isSetLimit()) {
+      if (!first) sb.append(", ");
+      sb.append("limit:");
+      sb.append(this.limit);
       first = false;
     }
     sb.append(")");
@@ -522,6 +674,22 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // TO_EVENT_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.toEventId = iprot.readI64();
+              struct.setToEventIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // LIMIT
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.limit = iprot.readI64();
+              struct.setLimitIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -550,6 +718,16 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetToEventId()) {
+        oprot.writeFieldBegin(TO_EVENT_ID_FIELD_DESC);
+        oprot.writeI64(struct.toEventId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetLimit()) {
+        oprot.writeFieldBegin(LIMIT_FIELD_DESC);
+        oprot.writeI64(struct.limit);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -573,9 +751,21 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCatName()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetToEventId()) {
+        optionals.set(1);
+      }
+      if (struct.isSetLimit()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
+      }
+      if (struct.isSetToEventId()) {
+        oprot.writeI64(struct.toEventId);
+      }
+      if (struct.isSetLimit()) {
+        oprot.writeI64(struct.limit);
       }
     }
 
@@ -586,10 +776,18 @@ import org.slf4j.LoggerFactory;
       struct.setFromEventIdIsSet(true);
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.toEventId = iprot.readI64();
+        struct.setToEventIdIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.limit = iprot.readI64();
+        struct.setLimitIsSet(true);
       }
     }
   }

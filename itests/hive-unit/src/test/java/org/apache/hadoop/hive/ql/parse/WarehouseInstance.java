@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -472,6 +473,22 @@ public class WarehouseInstance implements Closeable {
 
   public boolean isAcidEnabled() {
     return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+  }
+
+  // Test if the number of events between the given event ids and with the given database name are
+  // same as expected. toEventId = 0 is treated as unbounded. Same is the case with limit 0.
+  public void testEventCounts(String dbName, long fromEventId, Long toEventId, Integer limit,
+                               long expectedCount) throws Exception {
+    NotificationEventsCountRequest rqst = new NotificationEventsCountRequest(fromEventId, dbName);
+
+    if (toEventId != null) {
+      rqst.setToEventId(toEventId);
+    }
+    if (limit != null) {
+      rqst.setLimit(limit);
+    }
+
+    assertEquals(expectedCount, client.getNotificationEventsCount(rqst).getEventsCount());
   }
 
   @Override

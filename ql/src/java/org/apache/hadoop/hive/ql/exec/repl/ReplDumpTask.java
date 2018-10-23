@@ -166,11 +166,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         evFetcher, work.eventFrom, work.maxEventLimit(), evFilter);
 
     lastReplId = work.eventTo;
+
+    // Right now the only pattern allowed to be specified is *, which matches all the database
+    // names. So passing dbname as is works since getDbNotificationEventsCount can exclude filter
+    // on database name when it's *. In future, if we support more elaborate patterns, we will
+    // have to pass DatabaseAndTableFilter created above to getDbNotificationEventsCount() to get
+    // correct event count.
     String dbName = (null != work.dbNameOrPattern && !work.dbNameOrPattern.isEmpty())
         ? work.dbNameOrPattern
         : "?";
     replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(),
-            evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName));
+            evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
+                    work.maxEventLimit()));
     replLogger.startLog();
     while (evIter.hasNext()) {
       NotificationEvent ev = evIter.next();

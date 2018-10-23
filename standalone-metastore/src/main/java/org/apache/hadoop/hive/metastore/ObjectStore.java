@@ -10081,14 +10081,60 @@ public class ObjectStore implements RawStore, Configurable {
       long fromEventId = rqst.getFromEventId();
       String inputDbName = rqst.getDbName();
       String catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
-      String queryStr = "select count(eventId) from " + MNotificationLog.class.getName()
-                + " where eventId > fromEventId && dbName == inputDbName && catalogName == catName";
+      long toEventId;
+      String paramSpecs;
+      List<Object> paramVals = new ArrayList<Object>();
+
+      // We store a catalog name in lower case in metastore and also use the same way everywhere in
+      // hive.
+      assert catName.equals(catName.toLowerCase());
+
+      // Build the query to count events, part by part
+      String queryStr = "select count(eventId) from " + MNotificationLog.class.getName();
+      // count fromEventId onwards events
+      queryStr = queryStr + " where eventId > fromEventId";
+      paramSpecs = "java.lang.Long fromEventId";
+      paramVals.add(Long.valueOf(fromEventId));
+
+      // Input database name can be a database name or a *. In the first case we add a filter
+      // condition on dbName column, but not in the second case, since a * means all the
+      // databases. In case we support more elaborate database name patterns in future, we will
+      // have to apply a method similar to getNextNotification() method of MetaStoreClient.
+      if (!inputDbName.equals("*")) {
+        // dbName could be NULL in case of transaction related events, which also need to be
+        // counted.
+        queryStr = queryStr + " && (dbName == inputDbName || dbName == null)";
+        paramSpecs = paramSpecs + ", java.lang.String inputDbName";
+        // We store a database name in lower case in metastore.
+        paramVals.add(inputDbName.toLowerCase());
+      }
+
+      // catName could be NULL in case of transaction related events, which also need to be
+      // counted.
+      queryStr = queryStr + " && (catalogName == catName || catalogName == null)";
+      paramSpecs = paramSpecs +", java.lang.String catName";
+      paramVals.add(catName);
+
+      // count events upto toEventId if specified
+      if (rqst.isSetToEventId()) {
+        toEventId = rqst.getToEventId();
+        queryStr = queryStr + " && eventId <= toEventId";
+        paramSpecs = paramSpecs + ", java.lang.Long toEventId";
+        paramVals.add(Long.valueOf(toEventId));
+      }
+
       query = pm.newQuery(queryStr);
-      query.declareParameters("java.lang.Long fromEventId, java.lang.String inputDbName," +
-          " java.lang.String catName");
-      result = (Long) query.execute(fromEventId, inputDbName, catName);
+      query.declareParameters(paramSpecs);
+      result = (Long) query.executeWithArray(paramVals.toArray());
       commited = commitTransaction();
-      return new NotificationEventsCountResponse(result.longValue());
+
+      // Cap the event count by limit if specified.
+      long  eventCount = result.longValue();
+      if (rqst.isSetLimit() && eventCount > rqst.getLimit()) {
+        eventCount = rqst.getLimit();
+      }
+
+      return new NotificationEventsCountResponse(eventCount);
     } finally {
       rollbackAndCleanup(commited, query);
     }

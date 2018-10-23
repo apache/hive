@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -870,19 +871,71 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       long nextNLId = getNextNLId(stmt, sqlGenerator,
               "org.apache.hadoop.hive.metastore.model.MNotificationLog");
 
-      String insertVal = "(" + nextNLId + "," + nextEventId + "," + now() + ", ?, ?," +
-              quoteString(" ") + ",?, ?)";
+      String insertVal;
+      String columns;
+      List<String> params = new ArrayList<String>();
 
-      s = "insert into \"NOTIFICATION_LOG\" (\"NL_ID\", \"EVENT_ID\", \"EVENT_TIME\", " +
-              " \"EVENT_TYPE\", \"DB_NAME\", " +
-              " \"TBL_NAME\", \"MESSAGE\", \"MESSAGE_FORMAT\") VALUES " + insertVal;
-      List<String> params = Arrays.asList(
-              event.getEventType(), event.getDbName(), event.getMessage(), event.getMessageFormat());
+      // Construct the values string, parameters and column string step by step simultaneously so
+      // that the positions of columns and of their corresponding values do not go out of sync.
+
+      // Notification log id
+      columns = "\"NL_ID\"";
+      insertVal = "" + nextNLId;
+
+      // Event id
+      columns = columns + ", \"EVENT_ID\"";
+      insertVal = insertVal + "," + nextEventId;
+
+      // Event time
+      columns = columns + ", \"EVENT_TIME\"";
+      insertVal = insertVal + "," + now();
+
+      // Event type
+      columns = columns + ", \"EVENT_TYPE\"";
+      insertVal = insertVal + ", ?";
+      params.add(event.getEventType());
+
+      // Message
+      columns = columns + ", \"MESSAGE\"";
+      insertVal = insertVal + ", ?";
+      params.add(event.getMessage());
+
+      // Message format
+      columns = columns + ", \"MESSAGE_FORMAT\"";
+      insertVal = insertVal + ", ?";
+      params.add(event.getMessageFormat());
+
+      // Database name, optional
+      String dbName = event.getDbName();
+      if (dbName != null) {
+        assert dbName.equals(dbName.toLowerCase());
+        columns = columns + ", \"DB_NAME\"";
+        insertVal = insertVal + ", ?";
+        params.add(dbName);
+      }
+
+      // Table name, optional
+      String tableName = event.getTableName();
+      if (tableName != null) {
+        assert tableName.equals(tableName.toLowerCase());
+        columns = columns + ", \"TBL_NAME\"";
+        insertVal = insertVal + ", ?";
+        params.add(tableName);
+      }
+
+      // Catalog name, optional
+      String catName = event.getCatName();
+      if (catName != null) {
+        assert catName.equals(catName.toLowerCase());
+        columns = columns + ", \"CAT_NAME\"";
+        insertVal = insertVal + ", ?";
+        params.add(catName);
+      }
+
+      s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
-
-      LOG.debug("Going to execute insert <" + s.replaceAll("\\?", "{}") + ">",
-              quoteString(event.getEventType()), quoteString(event.getDbName()),
-              quoteString(event.getMessage()), quoteString(event.getMessageFormat()));
+      LOG.debug("Going to execute insert <" + s + "> with parameters (" +
+              String.join(", ", params) + ")");
       pst.execute();
 
       // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
