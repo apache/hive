@@ -2550,10 +2550,6 @@ public class Driver implements IDriver {
         LOG.info("Completed executing command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
       }
     }
-
-    if (console != null) {
-      console.printInfo("OK");
-    }
   }
 
   private long addWithOverflowCheck(long val1, long val2) {
