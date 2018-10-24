@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hive.spark.client.SparkClientUtilities;
-import org.apache.spark.util.CallSite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -62,31 +61,33 @@ import com.google.common.base.Strings;
  * environment and execute spark work.
  */
 public class LocalHiveSparkClient implements HiveSparkClient {
+
   private static final long serialVersionUID = 1L;
 
-  private static final String MR_JAR_PROPERTY = "tmpjars";
-  protected static final transient Logger LOG = LoggerFactory
-      .getLogger(LocalHiveSparkClient.class);
+  private static final transient Logger LOG = LoggerFactory
+          .getLogger(LocalHiveSparkClient.class);
 
+  private static final String MR_JAR_PROPERTY = "tmpjars";
   private static final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private static LocalHiveSparkClient client;
-
-  public static synchronized LocalHiveSparkClient getInstance(
-      SparkConf sparkConf, HiveConf hiveConf) throws FileNotFoundException, MalformedURLException {
-    if (client == null) {
-      client = new LocalHiveSparkClient(sparkConf, hiveConf);
-    }
-    return client;
-  }
+  private int activeSessions = 0;
 
   private final JavaSparkContext sc;
 
   private final List<String> localJars = new ArrayList<String>();
-
   private final List<String> localFiles = new ArrayList<String>();
 
   private final JobMetricsListener jobMetricsListener;
+
+  public static synchronized LocalHiveSparkClient getInstance(SparkConf sparkConf, HiveConf hiveConf)
+      throws FileNotFoundException, MalformedURLException {
+    if (client == null) {
+      client = new LocalHiveSparkClient(sparkConf, hiveConf);
+    }
+    ++client.activeSessions;
+    return client;
+  }
 
   private LocalHiveSparkClient(SparkConf sparkConf, HiveConf hiveConf)
       throws FileNotFoundException, MalformedURLException {
@@ -239,10 +240,13 @@ public class LocalHiveSparkClient implements HiveSparkClient {
   @Override
   public void close() {
     synchronized (LocalHiveSparkClient.class) {
-      client = null;
-    }
-    if (sc != null) {
-      sc.stop();
+      if (--activeSessions == 0) {
+        client = null;
+        if (sc != null) {
+          LOG.debug("Shutting down the SparkContext");
+          sc.stop();
+        }
+      }
     }
   }
 }
