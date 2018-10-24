@@ -1500,9 +1500,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public Partition getPartition(String dbName, String tableName,
       List<String> part_vals) throws NoSuchObjectException, MetaException {
-    openTransaction();
     Partition part = convertToPart(getMPartition(dbName, tableName, part_vals));
-    commitTransaction();
     if(part == null) {
       throw new NoSuchObjectException("partition values="
           + part_vals.toString());
