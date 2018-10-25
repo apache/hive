@@ -164,6 +164,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST, false)) {
+      inputs = sem.getInputs();
+      outputs = sem.getOutputs();
+    }
 
     ctx.setResFile(ctx.getLocalTmpPath());
     List<Task<? extends Serializable>> tasks = sem.getAllRootTasks();
