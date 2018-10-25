@@ -24,67 +24,22 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
-import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.service.api.records.Service;
 import org.apache.hadoop.yarn.service.client.ServiceClient;
 import org.apache.hadoop.yarn.service.utils.CoreFileSystem;
-import org.apache.hadoop.yarn.util.Clock;
-import org.apache.hadoop.yarn.util.SystemClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LlapSliderUtils {
-  private static final Logger LOG = LoggerFactory
-      .getLogger(LlapSliderUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LlapSliderUtils.class);
   private static final String LLAP_PACKAGE_DIR = ".yarn/package/LLAP/";
 
-  public static ServiceClient createServiceClient(
-      Configuration conf) throws Exception {
+  public static ServiceClient createServiceClient(Configuration conf) throws Exception {
     ServiceClient serviceClient = new ServiceClient();
     serviceClient.init(conf);
     serviceClient.start();
     return serviceClient;
-  }
-
-  public static ApplicationReport getAppReport(String appName, ServiceClient serviceClient,
-                                               long timeoutMs) throws
-      LlapStatusServiceDriver.LlapStatusCliException {
-    Clock clock = SystemClock.getInstance();
-    long startTime = clock.getTime();
-    long timeoutTime = timeoutMs < 0 ? Long.MAX_VALUE : (startTime + timeoutMs);
-    ApplicationReport appReport = null;
-    ApplicationId appId;
-    try {
-      appId = serviceClient.getAppId(appName);
-    } catch (YarnException | IOException e) {
-      return null;
-    }
-
-    while (appReport == null) {
-      try {
-        appReport = serviceClient.getYarnClient().getApplicationReport(appId);
-        if (timeoutMs == 0) {
-          // break immediately if timeout is 0
-          break;
-        }
-        // Otherwise sleep, and try again.
-        if (appReport == null) {
-          long remainingTime = Math.min(timeoutTime - clock.getTime(), 500l);
-          if (remainingTime > 0) {
-            Thread.sleep(remainingTime);
-          } else {
-            break;
-          }
-        }
-      } catch (Exception e) { // No point separating IOException vs YarnException vs others
-        throw new LlapStatusServiceDriver.LlapStatusCliException(
-            LlapStatusServiceDriver.ExitCode.YARN_ERROR,
-            "Failed to get Yarn AppReport", e);
-      }
-    }
-    return appReport;
   }
 
   public static Service getService(Configuration conf, String name) {
@@ -112,10 +67,8 @@ public class LlapSliderUtils {
     return service;
   }
 
-  public static void startCluster(Configuration conf, String name,
-      String packageName, Path packageDir, String queue) {
-    LOG.info("Starting cluster with " + name + ", "
-      + packageName + ", " + queue + ", " + packageDir);
+  public static void startCluster(Configuration conf, String name, String packageName, Path packageDir, String queue) {
+    LOG.info("Starting cluster with " + name + ", " + packageName + ", " + queue + ", " + packageDir);
     ServiceClient sc;
     try {
       sc = createServiceClient(conf);
