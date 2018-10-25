@@ -22,11 +22,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
@@ -222,6 +225,40 @@ public class TestHiveProtoLoggingHook {
 
     assertOtherInfo(event, OtherInfoType.STATUS, Boolean.FALSE.toString());
     assertOtherInfo(event, OtherInfoType.PERF, null);
+  }
+
+  @Test
+  public void testRolloverFiles() throws Exception {
+    long waitTime = 100;
+    context.setHookType(HookType.PRE_EXEC_HOOK);
+    conf.setTimeDuration(ConfVars.HIVE_PROTO_EVENTS_ROLLOVER_CHECK_INTERVAL.varname, waitTime,
+        TimeUnit.MICROSECONDS);
+    Path path = new Path(tmpFolder);
+    FileSystem fs = path.getFileSystem(conf);
+    AtomicLong time = new AtomicLong();
+    EventLogger evtLogger = new EventLogger(conf, () -> time.get());
+    evtLogger.handle(context);
+    int statusLen = 0;
+    // Loop to ensure that we give some grace for scheduling issues.
+    for (int i = 0; i < 3; ++i) {
+      Thread.sleep(waitTime + 100);
+      statusLen = fs.listStatus(path).length;
+      if (statusLen > 0) {
+        break;
+      }
+    }
+    Assert.assertEquals(1, statusLen);
+
+    // Move to next day and ensure a new file gets created.
+    time.set(24 * 60 * 60 * 1000 + 1000);
+    for (int i = 0; i < 3; ++i) {
+      Thread.sleep(waitTime + 100);
+      statusLen = fs.listStatus(path).length;
+      if (statusLen > 1) {
+        break;
+      }
+    }
+    Assert.assertEquals(2, statusLen);
   }
 
   private ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
