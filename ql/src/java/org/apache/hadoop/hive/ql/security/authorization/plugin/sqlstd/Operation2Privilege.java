@@ -113,6 +113,7 @@ public class Operation2Privilege {
   }
 
   private static Map<HiveOperationType, List<PrivRequirement>> op2Priv;
+  private static List<HiveOperationType> adminPrivOps;
 
   private static SQLPrivTypeGrant[] OWNER_PRIV_AR = arr(SQLPrivTypeGrant.OWNER_PRIV);
   private static SQLPrivTypeGrant[] SEL_NOGRANT_AR = arr(SQLPrivTypeGrant.SELECT_NOGRANT);
@@ -130,6 +131,7 @@ public class Operation2Privilege {
 
 
   static {
+    adminPrivOps = new ArrayList<HiveOperationType>();
     op2Priv = new HashMap<HiveOperationType, List<PrivRequirement>>();
 
     op2Priv.put(HiveOperationType.EXPLAIN, PrivRequirement.newIOPrivRequirement
@@ -292,6 +294,8 @@ public class Operation2Privilege {
         new PrivRequirement(arr(SQLPrivTypeGrant.INSERT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT),
             IOType.OUTPUT, null, HivePrivilegeObjectType.TABLE_OR_VIEW),
         new PrivRequirement(OWNER_PRIV_AR, IOType.OUTPUT, null, HivePrivilegeObjectType.DATABASE)));
+    adminPrivOps.add(HiveOperationType.CREATEFUNCTION);
+    adminPrivOps.add(HiveOperationType.DROPFUNCTION);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement
@@ -498,6 +502,17 @@ public class Operation2Privilege {
     }
 
     return reqPrivs;
+  }
+
+  /**
+   * Some operations are tagged as requiring admin privileges, ignoring any object that
+   * might be checked on it. This check is run in those cases.
+   *
+   * @param hiveOpType
+   * @return
+   */
+  public static boolean isAdminPrivOperation(HiveOperationType hiveOpType) {
+    return adminPrivOps.contains(hiveOpType);
   }
 
   // for unit tests
