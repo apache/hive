@@ -154,7 +154,13 @@ public class FallbackHiveAuthorizer extends AbstractHiveAuthorizer {
     if (hiveObjects == null) {
       return;
     }
-    if (admins != null && Arrays.stream(admins).parallel().anyMatch(n -> n.equals(userName))) {
+
+    boolean isAdmin = false;
+    if (admins != null && admins.length > 0) {
+      isAdmin = Arrays.asList(admins).contains(userName);
+    }
+
+    if (isAdmin) {
       return; // Skip rest of checks if user is admin
     }
 
