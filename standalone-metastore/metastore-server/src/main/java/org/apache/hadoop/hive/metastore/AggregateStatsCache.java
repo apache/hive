@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -73,10 +74,12 @@ public class AggregateStatsCache {
   private final AtomicLong cacheMisses = new AtomicLong(0);
   // To track cleaner metrics
   int numRemovedTTL = 0, numRemovedLRU = 0;
+  private final String hiveDefaultPartitionName;
 
   private AggregateStatsCache(int maxCacheNodes, int maxPartsPerCacheNode, long timeToLiveMs,
       double falsePositiveProbability, double maxVariance, long maxWriterWaitTime,
-      long maxReaderWaitTime, double maxFull, double cleanUntil) {
+      long maxReaderWaitTime, double maxFull, double cleanUntil,
+      String hiveDefaultPartitionName) {
     this.maxCacheNodes = maxCacheNodes;
     this.maxPartsPerCacheNode = maxPartsPerCacheNode;
     this.timeToLiveMs = timeToLiveMs;
@@ -87,6 +90,7 @@ public class AggregateStatsCache {
     this.maxFull = maxFull;
     this.cleanUntil = cleanUntil;
     this.cacheStore = new ConcurrentHashMap<>();
+    this.hiveDefaultPartitionName = hiveDefaultPartitionName;
   }
 
   public static synchronized AggregateStatsCache getInstance(Configuration conf) {
@@ -113,10 +117,11 @@ public class AggregateStatsCache {
           MetastoreConf.getDoubleVar(conf, ConfVars.AGGREGATE_STATS_CACHE_MAX_FULL);
       double cleanUntil =
           MetastoreConf.getDoubleVar(conf, ConfVars.AGGREGATE_STATS_CACHE_CLEAN_UNTIL);
+      String hiveDefaultPartitionName = MetastoreConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
       self =
           new AggregateStatsCache(maxCacheNodes, maxPartitionsPerCacheNode, timeToLiveMs,
               falsePositiveProbability, maxVariance, maxWriterWaitTime, maxReaderWaitTime, maxFull,
-              cleanUntil);
+              cleanUntil, hiveDefaultPartitionName);
     }
     return self;
   }
@@ -219,18 +224,51 @@ public class AggregateStatsCache {
     // 1st pass at marking invalid candidates
     // Checks based on variance and TTL
     // Note: we're not creating a copy of the list for saving memory
+    long maxVariancePercentage = (long)(maxVariance * 100.0);
+
+    // TODO: We assume that the default partition name has the format '???=__HIVE_DEFAULT_PARTITION__'.
+    String defaultPartitionName;
+    byte[] defaultPartitionNameBytes;
+    try {
+      String firstPartName = partNames.get(0);
+      String[] splits = firstPartName.split("=");
+      defaultPartitionName = splits[0] + "=" + hiveDefaultPartitionName;
+      defaultPartitionNameBytes = defaultPartitionName.getBytes();
+    } catch (Exception e) {
+      defaultPartitionName = null;
+      defaultPartitionNameBytes = null;
+    }
+
+    boolean partNamesContainDefaultPartitionName = false;
+    if (defaultPartitionName != null) {
+      ListIterator<String> li = partNames.listIterator(partNames.size());
+      while (li.hasPrevious()) {
+        String partName = li.previous();
+        if (partName.equals(defaultPartitionName)) {
+          partNamesContainDefaultPartitionName = true;
+          break;
+        }
+      }
+    }
+
     for (AggrColStats candidate : candidates) {
       // Variance check
-      if (Math.abs((candidate.getNumPartsCached() - numPartsRequested) / numPartsRequested)
-          > maxVariance) {
+      if (Math.abs((candidate.getNumPartsCached() - numPartsRequested) * 100 / numPartsRequested)
+          > maxVariancePercentage) {
         continue;
       }
       // TTL check
       if (isExpired(candidate)) {
         continue;
-      } else {
-        candidateMatchStats.put(candidate, new MatchStats(0, 0));
       }
+      if (defaultPartitionName != null) {
+        boolean candidateContainsDefaultPartitionName =
+            candidate.getBloomFilter().test(defaultPartitionNameBytes);
+        if (partNamesContainDefaultPartitionName != candidateContainsDefaultPartitionName) {
+          continue;
+        }
+      }
+      candidateMatchStats.put(candidate, new MatchStats(0, 0));
     }
     // We'll count misses as we iterate
     int maxMisses = (int) maxVariance * numPartsRequested;
