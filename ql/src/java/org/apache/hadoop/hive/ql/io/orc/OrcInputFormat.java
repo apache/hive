@@ -601,21 +601,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return result;
   }
 
-  @Override
-  public InputSplit[] getSplits(JobConf job,
-                                int numSplits) throws IOException {
-    long start = System.currentTimeMillis();
-    LOG.info("getSplits started");
-    Configuration conf = job;
-    if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED)) {
-      // Create HiveConf once, since this is expensive.
-      conf = new HiveConf(conf, OrcInputFormat.class);
+  public static boolean[] shiftReaderIncludedForAcid(boolean[] included) {
+    // We always need the base row
+    included[0] = true;
+    boolean[] newIncluded = new boolean[included.length + OrcRecordUpdater.FIELDS];
+    Arrays.fill(newIncluded, 0, OrcRecordUpdater.FIELDS, true);
+    for (int i = 0; i < included.length; ++i) {
+      newIncluded[i + OrcRecordUpdater.FIELDS] = included[i];
     }
-    List<OrcSplit> result = generateSplitsInfo(conf,
-        new Context(conf, numSplits, createExternalCaches()));
-    long end = System.currentTimeMillis();
-    LOG.info("getSplits finished (#splits: {}). duration: {} ms", result.size(), (end - start));
-    return result.toArray(new InputSplit[result.size()]);
+    return newIncluded;
   }
 
   /**
@@ -901,227 +895,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    }
 
   /**
-   * The global information about the split generation that we pass around to
-   * the different worker threads.
-   */
-  static class Context {
-    private final Configuration conf;
-
-    // We store all caches in variables to change the main one based on config.
-    // This is not thread safe between different split generations (and wasn't anyway).
-    private FooterCache footerCache;
-    private static LocalCache localCache;
-    private static ExternalCache metaCache;
-    static ExecutorService threadPool = null;
-    private final int numBuckets;
-    private final int splitStrategyBatchMs;
-    private final long maxSize;
-    private final long minSize;
-    private final int etlFileThreshold;
-    private final boolean footerInSplits;
-    private final boolean cacheStripeDetails;
-    private final boolean forceThreadpool;
-    private final AtomicInteger cacheHitCounter = new AtomicInteger(0);
-    private final AtomicInteger numFilesCounter = new AtomicInteger(0);
-    private final ValidWriteIdList writeIdList;
-    private SplitStrategyKind splitStrategyKind;
-    private final SearchArgument sarg;
-    private final AcidOperationalProperties acidOperationalProperties;
-    private final boolean isAcid;
-    private final boolean isVectorMode;
-
-    Context(Configuration conf) throws IOException {
-      this(conf, 1, null);
-    }
-
-    Context(Configuration conf, final int minSplits) throws IOException {
-      this(conf, minSplits, null);
-    }
-
-    @VisibleForTesting
-    Context(Configuration conf, final int minSplits, ExternalFooterCachesByConf efc)
-        throws IOException {
-      this.conf = conf;
-      this.isAcid = AcidUtils.isFullAcidScan(conf);
-      this.isVectorMode = Utilities.getIsVectorized(conf);
-      this.forceThreadpool = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
-      this.sarg = ConvertAstToSearchArg.createFromConf(conf);
-      minSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, DEFAULT_MIN_SPLIT_SIZE);
-      maxSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMAXSPLITSIZE, DEFAULT_MAX_SPLIT_SIZE);
-      String ss = conf.get(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
-      if (ss == null || ss.equals(SplitStrategyKind.HYBRID.name())) {
-        splitStrategyKind = SplitStrategyKind.HYBRID;
-      } else {
-        splitStrategyKind = SplitStrategyKind.valueOf(ss);
-      }
-      footerInSplits = HiveConf.getBoolVar(conf,
-          ConfVars.HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS);
-      numBuckets =
-          Math.max(conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0), 0);
-      splitStrategyBatchMs = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS);
-      long cacheMemSize = HiveConf.getSizeVar(
-          conf, ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE);
-      int numThreads = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS);
-      boolean useSoftReference = HiveConf.getBoolVar(
-          conf, ConfVars.HIVE_ORC_CACHE_USE_SOFT_REFERENCES);
-
-      cacheStripeDetails = (cacheMemSize > 0);
-
-      this.etlFileThreshold = minSplits <= 0 ? DEFAULT_ETL_FILE_THRESHOLD : minSplits;
-
-      synchronized (Context.class) {
-        if (threadPool == null) {
-          threadPool = Executors.newFixedThreadPool(numThreads,
-              new ThreadFactoryBuilder().setDaemon(true)
-                  .setNameFormat("ORC_GET_SPLITS #%d").build());
-        }
-
-        // TODO: local cache is created once, so the configs for future queries will not be honored.
-        if (cacheStripeDetails) {
-          // Note that there's no FS check here; we implicitly only use metastore cache for
-          // HDFS, because only HDFS would return fileIds for us. If fileId is extended using
-          // size/mod time/etc. for other FSes, we might need to check FSes explicitly because
-          // using such an aggregate fileId cache is not bulletproof and should be disable-able.
-          boolean useExternalCache = HiveConf.getBoolVar(
-              conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED);
-          if (useExternalCache) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(
-                "Turning off hive.orc.splits.ms.footer.cache.enabled since it is not fully supported yet");
-            }
-            useExternalCache = false;
-          }
-          if (localCache == null) {
-            localCache = new LocalCache(numThreads, cacheMemSize, useSoftReference);
-          }
-          if (useExternalCache) {
-            if (metaCache == null) {
-              metaCache = new ExternalCache(localCache,
-                  efc == null ? new MetastoreExternalCachesByConf() : efc);
-            }
-            assert conf instanceof HiveConf;
-            metaCache.configure((HiveConf)conf);
-          }
-          // Set footer cache for current split generation. See field comment - not thread safe.
-          // TODO: we should be able to enable caches separately
-          footerCache = useExternalCache ? metaCache : localCache;
-        }
-      }
-
-      // Determine the transactional_properties of the table from the job conf stored in context.
-      // The table properties are copied to job conf at HiveInputFormat::addSplitsForGroup(),
-      // & therefore we should be able to retrieve them here and determine appropriate behavior.
-      // Note that this will be meaningless for non-acid tables & will be set to null.
-      //this is set by Utilities.copyTablePropertiesToConf()
-      boolean isTxnTable = conf.getBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, false);
-      String txnProperties = conf.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-      this.acidOperationalProperties = isTxnTable
-          ? AcidOperationalProperties.parseString(txnProperties) : null;
-
-      String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
-      LOG.info("Context:: " +
-          "isAcid: {} " +
-          "isVectorMode: {} " +
-          "sarg: {} " +
-          "minSplitSize: {} " +
-          "maxSplitSize: {} " +
-          "splitStrategy: {} " +
-          "footerInSplits: {} " +
-          "numBuckets: {} " +
-          "numThreads: {} " +
-          "cacheMemSize: {} " +
-          "cacheStripeDetails: {} " +
-          "useSoftReference: {} " +
-          "writeIdList: {} " +
-          "isTransactionalTable: {} " +
-          "txnProperties: {} ",
-        isAcid,
-        isVectorMode,
-        sarg,
-        minSize,
-        maxSize,
-        splitStrategyKind,
-        footerInSplits,
-        numBuckets,
-        numThreads,
-        cacheMemSize,
-        cacheStripeDetails,
-        useSoftReference,
-        writeIdList,
-        isTxnTable,
-        txnProperties);
-    }
-
-    @VisibleForTesting
-    static int getCurrentThreadPoolSize() {
-      synchronized (Context.class) {
-        return (threadPool instanceof ThreadPoolExecutor)
-            ? ((ThreadPoolExecutor)threadPool).getPoolSize() : ((threadPool == null) ? 0 : -1);
-      }
-    }
-
-    @VisibleForTesting
-    public static void resetThreadPool() {
-      synchronized (Context.class) {
-        threadPool = null;
-      }
-    }
-
-    @VisibleForTesting
-    public static void clearLocalCache() {
-      if (localCache == null) return;
-      localCache.clear();
-    }
-  }
-
-  /**
-   * ACID split strategy is used when there is no base directory (when transactions are enabled).
-   */
-  static class ACIDSplitStrategy implements SplitStrategy<OrcSplit> {
-    Path dir;
-    private List<DeltaMetaData> deltas;
-    private AcidOperationalProperties acidOperationalProperties;
-    /**
-     * @param dir root of partition dir
-     */
-    ACIDSplitStrategy(Path dir, int numBuckets, List<DeltaMetaData> deltas, boolean[] covered,
-        AcidOperationalProperties acidOperationalProperties) {
-      this.dir = dir;
-      this.deltas = deltas;
-      this.acidOperationalProperties = acidOperationalProperties;
-    }
-
-    @Override
-    public List<OrcSplit> getSplits() throws IOException {
-      List<OrcSplit> splits = Lists.newArrayList();
-
-      // When split-update is enabled, we do not need to account for buckets that aren't covered.
-      // This is a huge performance benefit of split-update. And the reason why we are able to
-      // do so is because the 'deltas' here are actually only the delete_deltas. All the insert_deltas
-      // with valid user payload data has already been considered as base for the covered buckets.
-      // Hence, the uncovered buckets do not have any relevant data and we can just ignore them.
-      if (acidOperationalProperties != null && acidOperationalProperties.isSplitUpdate()) {
-        return Collections.emptyList();
-      }
-
-      // Generate a split for any buckets that weren't covered.
-      // This happens in the case where a bucket just has deltas and no
-      // base.
-      if (!deltas.isEmpty()) {
-        //since HIVE-17089 if here, then it's not an acid table so there should never be any deltas
-        throw new IllegalStateException("Found unexpected deltas: " + deltas + " in " + dir);
-      }
-      return splits;
-    }
-
-    @Override
-    public String toString() {
-      return ACIDSplitStrategy.class.getSimpleName() + " strategy for " + dir;
-    }
-  }
-
-  /**
    * BI strategy is used when the requirement is to spend less time in split generation
    * as opposed to query execution (split generation does not read or cache file footers).
    */
@@ -1196,6 +969,140 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     public String toString() {
       return BISplitStrategy.class.getSimpleName() + " strategy for " + dir;
     }
+  }
+
+  static List<OrcSplit> generateSplitsInfo(Configuration conf, Context context)
+      throws IOException {
+    if (LOG.isInfoEnabled()) {
+      LOG.info("ORC pushdown predicate: " + context.sarg);
+    }
+    boolean useFileIdsConfig = HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
+    // Sharing this state assumes splits will succeed or fail to get it together (same FS).
+    // We also start with null and only set it to true on the first call, so we would only do
+    // the global-disable thing on the first failure w/the API error, not any random failure.
+    Ref<Boolean> useFileIds = Ref.from(useFileIdsConfig ? null : false);
+    boolean allowSyntheticFileIds = useFileIdsConfig && HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_ORC_ALLOW_SYNTHETIC_FILE_ID_IN_SPLITS);
+    List<OrcSplit> splits = Lists.newArrayList();
+    List<Future<AcidDirInfo>> pathFutures = Lists.newArrayList();
+    List<Future<Void>> strategyFutures = Lists.newArrayList();
+    final List<Future<List<OrcSplit>>> splitFutures = Lists.newArrayList();
+    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+
+    // multi-threaded file statuses and split strategy
+    Path[] paths = getInputPaths(conf);
+    CompletionService<AcidDirInfo> ecs = new ExecutorCompletionService<>(Context.threadPool);
+    for (Path dir : paths) {
+      FileSystem fs = dir.getFileSystem(conf);
+      FileGenerator fileGenerator = new FileGenerator(context, fs, dir, useFileIds, ugi);
+      pathFutures.add(ecs.submit(fileGenerator));
+    }
+
+    boolean isAcidTableScan = AcidUtils.isFullAcidScan(conf);
+    boolean isSchemaEvolution = HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION);
+    TypeDescription readerSchema =
+        OrcInputFormat.getDesiredRowTypeDescr(conf, isAcidTableScan, Integer.MAX_VALUE);
+    List<OrcProto.Type> readerTypes = null;
+    if (readerSchema != null) {
+      readerTypes = OrcUtils.getOrcTypes(readerSchema);
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Generate splits schema evolution property " + isSchemaEvolution +
+        " reader schema " + (readerSchema == null ? "NULL" : readerSchema.toString()) +
+        " ACID scan property " + isAcidTableScan);
+    }
+
+    // complete path futures and schedule split generation
+    try {
+      CombinedCtx combinedCtx = (context.splitStrategyBatchMs > 0) ? new CombinedCtx() : null;
+      long maxWaitUs = context.splitStrategyBatchMs * 1000000;
+      int resultsLeft = paths.length;
+      while (resultsLeft > 0) {
+        AcidDirInfo adi = null;
+        if (combinedCtx != null && combinedCtx.combined != null) {
+          long waitTimeUs = combinedCtx.combineStartUs + maxWaitUs - System.nanoTime();
+          if (waitTimeUs >= 0) {
+            Future<AcidDirInfo> f = ecs.poll(waitTimeUs, TimeUnit.NANOSECONDS);
+            adi = (f == null) ? null : f.get();
+          }
+        } else {
+          adi = ecs.take().get();
+        }
+
+        if (adi == null) {
+          // We were combining SS-es and the time has expired.
+          assert combinedCtx.combined != null;
+          scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures, splits);
+          combinedCtx.combined = null;
+          continue;
+        }
+
+        // We have received a new directory information, make split strategies.
+        --resultsLeft;
+        if(adi.isEmpty()) {
+          //no files found, for example empty table/partition
+          continue;
+        }
+        // The reason why we can get a list of split strategies here is because for ACID split-update
+        // case when we have a mix of original base files & insert deltas, we will produce two
+        // independent split strategies for them. There is a global flag 'isOriginal' that is set
+        // on a per split strategy basis and it has to be same for all the files in that strategy.
+        List<SplitStrategy<?>> splitStrategies = determineSplitStrategies(combinedCtx, context, adi.fs,
+            adi.splitPath, adi.baseFiles, adi.deleteEvents, readerTypes, ugi,
+            allowSyntheticFileIds);
+
+        for (SplitStrategy<?> splitStrategy : splitStrategies) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Split strategy: {}", splitStrategy);
+          }
+
+          // Hack note - different split strategies return differently typed lists, yay Java.
+          // This works purely by magic, because we know which strategy produces which type.
+          if (splitStrategy instanceof ETLSplitStrategy) {
+            scheduleSplits((ETLSplitStrategy)splitStrategy,
+                context, splitFutures, strategyFutures, splits);
+          } else {
+            @SuppressWarnings("unchecked")
+            List<OrcSplit> readySplits = (List<OrcSplit>)splitStrategy.getSplits();
+            splits.addAll(readySplits);
+          }
+        }
+      }
+
+      // Run the last combined strategy, if any.
+      if (combinedCtx != null && combinedCtx.combined != null) {
+        scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures, splits);
+        combinedCtx.combined = null;
+      }
+
+      // complete split futures
+      for (Future<Void> ssFuture : strategyFutures) {
+         ssFuture.get(); // Make sure we get exceptions strategies might have thrown.
+      }
+      // All the split strategies are done, so it must be safe to access splitFutures.
+      for (Future<List<OrcSplit>> splitFuture : splitFutures) {
+        splits.addAll(splitFuture.get());
+      }
+    } catch (Exception e) {
+      cancelFutures(pathFutures);
+      cancelFutures(strategyFutures);
+      cancelFutures(splitFutures);
+      throw new RuntimeException("ORC split generation failed with exception: " + e.getMessage(), e);
+    }
+
+    if (context.cacheStripeDetails) {
+      LOG.info("FooterCacheHitRatio: " + context.cacheHitCounter.get() + "/"
+          + context.numFilesCounter.get());
+    }
+
+    if (LOG.isDebugEnabled()) {
+      for (OrcSplit split : splits) {
+        LOG.debug(split + " projected_columns_uncompressed_size: "
+            + split.getColumnarProjectionSize());
+      }
+    }
+    return splits;
   }
 
   /**
@@ -1382,218 +1289,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         result.add(AcidUtils.createOriginalObj(null, child));
       }
       return result;
-    }
-  }
-
-  public static boolean[] shiftReaderIncludedForAcid(boolean[] included) {
-    // We always need the base row
-    included[0] = true;
-    boolean[] newIncluded = new boolean[included.length + OrcRecordUpdater.FIELDS];
-    Arrays.fill(newIncluded, 0, OrcRecordUpdater.FIELDS, true);
-    for (int i = 0; i < included.length; ++i) {
-      newIncluded[i + OrcRecordUpdater.FIELDS] = included[i];
-    }
-    return newIncluded;
-  }
-
-  /** Class intended to update two values from methods... Java-related cruft. */
-  @VisibleForTesting
-  static final class CombinedCtx {
-    ETLSplitStrategy combined;
-    long combineStartUs;
-  }
-
-  static List<OrcSplit> generateSplitsInfo(Configuration conf, Context context)
-      throws IOException {
-    if (LOG.isInfoEnabled()) {
-      LOG.info("ORC pushdown predicate: " + context.sarg);
-    }
-    boolean useFileIdsConfig = HiveConf.getBoolVar(
-        conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
-    // Sharing this state assumes splits will succeed or fail to get it together (same FS).
-    // We also start with null and only set it to true on the first call, so we would only do
-    // the global-disable thing on the first failure w/the API error, not any random failure.
-    Ref<Boolean> useFileIds = Ref.from(useFileIdsConfig ? null : false);
-    boolean allowSyntheticFileIds = useFileIdsConfig && HiveConf.getBoolVar(
-        conf, ConfVars.HIVE_ORC_ALLOW_SYNTHETIC_FILE_ID_IN_SPLITS);
-    List<OrcSplit> splits = Lists.newArrayList();
-    List<Future<AcidDirInfo>> pathFutures = Lists.newArrayList();
-    List<Future<Void>> strategyFutures = Lists.newArrayList();
-    final List<Future<List<OrcSplit>>> splitFutures = Lists.newArrayList();
-    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-
-    // multi-threaded file statuses and split strategy
-    Path[] paths = getInputPaths(conf);
-    CompletionService<AcidDirInfo> ecs = new ExecutorCompletionService<>(Context.threadPool);
-    for (Path dir : paths) {
-      FileSystem fs = dir.getFileSystem(conf);
-      FileGenerator fileGenerator = new FileGenerator(context, fs, dir, useFileIds, ugi);
-      pathFutures.add(ecs.submit(fileGenerator));
-    }
-
-    boolean isAcidTableScan = AcidUtils.isFullAcidScan(conf);
-    boolean isSchemaEvolution = HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION);
-    TypeDescription readerSchema =
-        OrcInputFormat.getDesiredRowTypeDescr(conf, isAcidTableScan, Integer.MAX_VALUE);
-    List<OrcProto.Type> readerTypes = null;
-    if (readerSchema != null) {
-      readerTypes = OrcUtils.getOrcTypes(readerSchema);
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Generate splits schema evolution property " + isSchemaEvolution +
-        " reader schema " + (readerSchema == null ? "NULL" : readerSchema.toString()) +
-        " ACID scan property " + isAcidTableScan);
-    }
-
-    // complete path futures and schedule split generation
-    try {
-      CombinedCtx combinedCtx = (context.splitStrategyBatchMs > 0) ? new CombinedCtx() : null;
-      long maxWaitUs = context.splitStrategyBatchMs * 1000000;
-      int resultsLeft = paths.length;
-      while (resultsLeft > 0) {
-        AcidDirInfo adi = null;
-        if (combinedCtx != null && combinedCtx.combined != null) {
-          long waitTimeUs = combinedCtx.combineStartUs + maxWaitUs - System.nanoTime();
-          if (waitTimeUs >= 0) {
-            Future<AcidDirInfo> f = ecs.poll(waitTimeUs, TimeUnit.NANOSECONDS);
-            adi = (f == null) ? null : f.get();
-          }
-        } else {
-          adi = ecs.take().get();
-        }
-
-        if (adi == null) {
-          // We were combining SS-es and the time has expired.
-          assert combinedCtx.combined != null;
-          scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures, splits);
-          combinedCtx.combined = null;
-          continue;
-        }
-
-        // We have received a new directory information, make split strategies.
-        --resultsLeft;
-        if(adi.isEmpty()) {
-          //no files found, for example empty table/partition
-          continue;
-        }
-        // The reason why we can get a list of split strategies here is because for ACID split-update
-        // case when we have a mix of original base files & insert deltas, we will produce two
-        // independent split strategies for them. There is a global flag 'isOriginal' that is set
-        // on a per split strategy basis and it has to be same for all the files in that strategy.
-        List<SplitStrategy<?>> splitStrategies = determineSplitStrategies(combinedCtx, context, adi.fs,
-            adi.splitPath, adi.baseFiles, adi.deleteEvents, readerTypes, ugi,
-            allowSyntheticFileIds);
-
-        for (SplitStrategy<?> splitStrategy : splitStrategies) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Split strategy: {}", splitStrategy);
-          }
-
-          // Hack note - different split strategies return differently typed lists, yay Java.
-          // This works purely by magic, because we know which strategy produces which type.
-          if (splitStrategy instanceof ETLSplitStrategy) {
-            scheduleSplits((ETLSplitStrategy)splitStrategy,
-                context, splitFutures, strategyFutures, splits);
-          } else {
-            @SuppressWarnings("unchecked")
-            List<OrcSplit> readySplits = (List<OrcSplit>)splitStrategy.getSplits();
-            splits.addAll(readySplits);
-          }
-        }
-      }
-
-      // Run the last combined strategy, if any.
-      if (combinedCtx != null && combinedCtx.combined != null) {
-        scheduleSplits(combinedCtx.combined, context, splitFutures, strategyFutures, splits);
-        combinedCtx.combined = null;
-      }
-
-      // complete split futures
-      for (Future<Void> ssFuture : strategyFutures) {
-         ssFuture.get(); // Make sure we get exceptions strategies might have thrown.
-      }
-      // All the split strategies are done, so it must be safe to access splitFutures.
-      for (Future<List<OrcSplit>> splitFuture : splitFutures) {
-        splits.addAll(splitFuture.get());
-      }
-    } catch (Exception e) {
-      cancelFutures(pathFutures);
-      cancelFutures(strategyFutures);
-      cancelFutures(splitFutures);
-      throw new RuntimeException("ORC split generation failed with exception: " + e.getMessage(), e);
-    }
-
-    if (context.cacheStripeDetails) {
-      LOG.info("FooterCacheHitRatio: " + context.cacheHitCounter.get() + "/"
-          + context.numFilesCounter.get());
-    }
-
-    if (LOG.isDebugEnabled()) {
-      for (OrcSplit split : splits) {
-        LOG.debug(split + " projected_columns_uncompressed_size: "
-            + split.getColumnarProjectionSize());
-      }
-    }
-    return splits;
-  }
-
-  @VisibleForTesting
-  // We could have this as a protected method w/no class, but half of Hive is static, so there.
-  public static class ContextFactory {
-    public Context create(Configuration conf, int numSplits) throws IOException {
-      return new Context(conf, numSplits);
-    }
-  }
-
-  private static void scheduleSplits(ETLSplitStrategy splitStrategy, Context context,
-      List<Future<List<OrcSplit>>> splitFutures, List<Future<Void>> strategyFutures,
-      List<OrcSplit> splits) throws IOException {
-    Future<Void> ssFuture = splitStrategy.generateSplitWork(context, splitFutures, splits);
-    if (ssFuture == null) return;
-    strategyFutures.add(ssFuture);
-  }
-
-  private static <T> void cancelFutures(List<Future<T>> futures) {
-    for (Future<T> future : futures) {
-      future.cancel(true);
-    }
-  }
-
-  private static SplitStrategy<?> combineOrCreateETLStrategy(CombinedCtx combinedCtx,
-      Context context, FileSystem fs, Path dir, List<HdfsFileStatusWithId> files,
-      List<DeltaMetaData> deltas, boolean[] covered, List<OrcProto.Type> readerTypes,
-      boolean isOriginal, UserGroupInformation ugi, boolean allowSyntheticFileIds,
-      boolean isDefaultFs) {
-    if (!deltas.isEmpty() || combinedCtx == null) {
-      //why is this checking for deltas.isEmpty() - HIVE-18110
-      return new ETLSplitStrategy(
-          context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
-          allowSyntheticFileIds, isDefaultFs);
-    } else if (combinedCtx.combined == null) {
-      combinedCtx.combined = new ETLSplitStrategy(
-          context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
-          allowSyntheticFileIds, isDefaultFs);
-      combinedCtx.combineStartUs = System.nanoTime();
-      return null;
-    } else {
-      ETLSplitStrategy.CombineResult r =
-          combinedCtx.combined.combineWith(fs, dir, files, isOriginal);
-      switch (r) {
-      case YES: return null;
-      case NO_AND_CONTINUE:
-        return new ETLSplitStrategy(
-            context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
-            allowSyntheticFileIds, isDefaultFs);
-      case NO_AND_SWAP: {
-        ETLSplitStrategy oldBase = combinedCtx.combined;
-        combinedCtx.combined = new ETLSplitStrategy(
-            context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
-            allowSyntheticFileIds, isDefaultFs);
-        combinedCtx.combineStartUs = System.nanoTime();
-        return oldBase;
-      }
-      default: throw new AssertionError("Unknown result " + r);
-      }
     }
   }
 
@@ -1997,6 +1692,310 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         }
       }
       return ReaderImpl.getRawDataSizeFromColIndices(internalColIds, fileTypes, stats);
+    }
+  }
+
+  private static void scheduleSplits(ETLSplitStrategy splitStrategy, Context context,
+      List<Future<List<OrcSplit>>> splitFutures, List<Future<Void>> strategyFutures,
+      List<OrcSplit> splits) throws IOException {
+    Future<Void> ssFuture = splitStrategy.generateSplitWork(context, splitFutures, splits);
+    if (ssFuture == null) return;
+    strategyFutures.add(ssFuture);
+  }
+
+  private static <T> void cancelFutures(List<Future<T>> futures) {
+    for (Future<T> future : futures) {
+      future.cancel(true);
+    }
+  }
+
+  private static SplitStrategy<?> combineOrCreateETLStrategy(CombinedCtx combinedCtx,
+      Context context, FileSystem fs, Path dir, List<HdfsFileStatusWithId> files,
+      List<DeltaMetaData> deltas, boolean[] covered, List<OrcProto.Type> readerTypes,
+      boolean isOriginal, UserGroupInformation ugi, boolean allowSyntheticFileIds,
+      boolean isDefaultFs) {
+    if (!deltas.isEmpty() || combinedCtx == null) {
+      //why is this checking for deltas.isEmpty() - HIVE-18110
+      return new ETLSplitStrategy(
+          context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
+          allowSyntheticFileIds, isDefaultFs);
+    } else if (combinedCtx.combined == null) {
+      combinedCtx.combined = new ETLSplitStrategy(
+          context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
+          allowSyntheticFileIds, isDefaultFs);
+      combinedCtx.combineStartUs = System.nanoTime();
+      return null;
+    } else {
+      ETLSplitStrategy.CombineResult r =
+          combinedCtx.combined.combineWith(fs, dir, files, isOriginal);
+      switch (r) {
+      case YES: return null;
+      case NO_AND_CONTINUE:
+        return new ETLSplitStrategy(
+            context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
+            allowSyntheticFileIds, isDefaultFs);
+      case NO_AND_SWAP: {
+        ETLSplitStrategy oldBase = combinedCtx.combined;
+        combinedCtx.combined = new ETLSplitStrategy(
+            context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
+            allowSyntheticFileIds, isDefaultFs);
+        combinedCtx.combineStartUs = System.nanoTime();
+        return oldBase;
+      }
+      default: throw new AssertionError("Unknown result " + r);
+      }
+    }
+  }
+
+  @Override
+  public InputSplit[] getSplits(JobConf job,
+                                int numSplits) throws IOException {
+    long start = System.currentTimeMillis();
+    LOG.info("getSplits started");
+    Configuration conf = job;
+    if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED)) {
+      // Create HiveConf once, since this is expensive.
+      conf = new HiveConf(conf, OrcInputFormat.class);
+    }
+    List<OrcSplit> result = generateSplitsInfo(conf,
+            new Context(conf, numSplits, createExternalCaches()));
+    long end = System.currentTimeMillis();
+    LOG.info("getSplits finished (#splits: {}). duration: {} ms", result.size(), (end - start));
+    return result.toArray(new InputSplit[result.size()]);
+  }
+
+  /**
+   * The global information about the split generation that we pass around to
+   * the different worker threads.
+   */
+  static class Context {
+    static ExecutorService threadPool = null;
+    private static LocalCache localCache;
+    private static ExternalCache metaCache;
+    private final Configuration conf;
+    private final int numBuckets;
+    private final int splitStrategyBatchMs;
+    private final long maxSize;
+    private final long minSize;
+    private final int etlFileThreshold;
+    private final boolean footerInSplits;
+    private final boolean cacheStripeDetails;
+    private final boolean forceThreadpool;
+    private final AtomicInteger cacheHitCounter = new AtomicInteger(0);
+    private final AtomicInteger numFilesCounter = new AtomicInteger(0);
+    private final ValidWriteIdList writeIdList;
+    private final SearchArgument sarg;
+    private final AcidOperationalProperties acidOperationalProperties;
+    private final boolean isAcid;
+    private final boolean isVectorMode;
+    // We store all caches in variables to change the main one based on config.
+    // This is not thread safe between different split generations (and wasn't anyway).
+    private FooterCache footerCache;
+    private SplitStrategyKind splitStrategyKind;
+
+    Context(Configuration conf) throws IOException {
+      this(conf, 1, null);
+    }
+
+    Context(Configuration conf, final int minSplits) throws IOException {
+      this(conf, minSplits, null);
+    }
+
+    @VisibleForTesting
+    Context(Configuration conf, final int minSplits, ExternalFooterCachesByConf efc)
+        throws IOException {
+      this.conf = conf;
+      this.isAcid = AcidUtils.isFullAcidScan(conf);
+      this.isVectorMode = Utilities.getIsVectorized(conf);
+      this.forceThreadpool = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
+      this.sarg = ConvertAstToSearchArg.createFromConf(conf);
+      minSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, DEFAULT_MIN_SPLIT_SIZE);
+      maxSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMAXSPLITSIZE, DEFAULT_MAX_SPLIT_SIZE);
+      String ss = conf.get(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
+      if (ss == null || ss.equals(SplitStrategyKind.HYBRID.name())) {
+        splitStrategyKind = SplitStrategyKind.HYBRID;
+      } else {
+        splitStrategyKind = SplitStrategyKind.valueOf(ss);
+      }
+      footerInSplits = HiveConf.getBoolVar(conf,
+          ConfVars.HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS);
+      numBuckets =
+          Math.max(conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0), 0);
+      splitStrategyBatchMs = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS);
+      long cacheMemSize = HiveConf.getSizeVar(
+          conf, ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE);
+      int numThreads = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS);
+      boolean useSoftReference = HiveConf.getBoolVar(
+          conf, ConfVars.HIVE_ORC_CACHE_USE_SOFT_REFERENCES);
+
+      cacheStripeDetails = (cacheMemSize > 0);
+
+      this.etlFileThreshold = minSplits <= 0 ? DEFAULT_ETL_FILE_THRESHOLD : minSplits;
+
+      synchronized (Context.class) {
+        if (threadPool == null) {
+          threadPool = Executors.newFixedThreadPool(numThreads,
+              new ThreadFactoryBuilder().setDaemon(true)
+                  .setNameFormat("ORC_GET_SPLITS #%d").build());
+        }
+
+        // TODO: local cache is created once, so the configs for future queries will not be honored.
+        if (cacheStripeDetails) {
+          // Note that there's no FS check here; we implicitly only use metastore cache for
+          // HDFS, because only HDFS would return fileIds for us. If fileId is extended using
+          // size/mod time/etc. for other FSes, we might need to check FSes explicitly because
+          // using such an aggregate fileId cache is not bulletproof and should be disable-able.
+          boolean useExternalCache = HiveConf.getBoolVar(
+              conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED);
+          if (useExternalCache) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug(
+                "Turning off hive.orc.splits.ms.footer.cache.enabled since it is not fully supported yet");
+            }
+            useExternalCache = false;
+          }
+          if (localCache == null) {
+            localCache = new LocalCache(numThreads, cacheMemSize, useSoftReference);
+          }
+          if (useExternalCache) {
+            if (metaCache == null) {
+              metaCache = new ExternalCache(localCache,
+                  efc == null ? new MetastoreExternalCachesByConf() : efc);
+            }
+            assert conf instanceof HiveConf;
+            metaCache.configure((HiveConf)conf);
+          }
+          // Set footer cache for current split generation. See field comment - not thread safe.
+          // TODO: we should be able to enable caches separately
+          footerCache = useExternalCache ? metaCache : localCache;
+        }
+      }
+
+      // Determine the transactional_properties of the table from the job conf stored in context.
+      // The table properties are copied to job conf at HiveInputFormat::addSplitsForGroup(),
+      // & therefore we should be able to retrieve them here and determine appropriate behavior.
+      // Note that this will be meaningless for non-acid tables & will be set to null.
+      //this is set by Utilities.copyTablePropertiesToConf()
+      boolean isTxnTable = conf.getBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, false);
+      String txnProperties = conf.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+      this.acidOperationalProperties = isTxnTable
+          ? AcidOperationalProperties.parseString(txnProperties) : null;
+
+      String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+      writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
+      LOG.info("Context:: " +
+                      "isAcid: {} " +
+                      "isVectorMode: {} " +
+                      "sarg: {} " +
+                      "minSplitSize: {} " +
+                      "maxSplitSize: {} " +
+                      "splitStrategy: {} " +
+                      "footerInSplits: {} " +
+                      "numBuckets: {} " +
+                      "numThreads: {} " +
+                      "cacheMemSize: {} " +
+                      "cacheStripeDetails: {} " +
+                      "useSoftReference: {} " +
+                      "writeIdList: {} " +
+                      "isTransactionalTable: {} " +
+                      "txnProperties: {} ",
+              isAcid,
+              isVectorMode,
+              sarg,
+              minSize,
+              maxSize,
+              splitStrategyKind,
+              footerInSplits,
+              numBuckets,
+              numThreads,
+              cacheMemSize,
+              cacheStripeDetails,
+              useSoftReference,
+              writeIdList,
+              isTxnTable,
+              txnProperties);
+    }
+
+    @VisibleForTesting
+    static int getCurrentThreadPoolSize() {
+      synchronized (Context.class) {
+        return (threadPool instanceof ThreadPoolExecutor)
+            ? ((ThreadPoolExecutor)threadPool).getPoolSize() : ((threadPool == null) ? 0 : -1);
+      }
+    }
+
+    @VisibleForTesting
+    public static void resetThreadPool() {
+      synchronized (Context.class) {
+        threadPool = null;
+      }
+    }
+
+    @VisibleForTesting
+    public static void clearLocalCache() {
+      if (localCache == null) return;
+      localCache.clear();
+    }
+  }
+
+  /**
+   * ACID split strategy is used when there is no base directory (when transactions are enabled).
+   */
+  static class ACIDSplitStrategy implements SplitStrategy<OrcSplit> {
+    Path dir;
+    private List<DeltaMetaData> deltas;
+    private AcidOperationalProperties acidOperationalProperties;
+    /**
+     * @param dir root of partition dir
+     */
+    ACIDSplitStrategy(Path dir, int numBuckets, List<DeltaMetaData> deltas, boolean[] covered,
+        AcidOperationalProperties acidOperationalProperties) {
+      this.dir = dir;
+      this.deltas = deltas;
+      this.acidOperationalProperties = acidOperationalProperties;
+    }
+
+    @Override
+    public List<OrcSplit> getSplits() throws IOException {
+      List<OrcSplit> splits = Lists.newArrayList();
+
+      // When split-update is enabled, we do not need to account for buckets that aren't covered.
+      // This is a huge performance benefit of split-update. And the reason why we are able to
+      // do so is because the 'deltas' here are actually only the delete_deltas. All the insert_deltas
+      // with valid user payload data has already been considered as base for the covered buckets.
+      // Hence, the uncovered buckets do not have any relevant data and we can just ignore them.
+      if (acidOperationalProperties != null && acidOperationalProperties.isSplitUpdate()) {
+        return Collections.emptyList();
+      }
+
+      // Generate a split for any buckets that weren't covered.
+      // This happens in the case where a bucket just has deltas and no
+      // base.
+      if (!deltas.isEmpty()) {
+        //since HIVE-17089 if here, then it's not an acid table so there should never be any deltas
+        throw new IllegalStateException("Found unexpected deltas: " + deltas + " in " + dir);
+      }
+      return splits;
+    }
+
+    @Override
+    public String toString() {
+      return ACIDSplitStrategy.class.getSimpleName() + " strategy for " + dir;
+    }
+  }
+
+  /** Class intended to update two values from methods... Java-related cruft. */
+  @VisibleForTesting
+  static final class CombinedCtx {
+    ETLSplitStrategy combined;
+    long combineStartUs;
+  }
+
+  @VisibleForTesting
+  // We could have this as a protected method w/no class, but half of Hive is static, so there.
+  public static class ContextFactory {
+    public Context create(Configuration conf, int numSplits) throws IOException {
+      return new Context(conf, numSplits);
     }
   }
 
