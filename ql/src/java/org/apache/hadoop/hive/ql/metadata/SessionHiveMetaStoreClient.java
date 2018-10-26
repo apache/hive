@@ -901,14 +901,23 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       assertPartitioned();
       pTree.addPartition(p);
     }
+
     private Partition getPartition(String partName) throws MetaException {
       assertPartitioned();
       return pTree.getPartition(partName);
     }
+
+    private int addPartitions(List<Partition> partitions) throws AlreadyExistsException,
+            MetaException {
+      assertPartitioned();
+      return pTree.addPartitions(partitions);
+    }
+
     private List<Partition> getPartitions(List<String> partialPartVals) throws MetaException {
       assertPartitioned();
       return pTree.getPartitions(partialPartVals);
     }
+
     private void assertPartitioned() throws MetaException {
       if(tTable.getPartitionKeysSize() <= 0) {
         throw new MetaException(Warehouse.getQualifiedName(tTable) + " is not partitioned");
@@ -939,6 +948,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       private Partition getPartition(String partName) {
         return parts.get(partName);
       }
+
+      private int addPartitions(List<Partition> partitions)
+              throws AlreadyExistsException, MetaException {
+        int partitionsAdded = 0;
+        for (Partition partition : partitions) {
+          addPartition(partition);
+          partitionsAdded++;
+        }
+        return partitionsAdded;
+      }
+
       /**
        * Provided values for the 1st N partition columns, will return all matching PartitionS
        * The list is a partial list of partition values in the same order as partition columns.
@@ -960,9 +980,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
   }
   /**
-   * Loading Dynamic Partitons calls this.
-   * Hive.loadPartition() calls this which in turn can be called from Hive.loadDynamicPartitions()
-   * among others
+   * Hive.loadPartition() calls this.
    * @param partition
    *          The partition to add
    * @return the partition added
@@ -985,6 +1003,34 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     tt.addPartition(deepCopy(partition));
     return partition;
   }
+
+  /**
+   * Loading Dynamic Partitions calls this. The partitions which are loaded, must belong to the
+   * same table.
+   * @param partitions the new partitions to be added, must be not null
+   * @return number of partitions that were added
+   * @throws TException
+   */
+  @Override
+  public int add_partitions(List<Partition> partitions) throws TException {
+    if (partitions.isEmpty()) {
+      return 0;
+    }
+    Partition partition = partitions.get(0);
+    org.apache.hadoop.hive.metastore.api.Table table =
+            getTempTable(partition.getDbName(), partition.getTableName());
+    if (table == null) {
+      // not a temp table - Try underlying client
+      return super.add_partitions(partitions);
+    }
+    TempTable tt = getTempTable(table);
+    if (tt == null) {
+      throw new IllegalStateException("TempTable not found for" +
+              table.getTableName());
+    }
+    return tt.addPartitions(deepCopyPartitions(partitions));
+  }
+
   /**
    * @param partialPvals partition values, can be partial.  This really means that missing values
    *                    are represented by empty str.
