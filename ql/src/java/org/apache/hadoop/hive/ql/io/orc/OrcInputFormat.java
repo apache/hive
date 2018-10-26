@@ -1551,9 +1551,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       } else {
         populateAndCacheStripeDetails();
         boolean[] includeStripe = null;
-        // We can't eliminate stripes if there are deltas because the
-        // deltas may change the rows making them match the predicate. todo: See HIVE-14516.
-        if ((deltas == null || deltas.isEmpty()) && context.sarg != null) {
+        if (context.sarg != null) {
           String[] colNames =
               extractNeededColNames((readerTypes == null ? fileTypes : readerTypes),
                   context.conf, readerIncluded, isOriginal);
@@ -2212,7 +2210,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                        OrcFile.WriterVersion writerVersion,
                                        List<StripeStatistics> stripeStats,
       int stripeCount, Path filePath, final SchemaEvolution evolution) {
-    if (sarg == null || stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
+    if (stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
       return null; // only do split pruning if HIVE-8732 has been fixed in the writer
     }
     // eliminate stripes that doesn't satisfy the predicate condition
