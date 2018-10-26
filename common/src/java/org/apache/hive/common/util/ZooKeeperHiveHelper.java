@@ -20,7 +20,9 @@ package org.apache.hive.common.util;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -200,5 +202,36 @@ public class ZooKeeperHiveHelper {
 
   private void setDeregisteredWithZooKeeper(boolean deregisteredWithZooKeeper) {
     this.deregisteredWithZooKeeper = deregisteredWithZooKeeper;
+  }
+
+  /**
+   * This method is supposed to be called from client code connecting to one of the servers
+   * managed by the configured ZooKeeper. It starts and closes its own ZooKeeper client instead
+   * of using the class member.
+   * @return list of server URIs stored under the configured zookeeper namespace
+   * @throws Exception
+   */
+  public List<String> getServerUris() throws Exception {
+    CuratorFramework zkClient = null;
+    List<String> serverUris;
+    try {
+      zkClient = startZookeeperClient(null, false);
+      List<String> serverNodes =
+              zkClient.getChildren().forPath(ZOOKEEPER_PATH_SEPARATOR + rootNamespace);
+      serverUris = new ArrayList<String>(serverNodes.size());
+      for (String serverNode : serverNodes) {
+        byte[] serverUriBytes = zkClient.getData()
+                .forPath(ZOOKEEPER_PATH_SEPARATOR + rootNamespace +
+                        ZOOKEEPER_PATH_SEPARATOR + serverNode);
+        serverUris.add(new String(serverUriBytes, Charset.forName("UTF-8")));
+      }
+      zkClient.close();
+      return serverUris;
+    } catch (Exception e) {
+      if (zkClient != null) {
+        zkClient.close();
+      }
+      throw e;
+    }
   }
 }

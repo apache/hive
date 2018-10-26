@@ -144,8 +144,11 @@ public class MetaStoreTestUtils {
           MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, jdbcUrl);
         }
 
-        // Setting metastore instance specific metastore uri
-        MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
+        // Setting metastore instance specific metastore uri, if dynamic metastore service
+        // discovery is not enabled.
+        if (MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE).trim().isEmpty()) {
+          MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
+        }
         MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf);
 
         // Creating warehouse dir, if not exists

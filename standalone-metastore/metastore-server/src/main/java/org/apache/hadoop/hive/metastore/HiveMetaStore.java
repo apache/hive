@@ -75,6 +75,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
@@ -164,6 +165,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ShutdownHookManager;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
+import org.apache.hive.common.util.ZooKeeperHiveHelper;
+import org.apache.hive.common.util.ZKDeRegisterWatcher;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
@@ -221,6 +224,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
   static final String NO_FILTER_STRING = "";
   static final int UNLIMITED_MAX_PARTITIONS = -1;
+  private static ZooKeeperHiveHelper zooKeeperHelper = null;
 
   private static final class ChainedTTransportFactory extends TTransportFactory {
     private final TTransportFactory parentTransFactory;
@@ -9103,6 +9107,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 + e.getMessage(), e);
           }
         }
+        // Remove from zookeeper if it's configured
+        try {
+          if (zooKeeperHelper != null) {
+            zooKeeperHelper.removeServerInstanceFromZooKeeper();
+          }
+        } catch (Exception e) {
+          LOG.error("Error removing znode for this metastore instance from ZooKeeper.", e);
+        }
         ThreadPool.shutdown();
       }, 10);
 
@@ -9322,7 +9334,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if (startLock != null) {
       signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
     }
+
+    // If dynamic service discovery through ZooKeeper is enabled, add this server to the ZooKeeper.
+    if (MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE)
+            .equalsIgnoreCase("zookeeper")) {
+      zooKeeperHelper = MetastoreConf.getZKConfig(conf);
+      String serverInstanceURI = getServerInstanceURI(port);
+      zooKeeperHelper.addServerInstanceToZooKeeper(serverInstanceURI, serverInstanceURI, null,
+              new ZKDeRegisterWatcher(zooKeeperHelper));
+      HMSHandler.LOG.info("Metastore server instance with URL " + serverInstanceURI + " added to " +
+              "the zookeeper");
+    }
+
     tServer.serve();
+  }
+
+  private static String getServerInstanceURI(int port) throws Exception {
+    return ServerUtils.getHostAddress(null).getHostAddress() + ":" + port;
   }
 
   private static void cleanupRawStore() {
