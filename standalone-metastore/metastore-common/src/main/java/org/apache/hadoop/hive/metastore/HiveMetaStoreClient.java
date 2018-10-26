@@ -2468,7 +2468,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return copy;
   }
 
-  private List<Partition> deepCopyPartitions(List<Partition> partitions) {
+  protected List<Partition> deepCopyPartitions(List<Partition> partitions) {
     return deepCopyPartitions(partitions, null);
   }
 
