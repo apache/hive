@@ -164,13 +164,13 @@
       <version>${hadoop.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
+          <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
+          <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-util</artifactId>
-	</exclusion>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -179,11 +179,11 @@
       <version>${hadoop.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
+          <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
+          <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-util</artifactId>
         </exclusion>
       </exclusions>
