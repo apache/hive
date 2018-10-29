@@ -1135,6 +1135,7 @@ struct CreationMetadata {
 struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
+    3: optional list<string> eventTypeSkipList,
 }
 
 struct NotificationEvent {

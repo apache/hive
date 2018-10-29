@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
@@ -140,6 +141,9 @@ import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
+import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -566,6 +570,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
       if (Metrics.getRegistry() != null) {
         listeners.add(new HMSMetricsListener(conf));
+      }
+
+      boolean canCachedStoreCanUseEvent = false;
+      for (MetaStoreEventListener listener : transactionalListeners) {
+        if (listener.doesAddEventsToNotificationLogTable()) {
+          canCachedStoreCanUseEvent = true;
+          break;
+        }
+      }
+      if (conf.getBoolean(ConfVars.METASTORE_CACHE_CAN_USE_EVENT.getVarname(), false) &&
+              !canCachedStoreCanUseEvent) {
+        throw new MetaException("CahcedStore can not use events for invalidation as there is no " +
+                " TransactionalMetaStoreEventListener to add events to notification table");
       }
 
       endFunctionListeners = MetaStoreServerUtils.getMetaStoreListeners(
@@ -5786,14 +5803,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           colStats.getStatsDesc().getCatName(), colStats.getStatsDesc().getDbName(),
           colStats.getStatsDesc().getTableName()));
 
-      boolean ret = false;
+      Map<String, String> parameters = null;
+      getMS().openTransaction();
+      boolean committed = false;
       try {
-        ret = getMS().updateTableColumnStatistics(colStats, validWriteIds, writeId) != null;
+        parameters = getMS().updateTableColumnStatistics(colStats, validWriteIds, writeId);
+        if (parameters != null) {
+          if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.UPDATE_TABLE_COLUMN_STAT,
+                    new UpdateTableColumnStatEvent(colStats, parameters, validWriteIds, writeId, this));
+          }
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.UPDATE_TABLE_COLUMN_STAT,
+                    new UpdateTableColumnStatEvent(colStats, parameters, validWriteIds, writeId, this));
+          }
+        }
+        committed = getMS().commitTransaction();
       } finally {
-        endFunction("write_column_statistics", ret != false, null,
+        if (!committed) {
+          getMS().rollbackTransaction();
+        }
+        endFunction("write_column_statistics", parameters != null, null,
             colStats.getStatsDesc().getTableName());
       }
-      return ret;
+
+      return parameters != null;
     }
 
     private void normalizeColStatsInput(ColumnStatistics colStats) throws MetaException {
@@ -5826,16 +5862,37 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean ret = false;
 
+      Map<String, String> parameters;
+      List<String> partVals;
+      boolean committed = false;
+      getMS().openTransaction();
       try {
         if (tbl == null) {
           tbl = getTable(catName, dbName, tableName);
         }
-        List<String> partVals = getPartValsFromName(tbl, csd.getPartName());
-        return getMS().updatePartitionColumnStatistics(
-            colStats, partVals, validWriteIds, writeId) != null;
+        partVals = getPartValsFromName(tbl, csd.getPartName());
+        parameters = getMS().updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+        if (parameters != null) {
+          if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+              EventType.UPDATE_PARTITION_COLUMN_STAT,
+              new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, validWriteIds, writeId, this));
+          }
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.UPDATE_PARTITION_COLUMN_STAT,
+              new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, validWriteIds, writeId, this));
+          }
+        }
+        committed = getMS().commitTransaction();
       } finally {
+        if (!committed) {
+          getMS().rollbackTransaction();
+        }
         endFunction("write_partition_column_statistics", ret != false, null, tableName);
       }
+
+      return parameters != null;
     }
 
     @Override
@@ -5889,6 +5946,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         ret = getMS().deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
                                                       convertedPartName, partVals, colName);
+        if (ret) {
+          if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.DELETE_PARTITION_COLUMN_STAT,
+                    new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                            convertedPartName, partVals, colName, this));
+          }
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.DELETE_PARTITION_COLUMN_STAT,
+                    new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                            convertedPartName, partVals, colName, this));
+          }
+        }
         committed = getMS().commitTransaction();
       } finally {
         if (!committed) {
@@ -5926,6 +5997,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         ret = getMS().deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName);
+        if (ret) {
+          if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.DELETE_TABLE_COLUMN_STAT,
+                    new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+                            tableName, colName, this));
+          }
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.DELETE_TABLE_COLUMN_STAT,
+                    new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+                            tableName, colName, this));
+          }
+        }
         committed = getMS().commitTransaction();
       } finally {
         if (!committed) {

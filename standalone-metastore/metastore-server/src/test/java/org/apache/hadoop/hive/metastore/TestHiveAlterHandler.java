@@ -60,7 +60,7 @@ public class TestHiveAlterHandler {
         getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3"));
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
-    handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null);
+    handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
   }
 
   @Test
@@ -86,7 +86,7 @@ public class TestHiveAlterHandler {
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
     try {
-      handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null);
+      handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
     } catch (Throwable t) {
       System.err.println(t);
       t.printStackTrace(System.err);
@@ -121,7 +121,7 @@ public class TestHiveAlterHandler {
         getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3", "col4"));
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
-    handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null);
+    handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
   }
 
 }

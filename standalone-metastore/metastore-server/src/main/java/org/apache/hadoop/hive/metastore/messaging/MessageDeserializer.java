@@ -74,6 +74,14 @@ public abstract class MessageDeserializer {
       return getAllocWriteIdMessage(messageBody);
     case ACID_WRITE:
       return getAcidWriteMessage(messageBody);
+    case UPDATE_TABLE_COLUMN_STAT:
+      return getUpdateTableColumnStatMessage(messageBody);
+    case DELETE_TABLE_COLUMN_STAT:
+      return getDeleteTableColumnStatMessage(messageBody);
+    case UPDATE_PARTITION_COLUMN_STAT:
+      return getUpdatePartitionColumnStatMessage(messageBody);
+    case DELETE_PARTITION_COLUMN_STAT:
+      return getDeletePartitionColumnStatMessage(messageBody);
     default:
       throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
     }
@@ -194,6 +202,26 @@ public abstract class MessageDeserializer {
    * Method to de-serialize AcidWriteMessage instance.
    */
   public abstract AcidWriteMessage getAcidWriteMessage(String messageBody);
+
+  /**
+   * Method to de-serialize UpdateTableColumnStatMessage instance.
+   */
+  public abstract UpdateTableColumnStatMessage getUpdateTableColumnStatMessage(String messageBody);
+
+  /**
+   * Method to de-serialize DeleteTableColumnStatMessage instance.
+   */
+  public abstract DeleteTableColumnStatMessage getDeleteTableColumnStatMessage(String messageBody);
+
+  /**
+   * Method to de-serialize UpdatePartitionColumnStatMessage instance.
+   */
+  public abstract UpdatePartitionColumnStatMessage getUpdatePartitionColumnStatMessage(String messageBody);
+
+  /**
+   * Method to de-serialize DeletePartitionColumnStatMessage instance.
+   */
+  public abstract DeletePartitionColumnStatMessage getDeletePartitionColumnStatMessage(String messageBody);
 
   // Protection against construction.
   protected MessageDeserializer() {}

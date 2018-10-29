@@ -3460,10 +3460,12 @@ class NotificationEventRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   LASTEVENT = 1
   MAXEVENTS = 2
+  EVENTTYPESKIPLIST = 3
 
   FIELDS = {
     LASTEVENT => {:type => ::Thrift::Types::I64, :name => 'lastEvent'},
-    MAXEVENTS => {:type => ::Thrift::Types::I32, :name => 'maxEvents', :optional => true}
+    MAXEVENTS => {:type => ::Thrift::Types::I32, :name => 'maxEvents', :optional => true},
+    EVENTTYPESKIPLIST => {:type => ::Thrift::Types::LIST, :name => 'eventTypeSkipList', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

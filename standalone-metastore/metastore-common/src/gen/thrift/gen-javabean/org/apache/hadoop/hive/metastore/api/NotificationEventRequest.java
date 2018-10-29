@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField LAST_EVENT_FIELD_DESC = new org.apache.thrift.protocol.TField("lastEvent", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField MAX_EVENTS_FIELD_DESC = new org.apache.thrift.protocol.TField("maxEvents", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField EVENT_TYPE_SKIP_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("eventTypeSkipList", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,11 +50,13 @@ import org.slf4j.LoggerFactory;
 
   private long lastEvent; // required
   private int maxEvents; // optional
+  private List<String> eventTypeSkipList; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     LAST_EVENT((short)1, "lastEvent"),
-    MAX_EVENTS((short)2, "maxEvents");
+    MAX_EVENTS((short)2, "maxEvents"),
+    EVENT_TYPE_SKIP_LIST((short)3, "eventTypeSkipList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +75,8 @@ import org.slf4j.LoggerFactory;
           return LAST_EVENT;
         case 2: // MAX_EVENTS
           return MAX_EVENTS;
+        case 3: // EVENT_TYPE_SKIP_LIST
+          return EVENT_TYPE_SKIP_LIST;
         default:
           return null;
       }
@@ -115,7 +120,7 @@ import org.slf4j.LoggerFactory;
   private static final int __LASTEVENT_ISSET_ID = 0;
   private static final int __MAXEVENTS_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.MAX_EVENTS};
+  private static final _Fields optionals[] = {_Fields.MAX_EVENTS,_Fields.EVENT_TYPE_SKIP_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -123,6 +128,9 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.MAX_EVENTS, new org.apache.thrift.meta_data.FieldMetaData("maxEvents", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.EVENT_TYPE_SKIP_LIST, new org.apache.thrift.meta_data.FieldMetaData("eventTypeSkipList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(NotificationEventRequest.class, metaDataMap);
   }
@@ -145,6 +153,10 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = other.__isset_bitfield;
     this.lastEvent = other.lastEvent;
     this.maxEvents = other.maxEvents;
+    if (other.isSetEventTypeSkipList()) {
+      List<String> __this__eventTypeSkipList = new ArrayList<String>(other.eventTypeSkipList);
+      this.eventTypeSkipList = __this__eventTypeSkipList;
+    }
   }
 
   public NotificationEventRequest deepCopy() {
@@ -157,6 +169,7 @@ import org.slf4j.LoggerFactory;
     this.lastEvent = 0;
     setMaxEventsIsSet(false);
     this.maxEvents = 0;
+    this.eventTypeSkipList = null;
   }
 
   public long getLastEvent() {
@@ -203,6 +216,44 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXEVENTS_ISSET_ID, value);
   }
 
+  public int getEventTypeSkipListSize() {
+    return (this.eventTypeSkipList == null) ? 0 : this.eventTypeSkipList.size();
+  }
+
+  public java.util.Iterator<String> getEventTypeSkipListIterator() {
+    return (this.eventTypeSkipList == null) ? null : this.eventTypeSkipList.iterator();
+  }
+
+  public void addToEventTypeSkipList(String elem) {
+    if (this.eventTypeSkipList == null) {
+      this.eventTypeSkipList = new ArrayList<String>();
+    }
+    this.eventTypeSkipList.add(elem);
+  }
+
+  public List<String> getEventTypeSkipList() {
+    return this.eventTypeSkipList;
+  }
+
+  public void setEventTypeSkipList(List<String> eventTypeSkipList) {
+    this.eventTypeSkipList = eventTypeSkipList;
+  }
+
+  public void unsetEventTypeSkipList() {
+    this.eventTypeSkipList = null;
+  }
+
+  /** Returns true if field eventTypeSkipList is set (has been assigned a value) and false otherwise */
+  public boolean isSetEventTypeSkipList() {
+    return this.eventTypeSkipList != null;
+  }
+
+  public void setEventTypeSkipListIsSet(boolean value) {
+    if (!value) {
+      this.eventTypeSkipList = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LAST_EVENT:
@@ -221,6 +272,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case EVENT_TYPE_SKIP_LIST:
+      if (value == null) {
+        unsetEventTypeSkipList();
+      } else {
+        setEventTypeSkipList((List<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -231,6 +290,9 @@ import org.slf4j.LoggerFactory;
 
     case MAX_EVENTS:
       return getMaxEvents();
+
+    case EVENT_TYPE_SKIP_LIST:
+      return getEventTypeSkipList();
 
     }
     throw new IllegalStateException();
@@ -247,6 +309,8 @@ import org.slf4j.LoggerFactory;
       return isSetLastEvent();
     case MAX_EVENTS:
       return isSetMaxEvents();
+    case EVENT_TYPE_SKIP_LIST:
+      return isSetEventTypeSkipList();
     }
     throw new IllegalStateException();
   }
@@ -282,6 +346,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_eventTypeSkipList = true && this.isSetEventTypeSkipList();
+    boolean that_present_eventTypeSkipList = true && that.isSetEventTypeSkipList();
+    if (this_present_eventTypeSkipList || that_present_eventTypeSkipList) {
+      if (!(this_present_eventTypeSkipList && that_present_eventTypeSkipList))
+        return false;
+      if (!this.eventTypeSkipList.equals(that.eventTypeSkipList))
+        return false;
+    }
+
     return true;
   }
 
@@ -298,6 +371,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_maxEvents);
     if (present_maxEvents)
       list.add(maxEvents);
+
+    boolean present_eventTypeSkipList = true && (isSetEventTypeSkipList());
+    list.add(present_eventTypeSkipList);
+    if (present_eventTypeSkipList)
+      list.add(eventTypeSkipList);
 
     return list.hashCode();
   }
@@ -330,6 +408,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetEventTypeSkipList()).compareTo(other.isSetEventTypeSkipList());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEventTypeSkipList()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.eventTypeSkipList, other.eventTypeSkipList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -357,6 +445,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("maxEvents:");
       sb.append(this.maxEvents);
+      first = false;
+    }
+    if (isSetEventTypeSkipList()) {
+      if (!first) sb.append(", ");
+      sb.append("eventTypeSkipList:");
+      if (this.eventTypeSkipList == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.eventTypeSkipList);
+      }
       first = false;
     }
     sb.append(")");
@@ -424,6 +522,24 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // EVENT_TYPE_SKIP_LIST
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list732 = iprot.readListBegin();
+                struct.eventTypeSkipList = new ArrayList<String>(_list732.size);
+                String _elem733;
+                for (int _i734 = 0; _i734 < _list732.size; ++_i734)
+                {
+                  _elem733 = iprot.readString();
+                  struct.eventTypeSkipList.add(_elem733);
+                }
+                iprot.readListEnd();
+              }
+              struct.setEventTypeSkipListIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -444,6 +560,20 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(MAX_EVENTS_FIELD_DESC);
         oprot.writeI32(struct.maxEvents);
         oprot.writeFieldEnd();
+      }
+      if (struct.eventTypeSkipList != null) {
+        if (struct.isSetEventTypeSkipList()) {
+          oprot.writeFieldBegin(EVENT_TYPE_SKIP_LIST_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.eventTypeSkipList.size()));
+            for (String _iter735 : struct.eventTypeSkipList)
+            {
+              oprot.writeString(_iter735);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -467,9 +597,21 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetMaxEvents()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetEventTypeSkipList()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetMaxEvents()) {
         oprot.writeI32(struct.maxEvents);
+      }
+      if (struct.isSetEventTypeSkipList()) {
+        {
+          oprot.writeI32(struct.eventTypeSkipList.size());
+          for (String _iter736 : struct.eventTypeSkipList)
+          {
+            oprot.writeString(_iter736);
+          }
+        }
       }
     }
 
@@ -478,10 +620,23 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.lastEvent = iprot.readI64();
       struct.setLastEventIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.maxEvents = iprot.readI32();
         struct.setMaxEventsIsSet(true);
+      }
+      if (incoming.get(1)) {
+        {
+          org.apache.thrift.protocol.TList _list737 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.eventTypeSkipList = new ArrayList<String>(_list737.size);
+          String _elem738;
+          for (int _i739 = 0; _i739 < _list737.size; ++_i739)
+          {
+            _elem738 = iprot.readString();
+            struct.eventTypeSkipList.add(_elem738);
+          }
+        }
+        struct.setEventTypeSkipListIsSet(true);
       }
     }
   }
