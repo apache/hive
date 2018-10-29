@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -123,6 +124,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
   private Table createTable(String dbName, String tableName, TableType type)
           throws Exception {
     TableBuilder builder = new TableBuilder()
+            .setCatName("hive")
             .setDbName(dbName)
             .setTableName(tableName)
             .addCol("id", "int")
@@ -153,6 +155,7 @@ public class TestGetTableMeta extends MetaStoreClientTest {
     client.createTable(table);
     TableMeta tableMeta = new TableMeta(dbName, tableName, type.name());
     tableMeta.setComments(comment);
+    tableMeta.setCatName("hive");
     return tableMeta;
   }
 
@@ -160,7 +163,9 @@ public class TestGetTableMeta extends MetaStoreClientTest {
           throws Exception {
     Table table  = createTable(dbName, tableName, type);
     client.createTable(table);
-    return new TableMeta(dbName, tableName, type.name());
+    TableMeta tableMeta = new TableMeta(dbName, tableName, type.name());
+    tableMeta.setCatName("hive");
+    return tableMeta;
   }
 
   private void assertTableMetas(int[] expected, List<TableMeta> actualTableMetas) {
@@ -301,7 +306,9 @@ public class TestGetTableMeta extends MetaStoreClientTest {
           .addCol("id", "int")
           .addCol("name", "string")
           .build(metaStore.getConf()));
-      expected.add(new TableMeta(dbName, tableNames[i], TableType.MANAGED_TABLE.name()));
+      TableMeta tableMeta = new TableMeta(dbName, tableNames[i], TableType.MANAGED_TABLE.name());
+      tableMeta.setCatName(catName);
+      expected.add(tableMeta);
     }
 
     List<String> types = Collections.singletonList(TableType.MANAGED_TABLE.name());

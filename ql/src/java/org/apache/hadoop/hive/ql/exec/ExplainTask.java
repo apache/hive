@@ -356,32 +356,28 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (jsonOutput) {
       out = null;
     }
-    if (work.getParseContext() != null) {
-      List<LockComponent> lockComponents = AcidUtils.makeLockComponents(work.getOutputs(), work.getInputs(), conf);
+    List<LockComponent> lockComponents = AcidUtils.makeLockComponents(work.getOutputs(), work.getInputs(), conf);
+    if (null != out) {
+      out.print("LOCK INFORMATION:\n");
+    }
+    List<ExplainLockDesc> locks = new ArrayList<>(lockComponents.size());
+
+    for (LockComponent component : lockComponents) {
+      ExplainLockDesc lockDesc = new ExplainLockDesc(component);
+
       if (null != out) {
-        out.print("LOCK INFORMATION:\n");
-      }
-      List<ExplainLockDesc> locks = new ArrayList<>(lockComponents.size());
-
-      for (LockComponent component : lockComponents) {
-        ExplainLockDesc lockDesc = new ExplainLockDesc(component);
-
-        if (null != out) {
-          out.print(lockDesc.getFullName());
-          out.print(" -> ");
-          out.print(lockDesc.getLockType());
-          out.print('\n');
-        } else {
-          locks.add(lockDesc);
-        }
-
+        out.print(lockDesc.getFullName());
+        out.print(" -> ");
+        out.print(lockDesc.getLockType());
+        out.print('\n');
+      } else {
+        locks.add(lockDesc);
       }
 
-      if (jsonOutput) {
-        jsonObject.put("LOCK INFORMATION:", locks);
-      }
-    } else {
-      System.err.println("No parse context!");
+    }
+
+    if (jsonOutput) {
+      jsonObject.put("LOCK INFORMATION:", locks);
     }
     return jsonObject;
   }

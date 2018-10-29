@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -58,10 +59,14 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -71,6 +76,8 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.MetastoreException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
@@ -590,7 +597,7 @@ public class MetaStoreServerUtils {
   /** Duplicates AcidUtils; used in a couple places in metastore. */
   public static boolean isTransactionalTable(Map<String, String> params) {
     String transactionalProp = params.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    return (transactionalProp != null && "true".equalsIgnoreCase(transactionalProp));
+    return "true".equalsIgnoreCase(transactionalProp);
   }
 
   /**
@@ -1293,5 +1300,163 @@ public class MetaStoreServerUtils {
     public int hashCode() {
       return hashCode;
     }
+  }
+
+  // Some util methods from Hive.java, this is copied so as to avoid circular dependency with hive ql
+  public static Path getPath(Table table) {
+    String location = table.getSd().getLocation();
+    if (location == null) {
+      return null;
+    }
+    return new Path(location);
+  }
+
+  public static List<Partition> getAllPartitionsOf(IMetaStoreClient msc, Table table) throws MetastoreException {
+    try {
+      return msc.listPartitions(table.getCatName(), table.getDbName(), table.getTableName(), (short)-1);
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
+  public static boolean isPartitioned(Table table) {
+    if (getPartCols(table) == null) {
+      return false;
+    }
+    return (getPartCols(table).size() != 0);
+  }
+
+  public static List<FieldSchema> getPartCols(Table table) {
+    List<FieldSchema> partKeys = table.getPartitionKeys();
+    if (partKeys == null) {
+      partKeys = new ArrayList<>();
+      table.setPartitionKeys(partKeys);
+    }
+    return partKeys;
+  }
+
+  public static List<String> getPartColNames(Table table) {
+    List<String> partColNames = new ArrayList<>();
+    for (FieldSchema key : getPartCols(table)) {
+      partColNames.add(key.getName());
+    }
+    return partColNames;
+  }
+
+  public static Path getDataLocation(Table table, Partition partition) {
+    if (isPartitioned(table)) {
+      if (partition.getSd() == null) {
+        return null;
+      } else {
+        return new Path(partition.getSd().getLocation());
+      }
+    } else {
+      if (table.getSd() == null) {
+        return null;
+      }
+      else {
+        return getPath(table);
+      }
+    }
+  }
+
+  public static String getPartitionName(Table table, Partition partition) {
+    try {
+      return Warehouse.makePartName(getPartCols(table), partition.getValues());
+    } catch (MetaException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static Map<String, String> getPartitionSpec(Table table, Partition partition) {
+    return Warehouse.makeSpecFromValues(getPartCols(table), partition.getValues());
+  }
+
+  public static Partition getPartition(IMetaStoreClient msc, Table tbl, Map<String, String> partSpec) throws MetastoreException {
+    List<String> pvals = new ArrayList<String>();
+    for (FieldSchema field : getPartCols(tbl)) {
+      String val = partSpec.get(field.getName());
+      pvals.add(val);
+    }
+    Partition tpart = null;
+    try {
+      tpart = msc.getPartition(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), pvals);
+    } catch (NoSuchObjectException nsoe) {
+      // this means no partition exists for the given partition
+      // key value pairs - thrift cannot handle null return values, hence
+      // getPartition() throws NoSuchObjectException to indicate null partition
+    } catch (Exception e) {
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new MetastoreException(e);
+    }
+
+    return tpart;
+  }
+
+
+  /**
+   * Get the partition name from the path.
+   *
+   * @param tablePath
+   *          Path of the table.
+   * @param partitionPath
+   *          Path of the partition.
+   * @param partCols
+   *          Set of partition columns from table definition
+   * @return Partition name, for example partitiondate=2008-01-01
+   */
+  public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols) {
+    String result = null;
+    Path currPath = partitionPath;
+    LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
+
+    while (currPath != null && !tablePath.equals(currPath)) {
+      // format: partition=p_val
+      // Add only when table partition colName matches
+      String[] parts = currPath.getName().split("=");
+      if (parts.length > 0) {
+        if (parts.length != 2) {
+          LOG.warn(currPath.getName() + " is not a valid partition name");
+          return result;
+        }
+
+        String partitionName = parts[0];
+        if (partCols.contains(partitionName)) {
+          if (result == null) {
+            result = currPath.getName();
+          } else {
+            result = currPath.getName() + Path.SEPARATOR + result;
+          }
+        }
+      }
+      currPath = currPath.getParent();
+      LOG.debug("currPath=" + currPath);
+    }
+    return result;
+  }
+
+  public static Partition createMetaPartitionObject(Table tbl, Map<String, String> partSpec, Path location)
+    throws MetastoreException {
+    List<String> pvals = new ArrayList<String>();
+    for (FieldSchema field : getPartCols(tbl)) {
+      String val = partSpec.get(field.getName());
+      if (val == null || val.isEmpty()) {
+        throw new MetastoreException("partition spec is invalid; field "
+          + field.getName() + " does not exist or is empty");
+      }
+      pvals.add(val);
+    }
+
+    Partition tpart = new Partition();
+    tpart.setCatName(tbl.getCatName());
+    tpart.setDbName(tbl.getDbName());
+    tpart.setTableName(tbl.getTableName());
+    tpart.setValues(pvals);
+
+    if (!MetaStoreUtils.isView(tbl)) {
+      tpart.setSd(tbl.getSd().deepCopy());
+      tpart.getSd().setLocation((location != null) ? location.toString() : null);
+    }
+    return tpart;
   }
 }

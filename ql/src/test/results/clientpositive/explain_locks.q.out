@@ -2,6 +2,7 @@ PREHOOK: query: explain locks drop table test_explain_locks
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: explain locks drop table test_explain_locks
 POSTHOOK: type: DROPTABLE
+LOCK INFORMATION:
 PREHOOK: query: explain locks create table test_explain_locks (a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

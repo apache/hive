@@ -686,10 +686,9 @@ public class ObjectStore implements RawStore, Configurable {
       debugLog("rolling back transaction: no open transactions: " + openTrasactionCalls);
       return;
     }
-    debugLog("Rollback transaction, isActive: " + currentTransaction.isActive());
+    debugLog("Rollback transaction, isActive: " + isActiveTransaction());
     try {
-      if (currentTransaction.isActive()
-          && transactionStatus != TXN_STATUS.ROLLBACK) {
+      if (isActiveTransaction() && transactionStatus != TXN_STATUS.ROLLBACK) {
         currentTransaction.rollback();
       }
     } finally {
@@ -1711,6 +1710,7 @@ public class ObjectStore implements RawStore, Configurable {
       for (MTable table : tables) {
         TableMeta metaData = new TableMeta(
             table.getDatabase().getName(), table.getTableName(), table.getTableType());
+        metaData.setCatName(catName);
         metaData.setComments(table.getParameters().get("comment"));
         metas.add(metaData);
       }
