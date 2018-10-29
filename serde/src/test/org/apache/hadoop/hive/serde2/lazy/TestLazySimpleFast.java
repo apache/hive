@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -37,7 +39,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -386,5 +391,32 @@ public class TestLazySimpleFast extends TestCase {
 
   public void testLazyBinarySimpleComplexDepthFour() throws Throwable {
     testLazySimpleFast(SerdeRandomRowSource.SupportedTypes.ALL, 4);
+  }
+
+  public void testLazySimpleDeserializeRowEmptyArray() throws Throwable {
+    HiveConf hconf = new HiveConf();
+
+    // set the escaping related properties
+    Properties props = new Properties();
+    props.setProperty(serdeConstants.FIELD_DELIM, ",");
+
+    LazySerDeParameters lazyParams =
+        new LazySerDeParameters(hconf, props,
+            LazySimpleSerDe.class.getName());
+
+    TypeInfo[] typeInfos = new TypeInfo[] {
+        TypeInfoFactory.getListTypeInfo(
+            TypeInfoFactory.intTypeInfo),
+        TypeInfoFactory.getListTypeInfo(
+            TypeInfoFactory.getListTypeInfo(
+                TypeInfoFactory.stringTypeInfo))};
+    LazySimpleDeserializeRead deserializeRead =
+        new LazySimpleDeserializeRead(typeInfos, null, true, lazyParams);
+
+    byte[] bytes = ",".getBytes();
+    deserializeRead.set(bytes,  0, bytes.length);
+    verifyRead(deserializeRead, typeInfos[0], Collections.emptyList());
+    verifyRead(deserializeRead, typeInfos[1], Collections.emptyList());
+    TestCase.assertTrue(deserializeRead.isEndOfInputReached());
   }
 }
