@@ -172,6 +172,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	discover.partitions 	true                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -236,6 +237,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
@@ -472,6 +474,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
@@ -538,6 +541,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####

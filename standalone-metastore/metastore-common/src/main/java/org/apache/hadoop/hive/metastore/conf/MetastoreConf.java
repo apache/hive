@@ -74,6 +74,8 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String RUNTIME_STATS_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask";
+  static final String PARTITION_MANAGEMENT_TASK_CLASS =
+    "org.apache.hadoop.hive.metastore.PartitionManagementTask";
   @VisibleForTesting
   static final String EVENT_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.events.EventCleanerTask";
@@ -651,6 +653,58 @@ public class MetastoreConf {
     METRICS_REPORTERS("metastore.metrics.reporters", "metastore.metrics.reporters", "json,jmx",
         new StringSetValidator("json", "jmx", "console", "hadoop"),
         "A comma separated list of metrics reporters to start"),
+    MSCK_PATH_VALIDATION("msck.path.validation", "hive.msck.path.validation", "throw",
+      new StringSetValidator("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
+      "directories that are partition-like but contain unsupported characters. 'throw' (an " +
+      "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
+      " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
+    MSCK_REPAIR_BATCH_SIZE("msck.repair.batch.size",
+      "hive.msck.repair.batch.size", 3000,
+      "Batch size for the msck repair command. If the value is greater than zero,\n "
+        + "it will execute batch wise with the configured batch size. In case of errors while\n"
+        + "adding unknown partitions the batch size is automatically reduced by half in the subsequent\n"
+        + "retry attempt. The default value is 3000 which means it will execute in the batches of 3000."),
+    MSCK_REPAIR_BATCH_MAX_RETRIES("msck.repair.batch.max.retries", "hive.msck.repair.batch.max.retries", 4,
+      "Maximum number of retries for the msck repair command when adding unknown partitions.\n "
+        + "If the value is greater than zero it will retry adding unknown partitions until the maximum\n"
+        + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
+        + "In each retry attempt it will reduce the batch size by a factor of 2 until it reaches zero.\n"
+        + "If the value is set to zero it will retry until the batch size becomes zero as described above."),
+    MSCK_REPAIR_ENABLE_PARTITION_RETENTION("msck.repair.enable.partition.retention",
+      "msck.repair.enable.partition.retention", false,
+      "If 'partition.retention.period' table property is set, this flag determines whether MSCK REPAIR\n" +
+      "command should handle partition retention. If enabled, and if a specific partition's age exceeded\n" +
+      "retention period the partition will be dropped along with data"),
+
+
+    // Partition management task params
+    PARTITION_MANAGEMENT_TASK_FREQUENCY("metastore.partition.management.task.frequency",
+      "metastore.partition.management.task.frequency",
+      300, TimeUnit.SECONDS, "Frequency at which timer task runs to do automatic partition management for tables\n" +
+      "with table property 'discover.partitions'='true'. Partition management include 2 pieces. One is partition\n" +
+      "discovery and other is partition retention period. When 'discover.partitions'='true' is set, partition\n" +
+      "management will look for partitions in table location and add partitions objects for it in metastore.\n" +
+      "Similarly if partition object exists in metastore and partition location does not exist, partition object\n" +
+      "will be dropped. The second piece in partition management is retention period. When 'discover.partition'\n" +
+      "is set to true and if 'partition.retention.period' table property is defined, partitions that are older\n" +
+      "than the specified retention period will be automatically dropped from metastore along with the data."),
+    PARTITION_MANAGEMENT_TABLE_TYPES("metastore.partition.management.table.types",
+      "metastore.partition.management.table.types", "MANAGED_TABLE,EXTERNAL_TABLE",
+      "Comma separated list of table types to use for partition management"),
+    PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE("metastore.partition.management.task.thread.pool.size",
+      "metastore.partition.management.task.thread.pool.size", 5,
+      "Partition management uses thread pool on to which tasks are submitted for discovering and retaining the\n" +
+      "partitions. This determines the size of the thread pool."),
+    PARTITION_MANAGEMENT_CATALOG_NAME("metastore.partition.management.catalog.name",
+      "metastore.partition.management.catalog.name", "hive",
+      "Automatic partition management will look for tables under the specified catalog name"),
+    PARTITION_MANAGEMENT_DATABASE_PATTERN("metastore.partition.management.database.pattern",
+      "metastore.partition.management.database.pattern", "*",
+      "Automatic partition management will look for tables using the specified database pattern"),
+    PARTITION_MANAGEMENT_TABLE_PATTERN("metastore.partition.management.table.pattern",
+      "metastore.partition.management.table.pattern", "*",
+      "Automatic partition management will look for tables using the specified table pattern"),
+
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
     MAX_OPEN_TXNS("metastore.max.open.txns", "hive.max.open.txns", 100000,
@@ -799,7 +853,7 @@ public class MetastoreConf {
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
-            "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
+          "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
@@ -808,7 +862,8 @@ public class MetastoreConf {
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
             ACID_COMPACTION_HISTORY_SERVICE_CLASS + "," +
             ACID_WRITE_SET_SERVICE_CLASS + "," +
-            MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS,
+            MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +
+            PARTITION_MANAGEMENT_TASK_CLASS,
         "Command separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),

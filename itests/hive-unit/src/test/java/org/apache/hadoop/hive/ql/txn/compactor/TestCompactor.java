@@ -1679,7 +1679,6 @@ public class TestCompactor {
     Assert.assertNotEquals("Unexpected default compression size", 2700,
       OrcConf.BUFFER_SIZE.getDefaultValue());
 
-
     // Insert one more row - this should trigger hive.compactor.delta.pct.threshold to be reached for ttp2
     executeStatementOnDriver("insert into " + tblName1 + " values (6, 'f')", driver);
     executeStatementOnDriver("insert into " + tblName2 + " values (6, 'f')", driver);

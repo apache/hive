@@ -15,9 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.metadata;
+package org.apache.hadoop.hive.metastore;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAllPartitionsOf;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartition;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionSpec;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPath;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isPartitioned;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,27 +44,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 
-import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.ql.metadata.CheckResult.PartitionResult;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -65,21 +75,33 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class HiveMetaStoreChecker {
 
   public static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreChecker.class);
-  public static final String CLASS_NAME = HiveMetaStoreChecker.class.getName();
 
-  private final Hive hive;
-  private final HiveConf conf;
+  private final IMetaStoreClient msc;
+  private final Configuration conf;
+  private final long partitionExpirySeconds;
+  private final Interner<Path> pathInterner = Interners.newStrongInterner();
 
-  public HiveMetaStoreChecker(Hive hive) {
+  public HiveMetaStoreChecker(IMetaStoreClient msc, Configuration conf) {
+    this(msc, conf, -1);
+  }
+
+  public HiveMetaStoreChecker(IMetaStoreClient msc, Configuration conf, long partitionExpirySeconds) {
     super();
-    this.hive = hive;
-    conf = hive.getConf();
+    this.msc = msc;
+    this.conf = conf;
+    this.partitionExpirySeconds = partitionExpirySeconds;
+  }
+
+  public IMetaStoreClient getMsc() {
+    return msc;
   }
 
   /**
    * Check the metastore for inconsistencies, data missing in either the
    * metastore or on the dfs.
    *
+   * @param catName
+   *          name of the catalog, if not specified default catalog will be used.
    * @param dbName
    *          name of the database, if not specified the default will be used.
    * @param tableName
@@ -90,14 +112,14 @@ public class HiveMetaStoreChecker {
    *          partitions
    * @param result
    *          Fill this with the results of the check
-   * @throws HiveException
+   * @throws MetastoreException
    *           Failed to get required information from the metastore.
    * @throws IOException
    *           Most likely filesystem related
    */
-  public void checkMetastore(String dbName, String tableName,
+  public void checkMetastore(String catName, String dbName, String tableName,
       List<? extends Map<String, String>> partitions, CheckResult result)
-      throws HiveException, IOException {
+      throws MetastoreException, IOException {
 
     if (dbName == null || "".equalsIgnoreCase(dbName)) {
       dbName = Warehouse.DEFAULT_DATABASE_NAME;
@@ -106,41 +128,40 @@ public class HiveMetaStoreChecker {
     try {
       if (tableName == null || "".equals(tableName)) {
         // no table specified, check all tables and all partitions.
-        List<String> tables = hive.getTablesForDb(dbName, ".*");
+        List<String> tables = getMsc().getTables(catName, dbName, ".*");
         for (String currentTableName : tables) {
-          checkTable(dbName, currentTableName, null, result);
+          checkTable(catName, dbName, currentTableName, null, result);
         }
 
-        findUnknownTables(dbName, tables, result);
+        findUnknownTables(catName, dbName, tables, result);
       } else if (partitions == null || partitions.isEmpty()) {
         // only one table, let's check all partitions
-        checkTable(dbName, tableName, null, result);
+        checkTable(catName, dbName, tableName, null, result);
       } else {
         // check the specified partitions
-        checkTable(dbName, tableName, partitions, result);
+        checkTable(catName, dbName, tableName, partitions, result);
       }
       LOG.info("Number of partitionsNotInMs=" + result.getPartitionsNotInMs()
               + ", partitionsNotOnFs=" + result.getPartitionsNotOnFs()
               + ", tablesNotInMs=" + result.getTablesNotInMs()
-              + ", tablesNotOnFs=" + result.getTablesNotOnFs());
-    } catch (MetaException e) {
-      throw new HiveException(e);
+              + ", tablesNotOnFs=" + result.getTablesNotOnFs()
+              + ", expiredPartitions=" + result.getExpiredPartitions());
     } catch (TException e) {
-      throw new HiveException(e);
+      throw new MetastoreException(e);
     }
   }
 
   /**
    * Check for table directories that aren't in the metastore.
    *
+   * @param catName
+   *          name of the catalog, if not specified default catalog will be used.
    * @param dbName
    *          Name of the database
    * @param tables
    *          List of table names
    * @param result
    *          Add any found tables to this
-   * @throws HiveException
-   *           Failed to get required information from the metastore.
    * @throws IOException
    *           Most likely filesystem related
    * @throws MetaException
@@ -150,18 +171,21 @@ public class HiveMetaStoreChecker {
    * @throws TException
    *           Thrift communication error.
    */
-  void findUnknownTables(String dbName, List<String> tables, CheckResult result)
-      throws IOException, MetaException, TException, HiveException {
+  void findUnknownTables(String catName, String dbName, List<String> tables, CheckResult result)
+      throws IOException, MetaException, TException {
 
     Set<Path> dbPaths = new HashSet<Path>();
     Set<String> tableNames = new HashSet<String>(tables);
 
     for (String tableName : tables) {
-      Table table = hive.getTable(dbName, tableName);
+      Table table = getMsc().getTable(catName, dbName, tableName);
       // hack, instead figure out a way to get the db paths
       String isExternal = table.getParameters().get("EXTERNAL");
-      if (isExternal == null || !"TRUE".equalsIgnoreCase(isExternal)) {
-        dbPaths.add(table.getPath().getParent());
+      if (!"TRUE".equalsIgnoreCase(isExternal)) {
+        Path tablePath = getPath(table);
+        if (tablePath != null) {
+          dbPaths.add(tablePath.getParent());
+        }
       }
     }
 
@@ -182,6 +206,8 @@ public class HiveMetaStoreChecker {
    * Check the metastore for inconsistencies, data missing in either the
    * metastore or on the dfs.
    *
+   * @param catName
+   *          name of the catalog, if not specified default catalog will be used.
    * @param dbName
    *          Name of the database
    * @param tableName
@@ -190,22 +216,22 @@ public class HiveMetaStoreChecker {
    *          Partitions to check, if null or empty get all the partitions.
    * @param result
    *          Result object
-   * @throws HiveException
+   * @throws MetastoreException
    *           Failed to get required information from the metastore.
    * @throws IOException
    *           Most likely filesystem related
    * @throws MetaException
    *           Failed to get required information from the metastore.
    */
-  void checkTable(String dbName, String tableName,
+  void checkTable(String catName, String dbName, String tableName,
       List<? extends Map<String, String>> partitions, CheckResult result)
-      throws MetaException, IOException, HiveException {
+      throws MetaException, IOException, MetastoreException {
 
-    Table table = null;
+    Table table;
 
     try {
-      table = hive.getTable(dbName, tableName);
-    } catch (HiveException e) {
+      table = getMsc().getTable(catName, dbName, tableName);
+    } catch (TException e) {
       result.getTablesNotInMs().add(tableName);
       return;
     }
@@ -213,18 +239,13 @@ public class HiveMetaStoreChecker {
     PartitionIterable parts;
     boolean findUnknownPartitions = true;
 
-    if (table.isPartitioned()) {
+    if (isPartitioned(table)) {
       if (partitions == null || partitions.isEmpty()) {
-        String mode = HiveConf.getVar(conf, ConfVars.HIVEMAPREDMODE, (String) null);
-        if ("strict".equalsIgnoreCase(mode)) {
-          parts = new PartitionIterable(hive, table, null, conf.getIntVar(
-              HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+        int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        if (batchSize > 0) {
+          parts = new PartitionIterable(getMsc(), table, batchSize);
         } else {
-          List<Partition> loadedPartitions = new ArrayList<>();
-          PerfLogger perfLogger = SessionState.getPerfLogger();
-          perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
-          loadedPartitions.addAll(hive.getAllPartitionsOf(table));
-          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+          List<Partition> loadedPartitions = getAllPartitionsOf(getMsc(), table);
           parts = new PartitionIterable(loadedPartitions);
         }
       } else {
@@ -233,9 +254,9 @@ public class HiveMetaStoreChecker {
         findUnknownPartitions = false;
         List<Partition> loadedPartitions = new ArrayList<>();
         for (Map<String, String> map : partitions) {
-          Partition part = hive.getPartition(table, map, false);
+          Partition part = getPartition(getMsc(), table, map);
           if (part == null) {
-            PartitionResult pr = new PartitionResult();
+            CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
             pr.setTableName(tableName);
             pr.setPartitionName(Warehouse.makePartPath(map));
             result.getPartitionsNotInMs().add(pr);
@@ -266,14 +287,17 @@ public class HiveMetaStoreChecker {
    *          Should we try to find unknown partitions?
    * @throws IOException
    *           Could not get information from filesystem
-   * @throws HiveException
+   * @throws MetastoreException
    *           Could not create Partition object
    */
   void checkTable(Table table, PartitionIterable parts,
       boolean findUnknownPartitions, CheckResult result) throws IOException,
-      HiveException {
+    MetastoreException {
 
-    Path tablePath = table.getPath();
+    Path tablePath = getPath(table);
+    if (tablePath == null) {
+      return;
+    }
     FileSystem fs = tablePath.getFileSystem(conf);
     if (!fs.exists(tablePath)) {
       result.getTablesNotOnFs().add(table.getTableName());
@@ -288,18 +312,38 @@ public class HiveMetaStoreChecker {
         // most likely the user specified an invalid partition
         continue;
       }
-      Path partPath = partition.getDataLocation();
+      Path partPath = getDataLocation(table, partition);
+      if (partPath == null) {
+        continue;
+      }
       fs = partPath.getFileSystem(conf);
       if (!fs.exists(partPath)) {
-        PartitionResult pr = new PartitionResult();
-        pr.setPartitionName(partition.getName());
-        pr.setTableName(partition.getTable().getTableName());
+        CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
+        pr.setPartitionName(getPartitionName(table, partition));
+        pr.setTableName(partition.getTableName());
         result.getPartitionsNotOnFs().add(pr);
       }
 
-      for (int i = 0; i < partition.getSpec().size(); i++) {
+      if (partitionExpirySeconds > 0) {
+        long currentEpochSecs = Instant.now().getEpochSecond();
+        long createdTime = partition.getCreateTime();
+        long partitionAgeSeconds = currentEpochSecs - createdTime;
+        if (partitionAgeSeconds > partitionExpirySeconds) {
+          CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
+          pr.setPartitionName(getPartitionName(table, partition));
+          pr.setTableName(partition.getTableName());
+          result.getExpiredPartitions().add(pr);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("{}.{}.{}.{} expired. createdAt: {} current: {} age: {}s expiry: {}s", partition.getCatName(),
+              partition.getDbName(), partition.getTableName(), pr.getPartitionName(), createdTime, currentEpochSecs,
+              partitionAgeSeconds, partitionExpirySeconds);
+          }
+        }
+      }
+
+      for (int i = 0; i < getPartitionSpec(table, partition).size(); i++) {
         Path qualifiedPath = partPath.makeQualified(fs);
-        StringInternUtils.internUriStringsInPath(qualifiedPath);
+        pathInterner.intern(qualifiedPath);
         partPaths.add(qualifiedPath);
         partPath = partPath.getParent();
       }
@@ -321,16 +365,19 @@ public class HiveMetaStoreChecker {
    *          Result object
    * @throws IOException
    *           Thrown if we fail at fetching listings from the fs.
-   * @throws HiveException 
+   * @throws MetastoreException
    */
   void findUnknownPartitions(Table table, Set<Path> partPaths,
-      CheckResult result) throws IOException, HiveException {
+      CheckResult result) throws IOException, MetastoreException {
 
-    Path tablePath = table.getPath();
+    Path tablePath = getPath(table);
+    if (tablePath == null) {
+      return;
+    }
     // now check the table folder and see if we find anything
     // that isn't in the metastore
     Set<Path> allPartDirs = new HashSet<Path>();
-    checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(table.getPartColNames()));
+    checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(getPartColNames(table)));
     // don't want the table dir
     allPartDirs.remove(tablePath);
 
@@ -338,7 +385,7 @@ public class HiveMetaStoreChecker {
     allPartDirs.removeAll(partPaths);
 
     Set<String> partColNames = Sets.newHashSet();
-    for(FieldSchema fSchema : table.getPartCols()) {
+    for(FieldSchema fSchema : getPartCols(table)) {
       partColNames.add(fSchema.getName());
     }
 
@@ -350,7 +397,7 @@ public class HiveMetaStoreChecker {
       LOG.debug("PartitionName: " + partitionName);
 
       if (partitionName != null) {
-        PartitionResult pr = new PartitionResult();
+        CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
         pr.setPartitionName(partitionName);
         pr.setTableName(table.getTableName());
 
@@ -358,48 +405,6 @@ public class HiveMetaStoreChecker {
       }
     }
     LOG.debug("Number of partitions not in metastore : " + result.getPartitionsNotInMs().size());
-  }
-
-  /**
-   * Get the partition name from the path.
-   *
-   * @param tablePath
-   *          Path of the table.
-   * @param partitionPath
-   *          Path of the partition.
-   * @param partCols
-   *          Set of partition columns from table definition
-   * @return Partition name, for example partitiondate=2008-01-01
-   */
-  static String getPartitionName(Path tablePath, Path partitionPath,
-      Set<String> partCols) {
-    String result = null;
-    Path currPath = partitionPath;
-    LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
-
-    while (currPath != null && !tablePath.equals(currPath)) {
-      // format: partition=p_val
-      // Add only when table partition colName matches
-      String[] parts = currPath.getName().split("=");
-      if (parts != null && parts.length > 0) {
-        if (parts.length != 2) {
-          LOG.warn(currPath.getName() + " is not a valid partition name");
-          return result;
-        }
-
-        String partitionName = parts[0];
-        if (partCols.contains(partitionName)) {
-          if (result == null) {
-            result = currPath.getName();
-          } else {
-            result = currPath.getName() + Path.SEPARATOR + result;
-          }
-        }
-      }
-      currPath = currPath.getParent();
-      LOG.debug("currPath=" + currPath);
-    }
-    return result;
   }
 
   /**
@@ -414,20 +419,20 @@ public class HiveMetaStoreChecker {
    *          Start directory
    * @param allDirs
    *          This set will contain the leaf paths at the end.
-   * @param list
-   *          Specify how deep the search goes.
+   * @param partColNames
+   *          Partition column names
    * @throws IOException
    *           Thrown if we can't get lists from the fs.
-   * @throws HiveException
+   * @throws MetastoreException
    */
 
-  private void checkPartitionDirs(Path basePath, Set<Path> allDirs, final List<String> partColNames) throws IOException, HiveException {
+  private void checkPartitionDirs(Path basePath, Set<Path> allDirs, final List<String> partColNames) throws IOException, MetastoreException {
     // Here we just reuse the THREAD_COUNT configuration for
     // METASTORE_FS_HANDLER_THREADS_COUNT since this results in better performance
     // The number of missing partitions discovered are later added by metastore using a
     // threadpool of size METASTORE_FS_HANDLER_THREADS_COUNT. If we have different sized
     // pool here the smaller sized pool of the two becomes a bottleneck
-    int poolSize = conf.getInt(ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT.varname, 15);
+    int poolSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT);
 
     ExecutorService executor;
     if (poolSize <= 1) {
@@ -437,7 +442,7 @@ public class HiveMetaStoreChecker {
       LOG.debug("Using multi-threaded version of MSCK-GetPaths with number of threads " + poolSize);
       ThreadFactory threadFactory =
           new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MSCK-GetPaths-%d").build();
-      executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize, threadFactory);
+      executor = Executors.newFixedThreadPool(poolSize, threadFactory);
     }
     checkPartitionDirs(executor, basePath, allDirs, basePath.getFileSystem(conf), partColNames);
 
@@ -457,8 +462,7 @@ public class HiveMetaStoreChecker {
       this.pd = pd;
       this.fs = fs;
       this.pendingPaths = basePaths;
-      this.throwException = "throw"
-      .equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION));
+      this.throwException = "throw".equals(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION));
     }
 
     @Override
@@ -467,7 +471,7 @@ public class HiveMetaStoreChecker {
     }
 
     private Path processPathDepthInfo(final PathDepthInfo pd)
-        throws IOException, HiveException, InterruptedException {
+        throws IOException, MetastoreException {
       final Path currentPath = pd.p;
       final int currentDepth = pd.depth;
       FileStatus[] fileStatuses = fs.listStatus(currentPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
@@ -510,9 +514,9 @@ public class HiveMetaStoreChecker {
       return null;
     }
 
-    private void logOrThrowExceptionWithMsg(String msg) throws HiveException {
+    private void logOrThrowExceptionWithMsg(String msg) throws MetastoreException {
       if(throwException) {
-        throw new HiveException(msg);
+        throw new MetastoreException(msg);
       } else {
         LOG.warn(msg);
       }
@@ -530,7 +534,7 @@ public class HiveMetaStoreChecker {
 
   private void checkPartitionDirs(final ExecutorService executor,
       final Path basePath, final Set<Path> result,
-      final FileSystem fs, final List<String> partColNames) throws HiveException {
+      final FileSystem fs, final List<String> partColNames) throws MetastoreException {
     try {
       Queue<Future<Path>> futures = new LinkedList<Future<Path>>();
       ConcurrentLinkedQueue<PathDepthInfo> nextLevel = new ConcurrentLinkedQueue<>();
@@ -561,7 +565,7 @@ public class HiveMetaStoreChecker {
     } catch (InterruptedException | ExecutionException e) {
       LOG.error(e.getMessage());
       executor.shutdownNow();
-      throw new HiveException(e.getCause());
+      throw new MetastoreException(e.getCause());
     }
   }
 }

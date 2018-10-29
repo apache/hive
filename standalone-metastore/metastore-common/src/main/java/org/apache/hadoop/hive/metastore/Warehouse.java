@@ -409,7 +409,7 @@ public class Warehouse {
     }
   }
 
-  private static String escapePathName(String path) {
+  public static String escapePathName(String path) {
     return FileUtils.escapePathName(path);
   }
 
