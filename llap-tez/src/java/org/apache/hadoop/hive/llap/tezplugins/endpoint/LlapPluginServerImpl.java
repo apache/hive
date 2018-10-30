@@ -42,13 +42,16 @@ public class LlapPluginServerImpl extends AbstractService implements LlapPluginP
   private final int numHandlers;
   private final LlapTaskSchedulerService parent;
   private final AtomicReference<InetSocketAddress> bindAddress = new AtomicReference<>();
+  private final int port;
 
   public LlapPluginServerImpl(SecretManager<JobTokenIdentifier> secretManager,
-      int numHandlers, LlapTaskSchedulerService parent) {
+      int numHandlers, LlapTaskSchedulerService parent, int port) {
     super("LlapPluginServerImpl");
     this.secretManager = secretManager;
     this.numHandlers = numHandlers;
     this.parent = parent;
+    this.port = port <= 0 ? 0 : port;
+    LOG.info("Llap plugin server using port: {} #handlers: {}", port, numHandlers);
   }
 
   @Override
@@ -63,7 +66,7 @@ public class LlapPluginServerImpl extends AbstractService implements LlapPluginP
     final Configuration conf = getConfig();
     final BlockingService daemonImpl =
         LlapPluginProtocolProtos.LlapPluginProtocol.newReflectiveBlockingService(this);
-    server = LlapUtil.startProtocolServer(0, numHandlers, bindAddress , conf, daemonImpl,
+    server = LlapUtil.startProtocolServer(port, numHandlers, bindAddress , conf, daemonImpl,
         LlapPluginProtocolPB.class, secretManager, new LlapPluginPolicyProvider(),
         ConfVars.LLAP_PLUGIN_ACL, ConfVars.LLAP_PLUGIN_ACL_DENY);
     LOG.info("Starting the plugin endpoint on port " + bindAddress.get().getPort());

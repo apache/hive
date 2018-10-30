@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.ipc.RPC;
@@ -53,11 +54,14 @@ public class LlapTaskUmbilicalServer {
 
   public LlapTaskUmbilicalServer(Configuration conf, LlapTaskUmbilicalProtocol umbilical, int numHandlers) throws IOException {
     jobTokenSecretManager = new JobTokenSecretManager();
-
+    int umbilicalPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT);
+    if (umbilicalPort <= 0) {
+      umbilicalPort = 0;
+    }
     server = new RPC.Builder(conf)
         .setProtocol(LlapTaskUmbilicalProtocol.class)
         .setBindAddress("0.0.0.0")
-        .setPort(0)
+        .setPort(umbilicalPort)
         .setInstance(umbilical)
         .setNumHandlers(numHandlers)
         .setSecretManager(jobTokenSecretManager).build();
