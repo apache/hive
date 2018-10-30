@@ -93,15 +93,14 @@ TBLPROPERTIES (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jdbc_partition_table1
-PREHOOK: query: SELECT * FROM jdbc_partition_table1
+PREHOOK: query: SELECT * FROM jdbc_partition_table1 where ikey > 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@jdbc_partition_table1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM jdbc_partition_table1
+POSTHOOK: query: SELECT * FROM jdbc_partition_table1 where ikey > 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@jdbc_partition_table1
 #### A masked pattern was here ####
-1	1000	20.0	40.0	aaa	3.142	2010-01-01	2018-01-01 20:00:00
 3	4000	120.0	25.4	hello	2.718	2017-06-05	2011-11-11 02:00:08
 4	8000	120.4	31.3	ccc	NULL	2014-03-04	2018-07-08 18:00:00
 5	9000	NULL	10.0	bbb	2.718	2018-01-01	2010-06-01 21:00:00
