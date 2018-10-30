@@ -829,7 +829,7 @@ insert_num	part	c1	c2	c3	c4	b
 103	1	NULL	NULL	NULL	NULL	original
 104	1	2021-09-24	2021-09-24	2021-09-24	1978-08-02	original
 105	1	2024-11-11	2024-11-11	2024-11-11	1991-01-06	original
-111	1	1964-01-24	1964-01-24	1964-01-24	NULL	new
+111	1	1964-01-24	1964-01-24	1964-01-24	1964-01-24	new
 PREHOOK: query: drop table part_change_various_various_date_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_various_various_date_n2

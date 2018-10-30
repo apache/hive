@@ -2663,6 +2663,43 @@ public class TestStreaming {
     Assert.assertEquals("wrong status ti(4)", TxnState.ABORTED, ti.get(4).getState());
   }
 
+  @Test
+  public void testTimeStamp() throws Exception {
+    queryTable(driver, "drop table if exists default.timest");
+    queryTable(driver, "create table default.timest (a TIMESTAMP) stored as orc "
+        + "TBLPROPERTIES('transactional'='true')");
+
+    StrictDelimitedInputWriter wr = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+        .withDatabase("default")
+        .withTable("timest")
+        .withAgentInfo("UT_" + Thread.currentThread().getName())
+        .withRecordWriter(wr)
+        .withHiveConf(conf)
+        .connect();
+
+    connection.beginTransaction();
+    connection.write("2018-10-19 10:35:00 America/Los_Angeles".getBytes());
+    connection.write("2018-10-19 10:35:00 GMT+01:00".getBytes());
+    connection.write("2018-10-19 10:35:00+01:00".getBytes());
+    connection.write("2018-10-19 10:35:00.123 America/Los_Angeles".getBytes());
+    connection.write("2018-10-19 10:35:00.123 GMT+01:00".getBytes());
+    connection.write("2018-10-19 10:35:00.123+01:00".getBytes());
+    connection.commitTransaction();
+    connection.close();
+
+    List<String> rs = queryTable(driver, "SELECT * FROM default.timest");
+    Assert.assertEquals(rs.size(), 6);
+    for (int i = 0; i < 3; i++){
+      Assert.assertEquals(rs.get(i), "2018-10-19 10:35:00");
+    }
+    for (int i = 3; i < rs.size(); i++){
+      Assert.assertEquals(rs.get(i), "2018-10-19 10:35:00.123");
+    }
+  }
+
   // assumes un partitioned table
   // returns a map<bucketNum, list<record> >
   private HashMap<Integer, ArrayList<SampleRec>> dumpAllBuckets(String dbLocation, String tableName)

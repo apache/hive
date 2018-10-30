@@ -402,10 +402,6 @@ public class TestLazyPrimitive extends TestCase {
     assertEquals(false, t.isNull);
     assertEquals(Timestamp.valueOf(sampleDate),
         t.getWritableObject().getTimestamp());
-    String badDate = "2013-02-12 21:04:XX";
-    byte[] bad2013 = badDate.getBytes();
-    initLazyObject(t, bad2013, 0, bad2013.length);
-    assertEquals(true, t.isNull);
   }
 
   public void testLazyDate() throws Throwable {

@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.math.BigDecimal;
 import java.time.DateTimeException;
-import java.time.format.DateTimeParseException;
 
 /**
  * Utilities for Timestamps and the relevant conversions.
@@ -185,7 +184,7 @@ public class TimestampUtils {
       try {
         return Timestamp.valueOf(
             TimestampTZUtil.parse(s).getZonedDateTime().toLocalDateTime().toString());
-      } catch (IllegalArgumentException | DateTimeParseException eTZ) {
+      } catch (IllegalArgumentException | DateTimeException eTZ) {
         // Last attempt
         return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
       }

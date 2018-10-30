@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.joda.time.MutableDateTime;
@@ -106,7 +107,7 @@ public class TimestampParser {
     }
 
     // Otherwise try default timestamp parsing
-    return Timestamp.valueOf(strValue);
+    return TimestampUtils.stringToTimestamp(strValue);
   }
 
   private Optional<Timestamp> tryParseWithFormat(String strValue) {
