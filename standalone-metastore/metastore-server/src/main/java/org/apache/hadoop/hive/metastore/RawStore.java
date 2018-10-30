@@ -20,12 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.ISchemaName;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -1546,21 +1540,21 @@ public interface RawStore extends Configurable {
   void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
       throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException;
 
-  WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException;
+  WMFullResourcePlan getResourcePlan(String name, String string) throws NoSuchObjectException, MetaException;
 
-  List<WMResourcePlan> getAllResourcePlans() throws MetaException;
+  List<WMResourcePlan> getAllResourcePlans(String string) throws MetaException;
 
-  WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
+  WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException;
 
-  WMFullResourcePlan getActiveResourcePlan() throws MetaException;
+  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException;
 
-  WMValidateResourcePlanResponse validateResourcePlan(String name)
+  WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
       throws NoSuchObjectException, InvalidObjectException, MetaException;
 
-  void dropResourcePlan(String name) throws NoSuchObjectException, MetaException;
+  void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException;
 
   void createWMTrigger(WMTrigger trigger)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
@@ -1569,10 +1563,10 @@ public interface RawStore extends Configurable {
   void alterWMTrigger(WMTrigger trigger)
       throws NoSuchObjectException, InvalidOperationException, MetaException;
 
-  void dropWMTrigger(String resourcePlanName, String triggerName)
+  void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
       throws NoSuchObjectException, InvalidOperationException, MetaException;
 
-  List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
+  List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, MetaException;
 
   void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
@@ -1581,7 +1575,7 @@ public interface RawStore extends Configurable {
   void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException;
 
-  void dropWMPool(String resourcePlanName, String poolPath)
+  void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws NoSuchObjectException, InvalidOperationException, MetaException;
 
   void createOrUpdateWMMapping(WMMapping mapping, boolean update)
@@ -1591,11 +1585,11 @@ public interface RawStore extends Configurable {
   void dropWMMapping(WMMapping mapping)
       throws NoSuchObjectException, InvalidOperationException, MetaException;
 
-  void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath)
+  void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException;
 
-  void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath)
+  void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
       throws NoSuchObjectException, InvalidOperationException, MetaException;
 
   /**

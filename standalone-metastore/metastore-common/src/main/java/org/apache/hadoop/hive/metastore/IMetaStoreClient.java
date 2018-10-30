@@ -3542,22 +3542,22 @@ public interface IMetaStoreClient {
   void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
       throws InvalidObjectException, MetaException, TException;
 
-  WMFullResourcePlan getResourcePlan(String resourcePlanName)
+  WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns)
     throws NoSuchObjectException, MetaException, TException;
 
-  List<WMResourcePlan> getAllResourcePlans()
+  List<WMResourcePlan> getAllResourcePlans(String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  void dropResourcePlan(String resourcePlanName)
+  void dropResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
+  WMFullResourcePlan alterResourcePlan(String resourcePlanName, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
-  WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException;
+  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException, TException;
 
-  WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName)
+  WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
   void createWMTrigger(WMTrigger trigger)
@@ -3566,10 +3566,10 @@ public interface IMetaStoreClient {
   void alterWMTrigger(WMTrigger trigger)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
-  void dropWMTrigger(String resourcePlanName, String triggerName)
+  void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
-  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan)
+  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan, String ns)
       throws NoSuchObjectException, MetaException, TException;
 
   void createWMPool(WMPool pool)
@@ -3578,7 +3578,7 @@ public interface IMetaStoreClient {
   void alterWMPool(WMNullablePool pool, String poolPath)
       throws NoSuchObjectException, InvalidObjectException, TException;
 
-  void dropWMPool(String resourcePlanName, String poolPath)
+  void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws TException;
 
   void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
@@ -3588,7 +3588,7 @@ public interface IMetaStoreClient {
       throws TException;
 
   void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath, boolean shouldDrop) throws AlreadyExistsException, NoSuchObjectException,
+      String poolPath, boolean shouldDrop, String ns) throws AlreadyExistsException, NoSuchObjectException,
       InvalidObjectException, MetaException, TException;
 
   /**

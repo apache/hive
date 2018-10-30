@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField QUERY_PARALLELISM_FIELD_DESC = new org.apache.thrift.protocol.TField("queryParallelism", org.apache.thrift.protocol.TType.I32, (short)3);
   private static final org.apache.thrift.protocol.TField DEFAULT_POOL_PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("defaultPoolPath", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,6 +54,7 @@ import org.slf4j.LoggerFactory;
   private WMResourcePlanStatus status; // optional
   private int queryParallelism; // optional
   private String defaultPoolPath; // optional
+  private String ns; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -63,7 +65,8 @@ import org.slf4j.LoggerFactory;
      */
     STATUS((short)2, "status"),
     QUERY_PARALLELISM((short)3, "queryParallelism"),
-    DEFAULT_POOL_PATH((short)4, "defaultPoolPath");
+    DEFAULT_POOL_PATH((short)4, "defaultPoolPath"),
+    NS((short)5, "ns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -86,6 +89,8 @@ import org.slf4j.LoggerFactory;
           return QUERY_PARALLELISM;
         case 4: // DEFAULT_POOL_PATH
           return DEFAULT_POOL_PATH;
+        case 5: // NS
+          return NS;
         default:
           return null;
       }
@@ -128,7 +133,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __QUERYPARALLELISM_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.STATUS,_Fields.QUERY_PARALLELISM,_Fields.DEFAULT_POOL_PATH};
+  private static final _Fields optionals[] = {_Fields.STATUS,_Fields.QUERY_PARALLELISM,_Fields.DEFAULT_POOL_PATH,_Fields.NS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -139,6 +144,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.QUERY_PARALLELISM, new org.apache.thrift.meta_data.FieldMetaData("queryParallelism", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.DEFAULT_POOL_PATH, new org.apache.thrift.meta_data.FieldMetaData("defaultPoolPath", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.NS, new org.apache.thrift.meta_data.FieldMetaData("ns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMResourcePlan.class, metaDataMap);
@@ -169,6 +176,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetDefaultPoolPath()) {
       this.defaultPoolPath = other.defaultPoolPath;
     }
+    if (other.isSetNs()) {
+      this.ns = other.ns;
+    }
   }
 
   public WMResourcePlan deepCopy() {
@@ -182,6 +192,7 @@ import org.slf4j.LoggerFactory;
     setQueryParallelismIsSet(false);
     this.queryParallelism = 0;
     this.defaultPoolPath = null;
+    this.ns = null;
   }
 
   public String getName() {
@@ -283,6 +294,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getNs() {
+    return this.ns;
+  }
+
+  public void setNs(String ns) {
+    this.ns = ns;
+  }
+
+  public void unsetNs() {
+    this.ns = null;
+  }
+
+  /** Returns true if field ns is set (has been assigned a value) and false otherwise */
+  public boolean isSetNs() {
+    return this.ns != null;
+  }
+
+  public void setNsIsSet(boolean value) {
+    if (!value) {
+      this.ns = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -317,6 +351,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case NS:
+      if (value == null) {
+        unsetNs();
+      } else {
+        setNs((String)value);
+      }
+      break;
+
     }
   }
 
@@ -333,6 +375,9 @@ import org.slf4j.LoggerFactory;
 
     case DEFAULT_POOL_PATH:
       return getDefaultPoolPath();
+
+    case NS:
+      return getNs();
 
     }
     throw new IllegalStateException();
@@ -353,6 +398,8 @@ import org.slf4j.LoggerFactory;
       return isSetQueryParallelism();
     case DEFAULT_POOL_PATH:
       return isSetDefaultPoolPath();
+    case NS:
+      return isSetNs();
     }
     throw new IllegalStateException();
   }
@@ -406,6 +453,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_ns = true && this.isSetNs();
+    boolean that_present_ns = true && that.isSetNs();
+    if (this_present_ns || that_present_ns) {
+      if (!(this_present_ns && that_present_ns))
+        return false;
+      if (!this.ns.equals(that.ns))
+        return false;
+    }
+
     return true;
   }
 
@@ -432,6 +488,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_defaultPoolPath);
     if (present_defaultPoolPath)
       list.add(defaultPoolPath);
+
+    boolean present_ns = true && (isSetNs());
+    list.add(present_ns);
+    if (present_ns)
+      list.add(ns);
 
     return list.hashCode();
   }
@@ -480,6 +541,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetDefaultPoolPath()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.defaultPoolPath, other.defaultPoolPath);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNs()).compareTo(other.isSetNs());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNs()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ns, other.ns);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -534,6 +605,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.defaultPoolPath);
+      }
+      first = false;
+    }
+    if (isSetNs()) {
+      if (!first) sb.append(", ");
+      sb.append("ns:");
+      if (this.ns == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ns);
       }
       first = false;
     }
@@ -618,6 +699,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // NS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.ns = iprot.readString();
+              struct.setNsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -655,6 +744,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.ns != null) {
+        if (struct.isSetNs()) {
+          oprot.writeFieldBegin(NS_FIELD_DESC);
+          oprot.writeString(struct.ns);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -683,7 +779,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetDefaultPoolPath()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetNs()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetStatus()) {
         oprot.writeI32(struct.status.getValue());
       }
@@ -693,6 +792,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetDefaultPoolPath()) {
         oprot.writeString(struct.defaultPoolPath);
       }
+      if (struct.isSetNs()) {
+        oprot.writeString(struct.ns);
+      }
     }
 
     @Override
@@ -700,7 +802,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.name = iprot.readString();
       struct.setNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.status = org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus.findByValue(iprot.readI32());
         struct.setStatusIsSet(true);
@@ -712,6 +814,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(2)) {
         struct.defaultPoolPath = iprot.readString();
         struct.setDefaultPoolPathIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.ns = iprot.readString();
+        struct.setNsIsSet(true);
       }
     }
   }

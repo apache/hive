@@ -5637,9 +5637,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-
   public void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName, boolean ifNotExists)
       throws HiveException {
+    String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+    if (resourcePlan.isSetNs() && !ns.equals(resourcePlan.getNs())) {
+      throw new HiveException("Cannot create a plan in a different NS; was "
+          + resourcePlan.getNs() + ", configured " + ns);
+    }
+    resourcePlan.setNs(ns);
+
     try {
       getMSC().createResourcePlan(resourcePlan, copyFromName);
     } catch (AlreadyExistsException e) {
@@ -5653,7 +5659,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public WMFullResourcePlan getResourcePlan(String rpName) throws HiveException {
     try {
-      return getMSC().getResourcePlan(rpName);
+      return getMSC().getResourcePlan(rpName, conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE));
     } catch (NoSuchObjectException e) {
       return null;
     } catch (Exception e) {
@@ -5663,7 +5669,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public List<WMResourcePlan> getAllResourcePlans() throws HiveException {
     try {
-      return getMSC().getAllResourcePlans();
+      return getMSC().getAllResourcePlans(conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE));
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -5671,7 +5677,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void dropResourcePlan(String rpName, boolean ifExists) throws HiveException {
     try {
-      getMSC().dropResourcePlan(rpName);
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      getMSC().dropResourcePlan(rpName, ns);
     } catch (NoSuchObjectException e) {
       if (!ifExists) {
         throw new HiveException(e, ErrorMsg.RESOURCE_PLAN_NOT_EXISTS, rpName);
@@ -5684,7 +5691,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public WMFullResourcePlan alterResourcePlan(String rpName, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace) throws HiveException {
     try {
-      return getMSC().alterResourcePlan(rpName, resourcePlan, canActivateDisabled,
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      if (resourcePlan.isSetNs() && !ns.equals(resourcePlan.getNs())) {
+        throw new HiveException("Cannot modify a plan in a different NS; was "
+            + resourcePlan.getNs() + ", configured " + ns);
+      }
+      resourcePlan.setNs(ns);
+      return getMSC().alterResourcePlan(rpName, ns, resourcePlan, canActivateDisabled,
           isForceDeactivate, isReplace);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -5693,7 +5706,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public WMFullResourcePlan getActiveResourcePlan() throws HiveException {
     try {
-      return getMSC().getActiveResourcePlan();
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      return getMSC().getActiveResourcePlan(ns);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -5701,7 +5715,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public WMValidateResourcePlanResponse validateResourcePlan(String rpName) throws HiveException {
     try {
-      return getMSC().validateResourcePlan(rpName);
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      return getMSC().validateResourcePlan(rpName, ns);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -5709,6 +5724,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void createWMTrigger(WMTrigger trigger) throws HiveException {
     try {
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      if (trigger.isSetNs() && !ns.equals(trigger.getNs())) {
+        throw new HiveException("Cannot create a trigger in a different NS; was "
+            + trigger.getNs() + ", configured " + ns);
+      }
+      trigger.setNs(ns);
       getMSC().createWMTrigger(trigger);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -5717,6 +5738,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void alterWMTrigger(WMTrigger trigger) throws HiveException {
     try {
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      if (trigger.isSetNs() && !ns.equals(trigger.getNs())) {
+        throw new HiveException("Cannot modify a trigger in a different NS; was "
+            + trigger.getNs() + ", configured " + ns);
+      }
+      trigger.setNs(ns);
       getMSC().alterWMTrigger(trigger);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -5725,7 +5752,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void dropWMTrigger(String rpName, String triggerName) throws HiveException {
     try {
-      getMSC().dropWMTrigger(rpName, triggerName);
+      getMSC().dropWMTrigger(rpName, triggerName, conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE));
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -5733,6 +5760,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void createWMPool(WMPool pool) throws HiveException {
     try {
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      if (pool.isSetNs() && !ns.equals(pool.getNs())) {
+        throw new HiveException("Cannot create a pool in a different NS; was "
+            + pool.getNs() + ", configured " + ns);
+      }
+      pool.setNs(ns);
       getMSC().createWMPool(pool);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -5741,6 +5774,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void alterWMPool(WMNullablePool pool, String poolPath) throws HiveException {
     try {
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      if (pool.isSetNs() && !ns.equals(pool.getNs())) {
+        throw new HiveException("Cannot modify a pool in a different NS; was "
+            + pool.getNs() + ", configured " + ns);
+      }
+      pool.setNs(ns);
       getMSC().alterWMPool(pool, poolPath);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -5749,7 +5788,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void dropWMPool(String resourcePlanName, String poolPath) throws HiveException {
     try {
-      getMSC().dropWMPool(resourcePlanName, poolPath);
+      getMSC().dropWMPool(resourcePlanName, poolPath,
+          conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE));
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -5758,6 +5798,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
       throws HiveException {
     try {
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      if (mapping.isSetNs() && !ns.equals(mapping.getNs())) {
+        throw new HiveException("Cannot create a mapping in a different NS; was "
+            + mapping.getNs() + ", configured " + ns);
+      }
+      mapping.setNs(ns);
       getMSC().createOrUpdateWMMapping(mapping, isUpdate);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -5766,17 +5812,24 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void dropWMMapping(WMMapping mapping) throws HiveException {
     try {
+      String ns = conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE);
+      if (mapping.isSetNs() && !ns.equals(mapping.getNs())) {
+        throw new HiveException("Cannot modify a mapping in a different NS; was "
+            + mapping.getNs() + ", configured " + ns);
+      }
+      mapping.setNs(ns);
       getMSC().dropWMMapping(mapping);
     } catch (Exception e) {
       throw new HiveException(e);
     }
   }
 
-
+  // TODO: eh
   public void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath, boolean shouldDrop) throws HiveException {
     try {
-      getMSC().createOrDropTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, shouldDrop);
+      getMSC().createOrDropTriggerToPoolMapping(resourcePlanName, triggerName, poolPath,
+          shouldDrop, conf.getVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE));
     } catch (Exception e) {
       throw new HiveException(e);
     }

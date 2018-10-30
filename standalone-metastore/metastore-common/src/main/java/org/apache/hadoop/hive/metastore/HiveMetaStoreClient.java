@@ -51,6 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.security.auth.login.LoginException;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -3413,34 +3414,39 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public WMFullResourcePlan getResourcePlan(String resourcePlanName)
+  public WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, MetaException, TException {
     WMGetResourcePlanRequest request = new WMGetResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
+    request.setNs(ns);
     return client.get_resource_plan(request).getResourcePlan();
   }
 
   @Override
-  public List<WMResourcePlan> getAllResourcePlans()
+  public List<WMResourcePlan> getAllResourcePlans(String ns)
       throws NoSuchObjectException, MetaException, TException {
     WMGetAllResourcePlanRequest request = new WMGetAllResourcePlanRequest();
+    request.setNs(ns);
     return client.get_all_resource_plans(request).getResourcePlans();
   }
 
   @Override
-  public void dropResourcePlan(String resourcePlanName)
+  public void dropResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, MetaException, TException {
     WMDropResourcePlanRequest request = new WMDropResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
+    request.setNs(ns);
     client.drop_resource_plan(request);
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
+  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, String ns,
+      WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterResourcePlanRequest request = new WMAlterResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
+    request.setNs(ns);
     request.setResourcePlan(resourcePlan);
     request.setIsEnableAndActivate(canActivateDisabled);
     request.setIsForceDeactivate(isForceDeactivate);
@@ -3450,15 +3456,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException {
-    return client.get_active_resource_plan(new WMGetActiveResourcePlanRequest()).getResourcePlan();
+  public WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException, TException {
+    WMGetActiveResourcePlanRequest request = new WMGetActiveResourcePlanRequest();
+    request.setNs(ns);
+    return client.get_active_resource_plan(request).getResourcePlan();
   }
 
   @Override
-  public WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName)
+  public WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMValidateResourcePlanRequest request = new WMValidateResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
+    request.setNs(ns);
     return client.validate_resource_plan(request);
   }
 
@@ -3479,19 +3488,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void dropWMTrigger(String resourcePlanName, String triggerName)
+  public void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
       throws NoSuchObjectException, MetaException, TException {
     WMDropTriggerRequest request = new WMDropTriggerRequest();
     request.setResourcePlanName(resourcePlanName);
     request.setTriggerName(triggerName);
+    request.setNs(ns);
     client.drop_wm_trigger(request);
   }
 
   @Override
-  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlan)
+  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlan, String ns)
       throws NoSuchObjectException, MetaException, TException {
     WMGetTriggersForResourePlanRequest request = new WMGetTriggersForResourePlanRequest();
     request.setResourcePlanName(resourcePlan);
+    request.setNs(ns);
     return client.get_triggers_for_resourceplan(request).getTriggers();
   }
 
@@ -3513,11 +3524,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void dropWMPool(String resourcePlanName, String poolPath)
+  public void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws NoSuchObjectException, MetaException, TException {
     WMDropPoolRequest request = new WMDropPoolRequest();
     request.setResourcePlanName(resourcePlanName);
     request.setPoolPath(poolPath);
+    request.setNs(ns);
     client.drop_wm_pool(request);
   }
 
@@ -3540,13 +3552,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath, boolean shouldDrop) throws AlreadyExistsException, NoSuchObjectException,
+      String poolPath, boolean shouldDrop, String ns) throws AlreadyExistsException, NoSuchObjectException,
       InvalidObjectException, MetaException, TException {
     WMCreateOrDropTriggerToPoolMappingRequest request = new WMCreateOrDropTriggerToPoolMappingRequest();
     request.setResourcePlanName(resourcePlanName);
     request.setTriggerName(triggerName);
     request.setPoolPath(poolPath);
     request.setDrop(shouldDrop);
+    request.setNs(ns);
     client.create_or_drop_wm_trigger_to_pool_mapping(request);
   }
 

@@ -3206,6 +3206,10 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
         "workload management is enabled and used for these sessions."),
+    HIVE_SERVER2_WM_NAMESPACE("hive.server2.wm.namespace", "default",
+        "The WM namespace to use when one metastore is used by multiple compute clusters each \n" +
+        "with their own workload management. The special value 'default' (the default) will \n" +
+        "also include any resource plans created before the namespaces were introduced."),
     HIVE_SERVER2_WM_WORKER_THREADS("hive.server2.wm.worker.threads", 4,
         "Number of worker threads to use to perform the synchronous operations with Tez\n" +
         "sessions for workload management (e.g. opening, closing, etc.)"),

@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class WMGetActiveResourcePlanRequest implements org.apache.thrift.TBase<WMGetActiveResourcePlanRequest, WMGetActiveResourcePlanRequest._Fields>, java.io.Serializable, Cloneable, Comparable<WMGetActiveResourcePlanRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("WMGetActiveResourcePlanRequest");
 
+  private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRING, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,10 +46,11 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new WMGetActiveResourcePlanRequestTupleSchemeFactory());
   }
 
+  private String ns; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+    NS((short)1, "ns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -63,6 +65,8 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
+        case 1: // NS
+          return NS;
         default:
           return null;
       }
@@ -101,9 +105,14 @@ import org.slf4j.LoggerFactory;
       return _fieldName;
     }
   }
+
+  // isset id assignments
+  private static final _Fields optionals[] = {_Fields.NS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.NS, new org.apache.thrift.meta_data.FieldMetaData("ns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMGetActiveResourcePlanRequest.class, metaDataMap);
   }
@@ -115,6 +124,9 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public WMGetActiveResourcePlanRequest(WMGetActiveResourcePlanRequest other) {
+    if (other.isSetNs()) {
+      this.ns = other.ns;
+    }
   }
 
   public WMGetActiveResourcePlanRequest deepCopy() {
@@ -123,15 +135,50 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    this.ns = null;
+  }
+
+  public String getNs() {
+    return this.ns;
+  }
+
+  public void setNs(String ns) {
+    this.ns = ns;
+  }
+
+  public void unsetNs() {
+    this.ns = null;
+  }
+
+  /** Returns true if field ns is set (has been assigned a value) and false otherwise */
+  public boolean isSetNs() {
+    return this.ns != null;
+  }
+
+  public void setNsIsSet(boolean value) {
+    if (!value) {
+      this.ns = null;
+    }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case NS:
+      if (value == null) {
+        unsetNs();
+      } else {
+        setNs((String)value);
+      }
+      break;
+
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case NS:
+      return getNs();
+
     }
     throw new IllegalStateException();
   }
@@ -143,6 +190,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case NS:
+      return isSetNs();
     }
     throw new IllegalStateException();
   }
@@ -160,12 +209,26 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
+    boolean this_present_ns = true && this.isSetNs();
+    boolean that_present_ns = true && that.isSetNs();
+    if (this_present_ns || that_present_ns) {
+      if (!(this_present_ns && that_present_ns))
+        return false;
+      if (!this.ns.equals(that.ns))
+        return false;
+    }
+
     return true;
   }
 
   @Override
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
+
+    boolean present_ns = true && (isSetNs());
+    list.add(present_ns);
+    if (present_ns)
+      list.add(ns);
 
     return list.hashCode();
   }
@@ -178,6 +241,16 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetNs()).compareTo(other.isSetNs());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNs()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ns, other.ns);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -198,6 +271,15 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("WMGetActiveResourcePlanRequest(");
     boolean first = true;
 
+    if (isSetNs()) {
+      sb.append("ns:");
+      if (this.ns == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ns);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -241,6 +323,14 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
+          case 1: // NS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.ns = iprot.readString();
+              struct.setNsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -254,6 +344,13 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.ns != null) {
+        if (struct.isSetNs()) {
+          oprot.writeFieldBegin(NS_FIELD_DESC);
+          oprot.writeString(struct.ns);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -271,11 +368,24 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, WMGetActiveResourcePlanRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
+      BitSet optionals = new BitSet();
+      if (struct.isSetNs()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetNs()) {
+        oprot.writeString(struct.ns);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, WMGetActiveResourcePlanRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.ns = iprot.readString();
+        struct.setNsIsSet(true);
+      }
     }
   }
 

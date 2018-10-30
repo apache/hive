@@ -26084,6 +26084,10 @@ class WMResourcePlan {
    * @var string
    */
   public $defaultPoolPath = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -26104,6 +26108,10 @@ class WMResourcePlan {
           'var' => 'defaultPoolPath',
           'type' => TType::STRING,
           ),
+        5 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -26118,6 +26126,9 @@ class WMResourcePlan {
       }
       if (isset($vals['defaultPoolPath'])) {
         $this->defaultPoolPath = $vals['defaultPoolPath'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -26169,6 +26180,13 @@ class WMResourcePlan {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -26200,6 +26218,11 @@ class WMResourcePlan {
     if ($this->defaultPoolPath !== null) {
       $xfer += $output->writeFieldBegin('defaultPoolPath', TType::STRING, 4);
       $xfer += $output->writeString($this->defaultPoolPath);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 5);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -26236,6 +26259,10 @@ class WMNullableResourcePlan {
    * @var bool
    */
   public $isSetDefaultPoolPath = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -26264,6 +26291,10 @@ class WMNullableResourcePlan {
           'var' => 'isSetDefaultPoolPath',
           'type' => TType::BOOL,
           ),
+        8 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -26284,6 +26315,9 @@ class WMNullableResourcePlan {
       }
       if (isset($vals['isSetDefaultPoolPath'])) {
         $this->isSetDefaultPoolPath = $vals['isSetDefaultPoolPath'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -26349,6 +26383,13 @@ class WMNullableResourcePlan {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 8:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -26392,6 +26433,11 @@ class WMNullableResourcePlan {
       $xfer += $output->writeBool($this->isSetDefaultPoolPath);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 8);
+      $xfer += $output->writeString($this->ns);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -26422,6 +26468,10 @@ class WMPool {
    * @var string
    */
   public $schedulingPolicy = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -26446,6 +26496,10 @@ class WMPool {
           'var' => 'schedulingPolicy',
           'type' => TType::STRING,
           ),
+        6 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -26463,6 +26517,9 @@ class WMPool {
       }
       if (isset($vals['schedulingPolicy'])) {
         $this->schedulingPolicy = $vals['schedulingPolicy'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -26521,6 +26578,13 @@ class WMPool {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -26559,6 +26623,11 @@ class WMPool {
       $xfer += $output->writeString($this->schedulingPolicy);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 6);
+      $xfer += $output->writeString($this->ns);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -26593,6 +26662,10 @@ class WMNullablePool {
    * @var bool
    */
   public $isSetSchedulingPolicy = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -26621,6 +26694,10 @@ class WMNullablePool {
           'var' => 'isSetSchedulingPolicy',
           'type' => TType::BOOL,
           ),
+        7 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -26641,6 +26718,9 @@ class WMNullablePool {
       }
       if (isset($vals['isSetSchedulingPolicy'])) {
         $this->isSetSchedulingPolicy = $vals['isSetSchedulingPolicy'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -26706,6 +26786,13 @@ class WMNullablePool {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -26749,6 +26836,11 @@ class WMNullablePool {
       $xfer += $output->writeBool($this->isSetSchedulingPolicy);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 7);
+      $xfer += $output->writeString($this->ns);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -26779,6 +26871,10 @@ class WMTrigger {
    * @var bool
    */
   public $isInUnmanaged = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -26803,6 +26899,10 @@ class WMTrigger {
           'var' => 'isInUnmanaged',
           'type' => TType::BOOL,
           ),
+        6 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -26820,6 +26920,9 @@ class WMTrigger {
       }
       if (isset($vals['isInUnmanaged'])) {
         $this->isInUnmanaged = $vals['isInUnmanaged'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -26878,6 +26981,13 @@ class WMTrigger {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -26916,6 +27026,11 @@ class WMTrigger {
       $xfer += $output->writeBool($this->isInUnmanaged);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 6);
+      $xfer += $output->writeString($this->ns);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -26946,6 +27061,10 @@ class WMMapping {
    * @var int
    */
   public $ordering = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -26970,6 +27089,10 @@ class WMMapping {
           'var' => 'ordering',
           'type' => TType::I32,
           ),
+        6 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -26987,6 +27110,9 @@ class WMMapping {
       }
       if (isset($vals['ordering'])) {
         $this->ordering = $vals['ordering'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -27045,6 +27171,13 @@ class WMMapping {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -27083,6 +27216,11 @@ class WMMapping {
       $xfer += $output->writeI32($this->ordering);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 6);
+      $xfer += $output->writeString($this->ns);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -27101,6 +27239,10 @@ class WMPoolTrigger {
    * @var string
    */
   public $trigger = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -27113,6 +27255,10 @@ class WMPoolTrigger {
           'var' => 'trigger',
           'type' => TType::STRING,
           ),
+        3 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -27121,6 +27267,9 @@ class WMPoolTrigger {
       }
       if (isset($vals['trigger'])) {
         $this->trigger = $vals['trigger'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -27158,6 +27307,13 @@ class WMPoolTrigger {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -27179,6 +27335,11 @@ class WMPoolTrigger {
     if ($this->trigger !== null) {
       $xfer += $output->writeFieldBegin('trigger', TType::STRING, 2);
       $xfer += $output->writeString($this->trigger);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 3);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -27628,11 +27789,24 @@ class WMCreateResourcePlanResponse {
 class WMGetActiveResourcePlanRequest {
   static $_TSPEC;
 
+  /**
+   * @var string
+   */
+  public $ns = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
+      }
     }
   }
 
@@ -27655,6 +27829,13 @@ class WMGetActiveResourcePlanRequest {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -27668,6 +27849,11 @@ class WMGetActiveResourcePlanRequest {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('WMGetActiveResourcePlanRequest');
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 1);
+      $xfer += $output->writeString($this->ns);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -27762,6 +27948,10 @@ class WMGetResourcePlanRequest {
    * @var string
    */
   public $resourcePlanName = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -27770,11 +27960,18 @@ class WMGetResourcePlanRequest {
           'var' => 'resourcePlanName',
           'type' => TType::STRING,
           ),
+        2 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['resourcePlanName'])) {
         $this->resourcePlanName = $vals['resourcePlanName'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -27805,6 +28002,13 @@ class WMGetResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -27821,6 +28025,11 @@ class WMGetResourcePlanRequest {
     if ($this->resourcePlanName !== null) {
       $xfer += $output->writeFieldBegin('resourcePlanName', TType::STRING, 1);
       $xfer += $output->writeString($this->resourcePlanName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 2);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -27913,11 +28122,24 @@ class WMGetResourcePlanResponse {
 class WMGetAllResourcePlanRequest {
   static $_TSPEC;
 
+  /**
+   * @var string
+   */
+  public $ns = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
+      }
     }
   }
 
@@ -27940,6 +28162,13 @@ class WMGetAllResourcePlanRequest {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -27953,6 +28182,11 @@ class WMGetAllResourcePlanRequest {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('WMGetAllResourcePlanRequest');
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 1);
+      $xfer += $output->writeString($this->ns);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -28086,6 +28320,10 @@ class WMAlterResourcePlanRequest {
    * @var bool
    */
   public $isReplace = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -28111,6 +28349,10 @@ class WMAlterResourcePlanRequest {
           'var' => 'isReplace',
           'type' => TType::BOOL,
           ),
+        6 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -28128,6 +28370,9 @@ class WMAlterResourcePlanRequest {
       }
       if (isset($vals['isReplace'])) {
         $this->isReplace = $vals['isReplace'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -28187,6 +28432,13 @@ class WMAlterResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -28226,6 +28478,11 @@ class WMAlterResourcePlanRequest {
     if ($this->isReplace !== null) {
       $xfer += $output->writeFieldBegin('isReplace', TType::BOOL, 5);
       $xfer += $output->writeBool($this->isReplace);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 6);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -28322,6 +28579,10 @@ class WMValidateResourcePlanRequest {
    * @var string
    */
   public $resourcePlanName = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -28330,11 +28591,18 @@ class WMValidateResourcePlanRequest {
           'var' => 'resourcePlanName',
           'type' => TType::STRING,
           ),
+        2 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['resourcePlanName'])) {
         $this->resourcePlanName = $vals['resourcePlanName'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -28365,6 +28633,13 @@ class WMValidateResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -28381,6 +28656,11 @@ class WMValidateResourcePlanRequest {
     if ($this->resourcePlanName !== null) {
       $xfer += $output->writeFieldBegin('resourcePlanName', TType::STRING, 1);
       $xfer += $output->writeString($this->resourcePlanName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 2);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -28547,6 +28827,10 @@ class WMDropResourcePlanRequest {
    * @var string
    */
   public $resourcePlanName = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -28555,11 +28839,18 @@ class WMDropResourcePlanRequest {
           'var' => 'resourcePlanName',
           'type' => TType::STRING,
           ),
+        2 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['resourcePlanName'])) {
         $this->resourcePlanName = $vals['resourcePlanName'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -28590,6 +28881,13 @@ class WMDropResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -28606,6 +28904,11 @@ class WMDropResourcePlanRequest {
     if ($this->resourcePlanName !== null) {
       $xfer += $output->writeFieldBegin('resourcePlanName', TType::STRING, 1);
       $xfer += $output->writeString($this->resourcePlanName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 2);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -28936,6 +29239,10 @@ class WMDropTriggerRequest {
    * @var string
    */
   public $triggerName = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -28948,6 +29255,10 @@ class WMDropTriggerRequest {
           'var' => 'triggerName',
           'type' => TType::STRING,
           ),
+        3 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -28956,6 +29267,9 @@ class WMDropTriggerRequest {
       }
       if (isset($vals['triggerName'])) {
         $this->triggerName = $vals['triggerName'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -28993,6 +29307,13 @@ class WMDropTriggerRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -29014,6 +29335,11 @@ class WMDropTriggerRequest {
     if ($this->triggerName !== null) {
       $xfer += $output->writeFieldBegin('triggerName', TType::STRING, 2);
       $xfer += $output->writeString($this->triggerName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 3);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -29080,6 +29406,10 @@ class WMGetTriggersForResourePlanRequest {
    * @var string
    */
   public $resourcePlanName = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -29088,11 +29418,18 @@ class WMGetTriggersForResourePlanRequest {
           'var' => 'resourcePlanName',
           'type' => TType::STRING,
           ),
+        2 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['resourcePlanName'])) {
         $this->resourcePlanName = $vals['resourcePlanName'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -29123,6 +29460,13 @@ class WMGetTriggersForResourePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -29139,6 +29483,11 @@ class WMGetTriggersForResourePlanRequest {
     if ($this->resourcePlanName !== null) {
       $xfer += $output->writeFieldBegin('resourcePlanName', TType::STRING, 1);
       $xfer += $output->writeString($this->resourcePlanName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 2);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -29545,6 +29894,10 @@ class WMDropPoolRequest {
    * @var string
    */
   public $poolPath = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -29557,6 +29910,10 @@ class WMDropPoolRequest {
           'var' => 'poolPath',
           'type' => TType::STRING,
           ),
+        3 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -29565,6 +29922,9 @@ class WMDropPoolRequest {
       }
       if (isset($vals['poolPath'])) {
         $this->poolPath = $vals['poolPath'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -29602,6 +29962,13 @@ class WMDropPoolRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -29623,6 +29990,11 @@ class WMDropPoolRequest {
     if ($this->poolPath !== null) {
       $xfer += $output->writeFieldBegin('poolPath', TType::STRING, 2);
       $xfer += $output->writeString($this->poolPath);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 3);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -29984,6 +30356,10 @@ class WMCreateOrDropTriggerToPoolMappingRequest {
    * @var bool
    */
   public $drop = null;
+  /**
+   * @var string
+   */
+  public $ns = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -30004,6 +30380,10 @@ class WMCreateOrDropTriggerToPoolMappingRequest {
           'var' => 'drop',
           'type' => TType::BOOL,
           ),
+        5 => array(
+          'var' => 'ns',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -30018,6 +30398,9 @@ class WMCreateOrDropTriggerToPoolMappingRequest {
       }
       if (isset($vals['drop'])) {
         $this->drop = $vals['drop'];
+      }
+      if (isset($vals['ns'])) {
+        $this->ns = $vals['ns'];
       }
     }
   }
@@ -30069,6 +30452,13 @@ class WMCreateOrDropTriggerToPoolMappingRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->ns);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -30100,6 +30490,11 @@ class WMCreateOrDropTriggerToPoolMappingRequest {
     if ($this->drop !== null) {
       $xfer += $output->writeFieldBegin('drop', TType::BOOL, 4);
       $xfer += $output->writeBool($this->drop);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ns !== null) {
+      $xfer += $output->writeFieldBegin('ns', TType::STRING, 5);
+      $xfer += $output->writeString($this->ns);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
