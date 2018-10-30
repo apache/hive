@@ -32,7 +32,6 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
   private String lowerBound = null;
   private String upperBound = null;
 
-
   public JdbcInputSplit() {
     super(null, 0, 0, EMPTY_ARRAY);
     this.limit = -1;
@@ -51,14 +50,8 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
     this.offset = offset;
   }
 
-  public JdbcInputSplit(int limit, int offset) {
-    super(null, 0, 0, EMPTY_ARRAY);
-    this.limit = limit;
-    this.offset = offset;
-  }
-
-  public JdbcInputSplit(String partitionColumn, String lowerBound, String upperBound) {
-    super(null, 0, 0, EMPTY_ARRAY);
+  public JdbcInputSplit(String partitionColumn, String lowerBound, String upperBound, Path dummyPath) {
+    super(dummyPath, 0, 0, EMPTY_ARRAY);
     this.partitionColumn = partitionColumn;
     this.lowerBound = lowerBound;
     this.upperBound = upperBound;
@@ -72,7 +65,17 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
     if (partitionColumn != null) {
       out.writeBoolean(true);
       out.writeUTF(partitionColumn);
+    } else {
+      out.writeBoolean(false);
+    }
+    if (lowerBound != null) {
+      out.writeBoolean(true);
       out.writeUTF(lowerBound);
+    } else {
+      out.writeBoolean(false);
+    }
+    if (upperBound != null) {
+      out.writeBoolean(true);
       out.writeUTF(upperBound);
     } else {
       out.writeBoolean(false);
@@ -88,7 +91,13 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
     boolean partitionColumnExists = in.readBoolean();
     if (partitionColumnExists) {
       partitionColumn = in.readUTF();
+    }
+    boolean lowerBoundExists = in.readBoolean();
+    if (lowerBoundExists) {
       lowerBound = in.readUTF();
+    }
+    boolean upperBoundExists = in.readBoolean();
+    if (upperBoundExists) {
       upperBound = in.readUTF();
     }
   }

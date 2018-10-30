@@ -132,7 +132,7 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
         intervals.get(intervals.size()-1).setRight(null);
         splits = new InputSplit[intervals.size()];
         for (int i = 0; i < intervals.size(); i++) {
-          splits[i] = new JdbcInputSplit(partitionColumn, intervals.get(i).getLeft(), intervals.get(i).getRight());
+          splits[i] = new JdbcInputSplit(partitionColumn, intervals.get(i).getLeft(), intervals.get(i).getRight(), tablePaths[0]);
         }
       } else {
         int numRecords = dbAccessor.getTotalNumberOfRecords(job);
