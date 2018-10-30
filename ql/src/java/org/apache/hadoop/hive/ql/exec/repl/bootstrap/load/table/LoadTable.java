@@ -20,15 +20,16 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
@@ -54,7 +55,6 @@ import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Collections;
@@ -75,8 +75,7 @@ public class LoadTable {
   private final TableEvent event;
 
   public LoadTable(TableEvent event, Context context, ReplLogger replLogger,
-                   TableContext tableContext, TaskTracker limiter)
-      throws SemanticException, IOException {
+      TableContext tableContext, TaskTracker limiter) {
     this.event = event;
     this.context = context;
     this.replLogger = replLogger;
@@ -128,9 +127,7 @@ public class LoadTable {
           break;
       }
 
-      if (tableDesc.getLocation() == null) {
-        tableDesc.setLocation(location(tableDesc, parentDb));
-      }
+      tableDesc.setLocation(location(tableDesc, parentDb));
 
   /* Note: In the following section, Metadata-only import handling logic is
      interleaved with regular repl-import logic. The rule of thumb being
@@ -208,7 +205,7 @@ public class LoadTable {
       parentTask.addDependentTask(replTxnTask);
       parentTask = replTxnTask;
     }
-    if (!isPartitioned(tblDesc)) {
+    if (!isPartitioned(tblDesc) && !TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
       LOG.debug("adding dependent ReplTxnTask/CopyWork/MoveWork for table");
       Task<?> loadTableTask =
           loadTableTask(table, replicationSpec, new Path(tblDesc.getLocation()),
@@ -220,13 +217,17 @@ public class LoadTable {
 
   private String location(ImportTableDesc tblDesc, Database parentDb)
       throws MetaException, SemanticException {
-    if (!tableContext.waitOnPrecursor()) {
-      return context.warehouse.getDefaultTablePath(
-          parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString();
-    } else {
+    // dont use TableType.EXTERNAL_TABLE.equals(tblDesc.tableType()) since this comes in as managed always for tables.
+    if (tblDesc.isExternal()) {
+      return ReplExternalTables.externalTableLocation(context.hiveConf, tblDesc.getLocation());
+    }
+    if (tableContext.waitOnPrecursor()) {
       Path tablePath = context.warehouse.getDefaultTablePath(
           tblDesc.getDatabaseName(), tblDesc.getTableName(), tblDesc.isExternal());
       return context.warehouse.getDnsPath(tablePath).toString();
+    } else {
+      return context.warehouse.getDefaultTablePath(
+          parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString();
     }
   }
 

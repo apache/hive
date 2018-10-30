@@ -92,14 +92,14 @@ public class IncrementalLoadTasksBuilder {
   }
 
   public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
-                                            ReplLoadWork loadWork) throws Exception {
+      ReplLoadWork loadWork, TaskTracker tracker) throws Exception {
     Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
     Task<? extends Serializable> taskChainTail = evTaskRoot;
     Long lastReplayedEvent = null;
     this.log = log;
     numIteration++;
     this.log.debug("Iteration num " + numIteration);
-    TaskTracker tracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
+    //    TaskTracker tracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
 
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();
@@ -153,10 +153,7 @@ public class IncrementalLoadTasksBuilder {
       lastReplayedEvent = eventDmd.getEventTo();
     }
 
-    if (iterator.hasNext()) {
-      // add load task to start the next iteration
-      taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
-    } else {
+    if (!hasMoreWork()) {
       // if no events were replayed, then add a task to update the last repl id of the database/table to last event id.
       if (taskChainTail == evTaskRoot) {
         String lastEventid = eventTo.toString();
@@ -177,8 +174,18 @@ public class IncrementalLoadTasksBuilder {
       this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
               taskChainTail.getClass(), taskChainTail.getId(),
               barrierTask.getClass(), barrierTask.getId());
+      // This is making it dependent on the fact that incremental load as to happen before hdfs sync
+      // for external tables and only when everything w.r.t to incremental is done should
+      // hdfs replication start
+      if (loadWork.getPathsToCopyIterator().hasNext()) {
+        taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
+      }
     }
     return evTaskRoot;
+  }
+
+  public boolean hasMoreWork() {
+    return iterator.hasNext();
   }
 
   private boolean isEventNotReplayed(Map<String, String> params, FileStatus dir, DumpType dumpType) {

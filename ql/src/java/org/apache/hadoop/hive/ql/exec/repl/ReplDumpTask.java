@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -75,16 +76,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
   private static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   private static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
   private static final String FUNCTION_METADATA_FILE_NAME = "_metadata";
+  private static final long SLEEP_TIME = 60000;
+
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
     private final String prefix;
-    private ConstraintFileType(String name, String prefix) {
+    ConstraintFileType(String name, String prefix) {
       this.name = name;
       this.prefix = prefix;
     }
@@ -97,7 +101,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private static long sleepTime = 60000;
   private Logger LOG = LoggerFactory.getLogger(ReplDumpTask.class);
   private ReplLogger replLogger;
 
@@ -119,11 +122,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       } else {
         lastReplId = incrementalDump(dumpRoot, dmd, cmRoot, hiveDb);
       }
-      prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)), dumpSchema);
-    } catch (RuntimeException e) {
-      LOG.error("failed", e);
-      setException(e);
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)));
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
@@ -132,8 +131,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0;
   }
 
-  private void prepareReturnValues(List<String> values, String schema) throws SemanticException {
-    LOG.debug("prepareReturnValues : " + schema);
+  private void prepareReturnValues(List<String> values) throws SemanticException {
+    LOG.debug("prepareReturnValues : " + dumpSchema);
     for (String s : values) {
       LOG.debug("    > " + s);
     }
@@ -195,6 +194,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         dmd.getDumpFilePath(), conf);
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot);
     dmd.write();
+
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) &&
+        !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+      try (Writer writer = new Writer(dumpRoot, conf)) {
+        for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
+          Table table = hiveDb.getTable(dbName, tableName);
+          if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+            writer.dataLocationDump(table);
+          }
+        }
+      }
+    }
     return lastReplId;
   }
 
@@ -241,11 +252,27 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
       String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
       Exception caught = null;
-      try {
+      try (Writer writer = new Writer(dbRoot, conf)) {
         for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
           LOG.debug(
               "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
-          dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb);
+          try {
+            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName);
+            boolean shouldWriteExternalTableLocationInfo =
+                conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
+                && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())
+                && !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
+            if (shouldWriteExternalTableLocationInfo) {
+              LOG.debug("adding table {} to external tables list");
+              writer.dataLocationDump(tableTuple.object);
+            }
+            dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
+                tableTuple);
+          } catch (InvalidTableException te) {
+            // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
+            // Just log a debug message and skip it.
+            LOG.debug(te.getMessage());
+          }
           dumpConstraintMetadata(dbName, tblName, dbRoot, hiveDb);
         }
       } catch (Exception e) {
@@ -293,34 +320,26 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return dbRoot;
   }
 
-  void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId, Hive hiveDb) throws Exception {
-    try {
-      HiveWrapper.Tuple<Table> tuple = new HiveWrapper(hiveDb, dbName).table(tblName);
-      TableSpec tableSpec = new TableSpec(tuple.object);
-      TableExport.Paths exportPaths =
-          new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf, true);
-      String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
-      tuple.replicationSpec.setIsReplace(true);  // by default for all other objects this is false
-      if (AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
-        tuple.replicationSpec.setValidTxnList(validTxnList);
-        tuple.replicationSpec.setValidWriteIdList(getValidWriteIdList(dbName, tblName, validTxnList));
+  void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId,
+      Hive hiveDb, HiveWrapper.Tuple<Table> tuple) throws Exception {
+    TableSpec tableSpec = new TableSpec(tuple.object);
+    TableExport.Paths exportPaths =
+        new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf, true);
+    String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+    tuple.replicationSpec.setIsReplace(true);  // by default for all other objects this is false
+    if (AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
+      tuple.replicationSpec.setValidWriteIdList(getValidWriteIdList(dbName, tblName, validTxnList));
 
-        // For transactional table, data would be valid snapshot for current txn and doesn't include data
-        // added/modified by concurrent txns which are later than current txn. So, need to set last repl Id of this table
-        // as bootstrap dump's last repl Id.
-        tuple.replicationSpec.setCurrentReplicationState(String.valueOf(lastReplId));
-      }
-      MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
-      new TableExport(
-          exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write();
-
-
-      replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
-    } catch (InvalidTableException te) {
-      // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
-      // Just log a debug message and skip it.
-      LOG.debug(te.getMessage());
+      // For transactional table, data would be valid snapshot for current txn and doesn't include data
+      // added/modified by concurrent txns which are later than current txn. So, need to set last repl Id of this table
+      // as bootstrap dump's last repl Id.
+      tuple.replicationSpec.setCurrentReplicationState(String.valueOf(lastReplId));
     }
+    MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
+    new TableExport(
+        exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write();
+
+    replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
   }
 
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {
@@ -365,7 +384,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
       // Wait for 1 minute and check again.
       try {
-        Thread.sleep(sleepTime);
+        Thread.sleep(SLEEP_TIME);
       } catch (InterruptedException e) {
         LOG.info("REPL DUMP thread sleep interrupted", e);
       }
