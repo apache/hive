@@ -10,7 +10,7 @@ set hive.cbo.enable=false;
 show grant user hive_test_user;
 
 -- Initialize the hive schema.
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql;
+source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
 
 -- SORT_QUERY_RESULTS
 
@@ -240,13 +240,13 @@ CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair';
 
 CREATE POOL plan_2.default.c2 WITH
-    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.7;
+    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.75;
 
 -- Cannot activate c1 + c2 = 1.0
 ALTER RESOURCE PLAN plan_2 VALIDATE;
 ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE;
 
-ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.5, QUERY_PARALLELISM = 1;
+ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1;
 ALTER POOL plan_2.default.c2 SET SCHEDULING_POLICY='fair';
 SELECT * FROM SYS.WM_POOLS;
 ALTER POOL plan_2.default.c2 UNSET SCHEDULING_POLICY;

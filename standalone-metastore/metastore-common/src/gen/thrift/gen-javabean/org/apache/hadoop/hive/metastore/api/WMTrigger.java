@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TRIGGER_EXPRESSION_FIELD_DESC = new org.apache.thrift.protocol.TField("triggerExpression", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField ACTION_EXPRESSION_FIELD_DESC = new org.apache.thrift.protocol.TField("actionExpression", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField IS_IN_UNMANAGED_FIELD_DESC = new org.apache.thrift.protocol.TField("isInUnmanaged", org.apache.thrift.protocol.TType.BOOL, (short)5);
+  private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
   private String triggerExpression; // optional
   private String actionExpression; // optional
   private boolean isInUnmanaged; // optional
+  private String ns; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ import org.slf4j.LoggerFactory;
     TRIGGER_NAME((short)2, "triggerName"),
     TRIGGER_EXPRESSION((short)3, "triggerExpression"),
     ACTION_EXPRESSION((short)4, "actionExpression"),
-    IS_IN_UNMANAGED((short)5, "isInUnmanaged");
+    IS_IN_UNMANAGED((short)5, "isInUnmanaged"),
+    NS((short)6, "ns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ import org.slf4j.LoggerFactory;
           return ACTION_EXPRESSION;
         case 5: // IS_IN_UNMANAGED
           return IS_IN_UNMANAGED;
+        case 6: // NS
+          return NS;
         default:
           return null;
       }
@@ -129,7 +134,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __ISINUNMANAGED_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TRIGGER_EXPRESSION,_Fields.ACTION_EXPRESSION,_Fields.IS_IN_UNMANAGED};
+  private static final _Fields optionals[] = {_Fields.TRIGGER_EXPRESSION,_Fields.ACTION_EXPRESSION,_Fields.IS_IN_UNMANAGED,_Fields.NS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -143,6 +148,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.IS_IN_UNMANAGED, new org.apache.thrift.meta_data.FieldMetaData("isInUnmanaged", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.NS, new org.apache.thrift.meta_data.FieldMetaData("ns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMTrigger.class, metaDataMap);
   }
@@ -177,6 +184,9 @@ import org.slf4j.LoggerFactory;
       this.actionExpression = other.actionExpression;
     }
     this.isInUnmanaged = other.isInUnmanaged;
+    if (other.isSetNs()) {
+      this.ns = other.ns;
+    }
   }
 
   public WMTrigger deepCopy() {
@@ -191,6 +201,7 @@ import org.slf4j.LoggerFactory;
     this.actionExpression = null;
     setIsInUnmanagedIsSet(false);
     this.isInUnmanaged = false;
+    this.ns = null;
   }
 
   public String getResourcePlanName() {
@@ -307,6 +318,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISINUNMANAGED_ISSET_ID, value);
   }
 
+  public String getNs() {
+    return this.ns;
+  }
+
+  public void setNs(String ns) {
+    this.ns = ns;
+  }
+
+  public void unsetNs() {
+    this.ns = null;
+  }
+
+  /** Returns true if field ns is set (has been assigned a value) and false otherwise */
+  public boolean isSetNs() {
+    return this.ns != null;
+  }
+
+  public void setNsIsSet(boolean value) {
+    if (!value) {
+      this.ns = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RESOURCE_PLAN_NAME:
@@ -349,6 +383,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case NS:
+      if (value == null) {
+        unsetNs();
+      } else {
+        setNs((String)value);
+      }
+      break;
+
     }
   }
 
@@ -368,6 +410,9 @@ import org.slf4j.LoggerFactory;
 
     case IS_IN_UNMANAGED:
       return isIsInUnmanaged();
+
+    case NS:
+      return getNs();
 
     }
     throw new IllegalStateException();
@@ -390,6 +435,8 @@ import org.slf4j.LoggerFactory;
       return isSetActionExpression();
     case IS_IN_UNMANAGED:
       return isSetIsInUnmanaged();
+    case NS:
+      return isSetNs();
     }
     throw new IllegalStateException();
   }
@@ -452,6 +499,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_ns = true && this.isSetNs();
+    boolean that_present_ns = true && that.isSetNs();
+    if (this_present_ns || that_present_ns) {
+      if (!(this_present_ns && that_present_ns))
+        return false;
+      if (!this.ns.equals(that.ns))
+        return false;
+    }
+
     return true;
   }
 
@@ -483,6 +539,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_isInUnmanaged);
     if (present_isInUnmanaged)
       list.add(isInUnmanaged);
+
+    boolean present_ns = true && (isSetNs());
+    list.add(present_ns);
+    if (present_ns)
+      list.add(ns);
 
     return list.hashCode();
   }
@@ -541,6 +602,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetIsInUnmanaged()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isInUnmanaged, other.isInUnmanaged);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNs()).compareTo(other.isSetNs());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNs()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ns, other.ns);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -604,6 +675,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("isInUnmanaged:");
       sb.append(this.isInUnmanaged);
+      first = false;
+    }
+    if (isSetNs()) {
+      if (!first) sb.append(", ");
+      sb.append("ns:");
+      if (this.ns == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ns);
+      }
       first = false;
     }
     sb.append(")");
@@ -699,6 +780,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // NS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.ns = iprot.readString();
+              struct.setNsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -741,6 +830,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.isInUnmanaged);
         oprot.writeFieldEnd();
       }
+      if (struct.ns != null) {
+        if (struct.isSetNs()) {
+          oprot.writeFieldBegin(NS_FIELD_DESC);
+          oprot.writeString(struct.ns);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -770,7 +866,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsInUnmanaged()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetNs()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetTriggerExpression()) {
         oprot.writeString(struct.triggerExpression);
       }
@@ -779,6 +878,9 @@ import org.slf4j.LoggerFactory;
       }
       if (struct.isSetIsInUnmanaged()) {
         oprot.writeBool(struct.isInUnmanaged);
+      }
+      if (struct.isSetNs()) {
+        oprot.writeString(struct.ns);
       }
     }
 
@@ -789,7 +891,7 @@ import org.slf4j.LoggerFactory;
       struct.setResourcePlanNameIsSet(true);
       struct.triggerName = iprot.readString();
       struct.setTriggerNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.triggerExpression = iprot.readString();
         struct.setTriggerExpressionIsSet(true);
@@ -801,6 +903,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(2)) {
         struct.isInUnmanaged = iprot.readBool();
         struct.setIsInUnmanagedIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.ns = iprot.readString();
+        struct.setNsIsSet(true);
       }
     }
   }

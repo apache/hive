@@ -4109,12 +4109,14 @@ class WMResourcePlan
   STATUS = 2
   QUERYPARALLELISM = 3
   DEFAULTPOOLPATH = 4
+  NS = 5
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :optional => true, :enum_class => ::WMResourcePlanStatus},
     QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
-    DEFAULTPOOLPATH => {:type => ::Thrift::Types::STRING, :name => 'defaultPoolPath', :optional => true}
+    DEFAULTPOOLPATH => {:type => ::Thrift::Types::STRING, :name => 'defaultPoolPath', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4137,6 +4139,7 @@ class WMNullableResourcePlan
   ISSETQUERYPARALLELISM = 5
   DEFAULTPOOLPATH = 6
   ISSETDEFAULTPOOLPATH = 7
+  NS = 8
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name', :optional => true},
@@ -4144,7 +4147,8 @@ class WMNullableResourcePlan
     QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
     ISSETQUERYPARALLELISM => {:type => ::Thrift::Types::BOOL, :name => 'isSetQueryParallelism', :optional => true},
     DEFAULTPOOLPATH => {:type => ::Thrift::Types::STRING, :name => 'defaultPoolPath', :optional => true},
-    ISSETDEFAULTPOOLPATH => {:type => ::Thrift::Types::BOOL, :name => 'isSetDefaultPoolPath', :optional => true}
+    ISSETDEFAULTPOOLPATH => {:type => ::Thrift::Types::BOOL, :name => 'isSetDefaultPoolPath', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4165,13 +4169,15 @@ class WMPool
   ALLOCFRACTION = 3
   QUERYPARALLELISM = 4
   SCHEDULINGPOLICY = 5
+  NS = 6
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
     POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath'},
     ALLOCFRACTION => {:type => ::Thrift::Types::DOUBLE, :name => 'allocFraction', :optional => true},
     QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
-    SCHEDULINGPOLICY => {:type => ::Thrift::Types::STRING, :name => 'schedulingPolicy', :optional => true}
+    SCHEDULINGPOLICY => {:type => ::Thrift::Types::STRING, :name => 'schedulingPolicy', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4192,6 +4198,7 @@ class WMNullablePool
   QUERYPARALLELISM = 4
   SCHEDULINGPOLICY = 5
   ISSETSCHEDULINGPOLICY = 6
+  NS = 7
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
@@ -4199,7 +4206,8 @@ class WMNullablePool
     ALLOCFRACTION => {:type => ::Thrift::Types::DOUBLE, :name => 'allocFraction', :optional => true},
     QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
     SCHEDULINGPOLICY => {:type => ::Thrift::Types::STRING, :name => 'schedulingPolicy', :optional => true},
-    ISSETSCHEDULINGPOLICY => {:type => ::Thrift::Types::BOOL, :name => 'isSetSchedulingPolicy', :optional => true}
+    ISSETSCHEDULINGPOLICY => {:type => ::Thrift::Types::BOOL, :name => 'isSetSchedulingPolicy', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4219,13 +4227,15 @@ class WMTrigger
   TRIGGEREXPRESSION = 3
   ACTIONEXPRESSION = 4
   ISINUNMANAGED = 5
+  NS = 6
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
     TRIGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'triggerName'},
     TRIGGEREXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'triggerExpression', :optional => true},
     ACTIONEXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'actionExpression', :optional => true},
-    ISINUNMANAGED => {:type => ::Thrift::Types::BOOL, :name => 'isInUnmanaged', :optional => true}
+    ISINUNMANAGED => {:type => ::Thrift::Types::BOOL, :name => 'isInUnmanaged', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4245,13 +4255,15 @@ class WMMapping
   ENTITYNAME = 3
   POOLPATH = 4
   ORDERING = 5
+  NS = 6
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
     ENTITYTYPE => {:type => ::Thrift::Types::STRING, :name => 'entityType'},
     ENTITYNAME => {:type => ::Thrift::Types::STRING, :name => 'entityName'},
     POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true},
-    ORDERING => {:type => ::Thrift::Types::I32, :name => 'ordering', :optional => true}
+    ORDERING => {:type => ::Thrift::Types::I32, :name => 'ordering', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4269,10 +4281,12 @@ class WMPoolTrigger
   include ::Thrift::Struct, ::Thrift::Struct_Union
   POOL = 1
   TRIGGER = 2
+  NS = 3
 
   FIELDS = {
     POOL => {:type => ::Thrift::Types::STRING, :name => 'pool'},
-    TRIGGER => {:type => ::Thrift::Types::STRING, :name => 'trigger'}
+    TRIGGER => {:type => ::Thrift::Types::STRING, :name => 'trigger'},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4346,9 +4360,10 @@ end
 
 class WMGetActiveResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
+  NS = 1
 
   FIELDS = {
-
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4378,9 +4393,11 @@ end
 class WMGetResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
+  NS = 2
 
   FIELDS = {
-    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true}
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4409,9 +4426,10 @@ end
 
 class WMGetAllResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
+  NS = 1
 
   FIELDS = {
-
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4445,13 +4463,15 @@ class WMAlterResourcePlanRequest
   ISENABLEANDACTIVATE = 3
   ISFORCEDEACTIVATE = 4
   ISREPLACE = 5
+  NS = 6
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
     RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMNullableResourcePlan, :optional => true},
     ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true},
     ISFORCEDEACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isForceDeactivate', :optional => true},
-    ISREPLACE => {:type => ::Thrift::Types::BOOL, :name => 'isReplace', :optional => true}
+    ISREPLACE => {:type => ::Thrift::Types::BOOL, :name => 'isReplace', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4481,9 +4501,11 @@ end
 class WMValidateResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
+  NS = 2
 
   FIELDS = {
-    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true}
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4515,9 +4537,11 @@ end
 class WMDropResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
+  NS = 2
 
   FIELDS = {
-    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true}
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4609,10 +4633,12 @@ class WMDropTriggerRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
   TRIGGERNAME = 2
+  NS = 3
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
-    TRIGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'triggerName', :optional => true}
+    TRIGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'triggerName', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4641,9 +4667,11 @@ end
 class WMGetTriggersForResourePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
+  NS = 2
 
   FIELDS = {
-    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true}
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4738,10 +4766,12 @@ class WMDropPoolRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
   POOLPATH = 2
+  NS = 3
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
-    POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true}
+    POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4837,12 +4867,14 @@ class WMCreateOrDropTriggerToPoolMappingRequest
   TRIGGERNAME = 2
   POOLPATH = 3
   DROP = 4
+  NS = 5
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
     TRIGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'triggerName', :optional => true},
     POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true},
-    DROP => {:type => ::Thrift::Types::BOOL, :name => 'drop', :optional => true}
+    DROP => {:type => ::Thrift::Types::BOOL, :name => 'drop', :optional => true},
+    NS => {:type => ::Thrift::Types::STRING, :name => 'ns', :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TRIGGER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("triggerName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField POOL_PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("poolPath", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField DROP_FIELD_DESC = new org.apache.thrift.protocol.TField("drop", org.apache.thrift.protocol.TType.BOOL, (short)4);
+  private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ import org.slf4j.LoggerFactory;
   private String triggerName; // optional
   private String poolPath; // optional
   private boolean drop; // optional
+  private String ns; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     RESOURCE_PLAN_NAME((short)1, "resourcePlanName"),
     TRIGGER_NAME((short)2, "triggerName"),
     POOL_PATH((short)3, "poolPath"),
-    DROP((short)4, "drop");
+    DROP((short)4, "drop"),
+    NS((short)5, "ns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ import org.slf4j.LoggerFactory;
           return POOL_PATH;
         case 4: // DROP
           return DROP;
+        case 5: // NS
+          return NS;
         default:
           return null;
       }
@@ -124,7 +129,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __DROP_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN_NAME,_Fields.TRIGGER_NAME,_Fields.POOL_PATH,_Fields.DROP};
+  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN_NAME,_Fields.TRIGGER_NAME,_Fields.POOL_PATH,_Fields.DROP,_Fields.NS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -136,6 +141,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DROP, new org.apache.thrift.meta_data.FieldMetaData("drop", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.NS, new org.apache.thrift.meta_data.FieldMetaData("ns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMCreateOrDropTriggerToPoolMappingRequest.class, metaDataMap);
   }
@@ -158,6 +165,9 @@ import org.slf4j.LoggerFactory;
       this.poolPath = other.poolPath;
     }
     this.drop = other.drop;
+    if (other.isSetNs()) {
+      this.ns = other.ns;
+    }
   }
 
   public WMCreateOrDropTriggerToPoolMappingRequest deepCopy() {
@@ -171,6 +181,7 @@ import org.slf4j.LoggerFactory;
     this.poolPath = null;
     setDropIsSet(false);
     this.drop = false;
+    this.ns = null;
   }
 
   public String getResourcePlanName() {
@@ -264,6 +275,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __DROP_ISSET_ID, value);
   }
 
+  public String getNs() {
+    return this.ns;
+  }
+
+  public void setNs(String ns) {
+    this.ns = ns;
+  }
+
+  public void unsetNs() {
+    this.ns = null;
+  }
+
+  /** Returns true if field ns is set (has been assigned a value) and false otherwise */
+  public boolean isSetNs() {
+    return this.ns != null;
+  }
+
+  public void setNsIsSet(boolean value) {
+    if (!value) {
+      this.ns = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RESOURCE_PLAN_NAME:
@@ -298,6 +332,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case NS:
+      if (value == null) {
+        unsetNs();
+      } else {
+        setNs((String)value);
+      }
+      break;
+
     }
   }
 
@@ -314,6 +356,9 @@ import org.slf4j.LoggerFactory;
 
     case DROP:
       return isDrop();
+
+    case NS:
+      return getNs();
 
     }
     throw new IllegalStateException();
@@ -334,6 +379,8 @@ import org.slf4j.LoggerFactory;
       return isSetPoolPath();
     case DROP:
       return isSetDrop();
+    case NS:
+      return isSetNs();
     }
     throw new IllegalStateException();
   }
@@ -387,6 +434,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_ns = true && this.isSetNs();
+    boolean that_present_ns = true && that.isSetNs();
+    if (this_present_ns || that_present_ns) {
+      if (!(this_present_ns && that_present_ns))
+        return false;
+      if (!this.ns.equals(that.ns))
+        return false;
+    }
+
     return true;
   }
 
@@ -413,6 +469,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_drop);
     if (present_drop)
       list.add(drop);
+
+    boolean present_ns = true && (isSetNs());
+    list.add(present_ns);
+    if (present_ns)
+      list.add(ns);
 
     return list.hashCode();
   }
@@ -461,6 +522,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetDrop()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.drop, other.drop);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNs()).compareTo(other.isSetNs());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNs()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ns, other.ns);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -518,6 +589,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("drop:");
       sb.append(this.drop);
+      first = false;
+    }
+    if (isSetNs()) {
+      if (!first) sb.append(", ");
+      sb.append("ns:");
+      if (this.ns == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ns);
+      }
       first = false;
     }
     sb.append(")");
@@ -597,6 +678,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // NS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.ns = iprot.readString();
+              struct.setNsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -636,6 +725,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.drop);
         oprot.writeFieldEnd();
       }
+      if (struct.ns != null) {
+        if (struct.isSetNs()) {
+          oprot.writeFieldBegin(NS_FIELD_DESC);
+          oprot.writeString(struct.ns);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -666,7 +762,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetDrop()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetNs()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetResourcePlanName()) {
         oprot.writeString(struct.resourcePlanName);
       }
@@ -679,12 +778,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetDrop()) {
         oprot.writeBool(struct.drop);
       }
+      if (struct.isSetNs()) {
+        oprot.writeString(struct.ns);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, WMCreateOrDropTriggerToPoolMappingRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.resourcePlanName = iprot.readString();
         struct.setResourcePlanNameIsSet(true);
@@ -700,6 +802,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(3)) {
         struct.drop = iprot.readBool();
         struct.setDropIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.ns = iprot.readString();
+        struct.setNsIsSet(true);
       }
     }
   }

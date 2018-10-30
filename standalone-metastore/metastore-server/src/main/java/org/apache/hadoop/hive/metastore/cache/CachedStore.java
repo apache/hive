@@ -1644,7 +1644,7 @@ public class CachedStore implements RawStore, Configurable {
     }
     return partitions;
   }
-  
+
   private String getPartNameMatcher(Table table, List<String> partSpecs) throws MetaException {
     List<FieldSchema> partCols = table.getPartitionKeys();
     int numPartKeys = partCols.size();
@@ -2407,39 +2407,39 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan getResourcePlan(String name)
+  public WMFullResourcePlan getResourcePlan(String name, String ns)
       throws NoSuchObjectException, MetaException {
-    return rawStore.getResourcePlan(name);
+    return rawStore.getResourcePlan(name, ns);
   }
 
   @Override
-  public List<WMResourcePlan> getAllResourcePlans() throws MetaException {
-    return rawStore.getAllResourcePlans();
+  public List<WMResourcePlan> getAllResourcePlans(String ns) throws MetaException {
+    return rawStore.getAllResourcePlans(ns);
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
+  public WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
     boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
     return rawStore.alterResourcePlan(
-      name, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
+      name, ns, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
   }
 
   @Override
-  public WMFullResourcePlan getActiveResourcePlan() throws MetaException {
-    return rawStore.getActiveResourcePlan();
+  public WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException {
+    return rawStore.getActiveResourcePlan(ns);
   }
 
   @Override
-  public WMValidateResourcePlanResponse validateResourcePlan(String name)
+  public WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
-    return rawStore.validateResourcePlan(name);
+    return rawStore.validateResourcePlan(name, ns);
   }
 
   @Override
-  public void dropResourcePlan(String name) throws NoSuchObjectException, MetaException {
-    rawStore.dropResourcePlan(name);
+  public void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException {
+    rawStore.dropResourcePlan(name, ns);
   }
 
   @Override
@@ -2456,15 +2456,15 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropWMTrigger(String resourcePlanName, String triggerName)
+  public void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.dropWMTrigger(resourcePlanName, triggerName);
+    rawStore.dropWMTrigger(resourcePlanName, triggerName, ns);
   }
 
   @Override
-  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
+  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
       throws NoSuchObjectException, MetaException {
-    return rawStore.getTriggersForResourcePlan(resourcePlanName);
+    return rawStore.getTriggersForResourcePlan(resourcePlanName, ns);
   }
 
   @Override
@@ -2480,9 +2480,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropWMPool(String resourcePlanName, String poolPath)
+  public void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.dropWMPool(resourcePlanName, poolPath);
+    rawStore.dropWMPool(resourcePlanName, poolPath, ns);
   }
 
   @Override
@@ -2500,15 +2500,15 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath) throws AlreadyExistsException, NoSuchObjectException,
+      String poolPath, String ns) throws AlreadyExistsException, NoSuchObjectException,
       InvalidOperationException, MetaException {
-    rawStore.createWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath);
+    rawStore.createWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, ns);
   }
 
   @Override
   public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath);
+      String poolPath, String ns) throws NoSuchObjectException, InvalidOperationException, MetaException {
+    rawStore.dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, ns);
   }
 
   public long getCacheUpdateCount() {

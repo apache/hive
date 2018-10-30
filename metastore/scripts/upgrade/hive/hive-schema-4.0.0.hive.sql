@@ -941,6 +941,7 @@ FROM `PARTITION_PARAMS` GROUP BY `PART_ID`;
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
+  `NS` string,
   `STATUS` string,
   `QUERY_PARALLELISM` int,
   `DEFAULT_POOL_PATH` string
@@ -951,6 +952,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"STATUS\",
   \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
   \"WM_POOL\".\"PATH\"
@@ -960,6 +962,7 @@ FROM
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `NAME` string,
   `TRIGGER_EXPRESSION` string,
   `ACTION_EXPRESSION` string
@@ -970,6 +973,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   r.\"NAME\" AS RP_NAME,
+  case when r.\"NS\" is null then 'default' else r.\"NS\" end,
   t.\"NAME\" AS NAME,
   \"TRIGGER_EXPRESSION\",
   \"ACTION_EXPRESSION\"
@@ -983,6 +987,7 @@ ON
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
   `RP_NAME` string,
+  `NS` string,
   `PATH` string,
   `ALLOC_FRACTION` double,
   `QUERY_PARALLELISM` int,
@@ -994,6 +999,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\",
   \"WM_POOL\".\"ALLOC_FRACTION\",
   \"WM_POOL\".\"QUERY_PARALLELISM\",
@@ -1008,6 +1014,7 @@ ON
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `POOL_PATH` string,
   `TRIGGER_NAME` string
 )
@@ -1017,6 +1024,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\" AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_POOL_TO_TRIGGER\"
@@ -1026,6 +1034,7 @@ FROM \"WM_POOL_TO_TRIGGER\"
 UNION
 SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   '<unmanaged queries>' AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_TRIGGER\"
@@ -1036,6 +1045,7 @@ WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
   `RP_NAME` string,
+  `NS` string,
   `ENTITY_TYPE` string,
   `ENTITY_NAME` string,
   `POOL_PATH` string,
@@ -1047,6 +1057,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"ENTITY_TYPE\",
   \"ENTITY_NAME\",
   case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,

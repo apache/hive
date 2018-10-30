@@ -25,6 +25,7 @@ import java.util.Set;
  */
 public class MWMResourcePlan {
   private String name;
+  private String ns;
   private Integer queryParallelism;
   private Status status;
   private Set<MWMPool> pools;
@@ -49,6 +50,14 @@ public class MWMResourcePlan {
 
   public String getName() {
     return name;
+  }
+
+  public void setNs(String name) {
+    this.ns = name;
+  }
+
+  public String getNs() {
+    return ns;
   }
 
   public void setName(String name) {

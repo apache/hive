@@ -698,6 +698,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  // Note: the resource plan operations are going to be annotated with namespace based on the config
+  //       inside Hive.java. We don't want HS2 to be aware of namespaces beyond that, or to even see
+  //       that there exist other namespaces, because one HS2 always operates inside just one and we
+  //       don't want this complexity to bleed everywhere. Therefore, this code doesn't care about
+  //       namespaces - Hive.java will transparently scope everything. That's the idea anyway.
   private int alterResourcePlan(Hive db, AlterResourcePlanDesc desc) throws HiveException {
     if (desc.shouldValidate()) {
       WMValidateResourcePlanResponse result = db.validateResourcePlan(desc.getResourcePlanName());

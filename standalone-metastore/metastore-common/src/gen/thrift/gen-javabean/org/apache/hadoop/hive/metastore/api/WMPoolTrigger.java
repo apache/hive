@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField POOL_FIELD_DESC = new org.apache.thrift.protocol.TField("pool", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TRIGGER_FIELD_DESC = new org.apache.thrift.protocol.TField("trigger", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,11 +50,13 @@ import org.slf4j.LoggerFactory;
 
   private String pool; // required
   private String trigger; // required
+  private String ns; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     POOL((short)1, "pool"),
-    TRIGGER((short)2, "trigger");
+    TRIGGER((short)2, "trigger"),
+    NS((short)3, "ns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +75,8 @@ import org.slf4j.LoggerFactory;
           return POOL;
         case 2: // TRIGGER
           return TRIGGER;
+        case 3: // NS
+          return NS;
         default:
           return null;
       }
@@ -112,12 +117,15 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.NS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.POOL, new org.apache.thrift.meta_data.FieldMetaData("pool", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TRIGGER, new org.apache.thrift.meta_data.FieldMetaData("trigger", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.NS, new org.apache.thrift.meta_data.FieldMetaData("ns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMPoolTrigger.class, metaDataMap);
@@ -145,6 +153,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetTrigger()) {
       this.trigger = other.trigger;
     }
+    if (other.isSetNs()) {
+      this.ns = other.ns;
+    }
   }
 
   public WMPoolTrigger deepCopy() {
@@ -155,6 +166,7 @@ import org.slf4j.LoggerFactory;
   public void clear() {
     this.pool = null;
     this.trigger = null;
+    this.ns = null;
   }
 
   public String getPool() {
@@ -203,6 +215,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getNs() {
+    return this.ns;
+  }
+
+  public void setNs(String ns) {
+    this.ns = ns;
+  }
+
+  public void unsetNs() {
+    this.ns = null;
+  }
+
+  /** Returns true if field ns is set (has been assigned a value) and false otherwise */
+  public boolean isSetNs() {
+    return this.ns != null;
+  }
+
+  public void setNsIsSet(boolean value) {
+    if (!value) {
+      this.ns = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case POOL:
@@ -221,6 +256,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case NS:
+      if (value == null) {
+        unsetNs();
+      } else {
+        setNs((String)value);
+      }
+      break;
+
     }
   }
 
@@ -231,6 +274,9 @@ import org.slf4j.LoggerFactory;
 
     case TRIGGER:
       return getTrigger();
+
+    case NS:
+      return getNs();
 
     }
     throw new IllegalStateException();
@@ -247,6 +293,8 @@ import org.slf4j.LoggerFactory;
       return isSetPool();
     case TRIGGER:
       return isSetTrigger();
+    case NS:
+      return isSetNs();
     }
     throw new IllegalStateException();
   }
@@ -282,6 +330,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_ns = true && this.isSetNs();
+    boolean that_present_ns = true && that.isSetNs();
+    if (this_present_ns || that_present_ns) {
+      if (!(this_present_ns && that_present_ns))
+        return false;
+      if (!this.ns.equals(that.ns))
+        return false;
+    }
+
     return true;
   }
 
@@ -298,6 +355,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_trigger);
     if (present_trigger)
       list.add(trigger);
+
+    boolean present_ns = true && (isSetNs());
+    list.add(present_ns);
+    if (present_ns)
+      list.add(ns);
 
     return list.hashCode();
   }
@@ -326,6 +388,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetTrigger()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.trigger, other.trigger);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNs()).compareTo(other.isSetNs());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNs()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ns, other.ns);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -365,6 +437,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.trigger);
     }
     first = false;
+    if (isSetNs()) {
+      if (!first) sb.append(", ");
+      sb.append("ns:");
+      if (this.ns == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ns);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -432,6 +514,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // NS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.ns = iprot.readString();
+              struct.setNsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -455,6 +545,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeString(struct.trigger);
         oprot.writeFieldEnd();
       }
+      if (struct.ns != null) {
+        if (struct.isSetNs()) {
+          oprot.writeFieldBegin(NS_FIELD_DESC);
+          oprot.writeString(struct.ns);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -474,6 +571,14 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.pool);
       oprot.writeString(struct.trigger);
+      BitSet optionals = new BitSet();
+      if (struct.isSetNs()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetNs()) {
+        oprot.writeString(struct.ns);
+      }
     }
 
     @Override
@@ -483,6 +588,11 @@ import org.slf4j.LoggerFactory;
       struct.setPoolIsSet(true);
       struct.trigger = iprot.readString();
       struct.setTriggerIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.ns = iprot.readString();
+        struct.setNsIsSet(true);
+      }
     }
   }
 

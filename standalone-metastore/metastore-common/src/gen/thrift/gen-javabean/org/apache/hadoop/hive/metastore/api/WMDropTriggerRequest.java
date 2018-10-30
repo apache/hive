@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField RESOURCE_PLAN_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("resourcePlanName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TRIGGER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("triggerName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField NS_FIELD_DESC = new org.apache.thrift.protocol.TField("ns", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,11 +50,13 @@ import org.slf4j.LoggerFactory;
 
   private String resourcePlanName; // optional
   private String triggerName; // optional
+  private String ns; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     RESOURCE_PLAN_NAME((short)1, "resourcePlanName"),
-    TRIGGER_NAME((short)2, "triggerName");
+    TRIGGER_NAME((short)2, "triggerName"),
+    NS((short)3, "ns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +75,8 @@ import org.slf4j.LoggerFactory;
           return RESOURCE_PLAN_NAME;
         case 2: // TRIGGER_NAME
           return TRIGGER_NAME;
+        case 3: // NS
+          return NS;
         default:
           return null;
       }
@@ -112,13 +117,15 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN_NAME,_Fields.TRIGGER_NAME};
+  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN_NAME,_Fields.TRIGGER_NAME,_Fields.NS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.RESOURCE_PLAN_NAME, new org.apache.thrift.meta_data.FieldMetaData("resourcePlanName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TRIGGER_NAME, new org.apache.thrift.meta_data.FieldMetaData("triggerName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.NS, new org.apache.thrift.meta_data.FieldMetaData("ns", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMDropTriggerRequest.class, metaDataMap);
@@ -137,6 +144,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetTriggerName()) {
       this.triggerName = other.triggerName;
     }
+    if (other.isSetNs()) {
+      this.ns = other.ns;
+    }
   }
 
   public WMDropTriggerRequest deepCopy() {
@@ -147,6 +157,7 @@ import org.slf4j.LoggerFactory;
   public void clear() {
     this.resourcePlanName = null;
     this.triggerName = null;
+    this.ns = null;
   }
 
   public String getResourcePlanName() {
@@ -195,6 +206,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getNs() {
+    return this.ns;
+  }
+
+  public void setNs(String ns) {
+    this.ns = ns;
+  }
+
+  public void unsetNs() {
+    this.ns = null;
+  }
+
+  /** Returns true if field ns is set (has been assigned a value) and false otherwise */
+  public boolean isSetNs() {
+    return this.ns != null;
+  }
+
+  public void setNsIsSet(boolean value) {
+    if (!value) {
+      this.ns = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RESOURCE_PLAN_NAME:
@@ -213,6 +247,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case NS:
+      if (value == null) {
+        unsetNs();
+      } else {
+        setNs((String)value);
+      }
+      break;
+
     }
   }
 
@@ -223,6 +265,9 @@ import org.slf4j.LoggerFactory;
 
     case TRIGGER_NAME:
       return getTriggerName();
+
+    case NS:
+      return getNs();
 
     }
     throw new IllegalStateException();
@@ -239,6 +284,8 @@ import org.slf4j.LoggerFactory;
       return isSetResourcePlanName();
     case TRIGGER_NAME:
       return isSetTriggerName();
+    case NS:
+      return isSetNs();
     }
     throw new IllegalStateException();
   }
@@ -274,6 +321,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_ns = true && this.isSetNs();
+    boolean that_present_ns = true && that.isSetNs();
+    if (this_present_ns || that_present_ns) {
+      if (!(this_present_ns && that_present_ns))
+        return false;
+      if (!this.ns.equals(that.ns))
+        return false;
+    }
+
     return true;
   }
 
@@ -290,6 +346,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_triggerName);
     if (present_triggerName)
       list.add(triggerName);
+
+    boolean present_ns = true && (isSetNs());
+    list.add(present_ns);
+    if (present_ns)
+      list.add(ns);
 
     return list.hashCode();
   }
@@ -318,6 +379,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetTriggerName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.triggerName, other.triggerName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNs()).compareTo(other.isSetNs());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNs()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ns, other.ns);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -358,6 +429,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.triggerName);
+      }
+      first = false;
+    }
+    if (isSetNs()) {
+      if (!first) sb.append(", ");
+      sb.append("ns:");
+      if (this.ns == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ns);
       }
       first = false;
     }
@@ -420,6 +501,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // NS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.ns = iprot.readString();
+              struct.setNsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -447,6 +536,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.ns != null) {
+        if (struct.isSetNs()) {
+          oprot.writeFieldBegin(NS_FIELD_DESC);
+          oprot.writeString(struct.ns);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -471,19 +567,25 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetTriggerName()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetNs()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetResourcePlanName()) {
         oprot.writeString(struct.resourcePlanName);
       }
       if (struct.isSetTriggerName()) {
         oprot.writeString(struct.triggerName);
       }
+      if (struct.isSetNs()) {
+        oprot.writeString(struct.ns);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, WMDropTriggerRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.resourcePlanName = iprot.readString();
         struct.setResourcePlanNameIsSet(true);
@@ -491,6 +593,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(1)) {
         struct.triggerName = iprot.readString();
         struct.setTriggerNameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.ns = iprot.readString();
+        struct.setNsIsSet(true);
       }
     }
   }
