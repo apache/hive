@@ -44,7 +44,7 @@ TBLPROPERTIES (
                 "hive.sql.numPartitions" = "2"
 );
 
-SELECT * FROM jdbc_partition_table1;
+SELECT * FROM jdbc_partition_table1 where ikey > 1;
 
 -- decimal partition column
 -- lower/upper bound unset

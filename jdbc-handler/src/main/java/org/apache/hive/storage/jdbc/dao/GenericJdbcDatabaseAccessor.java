@@ -59,7 +59,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   protected static final int DEFAULT_FETCH_SIZE = 1000;
   protected static final Logger LOGGER = LoggerFactory.getLogger(GenericJdbcDatabaseAccessor.class);
   protected DataSource dbcpDataSource = null;
-  static final Pattern fromPattern = Pattern.compile("(.*?\\sfrom\\s)(.*+)", Pattern.CASE_INSENSITIVE);
+  static final Pattern fromPattern = Pattern.compile("(.*?\\sfrom\\s)(.*+)", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 
 
   public GenericJdbcDatabaseAccessor() {
