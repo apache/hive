@@ -225,6 +225,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstant
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExpandExpressionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExtractJoinFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCFilterJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCFilterPushDownRule;
@@ -1969,6 +1970,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_PUSHDOWN)) {
         List<RelOptRule> rules = Lists.newArrayList();
+        rules.add(JDBCExpandExpressionsRule.FILTER_INSTANCE);
+        rules.add(JDBCExpandExpressionsRule.JOIN_INSTANCE);
+        rules.add(JDBCExpandExpressionsRule.PROJECT_INSTANCE);
         rules.add(JDBCExtractJoinFilterRule.INSTANCE);
         rules.add(JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN);
         rules.add(JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER);
@@ -3001,7 +3005,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             final String url = tabMetaData.getProperty(Constants.JDBC_URL);
             final String driver = tabMetaData.getProperty(Constants.JDBC_DRIVER);
             final String user = tabMetaData.getProperty(Constants.JDBC_USERNAME);
-            //final String query = tabMetaData.getProperty("hive.sql.query");
             String pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
             if (pswd == null) {
               String keystore = tabMetaData.getProperty(Constants.JDBC_KEYSTORE);

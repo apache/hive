@@ -45,11 +45,11 @@ public class JDBCSortPushDownRule extends RelOptRule {
 
   public JDBCSortPushDownRule() {
     super(operand(HiveSortLimit.class,
-        operand(HiveJdbcConverter.class, operand(RelNode.class, any()))));
+        operand(HiveJdbcConverter.class, any())));
   }
 
   public boolean matches(RelOptRuleCall call) {
-    final Sort sort = (Sort) call.rel(0);
+    final Sort sort = call.rel(0);
     final HiveJdbcConverter conv = call.rel(1);
 
     for (RexNode currCall : sort.getChildExps()) {
@@ -67,18 +67,16 @@ public class JDBCSortPushDownRule extends RelOptRule {
 
     final HiveSortLimit sort = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
-    final RelNode input = call.rel(2);
 
-    Sort newHiveSort = sort.copy(sort.getTraitSet(), input, sort.getCollation(), sort.getOffsetExpr(),
-            sort.getFetchExpr());
+    JdbcSort jdbcSort = new JdbcSort(
+        sort.getCluster(),
+        sort.getTraitSet().replace(converter.getJdbcConvention()),
+        converter.getInput(),
+        sort.getCollation(),
+        sort.offset,
+        sort.fetch);
 
-    JdbcSort newJdbcSort =
-            (JdbcSort) new JdbcSortRule(converter.getJdbcConvention()).convert(newHiveSort, false);
-    if (newJdbcSort != null) {
-      RelNode converterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcSort));
-
-      call.transformTo(converterRes);
-    }
+    call.transformTo(converter.copy(converter.getTraitSet(), jdbcSort));
   }
 
-};
+}
