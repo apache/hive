@@ -645,6 +645,11 @@ public final class FileUtils {
       copied = shims.runDistCpAs(srcPaths, dst, conf, doAsUser);
     }
     if (copied && deleteSource) {
+      if (doAsUser != null) {
+        // if distcp is done using doAsUser, delete also should be done using same user.
+        //TODO : Need to change the delete execution within doAs if doAsUser is given.
+        throw new IOException("Distcp is called with doAsUser and delete source set as true");
+      }
       for (Path path : srcPaths) {
         srcFS.delete(path, true);
       }
