@@ -174,7 +174,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     catch (Exception e) {
       LOGGER.error("Caught exception while trying to execute query", e);
       cleanupResources(conn, ps, rs);
-      throw new HiveJdbcDatabaseAccessException("Caught exception while trying to execute query", e);
+      throw new HiveJdbcDatabaseAccessException("Caught exception while trying to execute query:" + e.getMessage(), e);
     }
   }
 
