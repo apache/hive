@@ -17,14 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc;
 
-import java.util.Arrays;
-
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregate;
-import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregateRule;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.InvalidRelException;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
@@ -56,6 +53,11 @@ public class JDBCAggregationPushDownRule extends RelOptRule {
     final HiveAggregate agg = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
 
+    if (agg.getGroupType() != Group.SIMPLE) {
+      // TODO: Grouping sets not supported yet
+      return false;
+    }
+
     for (AggregateCall relOptRuleOperand : agg.getAggCallList()) {
       SqlAggFunction f = relOptRuleOperand.getAggregation();
       if (f instanceof HiveSqlCountAggFunction) {
@@ -75,20 +77,27 @@ public class JDBCAggregationPushDownRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    LOG.debug("MyAggregationPushDownRule.onMatch has been called");
+    LOG.debug("JDBCAggregationPushDownRule has been called");
 
-    final HiveAggregate agg = call.rel(0);
+    final HiveAggregate aggregate = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
 
-    Aggregate newHiveAggregate = agg.copy(agg.getTraitSet(), converter.getInput(),
-            agg.getIndicatorCount() !=0, agg.getGroupSet(), agg.getGroupSets(), agg.getAggCallList());
-    JdbcAggregate newJdbcAggregate =
-            (JdbcAggregate) new JdbcAggregateRule(converter.getJdbcConvention()).convert(newHiveAggregate);
-    if (newJdbcAggregate != null) {
-      RelNode converterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcAggregate));
-
-      call.transformTo(converterRes);
+    JdbcAggregate jdbcAggregate;
+    try {
+      jdbcAggregate = new JdbcAggregate(
+          aggregate.getCluster(),
+          aggregate.getTraitSet().replace(converter.getJdbcConvention()),
+          converter.getInput(),
+          aggregate.indicator,
+          aggregate.getGroupSet(),
+          aggregate.getGroupSets(),
+          aggregate.getAggCallList());
+    } catch (InvalidRelException e) {
+      LOG.warn(e.toString());
+      return;
     }
+
+    call.transformTo(converter.copy(converter.getTraitSet(), jdbcAggregate));
   }
 
-};
+}
