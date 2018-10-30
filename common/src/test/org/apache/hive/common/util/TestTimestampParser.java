@@ -66,6 +66,19 @@ public class TestTimestampParser {
             Timestamp.valueOf("1970-01-01 00:00:00")),
         new ValidTimestampCase("1945-12-31T23:59:59",
             Timestamp.valueOf("1945-12-31 23:59:59")),
+
+        new ValidTimestampCase("2018-10-19 10:35:00.123 America/Los_Angeles",
+            Timestamp.valueOf("2018-10-19 10:35:00.123")),
+        new ValidTimestampCase("2018-10-19 10:35:00.123 GMT+01:00",
+            Timestamp.valueOf("2018-10-19 10:35:00.123")),
+        new ValidTimestampCase("2018-10-19 10:35:00.123+01:00",
+            Timestamp.valueOf("2018-10-19 10:35:00.123")),
+        new ValidTimestampCase("2018-10-19 10:35:00 America/Los_Angeles",
+            Timestamp.valueOf("2018-10-19 10:35:00")),
+        new ValidTimestampCase("2018-10-19 10:35:00 GMT+01:00",
+            Timestamp.valueOf("2018-10-19 10:35:00")),
+        new ValidTimestampCase("2018-10-19 10:35:00+01:00",
+            Timestamp.valueOf("2018-10-19 10:35:00")),
     };
 
     String[] invalidCases = {
