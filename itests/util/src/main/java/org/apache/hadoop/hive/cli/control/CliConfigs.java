@@ -285,6 +285,12 @@ public class CliConfigs {
       try {
         setQueryDir("ql/src/test/queries/clientpositive/perf");
 
+        if (useConstraints) {
+          excludesFrom(testConfigProps, "tez.perf.constraints.disabled.query.files");
+        } else {
+          excludesFrom(testConfigProps, "tez.perf.disabled.query.files");
+        }
+
         excludesFrom(testConfigProps, "minimr.query.files");
         excludesFrom(testConfigProps, "minitez.query.files");
         excludesFrom(testConfigProps, "encrypted.query.files");

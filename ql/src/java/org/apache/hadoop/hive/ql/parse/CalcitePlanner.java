@@ -2250,7 +2250,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
 
-        if (calcitePreMVRewritingPlan != basePlan) {
+        if (!RelOptUtil.toString(calcitePreMVRewritingPlan).equals(RelOptUtil.toString(basePlan))) {
           // A rewriting was produced, we will check whether it was part of an incremental rebuild
           // to try to replace INSERT OVERWRITE by INSERT
           if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD &&
