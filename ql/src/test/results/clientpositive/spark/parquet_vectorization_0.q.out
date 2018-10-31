@@ -6,6 +6,8 @@ SELECT MIN(ctinyint) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
@@ -190,11 +192,15 @@ SELECT SUM(ctinyint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(ctinyint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -518,6 +524,8 @@ SELECT MIN(cbigint) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(cbigint) as c1,
        MAX(cbigint),
@@ -702,11 +710,15 @@ SELECT SUM(cbigint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(cbigint) as c1
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1030,6 +1042,8 @@ SELECT MIN(cfloat) as c1,
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(cfloat) as c1,
        MAX(cfloat),
@@ -1214,11 +1228,15 @@ SELECT SUM(cfloat) as c1
 FROM   alltypesparquet
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(cfloat) as c1
 FROM   alltypesparquet
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1562,6 +1580,8 @@ WHERE  (((cstring2 LIKE '%b%')
             AND ((cboolean2 = 1)
                  AND (3569 = ctinyint))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),
@@ -1857,7 +1877,7 @@ STAGE PLANS:
                     serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                    totalSize 595113
+                    totalSize 595103
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                 
@@ -1879,7 +1899,7 @@ STAGE PLANS:
                       serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                      totalSize 595113
+                      totalSize 595103
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                     name: default.alltypesparquet
@@ -30686,7 +30706,7 @@ STAGE PLANS:
                     serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                    totalSize 595113
+                    totalSize 595103
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                 
@@ -30708,7 +30728,7 @@ STAGE PLANS:
                       serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                      totalSize 595113
+                      totalSize 595103
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                     name: default.alltypesparquet
@@ -30805,7 +30825,7 @@ STAGE PLANS:
                     serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                    totalSize 595113
+                    totalSize 595103
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                 
@@ -30827,7 +30847,7 @@ STAGE PLANS:
                       serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                      totalSize 595113
+                      totalSize 595103
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                     name: default.alltypesparquet
@@ -30928,7 +30948,7 @@ STAGE PLANS:
                     serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                    totalSize 595113
+                    totalSize 595103
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                 
@@ -30950,7 +30970,7 @@ STAGE PLANS:
                       serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                      totalSize 595113
+                      totalSize 595103
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                     name: default.alltypesparquet
@@ -31038,7 +31058,7 @@ STAGE PLANS:
                     serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                    totalSize 595113
+                    totalSize 595103
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                 
@@ -31060,7 +31080,7 @@ STAGE PLANS:
                       serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
-                      totalSize 595113
+                      totalSize 595103
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
                     name: default.alltypesparquet
