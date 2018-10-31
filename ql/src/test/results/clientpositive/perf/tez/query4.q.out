@@ -269,7 +269,7 @@ Stage-0
               Select Operator [SEL_146] (rows=7323197 width=85)
                 Output:["_col0"]
                 Filter Operator [FIL_145] (rows=7323197 width=533)
-                  predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col12 / _col3))) ELSE ((null > (_col12 / _col3))) END) ELSE (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > null)) ELSE (null) END) END
+                  predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col12 / _col3))) ELSE (false) END) ELSE (false) END
                   Merge Join Operator [MERGEJOIN_278] (rows=14646395 width=533)
                     Conds:RS_142._col2=RS_336._col0(Inner),Output:["_col3","_col5","_col9","_col11","_col12"]
                   <-Reducer 24 [SIMPLE_EDGE] vectorized
@@ -324,7 +324,7 @@ Stage-0
                     SHUFFLE [RS_142]
                       PartitionCols:_col2
                       Filter Operator [FIL_141] (rows=12248093 width=660)
-                        predicate:CASE WHEN (_col7 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col1 / _col7))) ELSE ((null > (_col1 / _col7))) END) ELSE (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > null)) ELSE (null) END) END
+                        predicate:CASE WHEN (_col7 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col1 / _col7))) ELSE (false) END) ELSE (false) END
                         Merge Join Operator [MERGEJOIN_277] (rows=24496186 width=660)
                           Conds:RS_138._col2=RS_333._col0(Inner),Output:["_col1","_col2","_col3","_col5","_col7","_col9"]
                         <-Reducer 17 [SIMPLE_EDGE] vectorized
