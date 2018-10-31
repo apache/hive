@@ -1,67 +1,13 @@
 
-Release Notes - Hive - Version 2.3.2
-
-** Sub-task
-    * [HIVE-16312] - Flaky test: TestHCatClient.testTransportFailure
-
-
-
-
+Release Notes - Hive - Version 2.3.4
 
 
 
 ** Bug
-    * [HIVE-10378] - Hive Update statement set keyword work with lower case only and doesn't give any error if wrong column name specified in the set clause.
-    * [HIVE-15761] - ObjectStore.getNextNotification could return an empty NotificationEventResponse causing TProtocolException 
-    * [HIVE-16213] - ObjectStore can leak Queries when rollbackTransaction throws an exception
-    * [HIVE-16487] - Serious Zookeeper exception is logged when a race condition happens
-    * [HIVE-16646] - Alias in transform ... as clause shouldn't be case sensitive
-    * [HIVE-16930] - HoS should verify the value of Kerberos principal and keytab file before adding them to spark-submit command parameters
-    * [HIVE-16991] - HiveMetaStoreClient needs a 2-arg constructor for backwards compatibility
-    * [HIVE-17008] - Fix boolean flag switchup in DropTableEvent
-    * [HIVE-17150] - CREATE INDEX execute HMS out-of-transaction listener calls inside a transaction
-    * [HIVE-17169] - Avoid extra call to KeyProvider::getMetadata()
-    * [HIVE-17184] - Unexpected new line in beeline output when running with -f option
-    * [HIVE-17189] - Fix backwards incompatibility in HiveMetaStoreClient
-    * [HIVE-17472] - Drop-partition for multi-level partition fails, if data does not exist.
-    * [HIVE-17640] - Comparison of date return null if time part is provided in string.
-    * [HIVE-17831] - HiveSemanticAnalyzerHookContext does not update the HiveOperation after sem.analyze() is called
-    * [HIVE-17891] - HIVE-13076 uses create table if not exists for the postgres script
-    * [HIVE-17928] - branch-2.3 does not compile due to using incorrect storage-api version
-    * [HIVE-17948] - Hive 2.3.2 Release Planning
-    * [HIVE-17966] - org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveArrayInspector - Review
+    * [HIVE-18767] - Some alterPartitions invocations throw 'NumberFormatException: null'
+    * [HIVE-18778] - Needs to capture input/output entities in explain
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+** New Feature
+    * [HIVE-20420] - Provide a fallback authorizer when no other authorizer is in use
 
