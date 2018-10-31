@@ -1393,7 +1393,7 @@ public class TestReplicationScenariosAcrossInstances {
             .run("insert overwrite table t1 select * from t2")
             .dump(primaryDbName, tuple.lastReplicationId);
 
-    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "INSERT", tuple);
+    testMoveOptimization(primaryDbName, replicatedDbName, replicatedDbName_CM, "t1", "ADD_PARTITION", tuple);
   }
 
   @Test

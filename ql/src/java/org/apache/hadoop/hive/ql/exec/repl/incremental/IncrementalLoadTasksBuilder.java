@@ -199,7 +199,7 @@ public class IncrementalLoadTasksBuilder {
       Database database;
       try {
         database = Hive.get().getDatabase(dbName);
-        return isEventNotReplayed(database.getParameters(), dir, dumpType);
+        return database == null ? true : isEventNotReplayed(database.getParameters(), dir, dumpType);
       } catch (HiveException e) {
         //may be the db is getting created in this load
         log.debug("failed to get the database " + dbName);
