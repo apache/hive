@@ -428,6 +428,8 @@ where
   a.cint between 1000000 and 3000000
 order by a.cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain select
   *
 from alltypesorc a left outer join alltypesorc b on a.cint = b.cint and a.csmallint != a.cint
@@ -435,6 +437,8 @@ where
   a.cint between 1000000 and 3000000
 order by a.cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -452,7 +456,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
@@ -473,7 +476,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
