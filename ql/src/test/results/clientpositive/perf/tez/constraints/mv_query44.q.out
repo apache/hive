@@ -1,3 +1,24 @@
+PREHOOK: query: CREATE MATERIALIZED VIEW mv_store_sales_item_customer PARTITIONED ON (ss_sold_date_sk)
+AS
+  select ss_item_sk, ss_store_sk, ss_customer_sk,  ss_sold_date_sk, count(*) cnt, sum(ss_quantity) as ss_quantity, sum(ss_ext_wholesale_cost) as ss_ext_wholesale_cost,sum(ss_net_paid) as ss_net_paid,sum(ss_net_profit) as ss_net_profit, sum(ss_ext_sales_price) as ss_ext_sales_price, sum(ss_coupon_amt) amt, sum(ss_sales_price) ss_sales_price, sum(ss_quantity*ss_sales_price) ssales
+  from store_sales
+  group by ss_store_sk, 
+  ss_item_sk,  ss_customer_sk, ss_sold_date_sk
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv_store_sales_item_customer
+PREHOOK: Output: default@mv_store_sales_item_customer
+POSTHOOK: query: CREATE MATERIALIZED VIEW mv_store_sales_item_customer PARTITIONED ON (ss_sold_date_sk)
+AS
+  select ss_item_sk, ss_store_sk, ss_customer_sk,  ss_sold_date_sk, count(*) cnt, sum(ss_quantity) as ss_quantity, sum(ss_ext_wholesale_cost) as ss_ext_wholesale_cost,sum(ss_net_paid) as ss_net_paid,sum(ss_net_profit) as ss_net_profit, sum(ss_ext_sales_price) as ss_ext_sales_price, sum(ss_coupon_amt) amt, sum(ss_sales_price) ss_sales_price, sum(ss_quantity*ss_sales_price) ssales
+  from store_sales
+  group by ss_store_sk, 
+  ss_item_sk,  ss_customer_sk, ss_sold_date_sk
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv_store_sales_item_customer
 Warning: Shuffle Join MERGEJOIN[101][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 8' is a cross product
 PREHOOK: query: explain
 select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing

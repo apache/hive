@@ -94,8 +94,8 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
-  HiveProject(s_store_name1=[$2], s_store_id1=[$1], d_week_seq1=[$3], _o__c3=[/($5, $14)], _o__c4=[/($6, $15)], _o__c5=[/($7, $7)], _o__c6=[/($8, $16)], _o__c7=[/($9, $17)], _o__c8=[/($10, $18)], _o__c9=[/($11, $19)])
-    HiveJoin(condition=[AND(=($1, $13), =($3, $20))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(s_store_name1=[$2], s_store_id1=[$1], d_week_seq1=[$3], _o__c3=[/($5, $15)], _o__c4=[/($6, $16)], _o__c5=[/($7, $7)], _o__c6=[/($8, $17)], _o__c7=[/($9, $18)], _o__c8=[/($10, $19)], _o__c9=[/($11, $20)])
+    HiveJoin(condition=[AND(=($1, $14), =($3, -($13, 52)))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$5])
           HiveTableScan(table=[[default, store]], table:alias=[store])
@@ -113,7 +113,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
           HiveProject(d_week_seq=[$4])
             HiveFilter(condition=[AND(BETWEEN(false, $3, 1185, 1196), IS NOT NULL($4))])
               HiveTableScan(table=[[default, date_dim]], table:alias=[d])
-      HiveProject(s_store_id2=[$1], sun_sales2=[$4], mon_sales2=[$5], wed_sales2=[$6], thu_sales2=[$7], fri_sales2=[$8], sat_sales2=[$9], -=[-($2, 52)])
+      HiveProject(d_week_seq2=[$2], s_store_id2=[$1], sun_sales2=[$4], mon_sales2=[$5], wed_sales2=[$6], thu_sales2=[$7], fri_sales2=[$8], sat_sales2=[$9])
         HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(s_store_sk=[$0], s_store_id=[$1])
             HiveTableScan(table=[[default, store]], table:alias=[store])
