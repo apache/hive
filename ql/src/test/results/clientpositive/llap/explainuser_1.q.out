@@ -2251,42 +2251,36 @@ POSTHOOK: Input: default@src_cbo
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (ONE_TO_ONE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 3 llap
-      File Output Operator [FS_14]
-        Select Operator [SEL_13] (rows=83 width=178)
-          Output:["_col0","_col1"]
-          Merge Join Operator [MERGEJOIN_29] (rows=83 width=178)
-            Conds:RS_10._col0=RS_11._col0(Inner),Output:["_col1","_col2"]
-          <-Map 4 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_11]
-              PartitionCols:_col0
-              Select Operator [SEL_9] (rows=166 width=178)
-                Output:["_col0","_col1"]
-                Filter Operator [FIL_18] (rows=166 width=178)
+      Reducer 2 llap
+      File Output Operator [FS_12]
+        Merge Join Operator [MERGEJOIN_27] (rows=83 width=178)
+          Conds:RS_8._col0=RS_9._col0(Left Semi),Output:["_col0","_col1"]
+        <-Map 1 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_8]
+            PartitionCols:_col0
+            Select Operator [SEL_2] (rows=166 width=178)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_15] (rows=166 width=178)
+                predicate:(key > '9')
+                TableScan [TS_0] (rows=500 width=178)
+                  default@src_cbo,src_cbo,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+        <-Map 3 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_9]
+            PartitionCols:_col0
+            Group By Operator [GBY_7] (rows=83 width=87)
+              Output:["_col0"],keys:_col0
+              Select Operator [SEL_5] (rows=166 width=87)
+                Output:["_col0"]
+                Filter Operator [FIL_16] (rows=166 width=87)
                   predicate:(key > '9')
-                  TableScan [TS_7] (rows=500 width=178)
-                    default@src_cbo,src_cbo,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-          <-Reducer 2 [ONE_TO_ONE_EDGE] llap
-            FORWARD [RS_10]
-              PartitionCols:_col0
-              Group By Operator [GBY_5] (rows=83 width=87)
-                Output:["_col0"],keys:KEY._col0
-              <-Map 1 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_4]
-                  PartitionCols:_col0
-                  Group By Operator [GBY_3] (rows=83 width=87)
-                    Output:["_col0"],keys:key
-                    Filter Operator [FIL_17] (rows=166 width=87)
-                      predicate:(key > '9')
-                      TableScan [TS_0] (rows=500 width=87)
-                        default@src_cbo,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                  TableScan [TS_3] (rows=500 width=87)
+                    default@src_cbo,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: explain select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
