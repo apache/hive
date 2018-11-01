@@ -2210,42 +2210,36 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (GROUP)
-Reducer 3 <- Map 4 (PARTITION-LEVEL SORT), Reducer 2 (PARTITION-LEVEL SORT)
+Reducer 2 <- Map 1 (PARTITION-LEVEL SORT), Map 3 (PARTITION-LEVEL SORT)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Reducer 3
-      File Output Operator [FS_14]
-        Select Operator [SEL_13] (rows=131 width=178)
-          Output:["_col0","_col1"]
-          Join Operator [JOIN_12] (rows=131 width=178)
-            Output:["_col1","_col2"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0","1":"_col0"}
-          <-Map 4 [PARTITION-LEVEL SORT]
-            PARTITION-LEVEL SORT [RS_11]
-              PartitionCols:_col0
-              Select Operator [SEL_9] (rows=166 width=178)
-                Output:["_col0","_col1"]
-                Filter Operator [FIL_16] (rows=166 width=178)
+      Reducer 2
+      File Output Operator [FS_12]
+        Join Operator [JOIN_10] (rows=131 width=178)
+          Output:["_col0","_col1"],condition map:[{"":"{\"type\":\"Left Semi\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0","1":"_col0"}
+        <-Map 1 [PARTITION-LEVEL SORT]
+          PARTITION-LEVEL SORT [RS_8]
+            PartitionCols:_col0
+            Select Operator [SEL_2] (rows=166 width=178)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_13] (rows=166 width=178)
+                predicate:(key > '9')
+                TableScan [TS_0] (rows=500 width=178)
+                  default@src_cbo,src_cbo,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+        <-Map 3 [PARTITION-LEVEL SORT]
+          PARTITION-LEVEL SORT [RS_9]
+            PartitionCols:_col0
+            Group By Operator [GBY_7] (rows=83 width=87)
+              Output:["_col0"],keys:_col0
+              Select Operator [SEL_5] (rows=166 width=87)
+                Output:["_col0"]
+                Filter Operator [FIL_14] (rows=166 width=87)
                   predicate:(key > '9')
-                  TableScan [TS_7] (rows=500 width=178)
-                    default@src_cbo,src_cbo,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-          <-Reducer 2 [PARTITION-LEVEL SORT]
-            PARTITION-LEVEL SORT [RS_10]
-              PartitionCols:_col0
-              Group By Operator [GBY_5] (rows=83 width=87)
-                Output:["_col0"],keys:KEY._col0
-              <-Map 1 [GROUP]
-                GROUP [RS_4]
-                  PartitionCols:_col0
-                  Group By Operator [GBY_3] (rows=83 width=87)
-                    Output:["_col0"],keys:key
-                    Filter Operator [FIL_15] (rows=166 width=87)
-                      predicate:(key > '9')
-                      TableScan [TS_0] (rows=500 width=87)
-                        default@src_cbo,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                  TableScan [TS_3] (rows=500 width=87)
+                    default@src_cbo,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: explain select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey
