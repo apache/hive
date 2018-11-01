@@ -155,15 +155,14 @@ POSTHOOK: Input: default@othertlb
 POSTHOOK: Output: default@acidtlb
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0]])
-  HiveProject(row__id=[$2], a=[$1], _o__c2=[450])
-    HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(c=[$0])
-        HiveAggregate(group=[{0}])
-          HiveFilter(condition=[<($0, 65)])
-            HiveTableScan(table=[[default, othertlb]], table:alias=[othertlb])
+  HiveProject(row__id=[$1], a=[$0], _o__c2=[450])
+    HiveSemiJoin(condition=[=($0, $2)], joinType=[inner])
       HiveProject(a=[$0], ROW__ID=[$4])
         HiveFilter(condition=[<($0, 65)])
           HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
+      HiveProject(c=[$0], d=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4])
+        HiveFilter(condition=[<($0, 65)])
+          HiveTableScan(table=[[default, othertlb]], table:alias=[othertlb])
 
 PREHOOK: query: update acidtlb set b=450
 where a in (select c from othertlb where c < 65)
