@@ -39,6 +39,7 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 
 public class TezExternalSessionState extends TezSessionState {
   private String externalAppId;
@@ -104,7 +105,7 @@ public class TezExternalSessionState extends TezSessionState {
       throw new IOException(e);
     }
 
-    // TODO## blocked on Tez release; session.getClient(ApplicationId.fromString(externalAppId));
+    session.getClient(ApplicationId.fromString(externalAppId));
     LOG.info("Started an external session; client name {}, app ID {}",
         session.getClientName(), externalAppId);
     setTezClient(session);

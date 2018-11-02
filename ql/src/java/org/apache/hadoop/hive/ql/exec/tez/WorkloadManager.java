@@ -188,7 +188,7 @@ public class WorkloadManager extends AbstractTriggerValidator
   /** Called once, when HS2 initializes. */
   public static WorkloadManager create(String yarnQueue, HiveConf conf,
       WMFullResourcePlan plan, boolean recoverAms)
-    throws ExecutionException, InterruptedException {
+    throws Exception {
     assert INSTANCE == null;
     // We could derive the expected number of AMs to pass in.
     // Note: we pass a null token here; the tokens to talk to plugin endpoints will only be
@@ -201,7 +201,7 @@ public class WorkloadManager extends AbstractTriggerValidator
   @VisibleForTesting
   WorkloadManager(LlapPluginEndpointClientImpl amComm, String yarnQueue, HiveConf conf,
       QueryAllocationManager qam, WMFullResourcePlan plan, boolean recoverAms)
-          throws ExecutionException, InterruptedException {
+    throws Exception {
     this.yarnQueue = yarnQueue;
     this.conf = conf;
     this.totalQueryParallelism = determineQueryParallelism(plan);
@@ -239,7 +239,7 @@ public class WorkloadManager extends AbstractTriggerValidator
     }
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      externalSessions = new TezExternalSessionsRegistryClient(conf);
+      externalSessions = TezExternalSessionsRegistryClient.getClient(conf);
     } else {
       externalSessions = null;
     }

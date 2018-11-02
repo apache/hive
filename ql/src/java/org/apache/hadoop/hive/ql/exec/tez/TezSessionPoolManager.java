@@ -177,7 +177,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
     this.hasInitialSessions = numSessionsTotal > 0;
   }
 
-  public void setupNonPool(HiveConf conf) {
+  public void setupNonPool(HiveConf conf) throws Exception {
     this.initConf = conf;
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
     llapQueue = new Semaphore(numConcurrentLlapQueries, true);
@@ -196,7 +196,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
     }
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      externalSessions = new TezExternalSessionsRegistryClient(conf);
+      externalSessions = TezExternalSessionsRegistryClient.getClient(conf);
     }
 
     restrictedConfig = new RestrictedConfigChecker(conf);

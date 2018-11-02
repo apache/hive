@@ -185,12 +185,12 @@ public class TestWorkloadManager {
     private SettableFuture<Boolean> failedWait;
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
-        QueryAllocationManager qam) throws ExecutionException, InterruptedException {
+        QueryAllocationManager qam) throws Exception {
       super(null, yarnQueue, conf, qam, createDummyPlan(numSessions), false);
     }
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf,
-        QueryAllocationManager qam, WMFullResourcePlan plan) throws ExecutionException, InterruptedException {
+        QueryAllocationManager qam, WMFullResourcePlan plan) throws Exception {
       super(null, yarnQueue, conf, qam, plan, false);
     }
 
