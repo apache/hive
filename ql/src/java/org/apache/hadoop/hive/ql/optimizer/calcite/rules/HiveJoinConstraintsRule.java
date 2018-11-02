@@ -59,6 +59,7 @@ import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -220,12 +221,12 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     }
 
     // 2) Check whether this join can be rewritten or removed
-    Pair<Boolean, List<RexNode>> r = HiveRelOptUtil.isRewritablePKFKJoin(call.builder(),
+    RewritablePKFKJoinInfo r = HiveRelOptUtil.isRewritablePKFKJoin(
         join, leftInput == fkInput, call.getMetadataQuery());
 
     // 3) If it is the only condition, we can trigger the rewriting
-    if (r.left) {
-      List<RexNode> nullableNodes = r.right;
+    if (r.rewritable) {
+      List<RexNode> nullableNodes = r.nullableNodes;
       // If we reach here, we trigger the transform
       if (mode == Mode.REMOVE) {
         if (rightInputPotentialFK) {
