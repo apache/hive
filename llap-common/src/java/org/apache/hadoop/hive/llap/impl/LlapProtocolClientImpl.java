@@ -23,6 +23,7 @@ import java.security.PrivilegedExceptionAction;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -71,6 +72,18 @@ public class LlapProtocolClientImpl implements LlapProtocolBlockingPB {
       this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
     } else {
       this.socketFactory = socketFactory;
+    }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.RegisterDagResponseProto registerDag(
+      RpcController controller,
+      LlapDaemonProtocolProtos.RegisterDagRequestProto request)
+      throws ServiceException {
+    try {
+      return getProxy().registerDag(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
     }
   }
 

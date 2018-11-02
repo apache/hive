@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.llap.daemon;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -28,6 +29,10 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFra
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 
 public interface ContainerRunner {
+
+  LlapDaemonProtocolProtos.RegisterDagResponseProto registerDag(
+      LlapDaemonProtocolProtos.RegisterDagRequestProto request)
+      throws IOException;
 
   SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws IOException;
 

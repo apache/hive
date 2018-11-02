@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
@@ -169,6 +170,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   /* List of registered applications */
   private final ConcurrentMap<String, Integer> registeredApps = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, Integer> registeredDirectories = new ConcurrentHashMap<>();
   /* Maps application identifiers (jobIds) to the associated user for the app */
   private final ConcurrentMap<String,String> userRsrc;
   private JobTokenSecretManager secretManager;
@@ -433,18 +435,21 @@ public class ShuffleHandler implements AttemptRegistrationListener {
    * Register an application and it's associated credentials and user information.
    *
    * This method and unregisterDag must be synchronized externally to prevent races in shuffle token registration/unregistration
+   * This method may be called several times but we can only set the registeredDirectories once which will be
+   * in the first call in which they are not null.
    *
    * @param applicationIdString
    * @param dagIdentifier
    * @param appToken
    * @param user
+   * @param appDirs
    */
   public void registerDag(String applicationIdString, int dagIdentifier,
                           Token<JobTokenIdentifier> appToken,
                           String user, String[] appDirs) {
     Integer registeredDagIdentifier = registeredApps.putIfAbsent(applicationIdString, dagIdentifier);
     // App never seen, or previous dag has been unregistered.
-    if (registeredDagIdentifier == null) {
+    if (registeredDagIdentifier == null && appToken != null ) {
       recordJobShuffleInfo(applicationIdString, user, appToken);
     }
     // Register the new dag identifier, if that's not the one currently registered.
@@ -453,6 +458,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       registeredApps.put(applicationIdString, dagIdentifier);
       // Don't need to recordShuffleInfo since the out of sync unregister will not remove the
       // credentials
+    }
+
+    if (appDirs == null) {
+      return;
+    }
+    registeredDagIdentifier  = registeredDirectories.put(applicationIdString, dagIdentifier);
+    if (registeredDagIdentifier != null && !registeredDagIdentifier.equals(dagIdentifier)) {
+      registeredDirectories.put(applicationIdString, dagIdentifier);
     }
     // First time registration, or new register comes in before the previous unregister.
     if (registeredDagIdentifier == null || !registeredDagIdentifier.equals(dagIdentifier)) {
@@ -487,6 +500,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     // be synchronized, hence the following check is sufficient.
     if (currentDagIdentifier != null && currentDagIdentifier.equals(dagIdentifier)) {
       registeredApps.remove(applicationIdString);
+      registeredDirectories.remove(applicationIdString);
       removeJobShuffleInfo(applicationIdString);
     }
     // Unregister for the dirWatcher for the specific dagIdentifier in either case.
@@ -512,6 +526,16 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     if (dirWatcher != null) {
       dirWatcher.stop();
     }
+  }
+
+  @VisibleForTesting
+  public Map getRegisteredApps() {
+    return new HashMap<>(registeredApps);
+  }
+
+  @VisibleForTesting
+  public Map getRegisteredDirectories() {
+    return new HashMap<>(registeredDirectories);
   }
 
   protected Shuffle getShuffle(Configuration conf) {

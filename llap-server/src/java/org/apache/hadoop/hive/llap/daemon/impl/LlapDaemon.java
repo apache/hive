@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -291,9 +292,22 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, waitQueueSize,
-        enablePreemption, localDirs, this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
-        amReporter, executorClassLoader, daemonId, fsUgiFactory, socketFactory);
+
+    QueryTracker queryTracker = new QueryTracker(daemonConf, localDirs,
+        daemonId.getClusterString());
+
+    String waitQueueSchedulerClassName = HiveConf.getVar(
+        daemonConf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
+
+    Scheduler<TaskRunnerCallable> executorService = new TaskExecutorService(numExecutors, waitQueueSize,
+        waitQueueSchedulerClassName, enablePreemption, executorClassLoader, metrics, null);
+
+    addIfService(queryTracker);
+    addIfService(executorService);
+
+    this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors,
+        this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
+        amReporter, queryTracker, executorService, daemonId, fsUgiFactory, socketFactory);
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
@@ -549,6 +563,13 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       }
       System.exit(-1);
     }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.RegisterDagResponseProto registerDag(
+      LlapDaemonProtocolProtos.RegisterDagRequestProto request)
+      throws IOException {
+    return containerRunner.registerDag(request);
   }
 
   @Override

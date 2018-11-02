@@ -52,6 +52,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RegisterDagRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RegisterDagResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
@@ -68,7 +70,6 @@ import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.SourceStateTracker;
 import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
 import org.apache.hadoop.ipc.RPC;
@@ -304,6 +305,48 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   public interface OperationCallback<ResultType, CtxType> {
     void setDone(CtxType ctx, ResultType result);
     void setError(CtxType ctx, Throwable t);
+  }
+
+  /**
+   * @param node
+   * @param callback
+   * @return if it was possible to attemp the registration. Sometimes it's
+   * not possible because is a dag is not running
+   */
+  public boolean registerDag(NodeInfo node, final OperationCallback<QueryIdentifierProto, Void> callback) {
+    RegisterDagRequestProto.Builder builder = RegisterDagRequestProto.newBuilder();
+    if (currentQueryIdentifierProto == null) {
+      return false;
+    }
+    try {
+      RegisterDagRequestProto request = builder
+          .setQueryIdentifier(currentQueryIdentifierProto)
+          .setUser(user)
+          .setCredentialsBinary(
+              getCredentials(getContext()
+                  .getCurrentDagInfo().getCredentials())).build();
+      communicator.registerDag(request, node.getHost(), node.getRpcPort(),
+          new LlapProtocolClientProxy.ExecuteRequestCallback<RegisterDagResponseProto>() {
+            @Override
+            public void setResponse(RegisterDagResponseProto response) {
+              callback.setDone(null, currentQueryIdentifierProto);
+            }
+
+            @Override
+            public void indicateError(Throwable t) {
+              LOG.info("Error registering dag with"
+                  + " appId=" + currentQueryIdentifierProto.getApplicationIdString()
+                  + " dagId=" + currentQueryIdentifierProto.getDagIndex()
+                  + " to node " + node.getHost());
+              if (!processSendError(t)) {
+                callback.setError(null, t);
+              }
+            }
+          });
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return true;
   }
 
   public <T> void startUpdateGuaranteed(TezTaskAttemptID attemptId, NodeInfo assignedNode,
@@ -795,14 +838,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     Preconditions.checkState(currentQueryIdentifierProto.getDagIndex() ==
         taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
-    ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
-    if (credentialsBinary == null) {
-      credentialsBinary = serializeCredentials(getContext().getCurrentDagInfo().getCredentials());
-      credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
-    } else {
-      credentialsBinary = credentialsBinary.duplicate();
-    }
-    builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
+
+
+    builder.setCredentialsBinary(
+        getCredentials(getContext().getCurrentDagInfo().getCredentials()));
     builder.setWorkSpec(VertexOrBinary.newBuilder().setVertex(Converters.constructSignableVertexSpec(
         taskSpec, currentQueryIdentifierProto, getTokenIdentifier(), user, hiveQueryId)).build());
     // Don't call builder.setWorkSpecSignature() - Tez doesn't sign fragments
@@ -814,15 +853,16 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     return builder.build();
   }
 
-  private ByteBuffer serializeCredentials(Credentials credentials) throws IOException {
-    Credentials containerCredentials = new Credentials();
-    containerCredentials.addAll(credentials);
-    DataOutputBuffer containerTokens_dob = new DataOutputBuffer();
-    containerCredentials.writeTokenStorageToStream(containerTokens_dob);
-    return ByteBuffer.wrap(containerTokens_dob.getData(), 0, containerTokens_dob.getLength());
+  private ByteString getCredentials(Credentials credentials) throws IOException {
+    ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
+    if (credentialsBinary == null) {
+      credentialsBinary = LlapTezUtils.serializeCredentials(credentials);
+      credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
+    } else {
+      credentialsBinary = credentialsBinary.duplicate();
+    }
+    return ByteString.copyFrom(credentialsBinary);
   }
-
-
 
   protected class LlapTaskUmbilicalProtocolImpl implements LlapTaskUmbilicalProtocol {
 
