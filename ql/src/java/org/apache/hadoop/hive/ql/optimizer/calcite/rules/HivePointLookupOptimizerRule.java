@@ -20,25 +20,24 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
@@ -59,15 +58,18 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
+/**
+ * This optimization attempts to identify and close expanded INs.
+ *
+ * Basically:
+ * <pre>
+ * (c) IN ( v1, v2, ...) &lt;=&gt; c1=v1 || c1=v2 || ...
+ * </pre>
+ * If c is struct; then c=v1 is a group of anded equations.
+ */
 public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
-/**
- * This optimization will take a Filter or expression, and if its predicate contains
- * an OR operator whose children are constant equality expressions, it will try
- * to generate an IN clause (which is more efficient). If the OR operator contains
- * AND operator children, the optimization might generate an IN clause that uses
- * structs.
- */
+  /** Rule adapter to apply the transformation to Filter conditions. */
   public static class FilterCondition extends HivePointLookupOptimizerRule {
     public FilterCondition (int minNumORClauses) {
       super(operand(Filter.class, any()), minNumORClauses);
@@ -78,22 +80,20 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final Filter filter = call.rel(0);
       final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
-      analyzeCondition(call , rexBuilder, filter, condition);
-    }
 
-    @Override protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
-      final Filter filter  = (Filter) node;
-      return filter.copy(filter.getTraitSet(), filter.getInput(), newCondition);
+      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+
+      // If we could not transform anything, we bail out
+      if (newCondition.toString().equals(condition.toString())) {
+        return;
+      }
+      RelNode newNode = filter.copy(filter.getTraitSet(), filter.getInput(), newCondition);
+
+      call.transformTo(newNode);
     }
   }
 
-/**
- * This optimization will take a Join or expression, and if its join condition contains
- * an OR operator whose children are constant equality expressions, it will try
- * to generate an IN clause (which is more efficient). If the OR operator contains
- * AND operator children, the optimization might generate an IN clause that uses
- * structs.
- */
+  /** Rule adapter to apply the transformation to Join conditions. */
   public static class JoinCondition extends HivePointLookupOptimizerRule {
     public JoinCondition (int minNumORClauses) {
       super(operand(Join.class, any()), minNumORClauses);
@@ -104,18 +104,55 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final Join join = call.rel(0);
       final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
       final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
-      analyzeCondition(call , rexBuilder, join, condition);
+
+      RexNode newCondition = analyzeRexNode(rexBuilder, condition);
+
+      // If we could not transform anything, we bail out
+      if (newCondition.toString().equals(condition.toString())) {
+        return;
+      }
+
+      RelNode newNode = join.copy(join.getTraitSet(),
+          newCondition,
+          join.getLeft(),
+          join.getRight(),
+          join.getJoinType(),
+          join.isSemiJoinDone());
+
+      call.transformTo(newNode);
+    }
+  }
+
+  /** Rule adapter to apply the transformation to Projections. */
+  public static class ProjectionExpressions extends HivePointLookupOptimizerRule {
+    public ProjectionExpressions(int minNumORClauses) {
+      super(operand(Project.class, any()), minNumORClauses);
     }
 
-    @Override protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
-      final Join join = (Join) node;
-      return join.copy(join.getTraitSet(),
-              newCondition,
-              join.getLeft(),
-              join.getRight(),
-              join.getJoinType(),
-              join.isSemiJoinDone());
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final Project project = call.rel(0);
+      boolean changed = false;
+      final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
+      List<RexNode> newProjects = new ArrayList<>();
+      for (RexNode oldNode : project.getProjects()) {
+        RexNode newNode = analyzeRexNode(rexBuilder, oldNode);
+        if (!newNode.toString().equals(oldNode.toString())) {
+          changed = true;
+          newProjects.add(newNode);
+        } else {
+          newProjects.add(oldNode);
+        }
+      }
+      if (!changed) {
+        return;
+      }
+      Project newProject = project.copy(project.getTraitSet(), project.getInput(), newProjects,
+          project.getRowType(), project.getFlags());
+      call.transformTo(newProject);
+
     }
+
   }
 
   protected static final Logger LOG = LoggerFactory.getLogger(HivePointLookupOptimizerRule.class);
@@ -123,37 +160,21 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
   // Minimum number of OR clauses needed to transform into IN clauses
   protected final int minNumORClauses;
 
-  protected abstract RelNode copyNode(AbstractRelNode node, RexNode newCondition);
-
   protected HivePointLookupOptimizerRule(
     RelOptRuleOperand operand, int minNumORClauses) {
     super(operand);
     this.minNumORClauses = minNumORClauses;
   }
 
-  public void analyzeCondition(RelOptRuleCall call,
-          RexBuilder rexBuilder,
-          AbstractRelNode node,
-          RexNode condition) {
-
+  public RexNode analyzeRexNode(RexBuilder rexBuilder, RexNode condition) {
     // 1. We try to transform possible candidates
-    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, node,
-            minNumORClauses);
+    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, minNumORClauses);
     RexNode newCondition = transformIntoInClause.apply(condition);
 
     // 2. We merge IN expressions
     RexMergeInClause mergeInClause = new RexMergeInClause(rexBuilder);
     newCondition = mergeInClause.apply(newCondition);
-
-    // 3. If we could not transform anything, we bail out
-    if (newCondition.toString().equals(condition.toString())) {
-      return;
-    }
-
-    // 4. We create the Filter/Join with the new condition
-    RelNode newNode = copyNode(node, newCondition);
-
-    call.transformTo(newNode);
+    return newCondition;
   }
 
 
@@ -162,11 +183,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
    */
   protected static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
-    private final AbstractRelNode nodeOp;
     private final int minNumORClauses;
 
-    RexTransformIntoInClause(RexBuilder rexBuilder, AbstractRelNode nodeOp, int minNumORClauses) {
-      this.nodeOp = nodeOp;
+    RexTransformIntoInClause(RexBuilder rexBuilder, int minNumORClauses) {
       this.rexBuilder = rexBuilder;
       this.minNumORClauses = minNumORClauses;
     }
@@ -180,7 +199,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         case OR:
           try {
             RexNode newNode = transformIntoInClauseCondition(rexBuilder,
-                nodeOp.getRowType(), call, minNumORClauses);
+                call, minNumORClauses);
             if (newNode != null) {
               return newNode;
             }
@@ -196,18 +215,56 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
 
     /**
-     * Represents a simple contraint.
+     * This class just wraps around a RexNode enables equals/hashCode based on toString.
+     *
+     * After CALCITE-2632 this might not be needed anymore */
+    static class RexNodeRef {
+
+      public static Comparator<RexNodeRef> COMPARATOR =
+          (RexNodeRef o1, RexNodeRef o2) -> o1.node.toString().compareTo(o2.node.toString());
+      private RexNode node;
+
+      public RexNodeRef(RexNode node) {
+        this.node = node;
+      }
+
+      public RexNode getRexNode() {
+        return node;
+      }
+
+      @Override
+      public int hashCode() {
+        return node.toString().hashCode();
+      }
+
+      @Override
+      public boolean equals(Object o) {
+        if (o instanceof RexNodeRef) {
+          RexNodeRef otherRef = (RexNodeRef) o;
+          return node.toString().equals(otherRef.node.toString());
+        }
+        return false;
+      }
+
+      @Override
+      public String toString() {
+        return "ref for:" + node.toString();
+      }
+    }
+    /**
+     * Represents a contraint.
      *
      * Example: a=1
+     * substr(a,1,2) = concat('asd','xxx')
      */
     static class Constraint {
 
-      private RexLiteral literal;
-      private RexInputRef inputRef;
+      private RexNode exprNode;
+      private RexNode constNode;
 
-      public Constraint(RexInputRef inputRef, RexLiteral literal) {
-        this.literal = literal;
-        this.inputRef = inputRef;
+      public Constraint(RexNode exprNode, RexNode constNode) {
+        this.exprNode = constNode;
+        this.constNode = exprNode;
       }
 
       /**
@@ -223,21 +280,31 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         }
         RexNode opA = call.operands.get(0);
         RexNode opB = call.operands.get(1);
-        if (opA instanceof RexLiteral && opB instanceof RexInputRef) {
-          RexLiteral rexLiteral = (RexLiteral) opA;
-          RexInputRef rexInputRef = (RexInputRef) opB;
-          return new Constraint(rexInputRef, rexLiteral);
+        if (RexUtil.isNull(opA) || RexUtil.isNull(opB)) {
+          // dont try to compare nulls
+          return null;
         }
-        if (opA instanceof RexInputRef && opB instanceof RexLiteral) {
-          RexLiteral rexLiteral = (RexLiteral) opB;
-          RexInputRef rexInputRef = (RexInputRef) opA;
-          return new Constraint(rexInputRef, rexLiteral);
+        if (isConstExpr(opA) && isColumnExpr(opB)) {
+          return new Constraint(opB, opA);
+        }
+        if (isColumnExpr(opA) && isConstExpr(opB)) {
+          return new Constraint(opA, opB);
         }
         return null;
       }
 
-      public RexInputRef getKey() {
-        return inputRef;
+      private static boolean isColumnExpr(RexNode node) {
+        return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).size() > 0
+            && HiveCalciteUtil.isDeterministic(node);
+      }
+
+      private static boolean isConstExpr(RexNode node) {
+        return !node.getType().isStruct() && HiveCalciteUtil.getInputRefs(node).size() == 0
+            && HiveCalciteUtil.isDeterministic(node);
+      }
+
+      public RexNodeRef getKey() {
+        return new RexNodeRef(constNode);
       }
 
     }
@@ -254,17 +321,17 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
      *
      */
     static class ConstraintGroup {
+      public static final Function<ConstraintGroup, Set<RexNodeRef>> KEY_FUNCTION =
+          new Function<ConstraintGroup, Set<RexNodeRef>>() {
 
-      public static final Function<ConstraintGroup, Set<RexInputRef>> KEY_FUNCTION = new Function<ConstraintGroup, Set<RexInputRef>>() {
-
-        @Override
-        public Set<RexInputRef> apply(ConstraintGroup a) {
-          return a.key;
-        }
-      };
-      private Map<RexInputRef, Constraint> constraints = new HashMap<>();
+            @Override
+            public Set<RexNodeRef> apply(ConstraintGroup cg) {
+              return cg.key;
+            }
+          };
+      private Map<RexNodeRef, Constraint> constraints = new HashMap<>();
       private RexNode originalRexNode;
-      private final Set<RexInputRef> key;
+      private final Set<RexNodeRef> key;
 
       public ConstraintGroup(RexNode rexNode) {
         originalRexNode = rexNode;
@@ -289,21 +356,21 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         key = constraints.keySet();
       }
 
-      public List<RexNode> getValuesInOrder(List<RexInputRef> columns) throws SemanticException {
+      public List<RexNode> getValuesInOrder(List<RexNodeRef> columns) throws SemanticException {
         List<RexNode> ret = new ArrayList<>();
-        for (RexInputRef rexInputRef : columns) {
+        for (RexNodeRef rexInputRef : columns) {
           Constraint constraint = constraints.get(rexInputRef);
           if (constraint == null) {
             throw new SemanticException("Unable to find constraint which was earlier added.");
           }
-          ret.add(constraint.literal);
+          ret.add(constraint.exprNode);
         }
         return ret;
       }
     }
 
-    private RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RelDataType inputSchema,
-            RexNode condition, int minNumORClauses) throws SemanticException {
+    private RexNode transformIntoInClauseCondition(RexBuilder rexBuilder, RexNode condition,
+            int minNumORClauses) throws SemanticException {
       assert condition.getKind() == SqlKind.OR;
 
       ImmutableList<RexNode> operands = RexUtil.flattenOr(((RexCall) condition).getOperands());
@@ -318,10 +385,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         allNodes.add(m);
       }
 
-      Multimap<Set<RexInputRef>, ConstraintGroup> assignmentGroups =
+      Multimap<Set<RexNodeRef>, ConstraintGroup> assignmentGroups =
           Multimaps.index(allNodes, ConstraintGroup.KEY_FUNCTION);
 
-      for (Entry<Set<RexInputRef>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
+      for (Entry<Set<RexNodeRef>, Collection<ConstraintGroup>> sa : assignmentGroups.asMap().entrySet()) {
         // skip opaque
         if (sa.getKey().size() == 0) {
           continue;
@@ -351,13 +418,15 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     }
 
-    private RexNode buildInFor(Set<RexInputRef> set, Collection<ConstraintGroup> value) throws SemanticException {
+    private RexNode buildInFor(Set<RexNodeRef> set, Collection<ConstraintGroup> value) throws SemanticException {
 
-      List<RexInputRef> columns = new ArrayList<RexInputRef>();
+      List<RexNodeRef> columns = new ArrayList<>();
       columns.addAll(set);
+      columns.sort(RexNodeRef.COMPARATOR);
       List<RexNode >operands = new ArrayList<>();
 
-      operands.add(useStructIfNeeded(columns));
+      List<RexNode> columnNodes = columns.stream().map(n -> n.getRexNode()).collect(Collectors.toList());
+      operands.add(useStructIfNeeded(columnNodes));
       for (ConstraintGroup node : value) {
         List<RexNode> values = node.getValuesInOrder(columns);
         operands.add(useStructIfNeeded(values));
