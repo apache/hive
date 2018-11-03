@@ -136,11 +136,14 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     if (SqlKind.AVG_AGG_FUNCTIONS.contains(kind)) {
       return true;
     }
+    if (kind == SqlKind.SUM0) {
+      return true;
+    }
     return false;
   }
 
   /**
-   * Reduces all calls to AVG, STDDEV_POP, STDDEV_SAMP, VAR_POP, VAR_SAMP in
+   * Reduces all calls to SUM0, AVG, STDDEV_POP, STDDEV_SAMP, VAR_POP, VAR_SAMP in
    * the aggregates list to.
    *
    * <p>It handles newly generated common subexpressions since this was done
@@ -205,6 +208,9 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final SqlKind kind = oldCall.getAggregation().getKind();
     if (isReducible(kind)) {
       switch (kind) {
+      case SUM0:
+        // replace original SUM0(x) with COALESCE(SUM(x), 0)
+        return reduceSum0(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs);
       case AVG:
         // replace original AVG(x) with SUM(x) / COUNT(x)
         return reduceAvg(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs);
@@ -271,6 +277,50 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
         oldCall.filterArg,
         aggFunction.inferReturnType(binding),
         null);
+  }
+
+  private RexNode reduceSum0(
+      Aggregate oldAggRel,
+      AggregateCall oldCall,
+      List<AggregateCall> newCalls,
+      Map<AggregateCall, RexNode> aggCallMapping,
+      List<RexNode> inputExprs) {
+    final int nGroups = oldAggRel.getGroupCount();
+    final RexBuilder rexBuilder = oldAggRel.getCluster().getRexBuilder();
+    final RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
+    final int iAvgInput = oldCall.getArgList().get(0);
+    final RelDataType sum0InputType = typeFactory.createTypeWithNullability(
+        getFieldType(oldAggRel.getInput(), iAvgInput), true);
+    final RelDataType sumReturnType = getSumReturnType(
+        rexBuilder.getTypeFactory(), sum0InputType, oldCall.getType());
+    final AggregateCall sumCall =
+        AggregateCall.create(
+            new HiveSqlSumAggFunction(
+                oldCall.isDistinct(),
+                ReturnTypes.explicit(sumReturnType),
+                oldCall.getAggregation().getOperandTypeInference(),
+                oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
+            oldCall.isDistinct(),
+            oldCall.isApproximate(),
+            oldCall.getArgList(),
+            oldCall.filterArg,
+            oldAggRel.getGroupCount(),
+            oldAggRel.getInput(),
+            null,
+            null);
+
+    RexNode refSum =
+        rexBuilder.addAggCall(sumCall,
+            nGroups,
+            oldAggRel.indicator,
+            newCalls,
+            aggCallMapping,
+            ImmutableList.of(sum0InputType));
+    refSum = rexBuilder.ensureType(oldCall.getType(), refSum, true);
+
+    final RexNode coalesce = rexBuilder.makeCall(
+        SqlStdOperatorTable.COALESCE, refSum, rexBuilder.makeZeroLiteral(refSum.getType()));
+    return rexBuilder.makeCast(oldCall.getType(), coalesce);
   }
 
   private RexNode reduceAvg(
