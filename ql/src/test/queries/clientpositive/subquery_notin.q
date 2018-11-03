@@ -3,6 +3,8 @@
 --! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
 
+-- SORT_QUERY_RESULTS
+
 -- non agg, non corr
 explain
 select * 
