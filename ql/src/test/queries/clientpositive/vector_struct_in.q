@@ -1,4 +1,4 @@
-set hive.cbo.enable=false;
+set hive.cbo.enable=true;
 set hive.explain.user=false;
 set hive.tez.dynamic.partition.pruning=false;
 set hive.vectorized.execution.enabled=true;

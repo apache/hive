@@ -432,7 +432,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (_col2 <= 0.1) (type: boolean)
+                  predicate: (_col2 <= 0.1D) (type: boolean)
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col2 (type: double)
@@ -491,7 +491,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col2 <= 0.1) and (_col2 > 0.1)) (type: boolean)
+                  predicate: ((_col2 <= 0.1D) and (_col2 > 0.1D)) (type: boolean)
                   Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col2 (type: double)
@@ -644,7 +644,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (_col2 <= 0.1) (type: boolean)
+                  predicate: (_col2 <= 0.1D) (type: boolean)
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col2 (type: double)
@@ -703,14 +703,14 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (_col2 <= 0.1) (type: boolean)
+                  predicate: (_col2 <= 0.1D) (type: boolean)
                   Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col2 (type: double)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
-                      predicate: (_col1 > 0.1) (type: boolean)
+                      predicate: (_col1 > 0.1D) (type: boolean)
                       Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
                       Limit
                         Number of rows: 20
