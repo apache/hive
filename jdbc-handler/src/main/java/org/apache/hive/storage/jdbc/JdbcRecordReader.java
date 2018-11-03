@@ -82,8 +82,7 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
       }
     }
     catch (Exception e) {
-      LOGGER.error("An error occurred while reading the next record from DB.", e);
-      return false;
+      throw new IOException(e);
     }
   }
 
