@@ -15,6 +15,7 @@ select key from masking_test_subq_n3 where key > 0;
 explain select value from masking_test_subq_n3 where key > 0;
 select value from masking_test_subq_n3 where key > 0;
 
+-- SORT_QUERY_RESULTS
 explain select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key);
 select * from masking_test_subq_n3 join srcpart on (masking_test_subq_n3.key = srcpart.key);
 

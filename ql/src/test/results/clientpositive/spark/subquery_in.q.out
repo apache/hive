@@ -20,10 +20,32 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 3 <- Map 4 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  filterExpr: (key > '9') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (key > '9') (type: boolean)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -36,57 +58,64 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: s1
-                  filterExpr: (key > '9') (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key > '9') (type: boolean)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                       Group By Operator
                         keys: _col0 (type: string)
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
+=======
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+=======
+                        value expressions: _col1 (type: string)
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: _col1 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1090,14 +1119,42 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 2)
-        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Map 6 (PARTITION-LEVEL SORT, 2), Reducer 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 7 (PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Map 4 (GROUP, 2)
+        Reducer 7 <- Map 6 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                  alias: li
+                  filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: int)
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   alias: lineitem
                   filterExpr: l_partkey is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
@@ -1120,6 +1177,8 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
+=======
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   alias: li
                   filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
@@ -1138,6 +1197,26 @@ STAGE PLANS:
                         Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int), _col2 (type: int)
             Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: lineitem
+                  filterExpr: l_partkey is not null (type: boolean)
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: l_partkey is not null (type: boolean)
+                    Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: l_partkey (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -1149,11 +1228,15 @@ STAGE PLANS:
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int)
-                      outputColumnNames: _col0
+                      outputColumnNames: l_orderkey
                       Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
+<<<<<<< HEAD
                         keys: _col0 (type: int)
                         minReductionHashAggr: 0.99
+=======
+                        keys: l_orderkey (type: int)
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
@@ -1165,6 +1248,7 @@ STAGE PLANS:
                           Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 2 
+<<<<<<< HEAD
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -1179,34 +1263,40 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+=======
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+<<<<<<< HEAD
+                  key expressions: _col1 (type: int)
+                  null sort order: a
+=======
+                  key expressions: _col0 (type: int)
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: int), _col2 (type: int)
+        Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: int)
-                  1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col1 (type: int)
-                  null sort order: a
-                  sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
-                  Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col3 (type: int)
-        Reducer 4 
-            Reduce Operator Tree:
-              Join Operator
-                condition map:
-                     Left Semi Join 0 to 1
-                keys:
-                  0 _col1 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col3
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col3 (type: int)
+                  expressions: _col1 (type: int), _col2 (type: int)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 60 Data size: 7257 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1216,6 +1306,32 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -5943,7 +6059,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_1, $hdt$_2]] in Work 'Reducer 4' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Work 'Reducer 5' is a cross product
 PREHOOK: query: explain select * from part where p_size IN (select pp.p_size from part p join part pp on pp.p_type = p.p_type where part.p_type <> p.p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -5961,9 +6077,9 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 1), Reducer 7 (PARTITION-LEVEL SORT, 1)
-        Reducer 5 <- Map 8 (PARTITION-LEVEL SORT, 2), Reducer 4 (PARTITION-LEVEL SORT, 2)
-        Reducer 7 <- Map 6 (GROUP, 2)
+        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 2), Map 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 5 <- Reducer 4 (PARTITION-LEVEL SORT, 1), Reducer 8 (PARTITION-LEVEL SORT, 1)
+        Reducer 8 <- Map 7 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -6001,23 +6117,77 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
+<<<<<<< HEAD
                         null sort order: 
                         sort order: 
+=======
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col1 (type: string)
+                        value expressions: _col0 (type: string)
             Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: part
                   filterExpr: p_type is not null (type: boolean)
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+                  alias: part
+                  filterExpr: p_type is not null (type: boolean)
+=======
+                  alias: pp
+                  filterExpr: (p_size is not null and p_type is not null) (type: boolean)
+>>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+                  alias: pp
+                  filterExpr: (p_type is not null and p_size is not null) (type: boolean)
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (p_size is not null and p_type is not null) (type: boolean)
+                    Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
+                    Group By Operator
+                      keys: p_type (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+=======
+                    Select Operator
+                      expressions: p_type (type: string), p_size (type: int)
+                      outputColumnNames: _col0, _col1
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
+                      Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized
+        Map 7 
+            Map Operator Tree:
+                TableScan
+<<<<<<< HEAD
+                  alias: pp
+                  filterExpr: (p_size is not null and p_type is not null) (type: boolean)
+=======
+                  alias: part
+                  filterExpr: p_type is not null (type: boolean)
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: p_type (type: string)
-                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
@@ -6028,27 +6198,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-        Map 8 
-            Map Operator Tree:
-                TableScan
-                  alias: pp
-                  filterExpr: (p_size is not null and p_type is not null) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (p_size is not null and p_type is not null) (type: boolean)
-                    Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: p_type (type: string), p_size (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int)
-            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -6058,10 +6207,10 @@ STAGE PLANS:
                   0 _col4 (type: string), _col5 (type: int)
                   1 _col0 (type: string), _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 408 Data size: 99397 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 400 Data size: 98341 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 408 Data size: 99397 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 400 Data size: 98341 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -6072,6 +6221,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2
@@ -6086,12 +6236,23 @@ STAGE PLANS:
                     Map-reduce partition columns: _col1 (type: string)
                     Statistics: Num rows: 338 Data size: 82147 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: string)
+=======
+                  0 _col1 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col3
+                Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string), _col3 (type: int)
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
         Reducer 5 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
+<<<<<<< HEAD
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col2, _col4
@@ -6104,7 +6265,19 @@ STAGE PLANS:
                     keys: _col0 (type: string), _col1 (type: int)
                     minReductionHashAggr: 0.99
                     mode: hash
+=======
+                  0 
+                  1 
+                outputColumnNames: _col0, _col3, _col4
+                Statistics: Num rows: 364 Data size: 89401 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col4 <> _col0) (type: boolean)
+                  Statistics: Num rows: 364 Data size: 89401 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col4 (type: string), _col3 (type: int)
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                     outputColumnNames: _col0, _col1
+<<<<<<< HEAD
                     Statistics: Num rows: 371 Data size: 90361 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: int)
@@ -6113,6 +6286,20 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
                       Statistics: Num rows: 371 Data size: 90361 Basic stats: COMPLETE Column stats: NONE
         Reducer 7 
+=======
+                    Statistics: Num rows: 364 Data size: 89401 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: string), _col1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 364 Data size: 89401 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 364 Data size: 89401 Basic stats: COMPLETE Column stats: NONE
+        Reducer 8 
+>>>>>>> a7084cb26e... CDPD-8247/HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -6132,7 +6319,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_1, $hdt$_2]] in Work 'Reducer 4' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_1, $hdt$_2, $hdt$_3]] in Work 'Reducer 5' is a cross product
 PREHOOK: query: select * from part where p_size IN (select pp.p_size from part p join part pp on pp.p_type = p.p_type where part.p_type <> p.p_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part

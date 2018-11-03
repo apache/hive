@@ -355,7 +355,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: regular_table1
@@ -370,12 +370,17 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
+<<<<<<< HEAD
                           0 _col0 (type: int)
 <<<<<<< HEAD
                           1 _col1 (type: int)
 =======
                           1 _col0 (type: int)
 >>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
+=======
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
@@ -387,7 +392,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [part_col:int (part_col)], Map 4 -> [part_col:int (part_col)]]
+                            Target Columns: [Map 1 -> [part_col:int (part_col)], Map 3 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
@@ -396,7 +401,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table2
@@ -413,6 +418,7 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
+<<<<<<< HEAD
                           0 _col0 (type: int)
 <<<<<<< HEAD
                           1 _col1 (type: int)
@@ -421,9 +427,15 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         outputColumnNames: _col1
 >>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
+=======
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col2
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                         input vertices:
-                          0 Map 3
+                          1 Map 4
                         Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
 <<<<<<< HEAD
                         Group By Operator
                           keys: _col0 (type: int)
@@ -433,25 +445,40 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col1 (type: int)
 >>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
+=======
+                        Select Operator
+                          expressions: _col2 (type: int)
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                           outputColumnNames: _col0
                           Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                          Spark HashTable Sink Operator
-                            keys:
-                              0 _col0 (type: int)
-                              1 _col0 (type: int)
-                          Select Operator
-                            expressions: _col0 (type: int)
+                          Group By Operator
+                            keys: _col0 (type: int)
+                            mode: hash
                             outputColumnNames: _col0
                             Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                             Group By Operator
                               keys: _col0 (type: int)
                               minReductionHashAggr: 0.99
                               mode: hash
+=======
+                            Spark HashTable Sink Operator
+                              keys:
+                                0 _col0 (type: int)
+                                1 _col0 (type: int)
+                            Select Operator
+                              expressions: _col0 (type: int)
+>>>>>>> ae1eb15d43... HIVE-20778: Join reordering may not be triggered if all joins in plan are created by decorrelation logic (Vineet Garg via Jesus Camacho Rodriguez)
                               outputColumnNames: _col0
                               Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                              Spark Partition Pruning Sink Operator
-                                Target Columns: [Map 1 -> [part_col:int (part_col)]]
+                              Group By Operator
+                                keys: _col0 (type: int)
+                                mode: hash
+                                outputColumnNames: _col0
                                 Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                                Spark Partition Pruning Sink Operator
+                                  Target Columns: [Map 1 -> [part_col:int (part_col)]]
+                                  Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
@@ -478,7 +505,7 @@ STAGE PLANS:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
                       input vertices:
-                        1 Map 4
+                        1 Map 3
                       Statistics: Num rows: 13 Data size: 13 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
