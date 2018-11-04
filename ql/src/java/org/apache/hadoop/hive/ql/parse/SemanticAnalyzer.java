@@ -14895,37 +14895,36 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private QueryResultsCache.LookupInfo createLookupInfoForQuery(ASTNode astNode) {
+  private ValidTxnWriteIdList getQueryValidTxnWriteIdList() throws SemanticException {
+    // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
+    //cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
+    //
+    List<String> transactionalTables = tablesFromReadEntities(inputs)
+            .stream()
+            .filter(table -> AcidUtils.isTransactionalTable(table))
+            .map(table -> table.getFullyQualifiedName())
+            .collect(Collectors.toList());
+    if (transactionalTables.size() > 0) {
+      try {
+        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+        return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
+      } catch (Exception err) {
+        String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
+                + " and validTxnList " + conf.get(ValidTxnList.VALID_TXNS_KEY);
+        throw new SemanticException(msg, err);
+      }
+    }
+
+    // No transactional tables.
+    return null;
+  }
+
+  private QueryResultsCache.LookupInfo createLookupInfoForQuery(ASTNode astNode) throws SemanticException {
     QueryResultsCache.LookupInfo lookupInfo = null;
     String queryString = getQueryStringForCache(astNode);
     if (queryString != null) {
-      lookupInfo = new QueryResultsCache.LookupInfo(queryString,
-          new Supplier<ValidTxnWriteIdList>() {
-            ValidTxnWriteIdList cachedWriteIdList = null;
-            @Override
-            public ValidTxnWriteIdList get() {
-              if (cachedWriteIdList == null) {
-                // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
-                //cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
-                //
-                List<String> transactionalTables = tablesFromReadEntities(inputs)
-                    .stream()
-                    .filter(table -> AcidUtils.isTransactionalTable(table))
-                    .map(table -> table.getFullyQualifiedName())
-                    .collect(Collectors.toList());
-                try {
-                  String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-                  cachedWriteIdList =
-                      getTxnMgr().getValidWriteIds(transactionalTables, txnString);
-                } catch (Exception err) {
-                  String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
-                      + " and validTxnList " + conf.get(ValidTxnList.VALID_TXNS_KEY);
-                  throw new RuntimeException(msg, err);
-                }
-              }
-              return cachedWriteIdList;
-            }
-          });
+      ValidTxnWriteIdList writeIdList = getQueryValidTxnWriteIdList();
+      lookupInfo = new QueryResultsCache.LookupInfo(queryString, () -> { return writeIdList; });
     }
     return lookupInfo;
   }
