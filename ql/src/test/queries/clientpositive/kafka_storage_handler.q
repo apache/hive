@@ -1,4 +1,4 @@
-SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=true;
 
 CREATE EXTERNAL TABLE kafka_table
 (`__time` timestamp , `page` string, `user` string, `language` string,
@@ -150,16 +150,6 @@ FROM kafka_table_2;
 
 Select count(*) FROM kafka_table_2;
 
-CREATE EXTERNAL TABLE wiki_kafka_avro_table_1
-STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
-TBLPROPERTIES
-("kafka.topic" = "wiki_kafka_avro_table",
-"kafka.bootstrap.servers"="localhost:9092",
-"kafka.serde.class"="org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe");
-
-SELECT * FROM wiki_kafka_avro_table_1;
-SELECT  COUNT (*) from wiki_kafka_avro_table_1;
-
 CREATE EXTERNAL TABLE wiki_kafka_avro_table
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 TBLPROPERTIES
@@ -232,7 +222,7 @@ TBLPROPERTIES
 describe extended wiki_kafka_avro_table;
 
 
-select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+select cast (`__timestamp` as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
  `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table;
 
 select count(*) from wiki_kafka_avro_table;
@@ -241,7 +231,7 @@ select count(distinct `user`) from  wiki_kafka_avro_table;
 
 select sum(deltabucket), min(commentlength) from wiki_kafka_avro_table;
 
-select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
+select cast (`__timestamp` as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
 `__partition`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
 `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090;
 
@@ -298,3 +288,12 @@ insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`
 values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284);
 
 select * from kafka_table_csv;
+select distinct `__key`, c_name from kafka_table_csv;
+
+SET hive.vectorized.execution.enabled=false ;
+explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table;
+select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table;
+
+SET hive.vectorized.execution.enabled=true ;
+explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table;
+select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table;

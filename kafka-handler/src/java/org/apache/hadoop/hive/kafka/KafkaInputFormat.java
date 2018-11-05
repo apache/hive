@@ -22,6 +22,9 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.io.NullWritable;
@@ -56,7 +59,7 @@ import java.util.stream.Collectors;
  * Records will be returned as bytes array.
  */
 @SuppressWarnings("WeakerAccess") public class KafkaInputFormat extends InputFormat<NullWritable, KafkaWritable>
-    implements org.apache.hadoop.mapred.InputFormat<NullWritable, KafkaWritable> {
+    implements org.apache.hadoop.mapred.InputFormat<NullWritable, KafkaWritable>, VectorizedInputFormatInterface {
 
   private static final Logger LOG = LoggerFactory.getLogger(KafkaInputFormat.class);
 
@@ -190,6 +193,10 @@ import java.util.stream.Collectors;
   @Override public RecordReader<NullWritable, KafkaWritable> getRecordReader(InputSplit inputSplit,
       JobConf jobConf,
       Reporter reporter) {
+    if (Utilities.getIsVectorized(jobConf)) {
+      //noinspection unchecked
+      return (RecordReader) new VectorizedKafkaRecordReader((KafkaInputSplit) inputSplit, jobConf);
+    }
     return new KafkaRecordReader((KafkaInputSplit) inputSplit, jobConf);
   }
 
@@ -204,5 +211,9 @@ import java.util.stream.Collectors;
       org.apache.hadoop.mapreduce.InputSplit inputSplit,
       TaskAttemptContext taskAttemptContext) {
     return new KafkaRecordReader();
+  }
+
+  @Override public VectorizedSupport.Support[] getSupportedFeatures() {
+    return new VectorizedSupport.Support[0];
   }
 }
