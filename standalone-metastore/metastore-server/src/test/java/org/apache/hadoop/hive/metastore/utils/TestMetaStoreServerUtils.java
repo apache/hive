@@ -64,6 +64,7 @@ import static org.apache.hadoop.hive.common.StatsSetupConst.TOTAL_SIZE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.filterMapkeys;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -812,5 +813,35 @@ public class TestMetaStoreServerUtils {
     assertThat(partition.getSd().getLocation(), is("/a/b"));
     assertThat(partition.getValues(), is(Collections.singletonList("val2")));
   }
+
+  @Test
+  public void testAnonymizeConnectionURL() {
+    String connectionURL = null;
+    String expectedConnectionURL = null;
+    String result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
+    assertEquals(expectedConnectionURL, result);
+
+    connectionURL = "jdbc:mysql://localhost:1111/db?user=user&password=password";
+    expectedConnectionURL = "jdbc:mysql://localhost:1111/db?user=****&password=****";
+    result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
+    assertEquals(expectedConnectionURL, result);
+
+    connectionURL = "jdbc:derby:sample;user=jill;password=toFetchAPail";
+    expectedConnectionURL = "jdbc:derby:sample;user=****;password=****";
+    result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
+    assertEquals(expectedConnectionURL, result);
+
+    connectionURL = "jdbc:mysql://[(host=myhost1,port=1111,user=sandy,password=secret)," +
+            "(host=myhost2,port=2222,user=finn,password=secret)]/db";
+    expectedConnectionURL = "jdbc:mysql://[(host=myhost1,port=1111,user=****,password=****)," +
+            "(host=myhost2,port=2222,user=****,password=****)]/db";
+    result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
+    assertEquals(expectedConnectionURL, result);
+
+    connectionURL = "jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true";
+    result = MetaStoreServerUtils.anonymizeConnectionURL(connectionURL);
+    assertEquals(connectionURL, result);
+  }
+
 }
 
