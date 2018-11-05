@@ -4016,11 +4016,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
       destFs.copyFromLocalFile(sourcePath, destFilePath);
     } else {
       if (!FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
-          true,   // delete source
+          false,   // delete source
           false,  // overwrite destination
           conf)) {
         LOG.error("Copy failed for source: " + sourcePath + " to destination: " + destFilePath);
         throw new IOException("File copy failed.");
+      }
+
+      // Source file delete may fail because of permission issue as executing user might not
+      // have permission to delete the files in the source path. Ignore this failure.
+      try {
+        if (!sourceFs.delete(sourcePath, true)) {
+          LOG.warn("Delete source failed for source: " + sourcePath + " during copy to destination: " + destFilePath);
+        }
+      } catch (Exception e) {
+        LOG.warn("Delete source failed for source: " + sourcePath + " during copy to destination: " + destFilePath, e);
       }
     }
     return destFilePath;
