@@ -434,7 +434,7 @@ public class ExprNodeDescUtils {
     // Find the key/value where the ExprNodeDesc value matches the column we are searching for.
     // The key portion of the entry will be the internal column name for the join key expression.
     for (Map.Entry<String, ExprNodeDesc> mapEntry : reduceSinkOp.getColumnExprMap().entrySet()) {
-      if (mapEntry.getValue().isSame(source)) {
+      if (mapEntry.getValue().equals(source)) {
         String columnInternalName = mapEntry.getKey();
         // Joins always use KEY columns for the keys, so avoid resolving to VALUE columns
         if(columnInternalName.startsWith(Utilities.ReduceField.VALUE.toString())) {
