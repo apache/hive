@@ -589,7 +589,12 @@ public class ObjectStore implements RawStore, Configurable {
       String confVal = MetastoreConf.getAsString(conf, var);
       String varName = var.getVarname();
       Object prevVal = prop.setProperty(varName, confVal);
-      if (MetastoreConf.isPrintable(varName)) {
+      if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(varName)) {
+        // The jdbc connection url can contain sensitive information like username and password
+        // which should be masked out before logging.
+        if (varName.equals(ConfVars.CONNECT_URL_KEY.getVarname())) {
+          confVal = MetaStoreUtils.anonymizeConnectionURL(confVal);
+        }
         LOG.debug("Overriding {} value {} from jpox.properties with {}",
           varName, prevVal, confVal);
       }
