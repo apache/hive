@@ -2287,7 +2287,7 @@ public final class Utilities {
   }
 
   /**
-   * Copies the storage handler proeprites configured for a table descriptor to a runtime job
+   * Copies the storage handler properties configured for a table descriptor to a runtime job
    * configuration.  This differs from {@link #copyTablePropertiesToConf(org.apache.hadoop.hive.ql.plan.TableDesc, org.apache.hadoop.mapred.JobConf)}
    * in that it does not allow parameters already set in the job to override the values from the
    * table.  This is important for setting the config up for reading,

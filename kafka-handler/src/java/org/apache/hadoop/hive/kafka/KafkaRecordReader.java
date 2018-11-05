@@ -157,7 +157,7 @@ import java.util.Properties;
   /**
    * Empty iterator for empty splits when startOffset == endOffset, this is added to avoid clumsy if condition.
    */
-  private static final class EmptyIterator implements Iterator<ConsumerRecord<byte[], byte[]>> {
+  static final class EmptyIterator implements Iterator<ConsumerRecord<byte[], byte[]>> {
     @Override public boolean hasNext() {
       return false;
     }

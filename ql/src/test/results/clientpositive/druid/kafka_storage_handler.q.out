@@ -607,52 +607,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
-PREHOOK: query: CREATE EXTERNAL TABLE wiki_kafka_avro_table_1
-STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
-TBLPROPERTIES
-("kafka.topic" = "wiki_kafka_avro_table",
-"kafka.bootstrap.servers"="localhost:9092",
-"kafka.serde.class"="org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe")
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@wiki_kafka_avro_table_1
-POSTHOOK: query: CREATE EXTERNAL TABLE wiki_kafka_avro_table_1
-STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
-TBLPROPERTIES
-("kafka.topic" = "wiki_kafka_avro_table",
-"kafka.bootstrap.servers"="localhost:9092",
-"kafka.serde.class"="org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe")
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@wiki_kafka_avro_table_1
-PREHOOK: query: SELECT * FROM wiki_kafka_avro_table_1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@wiki_kafka_avro_table_1
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT * FROM wiki_kafka_avro_table_1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@wiki_kafka_avro_table_1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-key-0	0	0	1534736225090
-key-1	0	1	1534739825090
-key-2	0	2	1534743425090
-key-3	0	3	1534747025090
-key-4	0	4	1534750625090
-key-5	0	5	1534754225090
-key-6	0	6	1534757825090
-key-7	0	7	1534761425090
-key-8	0	8	1534765025090
-key-9	0	9	1534768625090
-key-10	0	10	1534772225090
-PREHOOK: query: SELECT  COUNT (*) from wiki_kafka_avro_table_1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@wiki_kafka_avro_table_1
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT  COUNT (*) from wiki_kafka_avro_table_1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@wiki_kafka_avro_table_1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-11
 PREHOOK: query: CREATE EXTERNAL TABLE wiki_kafka_avro_table
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 TBLPROPERTIES
@@ -827,12 +781,12 @@ __timestamp         	bigint              	from deserializer
 #### A masked pattern was here ####
 StorageHandlerInfo	 	 
 Partition(topic = wiki_kafka_avro_table, partition = 0, leader = 1, replicas = [1], isr = [1], offlineReplicas = []) [start offset = [0], end offset = [11]]	 	 
-PREHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+PREHOOK: query: select cast (`__timestamp` as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
  `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
+POSTHOOK: query: select cast (`__timestamp` as timestamp) as kafka_record_ts, `__partition`, `__offset`, `timestamp`, `user`,
  `page`, `deleted`, `deltabucket`, `isanonymous`, `commentlength` from wiki_kafka_avro_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
@@ -875,13 +829,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5522.000000000001	0
-PREHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
+PREHOOK: query: select cast (`__timestamp` as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
 `__partition`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
 `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast ((`__timestamp`/1000) as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
+POSTHOOK: query: select cast (`__timestamp` as timestamp) as kafka_record_ts, `__timestamp` as kafka_record_ts_long,
 `__partition`, `__key`, `__offset`, `timestamp`, `user`, `page`, `deleted`, `deltabucket`,
 `isanonymous`, `commentlength` from wiki_kafka_avro_table where `__timestamp` > 1534750625090
 POSTHOOK: type: QUERY
@@ -1101,3 +1055,659 @@ test1	5	4.999	key	0	0	1536449552290
 test2	15	14.999666	NULL	0	1	1536449552285
 test4	-5	-4.999	key-2	0	3	1536449552291
 test5	-15	-14.9996666	key-3	0	5	1536449552284
+PREHOOK: query: select distinct `__key`, c_name from kafka_table_csv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka_table_csv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select distinct `__key`, c_name from kafka_table_csv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka_table_csv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+key	test1
+key-2	test4
+key-3	test5
+NULL	test2
+PREHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wiki_kafka_avro_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wiki_kafka_avro_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+OPTIMIZED SQL: SELECT `__offset` AS `$f0`, CAST(`__timestamp` AS TIMESTAMP(9)) AS `$f1`, `__key` AS `$f2`
+FROM `default`.`wiki_kafka_avro_table`
+GROUP BY `__offset`, CAST(`__timestamp` AS TIMESTAMP(9)), `__key`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: wiki_kafka_avro_table
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Select Operator
+                    expressions: __offset (type: bigint), CAST( __timestamp AS TIMESTAMP) (type: timestamp), __key (type: binary)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: bigint), _col1 (type: timestamp), _col2 (type: binary)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint), _col1 (type: timestamp), _col2 (type: binary)
+                        null sort order: aaa
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: bigint), _col1 (type: timestamp), _col2 (type: binary)
+                        Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                        tag: -1
+                        auto parallelism: true
+            Execution mode: llap
+            LLAP IO: no inputs
+            Path -> Alias:
+              hdfs://### HDFS PATH ### [wiki_kafka_avro_table]
+            Path -> Partition:
+              hdfs://### HDFS PATH ### 
+                Partition
+                  base file name: wiki_kafka_avro_table
+                  input format: org.apache.hadoop.hive.kafka.KafkaInputFormat
+                  output format: org.apache.hadoop.hive.kafka.KafkaOutputFormat
+                  properties:
+                    EXTERNAL TRUE
+                    avro.schema.literal {
+  "type" : "record",
+  "name" : "Wikipedia",
+  "namespace" : "org.apache.hive.kafka",
+  "version": "1",
+  "fields" : [ {
+    "name" : "isrobot",
+    "type" : "boolean"
+  }, {
+    "name" : "channel",
+    "type" : "string"
+  }, {
+    "name" : "timestamp",
+    "type" : "string"
+  }, {
+    "name" : "flags",
+    "type" : "string"
+  }, {
+    "name" : "isunpatrolled",
+    "type" : "boolean"
+  }, {
+    "name" : "page",
+    "type" : "string"
+  }, {
+    "name" : "diffurl",
+    "type" : "string"
+  }, {
+    "name" : "added",
+    "type" : "long"
+  }, {
+    "name" : "comment",
+    "type" : "string"
+  }, {
+    "name" : "commentlength",
+    "type" : "long"
+  }, {
+    "name" : "isnew",
+    "type" : "boolean"
+  }, {
+    "name" : "isminor",
+    "type" : "boolean"
+  }, {
+    "name" : "delta",
+    "type" : "long"
+  }, {
+    "name" : "isanonymous",
+    "type" : "boolean"
+  }, {
+    "name" : "user",
+    "type" : "string"
+  }, {
+    "name" : "deltabucket",
+    "type" : "double"
+  }, {
+    "name" : "deleted",
+    "type" : "long"
+  }, {
+    "name" : "namespace",
+    "type" : "string"
+  } ]
+}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
+                    columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
+                    columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
+#### A masked pattern was here ####
+                    hive.kafka.max.retries 6
+                    hive.kafka.metadata.poll.timeout.ms 30000
+                    hive.kafka.optimistic.commit false
+                    hive.kafka.poll.timeout.ms 5000
+                    kafka.bootstrap.servers localhost:9092
+                    kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
+                    kafka.topic wiki_kafka_avro_table
+                    kafka.write.semantic AT_LEAST_ONCE
+#### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
+                    name default.wiki_kafka_avro_table
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct wiki_kafka_avro_table { bool isrobot, string channel, string timestamp, string flags, bool isunpatrolled, string page, string diffurl, i64 added, string comment, i64 commentlength, bool isnew, bool isminor, i64 delta, bool isanonymous, string user, double deltabucket, i64 deleted, string namespace, binary __key, i32 __partition, i64 __offset, i64 __timestamp}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.kafka.KafkaSerDe
+                    storage_handler org.apache.hadoop.hive.kafka.KafkaStorageHandler
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.kafka.KafkaSerDe
+                
+                    input format: org.apache.hadoop.hive.kafka.KafkaInputFormat
+                    jobProperties:
+                      hive.kafka.max.retries 6
+                      hive.kafka.metadata.poll.timeout.ms 30000
+                      hive.kafka.optimistic.commit false
+                      hive.kafka.poll.timeout.ms 5000
+                      kafka.bootstrap.servers localhost:9092
+                      kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
+                      kafka.topic wiki_kafka_avro_table
+                      kafka.write.semantic AT_LEAST_ONCE
+                    output format: org.apache.hadoop.hive.kafka.KafkaOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      avro.schema.literal {
+  "type" : "record",
+  "name" : "Wikipedia",
+  "namespace" : "org.apache.hive.kafka",
+  "version": "1",
+  "fields" : [ {
+    "name" : "isrobot",
+    "type" : "boolean"
+  }, {
+    "name" : "channel",
+    "type" : "string"
+  }, {
+    "name" : "timestamp",
+    "type" : "string"
+  }, {
+    "name" : "flags",
+    "type" : "string"
+  }, {
+    "name" : "isunpatrolled",
+    "type" : "boolean"
+  }, {
+    "name" : "page",
+    "type" : "string"
+  }, {
+    "name" : "diffurl",
+    "type" : "string"
+  }, {
+    "name" : "added",
+    "type" : "long"
+  }, {
+    "name" : "comment",
+    "type" : "string"
+  }, {
+    "name" : "commentlength",
+    "type" : "long"
+  }, {
+    "name" : "isnew",
+    "type" : "boolean"
+  }, {
+    "name" : "isminor",
+    "type" : "boolean"
+  }, {
+    "name" : "delta",
+    "type" : "long"
+  }, {
+    "name" : "isanonymous",
+    "type" : "boolean"
+  }, {
+    "name" : "user",
+    "type" : "string"
+  }, {
+    "name" : "deltabucket",
+    "type" : "double"
+  }, {
+    "name" : "deleted",
+    "type" : "long"
+  }, {
+    "name" : "namespace",
+    "type" : "string"
+  } ]
+}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
+                      columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
+                      columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
+#### A masked pattern was here ####
+                      hive.kafka.max.retries 6
+                      hive.kafka.metadata.poll.timeout.ms 30000
+                      hive.kafka.optimistic.commit false
+                      hive.kafka.poll.timeout.ms 5000
+                      kafka.bootstrap.servers localhost:9092
+                      kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
+                      kafka.topic wiki_kafka_avro_table
+                      kafka.write.semantic AT_LEAST_ONCE
+#### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
+                      name default.wiki_kafka_avro_table
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
+                      serialization.ddl struct wiki_kafka_avro_table { bool isrobot, string channel, string timestamp, string flags, bool isunpatrolled, string page, string diffurl, i64 added, string comment, i64 commentlength, bool isnew, bool isminor, i64 delta, bool isanonymous, string user, double deltabucket, i64 deleted, string namespace, binary __key, i32 __partition, i64 __offset, i64 __timestamp}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.kafka.KafkaSerDe
+                      storage_handler org.apache.hadoop.hive.kafka.KafkaStorageHandler
+                      totalSize 0
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.kafka.KafkaSerDe
+                    name: default.wiki_kafka_avro_table
+                  name: default.wiki_kafka_avro_table
+            Truncated Path -> Alias:
+              /wiki_kafka_avro_table [wiki_kafka_avro_table]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: bigint), KEY._col1 (type: timestamp), KEY._col2 (type: binary)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  directory: hdfs://### HDFS PATH ###
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1,_col2
+                        columns.types bigint:timestamp:binary
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wiki_kafka_avro_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wiki_kafka_avro_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	2018-08-20 03:37:05.09	key-0
+1	2018-08-20 04:37:05.09	key-1
+3	2018-08-20 06:37:05.09	key-3
+4	2018-08-20 07:37:05.09	key-4
+5	2018-08-20 08:37:05.09	key-5
+7	2018-08-20 10:37:05.09	key-7
+8	2018-08-20 11:37:05.09	key-8
+9	2018-08-20 12:37:05.09	key-9
+10	2018-08-20 13:37:05.09	key-10
+11	2018-08-20 03:37:05.09	key-0
+13	2018-08-20 05:37:05.09	key-2
+15	2018-08-20 07:37:05.09	key-4
+17	2018-08-20 09:37:05.09	key-6
+19	2018-08-20 11:37:05.09	key-8
+21	2018-08-20 13:37:05.09	key-10
+2	2018-08-20 05:37:05.09	key-2
+6	2018-08-20 09:37:05.09	key-6
+12	2018-08-20 04:37:05.09	key-1
+14	2018-08-20 06:37:05.09	key-3
+16	2018-08-20 08:37:05.09	key-5
+18	2018-08-20 10:37:05.09	key-7
+20	2018-08-20 12:37:05.09	key-9
+PREHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wiki_kafka_avro_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wiki_kafka_avro_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+OPTIMIZED SQL: SELECT `__offset` AS `$f0`, CAST(`__timestamp` AS TIMESTAMP(9)) AS `$f1`, `__key` AS `$f2`
+FROM `default`.`wiki_kafka_avro_table`
+GROUP BY `__offset`, CAST(`__timestamp` AS TIMESTAMP(9)), `__key`
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: wiki_kafka_avro_table
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Select Operator
+                    expressions: __offset (type: bigint), CAST( __timestamp AS TIMESTAMP) (type: timestamp), __key (type: binary)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: bigint), _col1 (type: timestamp), _col2 (type: binary)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint), _col1 (type: timestamp), _col2 (type: binary)
+                        null sort order: aaa
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: bigint), _col1 (type: timestamp), _col2 (type: binary)
+                        Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                        tag: -1
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Path -> Alias:
+              hdfs://### HDFS PATH ### [wiki_kafka_avro_table]
+            Path -> Partition:
+              hdfs://### HDFS PATH ### 
+                Partition
+                  base file name: wiki_kafka_avro_table
+                  input format: org.apache.hadoop.hive.kafka.KafkaInputFormat
+                  output format: org.apache.hadoop.hive.kafka.KafkaOutputFormat
+                  properties:
+                    EXTERNAL TRUE
+                    avro.schema.literal {
+  "type" : "record",
+  "name" : "Wikipedia",
+  "namespace" : "org.apache.hive.kafka",
+  "version": "1",
+  "fields" : [ {
+    "name" : "isrobot",
+    "type" : "boolean"
+  }, {
+    "name" : "channel",
+    "type" : "string"
+  }, {
+    "name" : "timestamp",
+    "type" : "string"
+  }, {
+    "name" : "flags",
+    "type" : "string"
+  }, {
+    "name" : "isunpatrolled",
+    "type" : "boolean"
+  }, {
+    "name" : "page",
+    "type" : "string"
+  }, {
+    "name" : "diffurl",
+    "type" : "string"
+  }, {
+    "name" : "added",
+    "type" : "long"
+  }, {
+    "name" : "comment",
+    "type" : "string"
+  }, {
+    "name" : "commentlength",
+    "type" : "long"
+  }, {
+    "name" : "isnew",
+    "type" : "boolean"
+  }, {
+    "name" : "isminor",
+    "type" : "boolean"
+  }, {
+    "name" : "delta",
+    "type" : "long"
+  }, {
+    "name" : "isanonymous",
+    "type" : "boolean"
+  }, {
+    "name" : "user",
+    "type" : "string"
+  }, {
+    "name" : "deltabucket",
+    "type" : "double"
+  }, {
+    "name" : "deleted",
+    "type" : "long"
+  }, {
+    "name" : "namespace",
+    "type" : "string"
+  } ]
+}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
+                    columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
+                    columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
+#### A masked pattern was here ####
+                    hive.kafka.max.retries 6
+                    hive.kafka.metadata.poll.timeout.ms 30000
+                    hive.kafka.optimistic.commit false
+                    hive.kafka.poll.timeout.ms 5000
+                    kafka.bootstrap.servers localhost:9092
+                    kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
+                    kafka.topic wiki_kafka_avro_table
+                    kafka.write.semantic AT_LEAST_ONCE
+#### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
+                    name default.wiki_kafka_avro_table
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct wiki_kafka_avro_table { bool isrobot, string channel, string timestamp, string flags, bool isunpatrolled, string page, string diffurl, i64 added, string comment, i64 commentlength, bool isnew, bool isminor, i64 delta, bool isanonymous, string user, double deltabucket, i64 deleted, string namespace, binary __key, i32 __partition, i64 __offset, i64 __timestamp}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.kafka.KafkaSerDe
+                    storage_handler org.apache.hadoop.hive.kafka.KafkaStorageHandler
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.kafka.KafkaSerDe
+                
+                    input format: org.apache.hadoop.hive.kafka.KafkaInputFormat
+                    jobProperties:
+                      hive.kafka.max.retries 6
+                      hive.kafka.metadata.poll.timeout.ms 30000
+                      hive.kafka.optimistic.commit false
+                      hive.kafka.poll.timeout.ms 5000
+                      kafka.bootstrap.servers localhost:9092
+                      kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
+                      kafka.topic wiki_kafka_avro_table
+                      kafka.write.semantic AT_LEAST_ONCE
+                    output format: org.apache.hadoop.hive.kafka.KafkaOutputFormat
+                    properties:
+                      EXTERNAL TRUE
+                      avro.schema.literal {
+  "type" : "record",
+  "name" : "Wikipedia",
+  "namespace" : "org.apache.hive.kafka",
+  "version": "1",
+  "fields" : [ {
+    "name" : "isrobot",
+    "type" : "boolean"
+  }, {
+    "name" : "channel",
+    "type" : "string"
+  }, {
+    "name" : "timestamp",
+    "type" : "string"
+  }, {
+    "name" : "flags",
+    "type" : "string"
+  }, {
+    "name" : "isunpatrolled",
+    "type" : "boolean"
+  }, {
+    "name" : "page",
+    "type" : "string"
+  }, {
+    "name" : "diffurl",
+    "type" : "string"
+  }, {
+    "name" : "added",
+    "type" : "long"
+  }, {
+    "name" : "comment",
+    "type" : "string"
+  }, {
+    "name" : "commentlength",
+    "type" : "long"
+  }, {
+    "name" : "isnew",
+    "type" : "boolean"
+  }, {
+    "name" : "isminor",
+    "type" : "boolean"
+  }, {
+    "name" : "delta",
+    "type" : "long"
+  }, {
+    "name" : "isanonymous",
+    "type" : "boolean"
+  }, {
+    "name" : "user",
+    "type" : "string"
+  }, {
+    "name" : "deltabucket",
+    "type" : "double"
+  }, {
+    "name" : "deleted",
+    "type" : "long"
+  }, {
+    "name" : "namespace",
+    "type" : "string"
+  } ]
+}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
+                      columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
+                      columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
+#### A masked pattern was here ####
+                      hive.kafka.max.retries 6
+                      hive.kafka.metadata.poll.timeout.ms 30000
+                      hive.kafka.optimistic.commit false
+                      hive.kafka.poll.timeout.ms 5000
+                      kafka.bootstrap.servers localhost:9092
+                      kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
+                      kafka.topic wiki_kafka_avro_table
+                      kafka.write.semantic AT_LEAST_ONCE
+#### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
+                      name default.wiki_kafka_avro_table
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
+                      serialization.ddl struct wiki_kafka_avro_table { bool isrobot, string channel, string timestamp, string flags, bool isunpatrolled, string page, string diffurl, i64 added, string comment, i64 commentlength, bool isnew, bool isminor, i64 delta, bool isanonymous, string user, double deltabucket, i64 deleted, string namespace, binary __key, i32 __partition, i64 __offset, i64 __timestamp}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.kafka.KafkaSerDe
+                      storage_handler org.apache.hadoop.hive.kafka.KafkaStorageHandler
+                      totalSize 0
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.kafka.KafkaSerDe
+                    name: default.wiki_kafka_avro_table
+                  name: default.wiki_kafka_avro_table
+            Truncated Path -> Alias:
+              /wiki_kafka_avro_table [wiki_kafka_avro_table]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: bigint), KEY._col1 (type: timestamp), KEY._col2 (type: binary)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  directory: hdfs://### HDFS PATH ###
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1,_col2
+                        columns.types bigint:timestamp:binary
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wiki_kafka_avro_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wiki_kafka_avro_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	2018-08-20 03:37:05.09	key-0
+1	2018-08-20 04:37:05.09	key-1
+3	2018-08-20 06:37:05.09	key-3
+4	2018-08-20 07:37:05.09	key-4
+5	2018-08-20 08:37:05.09	key-5
+7	2018-08-20 10:37:05.09	key-7
+8	2018-08-20 11:37:05.09	key-8
+9	2018-08-20 12:37:05.09	key-9
+10	2018-08-20 13:37:05.09	key-10
+11	2018-08-20 03:37:05.09	key-0
+13	2018-08-20 05:37:05.09	key-2
+15	2018-08-20 07:37:05.09	key-4
+17	2018-08-20 09:37:05.09	key-6
+19	2018-08-20 11:37:05.09	key-8
+21	2018-08-20 13:37:05.09	key-10
+2	2018-08-20 05:37:05.09	key-2
+6	2018-08-20 09:37:05.09	key-6
+12	2018-08-20 04:37:05.09	key-1
+14	2018-08-20 06:37:05.09	key-3
+16	2018-08-20 08:37:05.09	key-5
+18	2018-08-20 10:37:05.09	key-7
+20	2018-08-20 12:37:05.09	key-9
