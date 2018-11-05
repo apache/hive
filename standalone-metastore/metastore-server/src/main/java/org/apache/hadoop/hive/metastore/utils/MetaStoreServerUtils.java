@@ -1158,6 +1158,19 @@ public class MetaStoreServerUtils {
     }
   }
 
+  /**
+   * Mask out all sensitive information from the jdbc connection url string.
+   * @param connectionURL the connection url, can be null
+   * @return the anonymized connection url , can be null
+   */
+  public static String anonymizeConnectionURL(String connectionURL) {
+    if (connectionURL == null)
+      return null;
+    String[] sensitiveData = {"user", "password"};
+    String regex = "([;,?&\\(]" + String.join("|", sensitiveData) + ")=.*?([;,&\\)]|$)";
+    return connectionURL.replaceAll(regex, "$1=****$2");
+  }
+
   // ColumnStatisticsObj with info about its db, table, partition (if table is partitioned)
   public static class ColStatsObjWithSourceInfo {
     private final ColumnStatisticsObj colStatsObj;
