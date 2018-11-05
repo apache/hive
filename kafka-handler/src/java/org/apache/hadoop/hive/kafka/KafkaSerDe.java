@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.kafka;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
@@ -89,8 +88,9 @@ import java.util.stream.Collectors;
    * Object Inspector of original row plus metadata.
    */
   private ObjectInspector objectInspector;
-  private final List<String> columnNames = Lists.newArrayList();
+  private final List<String> columnNames = new ArrayList<>();
   private BytesConverter bytesConverter;
+  private int metadataStartIndex;
 
   @Override public void initialize(@Nullable Configuration conf, Properties tbl) throws SerDeException {
     //This method is called before {@link org.apache.hadoop.hive.kafka.KafkaStorageHandler.preCreateTable}
@@ -124,7 +124,7 @@ import java.util.stream.Collectors;
         .collect(Collectors.toList()));
     inspectors.addAll(MetadataColumn.KAFKA_METADATA_INSPECTORS);
     objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
-
+    metadataStartIndex = columnNames.size() - MetadataColumn.values().length;
     // Setup Read and Write Path From/To Kafka
     if (delegateSerDe.getSerializedClass() == Text.class) {
       bytesConverter = new TextBytesConverter();
@@ -153,18 +153,19 @@ import java.util.stream.Collectors;
     }
     StructObjectInspector structObjectInspector = (StructObjectInspector) objInspector;
     List<Object> data = structObjectInspector.getStructFieldsDataAsList(obj);
+    int firstMetadataColumnIndex = data.size() - MetadataColumn.values().length;
     if (delegateSerializerOI == null) {
       //@TODO check if i can cache this if it is the same.
       delegateSerializerOI =
-          new SubStructObjectInspector(structObjectInspector, data.size() - MetadataColumn.values().length);
+          new SubStructObjectInspector(structObjectInspector, firstMetadataColumnIndex);
     }
     // We always append the metadata columns to the end of the row.
-    final List<Object> row = data.subList(0, data.size() - MetadataColumn.values().length);
-    //@TODO @FIXME use column names instead of actual positions that can be hard to read and review
-    Object key = data.get(data.size() - MetadataColumn.KAFKA_METADATA_COLUMN_NAMES.size());
-    Object partition = data.get(data.size() - MetadataColumn.KAFKA_METADATA_COLUMN_NAMES.size() + 1);
-    Object offset = data.get(data.size() - MetadataColumn.KAFKA_METADATA_COLUMN_NAMES.size() + 2);
-    Object timestamp = data.get(data.size() - MetadataColumn.KAFKA_METADATA_COLUMN_NAMES.size() + 3);
+    final List<Object> row = data.subList(0, firstMetadataColumnIndex);
+
+    Object key = data.get(firstMetadataColumnIndex);
+    Object partition = data.get(firstMetadataColumnIndex + 1);
+    Object offset = data.get(firstMetadataColumnIndex + 2);
+    Object timestamp = data.get(firstMetadataColumnIndex + 3);
 
     if (PrimitiveObjectInspectorUtils.getLong(offset, MetadataColumn.OFFSET.getObjectInspector()) != -1) {
       LOG.error("Can not insert values into `__offset` column, has to be [-1]");
@@ -197,15 +198,24 @@ import java.util.stream.Collectors;
   }
 
   @Override public Object deserialize(Writable blob) throws SerDeException {
-    KafkaWritable record = (KafkaWritable) blob;
-    final Object row = delegateSerDe.deserialize(bytesConverter.getWritable(record.getValue()));
-    return columnNames.stream().map(name -> {
-      final MetadataColumn metadataColumn = MetadataColumn.forName(name);
-      if (metadataColumn != null) {
-        return record.getHiveWritable(metadataColumn);
-      }
-      return delegateDeserializerOI.getStructFieldData(row, delegateDeserializerOI.getStructFieldRef(name));
-    }).collect(Collectors.toList());
+    return deserializeKWritable((KafkaWritable) blob);
+  }
+
+  ArrayList<Object> deserializeKWritable(KafkaWritable kafkaWritable) throws SerDeException {
+    ArrayList<Object> resultRow = new ArrayList<>(columnNames.size());
+    final Object row = delegateSerDe.deserialize(bytesConverter.getWritable(kafkaWritable.getValue()));
+    //first add the value payload elements
+
+    for (int i = 0; i < metadataStartIndex; i++) {
+      resultRow.add(delegateDeserializerOI.getStructFieldData(row,
+          delegateDeserializerOI.getStructFieldRef(columnNames.get(i))));
+    }
+    //add the metadata columns
+    for (int i = metadataStartIndex; i < columnNames.size(); i++) {
+      final MetadataColumn metadataColumn = MetadataColumn.forName(columnNames.get(i));
+      resultRow.add(kafkaWritable.getHiveWritable(metadataColumn));
+    }
+    return resultRow;
   }
 
   @Override public ObjectInspector getObjectInspector() {
@@ -361,6 +371,7 @@ import java.util.stream.Collectors;
 
   private static class TextBytesConverter implements BytesConverter<Text> {
     final private Text text = new Text();
+
     @Override public byte[] getBytes(Text writable) {
       //@TODO  There is no reason to decode then encode the string to bytes really
       //@FIXME this issue with CTRL-CHAR ^0 added by Text at the end of string and Json serd does not like that.

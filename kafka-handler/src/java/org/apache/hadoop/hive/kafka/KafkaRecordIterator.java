@@ -41,7 +41,15 @@ import java.util.concurrent.TimeUnit;
  *
  * Notes:
  * The user of this class has to provide a functional Kafka Consumer and then has to clean it afterward.
- * The user of this class is responsible for thread safety if the provided consumer is shared across threads.
+ *
+ * Iterator position is related to the position of the consumer therefore consumer CAN NOT BE SHARED between threads.
+ *
+ * The polling of new record will only occur if the current buffered records are consumed by the iterator via:
+ * {@link org.apache.hadoop.hive.kafka.KafkaRecordIterator#next()}
+ *
+ * org.apache.hadoop.hive.kafka.KafkaRecordIterator#hasNext() throws PollTimeoutException in case Kafka consumer poll,
+ * returns 0 record and consumer position did not reach requested endOffset.
+ * Such an exception is a retryable exception, and it can be a transient exception that if retried may succeed.
  *
  */
 class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte[]>> {
@@ -78,13 +86,16 @@ class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte[]>> {
   /**
    * Kafka record Iterator pulling from a single {@code topicPartition} an inclusive {@code requestedStartOffset},
    * up to exclusive {@code requestedEndOffset}.
+   * Iterator position is related to the position of the consumer therefore consumer can not be shared between threads.
    *
    * This iterator can block on polling up to a designated timeout.
    *
    * If no record is returned by brokers after poll timeout duration such case will be considered as an exception.
    * Although the timeout exception it is a retryable exception, therefore users of this class can retry if needed.
    *
-   * @param consumer       Functional kafka consumer, user must initialize this and close it.
+   * Other than the Kafka consumer, No Resources cleaning is needed.
+   *
+   * @param consumer       Functional kafka consumer, user must initialize and close it.
    * @param topicPartition Target Kafka topic partition.
    * @param requestedStartOffset    Requested start offset position, if NULL iterator will seek to beginning using:
    *                                {@link Consumer#seekToBeginning(java.util.Collection)}.

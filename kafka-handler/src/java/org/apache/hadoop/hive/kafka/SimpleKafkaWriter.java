@@ -57,13 +57,10 @@ class SimpleKafkaWriter implements FileSinkOperator.RecordWriter, RecordWriter<B
   private static final String
       ACTION_ABORT =
       "WriterId [{}] lost record from Topic [{}], delivery Semantic [{}] -> ACTION=ABORT, ERROR caused by [{}]";
-  private static final String
-      ACTION_CARRY_ON =
-      "WriterId [{}], lost record from Topic [{}], delivery Semantic [{}] -> ACTION=CARRY-ON";
 
   private final String topic;
   private final String writerId;
-  private final KafkaOutputFormat.WriteSemantic writeSemantic = KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE;;
+  private final KafkaOutputFormat.WriteSemantic writeSemantic = KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE;
   private final KafkaProducer<byte[], byte[]> producer;
   private final Callback callback;
   private final AtomicReference<Exception> sendExceptionRef = new AtomicReference<>();

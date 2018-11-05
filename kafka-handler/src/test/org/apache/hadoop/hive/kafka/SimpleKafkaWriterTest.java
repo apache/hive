@@ -30,15 +30,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -50,7 +47,7 @@ import java.util.stream.IntStream;
 /**
  * Test class for Kafka simple writer.
  */
-@RunWith(Parameterized.class) public class SimpleKafkaWriterTest {
+public class SimpleKafkaWriterTest {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleKafkaWriterTest.class);
 
   private static final int RECORD_NUMBER = 17384;
@@ -63,16 +60,7 @@ import java.util.stream.IntStream;
         return new KafkaWritable(0, (long) number, value, KEY_BYTES);
       }).collect(Collectors.toList());
   private final Configuration conf = new Configuration();
-  private final KafkaOutputFormat.WriteSemantic writeSemantic;
   private KafkaConsumer<byte[], byte[]> consumer;
-
-  public SimpleKafkaWriterTest(KafkaOutputFormat.WriteSemantic writeSemantic) {
-    this.writeSemantic = writeSemantic;
-  }
-
-  @Parameterized.Parameters public static Iterable<Object[]> data() {
-    return Arrays.asList(new Object[][] {{KafkaOutputFormat.WriteSemantic.AT_LEAST_ONCE}});
-  }
 
   @BeforeClass public static void setupCluster() throws Throwable {
     KAFKA_BROKER_RESOURCE.before();

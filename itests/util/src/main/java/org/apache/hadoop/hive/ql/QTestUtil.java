@@ -627,7 +627,9 @@ public class QTestUtil {
       druidCluster.start();
     }
 
-    if(clusterType == MiniClusterType.kafka || clusterType == MiniClusterType.druidKafka) {
+    if (clusterType == MiniClusterType.kafka
+        || clusterType == MiniClusterType.druidKafka
+        || clusterType == MiniClusterType.druidLocal) {
       kafkaCluster = new SingleNodeKafkaCluster("kafka",
           logDir + "/kafka-cluster",
           setup.zkPort
