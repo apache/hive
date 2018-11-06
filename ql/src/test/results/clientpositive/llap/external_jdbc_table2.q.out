@@ -383,6 +383,7 @@ STAGE PLANS:
         TableScan
           alias: db1_ext_auth1
           properties:
+<<<<<<< ours
             hive.sql.query SELECT "t"."ikey", "t"."bkey", "t"."fkey", "t"."dkey", "t0"."ikey" AS "ikey0", "t0"."bkey" AS "bkey0", "t0"."fkey" AS "fkey0", "t0"."dkey" AS "dkey0"
 FROM (SELECT *
 FROM "SIMPLE_DERBY_TABLE1"
@@ -390,6 +391,15 @@ WHERE "ikey" IS NOT NULL) AS "t"
 INNER JOIN (SELECT *
 FROM "SIMPLE_DERBY_TABLE2"
 WHERE "ikey" IS NOT NULL) AS "t0" ON "t"."ikey" = "t0"."ikey"
+=======
+            hive.sql.query SELECT "t0"."ikey", "t0"."bkey", "t0"."fkey", "t0"."dkey", "t2"."ikey" AS "ikey0", "t2"."bkey" AS "bkey0", "t2"."fkey" AS "fkey0", "t2"."dkey" AS "dkey0"
+FROM (SELECT "ikey", "bkey", "fkey", "dkey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
+WHERE "ikey" IS NOT NULL) AS "t0"
+INNER JOIN (SELECT "ikey", "bkey", "fkey", "dkey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2"
+WHERE "ikey" IS NOT NULL) AS "t2" ON "t0"."ikey" = "t2"."ikey"
+>>>>>>> theirs
             hive.sql.query.fieldNames ikey,bkey,fkey,dkey,ikey0,bkey0,fkey0,dkey0
             hive.sql.query.fieldTypes int,bigint,float,double,int,bigint,float,double
             hive.sql.query.split false
@@ -522,11 +532,19 @@ STAGE PLANS:
           alias: db1_ext_auth1
           properties:
             hive.sql.query SELECT "ikey", "bkey", "fkey", "dkey"
+<<<<<<< ours
 FROM (SELECT *
 FROM "SIMPLE_DERBY_TABLE1"
 UNION ALL
 SELECT *
 FROM "SIMPLE_DERBY_TABLE2") AS "t"
+=======
+FROM (SELECT "ikey", "bkey", "fkey", "dkey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
+UNION ALL
+SELECT "ikey", "bkey", "fkey", "dkey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2") AS "t1"
+>>>>>>> theirs
             hive.sql.query.fieldNames ikey,bkey,fkey,dkey
             hive.sql.query.fieldTypes int,bigint,float,double
             hive.sql.query.split false

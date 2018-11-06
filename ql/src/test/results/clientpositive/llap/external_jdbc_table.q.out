@@ -381,13 +381,13 @@ STAGE PLANS:
         TableScan
           alias: ext_simple_derby_table1
           properties:
-            hive.sql.query SELECT "t"."fkey", "t0"."dkey"
-FROM (SELECT *
+            hive.sql.query SELECT "t0"."fkey", "t2"."dkey"
+FROM (SELECT "ikey", "bkey", "fkey", "dkey"
 FROM "SIMPLE_DERBY_TABLE1"
-WHERE "ikey" IS NOT NULL) AS "t"
-INNER JOIN (SELECT *
+WHERE "ikey" IS NOT NULL) AS "t0"
+INNER JOIN (SELECT "ikey", "bkey", "fkey", "dkey"
 FROM "SIMPLE_DERBY_TABLE2"
-WHERE "ikey" IS NOT NULL) AS "t0" ON "t"."ikey" = "t0"."ikey"
+WHERE "ikey" IS NOT NULL) AS "t2" ON "t0"."ikey" = "t2"."ikey"
             hive.sql.query.fieldNames fkey,dkey
             hive.sql.query.fieldTypes float,double
             hive.sql.query.split false
