@@ -245,7 +245,7 @@ STAGE PLANS:
           Filter Operator
             predicate: (y = null) (type: boolean)
             Select Operator
-              expressions: x (type: string), y (type: string)
+              expressions: x (type: string), null (type: string)
               outputColumnNames: _col0, _col1
               ListSink
 

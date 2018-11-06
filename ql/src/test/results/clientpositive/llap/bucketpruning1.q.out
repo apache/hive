@@ -1509,7 +1509,7 @@ POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`srcbucket_pruned`
-WHERE FALSE
+WHERE NULL
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

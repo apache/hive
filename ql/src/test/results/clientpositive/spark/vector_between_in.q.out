@@ -1119,13 +1119,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: ((cdate = DATE'1969-10-26') or (cdate = DATE'1969-07-14')) (type: boolean)
+                    expressions: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [7]
-                        selectExpressions: ColOrCol(col 5:boolean, col 6:boolean)(children: DateColEqualDateScalar(col 3:date, date 1969-10-26) -> 5:boolean, DateColEqualDateScalar(col 3:date, date 1969-07-14) -> 6:boolean) -> 7:boolean
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: LongColumnInList(col 3, values [-67, -171]) -> 5:boolean
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1133,7 +1133,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 7:boolean
+                          keyExpressions: col 5:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -1259,13 +1259,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: ((cdecimal1 = 2365.8945945946) or (cdecimal1 = 881.0135135135) or (cdecimal1 = -3367.6517567568)) (type: boolean)
+                    expressions: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [8]
-                        selectExpressions: VectorUDFAdaptor(((cdecimal1 = 2365.8945945946) or (cdecimal1 = 881.0135135135) or (cdecimal1 = -3367.6517567568)))(children: DecimalColEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946) -> 5:boolean, DecimalColEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135) -> 6:boolean, DecimalColEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568) -> 7:boolean) -> 8:boolean
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1273,7 +1273,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 8:boolean
+                          keyExpressions: col 5:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -1299,7 +1299,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized

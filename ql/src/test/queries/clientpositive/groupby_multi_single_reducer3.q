@@ -2,6 +2,8 @@
 
 -- SORT_QUERY_RESULTS
 
+set hive.cbo.enable=true;
+
 create table e1_n1 (key string, count int);
 create table e2_n2 (key string, count int);
 

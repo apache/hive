@@ -742,8 +742,8 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3
-                residual filter predicates: {(struct(_col0,_col2)) IN (const struct(100,100), const struct(101,101), const struct(102,102))}
-                Statistics: Num rows: 9375 Data size: 180600 Basic stats: COMPLETE Column stats: NONE
+                residual filter predicates: {(struct(UDFToDouble(_col0),UDFToDouble(_col2))) IN (const struct(100.0D,100.0D), const struct(101.0D,101.0D), const struct(102.0D,102.0D))}
+                Statistics: Num rows: 6250 Data size: 120400 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
                   Statistics: Num rows: 10 Data size: 190 Basic stats: COMPLETE Column stats: NONE
