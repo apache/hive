@@ -144,80 +144,7 @@ STAGE PLANS:
         Reducer 30 <- Reducer 29 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-<<<<<<< ours
-        Map 27 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((d_moy = 3) and (d_year = 1999)) (type: boolean)
-                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: (d_month_seq + 3) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Reducer 28 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 9131 Data size: 10217589 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  Statistics: Num rows: 9131 Data size: 10217589 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count()
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: bigint)
-        Reducer 29 
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (sq_count_check(_col0) <= 1) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 
-                        1 
-
-  Stage: Stage-3
-    Spark
-      Edges:
-        Reducer 23 <- Map 22 (GROUP, 2)
-        Reducer 24 <- Reducer 23 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 22 
-=======
         Map 28 
->>>>>>> theirs
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -329,7 +256,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year = 1999) and (d_moy = 3)) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_moy = 3) and (d_year = 1999)) (type: boolean)
@@ -372,7 +298,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: d_date_sk is not null (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: d_date_sk is not null (type: boolean)
@@ -534,51 +459,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-<<<<<<< ours
-        Map 30 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((d_moy = 3) and (d_year = 1999)) (type: boolean)
-                    Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: (d_month_seq + 3) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: d_date_sk is not null (type: boolean)
-                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_date_sk (type: int), d_month_seq (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int)
-=======
         Reducer 10 
->>>>>>> theirs
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator

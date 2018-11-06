@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-Warning: Shuffle Join MERGEJOIN[154][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
-=======
-Warning: Shuffle Join MERGEJOIN[301][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 6' is a cross product
->>>>>>> 3cbc13e92b... HIVE-20788: Extended SJ reduction may backtrack columns incorrectly when creating filters (Jesus Camacho Rodriguez, reviewed by Deepak Jaiswal)
+Warning: Shuffle Join MERGEJOIN[155][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: explain cbo
 with ssales as
 (select c_last_name

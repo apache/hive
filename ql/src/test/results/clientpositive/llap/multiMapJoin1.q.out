@@ -935,7 +935,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: smalltbl3
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -971,28 +970,6 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-<<<<<<< ours
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: smalltbl3
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-=======
->>>>>>> theirs
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -1293,7 +1270,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: smalltbl3
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1329,28 +1305,6 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-<<<<<<< ours
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: smalltbl3
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-=======
->>>>>>> theirs
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -1626,7 +1580,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: smalltbl3
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1662,28 +1615,6 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-<<<<<<< ours
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: smalltbl3
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-=======
->>>>>>> theirs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2015,7 +1946,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: smalltbl3
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2051,28 +1981,6 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-<<<<<<< ours
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: smalltbl3
-                  Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-=======
->>>>>>> theirs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
