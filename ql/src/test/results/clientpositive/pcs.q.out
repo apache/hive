@@ -98,6 +98,10 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcs_t1`
+WHERE ROW(`key`, `ds`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09'))
+ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -288,6 +292,9 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`
+FROM `default`.`pcs_t1`
+WHERE ROW(`ds`, `key`) IN (ROW('2000-04-08', 1), ROW('2000-04-09', 2))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -465,6 +472,9 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`
+FROM `default`.`pcs_t1`
+WHERE ROW(`ds`, `key` + 2) IN (ROW('2000-04-08', 3), ROW('2000-04-09', 4))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
