@@ -1576,7 +1576,7 @@ public final class Utilities {
     Class<? extends Writable> outputClass = null;
     try {
       Serializer serializer = (Serializer) tableInfo.getDeserializerClass().newInstance();
-      serializer.initialize(null, tableInfo.getProperties());
+      serializer.initialize(hconf, tableInfo.getProperties());
       outputClass = serializer.getSerializedClass();
       hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(hconf, tableInfo);
     } catch (SerDeException e) {
