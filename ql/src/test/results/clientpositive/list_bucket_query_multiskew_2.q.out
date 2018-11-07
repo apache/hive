@@ -277,6 +277,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n2
 POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`fact_daily_n2`
+WHERE ROW(`key`, `value`) IN (ROW('484', 'val_484'), ROW('238', 'val_238')) AND `ds` = '1' AND `hr` = '4'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
