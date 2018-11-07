@@ -70,8 +70,6 @@ import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
-import org.apache.hadoop.hive.ql.exec.tez.TezExternalSessionState;
-import org.apache.hadoop.hive.ql.exec.tez.TezExternalSessionsRegistryClient;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
@@ -294,8 +292,6 @@ public class SessionState {
    * and is later used for function usage authorization.
    */
   private final Map<String, FunctionInfo> currentFunctionsInUse = new HashMap<>();
-
-  private static TezExternalSessionsRegistryClient externalSessions = null;
 
   /**
    * CURRENT_TIMESTAMP value for query
@@ -658,23 +654,9 @@ public class SessionState {
       return;
     }
 
-    if (HiveConf.getBoolVar(startSs.getConf(), ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      try {
-        externalSessions = TezExternalSessionsRegistryClient.getClient(startSs.getConf());
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      externalSessions = null;
-    }
-
     try {
       if (startSs.tezSessionState == null) {
-        if (externalSessions != null) {
-          startSs.setTezSession(new TezExternalSessionState(startSs.getSessionId(), startSs.sessionConf, externalSessions));
-        } else {
-          startSs.setTezSession(new TezSessionState(startSs.getSessionId(), startSs.sessionConf));
-        }
+        startSs.setTezSession(new TezSessionState(startSs.getSessionId(), startSs.sessionConf));
       } else {
         // Only TezTask sets this, and then removes when done, so we don't expect to see it.
         LOG.warn("Tez session was already present in SessionState before start: "
