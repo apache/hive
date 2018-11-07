@@ -20,27 +20,20 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.concurrent.CancellationException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.registry.impl.TezAmInstance;
-import org.apache.hadoop.yarn.api.records.LocalResource;
-import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.TezException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * TezSession that is aware of the session pool, and also keeps track of expiration and use.
@@ -50,33 +43,57 @@ import com.google.common.annotations.VisibleForTesting;
  * if it's time, the expiration is triggered; in that case, or if it was already triggered, the
  * caller gets a different session. When the session is in use when it expires, the expiration
  * thread ignores it and lets the return to the pool take care of the expiration.
- *
- * Because of the lack of multiple inheritance in Java, this uses composition.
  */
 @VisibleForTesting
-class TezSessionPoolSession implements TezSession {
-  protected static final Logger LOG = LoggerFactory.getLogger(TezSessionPoolSession.class);
+class TezSessionPoolSession extends TezSessionState {
   private static final int STATE_NONE = 0, STATE_IN_USE = 1, STATE_EXPIRED = 2;
 
   public interface Manager {
     void registerOpenSession(TezSessionPoolSession session);
+
     void unregisterOpenSession(TezSessionPoolSession session);
+
     void returnAfterUse(TezSessionPoolSession session) throws Exception;
-    TezSession reopen(TezSession session) throws Exception;
-    void destroy(TezSession session) throws Exception;
+
+    TezSessionState reopen(TezSessionState session) throws Exception;
+
+    void destroy(TezSessionState session) throws Exception;
+  }
+
+  public static abstract class AbstractTriggerValidator {
+    private ScheduledExecutorService scheduledExecutorService = null;
+    abstract Runnable getTriggerValidatorRunnable();
+
+    void startTriggerValidator(long triggerValidationIntervalMs) {
+      if (scheduledExecutorService == null) {
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
+          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("TriggerValidator").build());
+        Runnable triggerValidatorRunnable = getTriggerValidatorRunnable();
+        scheduledExecutorService.scheduleWithFixedDelay(triggerValidatorRunnable, triggerValidationIntervalMs,
+          triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
+        LOG.info("Started trigger validator with interval: {} ms", triggerValidationIntervalMs);
+      }
+    }
+
+    void stopTriggerValidator() {
+      if (scheduledExecutorService != null) {
+        scheduledExecutorService.shutdownNow();
+        scheduledExecutorService = null;
+        LOG.info("Stopped trigger validator");
+      }
+    }
   }
 
   private final AtomicInteger sessionState = new AtomicInteger(STATE_NONE);
   private Long expirationNs;
-  private final Manager manager;
+  private final Manager parent;
   private final SessionExpirationTracker expirationTracker;
-  private final TezSession baseSession;
 
 
-  public TezSessionPoolSession(Manager manager,
-      SessionExpirationTracker tracker, TezSession superr) {
-    this.baseSession = superr;
-    this.manager = manager;
+  public TezSessionPoolSession(String sessionId, Manager parent,
+      SessionExpirationTracker tracker, HiveConf conf) {
+    super(sessionId, conf);
+    this.parent = parent;
     this.expirationTracker = tracker;
   }
 
@@ -89,11 +106,11 @@ class TezSessionPoolSession implements TezSession {
   }
 
   @Override
-  public void close(boolean keepTmpDir) throws Exception {
+  void close(boolean keepTmpDir) throws Exception {
     try {
-      baseSession.close(keepTmpDir);
+      super.close(keepTmpDir);
     } finally {
-      manager.unregisterOpenSession(this);
+      parent.unregisterOpenSession(this);
       if (expirationTracker != null) {
         expirationTracker.removeFromExpirationQueue(this);
       }
@@ -101,26 +118,11 @@ class TezSessionPoolSession implements TezSession {
   }
 
   @Override
-  public void open(String[] additionalFilesNotFromConf)
-      throws LoginException, IOException, URISyntaxException, TezException {
-    baseSession.open(additionalFilesNotFromConf);
-    afterOpen();
-  }
-
-  @Override
-  public void open() throws IOException, LoginException, URISyntaxException, TezException {
-    baseSession.open();
-    afterOpen();
-  }
-
-  @Override
-  public void open(boolean isPoolInit) throws IOException, LoginException, URISyntaxException, TezException {
-    baseSession.open(isPoolInit);
-    afterOpen();
-  }
-
-  private void afterOpen() {
-    manager.registerOpenSession(this);
+  protected void openInternal(String[] additionalFiles,
+      boolean isAsync, LogHelper console, HiveResources resources)
+          throws IOException, LoginException, URISyntaxException, TezException {
+    super.openInternal(additionalFiles, isAsync, console, resources);
+    parent.registerOpenSession(this);
     if (expirationTracker != null) {
       boolean isNotExpired = expirationTracker.addToExpirationQueue(this, 0L);
       assert isNotExpired;
@@ -134,10 +136,10 @@ class TezSessionPoolSession implements TezSession {
       closeExpiredOnReconnect(applicationId);
       return false;
     }
-    if (!baseSession.reconnect(applicationId, amAgeMs)) {
+    if (!super.reconnect(applicationId, amAgeMs)) {
       return false;
     }
-    manager.registerOpenSession(this);
+    parent.registerOpenSession(this);
     if (expirationTracker != null && !expirationTracker.addToExpirationQueue(this, amAgeMs)) {
       closeExpiredOnReconnect(applicationId);
       return false;
@@ -155,48 +157,11 @@ class TezSessionPoolSession implements TezSession {
   }
 
   @Override
-  public void open(HiveResources resources)
-      throws LoginException, IOException, URISyntaxException, TezException {
-    baseSession.open(resources);
-    afterOpen();
+  public String toString() {
+    if (expirationNs == null) return super.toString();
+    long expiresInMs = (expirationNs - System.nanoTime()) / 1000000L;
+    return super.toString() + ", expires in " + expiresInMs + "ms";
   }
-
-  // TODO: this is only supported in CLI, might be good to try to remove it.
-  @Override
-  public void beginOpen(String[] additionalFiles, LogHelper console)
-      throws IOException, LoginException, URISyntaxException, TezException {
-    baseSession.beginOpen(additionalFiles, console);
-    afterOpen();
-  }
-
-  @Override
-  public void endOpen() throws InterruptedException, CancellationException {
-    baseSession.endOpen();
-  }
-
-  @Override
-  public void ensureLocalResources(Configuration conf,
-      String[] newFilesNotFromConf) throws IOException, LoginException,
-      URISyntaxException, TezException {
-    baseSession.ensureLocalResources(conf, newFilesNotFromConf);
-  }
-
-  @Override
-  public HiveResources extractHiveResources() {
-    return baseSession.extractHiveResources();
-  }
-
-  @Override
-  public Path replaceHiveResources(HiveResources resources, boolean isAsync) {
-    return baseSession.replaceHiveResources(resources, isAsync);
-  }
-
-  @Override
-  public boolean killQuery(String reason) throws HiveException {
-    return baseSession.killQuery(reason);
-  }
-
-  // *********** Methods specific to a pool session.
 
   /**
    * Tries to use this session. When the session is in use, it will not expire.
@@ -255,144 +220,24 @@ class TezSessionPoolSession implements TezSession {
 
   @Override
   public void returnToSessionManager() throws Exception {
-    manager.returnAfterUse(this);
+    parent.returnAfterUse(this);
   }
 
   @Override
-  public TezSession reopen() throws Exception {
-    return manager.reopen(this);
+  public TezSessionState reopen() throws Exception {
+    return parent.reopen(this);
   }
 
   @Override
   public void destroy() throws Exception {
-    manager.destroy(this);
+    parent.destroy(this);
   }
 
-  public boolean isOwnedBy(Manager parent) {
-    return this.manager == parent;
+  boolean isOwnedBy(Manager parent) {
+    return this.parent == parent;
   }
 
-  public void updateFromRegistry(TezAmInstance si, int ephSeqVersion) {
+  void updateFromRegistry(TezAmInstance si, int ephSeqVersion) {
     // Nothing to do.
   }
-
-  @Override
-  public String toString() {
-    return baseSession.toString() + getExpirationString();
-  }
-
-  private String getExpirationString() {
-    if (expirationNs == null) return "";
-    long expiresInMs = (expirationNs - System.nanoTime()) / 1000000L;
-    return ", expires in " + expiresInMs + "ms";
-  }
-
-  //  ********** The methods that we redirect to base.
-  // We could instead have a separate "data" interface that would "return superr" here, and
-  // "return this" in the actual session implementation; however that would require everyone to
-  // call session.getData().method() for some arbitrary set of methods. Let's keep all the
-  // ugliness in one place.
-
-  @Override
-  public HiveConf getConf() {
-    return baseSession.getConf();
-  }
-
-  @Override
-  public String getSessionId() {
-    return baseSession.getSessionId();
-  }
-
-  @Override
-  public String getUser() {
-    return baseSession.getUser();
-  }
-
-  @Override
-  public boolean isOpen() {
-    return baseSession.isOpen();
-  }
-
-  @Override
-  public void setQueueName(String queueName) {
-    baseSession.setQueueName(queueName);
-  }
-
-  @Override
-  public String getQueueName() {
-    return baseSession.getQueueName();
-  }
-
-  @Override
-  public void setDefault() {
-    baseSession.setDefault();
-
-  }
-
-  @Override
-  public boolean isDefault() {
-    return baseSession.isDefault();
-  }
-
-  @Override
-  public boolean getDoAsEnabled() {
-    return baseSession.getDoAsEnabled();
-  }
-
-  @Override
-  public boolean getLegacyLlapMode() {
-    return baseSession.getLegacyLlapMode();
-  }
-
-  @Override
-  public void setLegacyLlapMode(boolean b) {
-    baseSession.setLegacyLlapMode(b);
-  }
-
-  @Override
-  public WmContext getWmContext() {
-    return baseSession.getWmContext();
-  }
-
-  @Override
-  public void setWmContext(WmContext ctx) {
-    baseSession.setWmContext(ctx);
-  }
-
-  @Override
-  public LocalResource getAppJarLr() {
-    return baseSession.getAppJarLr();
-  }
-
-  @Override
-  public List<LocalResource> getLocalizedResources() {
-    return baseSession.getLocalizedResources();
-  }
-
-  @Override
-  public TezClient getTezClient() {
-    return baseSession.getTezClient();
-  }
-
-    @Override
-  public boolean isOpening() {
-    return baseSession.isOpening();
-  }
-
-  @Override
-  public void setOwnerThread() {
-    baseSession.setOwnerThread();
-  }
-
-  @Override
-  public void unsetOwnerThread() {
-    baseSession.unsetOwnerThread();
-  }
-
-  @Override
-  public void setKillQuery(KillQuery kq) {
-    baseSession.setKillQuery(kq);
-  }
-
-  // ********** End of the methods that we redirect to base.
 }

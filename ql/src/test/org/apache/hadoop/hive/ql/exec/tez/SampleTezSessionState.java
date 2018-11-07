@@ -23,13 +23,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.concurrent.ScheduledExecutorService;
-
 import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -52,9 +48,8 @@ public class SampleTezSessionState extends WmTezSession {
 
   public SampleTezSessionState(
       String sessionId, TezSessionPoolSession.Manager parent, HiveConf conf) {
-    super(parent, (parent instanceof TezSessionPoolManager)
-        ? ((TezSessionPoolManager)parent).getExpirationTracker() : null,
-            new TezSessionState(sessionId, conf));
+    super(sessionId, parent, (parent instanceof TezSessionPoolManager)
+        ? ((TezSessionPoolManager)parent).getExpirationTracker() : null, conf);
     this.sessionId = sessionId;
     this.hiveConf = conf;
     waitForAmRegFuture = createDefaultWaitForAmRegistryFuture();
@@ -84,12 +79,6 @@ public class SampleTezSessionState extends WmTezSession {
   }
 
   @Override
-  public void open(boolean isPoolInit) throws IOException, LoginException,
-      URISyntaxException, TezException {
-    open();
-  }
-
-  @Override
   public void open(HiveResources resources) throws LoginException, IOException {
     open();
   }
@@ -100,7 +89,7 @@ public class SampleTezSessionState extends WmTezSession {
   }
 
   @Override
-  public void close(boolean keepTmpDir) throws TezException, IOException {
+  void close(boolean keepTmpDir) throws TezException, IOException {
     open = keepTmpDir;
   }
 

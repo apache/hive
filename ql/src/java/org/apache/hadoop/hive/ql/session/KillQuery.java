@@ -22,6 +22,5 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public interface KillQuery {
-  void killQuery(String queryId, String errMsg, HiveConf conf, boolean isYarn)
-      throws HiveException;
+  void killQuery(String queryId, String errMsg, HiveConf conf) throws HiveException;
 }

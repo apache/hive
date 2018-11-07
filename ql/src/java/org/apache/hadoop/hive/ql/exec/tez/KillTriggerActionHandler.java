@@ -30,24 +30,28 @@ import org.slf4j.LoggerFactory;
 /**
  * Handles only Kill Action.
  */
-public class KillTriggerActionHandler implements TriggerActionHandler<TezSession> {
+public class KillTriggerActionHandler implements TriggerActionHandler<TezSessionState> {
   private static final Logger LOG = LoggerFactory.getLogger(KillTriggerActionHandler.class);
 
   @Override
-  public void applyAction(final Map<TezSession, Trigger> queriesViolated) {
-    for (Map.Entry<TezSession, Trigger> entry : queriesViolated.entrySet()) {
+  public void applyAction(final Map<TezSessionState, Trigger> queriesViolated) {
+    for (Map.Entry<TezSessionState, Trigger> entry : queriesViolated.entrySet()) {
       switch (entry.getValue().getAction().getType()) {
         case KILL_QUERY:
-          TezSession sessionState = entry.getKey();
+          TezSessionState sessionState = entry.getKey();
+          String queryId = sessionState.getWmContext().getQueryId();
           try {
-            // then session might have been released to pool or closed already
-            boolean wasKilled =  sessionState.killQuery(entry.getValue().getViolationMsg());
-            if (!wasKilled) {
-              LOG.info("Didn't kill the query {}", sessionState.getWmContext().getQueryId());
+            SessionState ss = new SessionState(new HiveConf());
+            ss.setIsHiveServerQuery(true);
+            SessionState.start(ss);
+            KillQuery killQuery = sessionState.getKillQuery();
+            // if kill query is null then session might have been released to pool or closed already
+            if (killQuery != null) {
+              sessionState.getKillQuery().killQuery(queryId, entry.getValue().getViolationMsg(),
+                      sessionState.getConf());
             }
           } catch (HiveException e) {
-            LOG.warn("Unable to kill query {} for trigger violation",
-                sessionState.getWmContext().getQueryId());
+            LOG.warn("Unable to kill query {} for trigger violation");
           }
           break;
         default:

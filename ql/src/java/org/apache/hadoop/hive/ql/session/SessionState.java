@@ -71,7 +71,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
-import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.history.HiveHistoryImpl;
@@ -229,7 +228,7 @@ public class SessionState {
 
   private Map<String, List<String>> localMapRedErrors;
 
-  private TezSession tezSessionState;
+  private TezSessionState tezSessionState;
 
   private String currentDatabase;
 
@@ -1858,23 +1857,23 @@ public class SessionState {
     }
   }
 
-  public TezSession getTezSession() {
+  public TezSessionState getTezSession() {
     return tezSessionState;
   }
 
   /** Called from TezTask to attach a TezSession to use to the threadlocal. Ugly pattern... */
-  public void setTezSession(TezSession session) {
+  public void setTezSession(TezSessionState session) {
     if (tezSessionState == session) {
       return; // The same object.
     }
     if (tezSessionState != null) {
-      tezSessionState.unsetOwnerThread();
+      tezSessionState.markFree();
       tezSessionState.setKillQuery(null);
       tezSessionState = null;
     }
     tezSessionState = session;
     if (session != null) {
-      session.setOwnerThread();
+      session.markInUse();
       tezSessionState.setKillQuery(getKillQuery());
     }
   }
