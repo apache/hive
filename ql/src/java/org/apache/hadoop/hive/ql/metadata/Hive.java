@@ -412,10 +412,12 @@ public class Hive {
   }
 
   /**
-   * The HMS connection from this Hive object should be closed when it is garbage collected.
+   * GC is attempting to destroy the object.
+   * No one references this Hive anymore, so HMS connection from this Hive object can be closed.
+   * @throws Throwable
    */
   @Override
-  public void finalize() throws Throwable {
+  protected void finalize() throws Throwable {
     close(true);
     super.finalize();
   }
