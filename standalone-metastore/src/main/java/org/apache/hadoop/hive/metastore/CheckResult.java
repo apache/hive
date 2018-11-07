@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.metadata;
+package org.apache.hadoop.hive.metastore;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,10 +25,12 @@ import java.util.TreeSet;
  */
 public class CheckResult {
 
+  // tree sets to preserve ordering in qfile tests
   private Set<String> tablesNotOnFs = new TreeSet<String>();
   private Set<String> tablesNotInMs = new TreeSet<String>();
   private Set<PartitionResult> partitionsNotOnFs = new TreeSet<PartitionResult>();
   private Set<PartitionResult> partitionsNotInMs = new TreeSet<PartitionResult>();
+  private Set<PartitionResult> expiredPartitions = new TreeSet<>();
 
   /**
    * @return a list of tables not found on the filesystem.
@@ -88,6 +90,15 @@ public class CheckResult {
    */
   public void setPartitionsNotInMs(Set<PartitionResult> partitionsNotInMs) {
     this.partitionsNotInMs = partitionsNotInMs;
+  }
+
+  public Set<PartitionResult> getExpiredPartitions() {
+    return expiredPartitions;
+  }
+
+  public void setExpiredPartitions(
+    final Set<PartitionResult> expiredPartitions) {
+    this.expiredPartitions = expiredPartitions;
   }
 
   /**

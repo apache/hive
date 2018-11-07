@@ -482,7 +482,9 @@ public abstract class NonCatCallsWithCatalog {
           .build(conf);
       table.unsetCatName();
       client.createTable(table);
-      expected.add(new TableMeta(dbName, tableNames[i], TableType.MANAGED_TABLE.name()));
+      TableMeta tableMeta = new TableMeta(dbName, tableNames[i], TableType.MANAGED_TABLE.name());
+      tableMeta.setCatName(expectedCatalog());
+      expected.add(tableMeta);
     }
 
     List<String> types = Collections.singletonList(TableType.MANAGED_TABLE.name());

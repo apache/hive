@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.metastore.api.MetaException;
-
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+
+import org.apache.hadoop.hive.metastore.api.MetaException;
 
 /**
  * This tests calls with an older client, to make sure that if the client supplies no catalog

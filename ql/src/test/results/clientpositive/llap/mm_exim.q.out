@@ -643,6 +643,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	3                   
 	numRows             	6                   
 	rawDataSize         	37                  

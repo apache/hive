@@ -17,57 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import org.apache.commons.collections.ListUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Decimal;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
-import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
-import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
-import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.security.SaslRpcServer;
-import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
-import org.apache.hadoop.security.authorize.ProxyUsers;
-import org.apache.hadoop.util.MachineList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -90,11 +39,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.StringJoiner;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -105,6 +54,58 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.security.SaslRpcServer;
+import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
+import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.util.MachineList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class MetaStoreUtils {
   /** A fixed date format to be used for hive partition column values. */
@@ -855,7 +856,7 @@ public class MetaStoreUtils {
   /** Duplicates AcidUtils; used in a couple places in metastore. */
   public static boolean isTransactionalTable(Map<String, String> params) {
     String transactionalProp = params.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    return (transactionalProp != null && "true".equalsIgnoreCase(transactionalProp));
+    return "true".equalsIgnoreCase(transactionalProp);
   }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
@@ -1864,5 +1865,163 @@ public class MetaStoreUtils {
     public String getDbTable() {
       return db + "." + table;
     }
+  }
+
+  // Some util methods from Hive.java, this is copied so as to avoid circular dependency with hive ql
+  public static Path getPath(Table table) {
+    String location = table.getSd().getLocation();
+    if (location == null) {
+      return null;
+    }
+    return new Path(location);
+  }
+
+  public static List<Partition> getAllPartitionsOf(IMetaStoreClient msc, Table table) throws MetastoreException {
+    try {
+      return msc.listPartitions(table.getCatName(), table.getDbName(), table.getTableName(), (short)-1);
+    } catch (Exception e) {
+      throw new MetastoreException(e);
+    }
+  }
+
+  public static boolean isPartitioned(Table table) {
+    if (getPartCols(table) == null) {
+      return false;
+    }
+    return (getPartCols(table).size() != 0);
+  }
+
+  public static List<FieldSchema> getPartCols(Table table) {
+    List<FieldSchema> partKeys = table.getPartitionKeys();
+    if (partKeys == null) {
+      partKeys = new ArrayList<>();
+      table.setPartitionKeys(partKeys);
+    }
+    return partKeys;
+  }
+
+  public static List<String> getPartColNames(Table table) {
+    List<String> partColNames = new ArrayList<>();
+    for (FieldSchema key : getPartCols(table)) {
+      partColNames.add(key.getName());
+    }
+    return partColNames;
+  }
+
+  public static Path getDataLocation(Table table, Partition partition) {
+    if (isPartitioned(table)) {
+      if (partition.getSd() == null) {
+        return null;
+      } else {
+        return new Path(partition.getSd().getLocation());
+      }
+    } else {
+      if (table.getSd() == null) {
+        return null;
+      }
+      else {
+        return getPath(table);
+      }
+    }
+  }
+
+  public static String getPartitionName(Table table, Partition partition) {
+    try {
+      return Warehouse.makePartName(getPartCols(table), partition.getValues());
+    } catch (MetaException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static Map<String, String> getPartitionSpec(Table table, Partition partition) {
+    return Warehouse.makeSpecFromValues(getPartCols(table), partition.getValues());
+  }
+
+  public static Partition getPartition(IMetaStoreClient msc, Table tbl, Map<String, String> partSpec) throws MetastoreException {
+    List<String> pvals = new ArrayList<String>();
+    for (FieldSchema field : getPartCols(tbl)) {
+      String val = partSpec.get(field.getName());
+      pvals.add(val);
+    }
+    Partition tpart = null;
+    try {
+      tpart = msc.getPartition(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), pvals);
+    } catch (NoSuchObjectException nsoe) {
+      // this means no partition exists for the given partition
+      // key value pairs - thrift cannot handle null return values, hence
+      // getPartition() throws NoSuchObjectException to indicate null partition
+    } catch (Exception e) {
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new MetastoreException(e);
+    }
+
+    return tpart;
+  }
+
+
+  /**
+   * Get the partition name from the path.
+   *
+   * @param tablePath
+   *          Path of the table.
+   * @param partitionPath
+   *          Path of the partition.
+   * @param partCols
+   *          Set of partition columns from table definition
+   * @return Partition name, for example partitiondate=2008-01-01
+   */
+  public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols) {
+    String result = null;
+    Path currPath = partitionPath;
+    LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
+
+    while (currPath != null && !tablePath.equals(currPath)) {
+      // format: partition=p_val
+      // Add only when table partition colName matches
+      String[] parts = currPath.getName().split("=");
+      if (parts.length > 0) {
+        if (parts.length != 2) {
+          LOG.warn(currPath.getName() + " is not a valid partition name");
+          return result;
+        }
+
+        String partitionName = parts[0];
+        if (partCols.contains(partitionName)) {
+          if (result == null) {
+            result = currPath.getName();
+          } else {
+            result = currPath.getName() + Path.SEPARATOR + result;
+          }
+        }
+      }
+      currPath = currPath.getParent();
+      LOG.debug("currPath=" + currPath);
+    }
+    return result;
+  }
+
+  public static Partition createMetaPartitionObject(Table tbl, Map<String, String> partSpec, Path location)
+    throws MetastoreException {
+    List<String> pvals = new ArrayList<String>();
+    for (FieldSchema field : getPartCols(tbl)) {
+      String val = partSpec.get(field.getName());
+      if (val == null || val.isEmpty()) {
+        throw new MetastoreException("partition spec is invalid; field "
+          + field.getName() + " does not exist or is empty");
+      }
+      pvals.add(val);
+    }
+
+    Partition tpart = new Partition();
+    tpart.setCatName(tbl.getCatName());
+    tpart.setDbName(tbl.getDbName());
+    tpart.setTableName(tbl.getTableName());
+    tpart.setValues(pvals);
+
+    if (!MetaStoreUtils.isView(tbl)) {
+      tpart.setSd(tbl.getSd().deepCopy());
+      tpart.getSd().setLocation((location != null) ? location.toString() : null);
+    }
+    return tpart;
   }
 }
