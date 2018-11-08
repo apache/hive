@@ -2638,7 +2638,7 @@ public class TestJdbcDriver2 {
       @Override
       public void run() {
         try {
-          // The test table has 500 rows, so total query time should be ~ 500*500ms
+          // The test table has 500 rows, so total query time should be ~ 500*1ms
           System.out.println("Executing query: ");
           stmt.executeQuery("select sleepMsUDF(t1.under_col, 1) as u0, t1.under_col as u1, "
               + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
@@ -2652,24 +2652,28 @@ public class TestJdbcDriver2 {
     Thread tGuid = new Thread(new Runnable() {
       @Override
       public void run() {
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-        String atsGuid = ((HiveStatement) stmt).getYarnATSGuid();
-        if (atsGuid != null) {
-          yarnATSGuidSet.set(true);
-          System.out.println("Yarn ATS GUID: " + atsGuid);
-        } else {
-          yarnATSGuidSet.set(false);
+        while (true) {
+          try {
+            Thread.sleep(200);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          String atsGuid = ((HiveStatement) stmt).getYarnATSGuid();
+          if (atsGuid != null) {
+            yarnATSGuidSet.set(true);
+            System.out.println("Yarn ATS GUID: " + atsGuid);
+            return;
+          } else {
+            yarnATSGuidSet.set(false);
+            System.out.println("No Yarn ATS GUID yet");
+          }
         }
       }
     });
     tExecute.start();
     tGuid.start();
     tExecute.join();
-    tGuid.join();
+    tGuid.interrupt();
     if (!yarnATSGuidSet.get()) {
       fail("Failed to set the YARN ATS Guid");
     }
