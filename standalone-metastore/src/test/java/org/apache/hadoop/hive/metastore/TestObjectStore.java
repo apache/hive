@@ -65,6 +65,7 @@ import javax.jdo.Query;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
@@ -646,6 +647,73 @@ public class TestObjectStore {
       previousId = event.getEventId();
     }
   }
+
+   /**
+   * Test the concurrent drop of same partition would leak transaction.
+   * https://issues.apache.org/jira/browse/HIVE-16839
+   *
+   * Note: the leak happens during a race condition, this test case tries
+   * to simulate the race condition on best effort, it have two threads trying
+   * to drop the same set of partitions
+   */
+  @Test
+  public void testConcurrentDropPartitions() throws MetaException, InvalidObjectException {
+    Database db1 = new DatabaseBuilder()
+      .setName(DB1)
+      .setDescription("description")
+      .setLocation("locationurl")
+      .build(conf);
+    objectStore.createDatabase(db1);
+    StorageDescriptor sd = createFakeSd("location");
+    HashMap<String, String> tableParams = new HashMap<>();
+    tableParams.put("EXTERNAL", "false");
+    FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl1 =
+      new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2),
+        tableParams, null, null, "MANAGED_TABLE");
+    objectStore.createTable(tbl1);
+    HashMap<String, String> partitionParams = new HashMap<>();
+    partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
+
+    // Create some partitions
+    List<List<String>> partNames = new LinkedList<>();
+    for (char c = 'A'; c < 'Z'; c++) {
+      String name = "" + c;
+      partNames.add(Arrays.asList(name, name));
+    }
+    for (List<String> n : partNames) {
+      Partition p = new Partition(n, DB1, TABLE1, 111, 111, sd, partitionParams);
+      p.setCatName(DEFAULT_CATALOG_NAME);
+      objectStore.addPartition(p);
+    }
+
+    int numThreads = 2;
+    ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      executorService.execute(
+        () -> {
+          for (List<String> p : partNames) {
+            try {
+              objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, p);
+              System.out.println("Dropping partition: " + p.get(0));
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+      );
+    }
+
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(30, TimeUnit.SECONDS);
+    } catch (InterruptedException ex) {
+      Assert.assertTrue("Got interrupted.", false);
+    }
+    Assert.assertTrue("Expect no active transactions.", !objectStore.isActiveTransaction());
+  }
+
 
   private void createTestCatalog(String catName) throws MetaException {
     Catalog cat = new CatalogBuilder()

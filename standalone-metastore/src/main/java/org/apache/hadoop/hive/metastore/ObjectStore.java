@@ -2482,15 +2482,20 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public Partition getPartition(String catName, String dbName, String tableName,
       List<String> part_vals) throws NoSuchObjectException, MetaException {
-    openTransaction();
-    Partition part = convertToPart(getMPartition(catName, dbName, tableName, part_vals));
-    commitTransaction();
-    if(part == null) {
-      throw new NoSuchObjectException("partition values="
-          + part_vals.toString());
+    Partition part;
+    boolean committed = false;
+    try {
+      openTransaction();
+      part = convertToPart(getMPartition(catName, dbName, tableName, part_vals));
+      committed = commitTransaction();
+      if (part == null) {
+        throw new NoSuchObjectException("partition values=" + part_vals.toString());
+      }
+      part.setValues(part_vals);
+      return part;
+    } finally {
+      rollbackAndCleanup(committed, (Query)null);
     }
-    part.setValues(part_vals);
-    return part;
   }
 
   private MPartition getMPartition(String catName, String dbName, String tableName, List<String> part_vals)
