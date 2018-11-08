@@ -1197,6 +1197,60 @@ public class HiveSchemaTool {
     }
   }
 
+  private File generateLogsTableScript(String logPath) throws HiveMetaException {
+    File tmpFile;
+
+    try {
+      tmpFile = File.createTempFile("schematool", ".sql");
+      tmpFile.deleteOnExit();
+      FileWriter fstream = new FileWriter(tmpFile.getPath());
+      try (BufferedWriter out = new BufferedWriter(fstream)) {
+        out.write("USE SYS;" + System.getProperty("line.separator"));
+
+        out.write("CREATE EXTERNAL TABLE logs");
+        out.write(" (timeMillis TIMESTAMP, thread STRING, level STRING, loggerName STRING,");
+        out.write(" message STRING, host STRING, component_id STRING, container_id STRING,");
+        out.write(" tag STRING, unmatched_line STRING)");
+        out.write(" PARTITIONED BY (dt DATE, ns STRING, app STRING)");
+        out.write(" ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.JsonSerDe'");
+        out.write(" WITH SERDEPROPERTIES (\"timestamp.formats\"=\"millis\")");
+        out.write(" LOCATION '" + logPath + "'");
+        out.write(" TBLPROPERTIES (\"partition.retention.period\"=\"7d\");");
+        out.write(System.getProperty("line.separator"));
+      }
+    } catch (Exception err) {
+      throw new HiveMetaException("Error generating logs table script", err);
+    }
+
+    return tmpFile;
+  }
+
+  /**
+   * Generate and run script to create logs table in the SYS schema at the specified location.
+   * @param logPath Path of the warehouse/compute logs directory
+   * @throws HiveMetaException
+   */
+  void createLogsTable(String logPath) throws HiveMetaException {
+    testConnectionToMetastore();
+
+    System.out.println("Starting creation of logs table");
+
+    File scriptFile = generateLogsTableScript(logPath);
+
+    String initScriptDir = scriptFile.getParent();
+    String initScriptFile = scriptFile.getName();
+
+    try {
+      System.out.println("Initialization script " + initScriptFile);
+      if (!dryRun) {
+        runBeeLine(initScriptDir, initScriptFile);
+        System.out.println("Initialization script completed");
+      }
+    } catch (IOException e) {
+      throw new HiveMetaException("Logs table creation FAILED!", e);
+    }
+  }
+
   /***
    * Run beeline with the given metastore script. Flatten the nested scripts
    * into single file.
@@ -1333,6 +1387,10 @@ public class HiveSchemaTool {
             "Requires --fromCatalog, --toCatalog, --fromDatabase, and --toDatabase " +
             " parameters as well.")
         .create("moveTable");
+    Option createLogsTable = OptionBuilder
+            .hasArg()
+            .withDescription("Create table for Hive warehouse/compute logs")
+            .create("createLogsTable");
 
     OptionGroup optGroup = new OptionGroup();
     optGroup.addOption(upgradeOpt)
@@ -1346,7 +1404,8 @@ public class HiveSchemaTool {
         .addOption(createCatalog)
         .addOption(alterCatalog)
         .addOption(moveDatabase)
-        .addOption(moveTable);
+        .addOption(moveTable)
+        .addOption(createLogsTable);
     optGroup.setRequired(true);
 
     Option userNameOpt = OptionBuilder.withArgName("user")
@@ -1408,6 +1467,7 @@ public class HiveSchemaTool {
         .withDescription("Database a moving table is coming from.  This is " +
             "required if you are moving a table.")
         .create("fromDatabase");
+
     cmdLineOptions.addOption(help);
     cmdLineOptions.addOption(dryRunOpt);
     cmdLineOptions.addOption(userNameOpt);
@@ -1558,6 +1618,8 @@ public class HiveSchemaTool {
         schemaTool.moveTable(line.getOptionValue("fromCatalog"), line.getOptionValue("toCatalog"),
             line.getOptionValue("fromDatabase"), line.getOptionValue("toDatabase"),
             line.getOptionValue("moveTable"));
+      } else if (line.hasOption("createLogsTable")){
+        schemaTool.createLogsTable(line.getOptionValue("createLogsTable"));
       } else {
         System.err.println("no valid option supplied");
         printAndExit(cmdLineOptions);
