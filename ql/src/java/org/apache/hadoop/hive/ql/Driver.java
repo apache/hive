@@ -543,7 +543,8 @@ public class Driver implements IDriver {
 
     LockedDriverState.setLockedDriverState(lDrvState);
 
-    String queryId = queryState.getQueryId();
+    final String queryId = Strings.isNullOrEmpty(queryState.getQueryId()) ?
+        QueryPlan.makeQueryId() : queryState.getQueryId();
 
     if (ctx != null) {
       setTriggerContext(queryId);
@@ -1463,7 +1464,7 @@ public class Driver implements IDriver {
         throw new LockException("Unexpected tables in compaction: " + txnTables);
       }
       String fullTableName = txnTables.get(0);
-      txnWriteIds = new ValidTxnWriteIdList(0L); // No transaction for the compaction for now.
+      txnWriteIds = new ValidTxnWriteIdList(0L); // No transaction for the compaction for now. todo: Since MM compaction is a query, a txn has been opened at this point
       txnWriteIds.addTableValidWriteIdList(compactionWriteIds);
     } else {
       txnWriteIds = txnMgr.getValidWriteIds(txnTables, txnString);
@@ -1651,8 +1652,10 @@ public class Driver implements IDriver {
       queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
       // This check is for controlling the correctness of the current state
       if (queryTxnMgr.recordSnapshot(plan) && !validTxnListsGenerated) {
-        throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
-            JavaUtils.txnIdToString(queryTxnMgr.getCurrentTxnId()));
+        throw new IllegalStateException(
+            "Need to record valid WriteID list but there is no valid TxnID list (" +
+                JavaUtils.txnIdToString(queryTxnMgr.getCurrentTxnId()) +
+                ", queryId:" + plan.getQueryId() + ")");
       }
 
       if (plan.hasAcidResourcesInQuery() || hasAcidDdl) {
@@ -2265,7 +2268,7 @@ public class Driver implements IDriver {
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
     Metrics metrics = MetricsFactory.getInstance();
 
-    String queryId = queryState.getQueryId();
+    String queryId = plan.getQueryId();
     // Get the query string from the conf file as the compileInternal() method might
     // hide sensitive information during query redaction.
     String queryStr = conf.getQueryString();
