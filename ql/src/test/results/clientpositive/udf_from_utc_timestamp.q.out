@@ -99,3 +99,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2012-02-11 00:00:00	2012-02-10 16:00:00
+PREHOOK: query: select
+to_epoch_milli(cast (1536449552291 as timestamp )),
+to_epoch_milli(cast('2012-02-11 04:30:00' as timestamp)),
+cast(to_epoch_milli(cast('2012-02-11 04:30:00' as timestamp)) as timestamp )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+to_epoch_milli(cast (1536449552291 as timestamp )),
+to_epoch_milli(cast('2012-02-11 04:30:00' as timestamp)),
+cast(to_epoch_milli(cast('2012-02-11 04:30:00' as timestamp)) as timestamp )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1536449552291	1328934600000	2012-02-11 04:30:00
