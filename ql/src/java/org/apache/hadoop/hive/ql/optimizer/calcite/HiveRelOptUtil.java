@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelReferentialConstraint;
@@ -44,6 +45,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.RelColumnOrigin;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -761,5 +763,44 @@ public class HiveRelOptUtil extends RelOptUtil {
       }
       return newEc;
     }
+  }
+
+  public static Pair<RelOptTable, List<Integer>> getColumnOriginSet(RelNode rel, ImmutableBitSet colSet) {
+    RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
+    RexBuilder rexBuilder = rel.getCluster().getRexBuilder();
+    Map<RelTableRef, List<Integer>> tabToOriginColumns = new HashMap<>();
+    for(int col:colSet) {
+      final RexInputRef tempColRef =  rexBuilder.makeInputRef(rel, col);
+      Set<RexNode> columnOrigins = mq.getExpressionLineage(rel, tempColRef);
+      if (null == columnOrigins || columnOrigins.isEmpty()) {
+        // if even on
+        return null;
+      }
+      // we have either one or multiple origins of the column, we need to make sure that all of the column
+      for (RexNode orgCol : columnOrigins) {
+        RexTableInputRef inputRef = extractTableInputRef(orgCol);
+        if(inputRef == null) {
+          return null;
+        }
+        List<Integer> cols = tabToOriginColumns.get(inputRef.getTableRef());
+        if (cols == null) {
+          cols = new ArrayList<>();
+        }
+        cols.add(inputRef.getIndex());
+        tabToOriginColumns.put(inputRef.getTableRef(), cols);
+      }
+    }
+
+    // return the first table which has same number of backtracked columns as colSet
+    // ideally we should return all, in case one doesn't work we can fall back to another
+    for(Entry<RelTableRef, List<Integer>> mapEntries: tabToOriginColumns.entrySet()) {
+      RelTableRef tblRef = mapEntries.getKey();
+      List<Integer> mapColList = mapEntries.getValue();
+      if(mapColList.size() == colSet.cardinality()) {
+        RelOptTable tbl = tblRef.getTable();
+        return Pair.of(tbl, mapColList);
+      }
+    }
+    return null;
   }
 }
