@@ -40,6 +40,16 @@ public class AbstractOperatorDesc implements OperatorDesc {
   protected long memAvailable = 0;
   protected String runtimeStatsTmpDir;
 
+  /**
+   * Return the string view of operator description
+   * Subclass should override this function
+   *
+   * @return string view of operator description
+   */
+  public String toString() {
+    return "AbstractOperatorDesc";
+  }
+
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
   public Statistics getStatistics() {

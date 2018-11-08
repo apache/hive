@@ -11265,7 +11265,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
     }
 
-    // 9. Optimize Physical op tree & Translate to target execution engine (MR,
+    LOG.info("AXE INFO: Before translate to target execution engin");
+    // 9. Optimize Physical op tree & Translate to tarfget execution engine (MR,
     // TEZ..)
     if (!ctx.getExplainLogical()) {
       TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
