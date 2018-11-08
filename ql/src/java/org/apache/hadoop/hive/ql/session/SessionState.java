@@ -501,6 +501,7 @@ public class SessionState {
    * it's not coupled to the executing thread.  Since tests run against Derby which often wedges
    * under concurrent access, tests must use a single thead and simulate concurrent access.
    * For example, {@code TestDbTxnManager2}
+   * @return previous {@link HiveTxnManager} or null
    */
   @VisibleForTesting
   public HiveTxnManager setTxnMgr(HiveTxnManager mgr) {
