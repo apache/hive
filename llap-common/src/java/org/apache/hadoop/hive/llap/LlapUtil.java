@@ -33,9 +33,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.PolicyProvider;
@@ -382,5 +384,20 @@ public class LlapUtil {
       }
     }
     return mxBean;
+  }
+
+  /**
+   * transform a byte of crendetials to a hadoop Credentials object.
+   * @param binaryCredentials credentials in byte format as they would
+   *                          usually be when received from protobuffers
+   * @return a hadoop Credentials object
+   */
+  public static Credentials credentialsFromByteArray(byte[] binaryCredentials)
+      throws IOException  {
+    Credentials credentials = new Credentials();
+    DataInputBuffer dib = new DataInputBuffer();
+    dib.reset(binaryCredentials, binaryCredentials.length);
+    credentials.readTokenStorageStream(dib);
+    return credentials;
   }
 }

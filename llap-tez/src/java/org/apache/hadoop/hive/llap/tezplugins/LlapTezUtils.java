@@ -15,12 +15,17 @@
 package org.apache.hadoop.hive.llap.tezplugins;
 
 import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.Credentials;
 import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.mapreduce.hadoop.MRInputHelpers;
 import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.input.MultiMRInput;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 @InterfaceAudience.Private
 public class LlapTezUtils {
@@ -47,5 +52,14 @@ public class LlapTezUtils {
       return s.substring(TezTaskAttemptID.ATTEMPT.length() + 1);
     }
     return s;
+  }
+
+  public static ByteBuffer serializeCredentials(Credentials credentials) throws
+      IOException {
+    Credentials containerCredentials = new Credentials();
+    containerCredentials.addAll(credentials);
+    DataOutputBuffer containerTokensDob = new DataOutputBuffer();
+    containerCredentials.writeTokenStorageToStream(containerTokensDob);
+    return ByteBuffer.wrap(containerTokensDob.getData(), 0, containerTokensDob.getLength());
   }
 }
