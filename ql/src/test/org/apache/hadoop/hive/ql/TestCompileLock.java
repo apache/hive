@@ -61,7 +61,7 @@ import static org.mockito.Matchers.eq;
 /**
  * Class for testing HS2 compile lock behavior (serializable, parallel unbounded, parallel bounded).
  */
-public class CompileLockTest {
+public class TestCompileLock {
 
   private static final int CONCURRENT_COMPILATION = 15151;
 
