@@ -16,7 +16,6 @@ package org.apache.hadoop.hive.llap.tezplugins;
 
 import com.google.common.io.ByteArrayDataOutput;
 
-import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 
@@ -71,6 +70,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
@@ -81,12 +81,8 @@ import org.apache.hadoop.hive.llap.tezplugins.endpoint.LlapPluginServerImpl;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerMetrics;
 import org.apache.hadoop.hive.llap.tezplugins.scheduler.LoggingFutureCallback;
-import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
-import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerState;
@@ -121,7 +117,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -133,6 +128,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskSchedulerService.class);
   private static final Logger WM_LOG = LoggerFactory.getLogger("GuaranteedTasks");
   private static final TaskStartComparator TASK_INFO_COMPARATOR = new TaskStartComparator();
+
   private final static Comparator<Priority> PRIORITY_COMPARATOR = new Comparator<Priority>() {
     @Override
     public int compare(Priority o1, Priority o2) {
@@ -151,6 +147,31 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     public void setError(TaskInfo ctx, Throwable t) {
       // The exception has been logged by the lower layer.
       handleUpdateResult(ctx, false);
+    }
+  }
+
+  private final class RegisterDagCallback implements OperationCallback<QueryIdentifierProto, Void> {
+    private final LlapServiceInstance llapServiceInstance;
+    private final NodeInfo nodeInfo;
+    RegisterDagCallback(NodeInfo nodeInfo, LlapServiceInstance llapServiceInstance) {
+      this.nodeInfo = nodeInfo;
+      this.llapServiceInstance = llapServiceInstance;
+    }
+    @Override
+    public void setDone(Void v, QueryIdentifierProto result) {
+      LOG.info("Dag with"
+          + " appId=" + result.getApplicationIdString()
+          + " dagId=" + result.getDagIndex()
+          + " registered successfully for node " + nodeInfo.getHost());
+      addNode(nodeInfo, llapServiceInstance);
+    }
+
+    @Override
+    public void setError(Void v, Throwable t) {
+      LOG.warn("Error registering dag for node " + nodeInfo.getHost(), t);
+      // In case we fail to register the dag we add the node anyway
+      // We will try to register the dag when we schedule the first container
+      addNode(nodeInfo, llapServiceInstance);
     }
   }
 
@@ -761,7 +782,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
       for (LlapServiceInstance inst : activeInstances.getAll()) {
-        addNode(new NodeInfo(inst, nodeBlacklistConf, clock,
+        registerAndAddNode(new NodeInfo(inst, nodeBlacklistConf, clock,
             numSchedulableTasksPerNode, metrics), inst);
       }
       if (amRegistry != null) {
@@ -788,7 +809,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     public void onCreate(LlapServiceInstance serviceInstance, int ephSeqVersion) {
       LOG.info("Added node with identity: {} as a result of registry callback",
           serviceInstance.getWorkerIdentity());
-      addNode(new NodeInfo(serviceInstance, nodeBlacklistConf, clock,
+      registerAndAddNode(new NodeInfo(serviceInstance, nodeBlacklistConf, clock,
           numSchedulableTasksPerNode, metrics), serviceInstance);
     }
 
@@ -1508,6 +1529,18 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         randomNode.toShortString(), nodesWithFreeSlots.size());
     }
     return new SelectHostResult(randomNode);
+  }
+
+  private void registerAndAddNode(NodeInfo node, LlapServiceInstance serviceInstance) {
+    if (communicator != null) {
+      boolean registered = communicator
+          .registerDag(node, new RegisterDagCallback(node, serviceInstance));
+      if (!registered) {
+        addNode(node, serviceInstance);
+      }
+    } else {
+      addNode(node, serviceInstance);
+    }
   }
 
   private void addNode(NodeInfo node, LlapServiceInstance serviceInstance) {
