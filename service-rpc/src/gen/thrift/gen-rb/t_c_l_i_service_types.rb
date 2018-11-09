@@ -942,7 +942,7 @@ class TOperationHandle
   FIELDS = {
     OPERATIONID => {:type => ::Thrift::Types::STRUCT, :name => 'operationId', :class => ::THandleIdentifier},
     OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :enum_class => ::TOperationType},
-    HASRESULTSET => {:type => ::Thrift::Types::BOOL, :name => 'hasResultSet'},
+    HASRESULTSET => {:type => ::Thrift::Types::BOOL, :name => 'hasResultSet', :optional => true},
     MODIFIEDROWCOUNT => {:type => ::Thrift::Types::DOUBLE, :name => 'modifiedRowCount', :optional => true}
   }
 
@@ -951,7 +951,6 @@ class TOperationHandle
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field operationId is unset!') unless @operationId
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field operationType is unset!') unless @operationType
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hasResultSet is unset!') if @hasResultSet.nil?
     unless @operationType.nil? || ::TOperationType::VALID_VALUES.include?(@operationType)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field operationType!')
     end

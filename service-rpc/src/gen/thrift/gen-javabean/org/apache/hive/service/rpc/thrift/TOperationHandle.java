@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 
   private THandleIdentifier operationId; // required
   private TOperationType operationType; // required
-  private boolean hasResultSet; // required
+  private boolean hasResultSet; // optional
   private double modifiedRowCount; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -129,7 +129,7 @@ import org.slf4j.LoggerFactory;
   private static final int __HASRESULTSET_ISSET_ID = 0;
   private static final int __MODIFIEDROWCOUNT_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.MODIFIED_ROW_COUNT};
+  private static final _Fields optionals[] = {_Fields.HAS_RESULT_SET,_Fields.MODIFIED_ROW_COUNT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -137,7 +137,7 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, THandleIdentifier.class)));
     tmpMap.put(_Fields.OPERATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("operationType", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, TOperationType.class)));
-    tmpMap.put(_Fields.HAS_RESULT_SET, new org.apache.thrift.meta_data.FieldMetaData("hasResultSet", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.HAS_RESULT_SET, new org.apache.thrift.meta_data.FieldMetaData("hasResultSet", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.MODIFIED_ROW_COUNT, new org.apache.thrift.meta_data.FieldMetaData("modifiedRowCount", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
@@ -150,14 +150,11 @@ import org.slf4j.LoggerFactory;
 
   public TOperationHandle(
     THandleIdentifier operationId,
-    TOperationType operationType,
-    boolean hasResultSet)
+    TOperationType operationType)
   {
     this();
     this.operationId = operationId;
     this.operationType = operationType;
-    this.hasResultSet = hasResultSet;
-    setHasResultSetIsSet(true);
   }
 
   /**
@@ -392,8 +389,8 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_hasResultSet = true;
-    boolean that_present_hasResultSet = true;
+    boolean this_present_hasResultSet = true && this.isSetHasResultSet();
+    boolean that_present_hasResultSet = true && that.isSetHasResultSet();
     if (this_present_hasResultSet || that_present_hasResultSet) {
       if (!(this_present_hasResultSet && that_present_hasResultSet))
         return false;
@@ -427,7 +424,7 @@ import org.slf4j.LoggerFactory;
     if (present_operationType)
       list.add(operationType.getValue());
 
-    boolean present_hasResultSet = true;
+    boolean present_hasResultSet = true && (isSetHasResultSet());
     list.add(present_hasResultSet);
     if (present_hasResultSet)
       list.add(hasResultSet);
@@ -523,10 +520,12 @@ import org.slf4j.LoggerFactory;
       sb.append(this.operationType);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("hasResultSet:");
-    sb.append(this.hasResultSet);
-    first = false;
+    if (isSetHasResultSet()) {
+      if (!first) sb.append(", ");
+      sb.append("hasResultSet:");
+      sb.append(this.hasResultSet);
+      first = false;
+    }
     if (isSetModifiedRowCount()) {
       if (!first) sb.append(", ");
       sb.append("modifiedRowCount:");
@@ -545,10 +544,6 @@ import org.slf4j.LoggerFactory;
 
     if (!isSetOperationType()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'operationType' is unset! Struct:" + toString());
-    }
-
-    if (!isSetHasResultSet()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'hasResultSet' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -649,9 +644,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeI32(struct.operationType.getValue());
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(HAS_RESULT_SET_FIELD_DESC);
-      oprot.writeBool(struct.hasResultSet);
-      oprot.writeFieldEnd();
+      if (struct.isSetHasResultSet()) {
+        oprot.writeFieldBegin(HAS_RESULT_SET_FIELD_DESC);
+        oprot.writeBool(struct.hasResultSet);
+        oprot.writeFieldEnd();
+      }
       if (struct.isSetModifiedRowCount()) {
         oprot.writeFieldBegin(MODIFIED_ROW_COUNT_FIELD_DESC);
         oprot.writeDouble(struct.modifiedRowCount);
@@ -676,12 +673,17 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       struct.operationId.write(oprot);
       oprot.writeI32(struct.operationType.getValue());
-      oprot.writeBool(struct.hasResultSet);
       BitSet optionals = new BitSet();
-      if (struct.isSetModifiedRowCount()) {
+      if (struct.isSetHasResultSet()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetModifiedRowCount()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetHasResultSet()) {
+        oprot.writeBool(struct.hasResultSet);
+      }
       if (struct.isSetModifiedRowCount()) {
         oprot.writeDouble(struct.modifiedRowCount);
       }
@@ -695,10 +697,12 @@ import org.slf4j.LoggerFactory;
       struct.setOperationIdIsSet(true);
       struct.operationType = org.apache.hive.service.rpc.thrift.TOperationType.findByValue(iprot.readI32());
       struct.setOperationTypeIsSet(true);
-      struct.hasResultSet = iprot.readBool();
-      struct.setHasResultSetIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
+        struct.hasResultSet = iprot.readBool();
+        struct.setHasResultSetIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.modifiedRowCount = iprot.readDouble();
         struct.setModifiedRowCountIsSet(true);
       }

@@ -25,6 +25,7 @@ public class OperationHandle extends Handle {
   private final OperationType opType;
   private final TProtocolVersion protocol;
   private boolean hasResultSet = false;
+  private boolean hasResultSetIsSet = false;
 
   public OperationHandle(OperationType opType, TProtocolVersion protocol) {
     super();
@@ -42,6 +43,7 @@ public class OperationHandle extends Handle {
     this.opType = OperationType.getOperationType(tOperationHandle.getOperationType());
     this.hasResultSet = tOperationHandle.isHasResultSet();
     this.protocol = protocol;
+    this.hasResultSetIsSet = tOperationHandle.isSetHasResultSet();
   }
 
   public OperationType getOperationType() {
@@ -50,17 +52,24 @@ public class OperationHandle extends Handle {
 
   public void setHasResultSet(boolean hasResultSet) {
     this.hasResultSet = hasResultSet;
+    hasResultSetIsSet = true;
   }
 
   public boolean hasResultSet() {
     return hasResultSet;
   }
 
+  public boolean isHasResultSetIsSet() {
+    return hasResultSetIsSet;
+  }
+
   public TOperationHandle toTOperationHandle() {
     TOperationHandle tOperationHandle = new TOperationHandle();
     tOperationHandle.setOperationId(getHandleIdentifier().toTHandleIdentifier());
     tOperationHandle.setOperationType(opType.toTOperationType());
-    tOperationHandle.setHasResultSet(hasResultSet);
+    if (hasResultSetIsSet) {
+      tOperationHandle.setHasResultSet(hasResultSet);
+    }
     return tOperationHandle;
   }
 

@@ -539,7 +539,7 @@ struct TOperationHandle {
   // does not generate a result set, and calling
   // GetResultSetMetadata or FetchResults against
   // this OperationHandle will generate an error.
-  3: required bool hasResultSet
+  3: optional bool hasResultSet
 
   // For operations that don't generate result sets,
   // modifiedRowCount is either:

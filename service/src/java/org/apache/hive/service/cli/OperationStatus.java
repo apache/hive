@@ -32,14 +32,17 @@ public class OperationStatus {
   private final HiveSQLException operationException;
   private JobProgressUpdate jobProgressUpdate;
   private long numModifiedRows;
+  private final boolean hasResultSetIsSet;
 
-  public OperationStatus(OperationState state, String taskStatus, long operationStarted, long operationCompleted, boolean hasResultSet, HiveSQLException operationException) {
+  public OperationStatus(OperationState state, String taskStatus, long operationStarted, long operationCompleted,
+                         boolean hasResultSet, HiveSQLException operationException, boolean hasResultSetIsSet) {
     this.state = state;
     this.taskStatus = taskStatus;
     this.operationStarted = operationStarted;
     this.operationCompleted = operationCompleted;
     this.hasResultSet = hasResultSet;
     this.operationException = operationException;
+    this.hasResultSetIsSet = hasResultSetIsSet;
   }
 
   public OperationState getState() {
@@ -80,5 +83,9 @@ public class OperationStatus {
 
   void setNumModifiedRows(long numRows) {
     this.numModifiedRows = numRows;
+  }
+
+  public boolean isHasResultSetIsSet() {
+    return hasResultSetIsSet;
   }
 }

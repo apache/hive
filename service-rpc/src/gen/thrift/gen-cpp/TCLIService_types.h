@@ -2079,7 +2079,8 @@ inline std::ostream& operator<<(std::ostream& out, const TSessionHandle& obj)
 }
 
 typedef struct _TOperationHandle__isset {
-  _TOperationHandle__isset() : modifiedRowCount(false) {}
+  _TOperationHandle__isset() : hasResultSet(false), modifiedRowCount(false) {}
+  bool hasResultSet :1;
   bool modifiedRowCount :1;
 } _TOperationHandle__isset;
 
@@ -2113,7 +2114,9 @@ class TOperationHandle {
       return false;
     if (!(operationType == rhs.operationType))
       return false;
-    if (!(hasResultSet == rhs.hasResultSet))
+    if (__isset.hasResultSet != rhs.__isset.hasResultSet)
+      return false;
+    else if (__isset.hasResultSet && !(hasResultSet == rhs.hasResultSet))
       return false;
     if (__isset.modifiedRowCount != rhs.__isset.modifiedRowCount)
       return false;

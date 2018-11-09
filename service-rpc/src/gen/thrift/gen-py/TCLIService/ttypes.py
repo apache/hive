@@ -3497,8 +3497,6 @@ class TOperationHandle:
       raise TProtocol.TProtocolException(message='Required field operationId is unset!')
     if self.operationType is None:
       raise TProtocol.TProtocolException(message='Required field operationType is unset!')
-    if self.hasResultSet is None:
-      raise TProtocol.TProtocolException(message='Required field hasResultSet is unset!')
     return
 
 

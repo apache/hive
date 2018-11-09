@@ -4491,6 +4491,7 @@ void TOperationHandle::__set_operationType(const TOperationType::type val) {
 
 void TOperationHandle::__set_hasResultSet(const bool val) {
   this->hasResultSet = val;
+__isset.hasResultSet = true;
 }
 
 void TOperationHandle::__set_modifiedRowCount(const double val) {
@@ -4512,7 +4513,6 @@ uint32_t TOperationHandle::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   bool isset_operationId = false;
   bool isset_operationType = false;
-  bool isset_hasResultSet = false;
 
   while (true)
   {
@@ -4543,7 +4543,7 @@ uint32_t TOperationHandle::read(::apache::thrift::protocol::TProtocol* iprot) {
       case 3:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
           xfer += iprot->readBool(this->hasResultSet);
-          isset_hasResultSet = true;
+          this->__isset.hasResultSet = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -4569,8 +4569,6 @@ uint32_t TOperationHandle::read(::apache::thrift::protocol::TProtocol* iprot) {
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_operationType)
     throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_hasResultSet)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -4587,10 +4585,11 @@ uint32_t TOperationHandle::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeI32((int32_t)this->operationType);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("hasResultSet", ::apache::thrift::protocol::T_BOOL, 3);
-  xfer += oprot->writeBool(this->hasResultSet);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.hasResultSet) {
+    xfer += oprot->writeFieldBegin("hasResultSet", ::apache::thrift::protocol::T_BOOL, 3);
+    xfer += oprot->writeBool(this->hasResultSet);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.modifiedRowCount) {
     xfer += oprot->writeFieldBegin("modifiedRowCount", ::apache::thrift::protocol::T_DOUBLE, 4);
     xfer += oprot->writeDouble(this->modifiedRowCount);
@@ -4630,7 +4629,7 @@ void TOperationHandle::printTo(std::ostream& out) const {
   out << "TOperationHandle(";
   out << "operationId=" << to_string(operationId);
   out << ", " << "operationType=" << to_string(operationType);
-  out << ", " << "hasResultSet=" << to_string(hasResultSet);
+  out << ", " << "hasResultSet="; (__isset.hasResultSet ? (out << to_string(hasResultSet)) : (out << "<null>"));
   out << ", " << "modifiedRowCount="; (__isset.modifiedRowCount ? (out << to_string(modifiedRowCount)) : (out << "<null>"));
   out << ")";
 }
