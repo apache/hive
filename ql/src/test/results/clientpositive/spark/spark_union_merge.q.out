@@ -6,6 +6,8 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union_merge.out' SELECT unioninput.*
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: target/warehouse/union_merge.out
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
@@ -14,6 +16,15 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union_merge.out' SELECT unioninput.*
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: target/warehouse/union_merge.out
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` < 100
+UNION ALL
+SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` > 100
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -27,6 +38,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -114,6 +126,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -233,6 +246,8 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union_merge.out' SELECT unioninput.*
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: target/warehouse/union_merge.out
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
@@ -241,6 +256,15 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union_merge.out' SELECT unioninput.*
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: target/warehouse/union_merge.out
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` < 100
+UNION ALL
+SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` > 100
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
@@ -259,6 +283,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -346,6 +371,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

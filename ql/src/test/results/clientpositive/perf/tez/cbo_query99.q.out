@@ -1,0 +1,106 @@
+PREHOOK: query: explain cbo
+select  
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,cc_name
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk > 30) and 
+                 (cs_ship_date_sk - cs_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk > 60) and 
+                 (cs_ship_date_sk - cs_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk > 90) and
+                 (cs_ship_date_sk - cs_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   catalog_sales
+  ,warehouse
+  ,ship_mode
+  ,call_center
+  ,date_dim
+where
+    d_month_seq between 1212 and 1212 + 11
+and cs_ship_date_sk   = d_date_sk
+and cs_warehouse_sk   = w_warehouse_sk
+and cs_ship_mode_sk   = sm_ship_mode_sk
+and cs_call_center_sk = cc_call_center_sk
+group by
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,cc_name
+order by substr(w_warehouse_name,1,20)
+        ,sm_type
+        ,cc_name
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@call_center
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@ship_mode
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,cc_name
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk <= 30 ) then 1 else 0 end)  as `30 days` 
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk > 30) and 
+                 (cs_ship_date_sk - cs_sold_date_sk <= 60) then 1 else 0 end )  as `31-60 days` 
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk > 60) and 
+                 (cs_ship_date_sk - cs_sold_date_sk <= 90) then 1 else 0 end)  as `61-90 days` 
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk > 90) and
+                 (cs_ship_date_sk - cs_sold_date_sk <= 120) then 1 else 0 end)  as `91-120 days` 
+  ,sum(case when (cs_ship_date_sk - cs_sold_date_sk  > 120) then 1 else 0 end)  as `>120 days` 
+from
+   catalog_sales
+  ,warehouse
+  ,ship_mode
+  ,call_center
+  ,date_dim
+where
+    d_month_seq between 1212 and 1212 + 11
+and cs_ship_date_sk   = d_date_sk
+and cs_warehouse_sk   = w_warehouse_sk
+and cs_ship_mode_sk   = sm_ship_mode_sk
+and cs_call_center_sk = cc_call_center_sk
+group by
+   substr(w_warehouse_name,1,20)
+  ,sm_type
+  ,cc_name
+order by substr(w_warehouse_name,1,20)
+        ,sm_type
+        ,cc_name
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@call_center
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@ship_mode
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(_o__c0=[$0], sm_type=[$1], cc_name=[$2], 30 days=[$3], 31-60 days=[$4], 61-90 days=[$5], 91-120 days=[$6], >120 days=[$7])
+  HiveSortLimit(sort0=[$8], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
+    HiveProject(_o__c0=[$0], sm_type=[$1], cc_name=[$2], 30 days=[$3], 31-60 days=[$4], 61-90 days=[$5], 91-120 days=[$6], >120 days=[$7], (tok_function substr (tok_table_or_col w_warehouse_name) 1 20)=[$0])
+      HiveAggregate(group=[{0, 1, 2}], agg#0=[sum($3)], agg#1=[sum($4)], agg#2=[sum($5)], agg#3=[sum($6)], agg#4=[sum($7)])
+        HiveProject($f0=[substr($10, 1, 20)], $f1=[$12], $f2=[$8], $f3=[CASE(<=(-($1, $0), 30), 1, 0)], $f4=[CASE(AND(>(-($1, $0), 30), <=(-($1, $0), 60)), 1, 0)], $f5=[CASE(AND(>(-($1, $0), 60), <=(-($1, $0), 90)), 1, 0)], $f6=[CASE(AND(>(-($1, $0), 90), <=(-($1, $0), 120)), 1, 0)], $f7=[CASE(>(-($1, $0), 120), 1, 0)])
+          HiveJoin(condition=[=($3, $11)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[=($4, $9)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[=($2, $7)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(cs_sold_date_sk=[$0], cs_ship_date_sk=[$2], cs_call_center_sk=[$11], cs_ship_mode_sk=[$13], cs_warehouse_sk=[$14])
+                    HiveFilter(condition=[AND(IS NOT NULL($14), IS NOT NULL($13), IS NOT NULL($11), IS NOT NULL($2))])
+                      HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                  HiveProject(d_date_sk=[$0], d_month_seq=[$3])
+                    HiveFilter(condition=[AND(BETWEEN(false, $3, 1212, 1223), IS NOT NULL($0))])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                HiveProject(cc_call_center_sk=[$0], cc_name=[$6])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, call_center]], table:alias=[call_center])
+              HiveProject(w_warehouse_sk=[$0], w_warehouse_name=[$2])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+            HiveProject(sm_ship_mode_sk=[$0], sm_type=[$2])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, ship_mode]], table:alias=[ship_mode])
+

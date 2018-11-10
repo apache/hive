@@ -46,6 +46,8 @@ import org.junit.Test;
 import scala.Tuple2;
 import scala.collection.JavaConversions;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 
 
@@ -53,11 +55,15 @@ public class TestSparkPlan {
 
   @Test
   public void testSetRDDCallSite() throws Exception {
+    String confDir = "../data/conf/spark/local/hive-site.xml";
+    HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
     HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-            SQLStdHiveAuthorizerFactory.class.getName());
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "spark");
+
+    // Set to false because we don't launch a job using LocalHiveSparkClient so the
+    // hive-kryo-registrator jar is never added to the classpath
+    conf.setBoolVar(HiveConf.ConfVars.SPARK_OPTIMIZE_SHUFFLE_SERDE, false);
+    conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
+            "TestSparkPlan-local-dir").toString());
 
     FileSystem fs = FileSystem.getLocal(conf);
     Path tmpDir = new Path("TestSparkPlan-tmp");

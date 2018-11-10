@@ -50,10 +50,16 @@ PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_desc1
+PREHOOK: Input: default@table_desc2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_desc1
+POSTHOOK: Input: default@table_desc2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -70,6 +76,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            filterExpr: (value is not null and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 10) and value is not null) (type: boolean)
@@ -84,6 +91,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (value is not null and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 10) and value is not null) (type: boolean)

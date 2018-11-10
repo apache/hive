@@ -39,9 +39,13 @@ t1_text_n7.a	t1_text_n7.b	t1_text_n7.c
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -148,9 +152,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by cube(a, b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by cube(a, b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -282,9 +290,13 @@ NULL	NULL	3.8333333333333335	12
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by a, b with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, avg(c), count(*) from T1_n106 group by a, b with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n106
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -368,10 +380,10 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkMultiKeyOperator
-                      keyColumnNums: [0, 1, 2]
+                      keyColumns: 0:string, 1:string, 2:bigint
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [3, 4, 5]
+                      valueColumns: 3:double, 4:bigint, 5:bigint
                   Statistics: Num rows: 48 Data size: 26496 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: double), _col4 (type: bigint), _col5 (type: bigint)
         Reducer 3 

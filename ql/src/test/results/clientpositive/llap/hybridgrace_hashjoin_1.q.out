@@ -15,110 +15,10 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
-select count(*) from
-(select c.ctinyint
- from alltypesorc c
- inner join alltypesorc cd
- on cd.cint = c.cint
- where c.cint < 2000000000) t1
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: c
-                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (cint < 2000000000) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: cint (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        input vertices:
-                          1 Map 3
-                        Statistics: Num rows: 25057 Data size: 200456 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: cd
-                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (cint < 2000000000) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: cint (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: select count(*) from
-(select c.ctinyint
- from alltypesorc c
- inner join alltypesorc cd
- on cd.cint = c.cint
- where c.cint < 2000000000) t1
-PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from
+POSTHOOK: query: explain
+select count(*) from
 (select c.ctinyint
  from alltypesorc c
  inner join alltypesorc cd
@@ -127,23 +27,6 @@ POSTHOOK: query: select count(*) from
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-3152013
-PREHOOK: query: explain
-select count(*) from
-(select c.ctinyint
- from alltypesorc c
- inner join alltypesorc cd
- on cd.cint = c.cint
- where c.cint < 2000000000) t1
-PREHOOK: type: QUERY
-POSTHOOK: query: explain
-select count(*) from
-(select c.ctinyint
- from alltypesorc c
- inner join alltypesorc cd
- on cd.cint = c.cint
- where c.cint < 2000000000) t1
-POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -161,6 +44,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (cint < 2000000000) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint < 2000000000) (type: boolean)
@@ -177,7 +61,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 25057 Data size: 200456 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 24737 Data size: 197896 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -193,6 +77,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
+                  filterExpr: (cint < 2000000000) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint < 2000000000) (type: boolean)
@@ -254,15 +139,21 @@ select count(*) from
 (select c.ctinyint
  from alltypesorc c
  inner join alltypesorc cd
- on cd.cint = c.cint) t1
+ on cd.cint = c.cint
+ where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
  inner join alltypesorc cd
- on cd.cint = c.cint) t1
+ on cd.cint = c.cint
+ where c.cint < 2000000000) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -280,6 +171,132 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (cint < 2000000000) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (cint < 2000000000) (type: boolean)
+                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 24737 Data size: 197896 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cd
+                  filterExpr: (cint < 2000000000) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (cint < 2000000000) (type: boolean)
+                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ inner join alltypesorc cd
+ on cd.cint = c.cint
+ where c.cint < 2000000000) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ inner join alltypesorc cd
+ on cd.cint = c.cint
+ where c.cint < 2000000000) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+3152013
+PREHOOK: query: explain
+select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ inner join alltypesorc cd
+ on cd.cint = c.cint) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ inner join alltypesorc cd
+ on cd.cint = c.cint) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -296,7 +313,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 18702 Data size: 149616 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 13785 Data size: 110280 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -312,6 +329,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
+                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -373,6 +391,8 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -380,6 +400,8 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -397,6 +419,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -413,7 +436,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 18702 Data size: 149616 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 13785 Data size: 110280 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -429,6 +452,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
+                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -490,6 +514,8 @@ select count(*) from
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -497,6 +523,8 @@ select count(*) from
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -527,7 +555,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 25057 Data size: 200456 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 24737 Data size: 197896 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -601,6 +629,8 @@ select count(*) from
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -608,6 +638,8 @@ select count(*) from
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -638,7 +670,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 25057 Data size: 200456 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 24737 Data size: 197896 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -744,6 +776,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parttbl
+PREHOOK: Input: default@parttbl@dt=2000-01-01
+PREHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select p1.value
@@ -751,6 +787,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parttbl
+POSTHOOK: Input: default@parttbl@dt=2000-01-01
+POSTHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -768,6 +808,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -800,6 +841,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -865,6 +907,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parttbl
+PREHOOK: Input: default@parttbl@dt=2000-01-01
+PREHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select p1.value
@@ -872,6 +918,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parttbl
+POSTHOOK: Input: default@parttbl@dt=2000-01-01
+POSTHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -889,6 +939,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -922,6 +973,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -987,6 +1039,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parttbl
+PREHOOK: Input: default@parttbl@dt=2000-01-01
+PREHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select p1.value
@@ -994,6 +1050,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parttbl
+POSTHOOK: Input: default@parttbl@dt=2000-01-01
+POSTHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1011,6 +1071,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1030,6 +1091,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1114,6 +1176,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parttbl
+PREHOOK: Input: default@parttbl@dt=2000-01-01
+PREHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select p1.value
@@ -1121,6 +1187,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parttbl
+POSTHOOK: Input: default@parttbl@dt=2000-01-01
+POSTHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1138,6 +1208,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1157,6 +1228,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 525 Data size: 104474 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1270,11 +1342,15 @@ PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1291,6 +1367,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (cint = 6981) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1354300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint = 6981) (type: boolean)
@@ -1309,6 +1386,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (cint = 6981) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1354300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint = 6981) (type: boolean)
@@ -1473,11 +1551,15 @@ PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1494,6 +1576,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (cint = 6981) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1354300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint = 6981) (type: boolean)
@@ -1512,6 +1595,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (cint = 6981) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1354300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cint = 6981) (type: boolean)

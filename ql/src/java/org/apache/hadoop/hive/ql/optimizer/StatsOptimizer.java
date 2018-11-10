@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -59,13 +60,14 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -179,7 +181,7 @@ public class StatsOptimizer extends Transform {
 
     enum DateSubType {
       DAYS {@Override
-        Object cast(long longValue) { return (new DateWritable((int)longValue)).get();}
+        Object cast(long longValue) { return (new DateWritableV2((int)longValue)).get();}
       };
       abstract Object cast(long longValue);
     }
@@ -281,7 +283,17 @@ public class StatsOptimizer extends Transform {
           // limit. In order to be safe, we do not use it now.
           return null;
         }
+
+        Hive hive = Hive.get(pctx.getConf());
         Table tbl = tsOp.getConf().getTableMetadata();
+        boolean isTransactionalTable = AcidUtils.isTransactionalTable(tbl);
+
+        // If the table is transactional, get stats state by calling getTable() with
+        // transactional flag on to check the validity of table stats.
+        if (isTransactionalTable) {
+          tbl = hive.getTable(tbl.getDbName(), tbl.getTableName(), true, true);
+        }
+
         if (MetaStoreUtils.isExternalTable(tbl.getTTable())) {
           Logger.info("Table " + tbl.getTableName() + " is external. Skip StatsOptimizer.");
           return null;
@@ -290,11 +302,7 @@ public class StatsOptimizer extends Transform {
           Logger.info("Table " + tbl.getTableName() + " is non Native table. Skip StatsOptimizer.");
           return null;
         }
-        if (AcidUtils.isTransactionalTable(tbl)) {
-          //todo: should this be OK for MM table?
-          Logger.info("Table " + tbl.getTableName() + " is ACID table. Skip StatsOptimizer.");
-          return null;
-        }
+
         Long rowCnt = getRowCnt(pctx, tsOp, tbl);
         // if we can not have correct table stats, then both the table stats and column stats are not useful.
         if (rowCnt == null) {
@@ -374,7 +382,8 @@ public class StatsOptimizer extends Transform {
 
         List<Object> oneRow = new ArrayList<Object>();
 
-        Hive hive = Hive.get(pctx.getConf());
+        AcidUtils.TableSnapshot tableSnapshot =
+            AcidUtils.getTableSnapshot(pctx.getConf(), tbl);
 
         for (AggregationDesc aggr : pgbyOp.getConf().getAggregators()) {
           if (aggr.getDistinct()) {
@@ -447,7 +456,7 @@ public class StatsOptimizer extends Transform {
               String colName = desc.getColumn();
               StatType type = getType(desc.getTypeString());
               if (!tbl.isPartitioned()) {
-                if (!StatsSetupConst.areBasicStatsUptoDate(tbl.getParameters())) {
+                if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
                   Logger.debug("Stats for table : " + tbl.getTableName() + " are not up to date.");
                   return null;
                 }
@@ -456,13 +465,17 @@ public class StatsOptimizer extends Transform {
                   Logger.debug("Table doesn't have up to date stats " + tbl.getTableName());
                   return null;
                 }
-                if (!StatsSetupConst.areColumnStatsUptoDate(tbl.getParameters(), colName)) {
+                if (!StatsUtils.areColumnStatsUptoDateForQueryAnswering(tbl, tbl.getParameters(), colName)) {
                   Logger.debug("Stats for table : " + tbl.getTableName() + " column " + colName
                       + " are not up to date.");
                   return null;
                 }
-                List<ColumnStatisticsObj> stats = hive.getMSC().getTableColumnStatistics(
-                    tbl.getDbName(), tbl.getTableName(), Lists.newArrayList(colName));
+
+                List<ColumnStatisticsObj> stats =
+                    hive.getMSC().getTableColumnStatistics(
+                      tbl.getDbName(), tbl.getTableName(),
+                      Lists.newArrayList(colName),
+                      tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
                 if (stats.isEmpty()) {
                   Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
                   return null;
@@ -479,7 +492,7 @@ public class StatsOptimizer extends Transform {
                 Set<Partition> parts = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp)
                     .getPartitions();
                 for (Partition part : parts) {
-                  if (!StatsSetupConst.areBasicStatsUptoDate(part.getParameters())) {
+                  if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(part.getTable(), part.getParameters())) {
                     Logger.debug("Stats for part : " + part.getSpec() + " are not up to date.");
                     return null;
                   }
@@ -517,13 +530,17 @@ public class StatsOptimizer extends Transform {
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
             if(!tbl.isPartitioned()) {
-              if (!StatsSetupConst.areColumnStatsUptoDate(tbl.getParameters(), colName)) {
+              if (!StatsUtils.areColumnStatsUptoDateForQueryAnswering(tbl, tbl.getParameters(), colName)) {
                 Logger.debug("Stats for table : " + tbl.getTableName() + " column " + colName
                     + " are not up to date.");
                 return null;
               }
-              List<ColumnStatisticsObj> stats = hive.getMSC().getTableColumnStatistics(
-                  tbl.getDbName(),tbl.getTableName(), Lists.newArrayList(colName));
+
+              List<ColumnStatisticsObj> stats =
+                  hive.getMSC().getTableColumnStatistics(
+                    tbl.getDbName(), tbl.getTableName(),
+                    Lists.newArrayList(colName),
+                      tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
               if (stats.isEmpty()) {
                 Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
                 return null;
@@ -658,14 +675,16 @@ public class StatsOptimizer extends Transform {
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
             if (!tbl.isPartitioned()) {
-              if (!StatsSetupConst.areColumnStatsUptoDate(tbl.getParameters(), colName)) {
+              if (!StatsUtils.areColumnStatsUptoDateForQueryAnswering(tbl, tbl.getParameters(), colName)) {
                 Logger.debug("Stats for table : " + tbl.getTableName() + " column " + colName
                     + " are not up to date.");
                 return null;
               }
-              ColumnStatisticsData statData = hive.getMSC().getTableColumnStatistics(
-                  tbl.getDbName(), tbl.getTableName(), Lists.newArrayList(colName))
-                  .get(0).getStatsData();
+              ColumnStatisticsData statData =
+                  hive.getMSC().getTableColumnStatistics(
+                    tbl.getDbName(), tbl.getTableName(), Lists.newArrayList(colName),
+                      tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null)
+                    .get(0).getStatsData();
               String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
                 case Integer: {
@@ -886,18 +905,22 @@ public class StatsOptimizer extends Transform {
     }
 
     private Collection<List<ColumnStatisticsObj>> verifyAndGetPartColumnStats(
-        Hive hive, Table tbl, String colName, Set<Partition> parts) throws TException {
+        Hive hive, Table tbl, String colName, Set<Partition> parts) throws TException, LockException {
       List<String> partNames = new ArrayList<String>(parts.size());
       for (Partition part : parts) {
-        if (!StatsSetupConst.areColumnStatsUptoDate(part.getParameters(), colName)) {
+        if (!StatsUtils.areColumnStatsUptoDateForQueryAnswering(part.getTable(), part.getParameters(), colName)) {
           Logger.debug("Stats for part : " + part.getSpec() + " column " + colName
               + " are not up to date.");
           return null;
         }
         partNames.add(part.getName());
       }
+      AcidUtils.TableSnapshot tableSnapshot =
+          AcidUtils.getTableSnapshot(hive.getConf(), tbl);
+
       Map<String, List<ColumnStatisticsObj>> result = hive.getMSC().getPartitionColumnStatistics(
-          tbl.getDbName(), tbl.getTableName(), partNames, Lists.newArrayList(colName));
+          tbl.getDbName(), tbl.getTableName(), partNames, Lists.newArrayList(colName),
+          tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       if (result.size() != parts.size()) {
         Logger.debug("Received " + result.size() + " stats for " + parts.size() + " partitions");
         return null;
@@ -911,7 +934,7 @@ public class StatsOptimizer extends Transform {
       if (tbl.isPartitioned()) {
         for (Partition part : pctx.getPrunedPartitions(
             tsOp.getConf().getAlias(), tsOp).getPartitions()) {
-          if (!StatsSetupConst.areBasicStatsUptoDate(part.getParameters())) {
+          if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(part.getTable(), part.getParameters())) {
             return null;
           }
           Long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
@@ -922,7 +945,7 @@ public class StatsOptimizer extends Transform {
           rowCnt += partRowCnt;
         }
       } else { // unpartitioned table
-        if (!StatsSetupConst.areBasicStatsUptoDate(tbl.getParameters())) {
+        if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
           return null;
         }
         rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));

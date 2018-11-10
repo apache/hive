@@ -3,6 +3,8 @@
 --! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
 
+-- SORT_QUERY_RESULTS
+
 -- non agg, non corr
 explain
 select * 
@@ -177,7 +179,7 @@ SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0);
 
 -- corr
 explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1);
-SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c1=t2_n0.c1);
+SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1);
 
 DROP TABLE t1_n0;
 DROP TABLE t2_n0;

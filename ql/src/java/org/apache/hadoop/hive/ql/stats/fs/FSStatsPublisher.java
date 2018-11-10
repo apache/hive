@@ -95,16 +95,17 @@ public class FSStatsPublisher implements StatsPublisher {
   public boolean closeConnection(StatsCollectionContext context) {
     List<String> statsDirs = context.getStatsTmpDirs();
     assert statsDirs.size() == 1 : "Found multiple stats dirs: " + statsDirs;
+    if (context.getContextSuffix() == null) {
+      throw new RuntimeException("ContextSuffix must be set before publishing!");
+    }
+
     Path statsDir = new Path(statsDirs.get(0));
     try {
-      Path statsFile = null;
-      if (context.getIndexForTezUnion() != -1) {
-        statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX
-            + conf.getInt("mapred.task.partition", 0) + "_" + context.getIndexForTezUnion());
-      } else {
-        statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX
-            + conf.getInt("mapred.task.partition", 0));
+      String suffix = Integer.toString(conf.getInt("mapred.task.partition", 0));
+      if (context.getContextSuffix() != null) {
+        suffix += "_" + context.getContextSuffix();
       }
+      Path statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX + suffix);
       Utilities.FILE_OP_LOGGER.trace("About to create stats file for this task : {}", statsFile);
       Output output = new Output(statsFile.getFileSystem(conf).create(statsFile,true));
       LOG.debug("Created file : " + statsFile);

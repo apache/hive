@@ -12,12 +12,32 @@ SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.key = z.key and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j1_n10
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n10
 SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.key = z.key and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j1_n10
+OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `key` IS NOT NULL) AS `t0`
+INNER JOIN ((SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `key`
+FROM `default`.`src1`
+WHERE `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-6 depends on stages: Stage-7
@@ -39,6 +59,7 @@ STAGE PLANS:
         $hdt$_1:y 
           TableScan
             alias: y
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -58,6 +79,7 @@ STAGE PLANS:
         $hdt$_2:x 
           TableScan
             alias: x
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -80,6 +102,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: z
+            filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

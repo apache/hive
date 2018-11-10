@@ -27,6 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.client.metrics.InputMetrics;
 import org.apache.hive.spark.client.metrics.Metrics;
+import org.apache.hive.spark.client.metrics.OutputMetrics;
 import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
 import org.apache.hive.spark.client.metrics.ShuffleWriteMetrics;
 
@@ -154,6 +155,7 @@ public class MetricsCollection {
       // Input metrics.
       boolean hasInputMetrics = false;
       long bytesRead = 0L;
+      long recordsRead = 0L;
 
       // Shuffle read metrics.
       boolean hasShuffleReadMetrics = false;
@@ -161,10 +163,19 @@ public class MetricsCollection {
       int localBlocksFetched = 0;
       long fetchWaitTime = 0L;
       long remoteBytesRead = 0L;
+      long localBytesRead = 0L;
+      long remoteBytesReadToDisk = 0L;
+      long shuffleRecordsRead = 0L;
 
       // Shuffle write metrics.
       long shuffleBytesWritten = 0L;
       long shuffleWriteTime = 0L;
+      long shuffleRecordsWritten = 0L;
+
+      // Input metrics.
+      boolean hasOuputMetrics = false;
+      long bytesWritten = 0L;
+      long recordsWritten = 0L;
 
       for (TaskInfo info : Collections2.filter(taskMetrics, filter)) {
         Metrics m = info.metrics;
@@ -182,6 +193,7 @@ public class MetricsCollection {
         if (m.inputMetrics != null) {
           hasInputMetrics = true;
           bytesRead += m.inputMetrics.bytesRead;
+          recordsRead += m.inputMetrics.recordsRead;
         }
 
         if (m.shuffleReadMetrics != null) {
@@ -190,17 +202,27 @@ public class MetricsCollection {
           localBlocksFetched += m.shuffleReadMetrics.localBlocksFetched;
           fetchWaitTime += m.shuffleReadMetrics.fetchWaitTime;
           remoteBytesRead += m.shuffleReadMetrics.remoteBytesRead;
+          localBytesRead += m.shuffleReadMetrics.localBytesRead;
+          remoteBytesReadToDisk += m.shuffleReadMetrics.remoteBytesReadToDisk;
+          shuffleRecordsRead += m.shuffleReadMetrics.recordsRead;
         }
 
         if (m.shuffleWriteMetrics != null) {
           shuffleBytesWritten += m.shuffleWriteMetrics.shuffleBytesWritten;
           shuffleWriteTime += m.shuffleWriteMetrics.shuffleWriteTime;
+          shuffleRecordsWritten += m.shuffleWriteMetrics.shuffleRecordsWritten;
+        }
+
+        if (m.outputMetrics != null) {
+          hasOuputMetrics = true;
+          bytesWritten += m.outputMetrics.bytesWritten;
+          recordsWritten += m.outputMetrics.recordsWritten;
         }
       }
 
       InputMetrics inputMetrics = null;
       if (hasInputMetrics) {
-        inputMetrics = new InputMetrics(bytesRead);
+        inputMetrics = new InputMetrics(bytesRead, recordsRead);
       }
 
       ShuffleReadMetrics shuffleReadMetrics = null;
@@ -209,14 +231,23 @@ public class MetricsCollection {
           remoteBlocksFetched,
           localBlocksFetched,
           fetchWaitTime,
-          remoteBytesRead);
+          remoteBytesRead,
+          localBytesRead,
+          remoteBytesReadToDisk,
+          shuffleRecordsRead);
       }
 
       ShuffleWriteMetrics shuffleWriteMetrics = null;
       if (hasShuffleReadMetrics) {
         shuffleWriteMetrics = new ShuffleWriteMetrics(
           shuffleBytesWritten,
-          shuffleWriteTime);
+          shuffleWriteTime,
+          shuffleRecordsWritten);
+      }
+
+      OutputMetrics outputMetrics = null;
+      if (hasInputMetrics) {
+        outputMetrics = new OutputMetrics(bytesWritten, recordsWritten);
       }
 
       return new Metrics(
@@ -232,7 +263,8 @@ public class MetricsCollection {
         taskDurationTime,
         inputMetrics,
         shuffleReadMetrics,
-        shuffleWriteMetrics);
+        shuffleWriteMetrics,
+        outputMetrics);
     } finally {
         lock.readLock().unlock();
     }

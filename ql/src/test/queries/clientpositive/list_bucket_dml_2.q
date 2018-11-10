@@ -9,7 +9,6 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.stats.reliable=true;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
 
 -- list bucketing DML: static partition. multiple skewed columns.

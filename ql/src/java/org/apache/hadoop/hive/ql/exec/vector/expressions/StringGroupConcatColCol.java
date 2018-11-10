@@ -128,7 +128,7 @@ public class StringGroupConcatColCol extends VectorExpression {
           }
         } else {
           for(int i = 0; i != n; i++) {
-            if (!inV2.isNull[0]) {
+            if (!inV2.isNull[i]) {
               outV.setConcat(i, vector1[0], start1[0], len1[0], vector2[i], start2[i], len2[i]);
             }
           }

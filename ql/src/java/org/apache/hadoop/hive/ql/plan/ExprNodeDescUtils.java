@@ -18,34 +18,39 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 
 public class ExprNodeDescUtils {
 
@@ -138,6 +143,37 @@ public class ExprNodeDescUtils {
       if (origin.getChildren() != null) {
         for (ExprNodeDesc child : origin.getChildren()) {
           replaceEqualDefaultPartition(child, defaultPartitionName);
+        }
+      }
+    }
+  }
+
+  public static void replaceNullFiltersWithDefaultPartition(ExprNodeDesc origin,
+                                            String defaultPartitionName) throws SemanticException {
+    // Convert "ptn_col isnull" to "ptn_col = default_partition" and
+    // "ptn_col isnotnull" to "ptn_col <> default_partition"
+    String fnName = null;
+    if (origin instanceof ExprNodeGenericFuncDesc) {
+      if (((ExprNodeGenericFuncDesc) origin).getGenericUDF() instanceof GenericUDFOPNull) {
+        fnName = "=";
+      } else if (((ExprNodeGenericFuncDesc) origin).getGenericUDF() instanceof GenericUDFOPNotNull) {
+        fnName = "<>";
+      }
+    }
+    // Found an expression for function "isnull" or "isnotnull"
+    if (fnName != null) {
+      List<ExprNodeDesc> children = origin.getChildren();
+      assert(children.size() == 1);
+      ExprNodeConstantDesc defaultPartition = new ExprNodeConstantDesc(defaultPartitionName);
+      children.add(defaultPartition);
+      ((ExprNodeGenericFuncDesc) origin).setChildren(children);
+
+      ((ExprNodeGenericFuncDesc) origin).setGenericUDF(
+              FunctionRegistry.getFunctionInfo(fnName).getGenericUDF());
+    } else {
+      if (origin.getChildren() != null) {
+        for (ExprNodeDesc child : origin.getChildren()) {
+          replaceNullFiltersWithDefaultPartition(child, defaultPartitionName);
         }
       }
     }
@@ -396,7 +432,7 @@ public class ExprNodeDescUtils {
     // Find the key/value where the ExprNodeDesc value matches the column we are searching for.
     // The key portion of the entry will be the internal column name for the join key expression.
     for (Map.Entry<String, ExprNodeDesc> mapEntry : reduceSinkOp.getColumnExprMap().entrySet()) {
-      if (mapEntry.getValue().isSame(source)) {
+      if (mapEntry.getValue().equals(source)) {
         String columnInternalName = mapEntry.getKey();
         if (source instanceof ExprNodeColumnDesc) {
           // The join key is a table column. Create the ExprNodeDesc based on this column.
@@ -537,7 +573,7 @@ public class ExprNodeDescUtils {
 
 	/**
 	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
-	 * 
+	 *
 	 * @param exprDesc
 	 * @param hashCodeToColumnDescMap
 	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
@@ -608,7 +644,9 @@ public class ExprNodeDescUtils {
     // We only do the minimum cast for decimals. Other types are assumed safe; fix if needed.
     // We also don't do anything for non-primitive children (maybe we should assert).
     if ((pti.getPrimitiveCategory() != PrimitiveCategory.DECIMAL)
-        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) return pti;
+        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) {
+      return pti;
+    }
     PrimitiveTypeInfo childTi = (PrimitiveTypeInfo)childExpr.getTypeInfo();
     // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
     return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
@@ -618,7 +656,7 @@ public class ExprNodeDescUtils {
    * Build ExprNodeColumnDesc for the projections in the input operator from
    * sartpos to endpos(both included). Operator must have an associated
    * colExprMap.
-   * 
+   *
    * @param inputOp
    *          Input Hive Operator
    * @param startPos
@@ -650,7 +688,7 @@ public class ExprNodeDescUtils {
     }
 
     return exprColLst;
-  }  
+  }
 
   public static List<ExprNodeDesc> flattenExprList(List<ExprNodeDesc> sourceList) {
     ArrayList<ExprNodeDesc> result = new ArrayList<ExprNodeDesc>(sourceList.size());
@@ -935,4 +973,46 @@ public class ExprNodeDescUtils {
     }
     return true;
   }
+
+  // Given an expression this method figures out if the type for the expression belongs to string group
+  // e.g. (String, Char, Varchar etc)
+  public static boolean isStringType(ExprNodeDesc expr) {
+    TypeInfo typeInfo = expr.getTypeInfo();
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) ==
+          PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP) {
+        return true;
+      }
+    }
+    return false;
+  }
+    // Given an expression this method figures out if the type for the expression is integer
+  // i.e. INT, SHORT, TINYINT (BYTE) or LONG
+  public static boolean isIntegerType(ExprNodeDesc expr) {
+    TypeInfo typeInfo = expr.getTypeInfo();
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      if(primitiveCategory == PrimitiveCategory.INT
+        || primitiveCategory == PrimitiveCategory.SHORT
+          || primitiveCategory == PrimitiveCategory.BYTE
+        || primitiveCategory == PrimitiveCategory.LONG){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean isConstantStruct(ExprNodeDesc valueDesc) {
+    return valueDesc instanceof ExprNodeConstantDesc && valueDesc.getTypeInfo() instanceof StructTypeInfo;
+  }
+
+  public static boolean isStructUDF(ExprNodeDesc columnDesc) {
+    if (columnDesc instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) columnDesc;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFStruct);
+    }
+    return false;
+  }
+
 }

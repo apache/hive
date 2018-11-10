@@ -52,9 +52,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFuncti
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateAddSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateSubSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFromUnixTimeSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTruncSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnixTimestampSqlOperator;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -204,8 +210,9 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.intervalYearMonthTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
-      } else
+      } else {
         throw new IllegalStateException("Unexpected type : " + castType.getQualifiedName());
+      }
     }
 
     return castUDF;
@@ -232,9 +239,14 @@ public class SqlFunctionConverter {
         case IN:
         case BETWEEN:
         case ROW:
+        case IS_NOT_TRUE:
+        case IS_TRUE:
+        case IS_NOT_FALSE:
+        case IS_FALSE:
         case IS_NOT_NULL:
         case IS_NULL:
         case CASE:
+        case COALESCE:
         case EXTRACT:
         case FLOOR:
         case CEIL:
@@ -315,8 +327,9 @@ public class SqlFunctionConverter {
         udfName = udfDescription.name();
         if (udfName != null) {
           String[] aliases = udfName.split(",");
-          if (aliases.length > 0)
+          if (aliases.length > 0) {
             udfName = aliases[0];
+          }
         }
       }
 
@@ -366,9 +379,14 @@ public class SqlFunctionConverter {
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
       registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.Identifier, "isnotnull"));
       registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.Identifier, "isnull"));
+      registerFunction("isnottrue", SqlStdOperatorTable.IS_NOT_TRUE, hToken(HiveParser.Identifier, "isnottrue"));
+      registerFunction("istrue", SqlStdOperatorTable.IS_TRUE, hToken(HiveParser.Identifier, "istrue"));
+      registerFunction("isnotfalse", SqlStdOperatorTable.IS_NOT_FALSE, hToken(HiveParser.Identifier, "isnotfalse"));
+      registerFunction("isfalse", SqlStdOperatorTable.IS_FALSE, hToken(HiveParser.Identifier, "isfalse"));
       registerFunction("is not distinct from", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
+      registerFunction("coalesce", SqlStdOperatorTable.COALESCE, hToken(HiveParser.Identifier, "coalesce"));
       // timebased
       registerFunction("year", HiveExtractDate.YEAR,
           hToken(HiveParser.Identifier, "year"));
@@ -431,15 +449,25 @@ public class SqlFunctionConverter {
       registerFunction("lower", SqlStdOperatorTable.LOWER, hToken(HiveParser.Identifier, "lower"));
       registerFunction("upper", SqlStdOperatorTable.UPPER, hToken(HiveParser.Identifier, "upper"));
       registerFunction("abs", SqlStdOperatorTable.ABS, hToken(HiveParser.Identifier, "abs"));
-      registerFunction("char_length", SqlStdOperatorTable.CHAR_LENGTH,
-          hToken(HiveParser.Identifier, "char_length")
+      registerFunction("character_length", SqlStdOperatorTable.CHAR_LENGTH,
+          hToken(HiveParser.Identifier, "character_length")
       );
-      registerDuplicateFunction("character_length", SqlStdOperatorTable.CHAR_LENGTH,
-          hToken(HiveParser.Identifier, "char_length")
+      registerDuplicateFunction("char_length", SqlStdOperatorTable.CHAR_LENGTH,
+          hToken(HiveParser.Identifier, "character_length")
       );
       registerFunction("length", SqlStdOperatorTable.CHARACTER_LENGTH,
           hToken(HiveParser.Identifier, "length")
       );
+      registerFunction("trunc", HiveTruncSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "trunc"));
+      registerFunction("to_date", HiveToDateSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "to_date"));
+      registerFunction("to_unix_timestamp", HiveUnixTimestampSqlOperator.INSTANCE,
+          hToken(HiveParser.Identifier, "to_unix_timestamp")
+      );
+      registerFunction("from_unixtime", HiveFromUnixTimeSqlOperator.INSTANCE,
+          hToken(HiveParser.Identifier, "from_unixtime")
+      );
+      registerFunction("date_add", HiveDateAddSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_add"));
+      registerFunction("date_sub", HiveDateSubSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_sub"));
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {

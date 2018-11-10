@@ -47,4 +47,8 @@ public class SparkStatisticGroup {
   public SparkStatistic getSparkStatistic(String name) {
     return this.statistics.get(name);
   }
+
+  public boolean containsSparkStatistic(String name) {
+    return this.statistics.containsKey(name);
+  }
 }

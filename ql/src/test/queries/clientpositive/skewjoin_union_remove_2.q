@@ -7,7 +7,6 @@ set hive.optimize.union.remove=true;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.merge.sparkfiles=false;
-set mapred.input.dir.recursive=true;
 
 CREATE TABLE T1_n8(key STRING, val STRING)
 SKEWED BY (key) ON ((2), (8)) STORED AS TEXTFILE;
@@ -27,7 +26,6 @@ LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n2;
 -- Union of 3 map-reduce subqueries is performed for the skew join
 -- There is no need to write the temporary results of the sub-queries, and then read them 
 -- again to process the union. The union can be removed completely.
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table, it might be easier
 -- to run the test only on hadoop 23
 

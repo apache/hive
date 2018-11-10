@@ -49,9 +49,13 @@ POSTHOOK: Output: default@test_table_out_n0
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1_n14 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1_n14 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -80,7 +84,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -133,7 +137,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -183,7 +187,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1_n14 GROUP BY key
@@ -243,6 +247,9 @@ SELECT a.key, a.value FROM (
 ) b
 ON (a.value = b.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT a.key, a.value FROM (
 	SELECT key, count(*) AS value FROM test_table1_n14 GROUP BY key
@@ -251,6 +258,9 @@ SELECT a.key, a.value FROM (
 ) b
 ON (a.value = b.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -285,6 +295,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: string), _col1 (type: bigint)
           TableScan
             alias: src
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -308,7 +319,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+            expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -450,9 +461,15 @@ Storage Desc Params:
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Input: default@test_table2_n13
+PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Input: default@test_table2_n13
+POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
@@ -469,6 +486,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -526,7 +544,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -576,7 +594,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
@@ -633,10 +651,16 @@ PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part
 SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Input: default@test_table2_n13
+PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Input: default@test_table2_n13
+POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -649,6 +673,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -677,7 +702,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Select Operator
-            expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+            expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false

@@ -41,8 +41,16 @@ POSTHOOK: Input: default@npe_test
 498
 PREHOOK: query: EXPLAIN SELECT * FROM npe_test WHERE ds > 2012-11-31 OR ds < 2012-12-15
 PREHOOK: type: QUERY
+PREHOOK: Input: default@npe_test
+PREHOOK: Input: default@npe_test@ds=2012-12-11
+PREHOOK: Input: default@npe_test@ds=2012-12-12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM npe_test WHERE ds > 2012-11-31 OR ds < 2012-12-15
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@npe_test
+POSTHOOK: Input: default@npe_test@ds=2012-12-11
+POSTHOOK: Input: default@npe_test@ds=2012-12-12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -53,6 +61,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: npe_test
+            filterExpr: ((UDFToDouble(ds) > 1970.0D) or (UDFToDouble(ds) < 1985.0D)) (type: boolean)
             Statistics: Num rows: 498 Data size: 5290 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(ds) < 1985.0D) or (UDFToDouble(ds) > 1970.0D)) (type: boolean)

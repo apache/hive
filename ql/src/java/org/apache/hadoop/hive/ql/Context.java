@@ -74,6 +74,7 @@ import org.slf4j.LoggerFactory;
  * each query should call clear() at end of use to remove temporary folders
  */
 public class Context {
+
   private boolean isHDFSCleanup;
   private Path resFile;
   private Path resDir;
@@ -103,6 +104,8 @@ public class Context {
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
   protected boolean cboSucceeded;
+  protected String optimizedSql;
+  protected String calcitePlan;
   protected String cmd = "";
   private TokenRewriteStream tokenRewriteStream;
   // Holds the qualified name to tokenRewriteStream for the views
@@ -291,6 +294,7 @@ public class Context {
   public DestClausePrefix addDestNamePrefix(int pos, DestClausePrefix prefix) {
     return insertBranchToNamePrefix.put(pos, prefix);
   }
+
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
   }
@@ -313,6 +317,49 @@ public class Context {
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
+  }
+
+  protected Context(Context ctx) {
+    // This method creates a deep copy of context, but the copy is partial,
+    // hence it needs to be used carefully. In particular, following objects
+    // are ignored:
+    // opContext, pathToCS, cboInfo, cboSucceeded, tokenRewriteStream, viewsTokenRewriteStreams,
+    // rewrittenStatementContexts, cteTables, loadTableOutputMap, planMapper, insertBranchToNamePrefix
+    this.isHDFSCleanup = ctx.isHDFSCleanup;
+    this.resFile = ctx.resFile;
+    this.resDir = ctx.resDir;
+    this.resFs = ctx.resFs;
+    this.resDirPaths = ctx.resDirPaths;
+    this.resDirFilesNum = ctx.resDirFilesNum;
+    this.initialized = ctx.initialized;
+    this.originalTracker = ctx.originalTracker;
+    this.nonLocalScratchPath = ctx.nonLocalScratchPath;
+    this.localScratchDir = ctx.localScratchDir;
+    this.scratchDirPermission = ctx.scratchDirPermission;
+    this.fsScratchDirs.putAll(ctx.fsScratchDirs);
+    this.conf = ctx.conf;
+    this.pathid = ctx.pathid;
+    this.explainConfig = ctx.explainConfig;
+    this.cmd = ctx.cmd;
+    this.executionId = ctx.executionId;
+    this.hiveLocks = ctx.hiveLocks;
+    this.hiveTxnManager = ctx.hiveTxnManager;
+    this.needLockMgr = ctx.needLockMgr;
+    this.sequencer = ctx.sequencer;
+    this.outputLockObjects.putAll(ctx.outputLockObjects);
+    this.stagingDir = ctx.stagingDir;
+    this.heartbeater = ctx.heartbeater;
+    this.skipTableMasking = ctx.skipTableMasking;
+    this.isUpdateDeleteMerge = ctx.isUpdateDeleteMerge;
+    this.isLoadingMaterializedView = ctx.isLoadingMaterializedView;
+    this.operation = ctx.operation;
+    this.wmContext = ctx.wmContext;
+    this.isExplainPlan = ctx.isExplainPlan;
+    this.statsSource = ctx.statsSource;
+    this.executionIndex = ctx.executionIndex;
+    this.viewsTokenRewriteStreams = new HashMap<>();
+    this.rewrittenStatementContexts = new HashSet<>();
+    this.opContext = new CompilationOpContext();
   }
 
   public Map<String, Path> getFsScratchDirs() {
@@ -959,12 +1006,28 @@ public class Context {
     this.cboInfo = cboInfo;
   }
 
+  public String getOptimizedSql() {
+    return this.optimizedSql;
+  }
+
+  public void setOptimizedSql(String newSql) {
+    this.optimizedSql = newSql;
+  }
+
   public boolean isCboSucceeded() {
     return cboSucceeded;
   }
 
   public void setCboSucceeded(boolean cboSucceeded) {
     this.cboSucceeded = cboSucceeded;
+  }
+
+  public String getCalcitePlan() {
+    return this.calcitePlan;
+  }
+
+  public void setCalcitePlan(String calcitePlan) {
+    this.calcitePlan = calcitePlan;
   }
 
   public Table getMaterializedTable(String cteName) {
@@ -981,6 +1044,10 @@ public class Context {
 
   public CompilationOpContext getOpContext() {
     return opContext;
+  }
+
+  public void setOpContext(CompilationOpContext opContext) {
+    this.opContext = opContext;
   }
 
   public Heartbeater getHeartbeater() {
@@ -1045,6 +1112,10 @@ public class Context {
     return executionId;
   }
 
+  public void setPlanMapper(PlanMapper planMapper) {
+    this.planMapper = planMapper;
+  }
+
   public PlanMapper getPlanMapper() {
     return planMapper;
   }
@@ -1081,4 +1152,5 @@ public class Context {
   public void setTempTableForLoad(Table tempTableForLoad) {
     this.tempTableForLoad = tempTableForLoad;
   }
+
 }

@@ -26,44 +26,45 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hive.common.util.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorMapOperatorReadType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -78,10 +79,7 @@ import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.util.Ref;
 import org.apache.hive.common.util.ReflectionUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -277,7 +275,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       if (part == null) {
         if (isCacheOnly) {
           LOG.info("Using cache only because there's no partition spec for SerDe-based IF");
-          injectLlapCaches(inputFormat, llapIo);
+          injectLlapCaches(inputFormat, llapIo, conf);
         } else {
           LOG.info("Not using LLAP IO because there's no partition spec for SerDe-based IF");
         }
@@ -297,7 +295,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
     if (isCacheOnly) {
-      injectLlapCaches(inputFormat, llapIo);
+      injectLlapCaches(inputFormat, llapIo, conf);
     }
     return inputFormat;
   }
@@ -323,8 +321,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public static void injectLlapCaches(InputFormat<WritableComparable, Writable> inputFormat,
-      LlapIo<VectorizedRowBatch> llapIo) {
+      LlapIo<VectorizedRowBatch> llapIo, Configuration conf) {
     LOG.info("Injecting LLAP caches into " + inputFormat.getClass().getCanonicalName());
+    conf.setInt("parquet.read.allocation.size", 1024*1024*1024); // Disable buffer splitting for now.
     llapIo.initCacheOnlyInputFormat(inputFormat);
   }
 
@@ -434,18 +433,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       } else {
         mrwork = Utilities.getMapWork(job);
       }
-
-      // Prune partitions
-      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
-          && HiveConf.isSparkDPPAny(job)) {
-        SparkDynamicPartitionPruner pruner = new SparkDynamicPartitionPruner();
-        try {
-          pruner.prune(mrwork, job);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-
       pathToPartitionInfo = mrwork.getPathToPartitionInfo();
     }
   }
@@ -460,11 +447,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result)
           throws IOException {
+    String tableName = table.getTableName();
     ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(
-        conf, table.getTableName());
+        conf, tableName == null ? null : HiveStringUtils.normalizeIdentifier(tableName));
     ValidWriteIdList validMmWriteIdList = getMmValidWriteIds(conf, table, validWriteIdList);
 
     try {
+      Utilities.copyJobSecretToTableProperties(table);
       Utilities.copyTablePropertiesToConf(table, conf);
       if (tableScan != null) {
         AcidUtils.setAcidOperationalProperties(conf, tableScan.getConf().isTranscationalTable(),
@@ -835,10 +824,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return;
     }
 
-    // disable filter pushdown for mapreduce when there are more than one table aliases,
+    // disable filter pushdown for mapreduce(except for storage handlers) when there are more than one table aliases,
     // since we don't clone jobConf per alias
-    if (mrwork != null && mrwork.getAliases() != null && mrwork.getAliases().size() > 1 &&
-      jobConf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname).equals("mr")) {
+    if (mrwork != null && mrwork.getAliases() != null && mrwork.getAliases().size() > 1
+        && jobConf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname).equals("mr")
+        && (scanDesc.getTableMetadata() == null
+            || !(scanDesc.getTableMetadata().getStorageHandler() instanceof HiveStoragePredicateHandler))) {
       return;
     }
 

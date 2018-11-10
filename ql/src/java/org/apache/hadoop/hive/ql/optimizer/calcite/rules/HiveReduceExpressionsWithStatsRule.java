@@ -214,7 +214,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             RexCall constStruct = (RexCall) call.getOperands().get(i);
             boolean allTrue = true;
             boolean addOperand = true;
-            for (int j = 0; i < constStruct.getOperands().size(); j++) {
+            for (int j = 0; j < constStruct.getOperands().size(); j++) {
               RexNode operand = constStruct.getOperands().get(j);
               if (operand instanceof RexLiteral) {
                 RexLiteral literal = (RexLiteral) operand;
@@ -295,9 +295,9 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
         RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
         if (table != null) {
           ColStatistics colStats =
-                  table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal())).get(0);
-          if (colStats != null && StatsSetupConst.areColumnStatsUptoDate(
-                  table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
+              table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal()), false).get(0);
+          if (colStats != null && StatsUtils.areColumnStatsUptoDateForQueryAnswering(
+              table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
             return colStats;
           }
         }
@@ -310,7 +310,8 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
       if (columnOrigin != null) {
         RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
         if (table != null) {
-          if (StatsSetupConst.areBasicStatsUptoDate(table.getHiveTableMD().getParameters())) {
+          if (StatsUtils.areBasicStatsUptoDateForQueryAnswering(table.getHiveTableMD(),
+              table.getHiveTableMD().getParameters())) {
             return StatsUtils.getNumRows(table.getHiveTableMD());
           }
         }

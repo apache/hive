@@ -1,0 +1,112 @@
+PREHOOK: query: explain
+select  i_product_name
+             ,i_brand
+             ,i_class
+             ,i_category
+             ,avg(inv_quantity_on_hand) qoh
+       from inventory
+           ,date_dim
+           ,item
+           ,warehouse
+       where inv_date_sk=d_date_sk
+              and inv_item_sk=i_item_sk
+              and inv_warehouse_sk = w_warehouse_sk
+              and d_month_seq between 1212 and 1212 + 11
+       group by rollup(i_product_name
+                       ,i_brand
+                       ,i_class
+                       ,i_category)
+order by qoh, i_product_name, i_brand, i_class, i_category
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select  i_product_name
+             ,i_brand
+             ,i_class
+             ,i_category
+             ,avg(inv_quantity_on_hand) qoh
+       from inventory
+           ,date_dim
+           ,item
+           ,warehouse
+       where inv_date_sk=d_date_sk
+              and inv_item_sk=i_item_sk
+              and inv_warehouse_sk = w_warehouse_sk
+              and d_month_seq between 1212 and 1212 + 11
+       group by rollup(i_product_name
+                       ,i_brand
+                       ,i_class
+                       ,i_category)
+order by qoh, i_product_name, i_brand, i_class, i_category
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:100
+    Stage-1
+      Reducer 5 vectorized
+      File Output Operator [FS_64]
+        Limit [LIM_63] (rows=100 width=397)
+          Number of rows:100
+          Select Operator [SEL_62] (rows=32730675 width=397)
+            Output:["_col0","_col1","_col2","_col3","_col4"]
+          <-Reducer 4 [SIMPLE_EDGE] vectorized
+            SHUFFLE [RS_61]
+              Select Operator [SEL_60] (rows=32730675 width=397)
+                Output:["_col0","_col1","_col2","_col3","_col4"]
+                Group By Operator [GBY_59] (rows=32730675 width=413)
+                  Output:["_col0","_col1","_col2","_col3","_col5","_col6"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4
+                <-Reducer 3 [SIMPLE_EDGE]
+                  SHUFFLE [RS_15]
+                    PartitionCols:_col0, _col1, _col2, _col3, _col4
+                    Group By Operator [GBY_14] (rows=32730675 width=413)
+                      Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["sum(_col2)","count(_col2)"],keys:_col5, _col6, _col7, _col8, 0L
+                      Merge Join Operator [MERGEJOIN_51] (rows=6546135 width=391)
+                        Conds:RS_10._col1=RS_58._col0(Inner),Output:["_col2","_col5","_col6","_col7","_col8"]
+                      <-Map 7 [SIMPLE_EDGE] vectorized
+                        SHUFFLE [RS_58]
+                          PartitionCols:_col0
+                          Select Operator [SEL_57] (rows=462000 width=393)
+                            Output:["_col0","_col1","_col2","_col3","_col4"]
+                            TableScan [TS_5] (rows=462000 width=393)
+                              default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_brand","i_class","i_category","i_product_name"]
+                      <-Reducer 2 [SIMPLE_EDGE]
+                        SHUFFLE [RS_10]
+                          PartitionCols:_col1
+                          Merge Join Operator [MERGEJOIN_50] (rows=6546135 width=6)
+                            Conds:RS_53._col0=RS_56._col0(Inner),Output:["_col1","_col2"]
+                          <-Map 1 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_53]
+                              PartitionCols:_col0
+                              Select Operator [SEL_52] (rows=37584000 width=11)
+                                Output:["_col0","_col1","_col2"]
+                                TableScan [TS_0] (rows=37584000 width=11)
+                                  default@inventory,inventory,Tbl:COMPLETE,Col:COMPLETE,Output:["inv_date_sk","inv_item_sk","inv_quantity_on_hand"]
+                          <-Map 6 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_56]
+                              PartitionCols:_col0
+                              Select Operator [SEL_55] (rows=317 width=4)
+                                Output:["_col0"]
+                                Filter Operator [FIL_54] (rows=317 width=8)
+                                  predicate:d_month_seq BETWEEN 1212 AND 1223
+                                  TableScan [TS_2] (rows=73049 width=8)
+                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_month_seq"]
+

@@ -48,8 +48,16 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3_n32
 PREHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n134
+PREHOOK: Input: default@t2_n80
+PREHOOK: Input: default@t3_n32
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n134
+POSTHOOK: Input: default@t2_n80
+POSTHOOK: Input: default@t3_n32
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -65,6 +73,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -80,6 +89,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key2 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key2 is not null (type: boolean)
@@ -95,6 +105,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key3 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key3 is not null (type: boolean)
@@ -151,8 +162,16 @@ POSTHOOK: Input: default@t3_n32
 2	12	2	22	2	12
 PREHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n134
+PREHOOK: Input: default@t2_n80
+PREHOOK: Input: default@t3_n32
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n134
+POSTHOOK: Input: default@t2_n80
+POSTHOOK: Input: default@t3_n32
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -168,6 +187,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -183,6 +203,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key2 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key2 is not null (type: boolean)
@@ -198,6 +219,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key3 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key3 is not null (type: boolean)
@@ -254,8 +276,16 @@ POSTHOOK: Input: default@t3_n32
 2	12	2	22	2	12
 PREHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n134
+PREHOOK: Input: default@t2_n80
+PREHOOK: Input: default@t3_n32
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n134
+POSTHOOK: Input: default@t2_n80
+POSTHOOK: Input: default@t3_n32
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -271,6 +301,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -286,6 +317,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key2 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key2 is not null (type: boolean)
@@ -301,6 +333,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key3 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key3 is not null (type: boolean)

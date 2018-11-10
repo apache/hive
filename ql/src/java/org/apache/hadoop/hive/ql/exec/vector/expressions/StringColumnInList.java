@@ -170,6 +170,11 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputCol) + ", values " + Arrays.toString(inListValues);
+    StringBuilder sb = new StringBuilder();
+    sb.append("col ");
+    sb.append(inputCol);
+    sb.append(", values ");
+    sb.append(displayArrayOfUtf8ByteArrays(inListValues));
+    return sb.toString();
   }
 }

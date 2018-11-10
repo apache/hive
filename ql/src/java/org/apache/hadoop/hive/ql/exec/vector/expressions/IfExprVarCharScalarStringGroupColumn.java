@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveVarchar;
-
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
@@ -32,8 +30,9 @@ public class IfExprVarCharScalarStringGroupColumn extends IfExprStringScalarStri
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprVarCharScalarStringGroupColumn(int arg1Column, HiveVarchar arg2Scalar, int arg3Column, int outputColumnNum) {
-    super(arg1Column, arg2Scalar.getValue().getBytes(), arg3Column, outputColumnNum);
+  public IfExprVarCharScalarStringGroupColumn(int arg1Column, byte[] arg2Scalar, int arg3Column,
+      int outputColumnNum) {
+    super(arg1Column, arg2Scalar, arg3Column, outputColumnNum);
    }
 
   public IfExprVarCharScalarStringGroupColumn() {

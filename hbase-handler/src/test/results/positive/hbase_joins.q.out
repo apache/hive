@@ -14,51 +14,57 @@ PREHOOK: query: DROP TABLE users_level
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE users_level
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE users(key string, state string, country string, country_id int)
+PREHOOK: query: CREATE EXTERNAL TABLE users(key string, state string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:state,info:country,info:country_id"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@users
-POSTHOOK: query: CREATE TABLE users(key string, state string, country string, country_id int)
+POSTHOOK: query: CREATE EXTERNAL TABLE users(key string, state string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:state,info:country,info:country_id"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users
-PREHOOK: query: CREATE TABLE states(key string, name string)
+PREHOOK: query: CREATE EXTERNAL TABLE states(key string, name string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "state:name"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@states
-POSTHOOK: query: CREATE TABLE states(key string, name string)
+POSTHOOK: query: CREATE EXTERNAL TABLE states(key string, name string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "state:name"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@states
-PREHOOK: query: CREATE TABLE countries(key string, name string, country string, country_id int)
+PREHOOK: query: CREATE EXTERNAL TABLE countries(key string, name string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:name,info:country,info:country_id"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@countries
-POSTHOOK: query: CREATE TABLE countries(key string, name string, country string, country_id int)
+POSTHOOK: query: CREATE EXTERNAL TABLE countries(key string, name string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
 "hbase.columns.mapping" = "info:name,info:country,info:country_id"
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@countries
@@ -218,27 +224,31 @@ POSTHOOK: query: DROP TABLE countries
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@countries
 POSTHOOK: Output: default@countries
-PREHOOK: query: CREATE TABLE users(key int, userid int, username string, created int) 
+PREHOOK: query: CREATE EXTERNAL TABLE users(key int, userid int, username string, created int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:nickname,f:created")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@users
-POSTHOOK: query: CREATE TABLE users(key int, userid int, username string, created int) 
+POSTHOOK: query: CREATE EXTERNAL TABLE users(key int, userid int, username string, created int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:nickname,f:created")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users
-PREHOOK: query: CREATE TABLE users_level(key int, userid int, level int)
+PREHOOK: query: CREATE EXTERNAL TABLE users_level(key int, userid int, level int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:level")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@users_level
-POSTHOOK: query: CREATE TABLE users_level(key int, userid int, level int)
+POSTHOOK: query: CREATE EXTERNAL TABLE users_level(key int, userid int, level int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:level")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users_level

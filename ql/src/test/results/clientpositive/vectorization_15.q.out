@@ -29,6 +29,8 @@ WHERE    (((cstring2 LIKE '%ss%')
 GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT   cfloat,
          cboolean1,
@@ -60,6 +62,8 @@ WHERE    (((cstring2 LIKE '%ss%')
 GROUP BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 ORDER BY cfloat, cboolean1, cdouble, cstring1, ctinyint, cint, ctimestamp1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -75,6 +79,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
+            filterExpr: ((cstring2 like '%ss%') or (cstring1 like '10%') or ((cint >= -75) and (UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0D))) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -124,8 +129,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

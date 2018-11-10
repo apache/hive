@@ -10,10 +10,18 @@ PREHOOK: query: explain
 FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1_n142 SELECT src1.key, src2.value where src1.ds = '2008-04-08' and src1.hr = '12'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1_n142
 POSTHOOK: query: explain
 FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1_n142 SELECT src1.key, src2.value where src1.ds = '2008-04-08' and src1.hr = '12'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1_n142
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-5 depends on stages: Stage-6
@@ -32,6 +40,7 @@ STAGE PLANS:
         $hdt$_0:src1 
           TableScan
             alias: src1
+            filterExpr: ((ds = '2008-04-08') and (hr = '12') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -50,6 +59,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

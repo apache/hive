@@ -339,7 +339,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     private WMFullResourcePlan resourcePlanToApply = null;
     private boolean doClearResourcePlan = false;
     private boolean hasClusterStateChanged = false;
-    private SettableFuture<Boolean> testEvent, applyRpFuture;
+    private List<SettableFuture<Boolean>> testEvents = new LinkedList<>();
+    private SettableFuture<Boolean> applyRpFuture;
     private SettableFuture<List<String>> dumpStateFuture;
     private final List<MoveSession> moveSessions = new LinkedList<>();
   }
@@ -401,10 +402,11 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         return;
       } catch (Exception | AssertionError ex) {
         LOG.error("WM thread encountered an error but will attempt to continue", ex);
-        if (currentEvents.testEvent != null) {
-          currentEvents.testEvent.setException(ex);
-          currentEvents.testEvent = null;
+        for (SettableFuture<Boolean> testEvent : currentEvents.testEvents) {
+          LOG.info("Failing test event " + System.identityHashCode(testEvent));
+          testEvent.setException(ex);
         }
+        currentEvents.testEvents.clear();
         if (currentEvents.applyRpFuture != null) {
           currentEvents.applyRpFuture.setException(ex);
           currentEvents.applyRpFuture = null;
@@ -425,6 +427,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       final String reason = killCtx.reason;
       LOG.info("Killing query for {}", toKill);
       workPool.submit(() -> {
+        SessionState ss = new SessionState(new HiveConf());
+        ss.setIsHiveServerQuery(true);
+        SessionState.start(ss);
         // Note: we get query ID here, rather than in the caller, where it would be more correct
         //       because we know which exact query we intend to kill. This is valid because we
         //       are not expecting query ID to change - we never reuse the session for which a
@@ -436,7 +441,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             WmEvent wmEvent = new WmEvent(WmEvent.EventType.KILL);
             LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
             try {
-              kq.killQuery(queryId, reason);
+              kq.killQuery(queryId, reason, toKill.getConf());
               addKillQueryResult(toKill, true);
               killCtx.killSessionFuture.set(true);
               wmEvent.endEvent(toKill);
@@ -721,12 +726,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       e.dumpStateFuture.set(result);
       e.dumpStateFuture = null;
     }
-    
+
     // 15. Notify tests and global async ops.
-    if (e.testEvent != null) {
-      e.testEvent.set(true);
-      e.testEvent = null;
+    for (SettableFuture<Boolean> testEvent : e.testEvents) {
+      LOG.info("Triggering test event " + System.identityHashCode(testEvent));
+      testEvent.set(null);
     }
+    e.testEvents.clear();
+
     if (e.applyRpFuture != null) {
       e.applyRpFuture.set(true);
       e.applyRpFuture = null;
@@ -1552,7 +1559,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     SettableFuture<Boolean> testEvent = SettableFuture.create();
     currentLock.lock();
     try {
-      current.testEvent = testEvent;
+      LOG.info("Adding test event " + System.identityHashCode(testEvent));
+      current.testEvents.add(testEvent);
       notifyWmThreadUnderLock();
     } finally {
       currentLock.unlock();

@@ -5,6 +5,8 @@ SELECT * FROM
   (SELECT * FROM src WHERE key+2 < 10) b
     ON a.key+1=b.key+2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 SELECT * FROM
   (SELECT * FROM src WHERE key+1 < 10) a
@@ -12,6 +14,8 @@ SELECT * FROM
   (SELECT * FROM src WHERE key+2 < 10) b
     ON a.key+1=b.key+2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -28,6 +32,7 @@ STAGE PLANS:
         $hdt$_0:src 
           TableScan
             alias: src
+            filterExpr: (((UDFToDouble(key) + 1.0D) < 10.0D) and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) + 1.0D) < 10.0D) and key is not null) (type: boolean)
@@ -46,6 +51,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (((UDFToDouble(key) + 2.0D) < 10.0D) and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) + 2.0D) < 10.0D) and key is not null) (type: boolean)

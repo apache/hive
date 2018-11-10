@@ -50,7 +50,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
-	totalSize           	503                 
+	totalSize           	501                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -62,10 +62,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	select a, b, c from cmv_basetable_n4	 
-View Expanded Text: 	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
-View Rewrite Enabled:	No                  	 
+# Materialized View Information	 	 
+Original Query:     	select a, b, c from cmv_basetable_n4	 
+Expanded Query:     	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	Unknown             	 
 PREHOOK: query: select * from cmv_mat_view_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view_n4
@@ -111,7 +112,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
-	totalSize           	348                 
+	totalSize           	345                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -123,10 +124,11 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	select a, c from cmv_basetable_n4	 
-View Expanded Text: 	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
-View Rewrite Enabled:	No                  	 
+# Materialized View Information	 	 
+Original Query:     	select a, c from cmv_basetable_n4	 
+Expanded Query:     	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	Unknown             	 
 PREHOOK: query: select * from cmv_mat_view2_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2_n1
@@ -181,8 +183,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_mat_view4
 #### A masked pattern was here ####
 1	10.30
-3	988.56
 2	172345.34
+3	988.56
 PREHOOK: query: describe extended cmv_mat_view4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view4
@@ -245,9 +247,10 @@ COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 bucketing_version	2
 key	value
 numFiles	1
+numFilesErasureCoded	0
 numRows	5
 rawDataSize	1605
-totalSize	702
+totalSize	703
 #### A masked pattern was here ####
 PREHOOK: query: drop materialized view cmv_mat_view_n4
 PREHOOK: type: DROP_MATERIALIZED_VIEW

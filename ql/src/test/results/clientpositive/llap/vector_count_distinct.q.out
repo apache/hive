@@ -1228,9 +1228,73 @@ POSTHOOK: Lineage: web_sales PARTITION(ws_web_site_sk=9).ws_wholesale_cost SIMPL
 PREHOOK: query: explain vectorization expression
 select count(distinct ws_order_number) from web_sales
 PREHOOK: type: QUERY
+PREHOOK: Input: default@web_sales
+PREHOOK: Input: default@web_sales@ws_web_site_sk=1
+PREHOOK: Input: default@web_sales@ws_web_site_sk=10
+PREHOOK: Input: default@web_sales@ws_web_site_sk=11
+PREHOOK: Input: default@web_sales@ws_web_site_sk=12
+PREHOOK: Input: default@web_sales@ws_web_site_sk=13
+PREHOOK: Input: default@web_sales@ws_web_site_sk=14
+PREHOOK: Input: default@web_sales@ws_web_site_sk=15
+PREHOOK: Input: default@web_sales@ws_web_site_sk=16
+PREHOOK: Input: default@web_sales@ws_web_site_sk=17
+PREHOOK: Input: default@web_sales@ws_web_site_sk=18
+PREHOOK: Input: default@web_sales@ws_web_site_sk=19
+PREHOOK: Input: default@web_sales@ws_web_site_sk=2
+PREHOOK: Input: default@web_sales@ws_web_site_sk=20
+PREHOOK: Input: default@web_sales@ws_web_site_sk=21
+PREHOOK: Input: default@web_sales@ws_web_site_sk=22
+PREHOOK: Input: default@web_sales@ws_web_site_sk=23
+PREHOOK: Input: default@web_sales@ws_web_site_sk=24
+PREHOOK: Input: default@web_sales@ws_web_site_sk=25
+PREHOOK: Input: default@web_sales@ws_web_site_sk=26
+PREHOOK: Input: default@web_sales@ws_web_site_sk=27
+PREHOOK: Input: default@web_sales@ws_web_site_sk=28
+PREHOOK: Input: default@web_sales@ws_web_site_sk=29
+PREHOOK: Input: default@web_sales@ws_web_site_sk=3
+PREHOOK: Input: default@web_sales@ws_web_site_sk=30
+PREHOOK: Input: default@web_sales@ws_web_site_sk=4
+PREHOOK: Input: default@web_sales@ws_web_site_sk=5
+PREHOOK: Input: default@web_sales@ws_web_site_sk=6
+PREHOOK: Input: default@web_sales@ws_web_site_sk=7
+PREHOOK: Input: default@web_sales@ws_web_site_sk=8
+PREHOOK: Input: default@web_sales@ws_web_site_sk=9
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(distinct ws_order_number) from web_sales
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=1
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=10
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=11
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=12
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=13
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=14
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=15
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=16
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=17
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=18
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=19
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=2
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=20
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=21
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=22
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=23
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=24
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=25
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=26
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=27
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=28
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=29
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=3
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=30
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=4
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=5
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=6
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=7
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=8
+POSTHOOK: Input: default@web_sales@ws_web_site_sk=9
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1252,7 +1316,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
-                  Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 3511604 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1262,7 +1326,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [16]
-                    Statistics: Num rows: 2000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2000 Data size: 3511604 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
@@ -1274,7 +1338,7 @@ STAGE PLANS:
                       keys: ws_order_number (type: int)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 169 Data size: 676 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 3511604 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -1283,14 +1347,14 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 169 Data size: 676 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2000 Data size: 3511604 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1315,7 +1379,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 169 Data size: 676 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1000 Data size: 1755802 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col0)
                   Group By Vectorization:
@@ -1327,14 +1391,14 @@ STAGE PLANS:
                       projectedOutputColumnNums: [0]
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkEmptyKeyOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1356,13 +1420,13 @@ STAGE PLANS:
                     projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

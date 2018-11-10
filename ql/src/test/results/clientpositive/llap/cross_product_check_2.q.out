@@ -31,8 +31,14 @@ POSTHOOK: Lineage: b_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A_n2 join B_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from A_n2 join B_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -100,11 +106,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from B_n2 d1 join B_n2 d2 on d1.key = d2.key join A_n2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from B_n2 d1 join B_n2 d2 on d1.key = d2.key join A_n2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -122,6 +134,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -150,6 +163,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -206,17 +220,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A_n2 join 
          (select d1.key 
           from B_n2 d1 join B_n2 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from A_n2 join 
          (select d1.key 
           from B_n2 d1 join B_n2 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -250,6 +270,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -284,6 +305,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -340,8 +362,14 @@ Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reduc
 Warning: Shuffle Join MERGEJOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A_n2 join (select d1.key from B_n2 d1 join B_n2 d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from A_n2 join (select d1.key from B_n2 d1 join B_n2 d2 where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -456,15 +484,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from 
 (select A_n2.key from A_n2 group by key) ss join 
 (select d1.key from B_n2 d1 join B_n2 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n2
+PREHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from 
 (select A_n2.key from A_n2 group by key) ss join 
 (select d1.key from B_n2 d1 join B_n2 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n2
+POSTHOOK: Input: default@b_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -505,6 +539,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -539,6 +574,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)

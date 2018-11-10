@@ -72,7 +72,7 @@
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>commmons-logging</groupId>
+            <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
@@ -89,6 +89,12 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-cli</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>4.0.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

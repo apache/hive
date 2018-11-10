@@ -13,6 +13,11 @@ FROM src1 x JOIN src y ON (x.key = y.key)
 JOIN srcpart z ON (x.key = z.key)
 WHERE z.ds='2008-04-08' and z.hr=11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j1_n4
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n4
 SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value
@@ -20,6 +25,11 @@ FROM src1 x JOIN src y ON (x.key = y.key)
 JOIN srcpart z ON (x.key = z.key)
 WHERE z.ds='2008-04-08' and z.hr=11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j1_n4
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -35,6 +45,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -107,6 +118,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -184,6 +196,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: z
+                  filterExpr: (key is not null and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -516,6 +529,11 @@ FROM src1_copy x JOIN src_copy y ON (x.key = y.key)
 JOIN srcpart z ON (x.key = z.key)
 WHERE z.ds='2008-04-08' and z.hr=11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_copy
+PREHOOK: Input: default@src_copy
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j1_n4
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n4
 SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value
@@ -523,6 +541,11 @@ FROM src1_copy x JOIN src_copy y ON (x.key = y.key)
 JOIN srcpart z ON (x.key = z.key)
 WHERE z.ds='2008-04-08' and z.hr=11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_copy
+POSTHOOK: Input: default@src_copy
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j1_n4
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -538,6 +561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -610,6 +634,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -687,6 +712,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: z
+                  filterExpr: (UDFToDouble(key) is not null and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

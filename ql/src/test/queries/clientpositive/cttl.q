@@ -21,7 +21,7 @@ create external table students(
 
 create temporary table temp1 like students;
 insert into table temp1 select * from students;
-select * from temp1 order by name limit 10; 
+select * from temp1 order by name, age limit 10; 
 
 drop table students;
 dfs -ls hdfs:///tmp/hive19577_cttl/;

@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.FileNotFoundException;
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hdfs.protocol.DSQuotaExceededException;
 import org.apache.hadoop.hdfs.protocol.NSQuotaExceededException;
@@ -34,6 +27,13 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.security.AccessControlException;
+
+import java.io.FileNotFoundException;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * List of all error messages.
@@ -199,8 +199,8 @@ public enum ErrorMsg {
   NEED_TABLE_SPECIFICATION(10117, "Table name could be determined; It should be specified "),
   PARTITION_EXISTS(10118, "Partition already exists"),
   TABLE_DATA_EXISTS(10119, "Table exists and contains data files"),
-  INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the import spec. "),
-  EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table. "),
+  INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the Export/Import spec. "),
+  EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table."),
   INSERT_INTO_BUCKETIZED_TABLE(10122, "Bucketized tables do not support INSERT INTO:"),
   PARTSPEC_DIFFER_FROM_SCHEMA(10125, "Partition columns in partition specification are "
       + "not the same as that defined in the table schema. "
@@ -334,7 +334,7 @@ public enum ErrorMsg {
       "A column on which a partition/table is list bucketed cannot be truncated."),
 
   TABLE_NOT_PARTITIONED(10241, "Table {0} is not a partitioned table", true),
-  DATABSAE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
+  DATABASE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
   CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
   BAD_LOCATION_VALUE(10244, "{0}  is not absolute.  Please specify a complete absolute uri."),
   UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
@@ -386,6 +386,9 @@ public enum ErrorMsg {
   MASKING_FILTERING_ON_ACID_NOT_SUPPORTED(10287,
       "Detected {0}.{1} has row masking/column filtering enabled, " +
       "which is not supported for query involving ACID operations", true),
+  MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
+      "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
+          "used by materialized view has row masking/column filtering enabled", true),
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
@@ -464,7 +467,9 @@ public enum ErrorMsg {
     "insert-only transactional", true),
   LOAD_DATA_LAUNCH_JOB_IO_ERROR(10415, "Encountered I/O error while parsing rewritten load data into insert query"),
   LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
-
+  RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
+  RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
+  INCOMPATIBLE_STRUCT(10419, "Incompatible structs.", true),
 
   //========================== 20000 range starts here ========================//
 
@@ -498,6 +503,16 @@ public enum ErrorMsg {
   SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark app for session {0} was submitted to an invalid" +
           " queue: {1}. Please fix and try again.", true),
   SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
+
+  //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
+  //method in HiveMetaStoreClient
+  REPL_EVENTS_MISSING_IN_METASTORE(20016, "Notification events are missing in the meta store."),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Load path {0} not valid as target database is bootstrapped " +
+          "from some other path : {1}."),
+  REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20018, "File is missing from both source and cm path."),
+  REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
+  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,
+          "Source of replication (repl.source.for) is not set in the database properties."),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
@@ -585,6 +600,13 @@ public enum ErrorMsg {
       "Cannot create Spark client on a closed session {0}", true),
 
   SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
+  SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
+  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
+
+  REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired."),
+  SPARK_GET_STAGES_INFO_TIMEOUT(30048, "Spark job GetSparkStagesInfoJob timed out after {0} seconds.", true),
+  SPARK_GET_STAGES_INFO_INTERRUPTED(30049, "Spark job GetSparkStagesInfoJob was interrupted."),
+  SPARK_GET_STAGES_INFO_EXECUTIONERROR(30050, "Spark job GetSparkStagesInfoJob failed in execution while getting job info due to exception {0}", true),
 
   //========================== 40000 range starts here ========================//
 

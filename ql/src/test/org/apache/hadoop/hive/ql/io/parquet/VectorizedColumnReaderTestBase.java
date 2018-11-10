@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -62,7 +63,6 @@ import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.schema.MessageType;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
@@ -209,7 +209,9 @@ public class VectorizedColumnReaderTestBase {
   }
 
   protected static NanoTime getNanoTime(int index) {
-    return NanoTimeUtils.getNanoTime(new Timestamp(index), false);
+    Timestamp ts = new Timestamp();
+    ts.setTimeInMillis(index);
+    return NanoTimeUtils.getNanoTime(ts, false);
   }
 
   protected static HiveDecimal getDecimal(
@@ -376,8 +378,13 @@ public class VectorizedColumnReaderTestBase {
           if (c == nElements) {
             break;
           }
-          Timestamp expected = isDictionaryEncoding ? new Timestamp(c % UNIQUE_NUM) : new Timestamp(c);
-          assertEquals("Not the same time at " + c, expected.getTime(), vector.getTime(i));
+          Timestamp expected = new Timestamp();
+          if (isDictionaryEncoding) {
+            expected.setTimeInMillis(c % UNIQUE_NUM);
+          } else {
+            expected.setTimeInMillis(c);
+          }
+          assertEquals("Not the same time at " + c, expected.toEpochMilli(), vector.getTime(i));
           assertEquals("Not the same nano at " + c, expected.getNanos(), vector.getNanos(i));
           assertFalse(vector.isNull[i]);
           c++;
@@ -408,8 +415,12 @@ public class VectorizedColumnReaderTestBase {
             break;
           }
 
-          Timestamp expected = isDictionaryEncoding ? new Timestamp(c % UNIQUE_NUM) : new Timestamp(
-              c);
+          Timestamp expected = new Timestamp();
+          if (isDictionaryEncoding) {
+            expected.setTimeInMillis(c % UNIQUE_NUM);
+          } else {
+            expected.setTimeInMillis(c);
+          };
           String actual = new String(Arrays
               .copyOfRange(vector.vector[i], vector.start[i], vector.start[i] + vector.length[i]));
           assertEquals("Not the same time at " + c, expected.toString(), actual);

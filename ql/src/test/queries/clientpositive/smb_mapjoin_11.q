@@ -8,7 +8,8 @@ set hive.cbo.enable=false;
 
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
-set hive.merge.mapredfiles=false; 
+set hive.merge.mapredfiles=false;
+set hive.auto.convert.sortmerge.join=false;
 
 -- This test verifies that the output of a sort merge join on 2 partitions (one on each side of the join) is bucketed
 

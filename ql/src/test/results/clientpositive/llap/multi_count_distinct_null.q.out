@@ -23,8 +23,12 @@ POSTHOOK: Lineage: employee.education_level SCRIPT []
 POSTHOOK: Lineage: employee.gender SCRIPT []
 PREHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
 PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -163,9 +167,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
 PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -291,22 +299,22 @@ group by department_id, gender, education_level grouping sets
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	NULL	NULL	NULL
 5	NULL	NULL	NULL
+6	NULL	NULL	NULL
 5	NULL	M	NULL
 2	1	NULL	1
 2	2	NULL	1
 2	2	NULL	3
-2	NULL	NULL	1
-6	NULL	NULL	3
-5	NULL	F	NULL
-2	1	NULL	2
-2	NULL	NULL	NULL
-6	NULL	NULL	NULL
 3	3	NULL	NULL
 3	NULL	NULL	NULL
+2	NULL	NULL	1
 6	NULL	NULL	1
 6	NULL	NULL	2
+6	NULL	NULL	3
+5	NULL	F	NULL
 3	1	NULL	NULL
+2	1	NULL	2
 2	1	NULL	3
 3	2	NULL	NULL
 2	3	NULL	2

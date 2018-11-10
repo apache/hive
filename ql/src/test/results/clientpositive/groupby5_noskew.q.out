@@ -12,12 +12,16 @@ SELECT src.key, sum(substr(src.value,5))
 FROM src
 GROUP BY src.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n31
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest1_n31 
 SELECT src.key, sum(substr(src.value,5)) 
 FROM src
 GROUP BY src.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n31
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -50,7 +54,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: UDFToInteger(_col0) (type: int), UDFToString(_col1) (type: string)
+            expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

@@ -220,6 +220,10 @@ PREHOOK: query: explain vectorization select
  order by s_state
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_n0
+PREHOOK: Input: default@store_n2
+PREHOOK: Input: default@store_sales_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select
         s_state, count(1)
  from store_sales_n2,
@@ -232,6 +236,10 @@ POSTHOOK: query: explain vectorization select
  order by s_state
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_n0
+POSTHOOK: Input: default@store_n2
+POSTHOOK: Input: default@store_sales_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -249,6 +257,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: store_sales_n2
+            filterExpr: (ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -265,6 +274,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: date_dim_n0
+            filterExpr: d_date_sk is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: d_date_sk is not null (type: boolean)
@@ -312,6 +322,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: store_n2
+            filterExpr: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)

@@ -27,7 +27,6 @@ import java.util.UUID;
 import org.apache.hive.hcatalog.HcatTestUtils;
 
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 
 import org.junit.Assert;
@@ -66,7 +65,7 @@ public class TestHCatStorerWrapper extends HCatBaseTest {
       }
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     logAndRegister(server, "A = load '"+INPUT_FILE_NAME+"' as (a:int, b:chararray);");
     logAndRegister(server, "store A into 'default.junit_external' using " + HCatStorerWrapper.class.getName()

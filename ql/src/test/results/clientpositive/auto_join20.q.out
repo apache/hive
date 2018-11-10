@@ -6,6 +6,8 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUT
 SORT BY k1,v1,k2,v2,k3,v3
 )a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(a.k1,a.v1,a.k2,a.v2,a.k3,a.v3))
 from (
@@ -14,6 +16,8 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUT
 SORT BY k1,v1,k2,v2,k3,v3
 )a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-2 depends on stages: Stage-6
@@ -33,6 +37,7 @@ STAGE PLANS:
         a:src1 
           TableScan
             alias: src1
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -49,6 +54,7 @@ STAGE PLANS:
         a:src2 
           TableScan
             alias: src2
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -146,6 +152,8 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.k
 SORT BY k1,v1,k2,v2,k3,v3
 )a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(hash(a.k1,a.v1,a.k2,a.v2,a.k3,a.v3))
 from (
@@ -154,6 +162,8 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.k
 SORT BY k1,v1,k2,v2,k3,v3
 )a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-2 depends on stages: Stage-6
@@ -173,6 +183,7 @@ STAGE PLANS:
         a:src1 
           TableScan
             alias: src1
+            filterExpr: ((key < 15) and (key < 10)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 10) and (key < 15)) (type: boolean)
@@ -189,6 +200,7 @@ STAGE PLANS:
         a:src2 
           TableScan
             alias: src2
+            filterExpr: ((key < 10) and (key < 15)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < 10) and (key < 15)) (type: boolean)

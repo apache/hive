@@ -34,12 +34,12 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
+  protected final int colNum;
 
   // The comparison is of the form "column BETWEEN leftValue AND rightValue".
   // NOTE: These can be set later by FilterColumnBetweenDynamicValue.txt so they are not final.
-  private <OperandType> leftValue;
-  private <OperandType> rightValue;
+  protected <OperandType> leftValue;
+  protected <OperandType> rightValue;
 
   public <ClassName>(int colNum, <OperandType> leftValue, <OperandType> rightValue) {
     super();

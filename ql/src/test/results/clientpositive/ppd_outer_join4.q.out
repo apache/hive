@@ -10,6 +10,8 @@ PREHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
  FROM 
   src a
@@ -22,6 +24,8 @@ POSTHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -32,6 +36,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
@@ -48,6 +53,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: c
+            filterExpr: ((sqrt(key) <> 13.0D) and (key < '20') and (key > '15')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
@@ -63,6 +69,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
@@ -374,6 +381,8 @@ PREHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
  FROM 
   src a
@@ -386,6 +395,8 @@ POSTHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -396,6 +407,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
@@ -412,6 +424,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: c
+            filterExpr: ((sqrt(key) <> 13.0D) and (key < '20') and (key > '15')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
@@ -427,6 +440,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)

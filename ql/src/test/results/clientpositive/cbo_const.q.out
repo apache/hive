@@ -109,8 +109,12 @@ key1	value1	2011-10-15
 key1	value1	2011-10-15
 PREHOOK: query: explain select array(1,2,3) from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select array(1,2,3) from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -144,9 +148,13 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN
 select key from (SELECT key from src where key = 1+3)s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 select key from (SELECT key from src where key = 1+3)s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -157,6 +165,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) = 4.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) = 4.0D) (type: boolean)
@@ -219,11 +228,19 @@ SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key and y.key = 1+2)
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11+3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key and y.key = 1+2)
 JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11+3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -235,6 +252,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
+            filterExpr: (UDFToDouble(key) = 3.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) = 3.0D) (type: boolean)
@@ -251,6 +269,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: x
+            filterExpr: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
@@ -293,6 +312,7 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: z
+            filterExpr: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0D) and value is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(hr) = 14.0D) and (ds = '2008-04-08') and value is not null) (type: boolean)

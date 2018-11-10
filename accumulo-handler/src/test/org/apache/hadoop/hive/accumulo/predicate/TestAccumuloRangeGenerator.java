@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.accumulo.TestAccumuloDefaultIndexScanner;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -37,7 +38,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.UDFToString;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToString;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -52,7 +53,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -388,12 +388,11 @@ public class TestAccumuloRangeGenerator {
     ExprNodeGenericFuncDesc addition = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, plus, Arrays.asList(fourty, fifty));
 
     // cast(.... as string)
-    UDFToString stringCast = new UDFToString();
-    GenericUDFBridge stringCastBridge = new GenericUDFBridge("cast", false, stringCast.getClass().getName());
+    GenericUDFToString stringCast = new GenericUDFToString();
 
     // cast (40 + 50 as string)
     ExprNodeGenericFuncDesc cast = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
-        stringCastBridge, "cast", Collections.<ExprNodeDesc> singletonList(addition));
+        stringCast, "cast", Collections.<ExprNodeDesc> singletonList(addition));
 
     ExprNodeDesc key = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "key", null,
         false);

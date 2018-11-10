@@ -35,6 +35,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -92,6 +94,8 @@ public class RemoteDriver {
   public static final String REMOTE_DRIVER_PORT_CONF = "--remote-port";
   public static final String REMOTE_DRIVER_CONF = "--remote-driver-conf";
 
+  private final long futureTimeout; // Rpc call timeout in milliseconds
+
   private RemoteDriver(String[] args) throws Exception {
     this.activeJobs = Maps.newConcurrentMap();
     this.jcLock = new Object();
@@ -135,7 +139,9 @@ public class RemoteDriver {
     String secret = mapConf.get(SparkClientFactory.CONF_KEY_SECRET);
     Preconditions.checkArgument(secret != null, "No secret provided.");
 
-    int threadCount = new RpcConfiguration(mapConf).getRpcThreadCount();
+    RpcConfiguration rpcConf = new RpcConfiguration(mapConf);
+    futureTimeout = rpcConf.getFutureTimeoutMs();
+    int threadCount = rpcConf.getRpcThreadCount();
     this.egroup = new NioEventLoopGroup(
         threadCount,
         new ThreadFactoryBuilder()
@@ -232,13 +238,19 @@ public class RemoteDriver {
       for (JobWrapper<?> job : activeJobs.values()) {
         cancelJob(job);
       }
+
       if (error != null) {
-        protocol.sendError(error);
+        try {
+          protocol.sendError(error).get(futureTimeout, TimeUnit.MILLISECONDS);
+        } catch(InterruptedException|ExecutionException|TimeoutException e) {
+          LOG.warn("Failed to send out the error during RemoteDriver shutdown", e);
+        }
       }
       if (jc != null) {
         jc.stop();
       }
       clientRpc.close();
+
       egroup.shutdownGracefully();
       synchronized (shutdownLock) {
         shutdownLock.notifyAll();
@@ -265,34 +277,35 @@ public class RemoteDriver {
 
   private class DriverProtocol extends BaseProtocol {
 
-    void sendError(Throwable error) {
+    Future<Void> sendError(Throwable error) {
       LOG.debug("Send error to Client: {}", Throwables.getStackTraceAsString(error));
-      clientRpc.call(new Error(Throwables.getStackTraceAsString(error)));
+      return clientRpc.call(new Error(Throwables.getStackTraceAsString(error)));
     }
 
-    void sendErrorMessage(String cause) {
+    Future<Void> sendErrorMessage(String cause) {
       LOG.debug("Send error to Client: {}", cause);
-      clientRpc.call(new Error(cause));
+      return clientRpc.call(new Error(cause));
     }
 
-    <T extends Serializable> void jobFinished(String jobId, T result,
+    <T extends Serializable>
+    Future<Void> jobFinished(String jobId, T result,
         Throwable error, SparkCounters counters) {
       LOG.debug("Send job({}) result to Client.", jobId);
-      clientRpc.call(new JobResult(jobId, result, error, counters));
+      return clientRpc.call(new JobResult<T>(jobId, result, error, counters));
     }
 
-    void jobStarted(String jobId) {
-      clientRpc.call(new JobStarted(jobId));
+    Future<Void> jobStarted(String jobId) {
+      return clientRpc.call(new JobStarted(jobId));
     }
 
-    void jobSubmitted(String jobId, int sparkJobId) {
+    Future<Void> jobSubmitted(String jobId, int sparkJobId) {
       LOG.debug("Send job({}/{}) submitted to Client.", jobId, sparkJobId);
-      clientRpc.call(new JobSubmitted(jobId, sparkJobId));
+      return clientRpc.call(new JobSubmitted(jobId, sparkJobId));
     }
 
-    void sendMetrics(String jobId, int sparkJobId, int stageId, long taskId, Metrics metrics) {
+    Future<Void> sendMetrics(String jobId, int sparkJobId, int stageId, long taskId, Metrics metrics) {
       LOG.debug("Send task({}/{}/{}/{}) metric to Client.", jobId, sparkJobId, stageId, taskId);
-      clientRpc.call(new JobMetrics(jobId, sparkJobId, stageId, taskId, metrics));
+      return clientRpc.call(new JobMetrics(jobId, sparkJobId, stageId, taskId, metrics));
     }
 
     private void handle(ChannelHandlerContext ctx, CancelJob msg) {
@@ -550,8 +563,7 @@ public class RemoteDriver {
       // If the main thread throws an exception for some reason, propagate the exception to the
       // client and initiate a safe shutdown
       if (rd.running) {
-        rd.protocol.sendError(e);
-        rd.shutdown(null);
+        rd.shutdown(e);
       }
       throw e;
     }

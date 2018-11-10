@@ -2,10 +2,14 @@ PREHOOK: query: explain
 select sum(l_extendedprice) from lineitem q0 where l_discount
 between cast('0.05' as decimal(3,2)) and cast('0.07' as decimal(3,2))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(l_extendedprice) from lineitem q0 where l_discount
 between cast('0.05' as decimal(3,2)) and cast('0.07' as decimal(3,2))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -16,6 +20,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: q0
+            filterExpr: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
@@ -69,10 +74,14 @@ PREHOOK: query: explain
 select sum(l_extendedprice) from lineitem q1 where l_discount
 between 0.06 - 0.01 and 0.06 + 0.01
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(l_extendedprice) from lineitem q1 where l_discount
 between 0.06 - 0.01 and 0.06 + 0.01
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -83,6 +92,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: q1
+            filterExpr: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
@@ -173,10 +183,14 @@ PREHOOK: query: explain
 select sum(l_extendedprice) from lineitem q10 where l_discount
 between cast('0.05' as decimal(3,2)) and cast('0.07' as decimal(3,2))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(l_extendedprice) from lineitem q10 where l_discount
 between cast('0.05' as decimal(3,2)) and cast('0.07' as decimal(3,2))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -187,6 +201,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: q10
+            filterExpr: l_discount BETWEEN CAST( '0.05' AS decimal(3,2)) AND CAST( '0.07' AS decimal(3,2)) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: l_discount BETWEEN CAST( '0.05' AS decimal(3,2)) AND CAST( '0.07' AS decimal(3,2)) (type: boolean)
@@ -240,10 +255,14 @@ PREHOOK: query: explain
 select sum(l_extendedprice) from lineitem q11 where l_discount
 between 0.06 - 0.01 and 0.06 + 0.01
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(l_extendedprice) from lineitem q11 where l_discount
 between 0.06 - 0.01 and 0.06 + 0.01
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -254,6 +273,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: q11
+            filterExpr: l_discount BETWEEN (0.06 - 0.01) AND (0.06 + 0.01) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: l_discount BETWEEN (0.06 - 0.01) AND (0.06 + 0.01) (type: boolean)

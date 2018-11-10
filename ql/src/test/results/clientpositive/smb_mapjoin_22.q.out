@@ -33,9 +33,13 @@ POSTHOOK: Lineage: test_table1_n10.value SIMPLE [(src)src.FieldSchema(name:value
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2_n10
 SELECT * FROM test_table1_n10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n10
+PREHOOK: Output: default@test_table2_n10
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2_n10
 SELECT * FROM test_table1_n10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n10
+POSTHOOK: Output: default@test_table2_n10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -179,9 +183,13 @@ POSTHOOK: Lineage: test_table1_n10.value SIMPLE [(src)src.FieldSchema(name:value
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2_n10
 SELECT * FROM test_table1_n10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n10
+PREHOOK: Output: default@test_table2_n10
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2_n10
 SELECT * FROM test_table1_n10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n10
+POSTHOOK: Output: default@test_table2_n10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

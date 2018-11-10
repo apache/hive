@@ -34,10 +34,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n7
+PREHOOK: Input: default@test_table1_n7@ds=1
+PREHOOK: Output: default@test_table2_n7@ds=1
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n7
+POSTHOOK: Input: default@test_table1_n7@ds=1
+POSTHOOK: Output: default@test_table2_n7@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -52,6 +58,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (ds = '1') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string)
@@ -207,10 +214,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1' and a.key = 238
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n7
+PREHOOK: Input: default@test_table1_n7@ds=1
+PREHOOK: Output: default@test_table2_n7@ds=2
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1' and a.key = 238
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n7
+POSTHOOK: Input: default@test_table1_n7@ds=1
+POSTHOOK: Output: default@test_table2_n7@ds=2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -227,6 +240,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: ((ds = '1') and (key = 238)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 238) (type: boolean)
@@ -345,10 +359,16 @@ PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '3')
 SELECT a.key, a.value FROM test_table2_n7 a WHERE a.ds = '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=2
+PREHOOK: Output: default@test_table2_n7@ds=3
 POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '3')
 SELECT a.key, a.value FROM test_table2_n7 a WHERE a.ds = '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=2
+POSTHOOK: Output: default@test_table2_n7@ds=3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -363,6 +383,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (ds = '2') (type: boolean)
                   Statistics: Num rows: 2 Data size: 22 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string)

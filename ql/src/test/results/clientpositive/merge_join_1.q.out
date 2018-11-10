@@ -44,6 +44,9 @@ join
     select a from test_join_2
 )t3 on t1.a = t3.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_join_1
+PREHOOK: Input: default@test_join_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from
 (
@@ -66,6 +69,9 @@ join
     select a from test_join_2
 )t3 on t1.a = t3.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_join_1
+POSTHOOK: Input: default@test_join_2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -77,6 +83,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_join_1
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
@@ -93,6 +100,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: test_join_2
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
@@ -134,6 +142,7 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: test_join_1
+            filterExpr: (a is not null and b is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (a is not null and b is not null) (type: boolean)

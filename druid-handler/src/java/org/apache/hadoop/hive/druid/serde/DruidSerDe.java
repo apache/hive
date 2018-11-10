@@ -27,14 +27,15 @@ import io.druid.query.metadata.metadata.ColumnAnalysis;
 import io.druid.query.metadata.metadata.SegmentAnalysis;
 import io.druid.query.metadata.metadata.SegmentMetadataQuery;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -42,12 +43,13 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -83,10 +85,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -97,11 +97,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
+
 /**
  * DruidSerDe that is used to  deserialize objects from a Druid data source.
  */
-@SerDeSpec(schemaProps = { Constants.DRUID_DATA_SOURCE })
-public class DruidSerDe extends AbstractSerDe {
+@SerDeSpec(schemaProps = { Constants.DRUID_DATA_SOURCE }) public class DruidSerDe extends AbstractSerDe {
 
   protected static final Logger LOG = LoggerFactory.getLogger(DruidSerDe.class);
 
@@ -110,23 +111,19 @@ public class DruidSerDe extends AbstractSerDe {
   private ObjectInspector inspector;
   private TimestampLocalTZTypeInfo tsTZTypeInfo;
 
-  @Override
-  public void initialize(Configuration configuration, Properties properties) throws SerDeException {
+  @Override public void initialize(Configuration configuration, Properties properties) throws SerDeException {
 
-    tsTZTypeInfo = new TimestampLocalTZTypeInfo(
-          configuration.get(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE.varname));
+    tsTZTypeInfo = new TimestampLocalTZTypeInfo(configuration.get(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE.varname));
     // Druid query
     final String druidQuery = properties.getProperty(Constants.DRUID_QUERY_JSON, null);
-    if (druidQuery !=  null && !druidQuery.isEmpty()) {
+    if (druidQuery != null && !druidQuery.isEmpty()) {
       initFromDruidQueryPlan(properties, druidQuery);
     } else {
       // No query. Either it is a CTAS, or we need to create a Druid meta data Query
-      if (!org.apache.commons.lang3.StringUtils
-              .isEmpty(properties.getProperty(serdeConstants.LIST_COLUMNS))
-              && !org.apache.commons.lang3.StringUtils
-              .isEmpty(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES))) {
+      if (!org.apache.commons.lang3.StringUtils.isEmpty(properties.getProperty(serdeConstants.LIST_COLUMNS))
+          && !org.apache.commons.lang3.StringUtils.isEmpty(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES))) {
         // CASE CTAS statement
-       initFromProperties(properties);
+        initFromProperties(properties);
       } else {
         // Segment Metadata query that retrieves all columns present in
         // the data source (dimensions and metrics).
@@ -134,8 +131,8 @@ public class DruidSerDe extends AbstractSerDe {
       }
     }
     if (LOG.isDebugEnabled()) {
-      LOG.debug("DruidSerDe initialized with\n" + "\t columns: " + Arrays.toString(columns)
-              + "\n\t types: " + Arrays.toString(types));
+      LOG.debug("DruidSerDe initialized with\n" + "\t columns: " + Arrays.toString(columns) + "\n\t types: " + Arrays
+          .toString(types));
     }
   }
 
@@ -147,8 +144,8 @@ public class DruidSerDe extends AbstractSerDe {
 
     String dataSource = properties.getProperty(Constants.DRUID_DATA_SOURCE);
     if (dataSource == null) {
-      throw new SerDeException("Druid data source not specified; use " +
-          Constants.DRUID_DATA_SOURCE + " in table properties");
+      throw new SerDeException(
+          "Druid data source not specified; use " + Constants.DRUID_DATA_SOURCE + " in table properties");
     }
     SegmentMetadataQueryBuilder builder = new Druids.SegmentMetadataQueryBuilder();
     builder.dataSource(dataSource);
@@ -157,9 +154,7 @@ public class DruidSerDe extends AbstractSerDe {
     SegmentMetadataQuery query = builder.build();
 
     // Execute query in Druid
-    String address = HiveConf.getVar(configuration,
-        HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS
-    );
+    String address = HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
     if (org.apache.commons.lang3.StringUtils.isEmpty(address)) {
       throw new SerDeException("Druid broker address not specified in configuration");
     }
@@ -176,33 +171,29 @@ public class DruidSerDe extends AbstractSerDe {
         columnNames.add(columnInfo.getKey()); // field name
         PrimitiveTypeInfo type = tsTZTypeInfo; // field type
         columnTypes.add(type);
-        inspectors
-            .add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
+        inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
         continue;
       }
       columnNames.add(columnInfo.getKey()); // field name
-      PrimitiveTypeInfo type = DruidSerDeUtils.convertDruidToHiveType(
-          columnInfo.getValue().getType()); // field type
+      PrimitiveTypeInfo type = DruidSerDeUtils.convertDruidToHiveType(columnInfo.getValue().getType()); // field type
       columnTypes.add(type instanceof TimestampLocalTZTypeInfo ? tsTZTypeInfo : type);
       inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
     }
     columns = columnNames.toArray(new String[columnNames.size()]);
     types = columnTypes.toArray(new PrimitiveTypeInfo[columnTypes.size()]);
-    inspector = ObjectInspectorFactory
-        .getStandardStructObjectInspector(columnNames, inspectors);
+    inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
   }
 
-  private void initFromProperties(final Properties properties)
-      throws SerDeException {
+  private void initFromProperties(final Properties properties) throws SerDeException {
     final List<ObjectInspector> inspectors = new ArrayList<>();
     final List<String> columnNames = new ArrayList<>();
     final List<PrimitiveTypeInfo> columnTypes = new ArrayList<>();
 
     columnNames.addAll(Utilities.getColumnNames(properties));
     if (!columnNames.contains(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
-      throw new SerDeException("Timestamp column (' " + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN +
-          "') not specified in create table; list of columns is : " +
-          properties.getProperty(serdeConstants.LIST_COLUMNS));
+      throw new SerDeException("Timestamp column (' " + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN
+          + "') not specified in create table; list of columns is : " + properties
+          .getProperty(serdeConstants.LIST_COLUMNS));
     }
     columnTypes.addAll(Lists.transform(
         Lists.transform(Utilities.getColumnTypes(properties), type -> TypeInfoFactory.getPrimitiveTypeInfo(type)),
@@ -214,8 +205,7 @@ public class DruidSerDe extends AbstractSerDe {
     ));
     columns = columnNames.toArray(new String[columnNames.size()]);
     types = columnTypes.toArray(new PrimitiveTypeInfo[columnTypes.size()]);
-    inspector = ObjectInspectorFactory
-        .getStandardStructObjectInspector(columnNames, inspectors);
+    inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
   }
 
   private void initFromDruidQueryPlan(Properties properties, String druidQuery) {
@@ -229,16 +219,16 @@ public class DruidSerDe extends AbstractSerDe {
         Preconditions.checkNotNull(properties.getProperty(Constants.DRUID_QUERY_FIELD_TYPES, null));
     if (fieldNamesProperty.isEmpty()) {
       // this might seem counter intuitive but some queries like query
-      // SELECT YEAR(Calcs.date0) AS yr_date0_ok FROM druid_tableau.calcs Calcs WHERE (YEAR(Calcs.date0) IS NULL) LIMIT 1
-      // is planed in a way where we only push a filter down and keep the project of null as hive project. Thus empty columns
+      // SELECT YEAR(Calcs.date0) AS yr_date0_ok FROM druid_tableau.calcs Calcs WHERE (YEAR(Calcs.date0) IS NULL)
+      // LIMIT 1
+      // is planed in a way where we only push a filter down and keep the project of null as hive project. Thus empty
+      // columns
       columnNames = Collections.EMPTY_LIST;
       columnTypes = Collections.EMPTY_LIST;
     } else {
-      columnNames =
-          Arrays.stream(fieldNamesProperty.trim().split(",")).collect(Collectors.toList());
+      columnNames = Arrays.stream(fieldNamesProperty.trim().split(",")).collect(Collectors.toList());
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(fieldTypesProperty).stream()
-          .map(e -> TypeInfoFactory.getPrimitiveTypeInfo(e.getTypeName()))
-          .map(primitiveTypeInfo -> {
+          .map(e -> TypeInfoFactory.getPrimitiveTypeInfo(e.getTypeName())).map(primitiveTypeInfo -> {
             if (primitiveTypeInfo instanceof TimestampLocalTZTypeInfo) {
               return tsTZTypeInfo;
             }
@@ -257,11 +247,11 @@ public class DruidSerDe extends AbstractSerDe {
 
   /* Submits the request and returns */
   protected SegmentAnalysis submitMetadataRequest(String address, SegmentMetadataQuery query)
-          throws SerDeException, IOException {
+      throws SerDeException, IOException {
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
-              DruidStorageHandlerUtils.createSmileRequest(address, query)
+          DruidStorageHandlerUtils.createSmileRequest(address, query)
       );
     } catch (Exception e) {
       throw new SerDeException(StringUtils.stringifyException(e));
@@ -272,10 +262,9 @@ public class DruidSerDe extends AbstractSerDe {
     try {
       // This will throw an exception in case of the response from druid is not an array
       // this case occurs if for instance druid query execution returns an exception instead of array of results.
-      resultsList = DruidStorageHandlerUtils.SMILE_MAPPER.readValue(response,
-              new TypeReference<List<SegmentAnalysis>>() {
-              }
-      );
+      resultsList =
+          DruidStorageHandlerUtils.SMILE_MAPPER.readValue(response, new TypeReference<List<SegmentAnalysis>>() {
+          });
     } catch (Exception e) {
       response.close();
       throw new SerDeException(StringUtils.stringifyException(e));
@@ -290,17 +279,14 @@ public class DruidSerDe extends AbstractSerDe {
     return resultsList.get(0);
   }
 
-  @Override
-  public Class<? extends Writable> getSerializedClass() {
+  @Override public Class<? extends Writable> getSerializedClass() {
     return DruidWritable.class;
   }
 
-  @Override
-  public Writable serialize(Object o, ObjectInspector objectInspector) throws SerDeException {
+  @Override public Writable serialize(Object o, ObjectInspector objectInspector) throws SerDeException {
     if (objectInspector.getCategory() != ObjectInspector.Category.STRUCT) {
-      throw new SerDeException(getClass().toString()
-              + " can only serialize struct types, but we got: "
-              + objectInspector.getTypeName());
+      throw new SerDeException(
+          getClass().toString() + " can only serialize struct types, but we got: " + objectInspector.getTypeName());
     }
 
     // Prepare the field ObjectInspectors
@@ -317,52 +303,51 @@ public class DruidSerDe extends AbstractSerDe {
       }
       final Object res;
       switch (types[i].getPrimitiveCategory()) {
-        case TIMESTAMP:
+      case TIMESTAMP:
         res = ((TimestampObjectInspector) fields.get(i).getFieldObjectInspector())
-            .getPrimitiveJavaObject(
-                values.get(i)).getTime();
+            .getPrimitiveJavaObject(values.get(i)).toEpochMilli();
           break;
-        case TIMESTAMPLOCALTZ:
-          res = ((TimestampLocalTZObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .getPrimitiveJavaObject(values.get(i)).getZonedDateTime().toInstant().toEpochMilli();
-          break;
-        case BYTE:
-          res = ((ByteObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
-          break;
-        case SHORT:
-          res = ((ShortObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
-          break;
-        case INT:
-          res = ((IntObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
-          break;
-        case LONG:
-          res = ((LongObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
-          break;
-        case FLOAT:
-          res = ((FloatObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
-          break;
-        case DOUBLE:
-          res = ((DoubleObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .get(values.get(i));
-          break;
-        case CHAR:
-          res = ((HiveCharObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .getPrimitiveJavaObject(values.get(i)).getValue();
-          break;
-        case VARCHAR:
-          res = ((HiveVarcharObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .getPrimitiveJavaObject(values.get(i)).getValue();
-          break;
-        case STRING:
-          res = ((StringObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .getPrimitiveJavaObject(values.get(i));
-          break;
-        case BOOLEAN:
-          res = ((BooleanObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .get(values.get(i));
-          break;
-        default:
-          throw new SerDeException("Unsupported type: " + types[i].getPrimitiveCategory());
+      case TIMESTAMPLOCALTZ:
+        res = ((TimestampLocalTZObjectInspector) fields.get(i).getFieldObjectInspector())
+            .getPrimitiveJavaObject(values.get(i)).getZonedDateTime().toInstant().toEpochMilli();
+        break;
+      case BYTE:
+        res = ((ByteObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
+        break;
+      case SHORT:
+        res = ((ShortObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
+        break;
+      case INT:
+        res = ((IntObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
+        break;
+      case LONG:
+        res = ((LongObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
+        break;
+      case FLOAT:
+        res = ((FloatObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
+        break;
+      case DOUBLE:
+        res = ((DoubleObjectInspector) fields.get(i).getFieldObjectInspector())
+            .get(values.get(i));
+        break;
+      case CHAR:
+        res = ((HiveCharObjectInspector) fields.get(i).getFieldObjectInspector())
+            .getPrimitiveJavaObject(values.get(i)).getValue();
+        break;
+      case VARCHAR:
+        res = ((HiveVarcharObjectInspector) fields.get(i).getFieldObjectInspector())
+            .getPrimitiveJavaObject(values.get(i)).getValue();
+        break;
+      case STRING:
+        res = ((StringObjectInspector) fields.get(i).getFieldObjectInspector())
+            .getPrimitiveJavaObject(values.get(i));
+        break;
+      case BOOLEAN:
+        res = ((BooleanObjectInspector) fields.get(i).getFieldObjectInspector())
+            .get(values.get(i)) ? 1L : 0L;
+        break;
+      default:
+        throw new SerDeException("Unsupported type: " + types[i].getPrimitiveCategory());
       }
       value.put(columns[i], res);
     }
@@ -370,114 +355,135 @@ public class DruidSerDe extends AbstractSerDe {
     // First Segment Granularity has to be here.
     final int granularityFieldIndex = columns.length;
     assert values.size() > granularityFieldIndex;
-    Preconditions.checkArgument(fields.get(granularityFieldIndex).getFieldName()
-        .equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME));
-    value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
-            ((TimestampObjectInspector) fields.get(granularityFieldIndex).getFieldObjectInspector())
-                    .getPrimitiveJavaObject(values.get(granularityFieldIndex)).getTime()
-    );
+    Preconditions.checkArgument(
+        fields.get(granularityFieldIndex).getFieldName().equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME));
+
+    Timestamp timestamp =
+        ((TimestampObjectInspector) fields.get(granularityFieldIndex).getFieldObjectInspector())
+            .getPrimitiveJavaObject(values.get(granularityFieldIndex));
+    Preconditions.checkNotNull(timestamp, "Timestamp column cannot have null value");
+    value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, timestamp.toEpochMilli());
+
     if (values.size() == columns.length + 2) {
       // Then partition number if any.
       final int partitionNumPos = granularityFieldIndex + 1;
-      Preconditions.checkArgument(
-          fields.get(partitionNumPos).getFieldName().equals(Constants.DRUID_SHARD_KEY_COL_NAME),
+      Preconditions.checkArgument(fields.get(partitionNumPos).getFieldName().equals(Constants.DRUID_SHARD_KEY_COL_NAME),
           String.format("expecting to encounter %s but was %s", Constants.DRUID_SHARD_KEY_COL_NAME,
               fields.get(partitionNumPos).getFieldName()
           )
       );
       value.put(Constants.DRUID_SHARD_KEY_COL_NAME,
-          ((LongObjectInspector) fields.get(partitionNumPos).getFieldObjectInspector())
-              .get(values.get(partitionNumPos))
+          ((LongObjectInspector) fields.get(partitionNumPos).getFieldObjectInspector()).get(values.get(partitionNumPos))
       );
     }
 
     return new DruidWritable(value);
   }
 
-  @Override
-  public SerDeStats getSerDeStats() {
+  @Override public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;
   }
 
-  @Override
-  public Object deserialize(Writable writable) throws SerDeException {
+  @Override public Object deserialize(Writable writable) throws SerDeException {
     final DruidWritable input = (DruidWritable) writable;
     final List<Object> output = Lists.newArrayListWithExpectedSize(columns.length);
     for (int i = 0; i < columns.length; i++) {
-      final Object value = input.getValue().get(columns[i]);
+      final Object value = input.isCompacted() ? input.getCompactedValue().get(i) : input.getValue().get(columns[i]);
       if (value == null) {
         output.add(null);
         continue;
       }
       switch (types[i].getPrimitiveCategory()) {
         case TIMESTAMP:
-          output.add(new TimestampWritable(Timestamp.valueOf(ZonedDateTime
-              .ofInstant(Instant.ofEpochMilli(((Number) value).longValue()),
-                  tsTZTypeInfo.timeZone()
-              ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toString())));
+          output.add(new TimestampWritableV2(
+              Timestamp.ofEpochMilli(deserializeToMillis(value))));
           break;
         case TIMESTAMPLOCALTZ:
-          output.add(
-              new TimestampLocalTZWritable(
-                  new TimestampTZ(
-                      ZonedDateTime.ofInstant(
-                          Instant.ofEpochMilli(((Number) value).longValue()),
-                          ((TimestampLocalTZTypeInfo) types[i]).timeZone()))));
+          output.add(new TimestampLocalTZWritable(
+              new TimestampTZ(
+                  ZonedDateTime
+                      .ofInstant(
+                          Instant.ofEpochMilli(deserializeToMillis(value)),
+                          ((TimestampLocalTZTypeInfo) types[i]).timeZone()
+                      ))));
           break;
-        case BYTE:
-          output.add(new ByteWritable(((Number) value).byteValue()));
-          break;
-        case SHORT:
-          output.add(new ShortWritable(((Number) value).shortValue()));
-          break;
-        case INT:
+        case DATE:
+          output.add(new DateWritableV2(
+              Date.ofEpochMilli(deserializeToMillis(value))));
+        break;
+      case BYTE:
+        output.add(new ByteWritable(((Number) value).byteValue()));
+        break;
+      case SHORT:
+        output.add(new ShortWritable(((Number) value).shortValue()));
+        break;
+      case INT:
+        if (value instanceof Number) {
           output.add(new IntWritable(((Number) value).intValue()));
-          break;
-        case LONG:
-          output.add(new LongWritable(((Number) value).longValue()));
-          break;
-        case FLOAT:
-          output.add(new FloatWritable(((Number) value).floatValue()));
-          break;
-        case DOUBLE:
-          output.add(new DoubleWritable(((Number) value).doubleValue()));
-          break;
-        case CHAR:
-          output.add(
-              new HiveCharWritable(
-                  new HiveChar(
-                      value.toString(),
-                      ((CharTypeInfo) types[i]).getLength())));
-          break;
-        case VARCHAR:
-          output.add(
-              new HiveVarcharWritable(
-                  new HiveVarchar(
-                      value.toString(),
-                      ((VarcharTypeInfo) types[i]).getLength())));
-          break;
-        case STRING:
-          output.add(new Text(value.toString()));
-          break;
-        case BOOLEAN:
+        } else {
+          // This is a corner case where we have an extract of time unit like day/month pushed as Extraction Fn
+          //@TODO The best way to fix this is to add explicit output Druid types to Calcite Extraction Functions impls
+          output.add(new IntWritable(Integer.valueOf((String) value)));
+        }
+
+        break;
+      case LONG:
+        output.add(new LongWritable(((Number) value).longValue()));
+        break;
+      case FLOAT:
+        output.add(new FloatWritable(((Number) value).floatValue()));
+        break;
+      case DOUBLE:
+        output.add(new DoubleWritable(((Number) value).doubleValue()));
+        break;
+      case CHAR:
+        output.add(new HiveCharWritable(new HiveChar(value.toString(), ((CharTypeInfo) types[i]).getLength())));
+        break;
+      case VARCHAR:
+        output
+            .add(new HiveVarcharWritable(new HiveVarchar(value.toString(), ((VarcharTypeInfo) types[i]).getLength())));
+        break;
+      case STRING:
+        output.add(new Text(value.toString()));
+        break;
+      case BOOLEAN:
+        if (value instanceof Number) {
+          output.add(new BooleanWritable(((Number) value).intValue() != 0));
+        } else {
           output.add(new BooleanWritable(Boolean.valueOf(value.toString())));
-          break;
-        default:
-          throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
+        }
+        break;
+      default:
+        throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
       }
     }
     return output;
   }
 
-  @Override
-  public ObjectInspector getObjectInspector() {
+  private long deserializeToMillis(Object value)
+  {
+    long numberOfMillis;
+    if (value instanceof Number) {
+      numberOfMillis = ((Number) value).longValue();
+    } else {
+      // it is an extraction fn need to be parsed
+      try {
+        numberOfMillis = dateOptionalTimeParser().parseDateTime((String) value).getMillis();
+      } catch (IllegalArgumentException e) {
+        // we may not be able to parse the date if it already comes in Hive format,
+        // we retry and otherwise fail
+        numberOfMillis = Timestamp.valueOf((String) value).toEpochMilli();
+      }
+    }
+    return numberOfMillis;
+  }
+
+  @Override public ObjectInspector getObjectInspector() {
     return inspector;
   }
 
-  @Override
-  public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
-    // If Druid table is not an external table store the schema in metadata store.
-    return !MetaStoreUtils.isExternal(tableParams);
+  @Override public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
+    return true;
   }
 }

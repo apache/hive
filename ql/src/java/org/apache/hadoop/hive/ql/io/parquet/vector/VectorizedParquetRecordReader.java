@@ -193,7 +193,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     if (metadataCache != null) {
       cacheKey = HdfsUtils.getFileId(file.getFileSystem(configuration), file,
         HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
-        HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID));
+        HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
+        !HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH));
     }
     if (cacheKey != null) {
       if (HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_TRACK_CACHE_USAGE)) {
@@ -253,7 +254,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     colsToInclude = ColumnProjectionUtils.getReadColumnIDs(configuration);
     requestedSchema = DataWritableReadSupport
       .getRequestedSchema(indexAccess, columnNamesList, columnTypesList, fileSchema, configuration);
- 
+
     Path path = wrapPathForCache(file, cacheKey, configuration, blocks, cacheTag);
     this.reader = new ParquetFileReader(
       configuration, footer.getFileMetaData(), path, blocks, requestedSchema.getColumns());
@@ -317,7 +318,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       if (LOG.isInfoEnabled()) {
         LOG.info("Caching the footer of length " + footerLength + " for " + cacheKey);
       }
-      footerData = metadataCache.putFileMetadata(cacheKey, footerLength, stream, tag);
+      // Note: we don't pass in isStopped here - this is not on an IO thread.
+      footerData = metadataCache.putFileMetadata(cacheKey, footerLength, stream, tag, null);
       try {
         return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
       } finally {

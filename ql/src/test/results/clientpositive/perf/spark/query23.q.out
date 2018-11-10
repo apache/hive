@@ -51,6 +51,13 @@ from
          and ws_bill_customer_sk in (select c_customer_sk from best_ss_customer))) y
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
@@ -102,6 +109,13 @@ from
          and ws_bill_customer_sk in (select c_customer_sk from best_ss_customer))) y
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -126,6 +140,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
@@ -145,24 +160,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 19 
             Map Operator Tree:
                 TableScan
                   alias: customer
+                  filterExpr: c_customer_sk is not null (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: c_customer_sk is not null (type: boolean)
@@ -181,6 +198,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
@@ -200,24 +218,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 26 
             Map Operator Tree:
                 TableScan
                   alias: customer
+                  filterExpr: c_customer_sk is not null (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: c_customer_sk is not null (type: boolean)
@@ -420,6 +440,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
@@ -439,24 +460,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 48 
             Map Operator Tree:
                 TableScan
                   alias: customer
+                  filterExpr: c_customer_sk is not null (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: c_customer_sk is not null (type: boolean)
@@ -475,6 +498,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
@@ -494,24 +518,26 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 55 
             Map Operator Tree:
                 TableScan
                   alias: customer
+                  filterExpr: c_customer_sk is not null (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: c_customer_sk is not null (type: boolean)
@@ -719,6 +745,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: (cs_item_sk is not null and cs_bill_customer_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
@@ -738,25 +765,27 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_date (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized
         Map 12 
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -776,6 +805,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_customer_sk is not null (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_customer_sk is not null (type: boolean)
@@ -795,6 +825,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
+                  filterExpr: c_customer_sk is not null (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: c_customer_sk is not null (type: boolean)
@@ -813,6 +844,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_item_sk is not null and ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_bill_customer_sk is not null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
@@ -832,6 +864,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 1999) and (d_moy = 1) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_moy = 1) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
@@ -850,6 +883,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_item_sk is not null and ss_sold_date_sk is not null) (type: boolean)

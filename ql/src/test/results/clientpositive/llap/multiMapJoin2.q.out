@@ -5,6 +5,9 @@ FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
@@ -12,6 +15,9 @@ FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30,6 +36,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -47,17 +54,18 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
-                          Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 78 Data size: 6786 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: y1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -77,6 +85,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -94,17 +103,18 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 6
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
-                          Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 78 Data size: 6786 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: y2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -126,10 +136,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 78 Data size: 6786 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 78 Data size: 6786 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -243,6 +253,9 @@ FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
@@ -250,6 +263,9 @@ FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -268,6 +284,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -287,6 +304,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -306,6 +324,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -325,6 +344,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -350,21 +370,21 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 78 Data size: 6786 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 78 Data size: 6786 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 78 Data size: 6786 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -379,11 +399,11 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 78 Data size: 6786 Basic stats: COMPLETE Column stats: COMPLETE
         Union 3 
             Vertex: Union 3
 
@@ -493,6 +513,9 @@ FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
@@ -500,6 +523,9 @@ FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -539,6 +565,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -556,17 +583,18 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 6
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
-                          Statistics: Num rows: 52 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 51 Data size: 4425 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: y2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -593,17 +621,17 @@ STAGE PLANS:
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 52 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 51 Data size: 4425 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 52 Data size: 4524 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 51 Data size: 4437 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 52 Data size: 4524 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 51 Data size: 4437 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -701,6 +729,9 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
@@ -713,6 +744,9 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -733,6 +767,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -750,7 +785,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -767,6 +802,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -791,6 +827,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -808,7 +845,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -941,6 +978,9 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
@@ -953,6 +993,9 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -973,6 +1016,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -990,7 +1034,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -1007,6 +1051,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1031,6 +1076,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1048,7 +1094,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -1181,6 +1227,9 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
@@ -1193,6 +1242,9 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1213,6 +1265,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1230,7 +1283,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -1247,6 +1300,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1289,7 +1343,7 @@ STAGE PLANS:
                   outputColumnNames: _col1
                   input vertices:
                     1 Reducer 6
-                  Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     keys: _col1 (type: string)
@@ -1405,6 +1459,9 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
@@ -1417,6 +1474,9 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1437,6 +1497,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1454,7 +1515,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 3393 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -1471,6 +1532,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1513,7 +1575,7 @@ STAGE PLANS:
                   outputColumnNames: _col1
                   input vertices:
                     1 Reducer 6
-                  Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     keys: _col1 (type: string)
@@ -1662,10 +1724,20 @@ PREHOOK: query: EXPLAIN
 SELECT count(*)
 FROM part_table_n0 x JOIN src1 y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table_n0
+PREHOOK: Input: default@part_table_n0@partitionid=1
+PREHOOK: Input: default@part_table_n0@partitionid=2
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(*)
 FROM part_table_n0 x JOIN src1 y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table_n0
+POSTHOOK: Input: default@part_table_n0@partitionid=1
+POSTHOOK: Input: default@part_table_n0@partitionid=2
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1683,6 +1755,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 125 Data size: 10875 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1715,6 +1788,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1781,6 +1855,8 @@ SELECT x.key FROM (
     JOIN src c ON tmp.key=c.key
 ) x order by x.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN   
 SELECT x.key FROM (
   SELECT c.key FROM
@@ -1792,6 +1868,8 @@ SELECT x.key FROM (
     JOIN src c ON tmp.key=c.key
 ) x order by x.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1812,6 +1890,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1840,6 +1919,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1857,23 +1937,24 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 809 Data size: 70383 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1896,23 +1977,24 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 7
-                        Statistics: Num rows: 809 Data size: 70383 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1941,6 +2023,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)

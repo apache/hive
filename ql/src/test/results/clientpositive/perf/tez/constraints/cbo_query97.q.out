@@ -1,0 +1,81 @@
+PREHOOK: query: explain cbo
+with ssci as (
+select ss_customer_sk customer_sk
+      ,ss_item_sk item_sk
+from store_sales,date_dim
+where ss_sold_date_sk = d_date_sk
+  and d_month_seq between 1212 and 1212 + 11
+group by ss_customer_sk
+        ,ss_item_sk),
+csci as(
+ select cs_bill_customer_sk customer_sk
+      ,cs_item_sk item_sk
+from catalog_sales,date_dim
+where cs_sold_date_sk = d_date_sk
+  and d_month_seq between 1212 and 1212 + 11
+group by cs_bill_customer_sk
+        ,cs_item_sk)
+ select  sum(case when ssci.customer_sk is not null and csci.customer_sk is null then 1 else 0 end) store_only
+      ,sum(case when ssci.customer_sk is null and csci.customer_sk is not null then 1 else 0 end) catalog_only
+      ,sum(case when ssci.customer_sk is not null and csci.customer_sk is not null then 1 else 0 end) store_and_catalog
+from ssci full outer join csci on (ssci.customer_sk=csci.customer_sk
+                               and ssci.item_sk = csci.item_sk)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with ssci as (
+select ss_customer_sk customer_sk
+      ,ss_item_sk item_sk
+from store_sales,date_dim
+where ss_sold_date_sk = d_date_sk
+  and d_month_seq between 1212 and 1212 + 11
+group by ss_customer_sk
+        ,ss_item_sk),
+csci as(
+ select cs_bill_customer_sk customer_sk
+      ,cs_item_sk item_sk
+from catalog_sales,date_dim
+where cs_sold_date_sk = d_date_sk
+  and d_month_seq between 1212 and 1212 + 11
+group by cs_bill_customer_sk
+        ,cs_item_sk)
+ select  sum(case when ssci.customer_sk is not null and csci.customer_sk is null then 1 else 0 end) store_only
+      ,sum(case when ssci.customer_sk is null and csci.customer_sk is not null then 1 else 0 end) catalog_only
+      ,sum(case when ssci.customer_sk is not null and csci.customer_sk is not null then 1 else 0 end) store_and_catalog
+from ssci full outer join csci on (ssci.customer_sk=csci.customer_sk
+                               and ssci.item_sk = csci.item_sk)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(fetch=[100])
+  HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+    HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[sum($1)], agg#2=[sum($2)])
+      HiveProject($f0=[CASE(AND(IS NOT NULL($0), IS NULL($2)), 1, 0)], $f1=[CASE(AND(IS NULL($0), IS NOT NULL($2)), 1, 0)], $f2=[CASE(AND(IS NOT NULL($0), IS NOT NULL($2)), 1, 0)])
+        HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[full], algorithm=[none], cost=[not available])
+          HiveProject(ss_customer_sk=[$1], ss_item_sk=[$0])
+            HiveAggregate(group=[{1, 2}])
+              HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_customer_sk=[$3])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                HiveProject(d_date_sk=[$0])
+                  HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(cs_bill_customer_sk=[$0], cs_item_sk=[$1])
+            HiveAggregate(group=[{1, 2}])
+              HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                HiveProject(d_date_sk=[$0])
+                  HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
+                    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

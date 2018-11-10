@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
+import java.util.function.BiFunction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -67,6 +68,7 @@ import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFJson;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFApproximateDistinct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLength;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
 import org.apache.hadoop.hive.ql.udf.UDFLn;
@@ -108,7 +110,6 @@ import org.apache.hadoop.hive.ql.udf.UDFToFloat;
 import org.apache.hadoop.hive.ql.udf.UDFToInteger;
 import org.apache.hadoop.hive.ql.udf.UDFToLong;
 import org.apache.hadoop.hive.ql.udf.UDFToShort;
-import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.UDFUUID;
 import org.apache.hadoop.hive.ql.udf.UDFUnbase64;
@@ -213,6 +214,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("ceiling", GenericUDFCeil.class);
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
+    system.registerGenericUDF("json_read", GenericUDFJsonRead.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
     system.registerGenericUDF("enforce_constraint", GenericUDFEnforceConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
@@ -289,15 +291,15 @@ public final class FunctionRegistry {
     system.registerGenericUDF(UNARY_PLUS_FUNC_NAME, GenericUDFOPPositive.class);
     system.registerGenericUDF(UNARY_MINUS_FUNC_NAME, GenericUDFOPNegative.class);
 
-    system.registerUDF("day", UDFDayOfMonth.class, false);
-    system.registerUDF("dayofmonth", UDFDayOfMonth.class, false);
+    system.registerGenericUDF("day", UDFDayOfMonth.class);
+    system.registerGenericUDF("dayofmonth", UDFDayOfMonth.class);
     system.registerUDF("dayofweek", UDFDayOfWeek.class, false);
-    system.registerUDF("month", UDFMonth.class, false);
+    system.registerGenericUDF("month", UDFMonth.class);
     system.registerGenericUDF("quarter", GenericUDFQuarter.class);
-    system.registerUDF("year", UDFYear.class, false);
-    system.registerUDF("hour", UDFHour.class, false);
-    system.registerUDF("minute", UDFMinute.class, false);
-    system.registerUDF("second", UDFSecond.class, false);
+    system.registerGenericUDF("year", UDFYear.class);
+    system.registerGenericUDF("hour", UDFHour.class);
+    system.registerGenericUDF("minute", UDFMinute.class);
+    system.registerGenericUDF("second", UDFSecond.class);
     system.registerUDF("from_unixtime", UDFFromUnixTime.class, false);
     system.registerGenericUDF("to_date", GenericUDFDate.class);
     system.registerUDF("weekofyear", UDFWeekOfYear.class, false);
@@ -352,7 +354,9 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF("grouping", GenericUDFGrouping.class);
 
-    system.registerGenericUDF("current_database", UDFCurrentDB.class);
+    system.registerGenericUDF("current_database", GenericUDFCurrentDatabase.class);
+    system.registerGenericUDF("current_schema", GenericUDFCurrentSchema.class);
+    system.registerGenericUDF("current_catalog", GenericUDFCurrentCatalog.class);
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
     system.registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
     system.registerGenericUDF("current_user", GenericUDFCurrentUser.class);
@@ -360,6 +364,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("logged_in_user", GenericUDFLoggedInUser.class);
     system.registerGenericUDF("restrict_information_schema", GenericUDFRestrictInformationSchema.class);
     system.registerGenericUDF("current_authorizer", GenericUDFCurrentAuthorizer.class);
+
+    system.registerGenericUDF("surrogate_key", GenericUDFSurrogateKey.class);
 
     system.registerGenericUDF("isnull", GenericUDFOPNull.class);
     system.registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
@@ -398,12 +404,11 @@ public final class FunctionRegistry {
     system.registerUDF(serdeConstants.BIGINT_TYPE_NAME, UDFToLong.class, false, UDFToLong.class.getSimpleName());
     system.registerUDF(serdeConstants.FLOAT_TYPE_NAME, UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
     system.registerUDF(serdeConstants.DOUBLE_TYPE_NAME, UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
-    system.registerUDF(serdeConstants.STRING_TYPE_NAME, UDFToString.class, false, UDFToString.class.getSimpleName());
     // following mapping is to enable UDFName to UDF while generating expression for default value (in operator tree)
     //  e.g. cast(4 as string) is serialized as UDFToString(4) into metastore, to allow us to generate appropriate UDF for
     //  UDFToString we need the following mappings
     // Rest of the types e.g. DATE, CHAR, VARCHAR etc are already registered
-    system.registerUDF(UDFToString.class.getSimpleName(), UDFToString.class, false, UDFToString.class.getSimpleName());
+    // TODO: According to vgarg, these function mappings are no longer necessary as the default value logic has changed.
     system.registerUDF(UDFToBoolean.class.getSimpleName(), UDFToBoolean.class, false, UDFToBoolean.class.getSimpleName());
     system.registerUDF(UDFToDouble.class.getSimpleName(), UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
     system.registerUDF(UDFToFloat.class.getSimpleName(), UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
@@ -412,6 +417,7 @@ public final class FunctionRegistry {
     system.registerUDF(UDFToShort.class.getSimpleName(), UDFToShort.class, false, UDFToShort.class.getSimpleName());
     system.registerUDF(UDFToByte.class.getSimpleName(), UDFToByte.class, false, UDFToByte.class.getSimpleName());
 
+    system.registerGenericUDF(serdeConstants.STRING_TYPE_NAME, GenericUDFToString.class);
     system.registerGenericUDF(serdeConstants.DATE_TYPE_NAME, GenericUDFToDate.class);
     system.registerGenericUDF(serdeConstants.TIMESTAMP_TYPE_NAME, GenericUDFTimestamp.class);
     system.registerGenericUDF(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME, GenericUDFToTimestampLocalTZ.class);
@@ -460,6 +466,7 @@ public final class FunctionRegistry {
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
+    system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
 
 
@@ -511,6 +518,9 @@ public final class FunctionRegistry {
     system.registerGenericUDF("internal_interval", GenericUDFInternalInterval.class);
 
     system.registerGenericUDF("to_epoch_milli", GenericUDFEpochMilli.class);
+    system.registerGenericUDF("bucket_number", GenericUDFBucketNumber.class);
+    system.registerGenericUDF("tumbling_window", GenericUDFTumbledWindow.class);
+
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
     system.registerGenericUDTF("replicate_rows", GenericUDTFReplicateRows.class);
@@ -805,9 +815,16 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
+
     if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+      // It is not primitive; check if it is a struct and we can infer a common class
+      if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
+        return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b,
+            (type1, type2) -> getCommonClassForComparison(type1, type2));
+      }
       return null;
     }
+
     PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
     PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
 
@@ -940,7 +957,8 @@ public final class FunctionRegistry {
     }
     // It is not primitive; check if it is a struct and we can infer a common class
     if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
-      return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b);
+      return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b,
+          (type1, type2) -> getCommonClass(type1, type2));
     }
     return null;
   }
@@ -951,7 +969,8 @@ public final class FunctionRegistry {
    *
    * @return null if no common class could be found.
    */
-  public static TypeInfo getCommonClassForStruct(StructTypeInfo a, StructTypeInfo b) {
+  public static TypeInfo getCommonClassForStruct(StructTypeInfo a, StructTypeInfo b,
+      BiFunction<TypeInfo, TypeInfo, TypeInfo> commonClassFunction) {
     if (a == b || a.equals(b)) {
       return a;
     }
@@ -980,7 +999,7 @@ public final class FunctionRegistry {
     ArrayList<TypeInfo> fromTypes = a.getAllStructFieldTypeInfos();
     ArrayList<TypeInfo> toTypes = b.getAllStructFieldTypeInfos();
     for (int i = 0; i < fromTypes.size(); i++) {
-      TypeInfo commonType = getCommonClass(fromTypes.get(i), toTypes.get(i));
+      TypeInfo commonType = commonClassFunction.apply(fromTypes.get(i), toTypes.get(i));
       if (commonType == null) {
         return null;
       }
@@ -1099,8 +1118,11 @@ public final class FunctionRegistry {
       String detailedMsg = e instanceof java.lang.reflect.InvocationTargetException ?
         e.getCause().getMessage() : e.getMessage();
 
-      throw new HiveException("Unable to execute method " + m + " with arguments "
-          + argumentString + ":" + detailedMsg, e);
+      // Log the arguments into a debug message for the ease of debugging. But when exposed through
+      // an error message they can leak sensitive information, even to the client application.
+      LOG.trace("Unable to execute method " + m + " with arguments "
+              + argumentString);
+      throw new HiveException("Unable to execute method " + m + ":" + detailedMsg, e);
     }
     return o;
   }
@@ -1613,7 +1635,7 @@ public final class FunctionRegistry {
     return udfClass == UDFToBoolean.class || udfClass == UDFToByte.class ||
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
-        udfClass == UDFToShort.class || udfClass == UDFToString.class ||
+        udfClass == UDFToShort.class || udfClass == GenericUDFToString.class ||
         udfClass == GenericUDFToVarchar.class || udfClass == GenericUDFToChar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
         udfClass == GenericUDFToDate.class || udfClass == GenericUDFToDecimal.class ||
@@ -1666,7 +1688,7 @@ public final class FunctionRegistry {
   }
 
   public static FunctionInfo registerPermanentFunction(String functionName,
-      String className, boolean registerToSession, FunctionResource[] resources) {
+      String className, boolean registerToSession, FunctionResource[] resources) throws SemanticException {
     return system.registerPermanentFunction(functionName, className, registerToSession, resources);
   }
 

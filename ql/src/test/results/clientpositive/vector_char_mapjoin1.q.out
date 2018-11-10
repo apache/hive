@@ -126,8 +126,12 @@ POSTHOOK: Lineage: char_join1_str_orc.c1 SIMPLE [(char_join1_str)char_join1_str.
 POSTHOOK: Lineage: char_join1_str_orc.c2 SIMPLE [(char_join1_str)char_join1_str.FieldSchema(name:c2, type:string, comment:null), ]
 PREHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@char_join1_vc1_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_join1_vc1_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -148,6 +152,7 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: c2 is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
@@ -166,6 +171,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: c2 is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -213,8 +219,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -259,8 +265,14 @@ POSTHOOK: Input: default@char_join1_vc1_orc
 3	 abc      	3	 abc      
 PREHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@char_join1_vc1_orc
+PREHOOK: Input: default@char_join1_vc2_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_join1_vc1_orc
+POSTHOOK: Input: default@char_join1_vc2_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -281,6 +293,7 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: c2 is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
@@ -299,6 +312,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: c2 is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 324 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -346,8 +360,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -394,8 +408,14 @@ POSTHOOK: Input: default@char_join1_vc2_orc
 3	 abc      	3	 abc                
 PREHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@char_join1_str_orc
+PREHOOK: Input: default@char_join1_vc1_orc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_join1_str_orc
+POSTHOOK: Input: default@char_join1_vc1_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -416,6 +436,7 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
+            filterExpr: c2 is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
@@ -426,7 +447,7 @@ STAGE PLANS:
                 Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
-                    0 UDFToString(_col1) (type: string)
+                    0 CAST( _col1 AS STRING) (type: string)
                     1 _col1 (type: string)
 
   Stage: Stage-2
@@ -434,6 +455,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: c2 is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -456,10 +478,10 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 UDFToString(_col1) (type: string)
+                    0 CAST( _col1 AS STRING) (type: string)
                     1 _col1 (type: string)
                   Map Join Vectorization:
-                      bigTableKeyExpressions: CastStringGroupToString(col 1:char(10)) -> 3:string
+                      bigTableKeyExpressions: col 1:char(10)
                       bigTableValueExpressions: col 0:int, col 1:char(10)
                       className: VectorMapJoinOperator
                       native: false
@@ -481,8 +503,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

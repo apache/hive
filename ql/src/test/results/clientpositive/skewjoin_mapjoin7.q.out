@@ -40,6 +40,9 @@ select * from
   select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
 ) subq1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n157
+PREHOOK: Input: default@t2_n92
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN	 
 select * from	
 (      
@@ -48,6 +51,9 @@ select * from
   select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
 ) subq1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n157
+POSTHOOK: Input: default@t2_n92
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-16 is a root stage
   Stage-2 depends on stages: Stage-16
@@ -70,6 +76,7 @@ STAGE PLANS:
         $hdt$_0-subquery1:$hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = '2') and key is not null) (type: boolean)
@@ -103,6 +110,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = '2') and key is not null) (type: boolean)
@@ -201,6 +209,7 @@ STAGE PLANS:
         $hdt$_0-subquery2:$hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = '2') and key is not null) (type: boolean)
@@ -234,6 +243,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = '2') and key is not null) (type: boolean)

@@ -111,6 +111,11 @@ GROUP BY x_n3.u
 ON n.u = o.u 
 WHERE n.u <> 0 AND n.ft <= '2014-09-02'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@v_n15
+PREHOOK: Input: default@x_n3
+PREHOOK: Input: default@y_n1
+PREHOOK: Input: default@z_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT o.u, n.u
 FROM 
@@ -138,6 +143,11 @@ GROUP BY x_n3.u
 ON n.u = o.u 
 WHERE n.u <> 0 AND n.ft <= '2014-09-02'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@v_n15
+POSTHOOK: Input: default@x_n3
+POSTHOOK: Input: default@y_n1
+POSTHOOK: Input: default@z_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -160,6 +170,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x_n3
+                  filterExpr: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
@@ -186,6 +197,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v_n15
+                  filterExpr: t is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: t is not null (type: boolean)
@@ -201,6 +213,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y_n1
+                  filterExpr: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
@@ -227,6 +240,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: z_n0
+                  filterExpr: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
@@ -253,6 +267,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x_n3
+                  filterExpr: (t is not null and (date >= '2014-03-04') and (date < '2014-09-03') and (u <> 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-03') and (date >= '2014-03-04') and (u <> 0L) and t is not null) (type: boolean)

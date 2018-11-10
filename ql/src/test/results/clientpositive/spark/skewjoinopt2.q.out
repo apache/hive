@@ -37,9 +37,15 @@ POSTHOOK: Output: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -56,6 +62,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and val is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
@@ -74,6 +81,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and val is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
@@ -177,9 +185,15 @@ POSTHOOK: Input: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -321,9 +335,15 @@ POSTHOOK: Input: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -341,6 +361,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and val is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
@@ -359,6 +380,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and val is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((((key = '2') or (key = '7')) or (key = '3')) or (key = '8')) and key is not null and val is not null) (type: boolean)
@@ -485,9 +507,15 @@ POSTHOOK: Input: default@t2_n81
 PREHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n139
+PREHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.key, count(1) FROM T1_n139 a LEFT OUTER JOIN T2_n81 b ON a.key = b.key and a.val = b.val group by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n139
+POSTHOOK: Input: default@t2_n81
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

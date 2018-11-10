@@ -534,8 +534,21 @@ POSTHOOK: Input: default@encrypted_table
 97	val_97
 PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WHERE t1.key = t2.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WHERE t1.key = t2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`encrypted_table`
+WHERE `key` IS NOT NULL) AS `t2` ON CAST(`t0`.`key` AS DOUBLE) = CAST(`t2`.`key` AS DOUBLE)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -546,6 +559,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -567,6 +581,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

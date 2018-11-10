@@ -49,7 +49,7 @@ public abstract class TxnCommandsBaseForTests {
   final static int BUCKET_COUNT = 2;
   @Rule
   public TestName testName = new TestName();
-  HiveConf hiveConf;
+  protected HiveConf hiveConf;
   Driver d;
   enum Table {
     ACIDTBL("acidTbl"),
@@ -138,10 +138,10 @@ public abstract class TxnCommandsBaseForTests {
       FileUtils.deleteDirectory(new File(getTestDataDir()));
     }
   }
-  String getWarehouseDir() {
+  protected String getWarehouseDir() {
     return getTestDataDir() + "/warehouse";
   }
-  abstract String getTestDataDir();
+  protected abstract String getTestDataDir();
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
@@ -149,7 +149,7 @@ public abstract class TxnCommandsBaseForTests {
   List<String> stringifyValues(int[][] rowsIn) {
     return TestTxnCommands2.stringifyValues(rowsIn);
   }
-  String makeValuesClause(int[][] rows) {
+  protected String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
   }
 
@@ -161,7 +161,7 @@ public abstract class TxnCommandsBaseForTests {
     TestTxnCommands2.runCleaner(hiveConf);
   }
 
-  List<String> runStatementOnDriver(String stmt) throws Exception {
+  protected List<String> runStatementOnDriver(String stmt) throws Exception {
     LOG.info("Running the query: " + stmt);
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {
@@ -225,7 +225,7 @@ public abstract class TxnCommandsBaseForTests {
         expected.length, rs.size());
     //verify data and layout
     for(int i = 0; i < expected.length; i++) {
-      Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i) + "; expected " + expected[i][0], rs.get(i).startsWith(expected[i][0]));
       if(checkFileName) {
         Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
       }
@@ -244,9 +244,14 @@ public abstract class TxnCommandsBaseForTests {
    * which will currently make the query non-vectorizable.  This means we can't check the file name
    * for vectorized version of the test.
    */
-  void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
+  protected void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
     List<String> rs = runStatementOnDriver(query);
     checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
     assertVectorized(isVectorized, query);
+  }
+  void dropTable(String[] tabs) throws Exception {
+    for(String tab : tabs) {
+      d.run("drop table if exists " + tab);
+    }
   }
 }

@@ -8,7 +8,6 @@ set hive.merge.mapredfiles=false;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
-set mapred.input.dir.recursive=true;
 
 -- SORT_QUERY_RESULTS
 -- This is to test the union->selectstar->filesink optimization
@@ -17,7 +16,6 @@ set mapred.input.dir.recursive=true;
 -- There is no need for this optimization, since the query is a map-only query.
 -- It does not matter, whether the output is merged or not. In this case, merging is turned
 -- off
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n4, it might be easier
 -- to run the test only on hadoop 23
 

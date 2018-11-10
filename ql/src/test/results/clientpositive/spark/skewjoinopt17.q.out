@@ -37,9 +37,15 @@ POSTHOOK: Output: default@t2_n18
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n27 a JOIN T2_n18 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n27
+PREHOOK: Input: default@t2_n18
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n27 a JOIN T2_n18 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n27
+POSTHOOK: Input: default@t2_n18
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -56,6 +62,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = '2') (type: boolean)
@@ -75,6 +82,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = '2') (type: boolean)
@@ -236,9 +244,15 @@ POSTHOOK: Output: default@t2_n18
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n27 a JOIN T2_n18 b ON a.key = b.key and a.val = b.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n27
+PREHOOK: Input: default@t2_n18
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1_n27 a JOIN T2_n18 b ON a.key = b.key and a.val = b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n27
+POSTHOOK: Input: default@t2_n18
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -255,6 +269,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and val is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((key = '2') and (val = '12')) or (key = '2')) and key is not null and val is not null) (type: boolean)
@@ -273,6 +288,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and val is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((key = '2') and (val = '12')) or (key = '2')) and key is not null and val is not null) (type: boolean)

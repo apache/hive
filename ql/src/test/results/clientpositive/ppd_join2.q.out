@@ -10,6 +10,8 @@ JOIN
 ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
@@ -22,6 +24,8 @@ JOIN
 ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -33,6 +37,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311')) (type: boolean)
@@ -49,6 +54,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src
+            filterExpr: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((value <> 'val_50') or (key > '1')) and (key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and value is not null) (type: boolean)
@@ -94,6 +100,7 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: src
+            filterExpr: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
@@ -1690,6 +1697,8 @@ JOIN
 ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
@@ -1702,6 +1711,8 @@ JOIN
 ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1713,6 +1724,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311')) (type: boolean)
@@ -1729,6 +1741,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src
+            filterExpr: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((value <> 'val_50') or (key > '1')) and (key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and value is not null) (type: boolean)
@@ -1774,6 +1787,7 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: src
+            filterExpr: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)

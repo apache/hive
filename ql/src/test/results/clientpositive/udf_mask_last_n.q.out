@@ -25,8 +25,12 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMaskLastN
 Function type:BUILTIN
 PREHOOK: query: explain select mask_last_n('TestString-123', 4, 'X', 'x', '0', '1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain select mask_last_n('TestString-123', 4, 'X', 'x', '0', '1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -67,4 +71,4 @@ POSTHOOK: query: select mask_last_n('TestString-123', 4, 'X', 'x', '0', ':'),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-TestString:000	TestString:000	TestString-123      ::::                                                                                                                                                                                                                                       	43	15555	15555	15555	1900-01-01
+TestString:000	TestString:000	TestString-123      ::::                                                                                                                                                                                                                                       	43	15555	15555	15555	0001-01-01

@@ -28,33 +28,58 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
 
   private int limit = 0;
   private int offset = 0;
-
+  private String partitionColumn = null;
+  private String lowerBound = null;
+  private String upperBound = null;
 
   public JdbcInputSplit() {
-    super((Path) null, 0, 0, EMPTY_ARRAY);
-
+    super(null, 0, 0, EMPTY_ARRAY);
+    this.limit = -1;
+    this.offset = 0;
   }
 
-
-  public JdbcInputSplit(long start, long end, Path dummyPath) {
+  public JdbcInputSplit(Path dummyPath) {
     super(dummyPath, 0, 0, EMPTY_ARRAY);
-    this.setLimit((int) start);
-    this.setOffset((int) end);
+    this.limit = -1;
+    this.offset = 0;
   }
 
-
-  public JdbcInputSplit(int limit, int offset) {
-    super((Path) null, 0, 0, EMPTY_ARRAY);
+  public JdbcInputSplit(int limit, int offset, Path dummyPath) {
+    super(dummyPath, 0, 0, EMPTY_ARRAY);
     this.limit = limit;
     this.offset = offset;
   }
 
+  public JdbcInputSplit(String partitionColumn, String lowerBound, String upperBound, Path dummyPath) {
+    super(dummyPath, 0, 0, EMPTY_ARRAY);
+    this.partitionColumn = partitionColumn;
+    this.lowerBound = lowerBound;
+    this.upperBound = upperBound;
+  }
 
   @Override
   public void write(DataOutput out) throws IOException {
     super.write(out);
     out.writeInt(limit);
     out.writeInt(offset);
+    if (partitionColumn != null) {
+      out.writeBoolean(true);
+      out.writeUTF(partitionColumn);
+    } else {
+      out.writeBoolean(false);
+    }
+    if (lowerBound != null) {
+      out.writeBoolean(true);
+      out.writeUTF(lowerBound);
+    } else {
+      out.writeBoolean(false);
+    }
+    if (upperBound != null) {
+      out.writeBoolean(true);
+      out.writeUTF(upperBound);
+    } else {
+      out.writeBoolean(false);
+    }
   }
 
 
@@ -63,6 +88,18 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
     super.readFields(in);
     limit = in.readInt();
     offset = in.readInt();
+    boolean partitionColumnExists = in.readBoolean();
+    if (partitionColumnExists) {
+      partitionColumn = in.readUTF();
+    }
+    boolean lowerBoundExists = in.readBoolean();
+    if (lowerBoundExists) {
+      lowerBound = in.readUTF();
+    }
+    boolean upperBoundExists = in.readBoolean();
+    if (upperBoundExists) {
+      upperBound = in.readUTF();
+    }
   }
 
 
@@ -97,4 +134,35 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
     this.offset = offset;
   }
 
+  public String getPartitionColumn() {
+    return this.partitionColumn;
+  }
+
+  public String getLowerBound() {
+    return this.lowerBound;
+  }
+
+  public String getUpperBound() {
+    return this.upperBound;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    if (partitionColumn != null) {
+      sb.append("interval:");
+      sb.append(partitionColumn).append("[");
+      if (lowerBound != null) {
+        sb.append(lowerBound);
+      }
+      sb.append(",");
+      if (upperBound != null) {
+        sb.append(upperBound);
+      }
+      sb.append(")");
+    } else {
+      sb.append("limit:" + limit + ", offset:" + offset);
+    }
+    return sb.toString();
+  }
 }

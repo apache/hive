@@ -23,7 +23,9 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
+import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -42,14 +45,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.orc.OrcConf;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.AcidStats;
 import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.WriterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 /**
  * A RecordUpdater where the files are stored as ORC.
@@ -73,7 +82,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static int BUCKET = 2;
   final static int ROW_ID = 3;
   final static int CURRENT_WRITEID = 4;
-  final static int ROW = 5;
+  public static final int ROW = 5;
   /**
    * total number of fields (above)
    */
@@ -179,7 +188,7 @@ public class OrcRecordUpdater implements RecordUpdater {
    * @param rowInspector the row's object inspector
    * @return an object inspector for the event stream
    */
-  static StructObjectInspector createEventSchema(ObjectInspector rowInspector) {
+  static StructObjectInspector createEventObjectInspector(ObjectInspector rowInspector) {
     List<StructField> fields = new ArrayList<StructField>();
     fields.add(new OrcStruct.Field("operation",
         PrimitiveObjectInspectorFactory.writableIntObjectInspector, OPERATION));
@@ -194,6 +203,41 @@ public class OrcRecordUpdater implements RecordUpdater {
     fields.add(new OrcStruct.Field("row", rowInspector, ROW));
     return new OrcStruct.OrcStructInspector(fields);
   }
+
+  private static TypeDescription createEventSchemaFromTableProperties(Properties tableProps) {
+    TypeDescription rowSchema = getTypeDescriptionFromTableProperties(tableProps);
+    if (rowSchema == null) {
+      return null;
+    }
+
+    return SchemaEvolution.createEventSchema(rowSchema);
+  }
+
+  private static TypeDescription getTypeDescriptionFromTableProperties(Properties tableProperties) {
+    TypeDescription schema = null;
+    if (tableProperties != null) {
+      final String columnNameProperty = tableProperties.getProperty(IOConstants.COLUMNS);
+      final String columnTypeProperty = tableProperties.getProperty(IOConstants.COLUMNS_TYPES);
+      if (!Strings.isNullOrEmpty(columnNameProperty) && !Strings.isNullOrEmpty(columnTypeProperty)) {
+        List<String> columnNames =
+          columnNameProperty.length() == 0 ? new ArrayList<String>() : Arrays.asList(columnNameProperty.split(","));
+        List<TypeInfo> columnTypes = columnTypeProperty.length() == 0 ? new ArrayList<TypeInfo>() : TypeInfoUtils
+          .getTypeInfosFromTypeString(columnTypeProperty);
+
+        schema = TypeDescription.createStruct();
+        for (int i = 0; i < columnNames.size(); i++) {
+          schema.addField(columnNames.get(i), OrcInputFormat.convertTypeInfo(columnTypes.get(i)));
+        }
+      }
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("ORC schema = " + schema);
+    }
+
+    return schema;
+  }
+
   /**
    * @param partitionRoot - partition root (or table root if not partitioned)
    */
@@ -282,8 +326,9 @@ public class OrcRecordUpdater implements RecordUpdater {
          */
         this.deleteWriterOptions = OrcFile.writerOptions(optionsCloneForDelta.getTableProperties(),
           optionsCloneForDelta.getConfiguration());
-        this.deleteWriterOptions.inspector(createEventSchema(findRecId(options.getInspector(),
+        this.deleteWriterOptions.inspector(createEventObjectInspector(findRecId(options.getInspector(),
           options.getRecordIdColumn())));
+        this.deleteWriterOptions.setSchema(createEventSchemaFromTableProperties(options.getTableProperties()));
       }
 
       // get buffer size and stripe size for base writer
@@ -297,7 +342,6 @@ public class OrcRecordUpdater implements RecordUpdater {
       writerOptions.blockPadding(false);
       if (optionsCloneForDelta.getConfiguration().getBoolean(
         HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED.varname, false)) {
-        writerOptions.compress(CompressionKind.NONE);
         writerOptions.encodingStrategy(org.apache.orc.OrcFile.EncodingStrategy.SPEED);
         writerOptions.rowIndexStride(0);
         writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
@@ -305,8 +349,9 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
     writerOptions.fileSystem(fs).callback(indexBuilder);
     rowInspector = (StructObjectInspector)options.getInspector();
-    writerOptions.inspector(createEventSchema(findRecId(options.getInspector(),
+    writerOptions.inspector(createEventObjectInspector(findRecId(options.getInspector(),
         options.getRecordIdColumn())));
+    writerOptions.setSchema(createEventSchemaFromTableProperties(options.getTableProperties()));
     item = new OrcStruct(FIELDS);
     item.setFieldValue(OPERATION, operation);
     item.setFieldValue(CURRENT_WRITEID, currentWriteId);
@@ -493,6 +538,9 @@ public class OrcRecordUpdater implements RecordUpdater {
   public void close(boolean abort) throws IOException {
     if (abort) {
       if (flushLengths == null) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Close on abort for path: {}.. Deleting..", path);
+        }
         fs.delete(path, false);
       }
     } else if (!writerClosed) {
@@ -500,25 +548,47 @@ public class OrcRecordUpdater implements RecordUpdater {
         // When split-update is enabled, we can choose not to write
         // any delta files when there are no inserts. In such cases only the delete_deltas
         // would be written & they are closed separately below.
-        if (writer != null && indexBuilder.acidStats.inserts > 0) {
-          writer.close(); // normal close, when there are inserts.
+        if (indexBuilder.acidStats.inserts > 0) {
+          if (writer != null) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Closing writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
+            }
+            writer.close(); // normal close, when there are inserts.
+          }
+        } else {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("No insert events in path: {}.. Deleting..", path);
+          }
+          fs.delete(path, false);
         }
       } else {
         //so that we create empty bucket files when needed (but see HIVE-17138)
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Initializing writer before close (to create empty buckets) for path: {}", path);
+        }
         initWriter();
         writer.close(); // normal close.
       }
       if (deleteEventWriter != null) {
         if (deleteEventIndexBuilder.acidStats.deletes > 0) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Closing delete event writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
+          }
           // Only need to write out & close the delete_delta if there have been any.
           deleteEventWriter.close();
         } else {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("No delete events in path: {}.. Deleting..", path);
+          }
           // Just remove delete_delta, if there have been no delete events.
           fs.delete(deleteEventPath, false);
         }
       }
     }
     if (flushLengths != null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Closing and deleting flush length file for path: {}", path);
+      }
       flushLengths.close();
       fs.delete(OrcAcidUtils.getSideFile(path), false);
     }

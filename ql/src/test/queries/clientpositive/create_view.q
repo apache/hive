@@ -42,6 +42,7 @@ EXPLAIN
 SELECT * from view2 where key=18;
 
 SHOW TABLES 'view.*';
+SHOW VIEWS 'view.*';
 DESCRIBE view1;
 DESCRIBE EXTENDED view1;
 DESCRIBE FORMATTED view1;
@@ -230,6 +231,15 @@ DESCRIBE table1_n4;
 -- dependencies for implementing RESTRICT
 
 
+-- create view over literals
+create view view17 as select 1 as v;
+select * from view17;
+create view view18 as select v+1 from (select 1 as v) t;
+select * from view18;
+
+-- create view if not exists
+create view if not exists view18 as select v+1 from (select 1 as v) t;
+
 DROP VIEW view1;
 DROP VIEW view2;
 DROP VIEW view3;
@@ -246,6 +256,8 @@ DROP VIEW view13;
 DROP VIEW view14;
 DROP VIEW view15;
 DROP VIEW view16;
+DROP VIEW view17;
+DROP VIEW view18;
 DROP TEMPORARY FUNCTION test_translate;
 DROP TEMPORARY FUNCTION test_max;
 DROP TEMPORARY FUNCTION test_explode;

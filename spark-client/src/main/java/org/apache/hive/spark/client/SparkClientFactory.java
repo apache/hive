@@ -18,13 +18,12 @@
 package org.apache.hive.spark.client;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.spark.client.rpc.RpcServer;
-import org.apache.spark.SparkException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -49,12 +48,12 @@ public final class SparkClientFactory {
    *
    * @param conf Map containing configuration parameters for the client library.
    */
-  public static void initialize(Map<String, String> conf) throws IOException {
+  public static void initialize(Map<String, String> conf, HiveConf hiveConf) throws IOException {
     if (server == null) {
       synchronized (serverLock) {
         if (server == null) {
           try {
-            server = new RpcServer(conf);
+            server = new RpcServer(conf, hiveConf);
           } catch (InterruptedException ie) {
             throw Throwables.propagate(ie);
           }
@@ -82,10 +81,23 @@ public final class SparkClientFactory {
    * @param hiveConf Configuration for Hive, contains hive.* properties.
    */
   public static SparkClient createClient(Map<String, String> sparkConf, HiveConf hiveConf,
-                                         String sessionId)
-          throws IOException, SparkException {
+                                         String sessionId) throws IOException {
     Preconditions.checkState(server != null,
             "Invalid state: Hive on Spark RPC Server has not been initialized");
-    return new SparkClientImpl(server, sparkConf, hiveConf, sessionId);
+    switch (hiveConf.getVar(HiveConf.ConfVars.SPARK_CLIENT_TYPE)) {
+    case HiveConf.HIVE_SPARK_SUBMIT_CLIENT:
+      return new SparkSubmitSparkClient(server, sparkConf, hiveConf, sessionId);
+    case HiveConf.HIVE_SPARK_LAUNCHER_CLIENT:
+      return new SparkLauncherSparkClient(server, sparkConf, hiveConf, sessionId);
+    default:
+      throw new IllegalArgumentException("Unknown Hive on Spark launcher type " + hiveConf.getVar(
+              HiveConf.ConfVars.SPARK_CLIENT_TYPE) + " valid options are " +
+              HiveConf.HIVE_SPARK_SUBMIT_CLIENT + " or " + HiveConf.HIVE_SPARK_LAUNCHER_CLIENT);
+    }
+  }
+
+  @VisibleForTesting
+  public static int getServerPort() {
+    return server.getPort();
   }
 }

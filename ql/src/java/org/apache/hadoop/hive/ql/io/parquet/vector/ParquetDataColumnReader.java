@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
 import org.apache.parquet.bytes.ByteBufferInputStream;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.parquet.column.Dictionary;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 
 /**
  * The interface to wrap the underlying Parquet dictionary and non dictionary encoded page reader.
@@ -58,6 +58,16 @@ public interface ParquetDataColumnReader {
    * a LongColumnVector to store integer values.
    */
   long readInteger();
+
+  /**
+   * @return the next SmallInt from the page
+   */
+  long readSmallInt();
+
+  /**
+   * @return the next TinyInt from the page
+   */
+  long readTinyInt();
 
   /**
    * @return the next Float from the page
@@ -105,16 +115,9 @@ public interface ParquetDataColumnReader {
   Timestamp readTimestamp();
 
   /**
-   * @param value data to be checked for validity
-   * @return is data valid for the type
-   * The type of the data in Parquet files need not match the type in HMS.  In that case
-   * the value returned to the user will depend on the data.  If the data value is within the valid
-   * range accommodated by the HMS type, the data will be returned as is.  When data is not within
-   * the valid range, a NULL will be returned.  These functions will do the appropriate check.
+   * @return is data valid
    */
-  boolean isValid(long value);
-  boolean isValid(float value);
-  boolean isValid(double value);
+  boolean isValid();
 
   /**
    * @return the underlying dictionary if current reader is dictionary encoded
@@ -157,6 +160,18 @@ public interface ParquetDataColumnReader {
    * @return the Long from the dictionary by id
    */
   long readLong(int id);
+
+  /**
+   * @param id in dictionary
+   * @return the Small Int from the dictionary by id
+   */
+  long readSmallInt(int id);
+
+  /**
+   * @param id in dictionary
+   * @return the tiny int from the dictionary by id
+   */
+  long readTinyInt(int id);
 
   /**
    * @param id in dictionary

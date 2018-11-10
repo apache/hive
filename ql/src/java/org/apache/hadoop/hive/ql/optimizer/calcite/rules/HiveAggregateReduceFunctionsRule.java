@@ -34,6 +34,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
@@ -41,10 +42,12 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Util;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -133,11 +136,14 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     if (SqlKind.AVG_AGG_FUNCTIONS.contains(kind)) {
       return true;
     }
+    if (kind == SqlKind.SUM0) {
+      return true;
+    }
     return false;
   }
 
   /**
-   * Reduces all calls to AVG, STDDEV_POP, STDDEV_SAMP, VAR_POP, VAR_SAMP in
+   * Reduces all calls to SUM0, AVG, STDDEV_POP, STDDEV_SAMP, VAR_POP, VAR_SAMP in
    * the aggregates list to.
    *
    * <p>It handles newly generated common subexpressions since this was done
@@ -202,6 +208,9 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final SqlKind kind = oldCall.getAggregation().getKind();
     if (isReducible(kind)) {
       switch (kind) {
+      case SUM0:
+        // replace original SUM0(x) with COALESCE(SUM(x), 0)
+        return reduceSum0(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs);
       case AVG:
         // replace original AVG(x) with SUM(x) / COUNT(x)
         return reduceAvg(oldAggRel, oldCall, newCalls, aggCallMapping, inputExprs);
@@ -270,6 +279,50 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
         null);
   }
 
+  private RexNode reduceSum0(
+      Aggregate oldAggRel,
+      AggregateCall oldCall,
+      List<AggregateCall> newCalls,
+      Map<AggregateCall, RexNode> aggCallMapping,
+      List<RexNode> inputExprs) {
+    final int nGroups = oldAggRel.getGroupCount();
+    final RexBuilder rexBuilder = oldAggRel.getCluster().getRexBuilder();
+    final RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
+    final int iAvgInput = oldCall.getArgList().get(0);
+    final RelDataType sum0InputType = typeFactory.createTypeWithNullability(
+        getFieldType(oldAggRel.getInput(), iAvgInput), true);
+    final RelDataType sumReturnType = getSumReturnType(
+        rexBuilder.getTypeFactory(), sum0InputType, oldCall.getType());
+    final AggregateCall sumCall =
+        AggregateCall.create(
+            new HiveSqlSumAggFunction(
+                oldCall.isDistinct(),
+                ReturnTypes.explicit(sumReturnType),
+                oldCall.getAggregation().getOperandTypeInference(),
+                oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
+            oldCall.isDistinct(),
+            oldCall.isApproximate(),
+            oldCall.getArgList(),
+            oldCall.filterArg,
+            oldAggRel.getGroupCount(),
+            oldAggRel.getInput(),
+            null,
+            null);
+
+    RexNode refSum =
+        rexBuilder.addAggCall(sumCall,
+            nGroups,
+            oldAggRel.indicator,
+            newCalls,
+            aggCallMapping,
+            ImmutableList.of(sum0InputType));
+    refSum = rexBuilder.ensureType(oldCall.getType(), refSum, true);
+
+    final RexNode coalesce = rexBuilder.makeCall(
+        SqlStdOperatorTable.COALESCE, refSum, rexBuilder.makeZeroLiteral(refSum.getType()));
+    return rexBuilder.makeCast(oldCall.getType(), coalesce);
+  }
+
   private RexNode reduceAvg(
       Aggregate oldAggRel,
       AggregateCall oldCall,
@@ -280,13 +333,15 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final RexBuilder rexBuilder = oldAggRel.getCluster().getRexBuilder();
     final RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
     final int iAvgInput = oldCall.getArgList().get(0);
-    RelDataType avgInputType = typeFactory.createTypeWithNullability(
+    final RelDataType avgInputType = typeFactory.createTypeWithNullability(
         getFieldType(oldAggRel.getInput(), iAvgInput), true);
+    final RelDataType sumReturnType = getSumReturnType(
+        rexBuilder.getTypeFactory(), avgInputType, oldCall.getType());
     final AggregateCall sumCall =
         AggregateCall.create(
             new HiveSqlSumAggFunction(
                 oldCall.isDistinct(),
-                oldCall.getAggregation().getReturnTypeInference(),
+                ReturnTypes.explicit(sumReturnType),
                 oldCall.getAggregation().getOperandTypeInference(),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
             oldCall.isDistinct(),
@@ -371,17 +426,21 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final RexNode argRef =
         rexBuilder.ensureType(oldCallType, inputExprs.get(argOrdinal), false);
     final int argRefOrdinal = lookupOrAdd(inputExprs, argRef);
+    final RelDataType sumReturnType = getSumReturnType(
+        rexBuilder.getTypeFactory(), argRef.getType(), oldCall.getType());
 
     final RexNode argSquared = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY,
         argRef, argRef);
     final int argSquaredOrdinal = lookupOrAdd(inputExprs, argSquared);
+    final RelDataType sumSquaredReturnType = getSumReturnType(
+        rexBuilder.getTypeFactory(), argSquared.getType(), oldCall.getType());
 
     final AggregateCall sumArgSquaredAggCall =
         createAggregateCallWithBinding(typeFactory,
             new HiveSqlSumAggFunction(
                 oldCall.isDistinct(),
-                oldCall.getAggregation().getReturnTypeInference(),
-                oldCall.getAggregation().getOperandTypeInference(),
+                ReturnTypes.explicit(sumSquaredReturnType),
+                InferTypes.explicit(Collections.singletonList(argSquared.getType())),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
             argSquared.getType(), oldAggRel, oldCall, argSquaredOrdinal);
 
@@ -397,8 +456,8 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
         AggregateCall.create(
             new HiveSqlSumAggFunction(
                 oldCall.isDistinct(),
-                oldCall.getAggregation().getReturnTypeInference(),
-                oldCall.getAggregation().getOperandTypeInference(),
+                ReturnTypes.explicit(sumReturnType),
+                InferTypes.explicit(Collections.singletonList(argOrdinalType)),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
             oldCall.isDistinct(),
             oldCall.isApproximate(),
@@ -531,5 +590,26 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final RelDataTypeField inputField =
         relNode.getRowType().getFieldList().get(i);
     return inputField.getType();
+  }
+
+  private RelDataType getSumReturnType(RelDataTypeFactory typeFactory,
+      RelDataType inputType, RelDataType originalReturnType) {
+    switch (inputType.getSqlTypeName()) {
+      case TINYINT:
+      case SMALLINT:
+      case INTEGER:
+      case BIGINT:
+        return TypeConverter.convert(TypeInfoFactory.longTypeInfo, typeFactory);
+      case TIMESTAMP:
+      case FLOAT:
+      case DOUBLE:
+      case VARCHAR:
+      case CHAR:
+        return TypeConverter.convert(TypeInfoFactory.doubleTypeInfo, typeFactory);
+      case DECIMAL:
+        // We keep precision and scale
+        return originalReturnType;
+    }
+    return null;
   }
 }

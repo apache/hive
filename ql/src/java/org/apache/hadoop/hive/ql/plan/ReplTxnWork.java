@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,6 +42,7 @@ public class ReplTxnWork implements Serializable {
   private List<Long> txnIds;
   private List<TxnToWriteId> txnToWriteIdList;
   private ReplicationSpec replicationSpec;
+  private List<WriteEventInfo> writeEventInfos;
 
   /**
    * OperationType.
@@ -60,6 +63,7 @@ public class ReplTxnWork implements Serializable {
     this.replPolicy = replPolicy;
     this.txnToWriteIdList = txnToWriteIdList;
     this.replicationSpec = replicationSpec;
+    this.writeEventInfos = null;
   }
 
   public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
@@ -84,6 +88,13 @@ public class ReplTxnWork implements Serializable {
     this.partNames = partNames;
     this.validWriteIdList = validWriteIdList;
     this.operation = type;
+  }
+
+  public void addWriteEventInfo(WriteEventInfo writeEventInfo) {
+    if (this.writeEventInfos == null) {
+      this.writeEventInfos = new ArrayList<>();
+    }
+    this.writeEventInfos.add(writeEventInfo);
   }
 
   public List<Long> getTxnIds() {
@@ -120,5 +131,9 @@ public class ReplTxnWork implements Serializable {
 
   public ReplicationSpec getReplicationSpec() {
     return replicationSpec;
+  }
+
+  public List<WriteEventInfo> getWriteEventInfos() {
+    return writeEventInfos;
   }
 }

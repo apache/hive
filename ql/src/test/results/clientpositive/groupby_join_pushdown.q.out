@@ -3,11 +3,15 @@ SELECT f.key, g.key, count(g.key)
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.key, count(g.key)
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -20,6 +24,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -98,6 +103,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -144,11 +150,15 @@ SELECT f.key, g.key
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.key
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -161,6 +171,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -230,6 +241,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -272,10 +284,14 @@ PREHOOK: query: EXPLAIN
 SELECT DISTINCT f.value, g.value
 FROM src f JOIN src g ON(f.value = g.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT DISTINCT f.value, g.value
 FROM src f JOIN src g ON(f.value = g.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -288,6 +304,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -357,6 +374,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -400,11 +418,15 @@ SELECT f.key, g.key, COUNT(*)
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT f.key, g.key, COUNT(*)
 FROM src f JOIN src g ON(f.key = g.key)
 GROUP BY f.key, g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -417,6 +439,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -495,6 +518,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -541,11 +565,15 @@ SELECT  f.ctinyint, g.ctinyint, SUM(f.cbigint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.cint = g.cint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT  f.ctinyint, g.ctinyint, SUM(f.cbigint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.cint = g.cint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -557,6 +585,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: cint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
@@ -573,6 +602,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: tinyint), _col2 (type: bigint)
           TableScan
             alias: g
+            filterExpr: cint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
@@ -646,11 +676,15 @@ SELECT  f.cbigint, g.cbigint, MAX(f.cint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.cbigint = g.cbigint)
 GROUP BY f.cbigint, g.cbigint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT  f.cbigint, g.cbigint, MAX(f.cint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.cbigint = g.cbigint)
 GROUP BY f.cbigint, g.cbigint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -663,6 +697,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: cbigint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cbigint is not null (type: boolean)
@@ -740,6 +775,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: cbigint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cbigint is not null (type: boolean)
@@ -783,11 +819,15 @@ SELECT  f.ctinyint, g.ctinyint, MIN(f.ctinyint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT  f.ctinyint, g.ctinyint, MIN(f.ctinyint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -800,6 +840,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -877,6 +918,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -920,11 +962,15 @@ SELECT   MIN(f.cint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT   MIN(f.cint)     
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -937,6 +983,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1014,6 +1061,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1057,11 +1105,15 @@ SELECT   count(f.ctinyint)
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT   count(f.ctinyint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1074,6 +1126,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1152,6 +1205,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1198,11 +1252,15 @@ SELECT   count(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT   count(f.cint), f.ctinyint              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1215,6 +1273,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1293,6 +1352,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1339,11 +1399,15 @@ SELECT   sum(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT   sum(f.cint), f.ctinyint            
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1356,6 +1420,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1434,6 +1499,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: g
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1484,11 +1550,15 @@ SELECT sum(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(f.cint), f.ctinyint            
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1594,11 +1664,15 @@ SELECT sum(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(f.cint), f.ctinyint            
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1610,6 +1684,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)
@@ -1626,6 +1701,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: g
+            filterExpr: ctinyint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ctinyint is not null (type: boolean)

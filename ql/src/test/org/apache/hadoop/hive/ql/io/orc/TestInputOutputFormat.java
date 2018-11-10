@@ -28,8 +28,6 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +48,9 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -181,8 +181,8 @@ public class TestInputOutputFormat {
       decimalValue = HiveDecimal.create(x);
       long millisUtc = x * MILLIS_IN_DAY;
       millisUtc -= LOCAL_TIMEZONE.getOffset(millisUtc);
-      dateValue = new Date(millisUtc);
-      timestampValue = new Timestamp(millisUtc);
+      dateValue = Date.ofEpochMilli(millisUtc);
+      timestampValue = Timestamp.ofEpochMilli(millisUtc);
     }
 
     @Override
@@ -229,7 +229,7 @@ public class TestInputOutputFormat {
       return "booleanValue,byteValue,shortValue,intValue,longValue,floatValue,doubleValue,stringValue,decimalValue,dateValue,timestampValue";
     }
     static String getColumnTypesProperty() {
-      return "boolean:tinyint:smallint:int:bigint:float:double:string:decimal:date:timestamp";
+      return "boolean:tinyint:smallint:int:bigint:float:double:string:decimal(38,18):date:timestamp";
     }
   }
 
@@ -794,8 +794,8 @@ public class TestInputOutputFormat {
       int readsAfter = fs.statistics.getReadOps();
       System.out.println("STATS TRACE END - " + testCaseName.getMethodName());
       int delta = readsAfter - readsBefore;
-      // 16 without HIVE-19588, 8 with HIVE-19588
-      assertEquals(8, delta);
+      //HIVE-16812 adds 1 read of the footer of each file
+      assertEquals(16, delta);
     } finally {
       MockFileSystem.clearGlobalFiles();
     }
@@ -3847,9 +3847,10 @@ public class TestInputOutputFormat {
    * Test schema evolution when using the reader directly.
    */
   @Test
-  public void testSchemaEvolution() throws Exception {
+  public void testSchemaEvolutionOldDecimal() throws Exception {
     TypeDescription fileSchema =
         TypeDescription.fromString("struct<a:int,b:struct<c:int>,d:string>");
+    conf.set(ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED.varname, "decimal_64");
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .fileSystem(fs)
@@ -3915,6 +3916,78 @@ public class TestInputOutputFormat {
   }
 
   /**
+   * Test schema evolution when using the reader directly.
+   */
+  @Test
+  public void testSchemaEvolutionDecimal64() throws Exception {
+    TypeDescription fileSchema =
+      TypeDescription.fromString("struct<a:int,b:struct<c:int>,d:string>");
+    conf.set(ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED.varname, "decimal_64");
+    Writer writer = OrcFile.createWriter(testFilePath,
+      OrcFile.writerOptions(conf)
+        .fileSystem(fs)
+        .setSchema(fileSchema)
+        .compress(org.apache.orc.CompressionKind.NONE));
+    VectorizedRowBatch batch = fileSchema.createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,1000);
+    batch.size = 1000;
+    LongColumnVector lcv = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[0]);
+    for(int r=0; r < 1000; r++) {
+      ((LongColumnVector) batch.cols[0]).vector[r] = r * 42;
+      lcv.vector[r] = r * 10001;
+      ((BytesColumnVector) batch.cols[2]).setVal(r,
+        Integer.toHexString(r).getBytes(StandardCharsets.UTF_8));
+    }
+    writer.addRowBatch(batch);
+    writer.close();
+    TypeDescription readerSchema = TypeDescription.fromString(
+      "struct<a:int,b:struct<c:int,future1:int>,d:string,future2:int>");
+    Reader reader = OrcFile.createReader(testFilePath,
+      OrcFile.readerOptions(conf).filesystem(fs));
+    RecordReader rows = reader.rowsOptions(new Reader.Options()
+      .schema(readerSchema));
+    batch = readerSchema.createRowBatchV2();
+    lcv = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[0]);
+    LongColumnVector future1 = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[1]);
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1000, batch.size);
+    assertEquals(true, future1.isRepeating);
+    assertEquals(true, future1.isNull[0]);
+    assertEquals(true, batch.cols[3].isRepeating);
+    assertEquals(true, batch.cols[3].isNull[0]);
+    for(int r=0; r < batch.size; ++r) {
+      assertEquals("row " + r, r * 42, ((LongColumnVector) batch.cols[0]).vector[r]);
+      assertEquals("row " + r, r * 10001, lcv.vector[r]);
+      assertEquals("row " + r, r * 10001, lcv.vector[r]);
+      assertEquals("row " + r, Integer.toHexString(r),
+        ((BytesColumnVector) batch.cols[2]).toString(r));
+    }
+    assertEquals(false, rows.nextBatch(batch));
+    rows.close();
+
+    // try it again with an include vector
+    rows = reader.rowsOptions(new Reader.Options()
+      .schema(readerSchema)
+      .include(new boolean[]{false, true, true, true, false, false, true}));
+    batch = readerSchema.createRowBatchV2();
+    lcv = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[0]);
+    future1 = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[1]);
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1000, batch.size);
+    assertEquals(true, future1.isRepeating);
+    assertEquals(true, future1.isNull[0]);
+    assertEquals(true, batch.cols[3].isRepeating);
+    assertEquals(true, batch.cols[3].isNull[0]);
+    assertEquals(true, batch.cols[2].isRepeating);
+    assertEquals(true, batch.cols[2].isNull[0]);
+    for(int r=0; r < batch.size; ++r) {
+      assertEquals("row " + r, r * 42, ((LongColumnVector) batch.cols[0]).vector[r]);
+      assertEquals("row " + r, r * 10001, lcv.vector[r]);
+    }
+    assertEquals(false, rows.nextBatch(batch));
+    rows.close();
+  }
+
+  /**
    * Test column projection when using ACID.
    */
   @Test
@@ -3933,7 +4006,7 @@ public class TestInputOutputFormat {
             .fileSystem(fs)
             .setSchema(fileSchema)
             .compress(org.apache.orc.CompressionKind.NONE));
-    VectorizedRowBatch batch = fileSchema.createRowBatch(1000);
+    VectorizedRowBatch batch = fileSchema.createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,1000);
     batch.size = 1000;
     StructColumnVector scv = (StructColumnVector)batch.cols[5];
     // operation
@@ -3976,7 +4049,7 @@ public class TestInputOutputFormat {
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2");
     OrcSplit split = new OrcSplit(testFilePath, null, 0, fileLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir, null);
     OrcInputFormat inputFormat = new OrcInputFormat();
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));
@@ -4004,7 +4077,7 @@ public class TestInputOutputFormat {
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2,3");
     split = new OrcSplit(testFilePath, null, 0, fileLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir, null);
     inputFormat = new OrcInputFormat();
     reader = inputFormat.getReader(split, new AcidInputFormat.Options(conf));
     record = 0;
@@ -4047,7 +4120,7 @@ public class TestInputOutputFormat {
         .stripeSize(128);
     // Create ORC file with small stripe size so we can write multiple stripes.
     Writer writer = OrcFile.createWriter(testFilePath, options);
-    VectorizedRowBatch batch = fileSchema.createRowBatch(1000);
+    VectorizedRowBatch batch = fileSchema.createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,1000);
     batch.size = 1000;
     StructColumnVector scv = (StructColumnVector)batch.cols[5];
     // operation
@@ -4122,7 +4195,7 @@ public class TestInputOutputFormat {
     // Specify an OrcSplit that starts beyond the offset of the last stripe.
     OrcSplit split = new OrcSplit(testFilePath, null, lastStripeOffset + 1, lastStripeLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir, null);
     OrcInputFormat inputFormat = new OrcInputFormat();
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));

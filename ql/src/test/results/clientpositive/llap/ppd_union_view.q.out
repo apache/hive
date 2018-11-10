@@ -133,9 +133,35 @@ POSTHOOK: Lineage: t1_n113.value EXPRESSION [(t1_new_n0)t1_new_n0.FieldSchema(na
 PREHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-13'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_mapping
+PREHOOK: Input: default@t1_mapping@ds=2011-10-13
+PREHOOK: Input: default@t1_n113
+PREHOOK: Input: default@t1_new_n0
+PREHOOK: Input: default@t1_old
+PREHOOK: Input: default@t1_old@ds=2011-10-13
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-13'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_mapping
+POSTHOOK: Input: default@t1_mapping@ds=2011-10-13
+POSTHOOK: Input: default@t1_n113
+POSTHOOK: Input: default@t1_new_n0
+POSTHOOK: Input: default@t1_old
+POSTHOOK: Input: default@t1_old@ds=2011-10-13
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2011-10-13' AS STRING) AS `ds`
+FROM (SELECT `key`, `value`
+FROM `default`.`t1_new_n0`
+WHERE `ds` = '2011-10-13'
+UNION ALL
+SELECT `t4`.`key`, `t2`.`value`
+FROM (SELECT `keymap`, `value`, CAST('2011-10-13' AS STRING) AS `ds`
+FROM `default`.`t1_old`
+WHERE `ds` = '2011-10-13' AND `keymap` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `key`, `keymap`, CAST('2011-10-13' AS STRING) AS `ds`
+FROM `default`.`t1_mapping`
+WHERE '2011-10-13' = `ds` AND `keymap` IS NOT NULL) AS `t4` ON `t2`.`keymap` = `t4`.`keymap`) AS `t6`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -153,6 +179,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_new_n0
+                  filterExpr: (ds = '2011-10-13') (type: boolean)
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -195,6 +222,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_old
+                  filterExpr: keymap is not null (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: COMPLETE
@@ -277,6 +305,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_mapping
+                  filterExpr: keymap is not null (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 179 Basic stats: COMPLETE Column stats: COMPLETE
@@ -448,9 +477,33 @@ key4	value4	2011-10-14
 PREHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-15'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_mapping
+PREHOOK: Input: default@t1_n113
+PREHOOK: Input: default@t1_new_n0
+PREHOOK: Input: default@t1_new_n0@ds=2011-10-15
+PREHOOK: Input: default@t1_old
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-15'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_mapping
+POSTHOOK: Input: default@t1_n113
+POSTHOOK: Input: default@t1_new_n0
+POSTHOOK: Input: default@t1_new_n0@ds=2011-10-15
+POSTHOOK: Input: default@t1_old
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2011-10-15' AS STRING) AS `ds`
+FROM (SELECT `key`, `value`
+FROM `default`.`t1_new_n0`
+WHERE `ds` = '2011-10-15'
+UNION ALL
+SELECT `t4`.`key`, `t2`.`value`
+FROM (SELECT `keymap`, `value`, CAST('2011-10-15' AS STRING) AS `ds`
+FROM `default`.`t1_old`
+WHERE `ds` = '2011-10-15' AND `keymap` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `key`, `keymap`, CAST('2011-10-15' AS STRING) AS `ds`
+FROM `default`.`t1_mapping`
+WHERE '2011-10-15' = `ds` AND `keymap` IS NOT NULL) AS `t4` ON `t2`.`keymap` = `t4`.`keymap`) AS `t6`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -468,6 +521,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_new_n0
+                  filterExpr: (ds = '2011-10-15') (type: boolean)
                   Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -561,6 +615,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_old
+                  filterExpr: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -588,6 +643,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_mapping
+                  filterExpr: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL

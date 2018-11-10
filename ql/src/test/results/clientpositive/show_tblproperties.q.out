@@ -41,6 +41,7 @@ bar	bar value
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
@@ -50,7 +51,7 @@ PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
-bar value	 
+bar	bar value
 PREHOOK: query: show tblproperties default.tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties default.tmpfoo
@@ -60,6 +61,7 @@ bar	bar value
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
@@ -69,7 +71,7 @@ PREHOOK: query: show tblproperties default.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties default.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
-bar value	 
+bar	bar value
 PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db1
@@ -115,6 +117,7 @@ bar	bar value
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
@@ -124,7 +127,7 @@ PREHOOK: query: show tblproperties default.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties default.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
-bar value	 
+bar	bar value
 PREHOOK: query: show tblproperties tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo
@@ -134,6 +137,7 @@ bar	bar value1
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true1
@@ -143,7 +147,7 @@ PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
-bar value1	 
+bar	bar value1
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -159,6 +163,7 @@ bar	bar value1
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true1
@@ -168,4 +173,4 @@ PREHOOK: query: show tblproperties db1.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties db1.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
-bar value1	 
+bar	bar value1

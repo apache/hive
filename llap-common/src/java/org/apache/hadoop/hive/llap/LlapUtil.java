@@ -14,6 +14,8 @@
 package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -31,9 +33,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.PolicyProvider;
@@ -365,5 +369,35 @@ public class LlapUtil {
   private static boolean isSomeHiveDir(String p) {
     return p.startsWith(BASE_PREFIX) || p.startsWith(DELTA_PREFIX) || p.startsWith(BUCKET_PREFIX)
         || p.startsWith(UNION_SUDBIR_PREFIX) || p.startsWith(DELETE_DELTA_PREFIX);
+  }
+
+
+  public static ThreadMXBean initThreadMxBean() {
+    ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
+    if (mxBean != null) {
+      if (!mxBean.isCurrentThreadCpuTimeSupported()) {
+        LOG.warn("Thread CPU monitoring is not supported");
+        return null;
+      } else if (!mxBean.isThreadCpuTimeEnabled()) {
+        LOG.warn("Thread CPU monitoring is not enabled");
+        return null;
+      }
+    }
+    return mxBean;
+  }
+
+  /**
+   * transform a byte of crendetials to a hadoop Credentials object.
+   * @param binaryCredentials credentials in byte format as they would
+   *                          usually be when received from protobuffers
+   * @return a hadoop Credentials object
+   */
+  public static Credentials credentialsFromByteArray(byte[] binaryCredentials)
+      throws IOException  {
+    Credentials credentials = new Credentials();
+    DataInputBuffer dib = new DataInputBuffer();
+    dib.reset(binaryCredentials, binaryCredentials.length);
+    credentials.readTokenStorageStream(dib);
+    return credentials;
   }
 }

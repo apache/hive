@@ -33,8 +33,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -44,7 +46,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -149,13 +150,6 @@ public class TestVectorCastStatement {
   }
 
   @Test
-  public void testBinary() throws Exception {
-    Random random = new Random(12882);
-
-    doIfTests(random, "binary");
-  }
-
-  @Test
   public void testDecimal() throws Exception {
     Random random = new Random(9300);
 
@@ -187,25 +181,28 @@ public class TestVectorCastStatement {
 
     for (PrimitiveCategory targetPrimitiveCategory : PrimitiveCategory.values()) {
 
+      if (targetPrimitiveCategory == PrimitiveCategory.INTERVAL_YEAR_MONTH ||
+          targetPrimitiveCategory == PrimitiveCategory.INTERVAL_DAY_TIME) {
+        if (primitiveCategory != PrimitiveCategory.STRING) {
+          continue;
+        }
+      }
+
       if (targetPrimitiveCategory == PrimitiveCategory.VOID ||
-          targetPrimitiveCategory == PrimitiveCategory.INTERVAL_YEAR_MONTH ||
-          targetPrimitiveCategory == PrimitiveCategory.INTERVAL_DAY_TIME ||
           targetPrimitiveCategory == PrimitiveCategory.TIMESTAMPLOCALTZ ||
           targetPrimitiveCategory == PrimitiveCategory.UNKNOWN) {
         continue;
       }
 
-      // BINARY conversions supported by GenericUDFDecimal, GenericUDFTimestamp.
-      if (primitiveCategory == PrimitiveCategory.BINARY) {
-        if (targetPrimitiveCategory == PrimitiveCategory.DECIMAL ||
-            targetPrimitiveCategory == PrimitiveCategory.TIMESTAMP) {
-          continue;
-        }
-      }
-
-      // DATE conversions supported by GenericUDFDecimal.
+      // DATE conversions NOT supported by integers, floating point, and GenericUDFDecimal.
       if (primitiveCategory == PrimitiveCategory.DATE) {
-        if (targetPrimitiveCategory == PrimitiveCategory.DECIMAL) {
+        if (targetPrimitiveCategory == PrimitiveCategory.BYTE ||
+            targetPrimitiveCategory == PrimitiveCategory.SHORT ||
+            targetPrimitiveCategory == PrimitiveCategory.INT ||
+            targetPrimitiveCategory == PrimitiveCategory.LONG ||
+            targetPrimitiveCategory == PrimitiveCategory.FLOAT ||
+            targetPrimitiveCategory == PrimitiveCategory.DOUBLE ||
+            targetPrimitiveCategory == PrimitiveCategory.DECIMAL) {
           continue;
         }
       }
@@ -222,34 +219,28 @@ public class TestVectorCastStatement {
     }
   }
 
+  private boolean needsValidDataTypeData(TypeInfo typeInfo) {
+    PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+    if (primitiveCategory == PrimitiveCategory.STRING ||
+        primitiveCategory == PrimitiveCategory.CHAR ||
+        primitiveCategory == PrimitiveCategory.VARCHAR ||
+        primitiveCategory == PrimitiveCategory.BINARY) {
+      return false;
+    }
+    return true;
+  }
+
   private void doIfTestOneCast(Random random, String typeName,
       DataTypePhysicalVariation dataTypePhysicalVariation,
       PrimitiveCategory targetPrimitiveCategory)
           throws Exception {
 
     TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+    PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
 
     boolean isDecimal64 = (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64);
     final int decimal64Scale =
         (isDecimal64 ? ((DecimalTypeInfo) typeInfo).getScale() : 0);
-
-    List<String> explicitTypeNameList = new ArrayList<String>();
-    List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList = new ArrayList<DataTypePhysicalVariation>();
-    explicitTypeNameList.add(typeName);
-    explicitDataTypePhysicalVariationList.add(dataTypePhysicalVariation);
-
-    VectorRandomRowSource rowSource = new VectorRandomRowSource();
-
-    rowSource.initExplicitSchema(
-        random, explicitTypeNameList, /* maxComplexDepth */ 0, /* allowNull */ true,
-        explicitDataTypePhysicalVariationList);
-
-    List<String> columns = new ArrayList<String>();
-    columns.add("col0");
-    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(typeInfo, "col0", "table", false);
-
-    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
-    children.add(col1Expr);
 
     //----------------------------------------------------------------------------------------------
 
@@ -267,6 +258,36 @@ public class TestVectorCastStatement {
     TypeInfo targetTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(targetTypeName);
 
     //----------------------------------------------------------------------------------------------
+
+    GenerationSpec generationSpec;
+    if (needsValidDataTypeData(targetTypeInfo) &&
+        (primitiveCategory == PrimitiveCategory.STRING ||
+         primitiveCategory == PrimitiveCategory.CHAR ||
+         primitiveCategory == PrimitiveCategory.VARCHAR)) {
+      generationSpec = GenerationSpec.createStringFamilyOtherTypeValue(typeInfo, targetTypeInfo);
+    } else {
+      generationSpec = GenerationSpec.createSameType(typeInfo);
+    }
+
+    List<GenerationSpec> generationSpecList = new ArrayList<GenerationSpec>();
+    List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList =
+        new ArrayList<DataTypePhysicalVariation>();
+    generationSpecList.add(generationSpec);
+    explicitDataTypePhysicalVariationList.add(dataTypePhysicalVariation);
+
+    VectorRandomRowSource rowSource = new VectorRandomRowSource();
+
+    rowSource.initGenerationSpecSchema(
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
+        explicitDataTypePhysicalVariationList);
+
+    List<String> columns = new ArrayList<String>();
+    columns.add("col1");
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(typeInfo, "col1", "table", false);
+
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+    children.add(col1Expr);
 
     String[] columnNames = columns.toArray(new String[0]);
 
@@ -334,9 +355,10 @@ public class TestVectorCastStatement {
                 " sourceTypeName " + typeName +
                 " targetTypeName " + targetTypeName +
                 " " + CastStmtTestMode.values()[v] +
-                " result is NULL " + (vectorResult == null ? "YES" : "NO") +
+                " result is NULL " + (vectorResult == null ? "YES" : "NO result " + vectorResult.toString()) +
                 " does not match row-mode expected result is NULL " +
-                (expectedResult == null ? "YES" : "NO"));
+                (expectedResult == null ? "YES" : "NO result " + expectedResult.toString()) +
+                " row values " + Arrays.toString(randomRows[i]));
           }
         } else {
 
@@ -357,7 +379,8 @@ public class TestVectorCastStatement {
                 " result " + vectorResult.toString() +
                 " (" + vectorResult.getClass().getSimpleName() + ")" +
                 " does not match row-mode expected result " + expectedResult.toString() +
-                " (" + expectedResult.getClass().getSimpleName() + ")");
+                " (" + expectedResult.getClass().getSimpleName() + ")" +
+                " row values " + Arrays.toString(randomRows[i]));
           }
         }
       }
@@ -414,9 +437,17 @@ public class TestVectorCastStatement {
 
   private void extractResultObjects(VectorizedRowBatch batch, int rowIndex,
       VectorExtractRow resultVectorExtractRow, Object[] scrqtchRow, Object[] resultObjects) {
-    // UNDONE: selectedInUse
-    for (int i = 0; i < batch.size; i++) {
-      resultVectorExtractRow.extractRow(batch, i, scrqtchRow);
+
+    boolean selectedInUse = batch.selectedInUse;
+    int[] selected = batch.selected;
+    for (int logicalIndex = 0; logicalIndex < batch.size; logicalIndex++) {
+      final int batchIndex = (selectedInUse ? selected[logicalIndex] : logicalIndex);
+
+      try {
+      resultVectorExtractRow.extractRow(batch, batchIndex, scrqtchRow);
+      } catch (Exception e) {
+        System.out.println("here");
+      }
 
       // UNDONE: Need to copy the object.
       resultObjects[rowIndex++] = scrqtchRow[0];
@@ -456,6 +487,16 @@ public class TestVectorCastStatement {
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
+
+    if (castStmtTestMode == CastStmtTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+          " castStmtTestMode " + castStmtTestMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
 
     /*
     System.out.println(

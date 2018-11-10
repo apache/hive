@@ -49,7 +49,7 @@ You can download the Oracle driver at
 http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html
 You should download Oracle 11g Release 1, ojdbc6.jar
 
-Logs for tests are located under standalone-metastore/target/failsafe-reports
+Logs for tests are located under standalone-metastore/metastore-common/target/failsafe-reports
 
 If you wish to use one of these containers to run your own tests against a
 non-Derby version of the metastore, you can do that as well.  You must specify

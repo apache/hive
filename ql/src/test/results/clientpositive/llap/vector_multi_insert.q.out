@@ -70,11 +70,19 @@ insert overwrite table orc_rn1 select a.* where a.rn < 100
 insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
 insert overwrite table orc_rn3 select a.* where a.rn >= 1000
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc1
+PREHOOK: Output: default@orc_rn1
+PREHOOK: Output: default@orc_rn2
+PREHOOK: Output: default@orc_rn3
 POSTHOOK: query: explain vectorization from orc1 a
 insert overwrite table orc_rn1 select a.* where a.rn < 100
 insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
 insert overwrite table orc_rn3 select a.* where a.rn >= 1000
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc1
+POSTHOOK: Output: default@orc_rn1
+POSTHOOK: Output: default@orc_rn2
+POSTHOOK: Output: default@orc_rn3
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -149,8 +157,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

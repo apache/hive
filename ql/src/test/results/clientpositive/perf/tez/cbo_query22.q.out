@@ -1,0 +1,72 @@
+PREHOOK: query: explain cbo
+select  i_product_name
+             ,i_brand
+             ,i_class
+             ,i_category
+             ,avg(inv_quantity_on_hand) qoh
+       from inventory
+           ,date_dim
+           ,item
+           ,warehouse
+       where inv_date_sk=d_date_sk
+              and inv_item_sk=i_item_sk
+              and inv_warehouse_sk = w_warehouse_sk
+              and d_month_seq between 1212 and 1212 + 11
+       group by rollup(i_product_name
+                       ,i_brand
+                       ,i_class
+                       ,i_category)
+order by qoh, i_product_name, i_brand, i_class, i_category
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  i_product_name
+             ,i_brand
+             ,i_class
+             ,i_category
+             ,avg(inv_quantity_on_hand) qoh
+       from inventory
+           ,date_dim
+           ,item
+           ,warehouse
+       where inv_date_sk=d_date_sk
+              and inv_item_sk=i_item_sk
+              and inv_warehouse_sk = w_warehouse_sk
+              and d_month_seq between 1212 and 1212 + 11
+       group by rollup(i_product_name
+                       ,i_brand
+                       ,i_class
+                       ,i_category)
+order by qoh, i_product_name, i_brand, i_class, i_category
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$4], sort1=[$0], sort2=[$1], sort3=[$2], sort4=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
+  HiveProject($f0=[$3], $f1=[$0], $f2=[$1], $f3=[$2], $f4=[/(CAST($4):DOUBLE, $5)])
+    HiveAggregate(group=[{1, 2, 3, 4}], groups=[[{1, 2, 3, 4}, {1, 2, 4}, {1, 4}, {4}, {}]], agg#0=[sum($8)], agg#1=[count($8)])
+      HiveJoin(condition=[=($6, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12], i_product_name=[$21])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, item]], table:alias=[item])
+        HiveJoin(condition=[=($2, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(inv_date_sk=[$0], inv_item_sk=[$1], inv_warehouse_sk=[$2], inv_quantity_on_hand=[$3])
+              HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($2))])
+                HiveTableScan(table=[[default, inventory]], table:alias=[inventory])
+            HiveProject(d_date_sk=[$0], d_month_seq=[$3])
+              HiveFilter(condition=[AND(BETWEEN(false, $3, 1212, 1223), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(w_warehouse_sk=[$0])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+

@@ -346,11 +346,14 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         try {
           keyObject = inputKeyDeserializer.deserialize(keyWritable);
         } catch (Exception e) {
-          throw new HiveException(
-            "Hive Runtime Error: Unable to deserialize reduce input key from "
+          // Log the input key which caused exception so that it's available for debugging. But when
+          // exposed through an error message it can leak sensitive information, even to the client
+          // application.
+          LOG.trace("Hive Runtime Error: Unable to deserialize reduce input key from "
               + Utilities.formatBinaryString(keyWritable.get(), 0,
               keyWritable.getSize()) + " with properties "
-              + keyTableDesc.getProperties(), e);
+              + keyTableDesc.getProperties());
+          throw new HiveException("Hive Runtime Error: Unable to deserialize reduce input key ", e);
         }
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
@@ -384,13 +387,16 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
       try {
         valueObject[tag] = inputValueDeserializer[tag].deserialize(valueWritable);
       } catch (SerDeException e) {
-        throw new HiveException(
-          "Hive Runtime Error: Unable to deserialize reduce input value (tag="
+        // Log the input value which caused exception so that it's available for debugging. But when
+        // exposed through an error message it can leak sensitive information, even to the client
+        // application.
+        LOG.trace("Hive Runtime Error: Unable to deserialize reduce input value (tag="
             + tag
             + ") from "
             + Utilities.formatBinaryString(valueWritable.get(), 0,
             valueWritable.getSize()) + " with properties "
-            + valueTableDesc[tag].getProperties(), e);
+            + valueTableDesc[tag].getProperties());
+        throw new HiveException("Hive Runtime Error: Unable to deserialize reduce input value ", e);
       }
       row.clear();
       row.add(keyObject);
@@ -408,8 +414,12 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           rowString = "[Error getting row data with exception "
             + StringUtils.stringifyException(e2) + " ]";
         }
-        throw new HiveException("Error while processing row (tag="
-          + tag + ") " + rowString, e);
+
+        // Log contents of the row which caused exception so that it's available for debugging. But
+        // when exposed through an error message it can leak sensitive information, even to the
+        // client application.
+        LOG.trace("Hive exception while processing row (tag=" + tag + ") " + rowString);
+        throw new HiveException("Error while processing row ", e);
       }
     }
     return true; // give me more
@@ -570,10 +580,14 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     try {
       return inputValueDeserializer[tag].deserialize(valueWritable);
     } catch (SerDeException e) {
-      throw new HiveException("Error: Unable to deserialize reduce input value (tag="
-        + tag + ") from "
-        + Utilities.formatBinaryString(valueWritable.getBytes(), 0, valueWritable.getLength())
-        + " with properties " + valueTableDesc[tag].getProperties(), e);
+      // Log the input value which caused exception so that it's available for debugging. But when
+      // exposed through an error message it can leak sensitive information, even to the client
+      // application.
+      LOG.trace("Error: Unable to deserialize reduce input value (tag=" + tag + ") from " +
+              Utilities.formatBinaryString(valueWritable.getBytes(), 0,
+                      valueWritable.getLength()) +
+              " with properties " + valueTableDesc[tag].getProperties());
+      throw new HiveException("Error: Unable to deserialize reduce input value ", e);
     }
   }
 

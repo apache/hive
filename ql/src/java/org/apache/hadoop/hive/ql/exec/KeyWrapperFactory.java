@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectsEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -65,6 +67,11 @@ public class KeyWrapperFactory {
   class ListKeyWrapper extends KeyWrapper {
     int hashcode = -1;
     Object[] keys;
+    @Override
+    public String toString() {
+      return "ListKeyWrapper [keys=" + Arrays.toString(keys) + "]";
+    }
+
     // decide whether this is already in hashmap (keys in hashmap are deepcopied
     // version, and we need to use 'currentKeyObjectInspector').
     ListObjectsEqualComparer equalComparer;
@@ -161,13 +168,18 @@ public class KeyWrapperFactory {
     }
   }
 
-  transient Object[] singleEleArray = new Object[1];
   transient StringObjectInspector soi_new, soi_copy;
 
   class TextKeyWrapper extends KeyWrapper {
+    @Override
+    public String toString() {
+      return "TextKeyWrapper [key=" + key + "]";
+    }
+
     int hashcode;
     Object key;
     boolean isCopy;
+    transient Object[] singleEleArray = new Object[1];
 
     public TextKeyWrapper(boolean isCopy) {
       this(-1, null, isCopy);

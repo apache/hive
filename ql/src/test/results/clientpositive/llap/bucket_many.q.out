@@ -10,10 +10,16 @@ PREHOOK: query: explain extended
 insert overwrite table bucket_many
 select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket_many
 POSTHOOK: query: explain extended
 insert overwrite table bucket_many
 select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket_many
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -250,9 +256,13 @@ POSTHOOK: Lineage: bucket_many.value SIMPLE [(src)src.FieldSchema(name:value, ty
 PREHOOK: query: explain
 select * from bucket_many tablesample (bucket 2 out of 256) s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_many
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from bucket_many tablesample (bucket 2 out of 256) s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_many
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

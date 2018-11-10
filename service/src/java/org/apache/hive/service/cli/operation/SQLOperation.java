@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -95,6 +97,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private long queryTimeout;
   private ScheduledExecutorService timeoutExecutor;
   private final boolean runAsync;
+  private final long operationLogCleanupDelayMs;
 
   /**
    * A map to track query count running by each user
@@ -114,6 +117,8 @@ public class SQLOperation extends ExecuteStatementOperation {
     if (timeout > 0 && (queryTimeout <= 0 || timeout < queryTimeout)) {
       this.queryTimeout = timeout;
     }
+    this.operationLogCleanupDelayMs = HiveConf.getTimeVar(queryState.getConf(),
+      HiveConf.ConfVars.HIVE_SERVER2_OPERATION_LOG_CLEANUP_DELAY, TimeUnit.MILLISECONDS);
 
     setupSessionIO(parentSession.getSessionState());
 
@@ -180,6 +185,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
 
       queryInfo.setQueryDisplay(driver.getQueryDisplay());
+      if (operationLog != null) {
+        queryInfo.setOperationLogLocation(operationLog.toString());
+      }
 
       // set the operation handle information in Driver, so that thrift API users
       // can use the operation handle they receive, to lookup query information in
@@ -195,7 +203,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       if (0 != response.getResponseCode()) {
         throw toSQLException("Error while compiling statement", response);
       }
-
+      if (queryState.getQueryTag() != null && queryState.getQueryId() != null) {
+        parentSession.updateQueryTag(queryState.getQueryId(), queryState.getQueryTag());
+      }
       setHasResultSet(driver.hasResultSet());
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
@@ -300,11 +310,13 @@ public class SQLOperation extends ExecuteStatementOperation {
       PrivilegedExceptionAction<Object> doAsAction = new PrivilegedExceptionAction<Object>() {
         @Override
         public Object run() throws HiveSQLException {
-          Hive.set(parentHive);
+          Hive.set(parentHive, false);
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(SessionState.getPerfLogger());
           LogUtils.registerLoggingContext(queryState.getConf());
+          ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
+
           try {
             if (asyncPrepare) {
               prepare(queryState);
@@ -316,6 +328,13 @@ public class SQLOperation extends ExecuteStatementOperation {
             LOG.error("Error running hive query: ", e);
           } finally {
             LogUtils.unregisterLoggingContext();
+            Hive hiveDb = Hive.getThreadLocal();
+            if (hiveDb != null && hiveDb != parentHive) {
+              // If new hive object is created  by the child thread, then we need to close it as it might
+              // have created a hms connection. Call Hive.closeCurrent() that closes the HMS connection, causes
+              // HMS connection leaks otherwise.
+              Hive.closeCurrent();
+            }
           }
           return null;
         }
@@ -340,7 +359,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
     }
   }
-
 
   /**
    * Returns the current UGI on the stack
@@ -403,7 +421,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       LOG.info("Cancelling the query execution: " + queryId);
     }
     cleanup(stateAfterCancel);
-    cleanupOperationLog();
+    cleanupOperationLog(operationLogCleanupDelayMs);
     if (stateAfterCancel == OperationState.CANCELED) {
       LOG.info("Successfully cancelled the query: " + queryId);
     }
@@ -412,7 +430,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   @Override
   public void close() throws HiveSQLException {
     cleanup(OperationState.CLOSED);
-    cleanupOperationLog();
+    cleanupOperationLog(0);
   }
 
   @Override

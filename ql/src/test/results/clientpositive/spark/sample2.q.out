@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@dest1_n29
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@dest1_n29
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -78,7 +82,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000000_0
+                  base file name: srcbucket
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -127,7 +131,7 @@ STAGE PLANS:
                     name: default.srcbucket
                   name: default.srcbucket
             Truncated Path -> Alias:
-              /srcbucket/000000_0 [s]
+              /srcbucket [s]
 
   Stage: Stage-0
     Move Operator

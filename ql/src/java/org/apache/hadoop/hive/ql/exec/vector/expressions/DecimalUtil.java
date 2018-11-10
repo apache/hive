@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 public class DecimalUtil {
 
   public static int compare(HiveDecimalWritable writableLeft, HiveDecimal right) {
-    return writableLeft.getHiveDecimal().compareTo(right);
+    return writableLeft.compareTo(right);
   }
 
   public static int compare(HiveDecimal left, HiveDecimalWritable writableRight) {

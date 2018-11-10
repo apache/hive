@@ -48,9 +48,19 @@ public class VectorMapJoinInfo {
   private TypeInfo[] bigTableValueTypeInfos;
   private VectorExpression[] slimmedBigTableValueExpressions;
 
-  private VectorColumnOutputMapping bigTableRetainedMapping;
-  private VectorColumnOutputMapping bigTableOuterKeyMapping;
-  private VectorColumnSourceMapping smallTableMapping;
+  private VectorExpression[] bigTableFilterExpressions;
+
+  private int[] bigTableRetainColumnMap;
+  private TypeInfo[] bigTableRetainTypeInfos;
+
+  private int[] nonOuterSmallTableKeyColumnMap;
+  private TypeInfo[] nonOuterSmallTableKeyTypeInfos;
+
+  private VectorColumnOutputMapping outerSmallTableKeyMapping;
+
+  private VectorColumnSourceMapping fullOuterSmallTableKeyMapping;
+
+  private VectorColumnSourceMapping smallTableValueMapping;
 
   private VectorColumnSourceMapping projectionMapping;
 
@@ -65,9 +75,19 @@ public class VectorMapJoinInfo {
     bigTableValueTypeInfos = null;
     slimmedBigTableValueExpressions = null;
 
-    bigTableRetainedMapping = null;
-    bigTableOuterKeyMapping = null;
-    smallTableMapping = null;
+    bigTableFilterExpressions = null;
+
+    bigTableRetainColumnMap = null;
+    bigTableRetainTypeInfos = null;
+
+    nonOuterSmallTableKeyColumnMap = null;
+    nonOuterSmallTableKeyTypeInfos = null;
+
+    outerSmallTableKeyMapping = null;
+
+    fullOuterSmallTableKeyMapping = null;
+
+    smallTableValueMapping = null;
 
     projectionMapping = null;
   }
@@ -138,28 +158,69 @@ public class VectorMapJoinInfo {
     this.slimmedBigTableValueExpressions = slimmedBigTableValueExpressions;
   }
 
-  public void setBigTableRetainedMapping(VectorColumnOutputMapping bigTableRetainedMapping) {
-    this.bigTableRetainedMapping = bigTableRetainedMapping;
+  public VectorExpression[] getBigTableFilterExpressions() {
+    return bigTableFilterExpressions;
   }
 
-  public VectorColumnOutputMapping getBigTableRetainedMapping() {
-    return bigTableRetainedMapping;
+  public void setBigTableFilterExpressions(VectorExpression[] bigTableFilterExpressions) {
+    this.bigTableFilterExpressions = bigTableFilterExpressions;
   }
 
-  public void setBigTableOuterKeyMapping(VectorColumnOutputMapping bigTableOuterKeyMapping) {
-    this.bigTableOuterKeyMapping = bigTableOuterKeyMapping;
+  public void setBigTableRetainColumnMap(int[] bigTableRetainColumnMap) {
+    this.bigTableRetainColumnMap = bigTableRetainColumnMap;
   }
 
-  public VectorColumnOutputMapping getBigTableOuterKeyMapping() {
-    return bigTableOuterKeyMapping;
+  public int[] getBigTableRetainColumnMap() {
+    return bigTableRetainColumnMap;
   }
 
-  public void setSmallTableMapping(VectorColumnSourceMapping smallTableMapping) {
-    this.smallTableMapping = smallTableMapping;
+  public void setBigTableRetainTypeInfos(TypeInfo[] bigTableRetainTypeInfos) {
+    this.bigTableRetainTypeInfos = bigTableRetainTypeInfos;
   }
 
-  public VectorColumnSourceMapping getSmallTableMapping() {
-    return smallTableMapping;
+  public TypeInfo[] getBigTableRetainTypeInfos() {
+    return bigTableRetainTypeInfos;
+  }
+
+  public void setNonOuterSmallTableKeyColumnMap(int[] nonOuterSmallTableKeyColumnMap) {
+    this.nonOuterSmallTableKeyColumnMap = nonOuterSmallTableKeyColumnMap;
+  }
+
+  public int[] getNonOuterSmallTableKeyColumnMap() {
+    return nonOuterSmallTableKeyColumnMap;
+  }
+
+  public void setNonOuterSmallTableKeyTypeInfos(TypeInfo[] nonOuterSmallTableKeyTypeInfos) {
+    this.nonOuterSmallTableKeyTypeInfos = nonOuterSmallTableKeyTypeInfos;
+  }
+
+  public TypeInfo[] getNonOuterSmallTableKeyTypeInfos() {
+    return nonOuterSmallTableKeyTypeInfos;
+  }
+
+  public void setOuterSmallTableKeyMapping(VectorColumnOutputMapping outerSmallTableKeyMapping) {
+    this.outerSmallTableKeyMapping = outerSmallTableKeyMapping;
+  }
+
+  public VectorColumnOutputMapping getOuterSmallTableKeyMapping() {
+    return outerSmallTableKeyMapping;
+  }
+
+  public void setFullOuterSmallTableKeyMapping(
+      VectorColumnSourceMapping fullOuterSmallTableKeyMapping) {
+    this.fullOuterSmallTableKeyMapping = fullOuterSmallTableKeyMapping;
+  }
+
+  public VectorColumnSourceMapping getFullOuterSmallTableKeyMapping() {
+    return fullOuterSmallTableKeyMapping;
+  }
+
+  public void setSmallTableValueMapping(VectorColumnSourceMapping smallTableValueMapping) {
+    this.smallTableValueMapping = smallTableValueMapping;
+  }
+
+  public VectorColumnSourceMapping getSmallTableValueMapping() {
+    return smallTableValueMapping;
   }
 
   public void setProjectionMapping(VectorColumnSourceMapping projectionMapping) {

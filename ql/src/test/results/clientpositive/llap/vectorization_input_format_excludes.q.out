@@ -51,11 +51,15 @@ PREHOOK: query: explain vectorization select *
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select *
   from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -73,6 +77,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_parquet_n0
+                  filterExpr: (cint = 528534767) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -142,6 +147,8 @@ PREHOOK: query: explain vectorization select ctinyint,
   from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select ctinyint,
   max(cint),
   min(csmallint),
@@ -151,6 +158,8 @@ POSTHOOK: query: explain vectorization select ctinyint,
   from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -181,12 +190,12 @@ STAGE PLANS:
                       keys: _col0 (type: tinyint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
-                        Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: double), _col5 (type: bigint), _col6 (type: double), _col7 (type: double), _col8 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -213,14 +222,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: tinyint), _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), (_col4 / _col5) (type: double), power(((_col6 - ((_col7 * _col7) / _col8)) / _col8), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 128 Data size: 4484 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 128 Data size: 4484 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -387,11 +396,15 @@ PREHOOK: query: explain vectorization select *
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select *
   from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -409,6 +422,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_parquet_n0
+                  filterExpr: (cint = 528534767) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -473,6 +487,8 @@ PREHOOK: query: explain vectorization select ctinyint,
   from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select ctinyint,
   max(cint),
   min(csmallint),
@@ -482,6 +498,8 @@ POSTHOOK: query: explain vectorization select ctinyint,
   from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -512,12 +530,12 @@ STAGE PLANS:
                       keys: _col0 (type: tinyint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
-                        Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: double), _col5 (type: bigint), _col6 (type: double), _col7 (type: double), _col8 (type: bigint)
             Execution mode: llap
             LLAP IO: all inputs (cache only)
@@ -539,14 +557,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: tinyint), _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), (_col4 / _col5) (type: double), power(((_col6 - ((_col7 * _col7) / _col8)) / _col8), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 128 Data size: 4484 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 128 Data size: 4484 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -713,11 +731,15 @@ PREHOOK: query: explain vectorization select *
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select *
   from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -735,6 +757,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_parquet_n0
+                  filterExpr: (cint = 528534767) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -804,6 +827,8 @@ PREHOOK: query: explain vectorization select ctinyint,
   from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select ctinyint,
   max(cint),
   min(csmallint),
@@ -813,6 +838,8 @@ POSTHOOK: query: explain vectorization select ctinyint,
   from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_parquet_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -843,12 +870,12 @@ STAGE PLANS:
                       keys: _col0 (type: tinyint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
-                        Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: double), _col5 (type: bigint), _col6 (type: double), _col7 (type: double), _col8 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -875,14 +902,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: tinyint), _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), (_col4 / _col5) (type: double), power(((_col6 - ((_col7 * _col7) / _col8)) / _col8), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 128 Data size: 4484 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 128 Data size: 4484 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1097,11 +1124,15 @@ PREHOOK: query: explain vectorization select *
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select *
   from alltypes_orc_n2
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1119,6 +1150,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n2
+                  filterExpr: (cint = 528534767) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -1183,6 +1215,8 @@ PREHOOK: query: explain vectorization select ctinyint,
   from alltypes_orc_n2
   group by ctinyint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select ctinyint,
   max(cint),
   min(csmallint),
@@ -1192,6 +1226,8 @@ POSTHOOK: query: explain vectorization select ctinyint,
   from alltypes_orc_n2
   group by ctinyint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1222,12 +1258,12 @@ STAGE PLANS:
                       keys: _col0 (type: tinyint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: tinyint)
-                        Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: double), _col5 (type: bigint), _col6 (type: double), _col7 (type: double), _col8 (type: bigint)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1249,14 +1285,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 128 Data size: 7556 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 131 Data size: 7732 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: tinyint), _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), (_col4 / _col5) (type: double), power(((_col6 - ((_col7 * _col7) / _col8)) / _col8), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 128 Data size: 4484 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 131 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 128 Data size: 4484 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 131 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1440,8 +1476,12 @@ POSTHOOK: Lineage: orctbl.t1 SCRIPT []
 POSTHOOK: Lineage: orctbl.t2 SCRIPT []
 PREHOOK: query: explain vectorization select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orctbl
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orctbl
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1459,6 +1499,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orctbl
+                  filterExpr: (UDFToInteger((t1 + t2)) > 10) (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger((t1 + t2)) > 10) (type: boolean)
@@ -1518,8 +1559,12 @@ POSTHOOK: Lineage: parquettbl.t1 SCRIPT []
 POSTHOOK: Lineage: parquettbl.t2 SCRIPT []
 PREHOOK: query: explain vectorization SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parquettbl
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquettbl
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1537,6 +1582,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: parquettbl
+                  filterExpr: (UDFToInteger((t1 + t2)) > 10) (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger((t1 + t2)) > 10) (type: boolean)

@@ -51,8 +51,18 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_mm_n0
 PREHOOK: query: explain insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@part_mm_n0@key_mm=455
 POSTHOOK: query: explain insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@part_mm_n0@key_mm=455
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -1829,6 +1839,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	6                   
@@ -1879,6 +1890,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	12                  
@@ -1937,7 +1949,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 

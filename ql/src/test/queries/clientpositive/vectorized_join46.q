@@ -1,3 +1,4 @@
+set hive.cli.print.header=true;
 set hive.vectorized.execution.enabled=true;
 set hive.auto.convert.join=true;
 set hive.strict.checks.cartesian.product=false;
@@ -15,7 +16,7 @@ INSERT INTO test2_n9 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
 
 
 -- Basic outer join
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value);
@@ -25,7 +26,7 @@ FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value);
 
 -- Conjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -39,7 +40,7 @@ ON (test1_n14.value=test2_n9.value
   AND test2_n9.key between 100 and 102);
 
 -- Conjunction with pred on single inputs (left outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.key between 100 and 102
@@ -51,7 +52,7 @@ ON (test1_n14.key between 100 and 102
   AND test2_n9.key between 100 and 102);
 
 -- Conjunction with pred on multiple inputs and none (left outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 RIGHT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value AND true);
@@ -61,7 +62,7 @@ FROM test1_n14 RIGHT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value AND true);
 
 -- Condition on one input (left outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.key between 100 and 102);
@@ -71,7 +72,7 @@ FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.key between 100 and 102);
 
 -- Disjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -85,7 +86,7 @@ ON (test1_n14.value=test2_n9.value
   OR test2_n9.key between 100 and 102);
 
 -- Disjunction with pred on multiple inputs and left input (left outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -97,7 +98,7 @@ ON (test1_n14.value=test2_n9.value
   OR test1_n14.key between 100 and 102);
 
 -- Disjunction with pred on multiple inputs and right input (left outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -109,7 +110,7 @@ ON (test1_n14.value=test2_n9.value
   OR test2_n9.key between 100 and 102);
 
 -- Keys plus residual (left outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 LEFT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -123,7 +124,7 @@ ON (test1_n14.value=test2_n9.value
     OR test2_n9.key between 100 and 102));
 
 -- Disjunction with pred on multiple inputs and single inputs (right outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 RIGHT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -137,7 +138,7 @@ ON (test1_n14.value=test2_n9.value
   OR test2_n9.key between 100 and 102);
 
 -- Disjunction with pred on multiple inputs and left input (right outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 RIGHT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -149,7 +150,7 @@ ON (test1_n14.value=test2_n9.value
   OR test1_n14.key between 100 and 102);
 
 -- Disjunction with pred on multiple inputs and right input (right outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 RIGHT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -161,7 +162,7 @@ ON (test1_n14.value=test2_n9.value
   OR test2_n9.key between 100 and 102);
 
 -- Keys plus residual (right outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 RIGHT OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -175,7 +176,7 @@ ON (test1_n14.value=test2_n9.value
     OR test2_n9.key between 100 and 102));
 
 -- Disjunction with pred on multiple inputs and single inputs (full outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 FULL OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -189,7 +190,7 @@ ON (test1_n14.value=test2_n9.value
   OR test2_n9.key between 100 and 102);
 
 -- Disjunction with pred on multiple inputs and left input (full outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 FULL OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -201,7 +202,7 @@ ON (test1_n14.value=test2_n9.value
   OR test1_n14.key between 100 and 102);
 
 -- Disjunction with pred on multiple inputs and right input (full outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 FULL OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value
@@ -213,7 +214,7 @@ ON (test1_n14.value=test2_n9.value
   OR test2_n9.key between 100 and 102);
 
 -- Keys plus residual (full outer join)
-EXPLAIN
+EXPLAIN VECTORIZATION OPERATOR
 SELECT *
 FROM test1_n14 FULL OUTER JOIN test2_n9
 ON (test1_n14.value=test2_n9.value

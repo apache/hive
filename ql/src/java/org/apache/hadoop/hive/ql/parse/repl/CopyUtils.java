@@ -26,6 +26,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -33,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
@@ -67,7 +70,7 @@ public class CopyUtils {
   // changed/removed during copy, so double check the checksum after copy,
   // if not match, copy again from cm
   public void copyAndVerify(FileSystem destinationFs, Path destRoot,
-                    List<ReplChangeManager.FileInfo> srcFiles) throws IOException, LoginException {
+                    List<ReplChangeManager.FileInfo> srcFiles) throws IOException, LoginException, HiveFatalException {
     Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
     for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
       FileSystem sourceFs = entry.getKey();
@@ -91,27 +94,60 @@ public class CopyUtils {
 
   private void doCopyRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
                            FileSystem destinationFs, Path destination,
-                           boolean useRegularCopy) throws IOException, LoginException {
+                           boolean useRegularCopy) throws IOException, LoginException, HiveFatalException {
     int repeat = 0;
     boolean isCopyError = false;
     List<Path> pathList = Lists.transform(srcFileList, ReplChangeManager.FileInfo::getEffectivePath);
     while (!pathList.isEmpty() && (repeat < MAX_COPY_RETRY)) {
-      LOG.info("Attempt: " + (repeat+1) + ". Copying files: " + pathList);
       try {
-        isCopyError = false;
+        // if its retrying, first regenerate the path list.
+        if (repeat > 0) {
+          pathList = getFilesToRetry(sourceFs, srcFileList, destinationFs, destination, isCopyError);
+          if (pathList.isEmpty()) {
+            // all files were copied successfully in last try. So can break from here.
+            break;
+          }
+        }
+
+        LOG.info("Attempt: " + (repeat+1) + ". Copying files: " + pathList);
+
+        // if exception happens during doCopyOnce, then need to call getFilesToRetry with copy error as true in retry.
+        isCopyError = true;
         doCopyOnce(sourceFs, pathList, destinationFs, destination, useRegularCopy);
+
+        // if exception happens after doCopyOnce, then need to call getFilesToRetry with copy error as false in retry.
+        isCopyError = false;
       } catch (IOException e) {
         // If copy fails, fall through the retry logic
-        isCopyError = true;
+        LOG.info("file operation failed", e);
+
+        if (repeat >= (MAX_COPY_RETRY - 1)) {
+          //no need to wait in the last iteration
+          break;
+        }
+
+        if (!(e instanceof FileNotFoundException)) {
+          int sleepTime = FileUtils.getSleepTime(repeat);
+          LOG.info("Sleep for " + sleepTime + " milliseconds before retry " + (repeat+1));
+          try {
+            Thread.sleep(sleepTime);
+          } catch (InterruptedException timerEx) {
+            LOG.info("sleep interrupted", timerEx.getMessage());
+          }
+
+          // looks like some network outrage, reset the file system object and retry.
+          FileSystem.closeAllForUGI(Utils.getUGI());
+          sourceFs = pathList.get(0).getFileSystem(hiveConf);
+          destinationFs = destination.getFileSystem(hiveConf);
+        }
       }
-      pathList = getFilesToRetry(sourceFs, srcFileList, destinationFs, destination, isCopyError);
       repeat++;
     }
 
     // If still files remains to be copied due to failure/checksum mismatch after several attempts, then throw error
     if (!pathList.isEmpty()) {
-      LOG.error("File copy failed even after several attempts. Files list: " + srcFileList);
-      throw new IOException("File copy failed even after several attempts.");
+      LOG.error("File copy failed even after several attempts. Files list: " + pathList);
+      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
     }
   }
 
@@ -120,7 +156,7 @@ public class CopyUtils {
   // itself is missing, then throw error.
   private List<Path> getFilesToRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
                                      FileSystem destinationFs, Path destination, boolean isCopyError)
-          throws IOException {
+          throws IOException, HiveFatalException {
     List<Path> pathList = new ArrayList<Path>();
 
     // Going through file list and make the retry list
@@ -148,41 +184,35 @@ public class CopyUtils {
             continue;
           }
         }
-      } else {
-        // If destination file is missing, then retry copy
-        if (sourceFs.exists(srcPath)) {
-          // If checksum does not match, likely the file is changed/removed, retry from CM path
-          if (isSourceFileMismatch(sourceFs, srcFile)) {
-            srcFile.setIsUseSourcePath(false);
-          }
-        } else {
-          if (srcFile.isUseSourcePath()) {
-            // Source file missing, then try with CM path
-            srcFile.setIsUseSourcePath(false);
-          } else {
-            // CM path itself is missing, cannot recover from this error
-            LOG.error("File Copy Failed. Both source and CM files are missing from source. "
-                    + "Missing Source File: " + srcFile.getSourcePath() + ", CM File: " + srcFile.getCmPath() + ". "
-                    + "Try setting higher value for hive.repl.cm.retain in source warehouse. "
-                    + "Also, bootstrap the system again to get back the consistent replicated state.");
-            throw new IOException("Both source and CM path are missing from source.");
-          }
-        }
+      } else if (isSourceFileMismatch(sourceFs, srcFile)) {
+        // If checksum does not match, likely the file is changed/removed, retry from CM path
+        srcFile.setIsUseSourcePath(false);
       }
+
       srcPath = srcFile.getEffectivePath();
       if (null == srcPath) {
         // This case possible if CM path is not enabled.
-        LOG.error("File copy failed and likely source file is deleted or modified. "
+        LOG.error("File copy failed and likely source file is deleted or modified."
                 + "Source File: " + srcFile.getSourcePath());
-        throw new IOException("File copy failed and likely source file is deleted or modified.");
+        throw new HiveFatalException(ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getMsg());
       }
+
+      if (!srcFile.isUseSourcePath() && !sourceFs.exists(srcFile.getCmPath())) {
+        // CM path itself is missing, cannot recover from this error
+        LOG.error("File Copy Failed. Both source and CM files are missing from source. "
+                + "Missing Source File: " + srcFile.getSourcePath() + ", CM File: " + srcFile.getCmPath() + ". "
+                + "Try setting higher value for hive.repl.cm.retain in source warehouse. "
+                + "Also, bootstrap the system again to get back the consistent replicated state.");
+        throw new HiveFatalException(ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getMsg());
+      }
+
       pathList.add(srcPath);
     }
     return pathList;
   }
 
   // Check if the source file unmodified even after copy to see if we copied the right file
-  private boolean isSourceFileMismatch(FileSystem sourceFs, ReplChangeManager.FileInfo srcFile) {
+  private boolean isSourceFileMismatch(FileSystem sourceFs, ReplChangeManager.FileInfo srcFile) throws IOException {
     // If source is already CM path, the checksum will be always matching
     if (srcFile.isUseSourcePath()) {
       String sourceChecksumString = srcFile.getCheckSum();
@@ -192,9 +222,13 @@ public class CopyUtils {
           verifySourceChecksumString
                   = ReplChangeManager.checksumFor(srcFile.getSourcePath(), sourceFs);
         } catch (IOException e) {
-          // Retry with CM path
-          LOG.debug("Unable to calculate checksum for source file: " + srcFile.getSourcePath());
-          return true;
+          LOG.info("Unable to calculate checksum for source file: " + srcFile.getSourcePath(), e);
+
+          if (!sourceFs.exists(srcFile.getSourcePath())) {
+            // if source file is missing, then return true, so that cm path will be used for copy.
+            return true;
+          }
+          throw e;
         }
         if (!sourceChecksumString.equals(verifySourceChecksumString)) {
           return true;
@@ -232,15 +266,17 @@ public class CopyUtils {
           RAW_RESERVED_VIRTUAL_PATH + destinationUri.getPath());
     }
 
-    FileUtils.distCp(
+    if (!FileUtils.distCp(
         sourceFs, // source file system
         srcList,  // list of source paths
         destination,
         false,
         usePrivilegedUser ? copyAsUser : null,
         hiveConf,
-        ShimLoader.getHadoopShims()
-    );
+        ShimLoader.getHadoopShims())) {
+      LOG.error("Distcp failed to copy files: " + srcList + " to destination: " + destination);
+      throw new IOException("Distcp operation failed.");
+    }
   }
 
   private void doRegularCopyOnce(FileSystem sourceFs, List<Path> srcList, FileSystem destinationFs,
@@ -289,7 +325,7 @@ public class CopyUtils {
       3. aggregate fileSize of all source Paths(can be directory /  file) is less than configured size.
       4. number of files of all source Paths(can be directory /  file) is less than configured size.
   */
-  private boolean regularCopy(FileSystem destinationFs, FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
+  boolean regularCopy(FileSystem destinationFs, FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
       throws IOException {
     if (hiveInTest) {
       return true;
@@ -370,7 +406,7 @@ public class CopyUtils {
     return result;
   }
 
-  private Path getCopyDestination(ReplChangeManager.FileInfo fileInfo, Path destRoot) {
+  public static Path getCopyDestination(ReplChangeManager.FileInfo fileInfo, Path destRoot) {
     if (fileInfo.getSubDir() == null) {
       return destRoot;
     }

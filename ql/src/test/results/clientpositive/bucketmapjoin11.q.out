@@ -139,11 +139,25 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
 ON a.key = b.key AND a.part IS NOT NULL AND b.part IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2@part=1
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6@part=1
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6@part=2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
 ON a.key = b.key AND a.part IS NOT NULL AND b.part IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2@part=1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6@part=1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6@part=2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -255,12 +269,13 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (part is not null and key is not null) (type: boolean)
+            Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -279,12 +294,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (part is not null and key is not null) (type: boolean)
+            Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -292,17 +308,17 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 Position of Big Table: 0
-                Statistics: Num rows: 240 Data size: 94182 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 94182 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
@@ -418,13 +434,13 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -476,11 +492,25 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
 ON a.key = b.key AND a.part = b.part AND a.part IS NOT NULL AND b.part IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2@part=1
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6@part=1
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6@part=2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
 ON a.key = b.key AND a.part = b.part AND a.part IS NOT NULL AND b.part IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2@part=1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6@part=1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6@part=2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -592,12 +622,13 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (part is not null and key is not null) (type: boolean)
+            Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int), part (type: string)
@@ -616,12 +647,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (part is not null and key is not null) (type: boolean)
+            Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -629,17 +661,17 @@ STAGE PLANS:
                   0 key (type: int), part (type: string)
                   1 key (type: int), part (type: string)
                 Position of Big Table: 0
-                Statistics: Num rows: 240 Data size: 94182 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 94182 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     tag: -1
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
@@ -755,13 +787,13 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat

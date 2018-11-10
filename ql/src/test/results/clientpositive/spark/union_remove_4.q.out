@@ -31,6 +31,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n24 group by key
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n24
+PREHOOK: Output: default@outputtbl1_n33
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n33
 SELECT *
@@ -40,6 +42,8 @@ FROM (
   SELECT key, count(1) as `values` from inputTbl1_n24 group by key
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n24
+POSTHOOK: Output: default@outputtbl1_n33
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4

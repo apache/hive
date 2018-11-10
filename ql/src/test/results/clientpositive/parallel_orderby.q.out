@@ -25,9 +25,15 @@ POSTHOOK: Output: default@src5_n2
 PREHOOK: query: explain
 create table total_ordered as select * from src5_n2 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src5_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@total_ordered
 POSTHOOK: query: explain
 create table total_ordered as select * from src5_n2 order by key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src5_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@total_ordered
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -68,7 +74,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-3
       Create Table Operator:
@@ -134,11 +140,11 @@ Storage Desc Params:
 PREHOOK: query: select * from total_ordered
 PREHOOK: type: QUERY
 PREHOOK: Input: default@total_ordered
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from total_ordered
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@total_ordered
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 128	val_128
 128	val_128
 150	val_150
@@ -245,11 +251,11 @@ Storage Desc Params:
 PREHOOK: query: select * from total_ordered
 PREHOOK: type: QUERY
 PREHOOK: Input: default@total_ordered
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from total_ordered
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@total_ordered
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 128	val_128
 128	val_128
 150	val_150

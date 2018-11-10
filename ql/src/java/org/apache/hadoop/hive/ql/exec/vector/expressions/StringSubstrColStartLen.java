@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -42,17 +43,8 @@ public class StringSubstrColStartLen extends VectorExpression {
   private final int length;
   private final int[] offsetArray;
 
-  private transient static byte[] EMPTY_STRING;
-
-  // Populating the Empty string bytes. Putting it as static since it should be immutable and can be
-  // shared
-  static {
-    try {
-      EMPTY_STRING = "".getBytes("UTF-8");
-    } catch(UnsupportedEncodingException e) {
-      e.printStackTrace();
-    }
-  }
+  private static final byte[] EMPTY_STRING =
+      StringUtils.EMPTY.getBytes(StandardCharsets.UTF_8);
 
   public StringSubstrColStartLen(int colNum, int startIdx, int length, int outputColumnNum) {
     super(outputColumnNum);
@@ -167,12 +159,7 @@ public class StringSubstrColStartLen extends VectorExpression {
     outputColVector.isRepeating = false;
 
     if (inV.isRepeating) {
-
-      if (!inV.noNulls && inV.isNull[0]) {
-        outputIsNull[0] = true;
-        outputColVector.noNulls = false;
-        outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
-      } else {
+      if (inV.noNulls || !inV.isNull[0]) {
         outputIsNull[0] = false;
         populateSubstrOffsets(vector[0], start[0], len[0], startIdx, length, offsetArray);
         if (offsetArray[0] != -1) {
@@ -180,6 +167,10 @@ public class StringSubstrColStartLen extends VectorExpression {
         } else {
           outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
         }
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+        outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
       }
       outputColVector.isRepeating = true;
       return;

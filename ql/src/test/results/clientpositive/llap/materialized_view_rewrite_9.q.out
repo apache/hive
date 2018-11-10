@@ -89,6 +89,9 @@ FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
 FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table_001_mv_n0
+PREHOOK: Input: default@source_table_001_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
@@ -96,6 +99,9 @@ FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
 FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table_001_mv_n0
+POSTHOOK: Input: default@source_table_001_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -129,10 +135,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
                         Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col4 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -205,6 +211,9 @@ FLOOR(A.MY_DATE to day),A.MY_ID2,A.ENVIRONMENT
 FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to day)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table_001_mv_n0
+PREHOOK: Input: default@source_table_001_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
@@ -212,6 +221,9 @@ FLOOR(A.MY_DATE to day),A.MY_ID2,A.ENVIRONMENT
 FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to day)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table_001_mv_n0
+POSTHOOK: Input: default@source_table_001_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -245,10 +257,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
                         Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col4 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -281,6 +293,9 @@ FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
 FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table_001_mv_n0
+PREHOOK: Input: default@source_table_001_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
@@ -288,6 +303,9 @@ FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
 FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table_001_mv_n0
+POSTHOOK: Input: default@source_table_001_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -310,6 +328,8 @@ FLOOR(A.MY_DATE to second),A.MY_ID2,A.ENVIRONMENT
 FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to second)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table_001_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
@@ -317,6 +337,8 @@ FLOOR(A.MY_DATE to second),A.MY_ID2,A.ENVIRONMENT
 FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to second)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table_001_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -350,10 +372,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
                         Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col4 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

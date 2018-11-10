@@ -252,12 +252,9 @@ drop table t_n11;
 drop table tempty_n0;
 
 -- following queries shouldn't have a join with sq_count_check
-set hive.optimize.remove.sq_count_check = true;
 explain select key, count(*) from src group by key having count(*) >
     (select count(*) from src s1 group by 4);
 
 explain select key, count(*) from src group by key having count(*) >
     (select count(*) from src s1 where s1.key = '90' group by s1.key );
-
-set hive.optimize.remove.sq_count_check = false;
 

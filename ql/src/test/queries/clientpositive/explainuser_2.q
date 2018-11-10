@@ -104,7 +104,7 @@ JOIN (select key, value from src1 union select key, value from src union select 
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
-set hive.auto.convert.join.noconditionaltask.size=10000;
+set hive.auto.convert.join.noconditionaltask.size=30000;
 set hive.stats.fetch.column.stats=false;
 
 
@@ -166,7 +166,7 @@ JOIN (select key, value from src1 union select key, value from src union select 
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
-set hive.auto.convert.join.noconditionaltask.size=10000;
+set hive.auto.convert.join.noconditionaltask.size=20000;
 set hive.auto.convert.sortmerge.join.bigtable.selection.policy = org.apache.hadoop.hive.ql.optimizer.TableSizeBasedBigTableSelectorForAutoSMJ;
 
 CREATE TABLE srcbucket_mapjoin_n22(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
@@ -198,7 +198,7 @@ select key,value from srcbucket_mapjoin_n22;
 set hive.convert.join.bucket.mapjoin.tez = false;
 set hive.auto.convert.sortmerge.join = true;
 
-set hive.auto.convert.join.noconditionaltask.size=500;
+set hive.auto.convert.join.noconditionaltask.size=2000;
 
 explain 
 select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key;

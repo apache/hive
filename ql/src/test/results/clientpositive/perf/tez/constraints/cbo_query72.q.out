@@ -1,0 +1,125 @@
+PREHOOK: query: explain cbo
+select  i_item_desc
+      ,w_warehouse_name
+      ,d1.d_week_seq
+      ,count(case when p_promo_sk is null then 1 else 0 end) no_promo
+      ,count(case when p_promo_sk is not null then 1 else 0 end) promo
+      ,count(*) total_cnt
+from catalog_sales
+join inventory on (cs_item_sk = inv_item_sk)
+join warehouse on (w_warehouse_sk=inv_warehouse_sk)
+join item on (i_item_sk = cs_item_sk)
+join customer_demographics on (cs_bill_cdemo_sk = cd_demo_sk)
+join household_demographics on (cs_bill_hdemo_sk = hd_demo_sk)
+join date_dim d1 on (cs_sold_date_sk = d1.d_date_sk)
+join date_dim d2 on (inv_date_sk = d2.d_date_sk)
+join date_dim d3 on (cs_ship_date_sk = d3.d_date_sk)
+left outer join promotion on (cs_promo_sk=p_promo_sk)
+left outer join catalog_returns on (cr_item_sk = cs_item_sk and cr_order_number = cs_order_number)
+where d1.d_week_seq = d2.d_week_seq
+  and inv_quantity_on_hand < cs_quantity 
+  and d3.d_date > d1.d_date + 5
+  and hd_buy_potential = '1001-5000'
+  and d1.d_year = 2001
+  and hd_buy_potential = '1001-5000'
+  and cd_marital_status = 'M'
+  and d1.d_year = 2001
+group by i_item_desc,w_warehouse_name,d1.d_week_seq
+order by total_cnt desc, i_item_desc, w_warehouse_name, d_week_seq
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_returns
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@customer_demographics
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@inventory
+PREHOOK: Input: default@item
+PREHOOK: Input: default@promotion
+PREHOOK: Input: default@warehouse
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select  i_item_desc
+      ,w_warehouse_name
+      ,d1.d_week_seq
+      ,count(case when p_promo_sk is null then 1 else 0 end) no_promo
+      ,count(case when p_promo_sk is not null then 1 else 0 end) promo
+      ,count(*) total_cnt
+from catalog_sales
+join inventory on (cs_item_sk = inv_item_sk)
+join warehouse on (w_warehouse_sk=inv_warehouse_sk)
+join item on (i_item_sk = cs_item_sk)
+join customer_demographics on (cs_bill_cdemo_sk = cd_demo_sk)
+join household_demographics on (cs_bill_hdemo_sk = hd_demo_sk)
+join date_dim d1 on (cs_sold_date_sk = d1.d_date_sk)
+join date_dim d2 on (inv_date_sk = d2.d_date_sk)
+join date_dim d3 on (cs_ship_date_sk = d3.d_date_sk)
+left outer join promotion on (cs_promo_sk=p_promo_sk)
+left outer join catalog_returns on (cr_item_sk = cs_item_sk and cr_order_number = cs_order_number)
+where d1.d_week_seq = d2.d_week_seq
+  and inv_quantity_on_hand < cs_quantity 
+  and d3.d_date > d1.d_date + 5
+  and hd_buy_potential = '1001-5000'
+  and d1.d_year = 2001
+  and hd_buy_potential = '1001-5000'
+  and cd_marital_status = 'M'
+  and d1.d_year = 2001
+group by i_item_desc,w_warehouse_name,d1.d_week_seq
+order by total_cnt desc, i_item_desc, w_warehouse_name, d_week_seq
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_returns
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@customer_demographics
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@inventory
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@promotion
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$5], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC-nulls-last], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
+  HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5])
+    HiveAggregate(group=[{0, 1, 2}], agg#0=[count($3)], agg#1=[count($4)], agg#2=[count()])
+      HiveProject($f0=[$15], $f1=[$13], $f2=[$19], $f3=[CASE(IS NULL($25), 1, 0)], $f4=[CASE(IS NOT NULL($25), 1, 0)])
+        HiveJoin(condition=[AND(=($26, $4), =($27, $6))], joinType=[left], algorithm=[none], cost=[not available])
+          HiveProject(cs_sold_date_sk=[$10], cs_ship_date_sk=[$11], cs_bill_cdemo_sk=[$12], cs_bill_hdemo_sk=[$13], cs_item_sk=[$14], cs_promo_sk=[$15], cs_order_number=[$16], cs_quantity=[$17], inv_date_sk=[$0], inv_item_sk=[$1], inv_warehouse_sk=[$2], inv_quantity_on_hand=[$3], w_warehouse_sk=[$4], w_warehouse_name=[$5], i_item_sk=[$8], i_item_desc=[$9], cd_demo_sk=[$21], hd_demo_sk=[$22], d_date_sk=[$18], d_week_seq=[$19], +=[$20], d_date_sk0=[$24], d_week_seq0=[$25], d_date_sk1=[$6], CAST=[$7], p_promo_sk=[$23])
+            HiveJoin(condition=[AND(=($0, $24), =($19, $25))], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[AND(=($14, $1), <($3, $17))], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[=($4, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(inv_date_sk=[$0], inv_item_sk=[$1], inv_warehouse_sk=[$2], inv_quantity_on_hand=[$3])
+                    HiveTableScan(table=[[default, inventory]], table:alias=[inventory])
+                  HiveProject(w_warehouse_sk=[$0], w_warehouse_name=[$2])
+                    HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+                HiveProject(d_date_sk=[$0], CAST=[$1], i_item_sk=[$2], i_item_desc=[$3], cs_sold_date_sk=[$4], cs_ship_date_sk=[$5], cs_bill_cdemo_sk=[$6], cs_bill_hdemo_sk=[$7], cs_item_sk=[$8], cs_promo_sk=[$9], cs_order_number=[$10], cs_quantity=[$11], d_date_sk0=[$12], d_week_seq=[$13], +=[$14], cd_demo_sk=[$15], hd_demo_sk=[$16], p_promo_sk=[$17])
+                  HiveJoin(condition=[AND(=($5, $0), >($1, $14))], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(d_date_sk=[$0], CAST=[CAST($2):DOUBLE])
+                      HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
+                    HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(i_item_sk=[$0], i_item_desc=[$4])
+                        HiveTableScan(table=[[default, item]], table:alias=[item])
+                      HiveJoin(condition=[=($5, $13)], joinType=[left], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($3, $12)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveJoin(condition=[=($2, $11)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+                              HiveProject(cs_sold_date_sk=[$0], cs_ship_date_sk=[$2], cs_bill_cdemo_sk=[$4], cs_bill_hdemo_sk=[$5], cs_item_sk=[$15], cs_promo_sk=[$16], cs_order_number=[$17], cs_quantity=[$18])
+                                HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($5), IS NOT NULL($0), IS NOT NULL($2))])
+                                  HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                              HiveProject(d_date_sk=[$0], d_week_seq=[$4], +=[+(CAST($2):DOUBLE, 5)])
+                                HiveFilter(condition=[AND(=($6, 2001), IS NOT NULL($4))])
+                                  HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+                            HiveProject(cd_demo_sk=[$0])
+                              HiveFilter(condition=[=($2, _UTF-16LE'M')])
+                                HiveTableScan(table=[[default, customer_demographics]], table:alias=[customer_demographics])
+                          HiveProject(hd_demo_sk=[$0])
+                            HiveFilter(condition=[=($2, _UTF-16LE'1001-5000')])
+                              HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                        HiveProject(p_promo_sk=[$0])
+                          HiveTableScan(table=[[default, promotion]], table:alias=[promotion])
+              HiveProject(d_date_sk=[$0], d_week_seq=[$4])
+                HiveFilter(condition=[IS NOT NULL($4)])
+                  HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+          HiveProject(cr_item_sk=[$2], cr_order_number=[$16])
+            HiveTableScan(table=[[default, catalog_returns]], table:alias=[catalog_returns])
+

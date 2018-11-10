@@ -67,6 +67,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src10_1_n0
+PREHOOK: Input: default@src10_2_n0
+PREHOOK: Input: default@src10_3_n0
+PREHOOK: Input: default@src10_4_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
@@ -74,6 +79,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src10_1_n0
+POSTHOOK: Input: default@src10_2_n0
+POSTHOOK: Input: default@src10_3_n0
+POSTHOOK: Input: default@src10_4_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -88,6 +98,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src10_2_n0
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -112,6 +123,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src10_1_n0
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -240,6 +252,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src10_1_n0
+PREHOOK: Input: default@src10_2_n0
+PREHOOK: Input: default@src10_3_n0
+PREHOOK: Input: default@src10_4_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
@@ -247,6 +264,11 @@ SELECT * FROM (
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src10_1_n0
+POSTHOOK: Input: default@src10_2_n0
+POSTHOOK: Input: default@src10_3_n0
+POSTHOOK: Input: default@src10_4_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -262,6 +284,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src10_1_n0
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -281,6 +304,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src10_2_n0
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)

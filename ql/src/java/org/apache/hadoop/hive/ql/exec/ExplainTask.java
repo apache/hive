@@ -45,9 +45,11 @@ import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailL
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+import org.apache.hadoop.hive.ql.plan.ExplainLockDesc;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -79,6 +82,7 @@ import com.google.common.annotations.VisibleForTesting;
  *
  **/
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
+  public static final String STAGE_DEPENDENCIES = "STAGE DEPENDENCIES";
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
@@ -134,6 +138,16 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     outJSONObject.put("input_tables", inputTableInfo);
     outJSONObject.put("input_partitions", inputPartitionInfo);
     return outJSONObject;
+  }
+
+  public String outputCboPlan(String cboPlan, PrintStream out, boolean jsonOutput)
+      throws JSONException {
+    if (out != null) {
+      out.println("CBO PLAN:");
+      out.println(cboPlan);
+    }
+
+    return jsonOutput ? cboPlan : null;
   }
 
   public JSONObject getJSONLogicalPlan(PrintStream out, ExplainWork work) throws Exception {
@@ -217,11 +231,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
       throws Exception {
     return getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
-                       work.isFormatted(), work.getExtended(), work.isAppendTaskType());
+        work.isFormatted(), work.getExtended(), work.isAppendTaskType(), work.getCboInfo(),
+        work.getOptimizedSQL());
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
-      boolean jsonOutput, boolean isExtended, boolean appendTaskType) throws Exception {
+      boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo, String optimizedSQL) throws Exception {
 
     // If the user asked for a formatted output, dump the json output
     // in the output stream
@@ -229,6 +244,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (jsonOutput) {
       out = null;
+    }
+
+    if (optimizedSQL != null) {
+      if (jsonOutput) {
+        outJSONObject.put("optimizedSQL", optimizedSQL);
+      } else {
+        out.print("OPTIMIZED SQL: ");
+        out.println(optimizedSQL);
+      }
     }
 
     List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
@@ -267,7 +291,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
 
       if (jsonOutput) {
-        outJSONObject.put("STAGE DEPENDENCIES", jsonDependencies);
+        if (cboInfo != null) {
+          outJSONObject.put("cboInfo", cboInfo);
+        }
+        outJSONObject.put(STAGE_DEPENDENCIES, jsonDependencies);
       }
 
       // Go over all the tasks and dump out the plans
@@ -321,6 +348,40 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return null;
   }
 
+  private JSONObject getLocks(PrintStream out, ExplainWork work) {
+
+    JSONObject jsonObject = new JSONObject(new LinkedHashMap<>());
+
+    boolean jsonOutput = work.isFormatted();
+    if (jsonOutput) {
+      out = null;
+    }
+    List<LockComponent> lockComponents = AcidUtils.makeLockComponents(work.getOutputs(), work.getInputs(), conf);
+    if (null != out) {
+      out.print("LOCK INFORMATION:\n");
+    }
+    List<ExplainLockDesc> locks = new ArrayList<>(lockComponents.size());
+
+    for (LockComponent component : lockComponents) {
+      ExplainLockDesc lockDesc = new ExplainLockDesc(component);
+
+      if (null != out) {
+        out.print(lockDesc.getFullName());
+        out.print(" -> ");
+        out.print(lockDesc.getLockType());
+        out.print('\n');
+      } else {
+        locks.add(lockDesc);
+      }
+
+    }
+
+    if (jsonOutput) {
+      jsonObject.put("LOCK INFORMATION:", locks);
+    }
+    return jsonObject;
+  }
+
   @Override
   public int execute(DriverContext driverContext) {
 
@@ -330,7 +391,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      if (work.isLogical()) {
+      if (work.isCbo()) {
+        if (work.getCboPlan() != null) {
+          outputCboPlan(work.getCboPlan(), out, work.isFormatted());
+        }
+      } else if (work.isLogical()) {
         JSONObject jsonLogicalPlan = getJSONLogicalPlan(out, work);
         if (work.isFormatted()) {
           out.print(jsonLogicalPlan);
@@ -343,6 +408,16 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       } else if (work.getDependency()) {
         JSONObject jsonDependencies = getJSONDependencies(work);
         out.print(jsonDependencies);
+      } else if (work.isLocks()) {
+        JSONObject jsonLocks = getLocks(out, work);
+        if(work.isFormatted()) {
+          out.print(jsonLocks);
+        }
+      } else if (work.isAst()) {
+        // Print out the parse AST
+        if (work.getAstStringTree() != null) {
+          outputAST(work.getAstStringTree(), out, work.isFormatted(), 0);
+        }
       } else {
         if (work.isUserLevelExplain()) {
           // Because of the implementation of the JsonParserFactory, we are sure
@@ -668,6 +743,73 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outputPlan(work, out, extended, jsonOutput, indent, "");
   }
 
+  private boolean isInvokeVectorization(Vectorization vectorization) {
+
+    boolean invokeFlag = true;   // Assume.
+
+    // The EXPLAIN VECTORIZATION option was specified.
+    final boolean desireOnly = this.work.isVectorizationOnly();
+    final VectorizationDetailLevel desiredVecDetailLevel =
+        this.work.isVectorizationDetailLevel();
+
+    switch (vectorization) {
+    case NON_VECTORIZED:
+      // Display all non-vectorized leaf objects unless ONLY.
+      if (desireOnly) {
+        invokeFlag = false;
+      }
+      break;
+    case SUMMARY:
+    case OPERATOR:
+    case EXPRESSION:
+    case DETAIL:
+      if (vectorization.rank < desiredVecDetailLevel.rank) {
+        // This detail not desired.
+        invokeFlag = false;
+      }
+      break;
+    case SUMMARY_PATH:
+    case OPERATOR_PATH:
+      if (desireOnly) {
+        if (vectorization.rank < desiredVecDetailLevel.rank) {
+          // Suppress headers and all objects below.
+          invokeFlag = false;
+        }
+      }
+      break;
+    default:
+      throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+    }
+
+    return invokeFlag;
+  }
+
+  private boolean isInvokeNonVectorization(Vectorization vectorization) {
+
+    boolean invokeFlag = true;   // Assume.
+
+    // Do not display vectorization objects.
+    switch (vectorization) {
+    case SUMMARY:
+    case OPERATOR:
+    case EXPRESSION:
+    case DETAIL:
+      invokeFlag = false;
+      break;
+    case NON_VECTORIZED:
+      // No action.
+      break;
+    case SUMMARY_PATH:
+    case OPERATOR_PATH:
+      // Always include headers since they contain non-vectorized objects, too.
+      break;
+    default:
+      throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+    }
+
+    return invokeFlag;
+  }
+
   @VisibleForTesting
   JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
@@ -692,65 +834,17 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         if (extended) {
           invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
         } else {
-          invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+          invokeFlag =
+              Level.DEFAULT.in(xpl_note.explainLevels()) ||
+              (this.work != null && this.work.isDebug() && Level.DEBUG.in(xpl_note.explainLevels()));
         }
       }
       if (invokeFlag) {
         Vectorization vectorization = xpl_note.vectorization();
         if (this.work != null && this.work.isVectorization()) {
-
-          // The EXPLAIN VECTORIZATION option was specified.
-          final boolean desireOnly = this.work.isVectorizationOnly();
-          final VectorizationDetailLevel desiredVecDetailLevel =
-              this.work.isVectorizationDetailLevel();
-
-          switch (vectorization) {
-          case NON_VECTORIZED:
-            // Display all non-vectorized leaf objects unless ONLY.
-            if (desireOnly) {
-              invokeFlag = false;
-            }
-            break;
-          case SUMMARY:
-          case OPERATOR:
-          case EXPRESSION:
-          case DETAIL:
-            if (vectorization.rank < desiredVecDetailLevel.rank) {
-              // This detail not desired.
-              invokeFlag = false;
-            }
-            break;
-          case SUMMARY_PATH:
-          case OPERATOR_PATH:
-            if (desireOnly) {
-              if (vectorization.rank < desiredVecDetailLevel.rank) {
-                // Suppress headers and all objects below.
-                invokeFlag = false;
-              }
-            }
-            break;
-          default:
-            throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
-          }
+          invokeFlag = isInvokeVectorization(vectorization);
         } else  {
-          // Do not display vectorization objects.
-          switch (vectorization) {
-          case SUMMARY:
-          case OPERATOR:
-          case EXPRESSION:
-          case DETAIL:
-            invokeFlag = false;
-            break;
-          case NON_VECTORIZED:
-            // No action.
-            break;
-          case SUMMARY_PATH:
-          case OPERATOR_PATH:
-            // Always include headers since they contain non-vectorized objects, too.
-            break;
-          default:
-            throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
-          }
+          invokeFlag = isInvokeNonVectorization(vectorization);
         }
       }
       if (invokeFlag) {
@@ -828,64 +922,18 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           if (extended) {
             invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
           } else {
-            invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+            invokeFlag =
+                Level.DEFAULT.in(xpl_note.explainLevels()) ||
+                (this.work != null && this.work.isDebug() && Level.DEBUG.in(xpl_note.explainLevels()));
           }
         }
         if (invokeFlag) {
           Vectorization vectorization = xpl_note.vectorization();
-          if (this.work != null && this.work.isVectorization()) {
-
-            // The EXPLAIN VECTORIZATION option was specified.
-            final boolean desireOnly = this.work.isVectorizationOnly();
-            final VectorizationDetailLevel desiredVecDetailLevel =
-                this.work.isVectorizationDetailLevel();
-
-            switch (vectorization) {
-            case NON_VECTORIZED:
-              // Display all non-vectorized leaf objects unless ONLY.
-              if (desireOnly) {
-                invokeFlag = false;
-              }
-              break;
-            case SUMMARY:
-            case OPERATOR:
-            case EXPRESSION:
-            case DETAIL:
-              if (vectorization.rank < desiredVecDetailLevel.rank) {
-                // This detail not desired.
-                invokeFlag = false;
-              }
-              break;
-            case SUMMARY_PATH:
-            case OPERATOR_PATH:
-              if (desireOnly) {
-                if (vectorization.rank < desiredVecDetailLevel.rank) {
-                  // Suppress headers and all objects below.
-                  invokeFlag = false;
-                }
-              }
-              break;
-            default:
-              throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
-            }
-          } else  {
-            // Do not display vectorization objects.
-            switch (vectorization) {
-            case SUMMARY:
-            case OPERATOR:
-            case EXPRESSION:
-            case DETAIL:
-              invokeFlag = false;
-              break;
-            case NON_VECTORIZED:
-              // No action.
-              break;
-            case SUMMARY_PATH:
-            case OPERATOR_PATH:
-              // Always include headers since they contain non-vectorized objects, too.
-              break;
-            default:
-              throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+          if (invokeFlag) {
+            if (this.work != null && this.work.isVectorization()) {
+              invokeFlag = isInvokeVectorization(vectorization);
+            } else  {
+              invokeFlag = isInvokeNonVectorization(vectorization);
             }
           }
         }
@@ -1179,7 +1227,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
 
     if (out != null) {
-      out.println("STAGE DEPENDENCIES:");
+      out.println(STAGE_DEPENDENCIES + ":");
     }
 
     JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;

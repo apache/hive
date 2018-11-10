@@ -10,10 +10,14 @@ PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n153 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n153
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n153 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n153
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -25,6 +29,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 100.0D) (type: boolean)

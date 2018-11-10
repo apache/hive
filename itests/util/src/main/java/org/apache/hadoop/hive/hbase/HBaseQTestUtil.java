@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.hbase;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
@@ -37,29 +37,24 @@ public class HBaseQTestUtil extends QTestUtil {
   /** A handle to this harness's cluster */
   private final Connection conn;
 
-  private HBaseTestSetup hbaseSetup = null;
-
   public HBaseQTestUtil(
     String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup,
     String initScript, String cleanupScript)
     throws Exception {
 
-    super(outDir, logDir, miniMr, null, "0.20", initScript, cleanupScript, false);
-    hbaseSetup = setup;
-    hbaseSetup.preTest(conf);
+    super(
+        QTestArguments.QTestArgumentsBuilder.instance()
+          .withOutDir(outDir)
+          .withLogDir(logDir)
+          .withClusterType(miniMr)
+          .withConfDir(null)
+          .withInitScript(initScript)
+          .withCleanupScript(cleanupScript)
+          .withLlapIo(false)
+          .withQTestSetup(setup)
+          .build());
+
     this.conn = setup.getConnection();
-    super.init();
-  }
-
-  @Override
-  public void init() throws Exception {
-    // defer
-  }
-
-  @Override
-  protected void initConfFromSetup() throws Exception {
-    super.initConfFromSetup();
-    hbaseSetup.preTest(conf);
   }
 
   @Override
@@ -67,7 +62,6 @@ public class HBaseQTestUtil extends QTestUtil {
     super.createSources(tname);
 
     conf.setBoolean("hive.test.init.phase", true);
-
     initDataset(HBASE_SRC_NAME);
 
     // create a snapshot
@@ -76,9 +70,10 @@ public class HBaseQTestUtil extends QTestUtil {
       admin = conn.getAdmin();
       admin.snapshot(HBASE_SRC_SNAPSHOT_NAME, TableName.valueOf(HBASE_SRC_NAME));
     } finally {
-      if (admin != null) admin.close();
+      if (admin != null) {
+        admin.close();
+      }
     }
-
     conf.setBoolean("hive.test.init.phase", false);
   }
 
@@ -91,13 +86,10 @@ public class HBaseQTestUtil extends QTestUtil {
       admin = conn.getAdmin();
       admin.deleteSnapshots(HBASE_SRC_SNAPSHOT_NAME);
     } finally {
-      if (admin != null) admin.close();
+      if (admin != null) {
+        admin.close();
+      }
     }
   }
 
-  @Override
-  public void clearTestSideEffects() throws Exception {
-    super.clearTestSideEffects();
-    hbaseSetup.preTest(conf);
-  }
 }

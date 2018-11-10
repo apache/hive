@@ -35,9 +35,15 @@ POSTHOOK: Lineage: t2_n14.id SCRIPT []
 PREHOOK: query: explain
 select sum(t1_n22.id) from t1_n22 join t2_n14 on (t1_n22.id=t2_n14.id)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n22
+PREHOOK: Input: default@t2_n14
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select sum(t1_n22.id) from t1_n22 join t2_n14 on (t1_n22.id=t2_n14.id)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n22
+POSTHOOK: Input: default@t2_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -49,6 +55,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n22
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -64,6 +71,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2_n14
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -140,9 +148,15 @@ POSTHOOK: Input: default@t2_n14
 PREHOOK: query: explain analyze
 select sum(t1_n22.id) from t1_n22 join t2_n14 on (t1_n22.id=t2_n14.id)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n22
+PREHOOK: Input: default@t2_n14
+#### A masked pattern was here ####
 POSTHOOK: query: explain analyze
 select sum(t1_n22.id) from t1_n22 join t2_n14 on (t1_n22.id=t2_n14.id)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n22
+POSTHOOK: Input: default@t2_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -154,6 +168,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n22
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2/2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -169,6 +184,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2/2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2_n14
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 5/5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -247,9 +263,15 @@ POSTHOOK: Input: default@t2_n14
 PREHOOK: query: explain reoptimization
 select sum(t1_n22.id) from t1_n22 join t2_n14 on (t1_n22.id=t2_n14.id)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n22
+PREHOOK: Input: default@t2_n14
+#### A masked pattern was here ####
 POSTHOOK: query: explain reoptimization
 select sum(t1_n22.id) from t1_n22 join t2_n14 on (t1_n22.id=t2_n14.id)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n22
+POSTHOOK: Input: default@t2_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -261,6 +283,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n22
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -276,6 +299,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2_n14
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)

@@ -53,9 +53,13 @@ POSTHOOK: Output: default@cmv_mat_view_n9
 PREHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -72,6 +76,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n9
+                  filterExpr: (c > 20) (type: boolean)
                   Statistics: Num rows: 5 Data size: 1030 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c > 20) (type: boolean)
@@ -126,8 +131,8 @@ POSTHOOK: query: select b from cmv_basetable_n9 where c > 20.0 group by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n9
 #### A masked pattern was here ####
-calvin
 bonnie
+calvin
 PREHOOK: query: create materialized view cmv_mat_view_2
 as select b, c from cmv_basetable_n9 where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -143,9 +148,13 @@ POSTHOOK: Output: default@cmv_mat_view_2
 PREHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -162,6 +171,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n9
+                  filterExpr: (c > 20) (type: boolean)
                   Statistics: Num rows: 5 Data size: 1030 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c > 20) (type: boolean)
@@ -216,8 +226,8 @@ POSTHOOK: query: select b from cmv_basetable_n9 where c > 20.0 group by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n9
 #### A masked pattern was here ####
-calvin
 bonnie
+calvin
 PREHOOK: query: create materialized view cmv_mat_view_3
 as select a, b, c from cmv_basetable_n9 where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -233,9 +243,15 @@ POSTHOOK: Output: default@cmv_mat_view_3
 PREHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n9
+PREHOOK: Input: default@cmv_mat_view_3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select b from cmv_basetable_n9 where c > 20.0 group by a, b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n9
+POSTHOOK: Input: default@cmv_mat_view_3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -252,6 +268,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_3
+                  filterExpr: (c > 20) (type: boolean)
                   Statistics: Num rows: 3 Data size: 1368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (c > 20) (type: boolean)
@@ -308,8 +325,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n9
 POSTHOOK: Input: default@cmv_mat_view_3
 #### A masked pattern was here ####
-calvin
 bonnie
+calvin
 PREHOOK: query: create materialized view cmv_mat_view_4
 as select a, b from cmv_basetable_n9 group by a, b
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -325,9 +342,15 @@ POSTHOOK: Output: default@cmv_mat_view_4
 PREHOOK: query: explain
 select b from cmv_basetable_n9 group by b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_n9
+PREHOOK: Input: default@cmv_mat_view_4
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select b from cmv_basetable_n9 group by b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_n9
+POSTHOOK: Input: default@cmv_mat_view_4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -393,10 +416,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n9
 POSTHOOK: Input: default@cmv_mat_view_4
 #### A masked pattern was here ####
-alfred
-bob
 bonnie
 charlie
+alfred
+bob
 calvin
 PREHOOK: query: create table cmv_basetable_2_n4 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -458,12 +481,20 @@ from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_baset
 where cmv_basetable_2_n4.c > 10.10
 group by cmv_basetable_n9.a, cmv_basetable_2_n4.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n4
+PREHOOK: Input: default@cmv_basetable_n9
+PREHOOK: Input: default@cmv_mat_view_5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select cmv_basetable_n9.a
 from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
 where cmv_basetable_2_n4.c > 10.10
 group by cmv_basetable_n9.a, cmv_basetable_2_n4.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n4
+POSTHOOK: Input: default@cmv_basetable_n9
+POSTHOOK: Input: default@cmv_mat_view_5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -474,6 +505,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_5
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -507,12 +539,20 @@ from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_baset
 where cmv_basetable_2_n4.c > 10.10
 group by cmv_basetable_n9.a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n4
+PREHOOK: Input: default@cmv_basetable_n9
+PREHOOK: Input: default@cmv_mat_view_5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select cmv_basetable_n9.a
 from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
 where cmv_basetable_2_n4.c > 10.10
 group by cmv_basetable_n9.a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n4
+POSTHOOK: Input: default@cmv_basetable_n9
+POSTHOOK: Input: default@cmv_mat_view_5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -529,6 +569,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_5
+                  filterExpr: (c > 10.1) (type: boolean)
                   Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (c > 10.1) (type: boolean)

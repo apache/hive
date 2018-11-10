@@ -1,5 +1,4 @@
 --! qt:dataset:src
--- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 
 create table t1_n121(key string, value string) partitioned by (ds string);

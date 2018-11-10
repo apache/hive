@@ -68,12 +68,22 @@ FROM T1_n49 a JOIN T2_n30 b ON a.key = b.key
           JOIN T3_n10 c ON b.key = c.key
           JOIN T4_n3 d ON c.key = d.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n49
+PREHOOK: Input: default@t2_n30
+PREHOOK: Input: default@t3_n10
+PREHOOK: Input: default@t4_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a) */ *
 FROM T1_n49 a JOIN T2_n30 b ON a.key = b.key
           JOIN T3_n10 c ON b.key = c.key
           JOIN T4_n3 d ON c.key = d.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n49
+POSTHOOK: Input: default@t2_n30
+POSTHOOK: Input: default@t3_n10
+POSTHOOK: Input: default@t4_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -84,6 +94,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -96,6 +107,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -108,6 +120,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: c
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -120,6 +133,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: d
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -188,12 +202,22 @@ FROM T1_n49 a JOIN T2_n30 b ON a.key = b.key
           JOIN T3_n10 c ON a.val = c.val
           JOIN T4_n3 d ON a.key + 1 = d.key + 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n49
+PREHOOK: Input: default@t2_n30
+PREHOOK: Input: default@t3_n10
+PREHOOK: Input: default@t4_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a) */ *
 FROM T1_n49 a JOIN T2_n30 b ON a.key = b.key
           JOIN T3_n10 c ON a.val = c.val
           JOIN T4_n3 d ON a.key + 1 = d.key + 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n49
+POSTHOOK: Input: default@t2_n30
+POSTHOOK: Input: default@t3_n10
+POSTHOOK: Input: default@t4_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -206,6 +230,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (key is not null and val is not null and (key + 1) is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key + 1) is not null and key is not null and val is not null) (type: boolean)
@@ -218,6 +243,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: (key is not null and (key + 1) is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key + 1) is not null and key is not null) (type: boolean)
@@ -256,6 +282,7 @@ STAGE PLANS:
               value expressions: _col0 (type: string), _col5 (type: string), _col6 (type: string)
           TableScan
             alias: c
+            filterExpr: val is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: val is not null (type: boolean)
@@ -294,6 +321,7 @@ STAGE PLANS:
               value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string)
           TableScan
             alias: d
+            filterExpr: (key + 1) is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key + 1) is not null (type: boolean)

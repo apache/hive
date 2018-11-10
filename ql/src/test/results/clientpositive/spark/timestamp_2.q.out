@@ -64,7 +64,7 @@ POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -73,7 +73,7 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -82,7 +82,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.29387251E9
+1.29384371E9
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -91,7 +91,7 @@ POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.293872461E9
+1.293843661E9
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -147,7 +147,7 @@ POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -156,7 +156,7 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -165,7 +165,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.29387251E9
+1.29384371E9
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -174,7 +174,7 @@ POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.293872461E9
+1.293843661E9
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -230,7 +230,7 @@ POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -239,7 +239,7 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -248,7 +248,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.29387251E9
+1.29384371E9
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -257,7 +257,7 @@ POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.2938724611E9
+1.2938436611E9
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -313,7 +313,7 @@ POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -322,7 +322,7 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -331,7 +331,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.29387251E9
+1.29384371E9
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -340,7 +340,7 @@ POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.2938724610001E9
+1.2938436610001E9
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -396,7 +396,7 @@ POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -405,7 +405,7 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -414,7 +414,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.29387251E9
+1.29384371E9
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -423,7 +423,7 @@ POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.2938724610001E9
+1.2938436610001E9
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -479,7 +479,7 @@ POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -488,7 +488,7 @@ POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1293872461
+1293843661
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -497,7 +497,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.29387251E9
+1.29384371E9
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
@@ -506,7 +506,7 @@ POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
 #### A masked pattern was here ####
-1.293872461001E9
+1.293843661001E9
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2

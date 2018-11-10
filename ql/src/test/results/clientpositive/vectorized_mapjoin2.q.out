@@ -35,9 +35,15 @@ POSTHOOK: Lineage: y.b SCRIPT []
 PREHOOK: query: explain vectorization expression
 select count(1) from x, y where a = b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+PREHOOK: Input: default@y
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(1) from x, y where a = b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+POSTHOOK: Input: default@y
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -58,6 +64,7 @@ STAGE PLANS:
         $hdt$_0:x 
           TableScan
             alias: x
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
@@ -76,6 +83,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
+            filterExpr: b is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -132,8 +140,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

@@ -31,25 +31,28 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.io.CharStreams;
-import com.metamx.common.JodaUtils;
-import com.metamx.common.MapUtils;
-import com.metamx.emitter.EmittingLogger;
-import com.metamx.emitter.core.NoopEmitter;
-import com.metamx.emitter.service.ServiceEmitter;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.Request;
-import com.metamx.http.client.response.InputStreamResponseHandler;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.StringDimensionSchema;
 import io.druid.jackson.DefaultObjectMapper;
+import io.druid.java.util.common.JodaUtils;
+import io.druid.java.util.common.MapUtils;
 import io.druid.java.util.common.Pair;
 import io.druid.java.util.common.granularity.Granularity;
+import io.druid.java.util.emitter.EmittingLogger;
+import io.druid.java.util.emitter.core.NoopEmitter;
+import io.druid.java.util.emitter.service.ServiceEmitter;
+import io.druid.java.util.http.client.HttpClient;
+import io.druid.java.util.http.client.Request;
+import io.druid.java.util.http.client.response.FullResponseHandler;
+import io.druid.java.util.http.client.response.FullResponseHolder;
+import io.druid.java.util.http.client.response.InputStreamResponseHandler;
 import io.druid.math.expr.ExprMacroTable;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.DoubleSumAggregatorFactory;
+import io.druid.query.aggregation.FloatSumAggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
 import io.druid.query.expression.LikeExprMacro;
 import io.druid.query.expression.RegexpExtractExprMacro;
@@ -89,7 +92,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.druid.serde.HiveDruidSerializationModule;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -100,6 +102,7 @@ import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.util.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.chrono.ISOChronology;
@@ -120,6 +123,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -194,9 +198,6 @@ public final class DruidStorageHandlerUtils {
 
     JSON_MAPPER.setInjectableValues(injectableValues);
     SMILE_MAPPER.setInjectableValues(injectableValues);
-    HiveDruidSerializationModule hiveDruidSerializationModule = new HiveDruidSerializationModule();
-    JSON_MAPPER.registerModule(hiveDruidSerializationModule);
-    SMILE_MAPPER.registerModule(hiveDruidSerializationModule);
     // Register the shard sub type to be used by the mapper
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
     JSON_MAPPER.registerSubtypes(new NamedType(NumberedShardSpec.class, "numbered"));
@@ -278,6 +279,43 @@ public final class DruidStorageHandlerUtils {
             DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, url)))) {
       return CharStreams.toString(reader);
     }
+  }
+
+  public static FullResponseHolder getResponseFromCurrentLeader(HttpClient client, Request request,
+          FullResponseHandler fullResponseHandler)
+          throws ExecutionException, InterruptedException {
+    FullResponseHolder responseHolder = client.go(request,
+            fullResponseHandler).get();
+    if (HttpResponseStatus.TEMPORARY_REDIRECT.equals(responseHolder.getStatus())) {
+      String redirectUrlStr = responseHolder.getResponse().headers().get("Location");
+      LOG.debug("Request[%s] received redirect response to location [%s].", request.getUrl(),
+              redirectUrlStr);
+      final URL redirectUrl;
+      try {
+        redirectUrl = new URL(redirectUrlStr);
+      } catch (MalformedURLException ex) {
+        throw new ExecutionException(
+                String.format(
+                        "Malformed redirect location is found in response from url[%s], new location[%s].",
+                        request.getUrl(),
+                        redirectUrlStr),
+                ex
+        );
+      }
+      responseHolder = client.go(withUrl(request, redirectUrl),
+              fullResponseHandler).get();
+    }
+    return responseHolder;
+  }
+
+  private static Request withUrl(Request old, URL url)
+  {
+    Request req = new Request(old.getMethod(), url);
+    req.addHeaderValues(old.getHeaders());
+    if (old.hasContent()) {
+      req.setContent(old.getContent());
+    }
+    return req;
   }
 
   /**
@@ -634,13 +672,14 @@ public final class DruidStorageHandlerUtils {
     );
   }
 
-  public static String createScanAllQuery(String dataSourceName) throws JsonProcessingException {
+  public static String createScanAllQuery(String dataSourceName, List<String> columns) throws JsonProcessingException {
     final ScanQuery.ScanQueryBuilder scanQueryBuilder = ScanQuery.newScanQueryBuilder();
     final List<Interval> intervals = Arrays.asList(DEFAULT_INTERVAL);
     ScanQuery scanQuery = scanQueryBuilder
         .dataSource(dataSourceName)
         .resultFormat(ScanQuery.RESULT_FORMAT_COMPACTED_LIST)
         .intervals(new MultipleIntervalSegmentSpec(intervals))
+        .columns(columns)
         .build();
     return JSON_MAPPER.writeValueAsString(scanQuery);
   }
@@ -788,12 +827,16 @@ public final class DruidStorageHandlerUtils {
         tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) != null ?
             tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
             HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
+    final boolean rollup = tableProperties.getProperty(Constants.DRUID_ROLLUP) != null ?
+        Boolean.parseBoolean(tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY)):
+        HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_DRUID_ROLLUP);
     return new UniformGranularitySpec(
         Granularity.fromString(segmentGranularity),
         Granularity.fromString(
             tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY) == null
                 ? "NONE"
                 : tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY)),
+        rollup,
         null
     );
   }
@@ -825,6 +868,8 @@ public final class DruidStorageHandlerUtils {
         af = new LongSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
         break;
       case FLOAT:
+        af = new FloatSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
+        break;
       case DOUBLE:
         af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
         break;

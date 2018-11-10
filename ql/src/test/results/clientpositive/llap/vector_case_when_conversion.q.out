@@ -1,0 +1,616 @@
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else "none"
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else "none"
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNull(col 5:double)
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [6, 2, 4, 1, 24]
+                          selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 6:stringcol 23:string)(children: IsNotNull(col 6:string) -> 13:boolean, col 6:string, IfExprCondExprCondExpr(col 14:boolean, col 15:stringcol 22:string)(children: IsNotNull(col 2:int) -> 14:boolean, CastLongToString(col 2:int) -> 15:string, IfExprCondExprCondExpr(col 16:boolean, col 17:stringcol 21:string)(children: IsNotNull(col 4:float) -> 16:boolean, CastFloatToString(col 4:float) -> 17:string, IfExprCondExprColumn(col 18:boolean, col 19:string, col 20:string)(children: IsNotNull(col 1:smallint) -> 18:boolean, CastLongToString(col 1:smallint) -> 19:string, ConstantVectorExpression(val none) -> 20:string) -> 21:string) -> 22:string) -> 23:string) -> 24:string
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5, 0, 1, 2, 3, 4]
+                        selectExpressions: ConstantVectorExpression(val null) -> 5:double
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else "none"
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else "none"
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	00MmJs1fiJp37y60mj4Ej8	-698191930	-51.0	NULL	00MmJs1fiJp37y60mj4Ej8
+NULL	00PafC7v	349566607	-51.0	NULL	00PafC7v
+NULL	00iT08	284688862	-51.0	NULL	00iT08
+NULL	00k3yt70n476d6UQA	-391432229	8.0	NULL	00k3yt70n476d6UQA
+NULL	014ILGhXxNY7g02hl0Xw	633097881	11.0	NULL	014ILGhXxNY7g02hl0Xw
+NULL	02VRbSC5I	551634127	8.0	NULL	02VRbSC5I
+NULL	02k5poW73QsWM	891702124	11.0	NULL	02k5poW73QsWM
+NULL	02v8WnLuYDos3Cq	-648704945	8.0	NULL	02v8WnLuYDos3Cq
+NULL	02vDyIVT752	388584379	11.0	NULL	02vDyIVT752
+NULL	0333uXvwB3ADRa4aP1h	336245146	8.0	NULL	0333uXvwB3ADRa4aP1h
+NULL	033ffm5082ng0V	-941753533	11.0	NULL	033ffm5082ng0V
+NULL	035i4wu42Rs3Uu1ft5K0AOe	-947302120	8.0	NULL	035i4wu42Rs3Uu1ft5K0AOe
+NULL	03SnoFNyeHxQ2X	-693113839	8.0	NULL	03SnoFNyeHxQ2X
+NULL	03n0QGH	1018006843	11.0	NULL	03n0QGH
+NULL	04Y1mA17	-114647521	-51.0	NULL	04Y1mA17
+NULL	04Yu8RntCU7amJtj	-640911032	-51.0	NULL	04Yu8RntCU7amJtj
+NULL	04fq7M416mV7CwI1q	168027481	-51.0	NULL	04fq7M416mV7CwI1q
+NULL	04q7g1Qm8cvCmny4S7r	118167064	-51.0	NULL	04q7g1Qm8cvCmny4S7r
+NULL	04vwGN4a82bd6y	295643033	NULL	NULL	04vwGN4a82bd6y
+NULL	04w7DF25lHW4	-981967139	8.0	NULL	04w7DF25lHW4
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else "none"
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else "none"
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsTrue(col 13:boolean)(children: VectorUDFAdaptor(cdouble is null) -> 13:boolean)
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [6, 2, 4, 1, 18]
+                          selectExpressions: VectorUDFAdaptor(CASE WHEN (cstring1 is not null) THEN (cstring1) WHEN (cint is not null) THEN (cint) WHEN (cfloat is not null) THEN (cfloat) WHEN (csmallint is not null) THEN (csmallint) ELSE ('none') END)(children: VectorUDFAdaptor(cstring1 is not null) -> 14:boolean, VectorUDFAdaptor(cint is not null) -> 15:boolean, VectorUDFAdaptor(cfloat is not null) -> 16:boolean, VectorUDFAdaptor(csmallint is not null) -> 17:boolean) -> 18:string
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: true
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5, 0, 1, 2, 3, 4]
+                        selectExpressions: ConstantVectorExpression(val null) -> 5:double
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else "none"
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else "none"
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	00MmJs1fiJp37y60mj4Ej8	-698191930	-51.0	NULL	00MmJs1fiJp37y60mj4Ej8
+NULL	00PafC7v	349566607	-51.0	NULL	00PafC7v
+NULL	00iT08	284688862	-51.0	NULL	00iT08
+NULL	00k3yt70n476d6UQA	-391432229	8.0	NULL	00k3yt70n476d6UQA
+NULL	014ILGhXxNY7g02hl0Xw	633097881	11.0	NULL	014ILGhXxNY7g02hl0Xw
+NULL	02VRbSC5I	551634127	8.0	NULL	02VRbSC5I
+NULL	02k5poW73QsWM	891702124	11.0	NULL	02k5poW73QsWM
+NULL	02v8WnLuYDos3Cq	-648704945	8.0	NULL	02v8WnLuYDos3Cq
+NULL	02vDyIVT752	388584379	11.0	NULL	02vDyIVT752
+NULL	0333uXvwB3ADRa4aP1h	336245146	8.0	NULL	0333uXvwB3ADRa4aP1h
+NULL	033ffm5082ng0V	-941753533	11.0	NULL	033ffm5082ng0V
+NULL	035i4wu42Rs3Uu1ft5K0AOe	-947302120	8.0	NULL	035i4wu42Rs3Uu1ft5K0AOe
+NULL	03SnoFNyeHxQ2X	-693113839	8.0	NULL	03SnoFNyeHxQ2X
+NULL	03n0QGH	1018006843	11.0	NULL	03n0QGH
+NULL	04Y1mA17	-114647521	-51.0	NULL	04Y1mA17
+NULL	04Yu8RntCU7amJtj	-640911032	-51.0	NULL	04Yu8RntCU7amJtj
+NULL	04fq7M416mV7CwI1q	168027481	-51.0	NULL	04fq7M416mV7CwI1q
+NULL	04q7g1Qm8cvCmny4S7r	118167064	-51.0	NULL	04q7g1Qm8cvCmny4S7r
+NULL	04vwGN4a82bd6y	295643033	NULL	NULL	04vwGN4a82bd6y
+NULL	04w7DF25lHW4	-981967139	8.0	NULL	04w7DF25lHW4
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else null
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else null
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNull(col 5:double)
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [6, 2, 4, 1, 23]
+                          selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 6:stringcol 22:string)(children: IsNotNull(col 6:string) -> 13:boolean, col 6:string, IfExprCondExprCondExpr(col 14:boolean, col 15:stringcol 21:string)(children: IsNotNull(col 2:int) -> 14:boolean, CastLongToString(col 2:int) -> 15:string, IfExprCondExprCondExpr(col 16:boolean, col 17:stringcol 20:string)(children: IsNotNull(col 4:float) -> 16:boolean, CastFloatToString(col 4:float) -> 17:string, IfExprCondExprNull(col 18:boolean, col 19:string, null)(children: IsNotNull(col 1:smallint) -> 18:boolean, CastLongToString(col 1:smallint) -> 19:string) -> 20:string) -> 21:string) -> 22:string) -> 23:string
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5, 0, 1, 2, 3, 4]
+                        selectExpressions: ConstantVectorExpression(val null) -> 5:double
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else null
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else null
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	00MmJs1fiJp37y60mj4Ej8	-698191930	-51.0	NULL	00MmJs1fiJp37y60mj4Ej8
+NULL	00PafC7v	349566607	-51.0	NULL	00PafC7v
+NULL	00iT08	284688862	-51.0	NULL	00iT08
+NULL	00k3yt70n476d6UQA	-391432229	8.0	NULL	00k3yt70n476d6UQA
+NULL	014ILGhXxNY7g02hl0Xw	633097881	11.0	NULL	014ILGhXxNY7g02hl0Xw
+NULL	02VRbSC5I	551634127	8.0	NULL	02VRbSC5I
+NULL	02k5poW73QsWM	891702124	11.0	NULL	02k5poW73QsWM
+NULL	02v8WnLuYDos3Cq	-648704945	8.0	NULL	02v8WnLuYDos3Cq
+NULL	02vDyIVT752	388584379	11.0	NULL	02vDyIVT752
+NULL	0333uXvwB3ADRa4aP1h	336245146	8.0	NULL	0333uXvwB3ADRa4aP1h
+NULL	033ffm5082ng0V	-941753533	11.0	NULL	033ffm5082ng0V
+NULL	035i4wu42Rs3Uu1ft5K0AOe	-947302120	8.0	NULL	035i4wu42Rs3Uu1ft5K0AOe
+NULL	03SnoFNyeHxQ2X	-693113839	8.0	NULL	03SnoFNyeHxQ2X
+NULL	03n0QGH	1018006843	11.0	NULL	03n0QGH
+NULL	04Y1mA17	-114647521	-51.0	NULL	04Y1mA17
+NULL	04Yu8RntCU7amJtj	-640911032	-51.0	NULL	04Yu8RntCU7amJtj
+NULL	04fq7M416mV7CwI1q	168027481	-51.0	NULL	04fq7M416mV7CwI1q
+NULL	04q7g1Qm8cvCmny4S7r	118167064	-51.0	NULL	04q7g1Qm8cvCmny4S7r
+NULL	04vwGN4a82bd6y	295643033	NULL	NULL	04vwGN4a82bd6y
+NULL	04w7DF25lHW4	-981967139	8.0	NULL	04w7DF25lHW4
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else null
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else null
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsTrue(col 13:boolean)(children: VectorUDFAdaptor(cdouble is null) -> 13:boolean)
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [6, 2, 4, 1, 18]
+                          selectExpressions: VectorUDFAdaptor(CASE WHEN (cstring1 is not null) THEN (cstring1) WHEN (cint is not null) THEN (cint) WHEN (cfloat is not null) THEN (cfloat) WHEN (csmallint is not null) THEN (csmallint) ELSE (null) END)(children: VectorUDFAdaptor(cstring1 is not null) -> 14:boolean, VectorUDFAdaptor(cint is not null) -> 15:boolean, VectorUDFAdaptor(cfloat is not null) -> 16:boolean, VectorUDFAdaptor(csmallint is not null) -> 17:boolean) -> 18:string
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: true
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5, 0, 1, 2, 3, 4]
+                        selectExpressions: ConstantVectorExpression(val null) -> 5:double
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else null
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint,
+  case
+    when (cdouble is not null) then cdouble
+    when (cstring1 is not null) then cstring1
+    when (cint is not null) then cint
+    when (cfloat is not null) then cfloat
+    when (csmallint is not null) then csmallint
+    else null
+    end as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	00MmJs1fiJp37y60mj4Ej8	-698191930	-51.0	NULL	00MmJs1fiJp37y60mj4Ej8
+NULL	00PafC7v	349566607	-51.0	NULL	00PafC7v
+NULL	00iT08	284688862	-51.0	NULL	00iT08
+NULL	00k3yt70n476d6UQA	-391432229	8.0	NULL	00k3yt70n476d6UQA
+NULL	014ILGhXxNY7g02hl0Xw	633097881	11.0	NULL	014ILGhXxNY7g02hl0Xw
+NULL	02VRbSC5I	551634127	8.0	NULL	02VRbSC5I
+NULL	02k5poW73QsWM	891702124	11.0	NULL	02k5poW73QsWM
+NULL	02v8WnLuYDos3Cq	-648704945	8.0	NULL	02v8WnLuYDos3Cq
+NULL	02vDyIVT752	388584379	11.0	NULL	02vDyIVT752
+NULL	0333uXvwB3ADRa4aP1h	336245146	8.0	NULL	0333uXvwB3ADRa4aP1h
+NULL	033ffm5082ng0V	-941753533	11.0	NULL	033ffm5082ng0V
+NULL	035i4wu42Rs3Uu1ft5K0AOe	-947302120	8.0	NULL	035i4wu42Rs3Uu1ft5K0AOe
+NULL	03SnoFNyeHxQ2X	-693113839	8.0	NULL	03SnoFNyeHxQ2X
+NULL	03n0QGH	1018006843	11.0	NULL	03n0QGH
+NULL	04Y1mA17	-114647521	-51.0	NULL	04Y1mA17
+NULL	04Yu8RntCU7amJtj	-640911032	-51.0	NULL	04Yu8RntCU7amJtj
+NULL	04fq7M416mV7CwI1q	168027481	-51.0	NULL	04fq7M416mV7CwI1q
+NULL	04q7g1Qm8cvCmny4S7r	118167064	-51.0	NULL	04q7g1Qm8cvCmny4S7r
+NULL	04vwGN4a82bd6y	295643033	NULL	NULL	04vwGN4a82bd6y
+NULL	04w7DF25lHW4	-981967139	8.0	NULL	04w7DF25lHW4

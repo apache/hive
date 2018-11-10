@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
@@ -34,10 +32,6 @@ import com.google.common.base.Preconditions;
  */
 public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDoubleMax.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   protected boolean isGroupResultNull;
   protected double max;
 
@@ -47,7 +41,8 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -70,7 +65,7 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
           isGroupResultNull = false;
         } else {
           final double repeatedMax = doubleColVector.vector[0];
-          if (repeatedMax < max) {
+          if (repeatedMax > max) {
             max = repeatedMax;
           }
         }
@@ -118,6 +113,12 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
   }
 
   @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
+  }
+
+  @Override
   public boolean isGroupResultNull() {
     return isGroupResultNull;
   }
@@ -135,6 +136,6 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
   @Override
   public void resetEvaluator() {
     isGroupResultNull = true;
-    max = Double.MIN_VALUE;
+    max = 0.0;
   }
 }

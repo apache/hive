@@ -85,6 +85,10 @@ if [ "$SERVICE" = "" ] ; then
   fi
 fi
 
+if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
+  SERVICE="beeline"
+fi
+
 if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
   SKIP_HBASECP=true
 fi
@@ -110,7 +114,7 @@ then
   fi
 fi
 
-CLASSPATH="${HIVE_CONF_DIR}"
+CLASSPATH="${TEZ_CONF_DIR:-/etc/tez/conf}:${HIVE_CONF_DIR}"
 
 HIVE_LIB=${HIVE_HOME}/lib
 
@@ -352,6 +356,7 @@ fi
 # include the log4j jar that is used for hive into the classpath
 CLASSPATH="${CLASSPATH}:${LOG_JAR_CLASSPATH}"
 export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${LOG_JAR_CLASSPATH}"
+export JVM_PID="$$"
 
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"

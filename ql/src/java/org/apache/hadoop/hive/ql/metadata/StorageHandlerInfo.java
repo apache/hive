@@ -18,13 +18,8 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * StorageHandlerInfo is a marker interface used to provide runtime information associated with a storage handler.

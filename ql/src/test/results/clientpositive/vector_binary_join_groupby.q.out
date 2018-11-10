@@ -100,11 +100,15 @@ SELECT sum(hash(*)) k
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
 order by k
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) k
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
 order by k
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -126,6 +130,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: bin is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: bin is not null (type: boolean)
@@ -144,6 +149,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: bin is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -170,7 +176,7 @@ STAGE PLANS:
                     1 _col10 (type: binary)
                   Map Join Vectorization:
                       bigTableKeyExpressions: col 10:binary
-                      bigTableValueExpressions: col 0:tinyint, col 1:smallint, col 2:int, col 3:bigint, col 4:float, col 5:double, col 6:boolean, col 7:string, col 8:timestamp, col 9:decimal(4,2), col 10:binary
+                      bigTableValueExpressions: col 0:tinyint, col 1:smallint, col 2:int, col 3:bigint, col 4:float, col 5:double, col 6:boolean, col 7:string, col 8:timestamp, ConvertDecimal64ToDecimal(col 9:decimal(4,2)/DECIMAL_64) -> 12:decimal(4,2), col 10:binary
                       className: VectorMapJoinOperator
                       native: false
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
@@ -211,8 +217,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: true
@@ -296,19 +302,23 @@ order by k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hundredorc
 #### A masked pattern was here ####
--27832781952
+-8303557760
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(*), bin
 FROM hundredorc
 GROUP BY bin
 order by bin
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(*), bin
 FROM hundredorc
 GROUP BY bin
 order by bin
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -364,8 +374,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -485,10 +495,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.i, t1.bin, t2.bin
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i
 PREHOOK: type: QUERY
+PREHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.i, t1.bin, t2.bin
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hundredorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -509,6 +523,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: i is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: i is not null (type: boolean)
@@ -527,6 +542,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: i is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -582,8 +598,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

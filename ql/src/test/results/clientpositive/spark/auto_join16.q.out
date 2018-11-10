@@ -6,6 +6,8 @@ JOIN src tab
 ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
 where tab.value < 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(hash(subq.key, tab.value)) 
 FROM 
@@ -14,6 +16,8 @@ JOIN src tab
 ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) 
 where tab.value < 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -28,6 +32,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab
+                  filterExpr: ((UDFToDouble(key) > 20.0D) and (UDFToDouble(value) < 200.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) > 20.0D) and (UDFToDouble(value) < 200.0D)) (type: boolean)
@@ -54,6 +59,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: ((UDFToDouble(key) > 20.0D) and (UDFToDouble(value) < 200.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) > 20.0D) and (UDFToDouble(value) < 200.0D)) (type: boolean)

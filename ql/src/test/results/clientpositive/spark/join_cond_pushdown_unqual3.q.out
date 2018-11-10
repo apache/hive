@@ -58,10 +58,18 @@ PREHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p1.p_name = p2_name and p2_name = p3_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part2_n5
+PREHOOK: Input: default@part3_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p1.p_name = p2_name and p2_name = p3_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part2_n5
+POSTHOOK: Input: default@part3_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -77,6 +85,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: p2_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p2_name is not null (type: boolean)
@@ -96,6 +105,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p3
+                  filterExpr: p3_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p3_name is not null (type: boolean)
@@ -115,6 +125,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -164,10 +175,18 @@ PREHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_name = p1.p_name and p3_name = p2_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part2_n5
+PREHOOK: Input: default@part3_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_name = p1.p_name and p3_name = p2_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part2_n5
+POSTHOOK: Input: default@part3_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -183,6 +202,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: p2_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p2_name is not null (type: boolean)
@@ -202,6 +222,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p3
+                  filterExpr: p3_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p3_name is not null (type: boolean)
@@ -221,6 +242,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -271,10 +293,18 @@ PREHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_partkey + p1.p_partkey = p1.p_partkey and p3_name = p2_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part2_n5
+PREHOOK: Input: default@part3_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_partkey + p1.p_partkey = p1.p_partkey and p3_name = p2_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part2_n5
+POSTHOOK: Input: default@part3_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -291,6 +321,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: p2_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p2_name is not null (type: boolean)
@@ -310,6 +341,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p3
+                  filterExpr: p3_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p3_name is not null (type: boolean)
@@ -389,10 +421,18 @@ PREHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_partkey = 1 and p3_name = p2_name
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Input: default@part2_n5
+PREHOOK: Input: default@part3_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain select *
 from part p1 join part2_n5 p2 join part3_n2 p3 
 where p2_partkey = 1 and p3_name = p2_name
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Input: default@part2_n5
+POSTHOOK: Input: default@part3_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -409,6 +449,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p3
+                  filterExpr: p3_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: p3_name is not null (type: boolean)
@@ -428,6 +469,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: ((p2_partkey = 1) and p2_name is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((p2_partkey = 1) and p2_name is not null) (type: boolean)

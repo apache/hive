@@ -69,9 +69,19 @@ POSTHOOK: Lineage: p1_n0 PARTITION(p=1).a SCRIPT []
 PREHOOK: query: explain
 select * from p1_n0 join t_n32 on (t_n32.a=p1_n0.a)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@p1_n0
+PREHOOK: Input: default@p1_n0@p=1
+PREHOOK: Input: default@p1_n0@p=2
+PREHOOK: Input: default@t_n32
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from p1_n0 join t_n32 on (t_n32.a=p1_n0.a)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@p1_n0
+POSTHOOK: Input: default@p1_n0@p=1
+POSTHOOK: Input: default@p1_n0@p=2
+POSTHOOK: Input: default@t_n32
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -82,6 +92,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p1_n0
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
@@ -98,6 +109,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: t_n32
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)

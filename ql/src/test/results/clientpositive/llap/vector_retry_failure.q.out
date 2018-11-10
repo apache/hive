@@ -19,9 +19,13 @@ POSTHOOK: Lineage: tx_n0.f SCRIPT []
 PREHOOK: query: explain vectorization expression
 select assert_true(1 > a) from tx_n0 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select assert_true(1 > a) from tx_n0 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -80,8 +84,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

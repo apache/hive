@@ -122,8 +122,14 @@ POSTHOOK: Input: default@t4_n5
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -141,6 +147,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -157,6 +164,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -231,8 +239,14 @@ POSTHOOK: Input: default@t2_n33
 8	val_8
 PREHOOK: query: explain select * from t2_n33 a left semi join t1_n55 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t2_n33 a left semi join t1_n55 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -250,6 +264,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -266,6 +281,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -342,8 +358,14 @@ POSTHOOK: Input: default@t2_n33
 8	val_4
 PREHOOK: query: explain select * from t1_n55 a left semi join t4_n5 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t4_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t4_n5 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t4_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -361,6 +383,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -377,6 +400,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -445,8 +469,14 @@ POSTHOOK: Input: default@t4_n5
 #### A masked pattern was here ####
 PREHOOK: query: explain select a.value from t1_n55 a left semi join t3_n12 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join t3_n12 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -464,6 +494,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -480,6 +511,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key < 15) (type: boolean)
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key < 15) (type: boolean)
@@ -563,8 +595,14 @@ val_8
 val_9
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -582,6 +620,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -598,6 +637,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: ((value < 'val_10') and key is not null) (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((value < 'val_10') and key is not null) (type: boolean)
@@ -669,8 +709,14 @@ POSTHOOK: Input: default@t2_n33
 0	val_0
 PREHOOK: query: explain select a.value from t1_n55 a left semi join (select key from t3_n12 where key > 5) b on a.key = b.key sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join (select key from t3_n12 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -688,6 +734,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t3_n12
+                  filterExpr: (key > 5) (type: boolean)
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key > 5) (type: boolean)
@@ -712,6 +759,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -779,8 +827,14 @@ val_8
 val_9
 PREHOOK: query: explain select a.value from t1_n55 a left semi join (select key , value from t2_n33 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join (select key , value from t2_n33 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -798,6 +852,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n33
+                  filterExpr: ((key > 5) and (value <= 'val_20')) (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > 5) and (value <= 'val_20')) (type: boolean)
@@ -822,6 +877,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -886,8 +942,14 @@ POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from t2_n33 a left semi join (select key , value from t1_n55 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t2_n33 a left semi join (select key , value from t1_n55 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -905,6 +967,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n55
+                  filterExpr: (key > 2) (type: boolean)
                   Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -929,6 +992,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -994,8 +1058,14 @@ POSTHOOK: Input: default@t2_n33
 8	val_4
 PREHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1013,6 +1083,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1028,6 +1099,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1115,8 +1187,14 @@ POSTHOOK: Input: default@t3_n12
 9
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1134,6 +1212,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1150,6 +1229,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (2 * key) is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (2 * key) is not null (type: boolean)
@@ -1222,8 +1302,16 @@ POSTHOOK: Input: default@t2_n33
 8	val_8
 PREHOOK: query: explain select * from t1_n55 a join t2_n33 b on a.key = b.key left semi join t3_n12 c on b.key = c.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a join t2_n33 b on a.key = b.key left semi join t3_n12 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1241,6 +1329,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1257,6 +1346,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1273,6 +1363,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1364,8 +1455,14 @@ POSTHOOK: Input: default@t3_n12
 8	val_8	8	val_4
 PREHOOK: query: explain select * from t3_n12 a left semi join t1_n55 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t3_n12 a left semi join t1_n55 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1383,6 +1480,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 22 Data size: 4136 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -1398,6 +1496,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 11 Data size: 2068 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -1480,8 +1579,16 @@ POSTHOOK: Input: default@t3_n12
 9	val_9
 PREHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key left semi join t2_n33 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key left semi join t2_n33 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1499,6 +1606,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1514,6 +1622,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1538,6 +1647,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1624,8 +1734,16 @@ POSTHOOK: Input: default@t3_n12
 8
 PREHOOK: query: explain select a.key from t3_n12 a left outer join t1_n55 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left outer join t1_n55 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1762,8 +1880,16 @@ POSTHOOK: Input: default@t3_n12
 8
 PREHOOK: query: explain select a.key from t1_n55 a right outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a right outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1903,8 +2029,16 @@ NULL
 NULL
 PREHOOK: query: explain select a.key from t1_n55 a full outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a full outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1968,7 +2102,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                      Left Semi Join 1 to 2
                 keys:
                   0 key (type: int)
@@ -2044,8 +2178,16 @@ NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2185,8 +2327,16 @@ POSTHOOK: Input: default@t3_n12
 8
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key right outer join t1_n55 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key right outer join t1_n55 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2328,8 +2478,16 @@ NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key full outer join t2_n33 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key full outer join t2_n33 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2394,7 +2552,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Outer Join 0 to 2
+                     Full Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -2482,8 +2640,16 @@ NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2502,6 +2668,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 22 Data size: 4136 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2518,6 +2685,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2652,8 +2820,14 @@ POSTHOOK: Input: default@t3_n12
 8
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2670,6 +2844,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: ((key > 100) and value is not null) (type: boolean)
                   Statistics: Num rows: 22 Data size: 4136 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > 100) and value is not null) (type: boolean)
@@ -2690,6 +2865,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -2745,15 +2921,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2772,6 +2952,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: outr
+                  filterExpr: ((key is not null and value is not null) or key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -2802,6 +2983,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -2856,12 +3038,12 @@ STAGE PLANS:
                     keys: _col0 (type: string), _col1 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 10609 Data size: 1888402 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20833 Data size: 3708274 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 10609 Data size: 1888402 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 20833 Data size: 3708274 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2881,7 +3063,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value

@@ -71,6 +71,7 @@ class OperatorType:
   RCFILEMERGE = 23
   MERGEJOIN = 24
   SPARKPRUNINGSINK = 25
+  TOPNKEY = 26
 
   _VALUES_TO_NAMES = {
     0: "JOIN",
@@ -99,6 +100,7 @@ class OperatorType:
     23: "RCFILEMERGE",
     24: "MERGEJOIN",
     25: "SPARKPRUNINGSINK",
+    26: "TOPNKEY",
   }
 
   _NAMES_TO_VALUES = {
@@ -128,6 +130,7 @@ class OperatorType:
     "RCFILEMERGE": 23,
     "MERGEJOIN": 24,
     "SPARKPRUNINGSINK": 25,
+    "TOPNKEY": 26,
   }
 
 class TaskType:
@@ -164,6 +167,7 @@ class StageType:
   REPL_BOOTSTRAP_LOAD = 13
   REPL_STATE_LOG = 14
   REPL_TXN = 15
+  REPL_INCREMENTAL_LOAD = 16
 
   _VALUES_TO_NAMES = {
     0: "CONDITIONAL",
@@ -182,6 +186,7 @@ class StageType:
     13: "REPL_BOOTSTRAP_LOAD",
     14: "REPL_STATE_LOG",
     15: "REPL_TXN",
+    16: "REPL_INCREMENTAL_LOAD",
   }
 
   _NAMES_TO_VALUES = {
@@ -201,6 +206,7 @@ class StageType:
     "REPL_BOOTSTRAP_LOAD": 13,
     "REPL_STATE_LOG": 14,
     "REPL_TXN": 15,
+    "REPL_INCREMENTAL_LOAD": 16,
   }
 
 

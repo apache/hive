@@ -7,6 +7,8 @@ FROM (
 SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src select src.key, src.value WHERE src.key < '100'
@@ -16,6 +18,8 @@ FROM (
 SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -26,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((key > '4') and (value > 'val_4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > '4') and (value > 'val_4')) (type: boolean)
@@ -249,6 +254,8 @@ FROM (
 SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src select src.key, src.value WHERE src.key < '100'
@@ -258,6 +265,8 @@ FROM (
 SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -268,6 +277,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((key > '4') and (value > 'val_4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > '4') and (value > 'val_4')) (type: boolean)

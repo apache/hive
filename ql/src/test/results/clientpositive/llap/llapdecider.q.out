@@ -1,7 +1,11 @@
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -86,8 +90,12 @@ POSTHOOK: Lineage: src_orc_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:st
 POSTHOOK: Lineage: src_orc_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -160,8 +168,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -245,8 +257,12 @@ POSTHOOK: Output: default@src_orc_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc_n2 GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -320,8 +336,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -339,6 +361,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -359,6 +382,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -383,11 +407,11 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col3 (type: string)
                   sort order: +
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
             Execution mode: vectorized
@@ -395,10 +419,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -412,8 +436,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -431,6 +459,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -451,6 +480,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -477,11 +507,11 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col3 (type: string)
                   sort order: +
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -489,10 +519,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -506,8 +536,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 join src on (src_orc_n2.key = src.key) order by src.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -525,6 +561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -545,6 +582,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -570,11 +608,11 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col3 (type: string)
                   sort order: +
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -582,10 +620,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -599,8 +637,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -618,6 +660,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -637,6 +680,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -661,11 +705,11 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col3 (type: string)
                   sort order: +
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
             Execution mode: vectorized
@@ -673,10 +717,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -690,8 +734,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -709,6 +757,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -728,6 +777,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -752,11 +802,11 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col3 (type: string)
                   sort order: +
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
             Execution mode: vectorized
@@ -764,10 +814,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -781,8 +831,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -800,190 +854,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: s2
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Reducer 2 
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: string)
-                  1 _col0 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col3 (type: string)
-                  sort order: +
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-        Reducer 3 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s1
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: s2
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Reducer 2 
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: string)
-                  1 _col0 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col3 (type: string)
-                  sort order: +
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-        Reducer 3 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1004,6 +875,203 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col3 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col3 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN SELECT * from src_orc_n2 s1 join src_orc_n2 s2 on (s1.key = s2.key) order by s2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1030,11 +1098,11 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col3 (type: string)
                   sort order: +
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1042,10 +1110,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 809 Data size: 288004 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 791 Data size: 281596 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1065,8 +1133,12 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_udf_get_java_string
 PREHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(key as int) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(key as int) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1083,6 +1155,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n2
+                  filterExpr: (UDFToInteger(key) > 1) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(key) > 1) (type: boolean)
@@ -1126,8 +1199,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1144,6 +1221,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n2
+                  filterExpr: (UDFToInteger(key) > 1) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(key) > 1) (type: boolean)
@@ -1186,8 +1264,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(test_udf_get_java_string(cast(key as string)) as int) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cast(key as int) + 1) from src_orc_n2 where cast(test_udf_get_java_string(cast(key as string)) as int) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1204,6 +1286,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n2
+                  filterExpr: (UDFToInteger(GenericUDFTestGetJavaString(key)) > 1) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(GenericUDFTestGetJavaString(key)) > 1) (type: boolean)
@@ -1246,8 +1329,12 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_orc_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_orc_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1264,6 +1351,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n2
+                  filterExpr: (UDFToInteger(key) > 1) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(key) > 1) (type: boolean)

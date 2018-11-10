@@ -45,11 +45,14 @@ PREHOOK: query: EXPLAIN
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1_n1@ds=1
 POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -75,7 +78,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.orcfile_merge1_n1
               Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), UDFToString(_col2) (type: string)
+                expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
                 outputColumnNames: key, value, ds, part
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -154,11 +157,14 @@ PREHOOK: query: EXPLAIN
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1b_n1@ds=1
 POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -189,7 +195,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.orcfile_merge1b_n1
               Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), UDFToString(_col2) (type: string)
+                expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
                 outputColumnNames: key, value, ds, part
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -307,11 +313,14 @@ PREHOOK: query: EXPLAIN
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcfile_merge1c_n1@ds=1
 POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -342,7 +351,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.orcfile_merge1c_n1
               Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), UDFToString(_col2) (type: string)
+                expressions: _col0 (type: int), _col1 (type: string), '1' (type: string), CAST( _col2 AS STRING) (type: string)
                 outputColumnNames: key, value, ds, part
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator

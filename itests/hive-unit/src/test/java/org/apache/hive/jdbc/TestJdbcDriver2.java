@@ -76,6 +76,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
@@ -206,6 +207,37 @@ public class TestJdbcDriver2 {
     stmt.execute("use " + testDbName);
     createTestTables(stmt, testDbName);
     stmt.close();
+  }
+
+
+  @Test
+  public void testExceucteUpdateCounts() throws Exception {
+    Statement stmt =  con.createStatement();
+    stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
+    stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+        "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    stmt.execute("create table transactional_crud (a int, b int) stored as orc " +
+        "tblproperties('transactional'='true', 'transactional_properties'='default')");
+    int count = stmt.executeUpdate("insert into transactional_crud values(1,2),(3,4),(5,6)");
+    assertEquals("Statement insert", 3, count);
+    count = stmt.executeUpdate("update transactional_crud set b = 17 where a <= 3");
+    assertEquals("Statement update", 2, count);
+    count = stmt.executeUpdate("delete from transactional_crud where b = 6");
+    assertEquals("Statement delete", 1, count);
+
+    stmt.close();
+    PreparedStatement pStmt =
+        con.prepareStatement("update transactional_crud set b = ? where a = ? or a = ?");
+    pStmt.setInt(1, 15);
+    pStmt.setInt(2, 1);
+    pStmt.setInt(3, 3);
+    count = pStmt.executeUpdate();
+    assertEquals("2 row PreparedStatement update", 2, count);
+    pStmt.setInt(1, 19);
+    pStmt.setInt(2, 3);
+    pStmt.setInt(3, 3);
+    count = pStmt.executeUpdate();
+    assertEquals("1 row PreparedStatement update", 1, count);
   }
 
   @AfterClass
@@ -977,7 +1009,7 @@ public class TestJdbcDriver2 {
     assertNotNull("ResultSet is null", res);
     assertTrue("getResultSet() not returning expected ResultSet", res == stmt
         .getResultSet());
-    assertEquals("get update count not as expected", -1, stmt.getUpdateCount());
+    assertEquals("get update count not as expected", 0, stmt.getUpdateCount());
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
@@ -2606,7 +2638,7 @@ public class TestJdbcDriver2 {
       @Override
       public void run() {
         try {
-          // The test table has 500 rows, so total query time should be ~ 500*500ms
+          // The test table has 500 rows, so total query time should be ~ 500*1ms
           System.out.println("Executing query: ");
           stmt.executeQuery("select sleepMsUDF(t1.under_col, 1) as u0, t1.under_col as u1, "
               + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
@@ -2620,24 +2652,28 @@ public class TestJdbcDriver2 {
     Thread tGuid = new Thread(new Runnable() {
       @Override
       public void run() {
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-        String atsGuid = ((HiveStatement) stmt).getYarnATSGuid();
-        if (atsGuid != null) {
-          yarnATSGuidSet.set(true);
-          System.out.println("Yarn ATS GUID: " + atsGuid);
-        } else {
-          yarnATSGuidSet.set(false);
+        while (true) {
+          try {
+            Thread.sleep(200);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          String atsGuid = ((HiveStatement) stmt).getYarnATSGuid();
+          if (atsGuid != null) {
+            yarnATSGuidSet.set(true);
+            System.out.println("Yarn ATS GUID: " + atsGuid);
+            return;
+          } else {
+            yarnATSGuidSet.set(false);
+            System.out.println("No Yarn ATS GUID yet");
+          }
         }
       }
     });
     tExecute.start();
     tGuid.start();
     tExecute.join();
-    tGuid.join();
+    tGuid.interrupt();
     if (!yarnATSGuidSet.get()) {
       fail("Failed to set the YARN ATS Guid");
     }
@@ -2927,6 +2963,27 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
+  @Test
+  public void testReplErrorScenarios() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+
+    try {
+      // source of replication not set
+      stmt.execute("repl dump default");
+    } catch(SQLException e){
+      assertTrue(e.getErrorCode() == ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getErrorCode());
+    }
+
+    try {
+      // invalid load path
+      stmt.execute("repl load default1 from '/tmp/junk'");
+    } catch(SQLException e){
+      assertTrue(e.getErrorCode() == ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getErrorCode());
+    }
+
+    stmt.close();
+  }
+
   /**
    * Test {@link HiveStatement#executeAsync(String)} for an insert overwrite into a table
    * @throws Exception
@@ -2962,23 +3019,53 @@ public class TestJdbcDriver2 {
 
   private void testInsertOverwrite(HiveStatement stmt) throws SQLException {
     String tblName = "testInsertOverwriteExecAsync";
-    int rowCount = 0;
-    stmt.execute("create table " + tblName + " (col1 int , col2 string)");
-    boolean isResulSet =
-        stmt.executeAsync("insert overwrite table " + tblName + " select * from " + tableName);
-    assertFalse(isResulSet);
-    // HiveStatement#getUpdateCount blocks until the async query is complete
-    stmt.getUpdateCount();
-    // Read from the new table
-    ResultSet rs = stmt.executeQuery("select * from " + tblName);
-    assertNotNull(rs);
-    while (rs.next()) {
-      String value = rs.getString(2);
-      rowCount++;
-      assertNotNull(value);
+    try {
+      int rowCount = 0;
+      stmt.execute("create table " + tblName + " (col1 int , col2 string)");
+      boolean isResulSet =
+          stmt.executeAsync("insert overwrite table " + tblName + " select * from " + tableName);
+      assertFalse(isResulSet);
+      // HiveStatement#getUpdateCount blocks until the async query is complete
+      rowCount = stmt.getUpdateCount();
+      // Read from the new table
+      ResultSet rs = stmt.executeQuery("select * from " + tblName);
+      assertNotNull(rs);
+      while (rs.next()) {
+        String value = rs.getString(2);
+        assertNotNull(value);
+      }
+      assertEquals(dataFileRowCount, rowCount);
+    } finally {
+      stmt.execute("drop table " + tblName);
     }
-    assertEquals(rowCount, dataFileRowCount);
-    stmt.execute("drop table " + tblName);
+  }
+
+  @Test
+  public void testGetQueryId() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    HiveStatement stmt1 = (HiveStatement) con.createStatement();
+    stmt.executeAsync("create database query_id_test with dbproperties ('repl.source.for' = '1, 2, 3')");
+    String queryId = stmt.getQueryId();
+    assertFalse(queryId.isEmpty());
+    stmt.getUpdateCount();
+
+    stmt1.executeAsync("repl status query_id_test with ('hive.query.id' = 'hiveCustomTag')");
+    String queryId1 = stmt1.getQueryId();
+    assertFalse("hiveCustomTag".equals(queryId1));
+    assertFalse(queryId.equals(queryId1));
+    assertFalse(queryId1.isEmpty());
+    stmt1.getUpdateCount();
+
+    stmt.executeAsync("select count(*) from " + dataTypeTableName);
+    queryId = stmt.getQueryId();
+    assertFalse("hiveCustomTag".equals(queryId));
+    assertFalse(queryId.isEmpty());
+    assertFalse(queryId.equals(queryId1));
+    stmt.getUpdateCount();
+
+    stmt.execute("drop database query_id_test");
+    stmt.close();
+    stmt1.close();
   }
 
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException

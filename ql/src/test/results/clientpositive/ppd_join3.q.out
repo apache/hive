@@ -10,6 +10,8 @@ JOIN
 ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
@@ -22,6 +24,8 @@ JOIN
 ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -32,6 +36,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((key <> '13') and (key <> '11') and (key < '400') and (key <> '12') and (key <> '1') and (key > '0') and (key <> '4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
@@ -47,6 +52,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            filterExpr: ((key <> '11') and (key < '400') and (key <> '12') and (key <> '13') and (key > '0') and ((value <> 'val_500') or (key > '1')) and (key <> '4') and (key <> '1')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((value <> 'val_500') or (key > '1')) and (key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
@@ -62,6 +68,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            filterExpr: ((key <> '12') and (key <> '11') and (key < '400') and (key <> '13') and (key <> '4') and (key > '0') and (key <> '1')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
@@ -1721,6 +1728,8 @@ JOIN
 ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
@@ -1733,6 +1742,8 @@ JOIN
 ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1743,6 +1754,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((key <> '13') and (key <> '11') and (key < '400') and (key <> '12') and (key <> '1') and (key > '0') and (key <> '4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
@@ -1758,6 +1770,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            filterExpr: ((key <> '11') and (key < '400') and (key <> '12') and (key <> '13') and (key > '0') and ((value <> 'val_500') or (key > '1')) and (key <> '4') and (key <> '1')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((value <> 'val_500') or (key > '1')) and (key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
@@ -1773,6 +1786,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            filterExpr: ((key <> '12') and (key <> '11') and (key < '400') and (key <> '13') and (key <> '4') and (key > '0') and (key <> '1')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)

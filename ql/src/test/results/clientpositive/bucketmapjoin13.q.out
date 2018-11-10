@@ -67,11 +67,23 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=1
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -137,6 +149,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -154,6 +167,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -350,11 +364,21 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key and a.part = '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key and a.part = '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -420,6 +444,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -444,6 +469,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((part = '2') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -596,11 +622,21 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -666,6 +702,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -690,6 +727,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -842,11 +880,21 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -912,6 +960,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -936,6 +985,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

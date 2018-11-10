@@ -2,7 +2,7 @@ PREHOOK: query: DROP TABLE accumulo_index_test
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE accumulo_index_test
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE accumulo_index_test (
+PREHOOK: query: CREATE EXTERNAL TABLE accumulo_index_test (
    rowid string,
    active boolean,
    num_offices tinyint,
@@ -24,10 +24,11 @@ WITH SERDEPROPERTIES (
    "accumulo.indexed.columns"="*",
    "accumulo.indextable.name"="accumulo_index_idx"
  )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@accumulo_index_test
-POSTHOOK: query: CREATE TABLE accumulo_index_test (
+POSTHOOK: query: CREATE EXTERNAL TABLE accumulo_index_test (
    rowid string,
    active boolean,
    num_offices tinyint,
@@ -49,6 +50,7 @@ WITH SERDEPROPERTIES (
    "accumulo.indexed.columns"="*",
    "accumulo.indextable.name"="accumulo_index_idx"
  )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@accumulo_index_test

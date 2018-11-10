@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -60,6 +61,9 @@ import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
+import org.apache.orc.OrcFile;
+import org.apache.orc.Reader;
+import org.apache.orc.TypeDescription;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -140,6 +144,9 @@ public class TestTxnCommands2 {
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    //TestTxnCommands2WithSplitUpdateAndVectorization has the vectorized version
+    //of these tests.
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
 
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb(hiveConf);
@@ -379,14 +386,14 @@ public class TestTxnCommands2 {
      */
     String[][] expected = {
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":4}\t0\t13",  "bucket_00001"},
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t0\t15", "bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t0\t17", "bucket_00001"},
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t0\t120", "bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":1}\t0\t15", "bucket_00001"},
+        {"{\"writeid\":10000003,\"bucketid\":536936448,\"rowid\":0}\t0\t17", "bucket_00001"},
+        {"{\"writeid\":10000002,\"bucketid\":536936448,\"rowid\":0}\t0\t120", "bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t2",   "bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":3}\t1\t4",   "bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5",   "bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":6}\t1\t6",   "bucket_00001"},
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t16", "bucket_00001"}
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t16", "bucket_00001"}
     };
     Assert.assertEquals("Unexpected row count before compaction", expected.length, rs.size());
     for(int i = 0; i < expected.length; i++) {
@@ -507,7 +514,7 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         Assert.assertEquals(2, buckets.length);
-        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00000"));
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
       }
     }
     Assert.assertTrue(sawNewBase);
@@ -541,7 +548,7 @@ public class TestTxnCommands2 {
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
-    Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00000"));
+    Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
     resultData = new int[][] {{3, 4}, {1, 2}};
     Assert.assertEquals(stringifyValuesNoSort(resultData), rs);
@@ -712,7 +719,7 @@ public class TestTxnCommands2 {
     int resultCount = 1;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
 
-    // 2. Convert NONACIDORCTBL to ACID table with split_update enabled. (txn_props=default)
+    // 2. Convert NONACIDORCTBL to ACID table
     runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true')");
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
@@ -773,11 +780,11 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_0000001_0000001_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_10000001_10000001_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_0000002_0000002_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_10000002_10000002_0000", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -786,7 +793,7 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDeleteDelta == 1) {
-          Assert.assertEquals("delete_delta_0000001_0000001_0000", status[i].getPath().getName());
+          Assert.assertEquals("delete_delta_10000001_10000001_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -833,7 +840,7 @@ public class TestTxnCommands2 {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_0000002", status[i].getPath().getName());
+          Assert.assertEquals("base_10000002", status[i].getPath().getName());
           Assert.assertEquals(2, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -859,7 +866,7 @@ public class TestTxnCommands2 {
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_0000002", status[0].getPath().getName());
+    Assert.assertEquals("base_10000002", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
@@ -2166,6 +2173,62 @@ public class TestTxnCommands2 {
     int [][] resultData = new int[][] {{1,2}, {3,4}};
     List<String> rs = runStatementOnDriver("select a,b from " + Table.MMTBL);
     Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  @Test
+  public void testAcidOrcWritePreservesFieldNames() throws Exception {
+    // with vectorization
+    String tableName = "acidorcwritefieldnames";
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    runStatementOnDriver("DROP TABLE IF EXISTS " + tableName);
+    runStatementOnDriver("CREATE TABLE " + tableName + " (a INT, b STRING) CLUSTERED BY (a) INTO " + BUCKET_COUNT + " BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("INSERT INTO " + tableName + " VALUES (1, 'foo'), (2, 'bar')");
+
+    tableName = "acidorcwritefieldnames_complex";
+    runStatementOnDriver("DROP TABLE IF EXISTS " + tableName);
+    runStatementOnDriver("CREATE TABLE " + tableName + " (a INT, b STRING, s STRUCT<c:int, si:STRUCT<d:double," +
+      "e:float>>) CLUSTERED BY (a) INTO " + BUCKET_COUNT +
+      " BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("INSERT INTO " + tableName + " select a, b, named_struct('c',10,'si'," +
+      "named_struct('d',cast(1.0 as double),'e',cast(2.0 as float))) from acidorcwritefieldnames");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] fileStatuses = fs.globStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tableName + "/" + AcidUtils.DELTA_PREFIX + "*/" + AcidUtils.BUCKET_PREFIX + "*"));
+    Assert.assertEquals(BUCKET_COUNT, fileStatuses.length);
+
+    OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(hiveConf);
+    for (FileStatus fileStatus : fileStatuses) {
+      Reader r = OrcFile.createReader(fileStatus.getPath(), readerOptions);
+      TypeDescription rowSchema = r.getSchema().getChildren().get(5);
+      Assert.assertEquals("struct<a:int,b:string,s:struct<c:int,si:struct<d:double,e:float>>>", rowSchema.toString());
+    }
+
+    // without vectorization
+    tableName = "acidorcwritefieldnames";
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    runStatementOnDriver("DROP TABLE IF EXISTS " + tableName);
+    runStatementOnDriver("CREATE TABLE " + tableName + " (a INT, b STRING) CLUSTERED BY (a) INTO " + BUCKET_COUNT + " BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("INSERT INTO " + tableName + " VALUES (1, 'foo'), (2, 'bar')");
+
+    tableName = "acidorcwritefieldnames_complex";
+    runStatementOnDriver("DROP TABLE IF EXISTS " + tableName);
+    runStatementOnDriver("CREATE TABLE " + tableName + " (a INT, b STRING, s STRUCT<c:int, si:STRUCT<d:double," +
+      "e:float>>) CLUSTERED BY (a) INTO " + BUCKET_COUNT +
+      " BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("INSERT INTO " + tableName + " select a, b, named_struct('c',10,'si'," +
+      "named_struct('d',cast(1.0 as double),'e',cast(2.0 as float))) from acidorcwritefieldnames");
+
+    fs = FileSystem.get(hiveConf);
+    fileStatuses = fs.globStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tableName + "/" + AcidUtils.DELTA_PREFIX + "*/" + AcidUtils.BUCKET_PREFIX + "*"));
+    Assert.assertEquals(BUCKET_COUNT, fileStatuses.length);
+
+    readerOptions = OrcFile.readerOptions(hiveConf);
+    for (FileStatus fileStatus : fileStatuses) {
+      Reader r = OrcFile.createReader(fileStatus.getPath(), readerOptions);
+      TypeDescription rowSchema = r.getSchema().getChildren().get(5);
+      Assert.assertEquals("struct<a:int,b:string,s:struct<c:int,si:struct<d:double,e:float>>>", rowSchema.toString());
+    }
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
   }
 
   /**

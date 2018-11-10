@@ -30,9 +30,20 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -67,6 +78,7 @@ public class WarehouseInstance implements Closeable {
   HiveConf hiveConf;
   MiniDFSCluster miniDFSCluster;
   private HiveMetaStoreClient client;
+  public final Path warehouseRoot;
 
   private static int uniqueIdentifier = 0;
 
@@ -80,7 +92,7 @@ public class WarehouseInstance implements Closeable {
     assert miniDFSCluster.isDataNodeUp();
     DistributedFileSystem fs = miniDFSCluster.getFileSystem();
 
-    Path warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
+    warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
     if (StringUtils.isNotEmpty(keyNameForEncryptedZone)) {
       fs.createEncryptionZone(warehouseRoot, keyNameForEncryptedZone);
     }
@@ -89,7 +101,7 @@ public class WarehouseInstance implements Closeable {
     initialize(cmRootPath.toString(), warehouseRoot.toString(), overridesForHiveConf);
   }
 
-  public WarehouseInstance(Logger logger, MiniDFSCluster cluster,
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster,
       Map<String, String> overridesForHiveConf) throws Exception {
     this(logger, cluster, overridesForHiveConf, null);
   }
@@ -130,6 +142,8 @@ public class WarehouseInstance implements Closeable {
     if (!hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER).equals("org.apache.hadoop.hive.ql.lockmgr.DbTxnManager")) {
       hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     }
+    hiveConf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
+            "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
@@ -187,6 +201,10 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  public CommandProcessorResponse runCommand(String command) throws Throwable {
+    return driver.run(command);
+  }
+
   WarehouseInstance runFailure(String command) throws Throwable {
     CommandProcessorResponse ret = driver.run(command);
     if (ret.getException() == null) {
@@ -217,9 +235,22 @@ public class WarehouseInstance implements Closeable {
     return dump(dbName, lastReplicationId, Collections.emptyList());
   }
 
+  WarehouseInstance dumpFailure(String dbName, String lastReplicationId) throws Throwable {
+    String dumpCommand =
+            "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+    advanceDumpDir();
+    runFailure(dumpCommand);
+    return this;
+  }
+
   WarehouseInstance load(String replicatedDbName, String dumpLocation) throws Throwable {
     run("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     printOutput();
+    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    return this;
+  }
+
+  WarehouseInstance loadWithoutExplain(String replicatedDbName, String dumpLocation) throws Throwable {
     run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     return this;
   }
@@ -249,10 +280,17 @@ public class WarehouseInstance implements Closeable {
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
-    runFailure("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
-    printOutput();
     runFailure("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     return this;
+  }
+
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+          throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if (!withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return runFailure(replLoadCmd);
   }
 
   WarehouseInstance verifyResult(String data) throws IOException {
@@ -323,19 +361,76 @@ public class WarehouseInstance implements Closeable {
   }
 
   public Database getDatabase(String dbName) throws Exception {
-    return client.getDatabase(dbName);
+    try {
+      return client.getDatabase(dbName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
+  public List<String> getAllTables(String dbName) throws Exception {
+    return client.getAllTables(dbName);
   }
 
   public Table getTable(String dbName, String tableName) throws Exception {
-    return client.getTable(dbName, tableName);
+    try {
+      return client.getTable(dbName, tableName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
+  public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {
+    try {
+      return client.listPartitions(dbName, tableName, Short.MAX_VALUE);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
   }
 
   public Partition getPartition(String dbName, String tableName, List<String> partValues) throws Exception {
-    return client.getPartition(dbName, tableName, partValues);
+    try {
+      return client.getPartition(dbName, tableName, partValues);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
+  public List<SQLPrimaryKey> getPrimaryKeyList(String dbName, String tblName) throws Exception {
+    return client.getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
+  }
+
+  public List<SQLForeignKey> getForeignKeyList(String dbName, String tblName) throws Exception {
+    return client.getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
+  }
+
+  public List<SQLUniqueConstraint> getUniqueConstraintList(String dbName, String tblName) throws Exception {
+    return client.getUniqueConstraints(new UniqueConstraintsRequest(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
+  }
+
+  public List<SQLNotNullConstraint> getNotNullConstraintList(String dbName, String tblName) throws Exception {
+    return client.getNotNullConstraints(
+            new NotNullConstraintsRequest(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
   }
 
   ReplicationV1CompatRule getReplivationV1CompatRule(List<String> testsToSkip) {
     return new ReplicationV1CompatRule(client, hiveConf, testsToSkip);
+  }
+
+  // Test if the number of events between the given event ids and with the given database name are
+  // same as expected. toEventId = 0 is treated as unbounded. Same is the case with limit 0.
+  public void testEventCounts(String dbName, long fromEventId, Long toEventId, Integer limit,
+                               long expectedCount) throws Exception {
+    NotificationEventsCountRequest rqst = new NotificationEventsCountRequest(fromEventId, dbName);
+
+    if (toEventId != null) {
+      rqst.setToEventId(toEventId);
+    }
+    if (limit != null) {
+      rqst.setLimit(limit);
+    }
+
+    assertEquals(expectedCount, client.getNotificationEventsCount(rqst).getEventsCount());
   }
 
   @Override

@@ -32,12 +32,16 @@ SELECT
 from str_str_orc
 GROUP BY str2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -56,18 +60,18 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
+              expressions: str2 (type: string), UDFToInteger(CASE WHEN (str1 is not null) THEN (str1) ELSE (0) END) (type: int)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [1, 5]
-                  selectExpressions: CastStringToLong(col 4:string)(children: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string) -> 5:int
+                  projectedOutputColumnNums: [1, 6]
+                  selectExpressions: CastStringToLong(col 5:string)(children: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string) -> 6:int
               Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                    aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     keyExpressions: col 1:string
@@ -93,8 +97,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -149,10 +153,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -171,13 +179,13 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: COALESCE(str1,0) (type: string)
+              expressions: CASE WHEN (str1 is not null) THEN (str1) ELSE (0) END (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [4]
-                  selectExpressions: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string
+                  projectedOutputColumnNums: [5]
+                  selectExpressions: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string
               Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -193,8 +201,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -218,21 +226,25 @@ POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 0
 0
+0
+0
 1
-0
-0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result
 from str_str_orc
 GROUP BY str2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -251,18 +263,18 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
+              expressions: str2 (type: string), UDFToInteger(CASE WHEN (str1 is not null) THEN (str1) ELSE (0) END) (type: int)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [1, 5]
-                  selectExpressions: CastStringToLong(col 4:string)(children: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string) -> 5:int
+                  projectedOutputColumnNums: [1, 6]
+                  selectExpressions: CastStringToLong(col 5:string)(children: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string) -> 6:int
               Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                    aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     keyExpressions: col 1:string
@@ -288,8 +300,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -344,10 +356,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@str_str_orc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -366,13 +382,13 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: COALESCE(str1,0) (type: string)
+              expressions: CASE WHEN (str1 is not null) THEN (str1) ELSE (0) END (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [4]
-                  selectExpressions: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string
+                  projectedOutputColumnNums: [5]
+                  selectExpressions: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string
               Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -388,8 +404,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -413,6 +429,6 @@ POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
 0
 0
+0
+0
 1
-0
-0

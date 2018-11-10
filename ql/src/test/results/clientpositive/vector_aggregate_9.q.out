@@ -104,9 +104,13 @@ POSTHOOK: Lineage: vectortab2korc_n4.ts2 SIMPLE [(vectortab2k_n4)vectortab2k_n4.
 PREHOOK: query: explain vectorization detail
 select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -158,8 +162,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -210,9 +214,13 @@ POSTHOOK: Input: default@vectortab2korc_n4
 PREHOOK: query: explain vectorization detail
 select min(d), max(d), sum(d), avg(d) from vectortab2korc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select min(d), max(d), sum(d), avg(d) from vectortab2korc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -264,8 +272,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -316,9 +324,13 @@ POSTHOOK: Input: default@vectortab2korc_n4
 PREHOOK: query: explain vectorization detail
 select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -370,8 +382,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -418,4 +430,4 @@ POSTHOOK: query: select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc_n
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2korc_n4
 #### A masked pattern was here ####
-2013-02-18 21:06:48	2081-02-22 01:21:53	4.591384881081E12	2.4254542425150557E9
+2013-02-18 21:06:48	2081-02-22 01:21:53	4.591334884281E12	2.4254278311045957E9

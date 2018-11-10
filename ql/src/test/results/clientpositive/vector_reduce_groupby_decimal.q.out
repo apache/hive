@@ -21,6 +21,8 @@ GROUP BY cint, cdouble, cdecimal1, cdecimal2
 ORDER BY cint, cdouble, cdecimal1, cdecimal2
 LIMIT 50
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_n2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
 WHERE cdecimal1 is not null and cdecimal2 is not null
@@ -28,6 +30,8 @@ GROUP BY cint, cdouble, cdecimal1, cdecimal2
 ORDER BY cint, cdouble, cdecimal1, cdecimal2
 LIMIT 50
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_n2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -43,6 +47,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_test_n2
+            filterExpr: (cdecimal1 is not null and cdecimal2 is not null) (type: boolean)
             Statistics: Num rows: 6102 Data size: 1440072 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -83,8 +88,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

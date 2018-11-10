@@ -29,12 +29,13 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeStampNanoVector;
+import org.apache.arrow.vector.TimeStampVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.holders.NullableIntervalDayHolder;
+import org.apache.arrow.vector.types.Types;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -53,10 +54,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
@@ -65,8 +64,10 @@ import org.apache.hadoop.io.Writable;
 import java.util.List;
 
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
-import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MS_PER_SECOND;
-import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MS;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MICROS_PER_SECOND;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.MILLIS_PER_SECOND;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MICROS;
+import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_MILLIS;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.NS_PER_SECOND;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.SECOND_PER_DAY;
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListTypeInfo;
@@ -130,7 +131,7 @@ class Deserializer {
   private void read(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
-        readPrimitive(arrowVector, hiveVector, typeInfo);
+        readPrimitive(arrowVector, hiveVector);
         break;
       case LIST:
         readList(arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo);
@@ -149,15 +150,14 @@ class Deserializer {
     }
   }
 
-  private void readPrimitive(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo) {
-    final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
-        ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+  private void readPrimitive(FieldVector arrowVector, ColumnVector hiveVector) {
+    final Types.MinorType minorType = arrowVector.getMinorType();
 
     final int size = arrowVector.getValueCount();
     hiveVector.ensureSize(size, false);
 
-    switch (primitiveCategory) {
-      case BOOLEAN:
+    switch (minorType) {
+      case BIT:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -169,7 +169,7 @@ class Deserializer {
           }
         }
         break;
-      case BYTE:
+      case TINYINT:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -181,7 +181,7 @@ class Deserializer {
           }
         }
         break;
-      case SHORT:
+      case SMALLINT:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -205,7 +205,7 @@ class Deserializer {
           }
         }
         break;
-      case LONG:
+      case BIGINT:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -217,19 +217,19 @@ class Deserializer {
           }
         }
         break;
-      case FLOAT:
-      {
-        for (int i = 0; i < size; i++) {
-          if (arrowVector.isNull(i)) {
-            VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
-          } else {
-            hiveVector.isNull[i] = false;
-            ((DoubleColumnVector) hiveVector).vector[i] = ((Float4Vector) arrowVector).get(i);
+      case FLOAT4:
+        {
+          for (int i = 0; i < size; i++) {
+            if (arrowVector.isNull(i)) {
+              VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
+            } else {
+              hiveVector.isNull[i] = false;
+              ((DoubleColumnVector) hiveVector).vector[i] = ((Float4Vector) arrowVector).get(i);
+            }
           }
         }
-      }
         break;
-      case DOUBLE:
+      case FLOAT8:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -241,9 +241,7 @@ class Deserializer {
           }
         }
         break;
-      case STRING:
       case VARCHAR:
-      case CHAR:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -255,7 +253,7 @@ class Deserializer {
           }
         }
         break;
-      case DATE:
+      case DATEDAY:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -267,7 +265,12 @@ class Deserializer {
           }
         }
         break;
-      case TIMESTAMP:
+      case TIMESTAMPMILLI:
+      case TIMESTAMPMILLITZ:
+      case TIMESTAMPMICRO:
+      case TIMESTAMPMICROTZ:
+      case TIMESTAMPNANO:
+      case TIMESTAMPNANOTZ:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -276,28 +279,52 @@ class Deserializer {
               hiveVector.isNull[i] = false;
 
               // Time = second + sub-second
-              final long timeInNanos = ((TimeStampNanoVector) arrowVector).get(i);
-              final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-              int subSecondInNanos = (int) (timeInNanos % NS_PER_SECOND);
-              long second = timeInNanos / NS_PER_SECOND;
+              final long time = ((TimeStampVector) arrowVector).get(i);
+              long second;
+              int subSecondInNanos;
+              switch (minorType) {
+                case TIMESTAMPMILLI:
+                case TIMESTAMPMILLITZ:
+                  {
+                    subSecondInNanos = (int) ((time % MILLIS_PER_SECOND) * NS_PER_MILLIS);
+                    second = time / MILLIS_PER_SECOND;
+                  }
+                  break;
+                case TIMESTAMPMICROTZ:
+                case TIMESTAMPMICRO:
+                  {
+                    subSecondInNanos = (int) ((time % MICROS_PER_SECOND) * NS_PER_MICROS);
+                    second = time / MICROS_PER_SECOND;
+                  }
+                  break;
+                case TIMESTAMPNANOTZ:
+                case TIMESTAMPNANO:
+                  {
+                    subSecondInNanos = (int) (time % NS_PER_SECOND);
+                    second = time / NS_PER_SECOND;
+                  }
+                  break;
+                default:
+                  throw new IllegalArgumentException();
+              }
 
+              final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
               // A nanosecond value should not be negative
               if (subSecondInNanos < 0) {
 
                 // So add one second to the negative nanosecond value to make it positive
                 subSecondInNanos += NS_PER_SECOND;
 
-                // Subtract one second from the second value because we added one second,
-                // then subtract one more second because of the ceiling in the division.
-                second -= 2;
+                // Subtract one second from the second value because we added one second
+                second -= 1;
               }
-              timestampColumnVector.time[i] = second * MS_PER_SECOND;
+              timestampColumnVector.time[i] = second * MILLIS_PER_SECOND;
               timestampColumnVector.nanos[i] = subSecondInNanos;
             }
           }
         }
         break;
-      case BINARY:
+      case VARBINARY:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -322,7 +349,7 @@ class Deserializer {
           }
         }
         break;
-      case INTERVAL_YEAR_MONTH:
+      case INTERVALYEAR:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -334,7 +361,7 @@ class Deserializer {
           }
         }
         break;
-      case INTERVAL_DAY_TIME:
+      case INTERVALDAY:
         {
           final IntervalDayVector intervalDayVector = (IntervalDayVector) arrowVector;
           final NullableIntervalDayHolder intervalDayHolder = new NullableIntervalDayHolder();
@@ -346,19 +373,16 @@ class Deserializer {
               hiveVector.isNull[i] = false;
               intervalDayVector.get(i, intervalDayHolder);
               final long seconds = intervalDayHolder.days * SECOND_PER_DAY +
-                  intervalDayHolder.milliseconds / MS_PER_SECOND;
-              final int nanos = (intervalDayHolder.milliseconds % 1_000) * NS_PER_MS;
+                  intervalDayHolder.milliseconds / MILLIS_PER_SECOND;
+              final int nanos = (intervalDayHolder.milliseconds % 1_000) * NS_PER_MILLIS;
               intervalDayTime.set(seconds, nanos);
               ((IntervalDayTimeColumnVector) hiveVector).set(i, intervalDayTime);
             }
           }
         }
         break;
-      case VOID:
-      case TIMESTAMPLOCALTZ:
-      case UNKNOWN:
       default:
-        break;
+        throw new IllegalArgumentException();
     }
   }
 

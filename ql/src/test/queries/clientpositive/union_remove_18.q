@@ -8,7 +8,6 @@ set hive.merge.mapredfiles=false;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
-set mapred.input.dir.recursive=true;
 
 -- SORT_QUERY_RESULTS
 -- This is to test the union->selectstar->filesink optimization
@@ -19,7 +18,6 @@ set mapred.input.dir.recursive=true;
 -- off
 -- This test demonstrates that the optimization works with dynamic partitions irrespective of the
 -- file format of the output file
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n30, it might be easier
 -- to run the test only on hadoop 23
 

@@ -50,11 +50,15 @@ from varchar_2_n0
 order by key asc
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select key, value
 from varchar_2_n0
 order by key asc
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_2_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -91,8 +95,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -170,11 +174,15 @@ from varchar_2_n0
 order by key desc
 limit 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization select key, value
 from varchar_2_n0
 order by key desc
 limit 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_2_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -211,8 +219,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -289,9 +297,13 @@ POSTHOOK: Output: default@varchar_3
 PREHOOK: query: explain vectorization expression
 insert into table varchar_3 select cint from alltypesorc limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@varchar_3
 POSTHOOK: query: explain vectorization expression
 insert into table varchar_3 select cint from alltypesorc limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@varchar_3
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -345,8 +357,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false

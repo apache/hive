@@ -45,9 +45,15 @@ POSTHOOK: Output: default@table2_n5
 PREHOOK: query: explain extended
 select /*+ mapjoin(b) */ count(*) from table1_n9 a join table2_n5 b on a.key=b.key and a.value=b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n9
+PREHOOK: Input: default@table2_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select /*+ mapjoin(b) */ count(*) from table1_n9 a join table2_n5 b on a.key=b.key and a.value=b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n9
+POSTHOOK: Input: default@table2_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -62,6 +68,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -142,6 +149,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

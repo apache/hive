@@ -31,6 +31,7 @@ public class OperationStatus {
   private final boolean hasResultSet;
   private final HiveSQLException operationException;
   private JobProgressUpdate jobProgressUpdate;
+  private long numModifiedRows;
 
   public OperationStatus(OperationState state, String taskStatus, long operationStarted, long operationCompleted, boolean hasResultSet, HiveSQLException operationException) {
     this.state = state;
@@ -71,5 +72,13 @@ public class OperationStatus {
 
   public JobProgressUpdate jobProgressUpdate(){
     return jobProgressUpdate;
+  }
+
+  public long getNumModifiedRows() {
+    return numModifiedRows;
+  }
+
+  void setNumModifiedRows(long numRows) {
+    this.numModifiedRows = numRows;
   }
 }

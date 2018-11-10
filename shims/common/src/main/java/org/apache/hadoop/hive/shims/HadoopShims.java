@@ -96,6 +96,22 @@ public interface HadoopShims {
   public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
       String nameNode, int numDir) throws IOException;
 
+
+  /**
+   * Set up the caller context for HDFS and Yarn.
+   */
+  void setHadoopCallerContext(String callerContext);
+
+  /**
+   * Set up context specific caller context with query prefix.
+   */
+  void setHadoopQueryContext(String queryId);
+
+  /**
+   * Set up context specific caller context with session prefix.
+   */
+  void setHadoopSessionContext(String sessionId);
+
   /**
    * Shim for MiniMrCluster
    */
@@ -691,6 +707,11 @@ public interface HadoopShims {
      * @param ecPolicyName the name of the erasure coding policy
      */
     void disableErasureCodingPolicy(String ecPolicyName) throws IOException;
+
+    /**
+     * @return true if if the runtime MR stat for Erasure Coding is available.
+     */
+    boolean isMapReduceStatAvailable();
   }
 
   /**
@@ -726,6 +747,11 @@ public interface HadoopShims {
 
     @Override
     public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public boolean isMapReduceStatAvailable() {
+      return false;
     }
 
   }

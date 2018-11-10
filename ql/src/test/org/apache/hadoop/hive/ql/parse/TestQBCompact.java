@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import junit.framework.Assert;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -31,15 +34,11 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import junit.framework.Assert;
 
 /**
  * Tests for parsing and semantic analysis of ALTER TABLE ... compact.
@@ -81,7 +80,7 @@ public class TestQBCompact {
     ASTNode head = (ASTNode)hd.parse(query).getChild(0);
     BaseSemanticAnalyzer a = SemanticAnalyzerFactory.get(queryState, head);
     a.analyze(head, new Context(conf));
-    List<Task<? extends Serializable>> roots = a.getRootTasks();
+    List<Task<?>> roots = a.getRootTasks();
     Assert.assertEquals(1, roots.size());
     return ((DDLWork)roots.get(0).getWork()).getAlterTblSimpleDesc();
   }

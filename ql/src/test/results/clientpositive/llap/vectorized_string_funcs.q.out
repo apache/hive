@@ -20,6 +20,8 @@ where cbigint % 237 = 0
 and length(substr(cstring1, 1, 2)) <= 2
 and cstring1 like '%'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization 
 select 
    substr(cstring1, 1, 2)
@@ -42,6 +44,8 @@ where cbigint % 237 = 0
 and length(substr(cstring1, 1, 2)) <= 2
 and cstring1 like '%'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -59,6 +63,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((cbigint % 237) = 0) and (length(substr(cstring1, 1, 2)) <= 2) and (cstring1 like '%')) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1816546 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (((cbigint % 237) = 0) and (cstring1 like '%') and (length(substr(cstring1, 1, 2)) <= 2)) (type: boolean)
@@ -79,8 +84,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

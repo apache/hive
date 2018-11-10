@@ -9,6 +9,8 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT sum(hash(src1.c1, src2.c4)) 
 FROM
@@ -20,6 +22,8 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-2 depends on stages: Stage-6
@@ -39,6 +43,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:src 
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 80.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 80.0D) (type: boolean)
@@ -55,6 +60,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_2:src 
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 80.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 80.0D) (type: boolean)
@@ -74,6 +80,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 80.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 80.0D) (type: boolean)

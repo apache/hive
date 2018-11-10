@@ -7,13 +7,11 @@ set hive.optimize.union.remove=true;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.merge.sparkfiles=false;
-set mapred.input.dir.recursive=true;
 
 -- This is to test the union->selectstar->filesink and skewjoin optimization
 -- Union of 2 map-reduce subqueries is performed for the skew join
 -- There is no need to write the temporary results of the sub-queries, and then read them 
 -- again to process the union. The union can be removed completely.
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output, it might be easier to run the test
 -- only on hadoop 23
 

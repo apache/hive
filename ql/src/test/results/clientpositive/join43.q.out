@@ -224,6 +224,10 @@ from (
   on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cart_history
+PREHOOK: Input: default@events
+PREHOOK: Input: default@purchase_history
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select s
 from (
@@ -240,6 +244,10 @@ from (
   on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cart_history
+POSTHOOK: Input: default@events
+POSTHOOK: Input: default@purchase_history
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -252,6 +260,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cart_history
+            filterExpr: s is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s is not null (type: boolean)
@@ -268,6 +277,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: purchase_history
+            filterExpr: s is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s is not null (type: boolean)
@@ -344,6 +354,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: events
+            filterExpr: (s is not null and time is not null) (type: boolean)
             Statistics: Num rows: 6 Data size: 79 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s is not null and time is not null) (type: boolean)
@@ -447,6 +458,10 @@ from (
   on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cart_history
+PREHOOK: Input: default@events
+PREHOOK: Input: default@purchase_history
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from (
@@ -463,6 +478,10 @@ from (
   on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cart_history
+POSTHOOK: Input: default@events
+POSTHOOK: Input: default@purchase_history
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -475,6 +494,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cart_history
+            filterExpr: s is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s is not null (type: boolean)
@@ -491,6 +511,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: purchase_history
+            filterExpr: s is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 57 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s is not null (type: boolean)
@@ -563,6 +584,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: events
+            filterExpr: (s is not null and time is not null) (type: boolean)
             Statistics: Num rows: 6 Data size: 79 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s is not null and time is not null) (type: boolean)

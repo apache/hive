@@ -1,9 +1,13 @@
 PREHOOK: query: explain
 select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -91,9 +95,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -193,9 +201,13 @@ POSTHOOK: Lineage: array_valued.value EXPRESSION [(src)src.FieldSchema(name:key,
 PREHOOK: query: explain
 select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

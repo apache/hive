@@ -202,7 +202,9 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hive.common.util.ACLConfigurationParser;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -253,13 +255,21 @@ public final class Utilities {
 
   public static Random randGen = new Random();
 
+  private static final Object INPUT_SUMMARY_LOCK = new Object();
+  private static final Object ROOT_HDFS_DIR_LOCK  = new Object();
+
   /**
    * ReduceField:
    * KEY: record key
    * VALUE: record value
    */
   public static enum ReduceField {
-    KEY, VALUE
+    KEY(0), VALUE(1);
+
+    int position;
+    ReduceField(int position) {
+      this.position = position;
+    };
   };
 
   public static List<String> reduceFieldNameList;
@@ -408,7 +418,19 @@ public final class Utilities {
    * @throws RuntimeException if the configuration files are not proper or if plan can not be loaded
    */
   private static BaseWork getBaseWork(Configuration conf, String name) {
-    Path path = null;
+
+    Path path = getPlanPath(conf, name);
+    LOG.debug("PLAN PATH = {}", path);
+    if (path == null) { // Map/reduce plan may not be generated
+      return null;
+    }
+
+    BaseWork gWork = gWorkMap.get(conf).get(path);
+    if (gWork != null) {
+      LOG.debug("Found plan in cache for name: {}", name);
+      return gWork;
+    }
+
     InputStream in = null;
     Kryo kryo = SerializationUtilities.borrowKryo();
     try {
@@ -424,73 +446,61 @@ public final class Utilities {
           kryo.setClassLoader(newLoader);
         }
       }
-
-      path = getPlanPath(conf, name);
-      LOG.info("PLAN PATH = {}", path);
-      if (path == null) { // Map/reduce plan may not be generated
-        return null;
-      }
-
-      BaseWork gWork = gWorkMap.get(conf).get(path);
-      if (gWork == null) {
-        Path localPath = path;
-        LOG.debug("local path = {}", localPath);
-        final long serializedSize;
-        final String planMode;
-        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
-          String planStringPath = path.toUri().getPath();
-          LOG.debug("Loading plan from string: {}", planStringPath);
-          String planString = conf.getRaw(planStringPath);
-          if (planString == null) {
-            LOG.info("Could not find plan string in conf");
-            return null;
-          }
-          serializedSize = planString.length();
-          planMode = "RPC";
-          byte[] planBytes = Base64.decodeBase64(planString);
-          in = new ByteArrayInputStream(planBytes);
-          in = new InflaterInputStream(in);
-        } else {
-          LOG.debug("Open file to read in plan: {}", localPath);
-          FileSystem fs = localPath.getFileSystem(conf);
-          in = fs.open(localPath);
-          serializedSize = fs.getFileStatus(localPath).getLen();
-          planMode = "FILE";
+      Path localPath = path;
+      LOG.debug("local path = {}", localPath);
+      final long serializedSize;
+      final String planMode;
+      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        String planStringPath = path.toUri().getPath();
+        LOG.debug("Loading plan from string: {}", planStringPath);
+        String planString = conf.getRaw(planStringPath);
+        if (planString == null) {
+          LOG.info("Could not find plan string in conf");
+          return null;
         }
-
-        if(MAP_PLAN_NAME.equals(name)){
-          if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
-          } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
-          } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
-          } else {
-            throw new RuntimeException("unable to determine work from configuration ."
-                + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS)) ;
-          }
-        } else if (REDUCE_PLAN_NAME.equals(name)) {
-          if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
-          } else {
-            throw new RuntimeException("unable to determine work from configuration ."
-                + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
-          }
-        } else if (name.contains(MERGE_PLAN_NAME)) {
-          if (name.startsWith(MAPNAME)) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
-          } else if (name.startsWith(REDUCENAME)) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
-          } else {
-            throw new RuntimeException("Unknown work type: " + name);
-          }
-        }
-        LOG.info("Deserialized plan (via {}) - name: {} size: {}", planMode,
-            gWork.getName(), humanReadableByteCount(serializedSize));
-        gWorkMap.get(conf).put(path, gWork);
+        serializedSize = planString.length();
+        planMode = "RPC";
+        byte[] planBytes = Base64.decodeBase64(planString);
+        in = new ByteArrayInputStream(planBytes);
+        in = new InflaterInputStream(in);
       } else {
-        LOG.debug("Found plan in cache for name: {}", name);
+        LOG.debug("Open file to read in plan: {}", localPath);
+        FileSystem fs = localPath.getFileSystem(conf);
+        in = fs.open(localPath);
+        serializedSize = fs.getFileStatus(localPath).getLen();
+        planMode = "FILE";
       }
+
+      if(MAP_PLAN_NAME.equals(name)){
+        if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
+        } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
+        } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
+        } else {
+          throw new RuntimeException("unable to determine work from configuration ."
+              + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS));
+        }
+      } else if (REDUCE_PLAN_NAME.equals(name)) {
+        if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
+        } else {
+          throw new RuntimeException("unable to determine work from configuration ."
+              + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS));
+        }
+      } else if (name.contains(MERGE_PLAN_NAME)) {
+        if (name.startsWith(MAPNAME)) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
+        } else if (name.startsWith(REDUCENAME)) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
+        } else {
+          throw new RuntimeException("Unknown work type: " + name);
+        }
+      }
+      LOG.info("Deserialized plan (via {}) - name: {} size: {}", planMode,
+          gWork.getName(), humanReadableByteCount(serializedSize));
+      gWorkMap.get(conf).put(path, gWork);
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
@@ -1566,7 +1576,7 @@ public final class Utilities {
     Class<? extends Writable> outputClass = null;
     try {
       Serializer serializer = (Serializer) tableInfo.getDeserializerClass().newInstance();
-      serializer.initialize(null, tableInfo.getProperties());
+      serializer.initialize(hconf, tableInfo.getProperties());
       outputClass = serializer.getSerializedClass();
       hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(hconf, tableInfo);
     } catch (SerDeException e) {
@@ -2123,9 +2133,19 @@ public final class Utilities {
   public static List<String> getColumnNames(Properties props) {
     List<String> names = new ArrayList<String>();
     String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);
+    return splitColNames(names, colNames);
+  }
+
+  public static List<String> getColumnNames(Configuration conf) {
+    List<String> names = new ArrayList<String>();
+    String colNames = conf.get(serdeConstants.LIST_COLUMNS);
+    return splitColNames(names, colNames);
+  }
+
+  private static List<String> splitColNames(List<String> names, String colNames) {
     String[] cols = colNames.trim().split(",");
-    for (String col : cols) {
-      if (StringUtils.isNotBlank(col)) {
+    for(String col : cols) {
+      if(StringUtils.isNotBlank(col)) {
         names.add(col);
       }
     }
@@ -2264,23 +2284,10 @@ public final class Utilities {
         job.set(entry.getKey(), entry.getValue());
       }
     }
-
-    try {
-      Map<String, String> jobSecrets = tbl.getJobSecrets();
-      if (jobSecrets != null) {
-        for (Map.Entry<String, String> entry : jobSecrets.entrySet()) {
-          job.getCredentials().addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
-          UserGroupInformation.getCurrentUser().getCredentials()
-            .addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
-        }
-      }
-    } catch (IOException e) {
-      throw new HiveException(e);
-    }
   }
 
   /**
-   * Copies the storage handler proeprites configured for a table descriptor to a runtime job
+   * Copies the storage handler properties configured for a table descriptor to a runtime job
    * configuration.  This differs from {@link #copyTablePropertiesToConf(org.apache.hadoop.hive.ql.plan.TableDesc, org.apache.hadoop.mapred.JobConf)}
    * in that it does not allow parameters already set in the job to override the values from the
    * table.  This is important for setting the config up for reading,
@@ -2302,22 +2309,26 @@ public final class Utilities {
         job.set(entry.getKey(), entry.getValue());
       }
     }
-
-    try {
-      Map<String, String> jobSecrets = tbl.getJobSecrets();
-      if (jobSecrets != null) {
-        for (Map.Entry<String, String> entry : jobSecrets.entrySet()) {
-          job.getCredentials().addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
-          UserGroupInformation.getCurrentUser().getCredentials()
-            .addSecretKey(new Text(entry.getKey()), entry.getValue().getBytes());
-        }
-      }
-    } catch (IOException e) {
-      throw new HiveException(e);
-    }
   }
 
-  private static final Object INPUT_SUMMARY_LOCK = new Object();
+  /**
+   * Copy job credentials to table properties
+   * @param tbl
+   */
+  public static void copyJobSecretToTableProperties(TableDesc tbl) throws IOException {
+    Credentials credentials = UserGroupInformation.getCurrentUser().getCredentials();
+    for (Text key : credentials.getAllSecretKeys()) {
+      String keyString = key.toString();
+      if (keyString.startsWith(TableDesc.SECRET_PREFIX + TableDesc.SECRET_DELIMIT)) {
+        String[] comps = keyString.split(TableDesc.SECRET_DELIMIT);
+        String tblName = comps[1];
+        String keyName = comps[2];
+        if (tbl.getTableName().equalsIgnoreCase(tblName)) {
+          tbl.getProperties().put(keyName, new String(credentials.getSecretKey(key)));
+        }
+      }
+    }
+  }
 
   /**
    * Returns the maximum number of executors required to get file information from several input locations.
@@ -3285,6 +3296,9 @@ public final class Utilities {
   public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir,
       Context ctx, boolean skipDummy) throws Exception {
 
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
+
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
@@ -3372,6 +3386,8 @@ public final class Utilities {
         finalPathsToAdd.add(newPath);
       }
     }
+
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
     return finalPathsToAdd;
   }
@@ -3750,32 +3766,6 @@ public final class Utilities {
 
   public static void clearWorkMap(Configuration conf) {
     gWorkMap.get(conf).clear();
-  }
-
-  /**
-   * Create a temp dir in specified baseDir
-   * This can go away once hive moves to support only JDK 7
-   *  and can use Files.createTempDirectory
-   *  Guava Files.createTempDir() does not take a base dir
-   * @param baseDir - directory under which new temp dir will be created
-   * @return File object for new temp dir
-   */
-  public static File createTempDir(String baseDir){
-    //try creating the temp dir MAX_ATTEMPTS times
-    final int MAX_ATTEMPS = 30;
-    for(int i = 0; i < MAX_ATTEMPS; i++){
-      //pick a random file name
-      String tempDirName = "tmp_" + ((int)(100000 * Math.random()));
-
-      //return if dir could successfully be created with that file name
-      File tempDir = new File(baseDir, tempDirName);
-      if(tempDir.mkdir()){
-        return tempDir;
-      }
-    }
-    throw new IllegalStateException("Failed to create a temp dir under "
-    + baseDir + " Giving up after " + MAX_ATTEMPS + " attempts");
-
   }
 
   /**
@@ -4293,14 +4283,15 @@ public final class Utilities {
       }
     }
 
-    HashSet<String> committed = new HashSet<>();
+    HashSet<Path> committed = new HashSet<>();
     for (Path mfp : manifests) {
       try (FSDataInputStream mdis = fs.open(mfp)) {
         int fileCount = mdis.readInt();
         for (int i = 0; i < fileCount; ++i) {
           String nextFile = mdis.readUTF();
           Utilities.FILE_OP_LOGGER.trace("Looking at committed file: {}", nextFile);
-          if (!committed.add(nextFile)) {
+          Path path = fs.makeQualified(new Path(nextFile));
+          if (!committed.add(path)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
         }
@@ -4361,7 +4352,7 @@ public final class Utilities {
   }
 
   private static void cleanMmDirectory(Path dir, FileSystem fs, String unionSuffix,
-      int lbLevels, HashSet<String> committed) throws IOException, HiveException {
+      int lbLevels, HashSet<Path> committed) throws IOException, HiveException {
     for (FileStatus child : fs.listStatus(dir)) {
       Path childPath = child.getPath();
       if (lbLevels > 0) {
@@ -4373,7 +4364,7 @@ public final class Utilities {
               "Recursion into LB directory {}; levels remaining ", childPath, lbLevels - 1);
           cleanMmDirectory(childPath, fs, unionSuffix, lbLevels - 1, committed);
         } else {
-          if (committed.contains(childPath.toString())) {
+          if (committed.contains(childPath)) {
             throw new HiveException("LB FSOP has commited "
                 + childPath + " outside of LB directory levels " + lbLevels);
           }
@@ -4383,12 +4374,12 @@ public final class Utilities {
       }
       // No more LB directories expected.
       if (unionSuffix == null) {
-        if (committed.remove(childPath.toString())) {
+        if (committed.remove(childPath)) {
           continue; // A good file.
         }
         deleteUncommitedFile(childPath, fs);
       } else if (!child.isDirectory()) {
-        if (committed.contains(childPath.toString())) {
+        if (committed.contains(childPath)) {
           throw new HiveException("Union FSOP has commited "
               + childPath + " outside of union directory " + unionSuffix);
         }
@@ -4483,11 +4474,16 @@ public final class Utilities {
   public static void ensurePathIsWritable(Path rootHDFSDirPath, HiveConf conf) throws IOException {
     FsPermission writableHDFSDirPermission = new FsPermission((short)00733);
     FileSystem fs = rootHDFSDirPath.getFileSystem(conf);
+
     if (!fs.exists(rootHDFSDirPath)) {
-      Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
+      synchronized (ROOT_HDFS_DIR_LOCK) {
+        if (!fs.exists(rootHDFSDirPath)) {
+          Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
+        }
+      }
     }
     FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
-    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
+    if (rootHDFSDirPath.toUri() != null) {
       String schema = rootHDFSDirPath.toUri().getScheme();
       LOG.debug("HDFS dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
           currentHDFSDirPermission);
@@ -4514,5 +4510,18 @@ public final class Utilities {
       }
     }
     return bucketingVersion;
+  }
+
+  public static String getPasswdFromKeystore(String keystore, String key) throws IOException {
+    String passwd = null;
+    if (keystore != null && key != null) {
+      Configuration conf = new Configuration();
+      conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystore);
+      char[] pwdCharArray = conf.getPassword(key);
+      if (pwdCharArray != null) {
+        passwd = new String(pwdCharArray);
+      }
+    }
+    return passwd;
   }
 }

@@ -123,6 +123,9 @@ public class ReduceRecordSource implements RecordSource {
   private long vectorizedVertexNum;
   private int vectorizedTestingReducerBatchSize;
 
+  // Flush the last record when reader is out of records
+  private boolean flushLastRecord = false;
+
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, Reader reader, boolean handleGroupKey, byte tag,
       VectorizedRowBatchCtx batchContext, long vectorizedVertexNum,
@@ -254,6 +257,9 @@ public class ReduceRecordSource implements RecordSource {
 
     try {
       if (!reader.next()) {
+        if (flushLastRecord) {
+          reducer.flushRecursive();
+        }
         return false;
       }
 
@@ -343,7 +349,7 @@ public class ReduceRecordSource implements RecordSource {
       } else {
         row.add(passDownKey.get(0));
       }
-      if ((passDownKey == null) && (reducer instanceof CommonMergeJoinOperator)) {
+      if ((passDownKey == null) && (reducer instanceof CommonMergeJoinOperator) && hasNext()) {
         passDownKey =
             (List<Object>) ObjectInspectorUtils.copyToStandardObject(row,
                 reducer.getInputObjInspectors()[tag], ObjectInspectorCopyOption.WRITABLE);
@@ -363,8 +369,13 @@ public class ReduceRecordSource implements RecordSource {
           rowString = "[Error getting row data with exception "
               + StringUtils.stringifyException(e2) + " ]";
         }
-        throw new HiveException("Hive Runtime Error while processing row (tag="
-            + tag + ") " + rowString, e);
+
+        // Log the contents of the row that caused exception so that it's available for debugging. But
+        // when exposed through an error message it can leak sensitive information, even to the
+        // client application.
+        l4j.trace("Hive Runtime Error while processing row (tag="
+                + tag + ") " + rowString);
+        throw new HiveException("Hive Runtime Error while processing row", e);
       }
     }
   }
@@ -445,6 +456,11 @@ public class ReduceRecordSource implements RecordSource {
           }
           reducer.process(batch, tag);
 
+          // Do the non-column batch reset logic.
+          batch.selectedInUse = false;
+          batch.size = 0;
+          batch.endOfFile = false;
+
           // Reset just the value columns and value buffer.
           for (int i = firstValueColumnOffset; i < batch.numCols; i++) {
             // Note that reset also resets the data buffer for bytes column vectors.
@@ -507,5 +523,9 @@ public class ReduceRecordSource implements RecordSource {
 
   public ObjectInspector getObjectInspector() {
     return rowObjectInspector;
+  }
+
+  public void setFlushLastRecord(boolean flushLastRecord) {
+    this.flushLastRecord = flushLastRecord;
   }
 }

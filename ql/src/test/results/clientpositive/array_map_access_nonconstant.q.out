@@ -19,9 +19,13 @@ POSTHOOK: Lineage: array_table.index EXPRESSION [(src)src.FieldSchema(name:key, 
 PREHOOK: query: explain
 select index, `array`[index] from array_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@array_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select index, `array`[index] from array_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -72,9 +76,13 @@ POSTHOOK: Lineage: map_table.key EXPRESSION [(src)src.FieldSchema(name:key, type
 PREHOOK: query: explain
 select key, data[key] from map_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@map_table
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, data[key] from map_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@map_table
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

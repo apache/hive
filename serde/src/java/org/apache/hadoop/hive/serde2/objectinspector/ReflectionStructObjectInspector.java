@@ -121,7 +121,7 @@ public class ReflectionStructObjectInspector extends
    */
   protected boolean isFullyInited(Set<Type> checkedTypes) {
     if (type != null && // when type is not set, init hasn't been called yet
-        ObjectInspectorFactory.objectInspectorCache.get(type) != this) {
+        ObjectInspectorFactory.objectInspectorCache.asMap().get(type) != this) {
       // This object should be the same as in cache, otherwise, it must be removed due to init error
       throw new RuntimeException("Cached object inspector is gone while waiting for it to initialize");
     }

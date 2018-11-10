@@ -56,12 +56,20 @@ from
 T1_n152 a join T2_n89 b on a.key = b.key 
 join T3_n36 c on a.val = c.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n152
+PREHOOK: Input: default@t2_n89
+PREHOOK: Input: default@t3_n36
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 select *
 from 
 T1_n152 a join T2_n89 b on a.key = b.key 
 join T3_n36 c on a.val = c.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n152
+POSTHOOK: Input: default@t2_n89
+POSTHOOK: Input: default@t3_n36
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-10 is a root stage
   Stage-7 depends on stages: Stage-10
@@ -84,6 +92,7 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: (key is not null and val is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = '2') and key is not null and val is not null) (type: boolean)
@@ -99,6 +108,7 @@ STAGE PLANS:
         $hdt$_2:c 
           TableScan
             alias: c
+            filterExpr: val is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: val is not null (type: boolean)
@@ -132,6 +142,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = '2') and key is not null) (type: boolean)

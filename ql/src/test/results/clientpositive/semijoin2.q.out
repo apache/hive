@@ -30,6 +30,9 @@ INNER JOIN table_18_n0 tt2 ON (tt2.decimal1611_col_22) = (tt1.decimal1208_col_20
 WHERE
 (t1.timestamp_col_10) = (tt2.timestamp_col_18))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_18_n0
+PREHOOK: Input: default@table_1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT
 COALESCE(498, LEAD(COALESCE(-973, -684, 515)) OVER (PARTITION BY (t2.int_col_2 + t1.smallint_col_25) ORDER BY (t2.int_col_2 + t1.smallint_col_25), FLOOR(t1.double_col_61) DESC), 524) AS int_col,
@@ -46,6 +49,9 @@ INNER JOIN table_18_n0 tt2 ON (tt2.decimal1611_col_22) = (tt1.decimal1208_col_20
 WHERE
 (t1.timestamp_col_10) = (tt2.timestamp_col_18))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_18_n0
+POSTHOOK: Input: default@table_1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-6
@@ -60,6 +66,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: (bigint_col_22 is not null and decimal1709_col_26 is not null and tinyint_col_8 is not null and timestamp_col_10 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (bigint_col_22 is not null and decimal1709_col_26 is not null and timestamp_col_10 is not null and tinyint_col_8 is not null) (type: boolean)
@@ -72,6 +79,7 @@ STAGE PLANS:
                 value expressions: smallint_col_25 (type: smallint), double_col_61 (type: double), timestamp_col_10 (type: timestamp)
           TableScan
             alias: t2
+            filterExpr: (UDFToLong(tinyint_col_6) is not null and decimal0504_col_37 is not null and tinyint_col_33 is not null and UDFToInteger(smallint_col_38) is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (UDFToInteger(smallint_col_38) is not null and UDFToLong(tinyint_col_6) is not null and decimal0504_col_37 is not null and tinyint_col_33 is not null) (type: boolean)
@@ -155,7 +163,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: (_col98 + _col16) ASC NULLS FIRST, floor(_col21) DESC NULLS LAST
+                  order by: (_col98 + _col16) ASC NULLS LAST, floor(_col21) DESC NULLS LAST
                   partition by: (_col98 + _col16)
                   raw input shape:
                   window functions:
@@ -230,6 +238,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tt1
+            filterExpr: decimal1208_col_20 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: decimal1208_col_20 is not null (type: boolean)
@@ -241,6 +250,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: tt2
+            filterExpr: (decimal1611_col_22 is not null and timestamp_col_18 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (decimal1611_col_22 is not null and timestamp_col_18 is not null) (type: boolean)

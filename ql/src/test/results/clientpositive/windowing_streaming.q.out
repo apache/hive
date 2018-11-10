@@ -48,10 +48,14 @@ PREHOOK: query: explain
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -83,7 +87,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1 ASC NULLS FIRST
+                  order by: _col1 ASC NULLS LAST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -118,11 +122,15 @@ select *
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a 
 where r < 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a 
 where r < 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -155,7 +163,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col1 ASC NULLS FIRST
+                  order by: _col1 ASC NULLS LAST
                   partition by: _col2
                   raw input shape:
                   window functions:
@@ -321,9 +329,13 @@ POSTHOOK: Input: default@over10k_n20
 PREHOOK: query: explain
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -355,7 +367,7 @@ STAGE PLANS:
                 Windowing table definition
                   input alias: ptf_1
                   name: windowingtablefunction
-                  order by: _col5 ASC NULLS FIRST
+                  order by: _col5 ASC NULLS LAST
                   partition by: _col0
                   raw input shape:
                   window functions:
@@ -417,48 +429,10 @@ where ctinyint is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sb_n0
 #### A masked pattern was here ####
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
+NULL	-16379.0	1
+NULL	-16310.0	2
+NULL	-16309.0	3
+NULL	-16307.0	4
 PREHOOK: query: drop table if exists sD_n0
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists sD_n0
@@ -488,45 +462,7 @@ where ctinyint is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sd_n0
 #### A masked pattern was here ####
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
+NULL	-16379.0	1
+NULL	-16310.0	2
+NULL	-16309.0	3
+NULL	-16307.0	4

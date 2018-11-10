@@ -7,6 +7,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -16,6 +19,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -28,6 +34,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -82,6 +89,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: bigint)
           TableScan
             alias: x
+            filterExpr: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
@@ -122,6 +130,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -203,6 +212,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -212,6 +224,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -222,6 +237,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -240,6 +256,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -258,6 +275,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
           TableScan
             alias: x
+            filterExpr: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
@@ -405,6 +423,9 @@ FROM
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -414,6 +435,9 @@ FROM
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -426,6 +450,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -513,6 +538,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -618,6 +644,9 @@ FROM
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -627,6 +656,9 @@ FROM
 ) subq1
 LEFT OUTER JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -637,6 +669,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -655,6 +688,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -829,6 +863,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -838,6 +875,9 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -850,6 +890,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -904,6 +945,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: bigint)
           TableScan
             alias: x
+            filterExpr: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
@@ -944,6 +986,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -995,6 +1038,9 @@ FROM
 ) subq1
 FULL OUTER JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT subq1.key, subq1.value, x.key, x.value
 FROM 
@@ -1004,6 +1050,9 @@ FROM
 ) subq1
 FULL OUTER JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -1016,6 +1065,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -1088,7 +1138,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Outer Join 0 to 1
+               Full Outer Join 0 to 1
           keys:
             0 UDFToDouble(_col0) (type: double)
             1 UDFToDouble(_col0) (type: double)
@@ -1107,6 +1157,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)

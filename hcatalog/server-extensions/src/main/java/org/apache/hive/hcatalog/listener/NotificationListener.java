@@ -140,7 +140,8 @@ public class NotificationListener extends MetaStoreEventListener {
       Partition after = ape.getNewPartition();
 
       String topicName = getTopicName(ape.getTable());
-      send(messageFactory.buildAlterPartitionMessage(ape.getTable(),before, after), topicName);
+      send(messageFactory.buildAlterPartitionMessage(ape.getTable(),before, after,
+              ape.getWriteId()), topicName);
     }
   }
 
@@ -254,7 +255,7 @@ public class NotificationListener extends MetaStoreEventListener {
       // DB topic - Alan.
       String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." +
           after.getDbName().toLowerCase();
-      send(messageFactory.buildAlterTableMessage(before, after), topicName);
+      send(messageFactory.buildAlterTableMessage(before, after, tableEvent.getWriteId()), topicName);
     }
   }
 

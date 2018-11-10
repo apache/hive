@@ -18,9 +18,10 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
-abstract class AbstractConstraintEventHandler extends AbstractEventHandler {
+abstract class AbstractConstraintEventHandler<T extends EventMessage> extends AbstractEventHandler<T> {
   AbstractConstraintEventHandler(NotificationEvent event) {
     super(event);
   }

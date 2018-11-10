@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +90,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir)
       throws HiveException {
     try {
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
+
       String mesg = "Moving data to " + (isDfsDir ? "" : "local ") + "directory "
           + targetPath.toString();
       String mesg_detail = " from " + sourcePath.toString();
@@ -101,6 +106,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         FileSystem dstFs = FileSystem.getLocal(conf);
         moveFileFromDfsToLocal(sourcePath, targetPath, fs, dstFs);
       }
+
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     } catch (Exception e) {
       throw new HiveException("Unable to move source " + sourcePath + " to destination "
           + targetPath, e);
@@ -132,8 +139,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
         deletePath = createTargetPath(targetPath, tgtFs);
       }
-      Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
-      if (!Hive.moveFile(conf, sourcePath, targetPath, true, false)) {
+      //For acid table incremental replication, just copy the content of staging directory to destination.
+      //No need to clean it.
+      if (work.isNeedCleanTarget()) {
+        Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
+      }
+      // Set isManaged to false as this is not load data operation for which it is needed.
+      if (!Hive.moveFile(conf, sourcePath, targetPath, true, false, false)) {
         try {
           if (deletePath != null) {
             tgtFs.delete(deletePath, true);
@@ -310,6 +322,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
         }
       }
+
       // Multi-file load is for dynamic partitions when some partitions do not
       // need to merge and they can simply be moved to the target directory.
       // This is also used for MM table conversion.
@@ -320,6 +333,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         for (int i = 0; i <lmfd.getSourceDirs().size(); ++i) {
           Path srcPath = lmfd.getSourceDirs().get(i);
           Path destPath = lmfd.getTargetDirs().get(i);
+          if (destPath.equals(srcPath)) {
+            continue;
+          }
           String filePrefix = targetPrefixes == null ? null : targetPrefixes.get(i);
           FileSystem destFs = destPath.getFileSystem(conf);
           if (filePrefix == null) {
@@ -470,7 +486,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     db.loadPartition(tbd.getSourcePath(), db.getTable(tbd.getTable().getTableName()),
         tbd.getPartitionSpec(), tbd.getLoadFileType(), tbd.getInheritTableSpecs(),
-        isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
+        tbd.getInheritLocation(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
          work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
          hasFollowingStatsTask(),
@@ -785,7 +801,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     if (updateBucketCols || updateSortCols) {
-      db.alterPartition(table.getDbName(), table.getTableName(), partn, null);
+      db.alterPartition(table.getCatalogName(), table.getDbName(), table.getTableName(),
+          partn, null, true);
     }
   }
 

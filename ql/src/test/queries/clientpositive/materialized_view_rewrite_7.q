@@ -1,6 +1,5 @@
 -- SORT_QUERY_RESULTS
 
-set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
@@ -30,14 +29,14 @@ create table dependents_n4 (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into dependents_n4 values (10, 'Michael'), (10, 'Jane');
+insert into dependents_n4 values (10, 'Michael'), (20, 'Jane');
 analyze table dependents_n4 compute statistics for columns;
 
 create table locations_n4 (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into locations_n4 values (10, 'San Francisco'), (10, 'San Diego');
+insert into locations_n4 values (10, 'San Francisco'), (20, 'San Diego');
 analyze table locations_n4 compute statistics for columns;
 
 alter table emps_n8 add constraint pk1 primary key (empid) disable novalidate rely;

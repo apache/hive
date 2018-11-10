@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hive.common.util.DateUtils;
@@ -43,7 +44,8 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
   protected final int colNum;
   protected final int field;
 
-  protected transient final Calendar calendar = Calendar.getInstance();
+  protected transient final Calendar calendar = Calendar.getInstance(
+      TimeZone.getTimeZone("UTC"));
 
   public VectorUDFTimestampFieldDate(int field, int colNum, int outputColumnNum) {
     super(outputColumnNum);
@@ -69,7 +71,7 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
   }
 
   protected long getDateField(long days) {
-    calendar.setTimeInMillis(DateWritable.daysToMillis((int) days));
+    calendar.setTimeInMillis(DateWritableV2.daysToMillis((int) days));
     return calendar.get(field);
   }
 

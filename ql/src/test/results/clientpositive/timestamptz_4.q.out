@@ -1,0 +1,31 @@
+PREHOOK: query: create table tstz4(t timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstz4
+POSTHOOK: query: create table tstz4(t timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstz4
+PREHOOK: query: insert into tstz4 VALUES ('2013-06-03 02:01:00.30547 GMT+01:00'), ('2013-06-03 02:01:00.30547 America/Los_Angeles'), ('2013-06-03 02:01:00.30547+01:00'), ('2013-06-03 02:01:00 GMT+01:00'), ('2013-06-03 02:01:00+07:00'), ('2013-06-03 02:01:00 America/Los_Angeles')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tstz4
+POSTHOOK: query: insert into tstz4 VALUES ('2013-06-03 02:01:00.30547 GMT+01:00'), ('2013-06-03 02:01:00.30547 America/Los_Angeles'), ('2013-06-03 02:01:00.30547+01:00'), ('2013-06-03 02:01:00 GMT+01:00'), ('2013-06-03 02:01:00+07:00'), ('2013-06-03 02:01:00 America/Los_Angeles')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tstz4
+POSTHOOK: Lineage: tstz4.t SCRIPT []
+PREHOOK: query: select * from tstz4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tstz4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz4
+#### A masked pattern was here ####
+2013-06-03 02:01:00.30547
+2013-06-03 02:01:00.30547
+2013-06-03 02:01:00.30547
+2013-06-03 02:01:00
+2013-06-03 02:01:00
+2013-06-03 02:01:00

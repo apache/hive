@@ -1,0 +1,105 @@
+PREHOOK: query: DROP TABLE IF EXISTS unionall_lateralview1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS unionall_lateralview1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS unionall_lateralview2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS unionall_lateralview2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE unionall_lateralview1(col1 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unionall_lateralview1
+POSTHOOK: query: CREATE TABLE unionall_lateralview1(col1 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unionall_lateralview1
+PREHOOK: query: INSERT INTO unionall_lateralview1 VALUES(1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unionall_lateralview1
+POSTHOOK: query: INSERT INTO unionall_lateralview1 VALUES(1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unionall_lateralview1
+POSTHOOK: Lineage: unionall_lateralview1.col1 SCRIPT []
+PREHOOK: query: CREATE TABLE unionall_lateralview2(col1 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unionall_lateralview2
+POSTHOOK: query: CREATE TABLE unionall_lateralview2(col1 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unionall_lateralview2
+Warning: Shuffle Join JOIN[18][tables = [x1, expdobj]] in Stage 'Stage-9:MAPRED' is a cross product
+PREHOOK: query: INSERT INTO unionall_lateralview2
+SELECT 1 AS `col1`
+FROM unionall_lateralview1
+UNION ALL
+  SELECT 2 AS `col1`
+  FROM
+    (SELECT col1
+     FROM unionall_lateralview1
+    ) x1
+    JOIN
+      (SELECT col1
+      FROM
+        (SELECT
+          Row_Number() over (PARTITION BY col1 ORDER BY col1) AS `col1`
+        FROM unionall_lateralview1
+        ) x2 lateral VIEW explode(map(10,1))`mapObj` AS `col2`, `col3`
+      ) `expdObj`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unionall_lateralview1
+PREHOOK: Output: default@unionall_lateralview2
+POSTHOOK: query: INSERT INTO unionall_lateralview2
+SELECT 1 AS `col1`
+FROM unionall_lateralview1
+UNION ALL
+  SELECT 2 AS `col1`
+  FROM
+    (SELECT col1
+     FROM unionall_lateralview1
+    ) x1
+    JOIN
+      (SELECT col1
+      FROM
+        (SELECT
+          Row_Number() over (PARTITION BY col1 ORDER BY col1) AS `col1`
+        FROM unionall_lateralview1
+        ) x2 lateral VIEW explode(map(10,1))`mapObj` AS `col2`, `col3`
+      ) `expdObj`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unionall_lateralview1
+POSTHOOK: Output: default@unionall_lateralview2
+POSTHOOK: Lineage: unionall_lateralview2.col1 EXPRESSION []
+PREHOOK: query: SELECT * FROM unionall_lateralview2 ORDER BY col1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unionall_lateralview2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM unionall_lateralview2 ORDER BY col1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unionall_lateralview2
+#### A masked pattern was here ####
+1
+1
+2
+2
+2
+2
+PREHOOK: query: DROP TABLE unionall_lateralview1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@unionall_lateralview1
+PREHOOK: Output: default@unionall_lateralview1
+POSTHOOK: query: DROP TABLE unionall_lateralview1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@unionall_lateralview1
+POSTHOOK: Output: default@unionall_lateralview1
+PREHOOK: query: DROP TABLE unionall_lateralview2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@unionall_lateralview2
+PREHOOK: Output: default@unionall_lateralview2
+POSTHOOK: query: DROP TABLE unionall_lateralview2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@unionall_lateralview2
+POSTHOOK: Output: default@unionall_lateralview2

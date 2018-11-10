@@ -21,11 +21,9 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.google.common.base.Strings;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -33,28 +31,38 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
 public class CoreCompareCliDriver extends CliAdapter{
 
   private static QTestUtil qt;
+
   public CoreCompareCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
 
-
   @Override
   @BeforeClass
   public void beforeClass() {
-
     MiniClusterType miniMR = cliConfig.getClusterType();
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
+
     try {
-      String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript, false);
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(false)
+            .build());
 
       // do a one time initialization
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
 
@@ -62,7 +70,7 @@ public class CoreCompareCliDriver extends CliAdapter{
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      fail("Unexpected exception in static initialization");
+      throw new RuntimeException("Unexpected exception in static initialization", e);
     }
   }
 
@@ -71,6 +79,7 @@ public class CoreCompareCliDriver extends CliAdapter{
   public void setUp() {
     try {
       qt.clearTestSideEffects();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -84,6 +93,7 @@ public class CoreCompareCliDriver extends CliAdapter{
   public void tearDown() {
     try {
       qt.clearPostTestEffects();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -94,7 +104,7 @@ public class CoreCompareCliDriver extends CliAdapter{
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       qt.shutdown();
     } catch (Exception e) {
@@ -105,13 +115,11 @@ public class CoreCompareCliDriver extends CliAdapter{
     }
   }
 
-  private Map<String, List<String>> versionFiles = new HashMap<>();
-
-  static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
+  private static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
      + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
 
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
+  public void runTest(String tname, String fname, String fpath) {
     final String queryDirectory = cliConfig.getQueryDirectory();
 
     long startTime = System.currentTimeMillis();
@@ -128,19 +136,15 @@ public class CoreCompareCliDriver extends CliAdapter{
         qt.addFile(new File(queryDirectory, versionFile), true);
       }
 
-      if (qt.shouldBeSkipped(fname)) {
-        return;
-      }
-
       int ecode = 0;
-      
-      qt.cliInit(new File(fpath), false);
-      
+
+      qt.cliInit(new File(fpath));
+
       List<String> outputs = new ArrayList<>(versionFiles.size());
       for (String versionFile : versionFiles) {
         // 1 for "_" after tname; 3 for ".qv" at the end. Version is in between.
         String versionStr = versionFile.substring(tname.length() + 1, versionFile.length() - 3);
-        outputs.add(qt.cliInit(new File(queryDirectory, tname + "." + versionStr), false));
+        outputs.add(qt.cliInit(new File(queryDirectory, tname + "." + versionStr)));
         // TODO: will this work?
         ecode = qt.executeClient(versionFile, fname);
         if (ecode != 0) {

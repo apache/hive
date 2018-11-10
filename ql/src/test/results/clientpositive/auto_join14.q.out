@@ -10,10 +10,20 @@ PREHOOK: query: explain
 FROM src JOIN srcpart ON src.key = srcpart.key AND srcpart.ds = '2008-04-08' and src.key > 100
 INSERT OVERWRITE TABLE dest1_n83 SELECT src.key, srcpart.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1_n83
 POSTHOOK: query: explain
 FROM src JOIN srcpart ON src.key = srcpart.key AND srcpart.ds = '2008-04-08' and src.key > 100
 INSERT OVERWRITE TABLE dest1_n83 SELECT src.key, srcpart.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1_n83
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
   Stage-5 depends on stages: Stage-6
@@ -32,6 +42,7 @@ STAGE PLANS:
         $hdt$_0:src 
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -50,6 +61,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((ds = '2008-04-08') and (UDFToDouble(key) > 100.0D)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)

@@ -12,8 +12,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert
 PREHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -141,8 +145,12 @@ POSTHOOK: Input: default@insert
 10226524244
 PREHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE `insert` SELECT * FROM src LIMIT 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -279,8 +287,12 @@ POSTHOOK: Input: default@insert
 200
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE `insert` SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

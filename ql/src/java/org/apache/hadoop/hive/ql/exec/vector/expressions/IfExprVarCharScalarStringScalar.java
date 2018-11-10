@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveVarchar;
-
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
@@ -33,8 +31,8 @@ public class IfExprVarCharScalarStringScalar extends IfExprStringScalarStringSca
   private static final long serialVersionUID = 1L;
 
   public IfExprVarCharScalarStringScalar(
-      int arg1Column, HiveVarchar arg2Scalar, byte[] arg3Scalar, int outputColumnNum) {
-    super(arg1Column, arg2Scalar.getValue().getBytes(), arg3Scalar, outputColumnNum);
+      int arg1Column, byte[] arg2Scalar, byte[] arg3Scalar, int outputColumnNum) {
+    super(arg1Column, arg2Scalar, arg3Scalar, outputColumnNum);
   }
 
   public IfExprVarCharScalarStringScalar() {
@@ -49,7 +47,7 @@ public class IfExprVarCharScalarStringScalar extends IfExprStringScalarStringSca
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.INT_FAMILY,
             VectorExpressionDescriptor.ArgumentType.VARCHAR,
-            VectorExpressionDescriptor.ArgumentType.STRING)
+            VectorExpressionDescriptor.ArgumentType.VARCHAR)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR,

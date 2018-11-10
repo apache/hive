@@ -31,13 +31,11 @@ import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
-import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
@@ -52,8 +50,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcFile;
 import org.apache.orc.OrcProto;
-import org.apache.orc.OrcUtils;
 import org.apache.orc.OrcProto.ColumnEncoding;
 import org.apache.orc.OrcProto.RowIndex;
 import org.apache.orc.OrcProto.RowIndexEntry;
@@ -107,7 +105,7 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
 
   public static final class SerDeStripeMetadata implements ConsumerStripeMetadata {
     // The writer is local to the process.
-    private final String writerTimezone = TimeZone.getDefault().getID();
+    private final String writerTimezone = "UTC";
     private List<ColumnEncoding> encodings;
     private final int stripeIx;
     private long rowCount = -1;
@@ -288,6 +286,11 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     @Override
     public TypeDescription getSchema() {
       return schema;
+    }
+
+    @Override
+    public OrcFile.Version getFileVersion() {
+      return null;
     }
   }
 }

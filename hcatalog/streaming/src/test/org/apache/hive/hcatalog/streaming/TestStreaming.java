@@ -439,8 +439,6 @@ public class TestStreaming {
     String tableLoc  = "'" + dbUri + Path.SEPARATOR + "streamedtable" + "'";
     String tableLoc2 = "'" + dbUri + Path.SEPARATOR + "finaltable" + "'";
     String tableLoc3 = "'" + dbUri + Path.SEPARATOR + "nobucket" + "'";
-    // disabling vectorization as this test yields incorrect results with vectorization
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     try (IDriver driver = DriverFactory.newDriver(conf)) {
       runDDL(driver, "create database testBucketing3");
       runDDL(driver, "use testBucketing3");
@@ -1357,6 +1355,18 @@ public class TestStreaming {
     }
   }
 
+  /**
+   * Make sure that creating an already existing partion is handled gracefully
+   * @throws Exception
+   */
+  @Test
+  public void testCreatePartition() throws Exception {
+    final HiveEndPoint ep = new HiveEndPoint(metaStoreURI, dbName, tblName, partitionVals);
+    StreamingConnection conn = ep.newConnection(true);
+    conn.close();
+    conn = ep.newConnection(true);
+    conn.close();
+  }
   @Test
   public void testConcurrentTransactionBatchCommits() throws Exception {
     final HiveEndPoint ep = new HiveEndPoint(metaStoreURI, dbName, tblName, partitionVals);

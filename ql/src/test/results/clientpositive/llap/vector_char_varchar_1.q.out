@@ -29,9 +29,15 @@ POSTHOOK: Output: default@varchar_table
 PREHOOK: query: explain vectorization detail
 create table varchar_ctas_1 as select length(vs),reverse(vs) from varchar_table
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@varchar_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_ctas_1
 POSTHOOK: query: explain vectorization detail
 create table varchar_ctas_1 as select length(vs),reverse(vs) from varchar_table
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@varchar_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_ctas_1
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -83,8 +89,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: true
@@ -177,9 +182,15 @@ POSTHOOK: Output: default@char_table
 PREHOOK: query: explain vectorization detail
 create table char_ctas_1 as select length(vs),reverse(vs) from char_table
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@char_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@char_ctas_1
 POSTHOOK: query: explain vectorization detail
 create table char_ctas_1 as select length(vs),reverse(vs) from char_table
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@char_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@char_ctas_1
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -231,8 +242,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: true

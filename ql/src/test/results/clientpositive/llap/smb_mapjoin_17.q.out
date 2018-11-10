@@ -167,6 +167,14 @@ JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n15
+PREHOOK: Input: default@test_table2_n14
+PREHOOK: Input: default@test_table3_n7
+PREHOOK: Input: default@test_table4_n1
+PREHOOK: Input: default@test_table5
+PREHOOK: Input: default@test_table6
+PREHOOK: Input: default@test_table7
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
 FROM test_table1_n15 a JOIN test_table2_n14 b ON a.key = b.key
@@ -176,6 +184,14 @@ JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n15
+POSTHOOK: Input: default@test_table2_n14
+POSTHOOK: Input: default@test_table3_n7
+POSTHOOK: Input: default@test_table4_n1
+POSTHOOK: Input: default@test_table5
+POSTHOOK: Input: default@test_table6
+POSTHOOK: Input: default@test_table7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -193,6 +209,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -212,6 +229,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -231,6 +249,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -250,6 +269,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -269,6 +289,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -288,6 +309,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: f
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -307,6 +329,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: g
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -415,6 +438,14 @@ LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n15
+PREHOOK: Input: default@test_table2_n14
+PREHOOK: Input: default@test_table3_n7
+PREHOOK: Input: default@test_table4_n1
+PREHOOK: Input: default@test_table5
+PREHOOK: Input: default@test_table6
+PREHOOK: Input: default@test_table7
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(*)
 FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
@@ -424,6 +455,14 @@ LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n15
+POSTHOOK: Input: default@test_table2_n14
+POSTHOOK: Input: default@test_table3_n7
+POSTHOOK: Input: default@test_table4_n1
+POSTHOOK: Input: default@test_table5
+POSTHOOK: Input: default@test_table6
+POSTHOOK: Input: default@test_table7
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -585,6 +624,15 @@ LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n15
+PREHOOK: Input: default@test_table2_n14
+PREHOOK: Input: default@test_table3_n7
+PREHOOK: Input: default@test_table4_n1
+PREHOOK: Input: default@test_table5
+PREHOOK: Input: default@test_table6
+PREHOOK: Input: default@test_table7
+PREHOOK: Input: default@test_table8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT count(*)
 FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
@@ -595,6 +643,15 @@ LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n15
+POSTHOOK: Input: default@test_table2_n14
+POSTHOOK: Input: default@test_table3_n7
+POSTHOOK: Input: default@test_table4_n1
+POSTHOOK: Input: default@test_table5
+POSTHOOK: Input: default@test_table6
+POSTHOOK: Input: default@test_table7
+POSTHOOK: Input: default@test_table8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -783,6 +840,15 @@ LEFT OUTER JOIN test_table6 r ON a.key = r.key
 LEFT OUTER JOIN test_table7 s ON a.key = s.key
 LEFT OUTER JOIN test_table8 t ON a.key = t.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n15
+PREHOOK: Input: default@test_table2_n14
+PREHOOK: Input: default@test_table3_n7
+PREHOOK: Input: default@test_table4_n1
+PREHOOK: Input: default@test_table5
+PREHOOK: Input: default@test_table6
+PREHOOK: Input: default@test_table7
+PREHOOK: Input: default@test_table8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.*
 FROM test_table1_n15 a
@@ -806,6 +872,15 @@ LEFT OUTER JOIN test_table6 r ON a.key = r.key
 LEFT OUTER JOIN test_table7 s ON a.key = s.key
 LEFT OUTER JOIN test_table8 t ON a.key = t.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n15
+POSTHOOK: Input: default@test_table2_n14
+POSTHOOK: Input: default@test_table3_n7
+POSTHOOK: Input: default@test_table4_n1
+POSTHOOK: Input: default@test_table5
+POSTHOOK: Input: default@test_table6
+POSTHOOK: Input: default@test_table7
+POSTHOOK: Input: default@test_table8
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -38,6 +38,8 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   db  = '-307' AND
   str = 1234
 PREHOOK: type: QUERY
+PREHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '127' AND
   si  = 32767 AND
@@ -47,6 +49,8 @@ POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   db  = '-307' AND
   str = 1234
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -57,9 +61,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
+            filterExpr: ((ti = 127Y) and (si = 32767S) and (i = 12345) and (bi = -12345L) and (fl = 906.0) and (db = -307.0D) and (UDFToDouble(str) = 1234.0D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(str) = 1234.0D) and (bi = -12345L) and (db = -307.0D) and (fl = 906) and (i = 12345) and (si = 32767S) and (ti = 127Y)) (type: boolean)
+              predicate: ((UDFToDouble(str) = 1234.0D) and (bi = -12345L) and (db = -307.0D) and (fl = 906.0) and (i = 12345) and (si = 32767S) and (ti = 127Y)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 127Y (type: tinyint), 32767S (type: smallint), 12345 (type: int), -12345L (type: bigint), 906.0 (type: float), -307.0D (type: double), str (type: string)
@@ -112,6 +117,8 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   fl  = 'float' OR
   db  = 'double'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
@@ -120,6 +127,8 @@ POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   fl  = 'float' OR
   db  = 'double'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -130,9 +139,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
+            filterExpr: ((UDFToDouble(ti) = 128.0D) or (UDFToInteger(si) = 32768) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(bi) = 9.223372036854776E18D) or null) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(bi) = 9.223372036854776E18D) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(ti) = 128.0D) or (UDFToInteger(si) = 32768)) (type: boolean)
+              predicate: ((UDFToDouble(bi) = 9.223372036854776E18D) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(ti) = 128.0D) or (UDFToInteger(si) = 32768) or null) (type: boolean)
               Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
@@ -179,11 +189,15 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   si  = 327.0 OR
   i   = '-100.0'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '127.0' OR
   si  = 327.0 OR
   i   = '-100.0'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -194,6 +208,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
+            filterExpr: ((UDFToDouble(ti) = 127.0D) or (CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(i) = -100.0D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(i) = -100.0D) or (UDFToDouble(ti) = 127.0D)) (type: boolean)
@@ -237,11 +252,15 @@ PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   i > '100.0' AND
   str = 1.57
 PREHOOK: type: QUERY
+PREHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti < '127.0' AND
   i > '100.0' AND
   str = 1.57
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@infertypes
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -252,6 +271,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
+            filterExpr: ((UDFToDouble(ti) < 127.0D) and (UDFToDouble(i) > 100.0D) and (UDFToDouble(str) = 1.57D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(i) > 100.0D) and (UDFToDouble(str) = 1.57D) and (UDFToDouble(ti) < 127.0D)) (type: boolean)

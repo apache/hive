@@ -4,7 +4,6 @@ set hive.mapred.mode=nonstrict;
 
 set hive.auto.convert.join = true;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 CREATE TABLE dest1_n83(c1 INT, c2 STRING) STORED AS TEXTFILE;
 

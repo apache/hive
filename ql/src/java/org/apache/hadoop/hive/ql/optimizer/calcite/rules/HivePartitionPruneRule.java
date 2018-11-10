@@ -22,10 +22,13 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Pair;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+
+import java.util.Collections;
 
 public class HivePartitionPruneRule extends RelOptRule {
 
@@ -45,13 +48,26 @@ public class HivePartitionPruneRule extends RelOptRule {
 
   protected void perform(RelOptRuleCall call, Filter filter,
       HiveTableScan tScan) {
-
+    // Original table
     RelOptHiveTable hiveTable = (RelOptHiveTable) tScan.getTable();
-    RexNode predicate = filter.getCondition();
 
+    // Copy original table scan and table
+    HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
+    RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
+
+    // Execute partition pruning
+    RexNode predicate = filter.getCondition();
     Pair<RexNode, RexNode> predicates = PartitionPrune
-        .extractPartitionPredicates(filter.getCluster(), hiveTable, predicate);
+        .extractPartitionPredicates(filter.getCluster(), hiveTableCopy, predicate);
     RexNode partColExpr = predicates.left;
-    hiveTable.computePartitionList(conf, partColExpr, tScan.getPartOrVirtualCols());
+    hiveTableCopy.computePartitionList(conf, partColExpr, tScanCopy.getPartOrVirtualCols());
+
+    if (StringUtils.equals(hiveTableCopy.getPartitionListKey(), hiveTable.getPartitionListKey())) {
+      // Nothing changed, we do not need to produce a new expression
+      return;
+    }
+
+    call.transformTo(filter.copy(
+        filter.getTraitSet(), Collections.singletonList(tScanCopy)));
   }
 }

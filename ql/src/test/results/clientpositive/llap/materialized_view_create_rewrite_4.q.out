@@ -79,6 +79,10 @@ CREATE MATERIALIZED VIEW cmv_mat_view_n5 DISABLE REWRITE TBLPROPERTIES ('transac
   WHERE cmv_basetable_2_n2.c > 10.0
   GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: query: EXPLAIN
 CREATE MATERIALIZED VIEW cmv_mat_view_n5 DISABLE REWRITE TBLPROPERTIES ('transactional'='true') AS
   SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)
@@ -86,6 +90,10 @@ CREATE MATERIALIZED VIEW cmv_mat_view_n5 DISABLE REWRITE TBLPROPERTIES ('transac
   WHERE cmv_basetable_2_n2.c > 10.0
   GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -107,6 +115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -126,6 +135,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -267,7 +277,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
-	rawDataSize         	248                 
+	rawDataSize         	0                   
 	totalSize           	736                 
 	transactional       	true                
 	transactional_properties	default             
@@ -282,28 +292,35 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
 	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
-View Expanded Text: 	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
 	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
-View Rewrite Enabled:	No                  	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -321,6 +338,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -340,6 +358,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10.1) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
@@ -451,9 +470,13 @@ POSTHOOK: Output: default@cmv_basetable_2_n2
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 ENABLE REWRITE
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@cmv_mat_view_n5
+PREHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 ENABLE REWRITE
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view_n5
+POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -494,7 +517,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
-	rawDataSize         	248                 
+	rawDataSize         	0                   
 	totalSize           	736                 
 	transactional       	true                
 	transactional_properties	default             
@@ -509,28 +532,35 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
 	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
-View Expanded Text: 	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
 	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	Yes                 	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -548,6 +578,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -567,6 +598,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10.1) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
@@ -655,9 +687,19 @@ POSTHOOK: Input: default@cmv_basetable_n5
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Input: default@cmv_mat_view_n5
+PREHOOK: Output: default@cmv_mat_view_n5
+PREHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Input: default@cmv_mat_view_n5
+POSTHOOK: Output: default@cmv_mat_view_n5
+POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -683,6 +725,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_n5
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -703,6 +746,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -722,9 +766,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 2) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 2) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2)), d (type: int)
@@ -788,6 +833,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       sort order: +
+                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int), _col2 (type: decimal(10,2)), _col3 (type: bigint)
         Reducer 3 
@@ -935,9 +981,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
-	totalSize           	1512                
+	numRows             	3                   
+	rawDataSize         	0                   
+	totalSize           	1500                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -951,28 +1000,37 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
 	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
-View Expanded Text: 	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
 	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Input: default@cmv_mat_view_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Input: default@cmv_mat_view_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -983,6 +1041,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n5
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -1022,9 +1081,15 @@ POSTHOOK: Output: default@cmv_basetable_2_n2
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1045,6 +1110,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -1064,19 +1130,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-                  Statistics: Num rows: 61 Data size: 7320 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
-                    Statistics: Num rows: 20 Data size: 2400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2)), d (type: int)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 20 Data size: 2400 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 20 Data size: 2400 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2)), _col2 (type: int)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -1090,7 +1157,7 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2, _col3
-                Statistics: Num rows: 33 Data size: 3960 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col3)
                   keys: _col0 (type: int), _col2 (type: decimal(10,2))
@@ -1186,12 +1253,20 @@ FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_baset
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Input: default@cmv_mat_view_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Input: default@cmv_mat_view_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1202,6 +1277,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n5
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -1241,9 +1317,15 @@ POSTHOOK: Output: default@cmv_basetable_2_n2
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1264,6 +1346,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -1283,19 +1366,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-                  Statistics: Num rows: 72 Data size: 8640 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
-                    Statistics: Num rows: 24 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2)), d (type: int)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 24 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 24 Data size: 2880 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2)), _col2 (type: int)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -1309,7 +1393,7 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2, _col3
-                Statistics: Num rows: 40 Data size: 4800 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col3)
                   keys: _col0 (type: int), _col2 (type: decimal(10,2))
@@ -1405,12 +1489,20 @@ FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_baset
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Input: default@cmv_mat_view_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Input: default@cmv_mat_view_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1421,6 +1513,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n5
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -1465,9 +1558,19 @@ POSTHOOK: Lineage: cmv_basetable_2_n2.d SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Input: default@cmv_mat_view_n5
+PREHOOK: Output: default@cmv_mat_view_n5
+PREHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Input: default@cmv_mat_view_n5
+POSTHOOK: Output: default@cmv_mat_view_n5
+POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -1493,6 +1596,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_n5
+                  filterExpr: ((c > 10) and a is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10) and a is not null) (type: boolean)
@@ -1513,6 +1617,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -1532,19 +1637,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-                  Statistics: Num rows: 88 Data size: 10560 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 6) and a is not null) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 4) and (c > 10) and a is not null) (type: boolean)
-                    Statistics: Num rows: 9 Data size: 1080 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((ROW__ID.writeid > 6) and (c > 10) and a is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2)), d (type: int)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 9 Data size: 1764 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 9 Data size: 1764 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2)), _col2 (type: int)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -1598,6 +1704,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       sort order: +
+                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int), _col2 (type: decimal(10,2)), _col3 (type: bigint)
         Reducer 3 
@@ -1641,7 +1748,7 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2, _col3
-                Statistics: Num rows: 15 Data size: 1800 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col3)
                   keys: _col0 (type: int), _col2 (type: decimal(10,2))
@@ -1733,12 +1840,20 @@ FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_baset
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n2
+PREHOOK: Input: default@cmv_basetable_n5
+PREHOOK: Input: default@cmv_mat_view_n5
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
 GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n2
+POSTHOOK: Input: default@cmv_basetable_n5
+POSTHOOK: Input: default@cmv_mat_view_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1749,6 +1864,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n5
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator

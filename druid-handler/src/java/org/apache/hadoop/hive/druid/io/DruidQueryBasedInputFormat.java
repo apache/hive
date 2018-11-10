@@ -17,11 +17,9 @@
  */
 package org.apache.hadoop.hive.druid.io;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
-import com.metamx.http.client.Request;
+import io.druid.java.util.http.client.Request;
 import io.druid.query.BaseQuery;
 import io.druid.query.LocatedSegmentDescriptor;
 import io.druid.query.Query;
@@ -45,6 +43,7 @@ import org.apache.hadoop.hive.druid.serde.DruidSelectQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTimeseriesQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTopNQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -106,14 +105,16 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   }
 
   @SuppressWarnings("deprecation")
-  private HiveDruidSplit[] getInputSplits(Configuration conf) throws IOException {
+  protected HiveDruidSplit[] getInputSplits(Configuration conf) throws IOException {
     String address = HiveConf.getVar(conf,
             HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS
     );
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
     if (StringUtils.isEmpty(address)) {
       throw new IOException("Druid broker address not specified in configuration");
     }
     String druidQuery = StringEscapeUtils.unescapeJava(conf.get(Constants.DRUID_QUERY_JSON));
+
     String druidQueryType;
     if (StringUtils.isEmpty(druidQuery)) {
       // Empty, maybe because CBO did not run; we fall back to
@@ -125,14 +126,19 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       if (dataSource == null || dataSource.isEmpty()) {
         throw new IOException("Druid data source cannot be empty or null");
       }
-
-      druidQuery = DruidStorageHandlerUtils.createScanAllQuery(dataSource);
+      druidQuery = DruidStorageHandlerUtils.createScanAllQuery(dataSource, Utilities.getColumnNames(conf));
       druidQueryType = Query.SCAN;
+      conf.set(Constants.DRUID_QUERY_TYPE, druidQueryType);
     } else {
       druidQueryType = conf.get(Constants.DRUID_QUERY_TYPE);
       if (druidQueryType == null) {
         throw new IOException("Druid query type not recognized");
       }
+    }
+
+    // Add Hive Query ID to Druid Query
+    if (queryId != null) {
+      druidQuery = withQueryId(druidQuery, queryId);
     }
 
     // hive depends on FileSplits
@@ -147,8 +153,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       case Query.TIMESERIES:
       case Query.TOPN:
       case Query.GROUP_BY:
-        return new HiveDruidSplit[] { new HiveDruidSplit(deserializeSerialize(druidQuery),
-                paths[0], new String[] {address}) };
+        return new HiveDruidSplit[] {
+            new HiveDruidSplit(druidQuery, paths[0], new String[] { address }) };
       case Query.SELECT:
         SelectQuery selectQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(
                 druidQuery, SelectQuery.class);
@@ -223,10 +229,13 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     final HiveDruidSplit[] splits = new HiveDruidSplit[segmentDescriptors.size()];
     for (int i = 0; i < numSplits; i++) {
       final LocatedSegmentDescriptor locatedSD = segmentDescriptors.get(i);
-      final String[] hosts = new String[locatedSD.getLocations().size()];
+      final String[] hosts = new String[locatedSD.getLocations().size() + 1];
       for (int j = 0; j < locatedSD.getLocations().size(); j++) {
         hosts[j] = locatedSD.getLocations().get(j).getHost();
       }
+      // Default to broker if all other hosts fail.
+      hosts[locatedSD.getLocations().size()] = address;
+
       // Create partial Select query
       final SegmentDescriptor newSD = new SegmentDescriptor(
           locatedSD.getInterval(), locatedSD.getVersion(), locatedSD.getPartitionNumber());
@@ -266,11 +275,10 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     return segmentDescriptors;
   }
 
-  private static String deserializeSerialize(String druidQuery)
-          throws JsonParseException, JsonMappingException, IOException {
-    BaseQuery<?> deserializedQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(
-            druidQuery, BaseQuery.class);
-    return DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(deserializedQuery);
+  private static String withQueryId(String druidQuery, String queryId) throws IOException {
+    Query<?> queryWithId =
+        DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, BaseQuery.class).withId(queryId);
+    return DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(queryWithId);
   }
 
   @Override
@@ -283,7 +291,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     final DruidQueryRecordReader<?, ?> reader;
     final String druidQueryType = job.get(Constants.DRUID_QUERY_TYPE);
     if (druidQueryType == null) {
-      reader = new DruidSelectQueryRecordReader(); // By default
+      reader = new DruidScanQueryRecordReader(); // By default we use scan query as fallback.
       reader.initialize((HiveDruidSplit) split, job);
       return reader;
     }
@@ -304,7 +312,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // The reason is that Druid results format is different for each type.
     final String druidQueryType = context.getConfiguration().get(Constants.DRUID_QUERY_TYPE);
     if (druidQueryType == null) {
-      return new DruidSelectQueryRecordReader(); // By default
+      return new DruidScanQueryRecordReader(); // By default, we use druid scan query as fallback.
     }
     final DruidQueryRecordReader<?, ?> reader =
             getDruidQueryReader(druidQueryType);

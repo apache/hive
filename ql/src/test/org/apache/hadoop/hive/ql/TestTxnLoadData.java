@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,8 +47,13 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
   @Rule
   public TemporaryFolder folder= new TemporaryFolder();
 
+  @Before
+  public void setUp() throws Exception {
+    setUpInternal();
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+  }
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 
@@ -263,12 +269,18 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/000000_0"},
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/000000_0"},
         //from Load Data into acid converted table
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t2\t2", "t/delta_0000001_0000001_0000/000001_0"},
-        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t3\t3", "t/delta_0000001_0000001_0000/000001_0"},
-        {"{\"writeid\":1,\"bucketid\":537001984,\"rowid\":0}\t4\t4", "t/delta_0000001_0000001_0000/000002_0"},
-        {"{\"writeid\":1,\"bucketid\":537001984,\"rowid\":1}\t5\t5", "t/delta_0000001_0000001_0000/000002_0"},
+        {"{\"writeid\":10000001,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
+            "t/delta_10000001_10000001_0000/000000_0"},
+        {"{\"writeid\":10000001,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
+            "t/delta_10000001_10000001_0000/000000_0"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t2\t2",
+            "t/delta_10000001_10000001_0000/000001_0"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":1}\t3\t3",
+            "t/delta_10000001_10000001_0000/000001_0"},
+        {"{\"writeid\":10000001,\"bucketid\":537001984,\"rowid\":0}\t4\t4",
+            "t/delta_10000001_10000001_0000/000002_0"},
+        {"{\"writeid\":10000001,\"bucketid\":537001984,\"rowid\":1}\t5\t5",
+            "t/delta_10000001_10000001_0000/000002_0"},
     };
     checkResult(expected, testQuery, isVectorized, "load data inpath");
 
@@ -279,9 +291,12 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/2/data' overwrite into table T");
 
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t5\t6", "t/base_0000002/000000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_0000002/000000_0"},
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t8\t8", "t/base_0000002/000001_0"}
+        {"{\"writeid\":10000002,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
+            "t/base_10000002/000000_0"},
+        {"{\"writeid\":10000002,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_10000002/000000_0"},
+        {"{\"writeid\":10000002,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
+
+            "t/base_10000002/000001_0"}
     };
     checkResult(expected2, testQuery, isVectorized, "load data inpath overwrite");
 
@@ -291,10 +306,14 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     TestTxnCommands2.runWorker(hiveConf);
 
     String[][] expected3 = new String[][] {
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t5\t6", "t/base_0000003/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_0000003/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t8\t8", "t/base_0000003/bucket_00001"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t9\t9", "t/base_0000003/bucket_00000"}
+        {"{\"writeid\":10000002,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
+            "t/base_10000003/bucket_00000"},
+        {"{\"writeid\":10000002,\"bucketid\":536870912,\"rowid\":1}\t7\t8",
+            "t/base_10000003/bucket_00000"},
+        {"{\"writeid\":10000002,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
+            "t/base_10000003/bucket_00001"},
+        {"{\"writeid\":10000003,\"bucketid\":536870912,\"rowid\":0}\t9\t9",
+            "t/base_10000003/bucket_00000"}
     };
     checkResult(expected3, testQuery, isVectorized, "load data inpath overwrite (major)");
   }
@@ -365,10 +384,10 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
-    CommandProcessorResponse cpr = runStatementOnDriverNegative("load data local inpath '" + getWarehouseDir() + "' into table T");
-    // This condition should not occur with the new support of rewriting load into IAS.
-    Assert.assertFalse(cpr.getErrorMessage().contains("Load into bucketed tables are disabled"));
+    // This will work with the new support of rewriting load into IAS.
+    runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/Tstage' into table T");
   }
+
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
     super.checkExpected(rs, expected, msg, LOG, true);
   }

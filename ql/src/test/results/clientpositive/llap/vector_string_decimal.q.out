@@ -43,9 +43,13 @@ POSTHOOK: Lineage: orc_decimal.id SIMPLE [(staging_n1)staging_n1.FieldSchema(nam
 PREHOOK: query: explain vectorization expression
 select * from orc_decimal where id in ('100000000', '200000000')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_decimal
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select * from orc_decimal where id in ('100000000', '200000000')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_decimal
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -63,6 +67,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_decimal
+                  filterExpr: (id) IN (100000000, 200000000) (type: boolean)
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -70,8 +75,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColumnInList(col 2:double, values [1.0E8, 2.0E8])(children: CastDecimalToDouble(col 0:decimal(18,0)) -> 2:double)
-                    predicate: (UDFToDouble(id)) IN (1.0E8D, 2.0E8D) (type: boolean)
+                        predicateExpression: FilterDecimal64ColumnInList(col 0:decimal(18,0)/DECIMAL_64, values [, decimal64Val 100000000, decimalVal 100000000, decimal64Val 200000000, decimalVal 200000000])
+                    predicate: (id) IN (100000000, 200000000) (type: boolean)
                     Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: decimal(18,0))
@@ -96,8 +101,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

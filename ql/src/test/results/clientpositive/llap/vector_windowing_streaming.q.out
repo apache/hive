@@ -48,10 +48,14 @@ PREHOOK: query: explain vectorization detail
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -83,11 +87,10 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [2, 1]
+                        keyColumns: 2:string, 1:string
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumnNums: [2]
-                        valueColumnNums: []
+                        partitionColumns: 2:string
                     Statistics: Num rows: 26 Data size: 5694 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -95,8 +98,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -112,7 +114,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -140,7 +142,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -195,11 +197,15 @@ select *
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a 
 where r < 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a 
 where r < 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -242,8 +248,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -259,7 +264,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -287,7 +292,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -396,11 +401,15 @@ select *
 from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * 
 from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n8
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -422,10 +431,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n8
+                  filterExpr: (t < 5Y) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -450,8 +460,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -459,7 +468,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [0, 4]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -467,7 +476,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -495,7 +504,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col4 ASC NULLS FIRST
+                        order by: _col4 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -642,9 +651,13 @@ a.t	a.f	a.r
 PREHOOK: query: explain vectorization detail
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: false
@@ -691,7 +704,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -755,48 +768,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sb
 #### A masked pattern was here ####
 sb.ctinyint	sb.cdouble	sb.r
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
+NULL	-16379.0	1
+NULL	-16310.0	2
+NULL	-16309.0	3
+NULL	-16307.0	4
 PREHOOK: query: drop table if exists sD
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists sD
@@ -805,10 +780,16 @@ PREHOOK: query: explain vectorization detail
 create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sD
 POSTHOOK: query: explain vectorization detail
 create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sD
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -853,8 +834,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -870,7 +851,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -898,7 +879,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS FIRST
+                        order by: _col5 ASC NULLS LAST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -1000,45 +981,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sd
 #### A masked pattern was here ####
 sd.ctinyint	sd.cdouble	sd.r
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
-NULL	NULL	1
+NULL	-16379.0	1
+NULL	-16310.0	2
+NULL	-16309.0	3
+NULL	-16307.0	4

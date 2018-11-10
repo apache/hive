@@ -7,6 +7,8 @@ from
   on (t2.key=t3.key )
   where t2.value='val_105' and t3.key='105'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select t2.* 
 from
@@ -16,6 +18,8 @@ from
   on (t2.key=t3.key )
   where t2.value='val_105' and t3.key='105'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-3 depends on stages: Stage-4
@@ -32,6 +36,7 @@ STAGE PLANS:
         t2:t1:src 
           TableScan
             alias: src
+            filterExpr: ((value = 'val_105') and (key = '105')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = '105') and (value = 'val_105')) (type: boolean)
@@ -48,6 +53,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (key = '105') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = '105') (type: boolean)

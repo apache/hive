@@ -28,12 +28,18 @@ SELECT * FROM
 UNION ALL
 SELECT CAST(key AS BIGINT) AS key FROM t2_n43) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1_n70
 UNION ALL
 SELECT CAST(key AS BIGINT) AS key FROM t2_n43) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -123,12 +129,18 @@ SELECT * FROM
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key FROM t2_n43) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key FROM t2_n43) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -140,6 +152,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -155,6 +168,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -278,12 +292,18 @@ SELECT * FROM
 UNION ALL
 SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t2_n43
 UNION ALL
 SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -295,6 +315,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -310,6 +331,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -433,12 +455,18 @@ SELECT * FROM
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -450,6 +478,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -465,6 +494,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -488,7 +518,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS CHAR(20))) (type: string)
+            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), CAST( CAST( _col1 AS CHAR(20)) AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -588,12 +618,18 @@ SELECT * FROM
 UNION ALL
 SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43
 UNION ALL
 SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -605,6 +641,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -620,6 +657,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -643,7 +681,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS CHAR(20))) (type: string)
+            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), CAST( CAST( _col1 AS CHAR(20)) AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

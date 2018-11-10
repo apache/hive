@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -72,6 +73,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   boolean isExternal;
   List<FieldSchema> cols;
   List<FieldSchema> partCols;
+  List<String> partColNames;
   List<String> bucketCols;
   List<Order> sortCols;
   int numBuckets;
@@ -108,6 +110,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   // The FSOP configuration for the FSOP that is going to write initial data during ctas.
   // This is not needed beyond compilation, so it is transient.
   private transient FileSinkDesc writer;
+  private Long replWriteId; // to be used by repl task to get the txn and valid write id list
 
   public CreateTableDesc() {
   }
@@ -137,28 +140,27 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   }
 
   public CreateTableDesc(String databaseName, String tableName, boolean isExternal, boolean isTemporary,
-                         List<FieldSchema> cols, List<FieldSchema> partCols,
-                         List<String> bucketCols, List<Order> sortCols, int numBuckets,
-                         String fieldDelim, String fieldEscape, String collItemDelim,
-                         String mapKeyDelim, String lineDelim, String comment, String inputFormat,
-                         String outputFormat, String location, String serName,
-                         String storageHandler,
-                         Map<String, String> serdeProps,
-                         Map<String, String> tblProps,
-                         boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
-                         boolean isCTAS, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-                         List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
-                         List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
-    this(databaseName, tableName, isExternal, isTemporary, cols, partCols,
-            bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
-            collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
-            outputFormat, location, serName, storageHandler, serdeProps,
-            tblProps, ifNotExists, skewedColNames, skewedColValues,
-            primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+      List<FieldSchema> cols, List<String> partColNames,
+      List<String> bucketCols, List<Order> sortCols, int numBuckets,
+      String fieldDelim, String fieldEscape, String collItemDelim,
+      String mapKeyDelim, String lineDelim, String comment, String inputFormat,
+      String outputFormat, String location, String serName,
+      String storageHandler,
+      Map<String, String> serdeProps,
+      Map<String, String> tblProps,
+      boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
+      boolean isCTAS, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
+    this(databaseName, tableName, isExternal, isTemporary, cols, new ArrayList<>(),
+        bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
+        collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
+        outputFormat, location, serName, storageHandler, serdeProps,
+        tblProps, ifNotExists, skewedColNames, skewedColValues,
+        primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+    this.partColNames = partColNames;
     this.isCTAS = isCTAS;
-
   }
-
 
   public CreateTableDesc(String tableName, boolean isExternal, boolean isTemporary,
       List<FieldSchema> cols, List<FieldSchema> partCols,
@@ -255,6 +257,14 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
   public void setPartCols(ArrayList<FieldSchema> partCols) {
     this.partCols = partCols;
+  }
+
+  public List<String> getPartColNames() {
+    return partColNames;
+  }
+
+  public void setPartColNames(ArrayList<String> partColNames) {
+    this.partColNames = partColNames;
   }
 
   public List<SQLPrimaryKey> getPrimaryKeys() {
@@ -822,12 +832,17 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
     if (DDLTask.doesTableNeedLocation(tbl)) {
       // If location is specified - ensure that it is a full qualified name
-      DDLTask.makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tableName, conf);
+      DDLTask.makeLocationQualified(tbl.getDbName(), tbl, conf);
     }
 
     if (isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");
       tbl.setTableType(TableType.EXTERNAL_TABLE);
+      // only add if user have not explicit set it (user explicitly disabled for example in which case don't flip it)
+      if (tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
+        // partition discovery is on by default if undefined
+        tbl.setProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
+      }
     }
 
     // If the sorted columns is a superset of bucketed columns, store this fact.
@@ -893,5 +908,13 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
   public void setWriter(FileSinkDesc writer) {
     this.writer = writer;
+  }
+
+  public Long getReplWriteId() {
+    return replWriteId;
+  }
+
+  public void setReplWriteId(Long replWriteId) {
+    this.replWriteId = replWriteId;
   }
 }

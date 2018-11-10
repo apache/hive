@@ -48,12 +48,18 @@ select a.colnum
 from mydb.q1_n0 as a join q1_n0 as b
 on a.colnum=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: mydb@q1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1_n0 as (select * from src where key= '5')
 select a.colnum
 from mydb.q1_n0 as a join q1_n0 as b
 on a.colnum=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: mydb@q1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -64,6 +70,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(colnum) = 5.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(colnum) = 5.0D) (type: boolean)
@@ -75,6 +82,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            filterExpr: (key = '5') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = '5') (type: boolean)

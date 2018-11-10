@@ -16,8 +16,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@myinput1_n9
 PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -107,8 +111,12 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -125,6 +133,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -141,6 +150,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -157,6 +167,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -212,8 +223,12 @@ POSTHOOK: Input: default@myinput1_n9
 100	100	100	100	100	100
 PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -336,8 +351,12 @@ NULL	NULL	NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -354,6 +373,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -369,6 +389,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -384,6 +405,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -439,8 +461,12 @@ POSTHOOK: Input: default@myinput1_n9
 NULL	10	10	NULL	NULL	10
 PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1578,8 +1604,12 @@ NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
 PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1596,6 +1626,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is null (type: boolean)
@@ -1612,6 +1643,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: value is null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is null (type: boolean)

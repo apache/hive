@@ -158,6 +158,9 @@ join
       on v1.intrvl1 = v2.intrvl2 
       and v1.s = v2.s
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab_a_1korc
+PREHOOK: Input: default@vectortab_b_1korc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
    v1.s,
@@ -180,6 +183,9 @@ join
       on v1.intrvl1 = v2.intrvl2 
       and v1.s = v2.s
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab_a_1korc
+POSTHOOK: Input: default@vectortab_b_1korc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -200,6 +206,7 @@ STAGE PLANS:
         $hdt$_1:vectortab_b_1korc 
           TableScan
             alias: vectortab_b_1korc
+            filterExpr: (dt is not null and ts is not null and s is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
@@ -218,6 +225,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vectortab_a_1korc
+            filterExpr: (dt is not null and ts is not null and s is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -274,8 +282,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

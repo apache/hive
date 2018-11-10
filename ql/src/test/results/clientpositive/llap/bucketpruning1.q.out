@@ -17,9 +17,16 @@ POSTHOOK: Output: default@srcbucket_unpruned
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -79,9 +86,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 16
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 16
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(16 AS INTEGER) AS `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 16
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -141,9 +155,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 17
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 17
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(17 AS INTEGER) AS `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 17
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -203,9 +224,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 16+1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 16+1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(17 AS INTEGER) AS `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 17
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -265,9 +293,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = '11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = '11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(11 AS INTEGER) AS `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 11
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -327,9 +362,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 1 AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -389,9 +431,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' and value='One'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' and value='One'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`, CAST('One' AS STRING) AS `$f1`, CAST('2008-04-08' AS STRING) AS `$f2`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 1 AND `ds` = '2008-04-08' AND `value` = 'One'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -451,9 +500,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key = 1 and ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key = 1 and ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`, CAST('One' AS STRING) AS `$f1`, CAST('2008-04-08' AS STRING) AS `$f2`
+FROM `default`.`srcbucket_pruned`
+WHERE `value` = 'One' AND `key` = 1 AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -513,9 +569,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -575,9 +635,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3) and ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3) and ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -637,9 +701,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3) and ds='2008-04-08' and value='One'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (2,3) and ds='2008-04-08' and value='One'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -699,9 +767,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key in (2,3) and ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key in (2,3) and ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -761,9 +833,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where (key=1 or key=2) and ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where (key=1 or key=2) and ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -777,12 +853,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: (((key = 1) or (key = 2)) and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: ((key) IN (1, 2) and (ds = '2008-04-08')) (type: boolean)
+                  buckets included: [4,13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((key = 1) or (key = 2)) and (ds = '2008-04-08')) (type: boolean)
+                    predicate: ((ds = '2008-04-08') and (key) IN (1, 2)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key (type: int), value (type: string), '2008-04-08' (type: string)
@@ -822,9 +899,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where (key=1 or key=2) and value = 'One' and ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where (key=1 or key=2) and value = 'One' and ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -838,12 +919,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: (((key = 1) or (key = 2)) and (value = 'One') and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: ((key) IN (1, 2) and (value = 'One') and (ds = '2008-04-08')) (type: boolean)
+                  buckets included: [4,13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((key = 1) or (key = 2)) and (ds = '2008-04-08') and (value = 'One')) (type: boolean)
+                    predicate: ((ds = '2008-04-08') and (key) IN (1, 2) and (value = 'One')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key (type: int), 'One' (type: string), '2008-04-08' (type: string)
@@ -883,9 +965,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = -15
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = -15
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(-15 AS INTEGER) AS `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = -15
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -945,9 +1034,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1007,9 +1100,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1069,9 +1166,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08' and value='One'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08' and value='One'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1131,9 +1232,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where value='One' and key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17) and ds='2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1193,9 +1298,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' or key = 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' or key = 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 1 AND `ds` = '2008-04-08' OR `key` = 2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1254,9 +1366,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' and (value='One' or value = 'Two')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' and (value='One' or value = 'Two')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1270,12 +1386,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((key = 1) and (ds = '2008-04-08') and ((value = 'One') or (value = 'Two'))) (type: boolean)
+                  filterExpr: ((value) IN ('One', 'Two') and (key = 1) and (ds = '2008-04-08')) (type: boolean)
+                  buckets included: [13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((value = 'One') or (value = 'Two')) and (ds = '2008-04-08') and (key = 1)) (type: boolean)
+                    predicate: ((ds = '2008-04-08') and (key = 1) and (value) IN ('One', 'Two')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: 1 (type: int), value (type: string), '2008-04-08' (type: string)
@@ -1315,9 +1432,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One" or key = 2 and value = "Two"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One" or key = 2 and value = "Two"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 1 OR `value` = 'One' OR `key` = 2 AND `value` = 'Two'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1376,9 +1500,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 'x11'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 'x11'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE NULL
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1436,9 +1567,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` = 1 OR `value` = 'One'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1497,9 +1635,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One" or key = 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 or value = "One" or key = 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_pruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1513,12 +1655,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((key = 1) or (value = 'One') or (key = 2)) (type: boolean)
+                  filterExpr: ((key) IN (1, 2) or (value = 'One')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((key = 1) or (key = 2) or (value = 'One')) (type: boolean)
+                    predicate: ((key) IN (1, 2) or (value = 'One')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key (type: int), value (type: string), ds (type: string)
@@ -1558,9 +1700,13 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_unpruned where key in (3, 5)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_unpruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_unpruned where key in (3, 5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_unpruned
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1619,9 +1765,16 @@ STAGE PLANS:
 PREHOOK: query: explain extended
 select * from srcbucket_unpruned where key = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_unpruned
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select * from srcbucket_unpruned where key = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_unpruned
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `key`, `value`, `ds`
+FROM `default`.`srcbucket_unpruned`
+WHERE `key` = 1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

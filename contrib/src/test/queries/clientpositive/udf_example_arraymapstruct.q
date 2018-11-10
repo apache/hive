@@ -1,5 +1,4 @@
 --! qt:dataset:src_thrift
--- Suppress vectorization due to known bug.  See HIVE-19110.
 set hive.vectorized.execution.enabled=false;
 set hive.test.vectorized.execution.enabled.override=disable;
 

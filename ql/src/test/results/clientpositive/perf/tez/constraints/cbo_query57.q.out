@@ -1,0 +1,171 @@
+PREHOOK: query: explain cbo
+with v1 as(
+ select i_category, i_brand,
+        cc_name,
+        d_year, d_moy,
+        sum(cs_sales_price) sum_sales,
+        avg(sum(cs_sales_price)) over
+          (partition by i_category, i_brand,
+                     cc_name, d_year)
+          avg_monthly_sales,
+        rank() over
+          (partition by i_category, i_brand,
+                     cc_name
+           order by d_year, d_moy) rn
+ from item, catalog_sales, date_dim, call_center
+ where cs_item_sk = i_item_sk and
+       cs_sold_date_sk = d_date_sk and
+       cc_call_center_sk= cs_call_center_sk and
+       (
+         d_year = 2000 or
+         ( d_year = 2000-1 and d_moy =12) or
+         ( d_year = 2000+1 and d_moy =1)
+       )
+ group by i_category, i_brand,
+          cc_name , d_year, d_moy),
+ v2 as(
+ select v1.i_category, v1.i_brand
+        ,v1.d_year, v1.d_moy
+        ,v1.avg_monthly_sales
+        ,v1.sum_sales, v1_lag.sum_sales psum, v1_lead.sum_sales nsum
+ from v1, v1 v1_lag, v1 v1_lead
+ where v1.i_category = v1_lag.i_category and
+       v1.i_category = v1_lead.i_category and
+       v1.i_brand = v1_lag.i_brand and
+       v1.i_brand = v1_lead.i_brand and
+       v1. cc_name = v1_lag. cc_name and
+       v1. cc_name = v1_lead. cc_name and
+       v1.rn = v1_lag.rn + 1 and
+       v1.rn = v1_lead.rn - 1)
+  select  *
+ from v2
+ where  d_year = 2000 and
+        avg_monthly_sales > 0 and
+        case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
+ order by sum_sales - avg_monthly_sales, 3
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@call_center
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with v1 as(
+ select i_category, i_brand,
+        cc_name,
+        d_year, d_moy,
+        sum(cs_sales_price) sum_sales,
+        avg(sum(cs_sales_price)) over
+          (partition by i_category, i_brand,
+                     cc_name, d_year)
+          avg_monthly_sales,
+        rank() over
+          (partition by i_category, i_brand,
+                     cc_name
+           order by d_year, d_moy) rn
+ from item, catalog_sales, date_dim, call_center
+ where cs_item_sk = i_item_sk and
+       cs_sold_date_sk = d_date_sk and
+       cc_call_center_sk= cs_call_center_sk and
+       (
+         d_year = 2000 or
+         ( d_year = 2000-1 and d_moy =12) or
+         ( d_year = 2000+1 and d_moy =1)
+       )
+ group by i_category, i_brand,
+          cc_name , d_year, d_moy),
+ v2 as(
+ select v1.i_category, v1.i_brand
+        ,v1.d_year, v1.d_moy
+        ,v1.avg_monthly_sales
+        ,v1.sum_sales, v1_lag.sum_sales psum, v1_lead.sum_sales nsum
+ from v1, v1 v1_lag, v1 v1_lead
+ where v1.i_category = v1_lag.i_category and
+       v1.i_category = v1_lead.i_category and
+       v1.i_brand = v1_lag.i_brand and
+       v1.i_brand = v1_lead.i_brand and
+       v1. cc_name = v1_lag. cc_name and
+       v1. cc_name = v1_lead. cc_name and
+       v1.rn = v1_lag.rn + 1 and
+       v1.rn = v1_lead.rn - 1)
+  select  *
+ from v2
+ where  d_year = 2000 and
+        avg_monthly_sales > 0 and
+        case when avg_monthly_sales > 0 then abs(sum_sales - avg_monthly_sales) / avg_monthly_sales else null end > 0.1
+ order by sum_sales - avg_monthly_sales, 3
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@call_center
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(i_category=[$0], i_brand=[$1], d_year=[$2], d_moy=[$3], avg_monthly_sales=[$4], sum_sales=[$5], psum=[$6], nsum=[$7])
+  HiveSortLimit(sort0=[$8], sort1=[$2], dir0=[ASC], dir1=[ASC], fetch=[100])
+    HiveProject(i_category=[$10], i_brand=[$11], d_year=[$13], d_moy=[$14], avg_monthly_sales=[$16], sum_sales=[$15], psum=[$8], nsum=[$3], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))=[-($15, $16)])
+      HiveJoin(condition=[AND(AND(AND(=($10, $0), =($11, $1)), =($12, $2)), =($17, $4))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col cc_name)=[$2], (tok_function sum (tok_table_or_col cs_sales_price))=[$3], -=[-($4, 1)])
+          HiveFilter(condition=[IS NOT NULL($4)])
+            HiveProject((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col cc_name)=[$4], (tok_function sum (tok_table_or_col cs_sales_price))=[$5], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4 ORDER BY $2 NULLS LAST, $3 NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+              HiveProject(i_brand=[$0], i_category=[$1], d_year=[$2], d_moy=[$3], cc_name=[$4], $f5=[$5])
+                HiveAggregate(group=[{1, 2, 8, 9, 11}], agg#0=[sum($6)])
+                  HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
+                      HiveFilter(condition=[AND(IS NOT NULL($12), IS NOT NULL($8))])
+                        HiveTableScan(table=[[default, item]], table:alias=[item])
+                    HiveJoin(condition=[=($7, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(cs_sold_date_sk=[$0], cs_call_center_sk=[$11], cs_item_sk=[$15], cs_sales_price=[$21])
+                          HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($11))])
+                            HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                        HiveProject(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
+                          HiveFilter(condition=[AND(IN($6, 2000, 1999, 2001), OR(=($6, 2000), IN(ROW($6, $8), ROW(1999, 12), ROW(2001, 1))))])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                      HiveProject(cc_call_center_sk=[$0], cc_name=[$6])
+                        HiveFilter(condition=[IS NOT NULL($6)])
+                          HiveTableScan(table=[[default, call_center]], table:alias=[call_center])
+        HiveJoin(condition=[AND(AND(AND(=($5, $0), =($6, $1)), =($7, $2)), =($12, $4))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col cc_name)=[$2], (tok_function sum (tok_table_or_col cs_sales_price))=[$3], +=[+($4, 1)])
+            HiveFilter(condition=[IS NOT NULL($4)])
+              HiveProject((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col cc_name)=[$4], (tok_function sum (tok_table_or_col cs_sales_price))=[$5], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4 ORDER BY $2 NULLS LAST, $3 NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+                HiveProject(i_brand=[$0], i_category=[$1], d_year=[$2], d_moy=[$3], cc_name=[$4], $f5=[$5])
+                  HiveAggregate(group=[{1, 2, 8, 9, 11}], agg#0=[sum($6)])
+                    HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
+                        HiveFilter(condition=[AND(IS NOT NULL($12), IS NOT NULL($8))])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                      HiveJoin(condition=[=($7, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(cs_sold_date_sk=[$0], cs_call_center_sk=[$11], cs_item_sk=[$15], cs_sales_price=[$21])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($11))])
+                              HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                          HiveProject(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
+                            HiveFilter(condition=[AND(IN($6, 2000, 1999, 2001), OR(=($6, 2000), IN(ROW($6, $8), ROW(1999, 12), ROW(2001, 1))))])
+                              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(cc_call_center_sk=[$0], cc_name=[$6])
+                          HiveFilter(condition=[IS NOT NULL($6)])
+                            HiveTableScan(table=[[default, call_center]], table:alias=[call_center])
+          HiveProject((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col cc_name)=[$2], (tok_table_or_col d_year)=[$3], (tok_table_or_col d_moy)=[$4], (tok_function sum (tok_table_or_col cs_sales_price))=[$5], avg_window_0=[$6], rank_window_1=[$7])
+            HiveFilter(condition=[AND(=($3, 2000), >($6, 0), CASE(>($6, 0), >(/(ABS(-($5, $6)), $6), 0.1), null), IS NOT NULL($7))])
+              HiveProject((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col cc_name)=[$4], (tok_table_or_col d_year)=[$2], (tok_table_or_col d_moy)=[$3], (tok_function sum (tok_table_or_col cs_sales_price))=[$5], avg_window_0=[avg($5) OVER (PARTITION BY $1, $0, $4, $2 ORDER BY $1 NULLS FIRST, $0 NULLS FIRST, $4 NULLS FIRST, $2 NULLS FIRST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4 ORDER BY $2 NULLS LAST, $3 NULLS LAST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+                HiveProject(i_brand=[$0], i_category=[$1], d_year=[$2], d_moy=[$3], cc_name=[$4], $f5=[$5])
+                  HiveAggregate(group=[{1, 2, 8, 9, 11}], agg#0=[sum($6)])
+                    HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
+                        HiveFilter(condition=[AND(IS NOT NULL($12), IS NOT NULL($8))])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                      HiveJoin(condition=[=($7, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(cs_sold_date_sk=[$0], cs_call_center_sk=[$11], cs_item_sk=[$15], cs_sales_price=[$21])
+                            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($11))])
+                              HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                          HiveProject(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
+                            HiveFilter(condition=[AND(IN($6, 2000, 1999, 2001), OR(=($6, 2000), IN(ROW($6, $8), ROW(1999, 12), ROW(2001, 1))))])
+                              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(cc_call_center_sk=[$0], cc_name=[$6])
+                          HiveFilter(condition=[IS NOT NULL($6)])
+                            HiveTableScan(table=[[default, call_center]], table:alias=[call_center])
+

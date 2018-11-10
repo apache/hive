@@ -19,17 +19,16 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
+import java.lang.management.ManagementFactory;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,16 +42,21 @@ import com.google.common.primitives.Longs;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -92,9 +96,9 @@ import org.apache.orc.StringColumnStatistics;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.MemoryManagerImpl;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -543,7 +547,7 @@ public class TestOrcFile {
     while (rows.hasNext()) {
       Object row = rows.next(null);
       Timestamp tlistTimestamp = tslist.get(idx++);
-      if (tlistTimestamp.getNanos() != ((TimestampWritable) row).getNanos()) {
+      if (tlistTimestamp.getNanos() != ((TimestampWritableV2) row).getNanos()) {
         assertTrue(false);
       }
     }
@@ -1313,10 +1317,10 @@ public class TestOrcFile {
     for (int year = minYear; year < maxYear; ++year) {
       for (int ms = 1000; ms < 2000; ++ms) {
         row.setFieldValue(0,
-            new TimestampWritable(Timestamp.valueOf(year + "-05-05 12:34:56."
+            new TimestampWritableV2(Timestamp.valueOf(year + "-05-05 12:34:56."
                 + ms)));
         row.setFieldValue(1,
-            new DateWritable(new Date(year - 1900, 11, 25)));
+            new DateWritableV2(Date.of(year - 1900, 11, 25)));
         writer.addRow(row);
       }
     }
@@ -1327,10 +1331,10 @@ public class TestOrcFile {
     for (int year = minYear; year < maxYear; ++year) {
       for(int ms = 1000; ms < 2000; ++ms) {
         row = (OrcStruct) rows.next(row);
-        assertEquals(new TimestampWritable
+        assertEquals(new TimestampWritableV2
                 (Timestamp.valueOf(year + "-05-05 12:34:56." + ms)),
             row.getFieldValue(0));
-        assertEquals(new DateWritable(new Date(year - 1900, 11, 25)),
+        assertEquals(new DateWritableV2(Date.of(year - 1900, 11, 25)),
             row.getFieldValue(1));
       }
     }
@@ -1384,12 +1388,12 @@ public class TestOrcFile {
     OrcStruct row = new OrcStruct(3);
     OrcUnion union = new OrcUnion();
     row.setFieldValue(1, union);
-    row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf("2000-03-12 15:00:00")));
+    row.setFieldValue(0, new TimestampWritableV2(Timestamp.valueOf("2000-03-12 15:00:00")));
     HiveDecimal value = HiveDecimal.create("12345678.6547456");
     row.setFieldValue(2, new HiveDecimalWritable(value));
     union.set((byte) 0, new IntWritable(42));
     writer.addRow(row);
-    row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf("2000-03-20 12:00:00.123456789")));
+    row.setFieldValue(0, new TimestampWritableV2(Timestamp.valueOf("2000-03-20 12:00:00.123456789")));
     union.set((byte) 1, new Text("hello"));
     value = HiveDecimal.create("-5643.234");
     row.setFieldValue(2, new HiveDecimalWritable(value));
@@ -1404,14 +1408,14 @@ public class TestOrcFile {
     union.set((byte) 1, null);
     writer.addRow(row);
     union.set((byte) 0, new IntWritable(200000));
-    row.setFieldValue(0, new TimestampWritable
+    row.setFieldValue(0, new TimestampWritableV2
         (Timestamp.valueOf("1970-01-01 00:00:00")));
     value = HiveDecimal.create("10000000000000000000");
     row.setFieldValue(2, new HiveDecimalWritable(value));
     writer.addRow(row);
     Random rand = new Random(42);
     for(int i=1970; i < 2038; ++i) {
-      row.setFieldValue(0, new TimestampWritable(Timestamp.valueOf(i +
+      row.setFieldValue(0, new TimestampWritableV2(Timestamp.valueOf(i +
           "-05-05 12:34:56." + i)));
       if ((i & 1) == 0) {
         union.set((byte) 0, new IntWritable(i*i));
@@ -1491,7 +1495,7 @@ public class TestOrcFile {
     inspector = reader.getObjectInspector();
     assertEquals("struct<time:timestamp,union:uniontype<int,string>,decimal:decimal(38,18)>",
         inspector.getTypeName());
-    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-12 15:00:00")),
+    assertEquals(new TimestampWritableV2(Timestamp.valueOf("2000-03-12 15:00:00")),
         row.getFieldValue(0));
     union = (OrcUnion) row.getFieldValue(1);
     assertEquals(0, union.getTag());
@@ -1500,7 +1504,7 @@ public class TestOrcFile {
         row.getFieldValue(2));
     row = (OrcStruct) rows.next(row);
     assertEquals(2, rows.getRowNumber());
-    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-20 12:00:00.123456789")),
+    assertEquals(new TimestampWritableV2(Timestamp.valueOf("2000-03-20 12:00:00.123456789")),
         row.getFieldValue(0));
     assertEquals(1, union.getTag());
     assertEquals(new Text("hello"), union.getObject());
@@ -1522,7 +1526,7 @@ public class TestOrcFile {
     assertEquals(null, union.getObject());
     assertEquals(null, row.getFieldValue(2));
     row = (OrcStruct) rows.next(row);
-    assertEquals(new TimestampWritable(Timestamp.valueOf("1970-01-01 00:00:00")),
+    assertEquals(new TimestampWritableV2(Timestamp.valueOf("1970-01-01 00:00:00")),
         row.getFieldValue(0));
     assertEquals(new IntWritable(200000), union.getObject());
     assertEquals(new HiveDecimalWritable(HiveDecimal.create("10000000000000000000")),
@@ -1530,7 +1534,7 @@ public class TestOrcFile {
     rand = new Random(42);
     for(int i=1970; i < 2038; ++i) {
       row = (OrcStruct) rows.next(row);
-      assertEquals(new TimestampWritable(Timestamp.valueOf(i + "-05-05 12:34:56." + i)),
+      assertEquals(new TimestampWritableV2(Timestamp.valueOf(i + "-05-05 12:34:56." + i)),
           row.getFieldValue(0));
       if ((i & 1) == 0) {
         assertEquals(0, union.getTag());
@@ -1557,7 +1561,7 @@ public class TestOrcFile {
     assertEquals(reader.getNumberOfRows(), rows.getRowNumber());
     rows.seekToRow(1);
     row = (OrcStruct) rows.next(row);
-    assertEquals(new TimestampWritable(Timestamp.valueOf("2000-03-20 12:00:00.123456789")),
+    assertEquals(new TimestampWritableV2(Timestamp.valueOf("2000-03-20 12:00:00.123456789")),
         row.getFieldValue(0));
     assertEquals(1, union.getTag());
     assertEquals(new Text("hello"), union.getObject());
@@ -1657,7 +1661,6 @@ public class TestOrcFile {
     rows.close();
   }
 
-  @Ignore("ORC-367. Will be re-enabled in HIVE-19669")
   @Test
   public void testSeek() throws Exception {
     ObjectInspector inspector;
@@ -1773,7 +1776,6 @@ public class TestOrcFile {
     rows.close();
   }
 
-  @Ignore("ORC-367. Will be re-enabled in HIVE-19669")
   @Test
   public void testZeroCopySeek() throws Exception {
     ObjectInspector inspector;
@@ -2205,5 +2207,40 @@ public class TestOrcFile {
     assertEquals(4, ((List<IntWritable>) orcrow.getFieldValue(0)).size());
     assertEquals(false, reader.hasNext());
     reader.close();
+  }
+
+  @Test
+  public void testLlapAwareMemoryManager() throws IOException {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
+        ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    try {
+      OrcFile.WriterOptions opts = OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.ZLIB);
+      Writer writer = OrcFile.createWriter(new Path(testFilePath, "-0"), opts);
+      writer.close();
+      assertEquals(opts.getMemoryManager().getClass(), MemoryManagerImpl.class);
+
+      conf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "llap");
+      LlapDaemonInfo.initialize("test", new Configuration());
+      LlapProxy.setDaemon(true);
+      opts = OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.ZLIB);
+      writer = OrcFile.createWriter(new Path(testFilePath, "-1"), opts);
+      writer.close();
+      assertEquals(opts.getMemoryManager().getClass(), OrcFile.LlapAwareMemoryManager.class);
+      assertEquals(LlapDaemonInfo.INSTANCE.getMemoryPerExecutor() * 0.5,
+        ((OrcFile.LlapAwareMemoryManager) opts.getMemoryManager()).getTotalMemoryPool(), 100);
+
+      conf.setBoolean(HiveConf.ConfVars.HIVE_ORC_WRITER_LLAP_MEMORY_MANAGER_ENABLED.varname, false);
+      opts = OrcFile.writerOptions(conf).inspector(inspector).compress(CompressionKind.ZLIB);
+      writer = OrcFile.createWriter(new Path(testFilePath, "-2"), opts);
+      writer.close();
+      assertEquals(opts.getMemoryManager().getClass(), MemoryManagerImpl.class);
+    } finally {
+      LlapProxy.setDaemon(false);
+      conf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "container");
+    }
   }
 }

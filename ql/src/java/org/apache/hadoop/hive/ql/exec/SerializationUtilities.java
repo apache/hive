@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.LinkedList;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -30,8 +28,10 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -39,21 +39,20 @@ import java.util.Properties;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -225,6 +224,7 @@ public class SerializationUtilities {
   private static final Object FAKE_REFERENCE = new Object();
 
   private static KryoFactory factory = new KryoFactory() {
+    @Override
     public Kryo create() {
       KryoWithHooks kryo = new KryoWithHooks();
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
@@ -234,13 +234,14 @@ public class SerializationUtilities {
       kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
       kryo.register(new java.util.ArrayList().subList(0,0).getClass(), new ArrayListSubListSerializer());
       kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
+      kryo.register(MapWork.class, new MapWorkSerializer(kryo, MapWork.class));
+      kryo.register(PartitionDesc.class, new PartitionDescSerializer(kryo, PartitionDesc.class));
 
       ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy())
           .setFallbackInstantiatorStrategy(
               new StdInstantiatorStrategy());
       removeField(kryo, AbstractOperatorDesc.class, "colExprMap");
       removeField(kryo, AbstractOperatorDesc.class, "statistics");
-      kryo.register(MapWork.class);
       kryo.register(ReduceWork.class);
       kryo.register(TableDesc.class);
       kryo.register(UnionOperator.class);
@@ -542,6 +543,54 @@ public class SerializationUtilities {
   }
 
   /**
+   * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link MapWork} objects in
+   * order to invoke any string interning code present in the "setter" methods. The fields in {@link
+   * MapWork} often store paths that contain duplicate strings, so interning them can decrease
+   * memory significantly.
+   */
+  private static class MapWorkSerializer extends FieldSerializer<MapWork> {
+
+    MapWorkSerializer(Kryo kryo, Class type) {
+      super(kryo, type);
+    }
+
+    @Override
+    public MapWork read(Kryo kryo, Input input, Class<MapWork> type) {
+      MapWork mapWork = super.read(kryo, input, type);
+      // The set methods in MapWork intern the any duplicate strings which is why we call them
+      // during de-serialization
+      mapWork.setPathToPartitionInfo(mapWork.getPathToPartitionInfo());
+      mapWork.setPathToAliases(mapWork.getPathToAliases());
+      return mapWork;
+    }
+  }
+
+  /**
+   * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link PartitionDesc} objects
+   * in order to invoke any string interning code present in the "setter" methods. {@link
+   * PartitionDesc} objects are usually stored by {@link MapWork} objects and contain duplicate info
+   * like input format class names, partition specs, etc.
+   */
+  private static class PartitionDescSerializer extends FieldSerializer<PartitionDesc> {
+
+    PartitionDescSerializer(Kryo kryo, Class type) {
+      super(kryo, type);
+    }
+
+    @Override
+    public PartitionDesc read(Kryo kryo, Input input, Class<PartitionDesc> type) {
+      PartitionDesc partitionDesc = super.read(kryo, input, type);
+      // The set methods in PartitionDesc intern the any duplicate strings which is why we call them
+      // during de-serialization
+      partitionDesc.setBaseFileName(partitionDesc.getBaseFileName());
+      partitionDesc.setPartSpec(partitionDesc.getPartSpec());
+      partitionDesc.setInputFileFormatClass(partitionDesc.getInputFileFormatClass());
+      partitionDesc.setOutputFileFormatClass(partitionDesc.getOutputFileFormatClass());
+      return partitionDesc;
+    }
+  }
+
+  /**
    * Serializes the plan.
    *
    * @param plan The plan, such as QueryPlan, MapredWork, etc.
@@ -646,29 +695,11 @@ public class SerializationUtilities {
    * @return The clone.
    */
   public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    CompilationOpContext ctx = roots.isEmpty() ? null : roots.get(0).getCompilationOpContext();
-    serializePlan(roots, baos, true);
-    @SuppressWarnings("unchecked")
-    List<Operator<?>> result =
-        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-            roots.getClass(), true);
-    // Restore the context.
-    LinkedList<Operator<?>> newOps = new LinkedList<>(result);
-    while (!newOps.isEmpty()) {
-      Operator<?> newOp = newOps.poll();
-      newOp.setCompilationOpContext(ctx);
-      List<Operator<?>> children = newOp.getChildOperators();
-      if (children != null) {
-        newOps.addAll(children);
-      }
+    if (roots.isEmpty()) {
+      return new ArrayList<>();
     }
-    return result;
-  }
-
-  public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots, int indexForTezUnion) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    CompilationOpContext ctx = roots.isEmpty() ? null : roots.get(0).getCompilationOpContext();
+    CompilationOpContext ctx = roots.get(0).getCompilationOpContext();
     serializePlan(roots, baos, true);
     @SuppressWarnings("unchecked")
     List<Operator<?>> result =
@@ -678,7 +709,6 @@ public class SerializationUtilities {
     LinkedList<Operator<?>> newOps = new LinkedList<>(result);
     while (!newOps.isEmpty()) {
       Operator<?> newOp = newOps.poll();
-      newOp.setIndexForTezUnion(indexForTezUnion);
       newOp.setCompilationOpContext(ctx);
       List<Operator<?>> children = newOp.getChildOperators();
       if (children != null) {

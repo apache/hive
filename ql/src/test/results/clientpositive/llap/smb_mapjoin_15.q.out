@@ -35,9 +35,24 @@ POSTHOOK: Lineage: test_table2_n4.value SIMPLE [(src)src.FieldSchema(name:value,
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n4
+PREHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -47,96 +62,14 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
-                  Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
-                  GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: int), value (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
-                        tag: 0
-                        value expressions: _col1 (type: string)
-                        auto parallelism: true
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: test_table1_n4
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    SORTBUCKETCOLSPREFIX TRUE
-                    bucket_count 16
-                    bucket_field_name key
-                    bucketing_version 2
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 
-                    columns.types int:string
-#### A masked pattern was here ####
-                    name default.test_table1_n4
-                    numFiles 16
-                    numRows 500
-                    rawDataSize 5312
-                    serialization.ddl struct test_table1_n4 { i32 key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 5812
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                      SORTBUCKETCOLSPREFIX TRUE
-                      bucket_count 16
-                      bucket_field_name key
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 
-                      columns.types int:string
-#### A masked pattern was here ####
-                      name default.test_table1_n4
-                      numFiles 16
-                      numRows 500
-                      rawDataSize 5312
-                      serialization.ddl struct test_table1_n4 { i32 key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5812
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test_table1_n4
-                  name: default.test_table1_n4
-            Truncated Path -> Alias:
-              /test_table1_n4 [a]
-        Map 4 
-            Map Operator Tree:
-                TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -147,23 +80,11 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
-                        tag: 1
-                        value expressions: _col1 (type: string)
-                        auto parallelism: true
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: test_table2_n4
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -215,30 +136,97 @@ STAGE PLANS:
                   name: default.test_table2_n4
             Truncated Path -> Alias:
               /test_table2_n4 [b]
-        Reducer 2 
-            Execution mode: llap
-            Needs Tagging: false
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Position of Big Table: 0
-                Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  null sort order: a
-                  sort order: +
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
-                  tag: -1
-                  TopN: 10
-                  TopN Hash Memory Usage: 0.1
-                  value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
-                  auto parallelism: false
-        Reducer 3 
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                      Merge Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        Position of Big Table: 0
+                        Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          TopN: 10
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
+                          auto parallelism: false
+            Execution mode: llap
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+                    SORTBUCKETCOLSPREFIX TRUE
+                    bucket_count 16
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.comments 
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.test_table1_n4
+                    numFiles 16
+                    numRows 500
+                    rawDataSize 5312
+                    serialization.ddl struct test_table1_n4 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 16
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.test_table1_n4
+                      numFiles 16
+                      numRows 500
+                      rawDataSize 5312
+                      serialization.ddl struct test_table1_n4 { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 5812
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.test_table1_n4
+                  name: default.test_table1_n4
+            Truncated Path -> Alias:
+              /test_table1_n4 [a]
+        Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
@@ -353,9 +341,24 @@ POSTHOOK: Lineage: test_table2_n4.value SIMPLE [(src)src.FieldSchema(name:value,
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.key2 = b.key2 ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n4
+PREHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.key2 = b.key2 ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL AND `key2` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL AND `key2` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`key2` = `t2`.`key2`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -373,6 +376,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -455,6 +459,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and key2 is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -548,7 +553,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
@@ -619,9 +624,24 @@ POSTHOOK: Input: default@test_table2_n4
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key2 = b.key2 and a.key = b.key ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n4
+PREHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key2 = b.key2 and a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t2` ON `t0`.`key2` = `t2`.`key2` AND `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -639,6 +659,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key2 is not null and key is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -721,6 +742,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key2 is not null and key is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -814,7 +836,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
@@ -885,9 +907,24 @@ POSTHOOK: Input: default@test_table2_n4
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.value = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n4
+PREHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.value = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n4
+POSTHOOK: Input: default@test_table2_n4
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`value` = `t2`.`value`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -905,6 +942,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -987,6 +1025,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1080,7 +1119,7 @@ STAGE PLANS:
                 Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
+                  null sort order: z
                   sort order: +
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1

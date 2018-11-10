@@ -7,6 +7,8 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from src b 
@@ -16,6 +18,8 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -26,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: ((value > 'val_9') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value > 'val_9') and key is not null) (type: boolean)
@@ -41,6 +46,7 @@ STAGE PLANS:
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: a
+            filterExpr: ((value > 'val_9') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value > 'val_9') and key is not null) (type: boolean)
@@ -200,6 +206,8 @@ where exists
   where b.VALUE = a.VALUE
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from src b
@@ -209,6 +217,8 @@ where exists
   where b.VALUE = a.VALUE
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -219,6 +229,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -235,6 +246,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string)
           TableScan
             alias: a
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -286,6 +298,8 @@ where exists
   where a.value > 'val_9'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from src b
@@ -295,6 +309,8 @@ where exists
   where a.value > 'val_9'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -306,6 +322,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (value > 'val_9') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (value > 'val_9') (type: boolean)
@@ -929,8 +946,14 @@ POSTHOOK: Lineage: t_n12.i SCRIPT []
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from t_n12 where exists (select count(*) from src where 1=2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@t_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t_n12 where exists (select count(*) from src where 1=2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1075,9 +1098,13 @@ POSTHOOK: Input: default@tx1_n0
 PREHOOK: query: explain select count(*) as result,3 as expected from tx1_n0 u
     where exists (select * from tx1_n0 v where u.a=v.a and u.b <> v.b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) as result,3 as expected from tx1_n0 u
     where exists (select * from tx1_n0 v where u.a=v.a and u.b <> v.b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1089,6 +1116,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: u
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
@@ -1105,6 +1133,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: v
+            filterExpr: (a is not null and b is not null) (type: boolean)
             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (a is not null and b is not null) (type: boolean)
@@ -1227,8 +1256,14 @@ POSTHOOK: Lineage: t2_n41.i SCRIPT []
 POSTHOOK: Lineage: t2_n41.j SCRIPT []
 PREHOOK: query: explain select * from t1_n68 where t1_n68.i in (select t2_n41.i from t2_n41 where t2_n41.j <> t1_n68.j)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n68
+PREHOOK: Input: default@t2_n41
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n68 where t1_n68.i in (select t2_n41.i from t2_n41 where t2_n41.j <> t1_n68.j)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n68
+POSTHOOK: Input: default@t2_n41
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1239,6 +1274,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n68
+            filterExpr: i is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: i is not null (type: boolean)
@@ -1255,6 +1291,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: t2_n41
+            filterExpr: (j is not null and i is not null) (type: boolean)
             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (i is not null and j is not null) (type: boolean)

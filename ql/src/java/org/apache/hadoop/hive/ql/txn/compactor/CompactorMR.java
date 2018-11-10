@@ -21,8 +21,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 
-import com.google.common.collect.Lists;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -63,6 +61,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -151,11 +150,6 @@ public class CompactorMR {
     job.setOutputFormat(NullOutputFormat.class);
     job.setOutputCommitter(CompactorOutputCommitter.class);
 
-    String queueName = conf.getVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
-    if(queueName != null && queueName.length() > 0) {
-      job.setQueueName(queueName);
-    }
-
     job.set(FINAL_LOCATION, sd.getLocation());
     job.set(TMP_LOCATION, generateTmpPath(sd));
     job.set(INPUT_FORMAT_CLASS_NAME, sd.getInputFormat());
@@ -168,6 +162,12 @@ public class CompactorMR {
     if (ci.properties != null) {
       overrideTblProps(job, t.getParameters(), ci.properties);
     }
+
+    String queueName = HiveConf.getVar(job, ConfVars.COMPACTOR_JOB_QUEUE);
+    if (queueName != null && queueName.length() > 0) {
+      job.setQueueName(queueName);
+    }
+
     setColumnTypes(job, sd.getCols());
     //with feature on, multiple tasks may get into conflict creating/using TMP_LOCATION and if we were
     //to generate the target dir in the Map task, there is no easy way to pass it to OutputCommitter
@@ -353,7 +353,7 @@ public class CompactorMR {
       conf.set(ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
 
       String user = UserGroupInformation.getCurrentUser().getShortUserName();
-      SessionState sessionState = setUpSessionState(conf, user);
+      SessionState sessionState = DriverUtils.setUpSessionState(conf, user, false);
 
       // Note: we could skip creating the table and just add table type stuff directly to the
       //       "insert overwrite directory" command if there were no bucketing or list bucketing.
@@ -365,7 +365,7 @@ public class CompactorMR {
             p == null ? t.getSd() : p.getSd(), baseLocation.toString());
         LOG.info("Compacting a MM table into " + query);
         try {
-          runOnDriver(conf, user, sessionState, query, null);
+          DriverUtils.runOnDriver(conf, user, sessionState, query, null);
           break;
         } catch (Exception ex) {
           Throwable cause = ex;
@@ -380,24 +380,14 @@ public class CompactorMR {
 
       String query = buildMmCompactionQuery(conf, t, p, tmpTableName);
       LOG.info("Compacting a MM table via " + query);
-      runOnDriver(conf, user, sessionState, query, writeIds);
+      DriverUtils.runOnDriver(conf, user, sessionState, query, writeIds);
       commitMmCompaction(tmpLocation, sd.getLocation(), conf, writeIds);
-      runOnDriver(conf, user, sessionState, "drop table if exists " + tmpTableName, null);
+      DriverUtils.runOnDriver(conf, user, sessionState,
+          "drop table if exists " + tmpTableName, null);
     } catch (HiveException e) {
       LOG.error("Error compacting a MM table", e);
       throw new IOException(e);
     }
-  }
-
-  public SessionState setUpSessionState(HiveConf conf, String user) {
-    SessionState sessionState = SessionState.get();
-    if (sessionState == null) {
-      // Note: we assume that workers run on the same threads repeatedly, so we can set up
-      //       the session here and it will be reused without explicitly storing in the worker.
-      sessionState = new SessionState(conf, user);
-      SessionState.setCurrentSessionState(sessionState);
-    }
-    return sessionState;
   }
 
   private String generateTmpPath(StorageDescriptor sd) {
@@ -478,7 +468,7 @@ public class CompactorMR {
         HiveStringUtils.escapeHiveCommand(location)).append("' TBLPROPERTIES (");
     // Exclude all standard table properties.
     Set<String> excludes = getHiveMetastoreConstants();
-    excludes.addAll(Lists.newArrayList(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
+    excludes.addAll(StatsSetupConst.TABLE_PARAMS_STATS_KEYS);
     isFirst = true;
     for (Map.Entry<String, String> e : t.getParameters().entrySet()) {
       if (e.getValue() == null) continue;
@@ -512,36 +502,6 @@ public class CompactorMR {
       }
     }
     return result;
-  }
-
-  private void runOnDriver(HiveConf conf, String user,
-      SessionState sessionState, String query, ValidWriteIdList writeIds) throws HiveException {
-    boolean isOk = false;
-    try {
-      QueryState qs = new QueryState.Builder().withHiveConf(conf).nonIsolated().build();
-      Driver driver = new Driver(qs, user, null, null);
-      driver.setCompactionWriteIds(writeIds);
-      try {
-        CommandProcessorResponse cpr = driver.run(query);
-        if (cpr.getResponseCode() != 0) {
-          LOG.error("Failed to run " + query, cpr.getException());
-          throw new HiveException("Failed to run " + query, cpr.getException());
-        }
-      } finally {
-        driver.close();
-        driver.destroy();
-      }
-      isOk = true;
-    } finally {
-      if (!isOk) {
-        try {
-          sessionState.close(); // This also resets SessionState.get.
-        } catch (Throwable th) {
-          LOG.warn("Failed to close a bad session", th);
-          SessionState.detachSession();
-        }
-      }
-    }
   }
 
   private String buildMmCompactionQuery(HiveConf conf, Table t, Partition p, String tmpName) {

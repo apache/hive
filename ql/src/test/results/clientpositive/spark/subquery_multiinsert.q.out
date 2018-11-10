@@ -43,6 +43,9 @@ INSERT OVERWRITE TABLE src_5
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_4
+PREHOOK: Output: default@src_5
 POSTHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -57,6 +60,9 @@ INSERT OVERWRITE TABLE src_5
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_4
+POSTHOOK: Output: default@src_5
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -103,6 +109,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: ((key > '9') and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '9') and value is not null) (type: boolean)
@@ -126,6 +133,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: (key > '2') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key > '2') (type: boolean)
@@ -144,6 +152,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: ((key > '2') and key is null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '2') and key is null) (type: boolean)
@@ -484,6 +493,9 @@ INSERT OVERWRITE TABLE src_5
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_4
+PREHOOK: Output: default@src_5
 POSTHOOK: query: explain
 from src b 
 INSERT OVERWRITE TABLE src_4 
@@ -498,6 +510,9 @@ INSERT OVERWRITE TABLE src_5
   where b.key not in  ( select key from src s1 where s1.key > '2') 
   order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_4
+POSTHOOK: Output: default@src_5
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -517,6 +532,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: ((key > '9') and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '9') and value is not null) (type: boolean)
@@ -541,6 +557,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: (key > '2') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key > '2') (type: boolean)
@@ -560,6 +577,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: ((key > '2') and key is null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '2') and key is null) (type: boolean)

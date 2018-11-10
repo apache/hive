@@ -52,7 +52,9 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.junit.Test;
 
 
 // Cannot call class TestCliDriver since that's the name of the generated
@@ -164,8 +166,10 @@ public class TestCliDriverMethods extends TestCase {
     IDriver proc = mock(IDriver.class);
 
     CommandProcessorResponse cpr = mock(CommandProcessorResponse.class);
+    QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(true).build();
     when(cpr.getResponseCode()).thenReturn(0);
     when(proc.run(anyString())).thenReturn(cpr);
+    when(proc.getQueryState()).thenReturn(queryState);
 
     // and then see what happens based on the provided schema
     when(proc.getSchema()).thenReturn(mockSchema);
@@ -351,6 +355,28 @@ public class TestCliDriverMethods extends TestCase {
       assertTrue(data.toString().contains("cannot recognize input near 'bla' 'bla' 'bla'"));
 
     }
+  }
+
+  @Test
+  public void testCommandSplits() {
+    // Test double quote in the string
+    String cmd1 = "insert into escape1 partition (ds='1', part='\"') values (\"!\")";
+    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1).get(0));
+    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1 + ";").get(0));
+
+    // Test escape
+    String cmd2 = "insert into escape1 partition (ds='1', part='\"\\'') values (\"!\")";
+    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2).get(0));
+    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2 + ";").get(0));
+
+    // Test multiple commands
+    List<String> results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2);
+    assertEquals(cmd1, results.get(0));
+    assertEquals(cmd2, results.get(1));
+
+    results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2 + ";");
+    assertEquals(cmd1, results.get(0));
+    assertEquals(cmd2, results.get(1));
   }
 
   private static void setEnv(String key, String value) throws Exception {

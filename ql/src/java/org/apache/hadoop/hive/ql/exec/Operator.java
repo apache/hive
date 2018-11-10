@@ -86,9 +86,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   private transient boolean rootInitializeCalled = false;
   protected transient long numRows = 0;
   protected transient long runTimeNumRows = 0;
-  protected int indexForTezUnion = -1;
   private transient Configuration hconf;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
+  private String marker;
 
   protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
@@ -134,6 +134,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     initOperatorId();
   }
 
+  /** Kryo ctor. */
   protected Operator() {
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
@@ -243,10 +244,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // for output rows of this operator
   protected transient ObjectInspector outputObjInspector;
 
-
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * This function is not named getId(), to make sure java serialization does
@@ -663,6 +660,18 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public void flush() throws HiveException {
   }
 
+  // Recursive flush to flush all the tree operators
+  public void flushRecursive() throws HiveException {
+    flush();
+    if (childOperators == null) {
+      return;
+    }
+
+    for (Operator<?> child : childOperators) {
+      child.flushRecursive();
+    }
+  }
+
   public void processGroup(int tag) throws HiveException {
     if (childOperators == null || childOperators.isEmpty()) {
       return;
@@ -915,63 +924,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   protected void forward(Object row, ObjectInspector rowInspector)
       throws HiveException {
-    forward(row, rowInspector, false);
-  }
-
-  protected void forward(VectorizedRowBatch vrg, ObjectInspector rowInspector)
-      throws HiveException {
-    forward(vrg, rowInspector, true);
-  }
-
-  protected void forward(Object row, ObjectInspector rowInspector, boolean isVectorized)
-      throws HiveException {
-    if (isVectorized) {
-      vectorForward((VectorizedRowBatch) row, rowInspector);
-    } else {
-      baseForward(row, rowInspector);
-    }
-  }
-
-  private void vectorForward(VectorizedRowBatch vrg, ObjectInspector rowInspector)
-      throws HiveException {
-    this.runTimeNumRows += vrg.count();
-    if (getDone()) {
-      return;
-    }
-
-    // Data structures to store original values
-    final int size = vrg.size;
-    final boolean selectedInUse = vrg.selectedInUse;
-    final boolean saveState = (selectedInUse && multiChildren);
-    if (saveState) {
-      System.arraycopy(vrg.selected, 0, selected, 0, size);
-    }
-
-    int childrenDone = 0;
-    for (int i = 0; i < childOperatorsArray.length; i++) {
-      Operator<? extends OperatorDesc> o = childOperatorsArray[i];
-      if (o.getDone()) {
-        childrenDone++;
-      } else {
-        o.process(vrg, childOperatorsTag[i]);
-        // Restore original values
-        vrg.size = size;
-        vrg.selectedInUse = selectedInUse;
-        if (saveState) {
-          System.arraycopy(selected, 0, vrg.selected, 0, size);
-        }
-      }
-    }
-
-    // if all children are done, this operator is also done
-    if (childrenDone != 0 && childrenDone == childOperatorsArray.length) {
-      setDone(true);
-    }
-  }
-
-  private void baseForward(Object row, ObjectInspector rowInspector)
-      throws HiveException {
-    this.runTimeNumRows++;
+    runTimeNumRows++;
     if (getDone()) {
       return;
     }
@@ -989,6 +942,52 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // if all children are done, this operator is also done
     if (childrenDone != 0 && childrenDone == childOperatorsArray.length) {
       setDone(true);
+    }
+  }
+
+  /*
+   * Forward a VectorizedRowBatch to the children operators.
+   */
+  protected void vectorForward(VectorizedRowBatch batch)
+      throws HiveException {
+
+    runTimeNumRows++;
+    if (getDone()) {
+      return;
+    }
+
+    // Data structures to store original values
+    final int size = batch.size;
+    final boolean selectedInUse = batch.selectedInUse;
+    final boolean saveState = (selectedInUse && multiChildren);
+    if (saveState) {
+      System.arraycopy(batch.selected, 0, selected, 0, size);
+    }
+
+    final int childSize = childOperatorsArray.length;
+    if (childSize == 1) {
+      childOperatorsArray[0].process(batch, childOperatorsTag[0]);
+    } else {
+      int childrenDone = 0;
+      for (int i = 0; i < childOperatorsArray.length; i++) {
+        Operator<? extends OperatorDesc> o = childOperatorsArray[i];
+        if (o.getDone()) {
+          childrenDone++;
+        } else {
+          o.process(batch, childOperatorsTag[i]);
+
+          // Restore original values
+          batch.size = size;
+          batch.selectedInUse = selectedInUse;
+          if (saveState) {
+            System.arraycopy(selected, 0, batch.selected, 0, size);
+          }
+        }
+      }
+      // if all children are done, this operator is also done
+      if (childrenDone != 0 && childrenDone == childOperatorsArray.length) {
+        setDone(true);
+      }
     }
   }
 
@@ -1155,12 +1154,16 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return operatorId;
   }
 
-  public void initOperatorId() {
-    setOperatorId(getName() + "_" + this.id);
+  public String getMarker() {
+    return marker;
   }
 
-  public void setOperatorId(String operatorId) {
-    this.operatorId = operatorId;
+  public void setMarker(String marker) {
+    this.marker = marker;
+  }
+
+  public void initOperatorId() {
+    this.operatorId = getName() + "_" + this.id;
   }
 
   /*
@@ -1527,7 +1530,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setCompilationOpContext(CompilationOpContext ctx) {
+    if (cContext == ctx) {
+      return;
+    }
     cContext = ctx;
+    id = String.valueOf(ctx.nextOperatorId());
+    initOperatorId();
   }
 
   /** @return Compilation operator context. Only available during compilation. */
@@ -1538,8 +1546,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   private void publishRunTimeStats() throws HiveException {
     StatsPublisher statsPublisher = new FSStatsPublisher();
     StatsCollectionContext sContext = new StatsCollectionContext(hconf);
-    sContext.setIndexForTezUnion(indexForTezUnion);
     sContext.setStatsTmpDir(conf.getRuntimeStatsTmpDir());
+    sContext.setContextSuffix(getOperatorId());
 
     if (!statsPublisher.connect(sContext)) {
       LOG.error("StatsPublishing error: cannot connect to database");
@@ -1559,14 +1567,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       // Not changing the interface to maintain backward compatibility
       throw new HiveException(ErrorMsg.STATSPUBLISHER_CLOSING_ERROR.getErrorCodedMsg());
     }
-  }
-
-  public int getIndexForTezUnion() {
-    return indexForTezUnion;
-  }
-
-  public void setIndexForTezUnion(int indexForTezUnion) {
-    this.indexForTezUnion = indexForTezUnion;
   }
 
   /**

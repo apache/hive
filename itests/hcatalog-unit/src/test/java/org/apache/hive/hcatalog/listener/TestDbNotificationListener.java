@@ -23,7 +23,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.TimeUnit;
 import java.lang.reflect.Field;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
@@ -59,6 +62,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -75,6 +79,7 @@ import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
@@ -89,6 +94,7 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -115,9 +121,19 @@ public class TestDbNotificationListener {
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
   private static IMetaStoreClient msClient;
   private static IDriver driver;
-  private static MessageDeserializer md = null;
+  private static MessageDeserializer md;
+
+  static {
+    try {
+      md = MessageFactory.getInstance(JSONMessageEncoder.FORMAT).getDeserializer();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private int startTime;
   private long firstEventId;
+  private final String testTempDir = Paths.get(System.getProperty("java.io.tmpdir"), "testDbNotif").toString();
 
   private static List<String> testsToSkipForReplV1BackwardCompatTesting =
       new ArrayList<>(Arrays.asList("cleanupNotifs", "cleanupNotificationWithError", "sqlTempTable"));
@@ -238,6 +254,10 @@ public class TestDbNotificationListener {
     public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent) throws MetaException {
       pushEventId(EventType.ALLOC_WRITE_ID, allocWriteIdEvent);
     }
+
+    public void onAcidWrite(AcidWriteEvent acidWriteEvent) throws MetaException {
+      pushEventId(EventType.ACID_WRITE, acidWriteEvent);
+    }
   }
 
   @SuppressWarnings("rawtypes")
@@ -252,22 +272,13 @@ public class TestDbNotificationListener {
     conf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     conf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
-    Class dbNotificationListener =
-        Class.forName("org.apache.hive.hcatalog.listener.DbNotificationListener");
-    Class[] classes = dbNotificationListener.getDeclaredClasses();
-    for (Class c : classes) {
-      if (c.getName().endsWith("CleanerThread")) {
-        Field sleepTimeField = c.getDeclaredField("sleepTime");
-        sleepTimeField.setAccessible(true);
-        sleepTimeField.set(null, CLEANUP_SLEEP_TIME * 1000);
-      }
-    }
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANUP_SLEEP_TIME, TimeUnit.SECONDS);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     SessionState.start(new CliSessionState(conf));
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(conf);
-    md = MessageFactory.getInstance().getDeserializer();
+    md = JSONMessageEncoder.getInstance().getDeserializer();
 
     bcompat = new ReplicationV1CompatRule(msClient, conf, testsToSkipForReplV1BackwardCompatTesting );
   }
@@ -290,12 +301,27 @@ public class TestDbNotificationListener {
     MockMetaStoreEventListener.clearEvents();
   }
 
+  // Test if the number of events between the given event ids and with the given database name are
+  // same as expected. toEventId = 0 is treated as unbounded. Same is the case with limit 0.
+  private void testEventCounts(String dbName, long fromEventId, Long toEventId, Integer limit,
+                               long expectedCount) throws Exception {
+    NotificationEventsCountRequest rqst = new NotificationEventsCountRequest(fromEventId, dbName);
+
+    if (toEventId != null) {
+      rqst.setToEventId(toEventId);
+    }
+    if (limit != null) {
+      rqst.setLimit(limit);
+    }
+
+    assertEquals(expectedCount, msClient.getNotificationEventsCount(rqst).getEventsCount());
+  }
 
   @Test
   public void createDatabase() throws Exception {
     String dbName = "createdb";
     String dbName2 = "createdb2";
-    String dbLocationUri = "file:/tmp";
+    String dbLocationUri = testTempDir;
     String dbDescription = "no description";
     Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
     msClient.createDatabase(db);
@@ -331,13 +357,17 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
+
+    // There's only one event corresponding to CREATE DATABASE
+    testEventCounts(dbName, firstEventId, null, null, 1);
+    testEventCounts(dbName2, firstEventId, null, null, 0);
   }
 
   @Test
   public void dropDatabase() throws Exception {
     String dbName = "dropdb";
     String dbName2 = "dropdb2";
-    String dbLocationUri = "file:/tmp";
+    String dbLocationUri = testTempDir;
     String dbDescription = "no description";
     Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
     msClient.createDatabase(db);
@@ -348,6 +378,7 @@ public class TestDbNotificationListener {
 
     // Two events: one for create db and other for drop db
     assertEquals(2, rsp.getEventsSize());
+    testEventCounts(dbName, firstEventId, null, null, 2);
 
     // Read event from notification
     NotificationEvent event = rsp.getEvents().get(1);
@@ -378,6 +409,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
+    testEventCounts(dbName2, firstEventId, null, null, 1);
   }
 
   @Test
@@ -386,7 +418,7 @@ public class TestDbNotificationListener {
     String tblName = "createtable";
     String tblName2 = "createtable2";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -433,6 +465,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 1);
   }
 
   @Test
@@ -440,7 +473,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "altertabletbl";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     FieldSchema col2 = new FieldSchema("col2", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
@@ -491,6 +524,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(2, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 2);
   }
 
   @Test
@@ -499,7 +533,7 @@ public class TestDbNotificationListener {
     String tblName = "droptbl";
     String tblName2 = "droptbl2";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -557,6 +591,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
   }
 
   @Test
@@ -565,7 +600,7 @@ public class TestDbNotificationListener {
     String tblName = "addptn";
     String tblName2 = "addptn2";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -626,6 +661,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(2, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 2);
   }
 
   @Test
@@ -633,7 +669,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "alterptn";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -694,6 +730,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
   }
 
   @Test
@@ -701,7 +738,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "dropptn";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -768,6 +805,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(4, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 4);
   }
 
   @Test
@@ -778,28 +816,33 @@ public class TestDbNotificationListener {
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     partCols.add(new FieldSchema("part", "int", ""));
     SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    StorageDescriptor sd1 = new StorageDescriptor(cols, "file:/tmp/1", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
+    StorageDescriptor sd1 =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "1").toString(), "input", "output", false, 0, serde, null,
+            null, emptyParameters);
     Table tab1 = new Table("tab1", dbName, "me", startTime, startTime, 0, sd1, partCols,
         emptyParameters, null, null, null);
     msClient.createTable(tab1);
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize()); // add_table
 
-    StorageDescriptor sd2 = new StorageDescriptor(cols, "file:/tmp/2", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
+    StorageDescriptor sd2 =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "2").toString(), "input", "output", false, 0, serde, null,
+            null, emptyParameters);
     Table tab2 = new Table("tab2", dbName, "me", startTime, startTime, 0, sd2, partCols,
         emptyParameters, null, null, null); // add_table
     msClient.createTable(tab2);
     rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
     assertEquals(1, rsp.getEventsSize());
 
-    StorageDescriptor sd1part = new StorageDescriptor(cols, "file:/tmp/1/part=1", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
-    StorageDescriptor sd2part = new StorageDescriptor(cols, "file:/tmp/1/part=2", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
-    StorageDescriptor sd3part = new StorageDescriptor(cols, "file:/tmp/1/part=3", "input", "output", false, 0,
-        serde, null, null, emptyParameters);
+    StorageDescriptor sd1part =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=1").toString(), "input", "output", false, 0,
+            serde, null, null, emptyParameters);
+    StorageDescriptor sd2part =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=2").toString(), "input", "output", false, 0,
+            serde, null, null, emptyParameters);
+    StorageDescriptor sd3part =
+        new StorageDescriptor(cols, Paths.get(testTempDir, "1", "part=3").toString(), "input", "output", false, 0,
+            serde, null, null, emptyParameters);
     Partition part1 = new Partition(Arrays.asList("1"), "default", tab1.getTableName(),
         startTime, startTime, sd1part, emptyParameters);
     Partition part2 = new Partition(Arrays.asList("2"), "default", tab1.getTableName(),
@@ -858,6 +901,7 @@ public class TestDbNotificationListener {
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 3);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
+    testEventCounts(dbName, firstEventId, null, null, 5);
   }
 
   @Test
@@ -868,8 +912,8 @@ public class TestDbNotificationListener {
     String ownerName = "me";
     String funcClass = "o.a.h.h.createfunc";
     String funcClass2 = "o.a.h.h.createfunc2";
-    String funcResource = "file:/tmp/somewhere";
-    String funcResource2 = "file:/tmp/somewhere2";
+    String funcResource = Paths.get(testTempDir, "somewhere").toString();
+    String funcResource2 = Paths.get(testTempDir, "somewhere2").toString();
     Function func =
         new Function(funcName, defaultDbName, funcClass, ownerName, PrincipalType.USER, startTime,
             FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, funcResource)));
@@ -916,6 +960,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 1);
   }
 
   @Test
@@ -926,8 +971,8 @@ public class TestDbNotificationListener {
     String ownerName = "me";
     String funcClass = "o.a.h.h.dropfunction";
     String funcClass2 = "o.a.h.h.dropfunction2";
-    String funcResource = "file:/tmp/somewhere";
-    String funcResource2 = "file:/tmp/somewhere2";
+    String funcResource = Paths.get(testTempDir, "somewhere").toString();
+    String funcResource2 = Paths.get(testTempDir, "somewhere2").toString();
     Function func =
         new Function(funcName, defaultDbName, funcClass, ownerName, PrincipalType.USER, startTime,
             FunctionType.JAVA, Arrays.asList(new ResourceUri(ResourceType.JAR, funcResource)));
@@ -970,6 +1015,7 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
   }
 
   @Test
@@ -977,7 +1023,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "inserttbl";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     String fileAdded = "/warehouse/mytable/b1";
     String checksumAdded = "1234";
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
@@ -1025,6 +1071,7 @@ public class TestDbNotificationListener {
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
+    testEventCounts(defaultDbName, firstEventId, null, null, 2);
   }
 
   @Test
@@ -1032,7 +1079,7 @@ public class TestDbNotificationListener {
     String defaultDbName = "default";
     String tblName = "insertptn";
     String tblOwner = "me";
-    String serdeLocation = "file:/tmp";
+    String serdeLocation = testTempDir;
     String fileAdded = "/warehouse/mytable/b1";
     String checksumAdded = "1234";
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
@@ -1091,16 +1138,17 @@ public class TestDbNotificationListener {
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 3);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
+    testEventCounts(defaultDbName, firstEventId, null, null, 3);
   }
 
 
   @Test
   public void getOnlyMaxEvents() throws Exception {
-    Database db = new Database("db1", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("db1", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
-    db = new Database("db2", "no description", "file:/tmp", emptyParameters);
+    db = new Database("db2", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
-    db = new Database("db3", "no description", "file:/tmp", emptyParameters);
+    db = new Database("db3", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
 
     // Get notifications from metastore
@@ -1112,9 +1160,9 @@ public class TestDbNotificationListener {
 
   @Test
   public void filter() throws Exception {
-    Database db = new Database("f1", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("f1", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
-    db = new Database("f2", "no description", "file:/tmp", emptyParameters);
+    db = new Database("f2", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
     msClient.dropDatabase("f2");
 
@@ -1133,9 +1181,9 @@ public class TestDbNotificationListener {
 
   @Test
   public void filterWithMax() throws Exception {
-    Database db = new Database("f10", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("f10", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
-    db = new Database("f11", "no description", "file:/tmp", emptyParameters);
+    db = new Database("f11", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
     msClient.dropDatabase("f11");
 
@@ -1185,10 +1233,12 @@ public class TestDbNotificationListener {
     event = rsp.getEvents().get(5);
     assertEquals(firstEventId + 6, event.getEventId());
     assertEquals(EventType.DROP_TABLE.toString(), event.getEventType());
+    testEventCounts(defaultDbName, firstEventId, null, null, 6);
   }
 
   @Test
   public void sqlCTAS() throws Exception {
+    String defaultDbName = "default";
     String sourceTblName = "sqlctasins1";
     String targetTblName = "sqlctasins2";
     // Event 1
@@ -1214,10 +1264,12 @@ public class TestDbNotificationListener {
     event = rsp.getEvents().get(4);
     assertEquals(firstEventId + 5, event.getEventId());
     assertEquals(EventType.CREATE_TABLE.toString(), event.getEventType());
+    testEventCounts(defaultDbName, firstEventId, null, null, 6);
   }
 
   @Test
   public void sqlTempTable() throws Exception {
+    String defaultDbName = "default";
     String tempTblName = "sqltemptbl";
     driver.run("create temporary table " + tempTblName + "  (c int)");
     driver.run("insert into table " + tempTblName + " values (1)");
@@ -1225,6 +1277,7 @@ public class TestDbNotificationListener {
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(0, rsp.getEventsSize());
+    testEventCounts(defaultDbName, firstEventId, null, null, 0);
   }
 
   @Test
@@ -1248,6 +1301,7 @@ public class TestDbNotificationListener {
 
   @Test
   public void sqlInsertPartition() throws Exception {
+    String defaultDbName = "default";
     String tblName = "sqlinsptn";
     // Event 1
     driver.run("create table " + tblName + " (c int) partitioned by (ds string)");
@@ -1259,6 +1313,13 @@ public class TestDbNotificationListener {
     driver.run("insert into table " + tblName + " partition (ds) values (3, 'today')");
     // Event 9, 10
     driver.run("alter table " + tblName + " add partition (ds = 'yesterday')");
+
+    testEventCounts(defaultDbName, firstEventId, null, null, 10);
+    // Test a limit higher than available events
+    testEventCounts(defaultDbName, firstEventId, null, 100, 10);
+    // Test toEventId lower than current eventId
+    testEventCounts(defaultDbName, firstEventId, (long) firstEventId + 5, null, 5);
+
     // Event 10, 11, 12
     driver.run("insert into table " + tblName + " partition (ds = 'yesterday') values (2)");
     // Event 12, 13, 14
@@ -1325,6 +1386,9 @@ public class TestDbNotificationListener {
     assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
     assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
 
+    // Test fromEventId different from the very first
+    testEventCounts(defaultDbName, event.getEventId(), null, null, 3);
+
     event = rsp.getEvents().get(21);
     assertEquals(firstEventId + 22, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
@@ -1340,6 +1404,16 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 24, event.getEventId());
     assertEquals(EventType.ALTER_PARTITION.toString(), event.getEventType());
     assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
+    testEventCounts(defaultDbName, firstEventId, null, null, 24);
+
+    // Test a limit within the available events
+    testEventCounts(defaultDbName, firstEventId, null, 10, 10);
+    // Test toEventId greater than current eventId
+    testEventCounts(defaultDbName, firstEventId, (long) firstEventId + 100, null, 24);
+    // Test toEventId greater than current eventId with some limit within available events
+    testEventCounts(defaultDbName, firstEventId, (long) firstEventId + 100, 10, 10);
+    // Test toEventId greater than current eventId with some limit beyond available events
+    testEventCounts(defaultDbName, firstEventId, (long) firstEventId + 100, 50, 24);
   }
 
   private void verifyInsert(NotificationEvent event, String dbName, String tblName) throws Exception {
@@ -1359,7 +1433,7 @@ public class TestDbNotificationListener {
 
   @Test
   public void cleanupNotifs() throws Exception {
-    Database db = new Database("cleanup1", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("cleanup1", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
     msClient.dropDatabase("cleanup1");
 
@@ -1379,7 +1453,7 @@ public class TestDbNotificationListener {
 
   @Test
   public void cleanupNotificationWithError() throws Exception {
-    Database db = new Database("cleanup1", "no description", "file:/tmp", emptyParameters);
+    Database db = new Database("cleanup1", "no description", testTempDir, emptyParameters);
     msClient.createDatabase(db);
     msClient.dropDatabase("cleanup1");
 

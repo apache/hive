@@ -7,6 +7,8 @@ PREHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
  FROM 
   src a
@@ -16,6 +18,8 @@ POSTHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -26,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((key < '20') and (key > '15')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15')) (type: boolean)
@@ -42,6 +47,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: ((key > '15') and (key < '20')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15')) (type: boolean)
@@ -234,6 +240,8 @@ PREHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
  FROM 
   src a
@@ -243,6 +251,8 @@ POSTHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -253,6 +263,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((key < '20') and (key > '15')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15')) (type: boolean)
@@ -269,6 +280,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: ((key > '15') and (key < '20')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key < '20') and (key > '15')) (type: boolean)

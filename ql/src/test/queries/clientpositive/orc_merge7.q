@@ -5,8 +5,8 @@ set hive.explain.user=false;
 
 -- orc merge file tests for dynamic partition case
 
-create table orc_merge5_n2 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
-create table orc_merge5a_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (st double) stored as orc;
+create table orc_merge5_n2 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc;
+create table orc_merge5a_n0 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) partitioned by (st double) stored as orc;
 
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n2;
 

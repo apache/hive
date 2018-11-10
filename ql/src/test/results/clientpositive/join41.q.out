@@ -13,9 +13,13 @@ POSTHOOK: Lineage: s1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -39,6 +43,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: string)
           TableScan
             alias: src2
+            filterExpr: (UDFToDouble(key) > 10.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 10.0D) (type: boolean)
@@ -90,9 +95,13 @@ POSTHOOK: Input: default@s1
 PREHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -116,6 +125,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: string)
           TableScan
             alias: src2
+            filterExpr: (UDFToDouble(key) > 10.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 10.0D) (type: boolean)

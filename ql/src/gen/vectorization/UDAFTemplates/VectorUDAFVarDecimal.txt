@@ -138,7 +138,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void init() {
 #IF COMPLETE
-      String aggregateName = vecAggrDesc.getAggrDesc().getGenericUDAFName();
+      String aggregateName = vecAggrDesc.getAggregationName();
       varianceKind = VarianceKind.nameMap.get(aggregateName);
 #ENDIF COMPLETE
     }
@@ -450,15 +450,12 @@ public class <ClassName> extends VectorAggregateExpression {
   public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
       AggregationBuffer agg) throws HiveException {
 
+    Aggregation myagg = (Aggregation) agg;
+
 #IF PARTIAL1
     StructColumnVector outputColVector = (StructColumnVector) batch.cols[columnNum];
 
-    Aggregation myagg = (Aggregation) agg;
-    if (myagg.isNull) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[batchIndex] = true;
-      return;
-    }
+    // For Variance Family, we do not mark NULL if all inputs were NULL.
     outputColVector.isNull[batchIndex] = false;
 
     ColumnVector[] fields = outputColVector.fields;
@@ -469,7 +466,13 @@ public class <ClassName> extends VectorAggregateExpression {
 #IF COMPLETE
     DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[columnNum];
 
-    Aggregation myagg = (Aggregation) agg;
+    if (myagg.isNull) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+
     if (GenericUDAFVariance.isVarianceNull(myagg.count, varianceKind)) {
 
       // SQL standard - return null for zero (or 1 for sample) elements

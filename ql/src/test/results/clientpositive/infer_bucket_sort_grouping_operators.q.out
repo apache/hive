@@ -17,9 +17,13 @@ POSTHOOK: Output: default@test_table_out_2
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH ROLLUP
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table_out@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH ROLLUP
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table_out@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -59,7 +63,7 @@ STAGE PLANS:
           Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), CAST( _col3 AS STRING) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1498,9 +1502,13 @@ Storage Desc Params:
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH CUBE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table_out@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH CUBE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table_out@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1540,7 +1548,7 @@ STAGE PLANS:
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), CAST( _col3 AS STRING) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1725,9 +1733,13 @@ Storage Desc Params:
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value GROUPING SETS (key, value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table_out@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value GROUPING SETS (key, value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table_out@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1767,7 +1779,7 @@ STAGE PLANS:
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
+            expressions: _col0 (type: string), _col1 (type: string), CAST( _col3 AS STRING) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

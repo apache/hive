@@ -219,6 +219,13 @@ select
  order by w_warehouse_name
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@ship_mode
+PREHOOK: Input: default@time_dim
+PREHOOK: Input: default@warehouse
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select   
          w_warehouse_name
@@ -440,6 +447,13 @@ select
  order by w_warehouse_name
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@ship_mode
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -457,6 +471,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ship_mode
+                  filterExpr: ((sm_carrier) IN ('DIAMOND', 'AIRBORNE') and sm_ship_mode_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((sm_carrier) IN ('DIAMOND', 'AIRBORNE') and sm_ship_mode_sk is not null) (type: boolean)
@@ -476,6 +491,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: warehouse
+                  filterExpr: w_warehouse_sk is not null (type: boolean)
                   Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: w_warehouse_sk is not null (type: boolean)
@@ -500,6 +516,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: (t_time BETWEEN 49530 AND 78330 and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (t_time BETWEEN 49530 AND 78330 and t_time_sk is not null) (type: boolean)
@@ -524,6 +541,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ship_mode
+                  filterExpr: ((sm_carrier) IN ('DIAMOND', 'AIRBORNE') and sm_ship_mode_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((sm_carrier) IN ('DIAMOND', 'AIRBORNE') and sm_ship_mode_sk is not null) (type: boolean)
@@ -543,6 +561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: warehouse
+                  filterExpr: w_warehouse_sk is not null (type: boolean)
                   Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: w_warehouse_sk is not null (type: boolean)
@@ -567,6 +586,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: (t_time BETWEEN 49530 AND 78330 and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (t_time BETWEEN 49530 AND 78330 and t_time_sk is not null) (type: boolean)
@@ -598,6 +618,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_warehouse_sk is not null and ws_sold_date_sk is not null and ws_sold_time_sk is not null and ws_ship_mode_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_ship_mode_sk is not null and ws_sold_date_sk is not null and ws_sold_time_sk is not null and ws_warehouse_sk is not null) (type: boolean)
@@ -629,6 +650,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: (cs_warehouse_sk is not null and cs_sold_date_sk is not null and cs_sold_time_sk is not null and cs_ship_mode_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_ship_mode_sk is not null and cs_sold_date_sk is not null and cs_sold_time_sk is not null and cs_warehouse_sk is not null) (type: boolean)
@@ -660,6 +682,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2002) and d_date_sk is not null) (type: boolean)
@@ -679,6 +702,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 2002) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2002) and d_date_sk is not null) (type: boolean)

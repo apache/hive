@@ -43,9 +43,13 @@ POSTHOOK: Lineage: decimal_3_n0.value SIMPLE [(decimal_3_txt)decimal_3_txt.Field
 PREHOOK: query: EXPLAIN
 SELECT * FROM DECIMAL_3_n0 a JOIN DECIMAL_3_n0 b ON (a.key = b.key) ORDER BY a.key, a.value, b.key, b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM DECIMAL_3_n0 a JOIN DECIMAL_3_n0 b ON (a.key = b.key) ORDER BY a.key, a.value, b.key, b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -57,6 +61,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -73,6 +78,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -207,9 +213,13 @@ POSTHOOK: Input: default@decimal_3_n0
 PREHOOK: query: EXPLAIN
 SELECT * FROM DECIMAL_3_n0 a JOIN DECIMAL_3_n0 b ON (a.key = b.key) ORDER BY a.key, a.value, b.key, b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM DECIMAL_3_n0 a JOIN DECIMAL_3_n0 b ON (a.key = b.key) ORDER BY a.key, a.value, b.key, b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -226,6 +236,7 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -244,6 +255,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 38 Data size: 4296 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

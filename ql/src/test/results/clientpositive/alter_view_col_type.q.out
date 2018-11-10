@@ -102,9 +102,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select c1, c2 from at1	 
-View Expanded Text: 	select `at1`.`c1`, `at1`.`c2` from `default`.`at1`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select c1, c2 from at1	 
+Expanded Query:     	select `at1`.`c1`, `at1`.`c2` from `default`.`at1`	 
 PREHOOK: query: select * from av1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@at1
@@ -159,9 +158,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select c2, c3 from at1	 
-View Expanded Text: 	select `at1`.`c2`, `at1`.`c3` from `default`.`at1`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select c2, c3 from at1	 
+Expanded Query:     	select `at1`.`c2`, `at1`.`c3` from `default`.`at1`	 
 PREHOOK: query: select * from av1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@at1

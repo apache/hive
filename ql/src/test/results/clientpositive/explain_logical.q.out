@@ -69,13 +69,18 @@ POSTHOOK: Lineage: V4_n1.value2 SIMPLE [(src)src3.FieldSchema(name:value, type:s
 PREHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM srcpart WHERE ds IS NOT NULL GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM srcpart WHERE ds IS NOT NULL GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
 LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: ds is not null (type: boolean)
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Select Operator (SEL_2)
       expressions: key (type: string)
@@ -110,9 +115,13 @@ srcpart
 PREHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM (SELECT key, value FROM src) subq1 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM (SELECT key, value FROM src) subq1 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 LOGICAL PLAN:
 src 
   TableScan (TS_0)
@@ -153,11 +162,17 @@ PREHOOK: query: EXPLAIN LOGICAL
     SELECT key, value FROM src UNION ALL SELECT key, value FROM srcpart WHERE ds IS NOT NULL
   ) S1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL 
   SELECT * FROM (
     SELECT key, value FROM src UNION ALL SELECT key, value FROM srcpart WHERE ds IS NOT NULL
   ) S1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
 LOGICAL PLAN:
 $hdt$_0-subquery1:src 
   TableScan (TS_0)
@@ -179,6 +194,7 @@ $hdt$_0-subquery1:src
 $hdt$_0-subquery2:srcpart 
   TableScan (TS_2)
     alias: srcpart
+    filterExpr: ds is not null (type: boolean)
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Select Operator (SEL_4)
       expressions: key (type: string), value (type: string)
@@ -190,13 +206,20 @@ $hdt$_0-subquery2:srcpart
 PREHOOK: query: EXPLAIN LOGICAL 
   SELECT S1.key, S2.value FROM src S1 JOIN srcpart S2 ON S1.key = S2.key WHERE ds IS NOT NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL 
   SELECT S1.key, S2.value FROM src S1 JOIN srcpart S2 ON S1.key = S2.key WHERE ds IS NOT NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
 LOGICAL PLAN:
 $hdt$_0:s1 
   TableScan (TS_0)
     alias: s1
+    filterExpr: key is not null (type: boolean)
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_11)
       predicate: key is not null (type: boolean)
@@ -232,6 +255,7 @@ $hdt$_0:s1
 $hdt$_1:s2 
   TableScan (TS_3)
     alias: s2
+    filterExpr: (key is not null and ds is not null) (type: boolean)
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_12)
       predicate: key is not null (type: boolean)
@@ -257,8 +281,14 @@ $hdt$_1:s2
 
 PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1_n8
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v1_n8
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1_n8
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v1_n8
+#### A masked pattern was here ####
 LOGICAL PLAN:
 src 
   TableScan (TS_0)
@@ -274,12 +304,27 @@ src
 
 PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@v2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@v2_n3
+#### A masked pattern was here ####
 LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: ds is not null (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -291,12 +336,23 @@ srcpart
 
 PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v2_n3
+PREHOOK: Input: default@v3_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v2_n3
+POSTHOOK: Input: default@v3_n1
+#### A masked pattern was here ####
 LOGICAL PLAN:
 $hdt$_0:srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: (ds is not null and key is not null) (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -334,6 +390,7 @@ $hdt$_0:srcpart
 $hdt$_1:src2 
   TableScan (TS_3)
     alias: src2
+    filterExpr: key is not null (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -361,12 +418,25 @@ $hdt$_1:src2
 
 PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v1_n8
+PREHOOK: Input: default@v2_n3
+PREHOOK: Input: default@v4_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v1_n8
+POSTHOOK: Input: default@v2_n3
+POSTHOOK: Input: default@v4_n1
+#### A masked pattern was here ####
 LOGICAL PLAN:
 $hdt$_0:srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: (ds is not null and key is not null) (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -407,6 +477,7 @@ $hdt$_0:srcpart
 $hdt$_1:src 
   TableScan (TS_3)
     alias: src
+    filterExpr: key is not null (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -435,6 +506,7 @@ $hdt$_1:src
 $hdt$_2:src3 
   TableScan (TS_6)
     alias: src3
+    filterExpr: key is not null (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -478,12 +550,19 @@ POSTHOOK: Lineage: V5_n0.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type
 POSTHOOK: Lineage: V5_n0.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v5_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v5_n0
+#### A masked pattern was here ####
 LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: (ds = '10') (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -498,12 +577,17 @@ srcpart
 
 PREHOOK: query: EXPLAIN LOGICAL SELECT s1.key, s1.cnt, s2.value FROM (SELECT key, count(value) as cnt FROM src GROUP BY key) s1 JOIN src s2 ON (s1.key = s2.key) ORDER BY s1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN LOGICAL SELECT s1.key, s1.cnt, s2.value FROM (SELECT key, count(value) as cnt FROM src GROUP BY key) s1 JOIN src s2 ON (s1.key = s2.key) ORDER BY s1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 LOGICAL PLAN:
 $hdt$_0:src 
   TableScan (TS_0)
     alias: src
+    filterExpr: key is not null (type: boolean)
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_17)
       predicate: key is not null (type: boolean)
@@ -563,6 +647,7 @@ $hdt$_0:src
 $hdt$_1:s2 
   TableScan (TS_7)
     alias: s2
+    filterExpr: key is not null (type: boolean)
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_18)
       predicate: key is not null (type: boolean)

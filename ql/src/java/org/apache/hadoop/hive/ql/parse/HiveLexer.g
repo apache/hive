@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
+KW_UNKNOWN : 'UNKNOWN';
 KW_ALL : 'ALL';
 KW_NONE: 'NONE';
 KW_AND : 'AND';
@@ -125,6 +126,7 @@ KW_SMALLINT: 'SMALLINT';
 KW_INT: 'INT' | 'INTEGER';
 KW_BIGINT: 'BIGINT';
 KW_FLOAT: 'FLOAT';
+KW_REAL: 'REAL';
 KW_DOUBLE: 'DOUBLE';
 KW_PRECISION: 'PRECISION';
 KW_DATE: 'DATE';
@@ -187,9 +189,11 @@ KW_FILE: 'FILE';
 KW_JAR: 'JAR';
 KW_EXPLAIN: 'EXPLAIN';
 KW_EXTENDED: 'EXTENDED';
+KW_DEBUG: 'DEBUG';
 KW_FORMATTED: 'FORMATTED';
 KW_DEPENDENCY: 'DEPENDENCY';
 KW_LOGICAL: 'LOGICAL';
+KW_CBO: 'CBO';
 KW_SERDE: 'SERDE';
 KW_WITH: 'WITH';
 KW_DEFERRED: 'DEFERRED';
@@ -301,6 +305,7 @@ KW_PRINCIPALS: 'PRINCIPALS';
 KW_COMPACT: 'COMPACT';
 KW_COMPACTIONS: 'COMPACTIONS';
 KW_TRANSACTIONS: 'TRANSACTIONS';
+KW_TRANSACTIONAL: 'TRANSACTIONAL';
 KW_REWRITE : 'REWRITE';
 KW_AUTHORIZATION: 'AUTHORIZATION';
 KW_REOPTIMIZATION: 'REOPTIMIZATION';
@@ -333,6 +338,7 @@ KW_PRIMARY: 'PRIMARY';
 KW_FOREIGN: 'FOREIGN';
 KW_REFERENCES: 'REFERENCES';
 KW_CONSTRAINT: 'CONSTRAINT';
+KW_FORCE: 'FORCE';
 KW_ENFORCED: 'ENFORCED';
 KW_VALIDATE: 'VALIDATE';
 KW_NOVALIDATE: 'NOVALIDATE';
@@ -374,6 +380,7 @@ KW_ACTIVE: 'ACTIVE';
 KW_UNMANAGED: 'UNMANAGED';
 KW_APPLICATION: 'APPLICATION';
 KW_SYNC: 'SYNC';
+KW_AST: 'AST';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
@@ -470,21 +477,6 @@ NumberLiteral
 ByteLengthLiteral
     :
     (Digit)+ ('b' | 'B' | 'k' | 'K' | 'm' | 'M' | 'g' | 'G')
-    ;
-
-TimeFullLiteral
-    :
-    (Digit)+ ('NS' | 'NSEC' | 'NSECS' | 'NANOSECOND' | 'NANOSECONDS' |
-          'US' | 'USEC' | 'USECS' | 'MICROSECOND' | 'MICROSECONDS' |
-          'MS' | 'MSEC' | 'MSECS' | 'MILLISECOND' | 'MILLISECONDS' |
-          'SEC' | 'SECS' | 'SECOND' | 'SECONDS' |
-          'MIN' | 'MINS' | 'MINUTE' | 'MINUTES' |
-          'HOUR' | 'HOURS' | 'DAY' | 'DAYS')
-    ;
-
-ByteLengthFullLiteral
-    :
-    (Digit)+ ('KB' | 'MB' | 'GB' | 'TB' | 'PB')
     ;
 
 Number

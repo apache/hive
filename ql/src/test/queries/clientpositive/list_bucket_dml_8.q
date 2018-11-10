@@ -48,7 +48,6 @@ set hive.merge.mapredfiles=false;
 -- with merge
 -- 118 000002_0 
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 -- create a skewed table
 create table list_bucketing_dynamic_part_n2 (key String, value String) 

@@ -31,6 +31,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -69,9 +70,16 @@ public class ErasureProcessor implements CommandProcessor {
   private HadoopShims.HdfsErasureCodingShim erasureCodingShim;
 
   ErasureProcessor(HiveConf config) throws IOException {
+    this.erasureCodingShim  = getErasureShim(config);
+  }
+
+  /**
+   * Get an instance of HdfsErasureCodingShim from a config.
+   */
+  public static HadoopShims.HdfsErasureCodingShim getErasureShim(Configuration config) throws IOException {
     HadoopShims hadoopShims = ShimLoader.getHadoopShims();
     FileSystem fileSystem = FileSystem.get(config);
-    this.erasureCodingShim  = hadoopShims.createHdfsErasureCodingShim(fileSystem, config);
+    return hadoopShims.createHdfsErasureCodingShim(fileSystem, config);
   }
 
   private CommandLine parseCommandArgs(final Options opts, String[] args) throws ParseException {

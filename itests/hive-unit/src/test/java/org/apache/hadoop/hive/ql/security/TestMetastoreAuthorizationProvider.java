@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,6 +239,8 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     assertEquals(0,ret.getResponseCode()); // now it succeeds.
     Table tbl = msc.getTable(dbName, tblName);
+    Assert.assertTrue(tbl.isSetId());
+    tbl.unsetId();
 
     validateCreateTable(tbl,tblName, dbName);
 

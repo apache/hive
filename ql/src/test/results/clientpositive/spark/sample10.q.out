@@ -36,9 +36,21 @@ POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(s
 PREHOOK: query: explain extended
 select ds, count(1) from srcpartbucket tablesample (bucket 2 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpartbucket
+PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select ds, count(1) from srcpartbucket tablesample (bucket 2 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpartbucket
+POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -55,6 +67,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpartbucket
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 40 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -87,7 +100,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -138,7 +151,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -189,7 +202,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -240,7 +253,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -290,10 +303,10 @@ STAGE PLANS:
                     name: default.srcpartbucket
                   name: default.srcpartbucket
             Truncated Path -> Alias:
-              /srcpartbucket/ds=2008-04-08/hr=11/000001_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-08/hr=12/000001_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-09/hr=11/000001_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-09/hr=12/000001_0 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-08/hr=11 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-08/hr=12 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-09/hr=11 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-09/hr=12 [srcpartbucket]
         Reducer 2 
             Execution mode: vectorized
             Needs Tagging: false

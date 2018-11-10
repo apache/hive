@@ -35,11 +35,13 @@ select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n2
 -- SORT_QUERY_RESULTS
 
 select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`);
+select count(*) from (select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)) as t;
 
 explain vectorization detail
 select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`);
 
 select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`);
+select count(*) from (select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)) as t;
 
 
 
@@ -72,11 +74,13 @@ select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`
 -- SORT_QUERY_RESULTS
 
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
+select count(*) from (select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t;
 
 explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
 
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
+select count(*) from (select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t;
 
 
 set hive.vectorized.input.format.supports.enabled=none;
@@ -87,9 +91,11 @@ select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`
 -- SORT_QUERY_RESULTS
 
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
+select count(*) from (select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t;
 
 explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
 
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`);
+select count(*) from (select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t;
 

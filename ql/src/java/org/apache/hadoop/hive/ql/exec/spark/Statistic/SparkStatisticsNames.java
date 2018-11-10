@@ -31,15 +31,31 @@ public class SparkStatisticsNames {
   public static final String RESULT_SERIALIZATION_TIME = "ResultSerializationTime";
   public static final String MEMORY_BYTES_SPILLED = "MemoryBytesSpilled";
   public static final String DISK_BYTES_SPILLED = "DiskBytesSpilled";
+
+  public static final String TASK_DURATION_TIME = "TaskDurationTime";
+
+  // Input Metrics
   public static final String BYTES_READ = "BytesRead";
-  public static final String REMOTE_BLOCKS_FETCHED = "RemoteBlocksFetched";
-  public static final String LOCAL_BLOCKS_FETCHED = "LocalBlocksFetched";
-  public static final String TOTAL_BLOCKS_FETCHED = "TotalBlocksFetched";
-  public static final String FETCH_WAIT_TIME = "FetchWaitTime";
-  public static final String REMOTE_BYTES_READ = "RemoteBytesRead";
+  public static final String RECORDS_READ = "RecordsRead";
+
+  // Shuffle Read Metrics
+  public static final String SHUFFLE_FETCH_WAIT_TIME = "ShuffleFetchWaitTime";
+  public static final String SHUFFLE_REMOTE_BYTES_READ = "ShuffleRemoteBytesRead";
+  public static final String SHUFFLE_LOCAL_BYTES_READ = "ShuffleLocalBytesRead";
+  public static final String SHUFFLE_TOTAL_BYTES_READ = "ShuffleTotalBytesRead";
+  public static final String SHUFFLE_REMOTE_BLOCKS_FETCHED = "ShuffleRemoteBlocksFetched";
+  public static final String SHUFFLE_LOCAL_BLOCKS_FETCHED = "ShuffleLocalBlocksFetched";
+  public static final String SHUFFLE_TOTAL_BLOCKS_FETCHED = "ShuffleTotalBlocksFetched";
+  public static final String SHUFFLE_REMOTE_BYTES_READ_TO_DISK = "ShuffleRemoteBytesReadToDisk";
+  public static final String SHUFFLE_RECORDS_READ = "ShuffleRecordsRead";
+
+  // Shuffle Write Metrics
   public static final String SHUFFLE_BYTES_WRITTEN = "ShuffleBytesWritten";
   public static final String SHUFFLE_WRITE_TIME = "ShuffleWriteTime";
-  public static final String TASK_DURATION_TIME = "TaskDurationTime";
+  public static final String SHUFFLE_RECORDS_WRITTEN = "ShuffleRecordsWritten";
+
+  public static final String RECORDS_WRITTEN = "RecordsWritten";
+  public static final String BYTES_WRITTEN = "BytesWritten";
 
   public static final String SPARK_GROUP_NAME = "SPARK";
 }

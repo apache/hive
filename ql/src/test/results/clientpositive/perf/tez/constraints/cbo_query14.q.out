@@ -1,0 +1,612 @@
+Warning: Shuffle Join MERGEJOIN[1431][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[1443][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[1433][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 13' is a cross product
+Warning: Shuffle Join MERGEJOIN[1456][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 14' is a cross product
+Warning: Shuffle Join MERGEJOIN[1435][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 18' is a cross product
+Warning: Shuffle Join MERGEJOIN[1469][tables = [$hdt$_2, $hdt$_3, $hdt$_1]] in Stage 'Reducer 19' is a cross product
+PREHOOK: query: explain cbo
+with  cross_items as
+ (select i_item_sk ss_item_sk
+ from item,
+ (select iss.i_brand_id brand_id
+     ,iss.i_class_id class_id
+     ,iss.i_category_id category_id
+ from store_sales
+     ,item iss
+     ,date_dim d1
+ where ss_item_sk = iss.i_item_sk
+   and ss_sold_date_sk = d1.d_date_sk
+   and d1.d_year between 1999 AND 1999 + 2
+ intersect 
+ select ics.i_brand_id
+     ,ics.i_class_id
+     ,ics.i_category_id
+ from catalog_sales
+     ,item ics
+     ,date_dim d2
+ where cs_item_sk = ics.i_item_sk
+   and cs_sold_date_sk = d2.d_date_sk
+   and d2.d_year between 1999 AND 1999 + 2
+ intersect
+ select iws.i_brand_id
+     ,iws.i_class_id
+     ,iws.i_category_id
+ from web_sales
+     ,item iws
+     ,date_dim d3
+ where ws_item_sk = iws.i_item_sk
+   and ws_sold_date_sk = d3.d_date_sk
+   and d3.d_year between 1999 AND 1999 + 2) x
+ where i_brand_id = brand_id
+      and i_class_id = class_id
+      and i_category_id = category_id
+),
+ avg_sales as
+ (select avg(quantity*list_price) average_sales
+  from (select ss_quantity quantity
+             ,ss_list_price list_price
+       from store_sales
+           ,date_dim
+       where ss_sold_date_sk = d_date_sk
+         and d_year between 1999 and 2001 
+       union all 
+       select cs_quantity quantity 
+             ,cs_list_price list_price
+       from catalog_sales
+           ,date_dim
+       where cs_sold_date_sk = d_date_sk
+         and d_year between 1998 and 1998 + 2 
+       union all
+       select ws_quantity quantity
+             ,ws_list_price list_price
+       from web_sales
+           ,date_dim
+       where ws_sold_date_sk = d_date_sk
+         and d_year between 1998 and 1998 + 2) x)
+  select  channel, i_brand_id,i_class_id,i_category_id,sum(sales), sum(number_sales)
+ from(
+       select 'store' channel, i_brand_id,i_class_id
+             ,i_category_id,sum(ss_quantity*ss_list_price) sales
+             , count(*) number_sales
+       from store_sales
+           ,item
+           ,date_dim
+       where ss_item_sk in (select ss_item_sk from cross_items)
+         and ss_item_sk = i_item_sk
+         and ss_sold_date_sk = d_date_sk
+         and d_year = 1998+2 
+         and d_moy = 11
+       group by i_brand_id,i_class_id,i_category_id
+       having sum(ss_quantity*ss_list_price) > (select average_sales from avg_sales)
+       union all
+       select 'catalog' channel, i_brand_id,i_class_id,i_category_id, sum(cs_quantity*cs_list_price) sales, count(*) number_sales
+       from catalog_sales
+           ,item
+           ,date_dim
+       where cs_item_sk in (select ss_item_sk from cross_items)
+         and cs_item_sk = i_item_sk
+         and cs_sold_date_sk = d_date_sk
+         and d_year = 1998+2 
+         and d_moy = 11
+       group by i_brand_id,i_class_id,i_category_id
+       having sum(cs_quantity*cs_list_price) > (select average_sales from avg_sales)
+       union all
+       select 'web' channel, i_brand_id,i_class_id,i_category_id, sum(ws_quantity*ws_list_price) sales , count(*) number_sales
+       from web_sales
+           ,item
+           ,date_dim
+       where ws_item_sk in (select ss_item_sk from cross_items)
+         and ws_item_sk = i_item_sk
+         and ws_sold_date_sk = d_date_sk
+         and d_year = 1998+2
+         and d_moy = 11
+       group by i_brand_id,i_class_id,i_category_id
+       having sum(ws_quantity*ws_list_price) > (select average_sales from avg_sales)
+ ) y
+ group by rollup (channel, i_brand_id,i_class_id,i_category_id)
+ order by channel,i_brand_id,i_class_id,i_category_id
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+with  cross_items as
+ (select i_item_sk ss_item_sk
+ from item,
+ (select iss.i_brand_id brand_id
+     ,iss.i_class_id class_id
+     ,iss.i_category_id category_id
+ from store_sales
+     ,item iss
+     ,date_dim d1
+ where ss_item_sk = iss.i_item_sk
+   and ss_sold_date_sk = d1.d_date_sk
+   and d1.d_year between 1999 AND 1999 + 2
+ intersect 
+ select ics.i_brand_id
+     ,ics.i_class_id
+     ,ics.i_category_id
+ from catalog_sales
+     ,item ics
+     ,date_dim d2
+ where cs_item_sk = ics.i_item_sk
+   and cs_sold_date_sk = d2.d_date_sk
+   and d2.d_year between 1999 AND 1999 + 2
+ intersect
+ select iws.i_brand_id
+     ,iws.i_class_id
+     ,iws.i_category_id
+ from web_sales
+     ,item iws
+     ,date_dim d3
+ where ws_item_sk = iws.i_item_sk
+   and ws_sold_date_sk = d3.d_date_sk
+   and d3.d_year between 1999 AND 1999 + 2) x
+ where i_brand_id = brand_id
+      and i_class_id = class_id
+      and i_category_id = category_id
+),
+ avg_sales as
+ (select avg(quantity*list_price) average_sales
+  from (select ss_quantity quantity
+             ,ss_list_price list_price
+       from store_sales
+           ,date_dim
+       where ss_sold_date_sk = d_date_sk
+         and d_year between 1999 and 2001 
+       union all 
+       select cs_quantity quantity 
+             ,cs_list_price list_price
+       from catalog_sales
+           ,date_dim
+       where cs_sold_date_sk = d_date_sk
+         and d_year between 1998 and 1998 + 2 
+       union all
+       select ws_quantity quantity
+             ,ws_list_price list_price
+       from web_sales
+           ,date_dim
+       where ws_sold_date_sk = d_date_sk
+         and d_year between 1998 and 1998 + 2) x)
+  select  channel, i_brand_id,i_class_id,i_category_id,sum(sales), sum(number_sales)
+ from(
+       select 'store' channel, i_brand_id,i_class_id
+             ,i_category_id,sum(ss_quantity*ss_list_price) sales
+             , count(*) number_sales
+       from store_sales
+           ,item
+           ,date_dim
+       where ss_item_sk in (select ss_item_sk from cross_items)
+         and ss_item_sk = i_item_sk
+         and ss_sold_date_sk = d_date_sk
+         and d_year = 1998+2 
+         and d_moy = 11
+       group by i_brand_id,i_class_id,i_category_id
+       having sum(ss_quantity*ss_list_price) > (select average_sales from avg_sales)
+       union all
+       select 'catalog' channel, i_brand_id,i_class_id,i_category_id, sum(cs_quantity*cs_list_price) sales, count(*) number_sales
+       from catalog_sales
+           ,item
+           ,date_dim
+       where cs_item_sk in (select ss_item_sk from cross_items)
+         and cs_item_sk = i_item_sk
+         and cs_sold_date_sk = d_date_sk
+         and d_year = 1998+2 
+         and d_moy = 11
+       group by i_brand_id,i_class_id,i_category_id
+       having sum(cs_quantity*cs_list_price) > (select average_sales from avg_sales)
+       union all
+       select 'web' channel, i_brand_id,i_class_id,i_category_id, sum(ws_quantity*ws_list_price) sales , count(*) number_sales
+       from web_sales
+           ,item
+           ,date_dim
+       where ws_item_sk in (select ss_item_sk from cross_items)
+         and ws_item_sk = i_item_sk
+         and ws_sold_date_sk = d_date_sk
+         and d_year = 1998+2
+         and d_moy = 11
+       group by i_brand_id,i_class_id,i_category_id
+       having sum(ws_quantity*ws_list_price) > (select average_sales from avg_sales)
+ ) y
+ group by rollup (channel, i_brand_id,i_class_id,i_category_id)
+ order by channel,i_brand_id,i_class_id,i_category_id
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
+  HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], $f4=[$4], $f5=[$5])
+    HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2, 3}, {0, 1, 2}, {0, 1}, {0}, {}]], agg#0=[sum($4)], agg#1=[sum($5)])
+      HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], sales=[$4], number_sales=[$5])
+        HiveUnion(all=[true])
+          HiveProject(channel=[_UTF-16LE'store'], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
+            HiveJoin(condition=[>($3, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+                HiveAggregate(group=[{0, 1, 2}], agg#0=[sum($3)], agg#1=[count()])
+                  HiveProject($f0=[$2], $f1=[$3], $f2=[$4], $f3=[*(CAST($7):DECIMAL(10, 0), $8)])
+                    HiveJoin(condition=[=($6, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(ss_item_sk=[$0])
+                        HiveJoin(condition=[AND(AND(=($1, $4), =($2, $5)), =($3, $6))], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                              HiveTableScan(table=[[default, item]], table:alias=[item])
+                          HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+                            HiveFilter(condition=[=($3, 3)])
+                              HiveAggregate(group=[{0, 1, 2}], agg#0=[count($3)])
+                                HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                  HiveUnion(all=[true])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[iss])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$15])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[ics])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[iws])
+                      HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                        HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_quantity=[$10], ss_list_price=[$12])
+                            HiveFilter(condition=[IS NOT NULL($0)])
+                              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                          HiveProject(d_date_sk=[$0])
+                            HiveFilter(condition=[AND(=($6, 2000), =($8, 11))])
+                              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(cnt=[$0])
+                  HiveFilter(condition=[<=(sq_count_check($0), 1)])
+                    HiveProject(cnt=[$0])
+                      HiveAggregate(group=[{}], cnt=[COUNT()])
+                        HiveProject
+                          HiveProject($f0=[$0])
+                            HiveAggregate(group=[{}], agg#0=[count($0)])
+                              HiveProject(quantity=[$0], list_price=[$1])
+                                HiveUnion(all=[true])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$10], ss_list_price=[$12])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(cs_sold_date_sk=[$0], cs_quantity=[$18], cs_list_price=[$20])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(ws_sold_date_sk=[$0], ws_quantity=[$18], ws_list_price=[$20])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                HiveProject($f0=[/($0, $1)])
+                  HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[count($0)])
+                    HiveProject($f0=[*(CAST($0):DECIMAL(10, 0), $1)])
+                      HiveUnion(all=[true])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$10], ss_list_price=[$12])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(cs_sold_date_sk=[$0], cs_quantity=[$18], cs_list_price=[$20])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(ws_sold_date_sk=[$0], ws_quantity=[$18], ws_list_price=[$20])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(channel=[_UTF-16LE'catalog'], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
+            HiveJoin(condition=[>($3, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+                HiveAggregate(group=[{0, 1, 2}], agg#0=[sum($3)], agg#1=[count()])
+                  HiveProject($f0=[$2], $f1=[$3], $f2=[$4], $f3=[*(CAST($7):DECIMAL(10, 0), $8)])
+                    HiveJoin(condition=[=($6, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(ss_item_sk=[$0])
+                        HiveJoin(condition=[AND(AND(=($1, $4), =($2, $5)), =($3, $6))], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                              HiveTableScan(table=[[default, item]], table:alias=[item])
+                          HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+                            HiveFilter(condition=[=($3, 3)])
+                              HiveAggregate(group=[{0, 1, 2}], agg#0=[count($3)])
+                                HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                  HiveUnion(all=[true])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[iss])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$15])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[ics])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[iws])
+                      HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                        HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_quantity=[$18], cs_list_price=[$20])
+                            HiveFilter(condition=[IS NOT NULL($0)])
+                              HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                          HiveProject(d_date_sk=[$0])
+                            HiveFilter(condition=[AND(=($6, 2000), =($8, 11))])
+                              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(cnt=[$0])
+                  HiveFilter(condition=[<=(sq_count_check($0), 1)])
+                    HiveProject(cnt=[$0])
+                      HiveAggregate(group=[{}], cnt=[COUNT()])
+                        HiveProject
+                          HiveProject($f0=[$0])
+                            HiveAggregate(group=[{}], agg#0=[count($0)])
+                              HiveProject(quantity=[$0], list_price=[$1])
+                                HiveUnion(all=[true])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$10], ss_list_price=[$12])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(cs_sold_date_sk=[$0], cs_quantity=[$18], cs_list_price=[$20])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(ws_sold_date_sk=[$0], ws_quantity=[$18], ws_list_price=[$20])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                HiveProject($f0=[/($0, $1)])
+                  HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[count($0)])
+                    HiveProject($f0=[*(CAST($0):DECIMAL(10, 0), $1)])
+                      HiveUnion(all=[true])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$10], ss_list_price=[$12])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(cs_sold_date_sk=[$0], cs_quantity=[$18], cs_list_price=[$20])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(ws_sold_date_sk=[$0], ws_quantity=[$18], ws_list_price=[$20])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+          HiveProject(channel=[_UTF-16LE'web'], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
+            HiveJoin(condition=[>($3, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
+                HiveAggregate(group=[{0, 1, 2}], agg#0=[sum($3)], agg#1=[count()])
+                  HiveProject($f0=[$2], $f1=[$3], $f2=[$4], $f3=[*(CAST($7):DECIMAL(10, 0), $8)])
+                    HiveJoin(condition=[=($6, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveProject(ss_item_sk=[$0])
+                        HiveJoin(condition=[AND(AND(=($1, $4), =($2, $5)), =($3, $6))], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                              HiveTableScan(table=[[default, item]], table:alias=[item])
+                          HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+                            HiveFilter(condition=[=($3, 3)])
+                              HiveAggregate(group=[{0, 1, 2}], agg#0=[count($3)])
+                                HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                  HiveUnion(all=[true])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(ss_sold_date_sk=[$0], ss_item_sk=[$2])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[iss])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(cs_sold_date_sk=[$0], cs_item_sk=[$15])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[ics])
+                                    HiveProject(i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], $f3=[$3])
+                                      HiveAggregate(group=[{4, 5, 6}], agg#0=[count()])
+                                        HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                          HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                                            HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3])
+                                              HiveFilter(condition=[IS NOT NULL($0)])
+                                                HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                                            HiveProject(d_date_sk=[$0])
+                                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                                HiveTableScan(table=[[default, date_dim]], table:alias=[d3])
+                                          HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                                            HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
+                                              HiveTableScan(table=[[default, item]], table:alias=[iws])
+                      HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11])
+                          HiveTableScan(table=[[default, item]], table:alias=[item])
+                        HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_quantity=[$18], ws_list_price=[$20])
+                            HiveFilter(condition=[IS NOT NULL($0)])
+                              HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                          HiveProject(d_date_sk=[$0])
+                            HiveFilter(condition=[AND(=($6, 2000), =($8, 11))])
+                              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+              HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(cnt=[$0])
+                  HiveFilter(condition=[<=(sq_count_check($0), 1)])
+                    HiveProject(cnt=[$0])
+                      HiveAggregate(group=[{}], cnt=[COUNT()])
+                        HiveProject
+                          HiveProject($f0=[$0])
+                            HiveAggregate(group=[{}], agg#0=[count($0)])
+                              HiveProject(quantity=[$0], list_price=[$1])
+                                HiveUnion(all=[true])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$10], ss_list_price=[$12])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(cs_sold_date_sk=[$0], cs_quantity=[$18], cs_list_price=[$20])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                                  HiveProject(quantity=[$1], list_price=[$2])
+                                    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                                      HiveProject(ws_sold_date_sk=[$0], ws_quantity=[$18], ws_list_price=[$20])
+                                        HiveFilter(condition=[IS NOT NULL($0)])
+                                          HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                                      HiveProject(d_date_sk=[$0])
+                                        HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                HiveProject($f0=[/($0, $1)])
+                  HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[count($0)])
+                    HiveProject($f0=[*(CAST($0):DECIMAL(10, 0), $1)])
+                      HiveUnion(all=[true])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$10], ss_list_price=[$12])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1999, 2001)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(cs_sold_date_sk=[$0], cs_quantity=[$18], cs_list_price=[$20])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        HiveProject(quantity=[$1], list_price=[$2])
+                          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+                            HiveProject(ws_sold_date_sk=[$0], ws_quantity=[$18], ws_list_price=[$20])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                            HiveProject(d_date_sk=[$0])
+                              HiveFilter(condition=[BETWEEN(false, $6, 1998, 2000)])
+                                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+

@@ -61,12 +61,18 @@ INSERT OVERWRITE TABLE join_result_1
 SELECT a.*, b.*
 WHERE b.id = 'Id_1' AND b.val = 'val_103'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_a
+PREHOOK: Input: default@t_b
+PREHOOK: Output: default@join_result_1
 POSTHOOK: query: explain
 FROM T_A a LEFT JOIN T_B b ON a.id = b.id
 INSERT OVERWRITE TABLE join_result_1
 SELECT a.*, b.*
 WHERE b.id = 'Id_1' AND b.val = 'val_103'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_a
+POSTHOOK: Input: default@t_b
+POSTHOOK: Output: default@join_result_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -79,6 +85,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (id = 'Id_1') (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (id = 'Id_1') (type: boolean)
@@ -93,6 +100,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: ((id = 'Id_1') and (val = 'val_103')) (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_1') and (val = 'val_103')) (type: boolean)
@@ -187,12 +195,18 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
 WHERE b.val = 'val_104' AND b.id = 'Id_2' AND a.val <> b.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_a
+PREHOOK: Input: default@t_b
+PREHOOK: Output: default@join_result_3
 POSTHOOK: query: explain
 FROM T_A a LEFT JOIN T_B b ON a.id = b.id
 INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
 WHERE b.val = 'val_104' AND b.id = 'Id_2' AND a.val <> b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_a
+POSTHOOK: Input: default@t_b
+POSTHOOK: Output: default@join_result_3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -205,6 +219,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((id = 'Id_2') and (val <> 'val_104')) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_2') and (val <> 'val_104')) (type: boolean)
@@ -219,6 +234,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: ((val = 'val_104') and (id = 'Id_2')) (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_2') and (val = 'val_104')) (type: boolean)
@@ -315,6 +331,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
 WHERE b.val = 'val_104' AND b.id = 'Id_2' AND a.val <> b.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_a
+PREHOOK: Input: default@t_b
+PREHOOK: Output: default@join_result_1
+PREHOOK: Output: default@join_result_3
 POSTHOOK: query: explain
 FROM T_A a LEFT JOIN T_B b ON a.id = b.id
 INSERT OVERWRITE TABLE join_result_1
@@ -324,6 +344,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
 WHERE b.val = 'val_104' AND b.id = 'Id_2' AND a.val <> b.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_a
+POSTHOOK: Input: default@t_b
+POSTHOOK: Output: default@join_result_1
+POSTHOOK: Output: default@join_result_3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -516,6 +540,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_a
+PREHOOK: Input: default@t_b
+PREHOOK: Output: default@join_result_1
+PREHOOK: Output: default@join_result_3
 POSTHOOK: query: explain
 FROM T_A a LEFT JOIN T_B b ON a.id = b.id
 INSERT OVERWRITE TABLE join_result_1
@@ -525,6 +553,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_a
+POSTHOOK: Input: default@t_b
+POSTHOOK: Output: default@join_result_1
+POSTHOOK: Output: default@join_result_3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -717,6 +749,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_a
+PREHOOK: Input: default@t_b
+PREHOOK: Output: default@join_result_1
+PREHOOK: Output: default@join_result_3
 POSTHOOK: query: explain
 FROM T_A a JOIN T_B b ON a.id = b.id
 INSERT OVERWRITE TABLE join_result_1
@@ -726,6 +762,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_a
+POSTHOOK: Input: default@t_b
+POSTHOOK: Output: default@join_result_1
+POSTHOOK: Output: default@join_result_3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -741,6 +781,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -753,6 +794,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -924,6 +966,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT *
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_a
+PREHOOK: Input: default@t_b
+PREHOOK: Output: default@join_result_1
+PREHOOK: Output: default@join_result_3
 POSTHOOK: query: explain
 FROM T_A a JOIN T_B b ON a.id = b.id
 INSERT OVERWRITE TABLE join_result_1
@@ -933,6 +979,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT *
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_a
+POSTHOOK: Input: default@t_b
+POSTHOOK: Output: default@join_result_1
+POSTHOOK: Output: default@join_result_3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -948,6 +998,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -960,6 +1011,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1131,6 +1183,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.id, a.val, b.id, b.val
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_a
+PREHOOK: Input: default@t_b
+PREHOOK: Output: default@join_result_1
+PREHOOK: Output: default@join_result_3
 POSTHOOK: query: explain
 FROM T_A a JOIN T_B b ON a.id = b.id
 INSERT OVERWRITE TABLE join_result_1
@@ -1140,6 +1196,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.id, a.val, b.id, b.val
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_a
+POSTHOOK: Input: default@t_b
+POSTHOOK: Output: default@join_result_1
+POSTHOOK: Output: default@join_result_3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -1155,6 +1215,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1171,6 +1232,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1350,6 +1412,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.id, b.val, b.id, a.val
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_a
+PREHOOK: Input: default@t_b
+PREHOOK: Output: default@join_result_1
+PREHOOK: Output: default@join_result_3
 POSTHOOK: query: explain
 FROM T_A a JOIN T_B b ON a.id = b.id
 INSERT OVERWRITE TABLE join_result_1
@@ -1359,6 +1425,10 @@ INSERT OVERWRITE TABLE join_result_3
 SELECT a.id, b.val, b.id, a.val
 WHERE b.val = 'val_104' AND b.id = 'Id_2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_a
+POSTHOOK: Input: default@t_b
+POSTHOOK: Output: default@join_result_1
+POSTHOOK: Output: default@join_result_3
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -1374,6 +1444,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1390,6 +1461,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)

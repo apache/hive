@@ -90,6 +90,9 @@ select sub1.aid, sub1.avalue, sub2.bvalue
 from sub1,sub2
 where sub1.aid=sub2.bid
 PREHOOK: type: QUERY
+PREHOOK: Input: default@expod1
+PREHOOK: Input: default@expod2
+#### A masked pattern was here ####
 POSTHOOK: query: explain with sub1 as
 (select aid, avalue from expod1 lateral view explode(av) avs as avalue ),
 sub2 as
@@ -98,6 +101,9 @@ select sub1.aid, sub1.avalue, sub2.bvalue
 from sub1,sub2
 where sub1.aid=sub2.bid
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@expod1
+POSTHOOK: Input: default@expod2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -114,6 +120,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: expod1
+                  filterExpr: aid is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 5772 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: aid is not null (type: boolean)
@@ -199,6 +206,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: expod2
+                  filterExpr: bid is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 5772 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: bid is not null (type: boolean)

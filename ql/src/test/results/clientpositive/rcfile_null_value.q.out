@@ -72,6 +72,8 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_rc
 POSTHOOK: query: EXPLAIN
 FROM (
  FROM 
@@ -87,6 +89,8 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_rc
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -99,6 +103,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
@@ -115,6 +120,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src2
+            filterExpr: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 25.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(key) < 25.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)

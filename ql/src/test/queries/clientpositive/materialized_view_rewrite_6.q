@@ -1,6 +1,5 @@
 -- SORT_QUERY_RESULTS
 
-set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
@@ -15,7 +14,7 @@ create table emps (
   commission int)
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
-  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250);
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250);
 analyze table emps compute statistics for columns;
 
 create table depts (
@@ -30,14 +29,14 @@ create table dependents (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into dependents values (10, 'Michael'), (10, 'Jane');
+insert into dependents values (10, 'Michael'), (20, 'Jane');
 analyze table dependents compute statistics for columns;
 
 create table locations (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into locations values (10, 'San Francisco'), (10, 'San Diego');
+insert into locations values (10, 'San Francisco'), (20, 'San Diego');
 analyze table locations compute statistics for columns;
 
 alter table emps add constraint pk1 primary key (empid) disable novalidate rely;

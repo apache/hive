@@ -102,3 +102,24 @@ select sum(hash(*)) from newtypesorc_n3 where da between '1970-02-18' and '1970-
 
 set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n3 where da between '1970-02-18' and '1970-02-19';
+
+create table test_lrl(c date) stored as orc;
+insert into test_lrl values ('1900-01-01');
+
+explain select count(*) from test_lrl where c='1900-01-01';
+set hive.optimize.index.filter=true;
+select count(*) from test_lrl where c='1900-01-01';
+set hive.optimize.index.filter=false;
+select count(*) from test_lrl where c='1900-01-01';
+
+explain select * from test_lrl where c=cast('1900-01-01' as date);
+set hive.optimize.index.filter=true;
+select * from test_lrl where c=cast('1900-01-01' as date);
+set hive.optimize.index.filter=false;
+select * from test_lrl where c=cast('1900-01-01' as date);
+
+explain select count(*) from test_lrl where c LIKE '1900-01-01%';
+set hive.optimize.index.filter=true;
+select count(*) from test_lrl where c LIKE '1900-01-01%';
+set hive.optimize.index.filter=false;
+select count(*) from test_lrl where c LIKE '1900-01-01%';

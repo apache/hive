@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,6 +75,14 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setExtended(true);
       } else if (explainOptions == HiveParser.KW_DEPENDENCY) {
         config.setDependency(true);
+      } else if (explainOptions == HiveParser.KW_CBO) {
+        config.setCbo(true);
+        if (i + 1 < childCount) {
+          if (ast.getChild(i + 1).getType() == HiveParser.KW_EXTENDED) {
+            config.setCboExtended(true);
+            i++;
+          }
+        }
       } else if (explainOptions == HiveParser.KW_LOGICAL) {
         config.setLogical(true);
       } else if (explainOptions == HiveParser.KW_AUTHORIZATION) {
@@ -113,6 +120,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
             i++;
           }
         }
+      } else if (explainOptions == HiveParser.KW_LOCKS) {
+        config.setLocks(true);
+      } else if (explainOptions == HiveParser.KW_AST){
+        config.setAst(true);
+      } else if (explainOptions == HiveParser.KW_DEBUG) {
+        config.setDebug(true);
       } else {
         // UNDONE: UNKNOWN OPTION?
       }
@@ -163,9 +176,11 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
+    inputs = sem.getInputs();
+    outputs = sem.getOutputs();
 
     ctx.setResFile(ctx.getLocalTmpPath());
-    List<Task<? extends Serializable>> tasks = sem.getAllRootTasks();
+    List<Task<?>> tasks = sem.getAllRootTasks();
     if (tasks == null) {
       tasks = Collections.emptyList();
     }
@@ -184,6 +199,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     config.setUserLevelExplain(!config.isExtended()
         && !config.isFormatted()
         && !config.isDependency()
+        && !config.isCbo()
         && !config.isLogical()
         && !config.isAuthorize()
         && (
@@ -205,9 +221,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         pCtx,
         tasks,
         fetchTask,
+        input,
         sem,
         config,
-        ctx.getCboInfo());
+        ctx.getCboInfo(),
+        ctx.getOptimizedSql(),
+        ctx.getCalcitePlan());
 
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));
@@ -262,7 +281,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public boolean skipAuthorization() {
-    List<Task<? extends Serializable>> rootTasks = getRootTasks();
+    List<Task<?>> rootTasks = getRootTasks();
     assert rootTasks != null && rootTasks.size() == 1;
     Task task = rootTasks.get(0);
     return task instanceof ExplainTask && ((ExplainTask)task).getWork().isAuthorize();

@@ -82,7 +82,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
   ).getPath().replaceAll("\\\\", "/");
   protected static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 
@@ -284,6 +284,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     for(int h=0; h < pStrings.length; h++) {
       status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
           (TableExtended.MMTBLPART).toString().toLowerCase() + pStrings[h]), FileUtils.STAGING_DIR_PATH_FILTER);
+      Arrays.sort(status);
       // There should be 1 delta dir, plus a base dir in the location
       Assert.assertEquals(2, status.length);
       for (int i = 0; i < status.length; i++) {

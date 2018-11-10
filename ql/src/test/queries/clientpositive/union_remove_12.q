@@ -7,7 +7,6 @@ set hive.merge.sparkfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
 set hive.merge.smallfiles.avgsize=1;
-set mapred.input.dir.recursive=true;
 
 -- SORT_QUERY_RESULTS
 -- This is to test the union->selectstar->filesink optimization
@@ -15,7 +14,6 @@ set mapred.input.dir.recursive=true;
 -- other one is a map-join query), followed by select star and a file sink.
 -- The union optimization is applied, and the union is removed.
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n29, it might be easier
 -- to run the test only on hadoop 23
 

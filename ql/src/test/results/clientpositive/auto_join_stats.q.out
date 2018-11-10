@@ -24,8 +24,14 @@ POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Output: default@smalltable_n0
 PREHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable_n0
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable_n0
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-8 is a root stage , consists of Stage-10, Stage-11, Stage-1
   Stage-10 has a backup stage: Stage-1
@@ -51,6 +57,7 @@ STAGE PLANS:
         $hdt$_1:src2 
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -69,6 +76,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -105,6 +113,7 @@ STAGE PLANS:
         $hdt$_2:smalltable_n0 
           TableScan
             alias: smalltable_n0
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -151,6 +160,7 @@ STAGE PLANS:
         $hdt$_0:src1 
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -169,6 +179,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -200,6 +211,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -215,6 +227,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -288,8 +301,16 @@ POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Output: default@smalltable_n0
 PREHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smalltable2_n0
+PREHOOK: Input: default@smalltable_n0
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smalltable2_n0
+POSTHOOK: Input: default@smalltable_n0
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-9 is a root stage , consists of Stage-11, Stage-12, Stage-1
   Stage-11 has a backup stage: Stage-1
@@ -315,6 +336,7 @@ STAGE PLANS:
         $hdt$_2:src2 
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -333,6 +355,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -372,6 +395,7 @@ STAGE PLANS:
         $hdt$_0:smalltable_n0 
           TableScan
             alias: smalltable_n0
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -388,6 +412,7 @@ STAGE PLANS:
         $hdt$_3:smalltable2_n0 
           TableScan
             alias: smalltable2_n0
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -441,6 +466,7 @@ STAGE PLANS:
         $hdt$_1:src1 
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -459,6 +485,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -490,6 +517,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -505,6 +533,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

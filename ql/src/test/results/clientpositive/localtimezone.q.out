@@ -19,24 +19,24 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_test
 PREHOOK: query: insert into `date_test` VALUES
-  ('2011-01-01 01:01:01.123'),
-  ('2011-01-01 01:01:01.123 Europe/Rome'),
-  ('2011-01-01 01:01:01.123 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912'),
-  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
-  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912 xyz')
+  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@date_test
 POSTHOOK: query: insert into `date_test` VALUES
-  ('2011-01-01 01:01:01.123'),
-  ('2011-01-01 01:01:01.123 Europe/Rome'),
-  ('2011-01-01 01:01:01.123 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912'),
-  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
-  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912 xyz')
+  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@date_test
@@ -50,24 +50,24 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_test
 PREHOOK: query: insert into `timestamp_test` VALUES
-  ('2011-01-01 01:01:01.123'),
-  ('2011-01-01 01:01:01.123 Europe/Rome'),
-  ('2011-01-01 01:01:01.123 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912'),
-  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
-  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912 xyz')
+  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@timestamp_test
 POSTHOOK: query: insert into `timestamp_test` VALUES
-  ('2011-01-01 01:01:01.123'),
-  ('2011-01-01 01:01:01.123 Europe/Rome'),
-  ('2011-01-01 01:01:01.123 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912'),
-  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
-  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912 xyz')
+  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@timestamp_test
@@ -81,24 +81,24 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamptz_test
 PREHOOK: query: insert into `timestamptz_test` VALUES
-  ('2011-01-01 01:01:01.123'),
-  ('2011-01-01 01:01:01.123 Europe/Rome'),
-  ('2011-01-01 01:01:01.123 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912'),
-  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
-  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912 xyz')
+  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@timestamptz_test
 POSTHOOK: query: insert into `timestamptz_test` VALUES
-  ('2011-01-01 01:01:01.123'),
-  ('2011-01-01 01:01:01.123 Europe/Rome'),
-  ('2011-01-01 01:01:01.123 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912'),
-  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
-  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
-  ('2011-01-01 01:01:01.12345678912 xyz')
+  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
+  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@timestamptz_test
@@ -555,12 +555,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamptz_test2
 #### A masked pattern was here ####
 cable	0.0	1
-pin	NULL	1
-hdmi	1.25	2
-keyboard 2	3.9	3
-keyboard 3	3.99	4
-keyboard 1	4.2	5
-laptop 2	10.0	6
+hdmi	1.25	1
+keyboard 2	3.9	2
+keyboard 3	3.99	3
+keyboard 1	4.2	4
+laptop 2	10.0	5
+pin	NULL	6
 mouse 1	3.1	1
 mouse 2	4.594	2
 laptop 1	9.2	3

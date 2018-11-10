@@ -80,7 +80,7 @@ public class ReExecDriver implements IDriver {
     }
 
     @Override
-    public void postAnalyze(HiveSemanticAnalyzerHookContext context, List<Task<? extends Serializable>> rootTasks)
+    public void postAnalyze(HiveSemanticAnalyzerHookContext context, List<Task<?>> rootTasks)
         throws SemanticException {
     }
   }
@@ -129,6 +129,11 @@ public class ReExecDriver implements IDriver {
   @Override
   public QueryPlan getPlan() {
     return coreDriver.getPlan();
+  }
+
+  @Override
+  public QueryState getQueryState() {
+    return queryState;
   }
 
   @Override

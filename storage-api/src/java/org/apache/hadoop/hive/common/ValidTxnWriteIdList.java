@@ -63,6 +63,10 @@ public class ValidTxnWriteIdList {
     return null;
   }
 
+  public boolean isEmpty() {
+    return tablesValidWriteIdList.isEmpty();
+  }
+
   // Each ValidWriteIdList is separated with "$" and each one maps to one table
   // Format <txnId>$<table_name>:<hwm>:<minOpenWriteId>:<open_writeids>:<abort_writeids>$<table_name>...
   private void readFromString(String src) {

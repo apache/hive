@@ -734,7 +734,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
   @Override
   public void process(Object row, int tag) throws HiveException {
     firstRow = false;
-    ObjectInspector rowInspector = inputObjInspectors[tag];
+    ObjectInspector rowInspector = inputObjInspectors[0];
     // Total number of input rows is needed for hash aggregation only
     if (hashAggr) {
       numRowsInput++;

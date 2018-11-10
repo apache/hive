@@ -5,6 +5,8 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
@@ -12,6 +14,8 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -29,6 +33,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -50,6 +55,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
@@ -71,6 +77,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
@@ -188,11 +195,15 @@ select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.
 union all
 select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) order by k limit 10)b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) order by k limit 10)a
 union all
 select * from (select s1.key as k, s2.value as v from src s1 join src s2 on (s1.key = s2.key) order by k limit 10)b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -210,6 +221,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -229,6 +241,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -344,6 +357,9 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_top
 POSTHOOK: query: explain
 create table union_top as
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
@@ -352,6 +368,9 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_top
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -371,6 +390,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -392,6 +412,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
@@ -413,6 +434,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
@@ -569,6 +591,8 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_top
 POSTHOOK: query: explain
 insert into table union_top
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
@@ -577,6 +601,8 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@union_top
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -595,6 +621,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -616,6 +643,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
@@ -637,6 +665,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
@@ -780,6 +809,8 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_top
 POSTHOOK: query: explain
 insert overwrite table union_top
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
@@ -788,6 +819,8 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@union_top
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -806,6 +839,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -827,6 +861,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
@@ -848,6 +883,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
@@ -991,6 +1027,9 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_top_view
 POSTHOOK: query: explain
 create view union_top_view as
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
@@ -999,6 +1038,9 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_top_view
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
 
