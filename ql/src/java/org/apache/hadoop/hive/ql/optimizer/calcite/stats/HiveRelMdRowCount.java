@@ -34,6 +34,7 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdRowCount;
+import org.apache.calcite.rel.metadata.RelMdUtil;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexBuilder;
@@ -46,6 +47,8 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.PKFKJoinInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -63,24 +66,48 @@ public class HiveRelMdRowCount extends RelMdRowCount {
   }
 
   public Double getRowCount(Join join, RelMetadataQuery mq) {
-    PKFKRelationInfo pkfk = analyzeJoinForPKFK(join, mq);
+    // Try to infer from constraints first
+    final Pair<PKFKRelationInfo, RexNode> constraintBasedResult =
+        constraintsBasedAnalyzeJoinForPKFK(join, mq);
+    if (constraintBasedResult != null) {
+      // We succeeded, we calculate the selectivity based on the inferred information
+      // and any residual predicate
+      double joinSelectivity = Math.min(1.0,
+          constraintBasedResult.left.pkInfo.selectivity * constraintBasedResult.left.ndvScalingFactor);
+      double residualSelectivity = RelMdUtil.guessSelectivity(constraintBasedResult.right);
+      double rowCount = constraintBasedResult.left.fkInfo.rowCount * joinSelectivity * residualSelectivity;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Identified Primary - Foreign Key relation from constraints:\n {} {} Row count for join: {}\n" +
+            " Join selectivity: {}\n Residual selectivity: {}\n", RelOptUtil.toString(join), constraintBasedResult.left,
+            rowCount, joinSelectivity, residualSelectivity);
+      }
+      return rowCount;
+    }
+    // Otherwise, try to infer from stats
+    final PKFKRelationInfo pkfk = analyzeJoinForPKFK(join, mq);
     if (pkfk != null) {
-      double selectivity = (pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor);
+      double selectivity = pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor;
       selectivity = Math.min(1.0, selectivity);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Identified Primary - Foreign Key relation: {} {}",RelOptUtil.toString(join), pkfk);
+        LOG.debug("Identified Primary - Foreign Key relation: {} {}", RelOptUtil.toString(join), pkfk);
       }
       return pkfk.fkInfo.rowCount * selectivity;
     }
+    // If we cannot infer anything, then we just go to join.estimateRowCount(mq).
     // Do not call mq.getRowCount(join), will trigger CyclicMetadataException
-    return join.estimateRowCount(mq);
+    final Double rowCount = join.estimateRowCount(mq);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("No Primary - Foreign Key relation: \n{} Row count for join: {}\n",
+          RelOptUtil.toString(join), rowCount);
+    }
+    return rowCount;
   }
 
   @Override
   public Double getRowCount(SemiJoin rel, RelMetadataQuery mq) {
     PKFKRelationInfo pkfk = analyzeJoinForPKFK(rel, mq);
     if (pkfk != null) {
-      double selectivity = (pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor);
+      double selectivity = pkfk.pkInfo.selectivity * pkfk.ndvScalingFactor;
       selectivity = Math.min(1.0, selectivity);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Identified Primary - Foreign Key relation: {} {}", RelOptUtil.toString(rel), pkfk);
@@ -217,10 +244,10 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     int rightColIdx = joinCols.right;
 
     RexBuilder rexBuilder = joinRel.getCluster().getRexBuilder();
-    RexNode leftPred = RexUtil
-        .composeConjunction(rexBuilder, leftFilters, true);
-    RexNode rightPred = RexUtil.composeConjunction(rexBuilder, rightFilters,
-        true);
+    RexNode leftPred = RexUtil.composeConjunction(
+        rexBuilder, leftFilters, true);
+    RexNode rightPred = RexUtil.composeConjunction(
+        rexBuilder, rightFilters, true);
     ImmutableBitSet lBitSet = ImmutableBitSet.of(leftColIdx);
     ImmutableBitSet rBitSet = ImmutableBitSet.of(rightColIdx);
 
@@ -228,11 +255,10 @@ public class HiveRelMdRowCount extends RelMdRowCount {
      * If the form is Dim loj F or Fact roj Dim or Dim semij Fact then return
      * null.
      */
-    boolean leftIsKey = (joinRel.getJoinType() == JoinRelType.INNER || joinRel
-        .getJoinType() == JoinRelType.RIGHT)
-        && !(joinRel instanceof SemiJoin) && isKey(lBitSet, left, mq);
-    boolean rightIsKey = (joinRel.getJoinType() == JoinRelType.INNER || joinRel
-        .getJoinType() == JoinRelType.LEFT) && isKey(rBitSet, right, mq);
+    boolean leftIsKey = (joinRel.getJoinType() == JoinRelType.INNER || joinRel.getJoinType() == JoinRelType.RIGHT)
+        && isKey(lBitSet, left, mq);
+    boolean rightIsKey = (joinRel.getJoinType() == JoinRelType.INNER || joinRel.getJoinType() == JoinRelType.LEFT)
+        && isKey(rBitSet, right, mq);
 
     if (!leftIsKey && !rightIsKey) {
       return null;
@@ -247,41 +273,37 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       }
     }
 
-    int pkSide = leftIsKey ? 0 : rightIsKey ? 1 : -1;
+    int pkSide = leftIsKey ? 0 : 1;
+    boolean isPKSideSimpleTree = leftIsKey ? SimpleTreeOnJoinKey.check(false, left, lBitSet, mq) :
+        SimpleTreeOnJoinKey.check(false, right, rBitSet, mq);
+    double leftNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(left, lBitSet, leftPred) : -1;
+    double rightNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(right, rBitSet, rightPred) : -1;
 
-    boolean isPKSideSimpleTree = pkSide != -1 ?
-        IsSimpleTreeOnJoinKey.check(
-            pkSide == 0 ? left : right,
-            pkSide == 0 ? leftColIdx : rightColIdx, mq) : false;
-
-   double leftNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(left, lBitSet, leftPred) : -1;
-   double rightNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(right, rBitSet, rightPred) : -1;
-
-   /*
-    * If the ndv of the PK - FK side don't match, and the PK side is a filter
-    * on the Key column then scale the NDV on the FK side.
-    *
-    * As described by Peter Boncz: http://databasearchitects.blogspot.com/
-    * in such cases we can be off by a large margin in the Join cardinality
-    * estimate. The e.g. he provides is on the join of StoreSales and DateDim
-    * on the TPCDS dataset. Since the DateDim is populated for 20 years into
-    * the future, while the StoreSales only has 5 years worth of data, there
-    * are 40 times fewer distinct dates in StoreSales.
-    *
-    * In general it is hard to infer the range for the foreign key on an
-    * arbitrary expression. For e.g. the NDV for DayofWeek is the same
-    * irrespective of NDV on the number of unique days, whereas the
-    * NDV of Quarters has the same ratio as the NDV on the keys.
-    *
-    * But for expressions that apply only on columns that have the same NDV
-    * as the key (implying that they are alternate keys) we can apply the
-    * ratio. So in the case of StoreSales - DateDim joins for predicate on the
-    * d_date column we can apply the scaling factor.
-    */
-   double ndvScalingFactor = 1.0;
-   if ( isPKSideSimpleTree ) {
-     ndvScalingFactor = pkSide == 0 ? leftNDV/rightNDV : rightNDV / leftNDV;
-   }
+    /*
+     * If the ndv of the PK - FK side don't match, and the PK side is a filter
+     * on the Key column then scale the NDV on the FK side.
+     *
+     * As described by Peter Boncz: http://databasearchitects.blogspot.com/
+     * in such cases we can be off by a large margin in the Join cardinality
+     * estimate. The e.g. he provides is on the join of StoreSales and DateDim
+     * on the TPCDS dataset. Since the DateDim is populated for 20 years into
+     * the future, while the StoreSales only has 5 years worth of data, there
+     * are 40 times fewer distinct dates in StoreSales.
+     *
+     * In general it is hard to infer the range for the foreign key on an
+     * arbitrary expression. For e.g. the NDV for DayofWeek is the same
+     * irrespective of NDV on the number of unique days, whereas the
+     * NDV of Quarters has the same ratio as the NDV on the keys.
+     *
+     * But for expressions that apply only on columns that have the same NDV
+     * as the key (implying that they are alternate keys) we can apply the
+     * ratio. So in the case of StoreSales - DateDim joins for predicate on the
+     * d_date column we can apply the scaling factor.
+     */
+    double ndvScalingFactor = 1.0;
+    if ( isPKSideSimpleTree ) {
+      ndvScalingFactor = pkSide == 0 ? leftNDV/rightNDV : rightNDV / leftNDV;
+    }
 
     if (pkSide == 0) {
       FKSideInfo fkInfo = new FKSideInfo(rightRowCount,
@@ -293,9 +315,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
             pkSelectivity);
 
       return new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
-    }
-
-    if (pkSide == 1) {
+    } else { // pkSide == 1
       FKSideInfo fkInfo = new FKSideInfo(leftRowCount,
           leftNDV);
       double pkSelectivity = pkSelectivity(joinRel, mq, false, right, rightRowCount);
@@ -304,10 +324,114 @@ public class HiveRelMdRowCount extends RelMdRowCount {
           joinRel.getJoinType().generatesNullsOnLeft() ? 1.0 :
             pkSelectivity);
 
-      return new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
+      return new PKFKRelationInfo(0, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree);
+    }
+  }
+
+  /*
+   *
+   */
+  public static Pair<PKFKRelationInfo, RexNode> constraintsBasedAnalyzeJoinForPKFK(Join join, RelMetadataQuery mq) {
+
+    if (join instanceof SemiJoin) {
+      // TODO: Support semijoin
+      return null;
     }
 
-    return null;
+    final RelNode left = join.getInputs().get(0);
+    final RelNode right = join.getInputs().get(1);
+
+    // 1) Split filters in conjuncts
+    final List<RexNode> condConjs = RelOptUtil.conjunctions(
+        join.getCondition());
+
+    if (condConjs.isEmpty()) {
+      // Bail out
+      return null;
+    }
+
+    // 2) Classify filters depending on their provenance
+    final List<RexNode> joinFilters = new ArrayList<>(condConjs);
+    final List<RexNode> leftFilters = new ArrayList<>();
+    final List<RexNode> rightFilters = new ArrayList<>();
+    RelOptUtil.classifyFilters(join, joinFilters, join.getJoinType(),false,
+        !join.getJoinType().generatesNullsOnRight(), !join.getJoinType().generatesNullsOnLeft(),
+        joinFilters, leftFilters, rightFilters);
+
+    // 3) Check if we are joining on PK-FK
+    final PKFKJoinInfo leftInputResult =
+        HiveRelOptUtil.extractPKFKJoin(join, joinFilters, false, mq);
+    final PKFKJoinInfo rightInputResult =
+        HiveRelOptUtil.extractPKFKJoin(join, joinFilters, true, mq);
+    if (leftInputResult == null && rightInputResult == null) {
+      // Nothing to do here, bail out
+      return null;
+    }
+
+    boolean leftIsKey = (join.getJoinType() == JoinRelType.INNER || join.getJoinType() == JoinRelType.RIGHT)
+        && leftInputResult.isPkFkJoin;
+    boolean rightIsKey = (join.getJoinType() == JoinRelType.INNER || join.getJoinType() == JoinRelType.LEFT)
+        && rightInputResult.isPkFkJoin;
+    if (!leftIsKey && !rightIsKey) {
+      // Nothing to do here, bail out
+      return null;
+    }
+    final double leftRowCount = mq.getRowCount(left);
+    final double rightRowCount = mq.getRowCount(right);
+    if (leftIsKey && rightIsKey) {
+      if (rightRowCount < leftRowCount) {
+        leftIsKey = false;
+      }
+    }
+    final ImmutableBitSet lBitSet = leftIsKey ? leftInputResult.pkFkJoinColumns.left : rightInputResult.pkFkJoinColumns.left;
+    final ImmutableBitSet rBitSet = leftIsKey ? leftInputResult.pkFkJoinColumns.right : rightInputResult.pkFkJoinColumns.right;
+    final List<RexNode> residualFilters = leftIsKey ? leftInputResult.additionalPredicates : rightInputResult.additionalPredicates;
+
+    // 4) Extract additional information on the PK-FK relationship
+    int pkSide = leftIsKey ? 0 : 1;
+    boolean isPKSideSimpleTree = leftIsKey ? SimpleTreeOnJoinKey.check(true, left, lBitSet, mq) :
+        SimpleTreeOnJoinKey.check(true, right, rBitSet, mq);
+    RexBuilder rexBuilder = join.getCluster().getRexBuilder();
+    RexNode leftPred = RexUtil.composeConjunction(
+        rexBuilder, leftFilters, true);
+    RexNode rightPred = RexUtil.composeConjunction(
+        rexBuilder, rightFilters, true);
+    double leftNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(left, lBitSet, leftPred) : -1;
+    double rightNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(right, rBitSet, rightPred) : -1;
+
+    // 5) Add the rest of operators back to the join filters
+    // and create residual condition
+    RexNode residualCond = residualFilters.isEmpty() ? null :
+        residualFilters.size() == 1 ? residualFilters.get(0) :
+            rexBuilder.makeCall(SqlStdOperatorTable.AND, residualFilters);
+
+    // 6) Return result
+    if (pkSide == 0) {
+      FKSideInfo fkInfo = new FKSideInfo(rightRowCount,
+          rightNDV);
+      double pkSelectivity = pkSelectivity(join, mq, true, left, leftRowCount);
+      PKSideInfo pkInfo = new PKSideInfo(leftRowCount,
+          leftNDV,
+          join.getJoinType().generatesNullsOnRight() ? 1.0 :
+              pkSelectivity);
+      double ndvScalingFactor = isPKSideSimpleTree ? leftNDV/rightNDV : 1.0;
+      if (isPKSideSimpleTree) {
+        ndvScalingFactor = leftNDV/rightNDV;
+      }
+      return Pair.of(new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree),
+          residualCond);
+    } else { // pkSide == 1
+      FKSideInfo fkInfo = new FKSideInfo(leftRowCount,
+          leftNDV);
+      double pkSelectivity = pkSelectivity(join, mq, false, right, rightRowCount);
+      PKSideInfo pkInfo = new PKSideInfo(rightRowCount,
+          rightNDV,
+          join.getJoinType().generatesNullsOnLeft() ? 1.0 :
+              pkSelectivity);
+      double ndvScalingFactor = isPKSideSimpleTree ? rightNDV/leftNDV : 1.0;
+      return Pair.of(new PKFKRelationInfo(0, fkInfo, pkInfo, ndvScalingFactor, isPKSideSimpleTree),
+          residualCond);
+    }
   }
 
   private static double pkSelectivity(Join joinRel, RelMetadataQuery mq, boolean leftChild,
@@ -402,20 +526,22 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     return new Pair<Integer, Integer>(leftColIdx, rightColIdx);
   }
 
-  private static class IsSimpleTreeOnJoinKey extends RelVisitor {
+  private static class SimpleTreeOnJoinKey extends RelVisitor {
 
-    int joinKey;
+    boolean constraintsBased;
+    ImmutableBitSet joinKey;
     boolean simpleTree;
     RelMetadataQuery mq;
 
-    static boolean check(RelNode r, int joinKey, RelMetadataQuery mq) {
-      IsSimpleTreeOnJoinKey v = new IsSimpleTreeOnJoinKey(joinKey, mq);
+    static boolean check(boolean constraintsBased, RelNode r, ImmutableBitSet joinKey, RelMetadataQuery mq) {
+      SimpleTreeOnJoinKey v = new SimpleTreeOnJoinKey(constraintsBased, joinKey, mq);
       v.go(r);
       return v.simpleTree;
     }
 
-    IsSimpleTreeOnJoinKey(int joinKey, RelMetadataQuery mq) {
+    SimpleTreeOnJoinKey(boolean constraintsBased, ImmutableBitSet joinKey, RelMetadataQuery mq) {
       super();
+      this.constraintsBased = constraintsBased;
       this.joinKey = joinKey;
       this.mq = mq;
       simpleTree = true;
@@ -444,16 +570,23 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     }
 
     private boolean isSimple(Project project) {
-      RexNode r = project.getProjects().get(joinKey);
-      if (r instanceof RexInputRef) {
-        joinKey = ((RexInputRef) r).getIndex();
-        return true;
+      ImmutableBitSet.Builder b = ImmutableBitSet.builder();
+      for (int pos : joinKey) {
+        RexNode r = project.getProjects().get(pos);
+        if (!(r instanceof RexInputRef)) {
+          return false;
+        }
+        b.set(((RexInputRef) r).getIndex());
       }
-      return false;
+      joinKey = b.build();
+      return true;
     }
 
     private boolean isSimple(Filter filter, RelMetadataQuery mq) {
       ImmutableBitSet condBits = RelOptUtil.InputFinder.bits(filter.getCondition());
+      if (constraintsBased) {
+        return mq.areColumnsUnique(filter, condBits);
+      }
       return isKey(condBits, filter, mq);
     }
 
