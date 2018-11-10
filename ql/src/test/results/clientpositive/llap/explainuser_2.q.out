@@ -363,14 +363,14 @@ Stage-0
                             <-Reducer 11 [SIMPLE_EDGE] llap
                               SHUFFLE [RS_38]
                                 PartitionCols:_col4, _col2
-                                Merge Join Operator [MERGEJOIN_186] (rows=7 width=356)
+                                Merge Join Operator [MERGEJOIN_186] (rows=5 width=356)
                                   Conds:RS_212._col0=RS_200._col0(Inner),Output:["_col2","_col3","_col4","_col5"]
                                 <-Map 6 [SIMPLE_EDGE] vectorized, llap
                                   SHUFFLE [RS_200]
                                     PartitionCols:_col0
-                                    Select Operator [SEL_197] (rows=25 width=178)
+                                    Select Operator [SEL_197] (rows=5 width=178)
                                       Output:["_col0"]
-                                      Filter Operator [FIL_194] (rows=25 width=178)
+                                      Filter Operator [FIL_194] (rows=5 width=178)
                                         predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
                                         TableScan [TS_3] (rows=500 width=178)
                                           default@src,d3,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
@@ -436,14 +436,14 @@ Stage-0
                       <-Reducer 2 [SIMPLE_EDGE] llap
                         SHUFFLE [RS_44]
                           PartitionCols:_col1, _col3
-                          Merge Join Operator [MERGEJOIN_182] (rows=170 width=269)
+                          Merge Join Operator [MERGEJOIN_182] (rows=70 width=269)
                             Conds:RS_191._col0=RS_198._col0(Inner),Output:["_col1","_col2","_col3"]
                           <-Map 6 [SIMPLE_EDGE] vectorized, llap
                             SHUFFLE [RS_198]
                               PartitionCols:_col0
-                              Select Operator [SEL_195] (rows=25 width=178)
+                              Select Operator [SEL_195] (rows=5 width=178)
                                 Output:["_col0"]
-                                Filter Operator [FIL_192] (rows=25 width=178)
+                                Filter Operator [FIL_192] (rows=5 width=178)
                                   predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
                                    Please refer to the previous TableScan [TS_3]
                           <-Map 1 [SIMPLE_EDGE] vectorized, llap
