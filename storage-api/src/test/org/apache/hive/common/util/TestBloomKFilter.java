@@ -19,6 +19,7 @@
 package org.apache.hive.common.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -33,7 +34,7 @@ import org.junit.Test;
  */
 public class TestBloomKFilter {
   private static final int COUNT = 100;
-  Random rand = new Random(123);
+  private Random rand = new Random(123);
   // bloom-1 is known to have higher fpp, to make tests pass give room for another 3%
   private final double deltaError = 0.03;
 
@@ -89,30 +90,30 @@ public class TestBloomKFilter {
     byte[] val2 = new byte[]{1, 2, 3, 4, 5};
     byte[] val3 = new byte[]{1, 2, 3, 4, 5, 6};
 
-    assertEquals(false, bf.test(val));
-    assertEquals(false, bf.test(val1));
-    assertEquals(false, bf.test(val2));
-    assertEquals(false, bf.test(val3));
+    assertFalse(bf.test(val));
+    assertFalse(bf.test(val1));
+    assertFalse(bf.test(val2));
+    assertFalse(bf.test(val3));
     bf.add(val);
-    assertEquals(true, bf.test(val));
-    assertEquals(false, bf.test(val1));
-    assertEquals(false, bf.test(val2));
-    assertEquals(false, bf.test(val3));
+    assertTrue(bf.test(val));
+    assertFalse(bf.test(val1));
+    assertFalse(bf.test(val2));
+    assertFalse(bf.test(val3));
     bf.add(val1);
-    assertEquals(true, bf.test(val));
-    assertEquals(true, bf.test(val1));
-    assertEquals(false, bf.test(val2));
-    assertEquals(false, bf.test(val3));
+    assertTrue(bf.test(val));
+    assertTrue(bf.test(val1));
+    assertFalse(bf.test(val2));
+    assertFalse(bf.test(val3));
     bf.add(val2);
-    assertEquals(true, bf.test(val));
-    assertEquals(true, bf.test(val1));
-    assertEquals(true, bf.test(val2));
-    assertEquals(false, bf.test(val3));
+    assertTrue(bf.test(val));
+    assertTrue(bf.test(val1));
+    assertTrue(bf.test(val2));
+    assertFalse(bf.test(val3));
     bf.add(val3);
-    assertEquals(true, bf.test(val));
-    assertEquals(true, bf.test(val1));
-    assertEquals(true, bf.test(val2));
-    assertEquals(true, bf.test(val3));
+    assertTrue(bf.test(val));
+    assertTrue(bf.test(val1));
+    assertTrue(bf.test(val2));
+    assertTrue(bf.test(val3));
 
     byte[] randVal = new byte[COUNT];
     for (int i = 0; i < COUNT; i++) {
@@ -120,14 +121,14 @@ public class TestBloomKFilter {
       bf.add(randVal);
     }
     // last value should be present
-    assertEquals(true, bf.test(randVal));
+    assertTrue( bf.test(randVal));
     // most likely this value should not exist
     randVal[0] = 0;
     randVal[1] = 0;
     randVal[2] = 0;
     randVal[3] = 0;
     randVal[4] = 0;
-    assertEquals(false, bf.test(randVal));
+    assertFalse( bf.test(randVal));
 
     assertEquals(7808, bf.sizeInBytes());
   }
@@ -140,30 +141,30 @@ public class TestBloomKFilter {
     byte val2 = 2;
     byte val3 = Byte.MAX_VALUE;
 
-    assertEquals(false, bf.testLong(val));
-    assertEquals(false, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertFalse(bf.testLong(val));
+    assertFalse(bf.testLong(val1));
+    assertFalse(bf.testLong(val2));
+    assertFalse(bf.testLong(val3));
     bf.addLong(val);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(false, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue(bf.testLong(val));
+    assertFalse(bf.testLong(val1));
+    assertFalse(bf.testLong(val2));
+    assertFalse(bf.testLong(val3));
     bf.addLong(val1);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue(bf.testLong(val));
+    assertTrue(bf.testLong(val1));
+    assertFalse(bf.testLong(val2));
+    assertFalse(bf.testLong(val3));
     bf.addLong(val2);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(true, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue(bf.testLong(val));
+    assertTrue(bf.testLong(val1));
+    assertTrue(bf.testLong(val2));
+    assertFalse(bf.testLong(val3));
     bf.addLong(val3);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(true, bf.testLong(val2));
-    assertEquals(true, bf.testLong(val3));
+    assertTrue(bf.testLong(val));
+    assertTrue(bf.testLong(val1));
+    assertTrue(bf.testLong(val2));
+    assertTrue(bf.testLong(val3));
 
     byte randVal = 0;
     for (int i = 0; i < COUNT; i++) {
@@ -171,9 +172,9 @@ public class TestBloomKFilter {
       bf.addLong(randVal);
     }
     // last value should be present
-    assertEquals(true, bf.testLong(randVal));
+    assertTrue( bf.testLong(randVal));
     // most likely this value should not exist
-    assertEquals(false, bf.testLong((byte) -120));
+    assertFalse( bf.testLong((byte) -120));
 
     assertEquals(7808, bf.sizeInBytes());
   }
@@ -186,30 +187,30 @@ public class TestBloomKFilter {
     int val2 = 2;
     int val3 = Integer.MAX_VALUE;
 
-    assertEquals(false, bf.testLong(val));
-    assertEquals(false, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertFalse( bf.testLong(val));
+    assertFalse( bf.testLong(val1));
+    assertFalse( bf.testLong(val2));
+    assertFalse( bf.testLong(val3));
     bf.addLong(val);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(false, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue( bf.testLong(val));
+    assertFalse( bf.testLong(val1));
+    assertFalse( bf.testLong(val2));
+    assertFalse( bf.testLong(val3));
     bf.addLong(val1);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue( bf.testLong(val));
+    assertTrue( bf.testLong(val1));
+    assertFalse( bf.testLong(val2));
+    assertFalse( bf.testLong(val3));
     bf.addLong(val2);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(true, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue( bf.testLong(val));
+    assertTrue( bf.testLong(val1));
+    assertTrue( bf.testLong(val2));
+    assertFalse( bf.testLong(val3));
     bf.addLong(val3);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(true, bf.testLong(val2));
-    assertEquals(true, bf.testLong(val3));
+    assertTrue( bf.testLong(val));
+    assertTrue( bf.testLong(val1));
+    assertTrue( bf.testLong(val2));
+    assertTrue( bf.testLong(val3));
 
     int randVal = 0;
     for (int i = 0; i < COUNT; i++) {
@@ -217,9 +218,9 @@ public class TestBloomKFilter {
       bf.addLong(randVal);
     }
     // last value should be present
-    assertEquals(true, bf.testLong(randVal));
+    assertTrue( bf.testLong(randVal));
     // most likely this value should not exist
-    assertEquals(false, bf.testLong(-120));
+    assertFalse( bf.testLong(-120));
 
     assertEquals(7808, bf.sizeInBytes());
   }
@@ -232,30 +233,30 @@ public class TestBloomKFilter {
     long val2 = 2;
     long val3 = Long.MAX_VALUE;
 
-    assertEquals(false, bf.testLong(val));
-    assertEquals(false, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertFalse( bf.testLong(val));
+    assertFalse( bf.testLong(val1));
+    assertFalse( bf.testLong(val2));
+    assertFalse( bf.testLong(val3));
     bf.addLong(val);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(false, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue( bf.testLong(val));
+    assertFalse( bf.testLong(val1));
+    assertFalse( bf.testLong(val2));
+    assertFalse( bf.testLong(val3));
     bf.addLong(val1);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(false, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue( bf.testLong(val));
+    assertTrue( bf.testLong(val1));
+    assertFalse( bf.testLong(val2));
+    assertFalse( bf.testLong(val3));
     bf.addLong(val2);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(true, bf.testLong(val2));
-    assertEquals(false, bf.testLong(val3));
+    assertTrue( bf.testLong(val));
+    assertTrue( bf.testLong(val1));
+    assertTrue( bf.testLong(val2));
+    assertFalse( bf.testLong(val3));
     bf.addLong(val3);
-    assertEquals(true, bf.testLong(val));
-    assertEquals(true, bf.testLong(val1));
-    assertEquals(true, bf.testLong(val2));
-    assertEquals(true, bf.testLong(val3));
+    assertTrue( bf.testLong(val));
+    assertTrue( bf.testLong(val1));
+    assertTrue( bf.testLong(val2));
+    assertTrue( bf.testLong(val3));
 
     long randVal = 0;
     for (int i = 0; i < COUNT; i++) {
@@ -263,9 +264,9 @@ public class TestBloomKFilter {
       bf.addLong(randVal);
     }
     // last value should be present
-    assertEquals(true, bf.testLong(randVal));
+    assertTrue( bf.testLong(randVal));
     // most likely this value should not exist
-    assertEquals(false, bf.testLong(-120));
+    assertFalse( bf.testLong(-120));
 
     assertEquals(7808, bf.sizeInBytes());
   }
@@ -278,30 +279,30 @@ public class TestBloomKFilter {
     float val2 = 2.2f;
     float val3 = Float.MAX_VALUE;
 
-    assertEquals(false, bf.testDouble(val));
-    assertEquals(false, bf.testDouble(val1));
-    assertEquals(false, bf.testDouble(val2));
-    assertEquals(false, bf.testDouble(val3));
+    assertFalse( bf.testDouble(val));
+    assertFalse( bf.testDouble(val1));
+    assertFalse( bf.testDouble(val2));
+    assertFalse( bf.testDouble(val3));
     bf.addDouble(val);
-    assertEquals(true, bf.testDouble(val));
-    assertEquals(false, bf.testDouble(val1));
-    assertEquals(false, bf.testDouble(val2));
-    assertEquals(false, bf.testDouble(val3));
+    assertTrue( bf.testDouble(val));
+    assertFalse( bf.testDouble(val1));
+    assertFalse( bf.testDouble(val2));
+    assertFalse( bf.testDouble(val3));
     bf.addDouble(val1);
-    assertEquals(true, bf.testDouble(val));
-    assertEquals(true, bf.testDouble(val1));
-    assertEquals(false, bf.testDouble(val2));
-    assertEquals(false, bf.testDouble(val3));
+    assertTrue( bf.testDouble(val));
+    assertTrue( bf.testDouble(val1));
+    assertFalse( bf.testDouble(val2));
+    assertFalse( bf.testDouble(val3));
     bf.addDouble(val2);
-    assertEquals(true, bf.testDouble(val));
-    assertEquals(true, bf.testDouble(val1));
-    assertEquals(true, bf.testDouble(val2));
-    assertEquals(false, bf.testDouble(val3));
+    assertTrue( bf.testDouble(val));
+    assertTrue( bf.testDouble(val1));
+    assertTrue( bf.testDouble(val2));
+    assertFalse( bf.testDouble(val3));
     bf.addDouble(val3);
-    assertEquals(true, bf.testDouble(val));
-    assertEquals(true, bf.testDouble(val1));
-    assertEquals(true, bf.testDouble(val2));
-    assertEquals(true, bf.testDouble(val3));
+    assertTrue( bf.testDouble(val));
+    assertTrue( bf.testDouble(val1));
+    assertTrue( bf.testDouble(val2));
+    assertTrue( bf.testDouble(val3));
 
     float randVal = 0;
     for (int i = 0; i < COUNT; i++) {
@@ -309,9 +310,9 @@ public class TestBloomKFilter {
       bf.addDouble(randVal);
     }
     // last value should be present
-    assertEquals(true, bf.testDouble(randVal));
+    assertTrue( bf.testDouble(randVal));
     // most likely this value should not exist
-    assertEquals(false, bf.testDouble(-120.2f));
+    assertFalse( bf.testDouble(-120.2f));
 
     assertEquals(7808, bf.sizeInBytes());
   }
@@ -324,30 +325,30 @@ public class TestBloomKFilter {
     double val2 = 2.2d;
     double val3 = Double.MAX_VALUE;
 
-    assertEquals(false, bf.testDouble(val));
-    assertEquals(false, bf.testDouble(val1));
-    assertEquals(false, bf.testDouble(val2));
-    assertEquals(false, bf.testDouble(val3));
+    assertFalse( bf.testDouble(val));
+    assertFalse( bf.testDouble(val1));
+    assertFalse( bf.testDouble(val2));
+    assertFalse( bf.testDouble(val3));
     bf.addDouble(val);
-    assertEquals(true, bf.testDouble(val));
-    assertEquals(false, bf.testDouble(val1));
-    assertEquals(false, bf.testDouble(val2));
-    assertEquals(false, bf.testDouble(val3));
+    assertTrue( bf.testDouble(val));
+    assertFalse( bf.testDouble(val1));
+    assertFalse( bf.testDouble(val2));
+    assertFalse( bf.testDouble(val3));
     bf.addDouble(val1);
-    assertEquals(true, bf.testDouble(val));
-    assertEquals(true, bf.testDouble(val1));
-    assertEquals(false, bf.testDouble(val2));
-    assertEquals(false, bf.testDouble(val3));
+    assertTrue( bf.testDouble(val));
+    assertTrue( bf.testDouble(val1));
+    assertFalse( bf.testDouble(val2));
+    assertFalse( bf.testDouble(val3));
     bf.addDouble(val2);
-    assertEquals(true, bf.testDouble(val));
-    assertEquals(true, bf.testDouble(val1));
-    assertEquals(true, bf.testDouble(val2));
-    assertEquals(false, bf.testDouble(val3));
+    assertTrue( bf.testDouble(val));
+    assertTrue( bf.testDouble(val1));
+    assertTrue( bf.testDouble(val2));
+    assertFalse( bf.testDouble(val3));
     bf.addDouble(val3);
-    assertEquals(true, bf.testDouble(val));
-    assertEquals(true, bf.testDouble(val1));
-    assertEquals(true, bf.testDouble(val2));
-    assertEquals(true, bf.testDouble(val3));
+    assertTrue( bf.testDouble(val));
+    assertTrue( bf.testDouble(val1));
+    assertTrue( bf.testDouble(val2));
+    assertTrue( bf.testDouble(val3));
 
     double randVal = 0;
     for (int i = 0; i < COUNT; i++) {
@@ -355,9 +356,9 @@ public class TestBloomKFilter {
       bf.addDouble(randVal);
     }
     // last value should be present
-    assertEquals(true, bf.testDouble(randVal));
+    assertTrue( bf.testDouble(randVal));
     // most likely this value should not exist
-    assertEquals(false, bf.testDouble(-120.2d));
+    assertFalse( bf.testDouble(-120.2d));
 
     assertEquals(7808, bf.sizeInBytes());
   }
@@ -370,30 +371,30 @@ public class TestBloomKFilter {
     String val2 = "bloom filter";
     String val3 = "cuckoo filter";
 
-    assertEquals(false, bf.testString(val));
-    assertEquals(false, bf.testString(val1));
-    assertEquals(false, bf.testString(val2));
-    assertEquals(false, bf.testString(val3));
+    assertFalse( bf.testString(val));
+    assertFalse( bf.testString(val1));
+    assertFalse( bf.testString(val2));
+    assertFalse( bf.testString(val3));
     bf.addString(val);
-    assertEquals(true, bf.testString(val));
-    assertEquals(false, bf.testString(val1));
-    assertEquals(false, bf.testString(val2));
-    assertEquals(false, bf.testString(val3));
+    assertTrue( bf.testString(val));
+    assertFalse( bf.testString(val1));
+    assertFalse( bf.testString(val2));
+    assertFalse( bf.testString(val3));
     bf.addString(val1);
-    assertEquals(true, bf.testString(val));
-    assertEquals(true, bf.testString(val1));
-    assertEquals(false, bf.testString(val2));
-    assertEquals(false, bf.testString(val3));
+    assertTrue( bf.testString(val));
+    assertTrue( bf.testString(val1));
+    assertFalse( bf.testString(val2));
+    assertFalse( bf.testString(val3));
     bf.addString(val2);
-    assertEquals(true, bf.testString(val));
-    assertEquals(true, bf.testString(val1));
-    assertEquals(true, bf.testString(val2));
-    assertEquals(false, bf.testString(val3));
+    assertTrue( bf.testString(val));
+    assertTrue( bf.testString(val1));
+    assertTrue( bf.testString(val2));
+    assertFalse( bf.testString(val3));
     bf.addString(val3);
-    assertEquals(true, bf.testString(val));
-    assertEquals(true, bf.testString(val1));
-    assertEquals(true, bf.testString(val2));
-    assertEquals(true, bf.testString(val3));
+    assertTrue( bf.testString(val));
+    assertTrue( bf.testString(val1));
+    assertTrue( bf.testString(val2));
+    assertTrue( bf.testString(val3));
 
     long randVal = 0;
     for (int i = 0; i < COUNT; i++) {
@@ -401,9 +402,9 @@ public class TestBloomKFilter {
       bf.addString(Long.toString(randVal));
     }
     // last value should be present
-    assertEquals(true, bf.testString(Long.toString(randVal)));
+    assertTrue( bf.testString(Long.toString(randVal)));
     // most likely this value should not exist
-    assertEquals(false, bf.testString(Long.toString(-120)));
+    assertFalse( bf.testString(Long.toString(-120)));
 
     assertEquals(77952, bf.sizeInBytes());
   }
@@ -430,25 +431,25 @@ public class TestBloomKFilter {
     bf2.addString(v2);
     bf2.addString(v3);
 
-    assertEquals(true, bf.testString(val));
-    assertEquals(true, bf.testString(val1));
-    assertEquals(true, bf.testString(val2));
-    assertEquals(true, bf.testString(val3));
-    assertEquals(false, bf.testString(v));
-    assertEquals(false, bf.testString(v1));
-    assertEquals(false, bf.testString(v2));
-    assertEquals(false, bf.testString(v3));
+    assertTrue( bf.testString(val));
+    assertTrue( bf.testString(val1));
+    assertTrue( bf.testString(val2));
+    assertTrue( bf.testString(val3));
+    assertFalse( bf.testString(v));
+    assertFalse( bf.testString(v1));
+    assertFalse( bf.testString(v2));
+    assertFalse( bf.testString(v3));
 
     bf.merge(bf2);
 
-    assertEquals(true, bf.testString(val));
-    assertEquals(true, bf.testString(val1));
-    assertEquals(true, bf.testString(val2));
-    assertEquals(true, bf.testString(val3));
-    assertEquals(true, bf.testString(v));
-    assertEquals(true, bf.testString(v1));
-    assertEquals(true, bf.testString(v2));
-    assertEquals(true, bf.testString(v3));
+    assertTrue( bf.testString(val));
+    assertTrue( bf.testString(val1));
+    assertTrue( bf.testString(val2));
+    assertTrue( bf.testString(val3));
+    assertTrue( bf.testString(v));
+    assertTrue( bf.testString(v1));
+    assertTrue( bf.testString(v2));
+    assertTrue( bf.testString(v3));
   }
 
   @Test
@@ -472,8 +473,8 @@ public class TestBloomKFilter {
     BloomKFilter bf2 = BloomKFilter.deserialize(bytesIn);
 
     for (String val : inputs) {
-      assertEquals("Testing bf1 with " + val, true, bf1.testString(val));
-      assertEquals("Testing bf2 with " + val, true, bf2.testString(val));
+      assertTrue("Testing bf1 with " + val, bf1.testString(val));
+      assertTrue("Testing bf2 with " + val, bf2.testString(val));
     }
   }
 
@@ -573,7 +574,7 @@ public class TestBloomKFilter {
   public void testFpp1K() {
     int size = 1000;
     BloomKFilter bf = new BloomKFilter(size);
-    int fp = 0;
+    int fp;
     for (int i = 0; i < size; i++) {
       bf.addLong(i);
     }
@@ -582,18 +583,10 @@ public class TestBloomKFilter {
       assertTrue(bf.testLong(i));
     }
 
-    for (int i = 0; i < size; i++) {
-      int probe = rand.nextInt();
-      // out of range probes
-      if ((probe > size) || (probe < 0)) {
-        if (bf.testLong(probe)) {
-          fp++;
-        }
-      }
-    }
+    fp = getFp(size, bf);
 
     double actualFpp = (double) fp / (double) size;
-    double expectedFpp = bf.DEFAULT_FPP;
+    double expectedFpp = BloomKFilter.DEFAULT_FPP;
     if (actualFpp < expectedFpp) {
       assertTrue(actualFpp != 0.0);
     } else {
@@ -605,7 +598,7 @@ public class TestBloomKFilter {
   public void testFpp10K() {
     int size = 10_000;
     BloomKFilter bf = new BloomKFilter(size);
-    int fp = 0;
+    int fp;
     for (int i = 0; i < size; i++) {
       bf.addLong(i);
     }
@@ -614,18 +607,10 @@ public class TestBloomKFilter {
       assertTrue(bf.testLong(i));
     }
 
-    for (int i = 0; i < size; i++) {
-      int probe = rand.nextInt();
-      // out of range probes
-      if ((probe > size) || (probe < 0)) {
-        if (bf.testLong(probe)) {
-          fp++;
-        }
-      }
-    }
+    fp = getFp(size, bf);
 
     double actualFpp = (double) fp / (double) size;
-    double expectedFpp = bf.DEFAULT_FPP;
+    double expectedFpp = BloomKFilter.DEFAULT_FPP;
     if (actualFpp < expectedFpp) {
       assertTrue(actualFpp != 0.0);
     } else {
@@ -634,10 +619,10 @@ public class TestBloomKFilter {
   }
 
   @Test
-  public void testFpp1M() {
+  public void testFpp1MLong() {
     int size = 1_000_000;
     BloomKFilter bf = new BloomKFilter(size);
-    int fp = 0;
+    int fp;
     for (int i = 0; i < size; i++) {
       bf.addLong(i);
     }
@@ -646,18 +631,35 @@ public class TestBloomKFilter {
       assertTrue(bf.testLong(i));
     }
 
-    for (int i = 0; i < size; i++) {
-      int probe = rand.nextInt();
-      // out of range probes
-      if ((probe > size) || (probe < 0)) {
-        if (bf.testLong(probe)) {
-          fp++;
-        }
-      }
-    }
+    fp = getFp(size, bf);
 
     double actualFpp = (double) fp / (double) size;
-    double expectedFpp = bf.DEFAULT_FPP;
+    double expectedFpp = BloomKFilter.DEFAULT_FPP;
+    if (actualFpp < expectedFpp) {
+      assertTrue(actualFpp != 0.0);
+    } else {
+      assertEquals(expectedFpp, actualFpp, deltaError);
+    }
+  }
+
+  @Test
+  public void testFpp1MFloat() {
+    int size = 1_000_000;
+    float constant = 0.12358f;
+    BloomKFilter bf = new BloomKFilter(size);
+    int fp;
+    for (int i = 0; i < size; i++) {
+      bf.addFloat(i * constant);
+    }
+
+    for (int i = 0; i < size; i++) {
+      assertTrue(bf.testFloat(i * constant));
+    }
+
+    fp = getFp(size, bf);
+
+    double actualFpp = (double) fp / (double) size;
+    double expectedFpp = BloomKFilter.DEFAULT_FPP;
     if (actualFpp < expectedFpp) {
       assertTrue(actualFpp != 0.0);
     } else {
@@ -669,7 +671,7 @@ public class TestBloomKFilter {
   public void testFpp10M() {
     int size = 10_000_000;
     BloomKFilter bf = new BloomKFilter(size);
-    int fp = 0;
+    int fp;
     for (int i = 0; i < size; i++) {
       bf.addLong(i);
     }
@@ -678,6 +680,19 @@ public class TestBloomKFilter {
       assertTrue(bf.testLong(i));
     }
 
+    fp = getFp(size, bf);
+
+    double actualFpp = (double) fp / (double) size;
+    double expectedFpp = BloomKFilter.DEFAULT_FPP;
+    if (actualFpp < expectedFpp) {
+      assertTrue(actualFpp != 0.0);
+    } else {
+      assertEquals(expectedFpp, actualFpp, deltaError);
+    }
+  }
+
+  @SuppressWarnings("Duplicates") private int getFp(int size, BloomKFilter bf) {
+    int fp = 0;
     for (int i = 0; i < size; i++) {
       int probe = rand.nextInt();
       // out of range probes
@@ -687,13 +702,6 @@ public class TestBloomKFilter {
         }
       }
     }
-
-    double actualFpp = (double) fp / (double) size;
-    double expectedFpp = bf.DEFAULT_FPP;
-    if (actualFpp < expectedFpp) {
-      assertTrue(actualFpp != 0.0);
-    } else {
-      assertEquals(expectedFpp, actualFpp, deltaError);
-    }
+    return fp;
   }
 }
