@@ -822,7 +822,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -831,8 +831,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
@@ -894,6 +894,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -939,7 +940,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -948,8 +949,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
@@ -1112,6 +1113,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1157,7 +1159,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1166,8 +1168,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
@@ -1624,7 +1626,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1633,8 +1635,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
@@ -1696,6 +1698,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1741,7 +1744,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1750,8 +1753,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
@@ -9523,7 +9526,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -9532,8 +9535,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
@@ -9603,6 +9606,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
