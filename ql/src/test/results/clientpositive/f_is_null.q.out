@@ -1,0 +1,53 @@
+PREHOOK: query: create table t (a string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values (null),('1988-11-11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (null),('1988-11-11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+PREHOOK: query: select 'expected 1 (to_date)',count(1) from t where to_date(a) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 1 (to_date)',count(1) from t where to_date(a) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+expected 1 (to_date)	1
+PREHOOK: query: select 'expected 1 (second)', count(1) from t where second(a) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 1 (second)', count(1) from t where second(a) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+expected 1 (second)	1
+PREHOOK: query: select 'expected 1 (to_date)',count(1) from t where to_date(a) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 1 (to_date)',count(1) from t where to_date(a) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+expected 1 (to_date)	1
+PREHOOK: query: select 'expected 1 (second)', count(1) from t where second(a) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expected 1 (second)', count(1) from t where second(a) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+expected 1 (second)	1
