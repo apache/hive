@@ -113,9 +113,9 @@ Stage-0
                                       SHUFFLE [RS_80]
                                         PartitionCols:_col0, _col1, _col2
                                         Group By Operator [GBY_79] (rows=24986582 width=274)
-                                          Output:["_col0","_col1","_col2"],keys:_col7, _col6, _col3
+                                          Output:["_col0","_col1","_col2"],keys:_col6, _col5, _col3
                                           Merge Join Operator [MERGEJOIN_192] (rows=24986582 width=274)
-                                            Conds:RS_75._col1=RS_249._col0(Inner),Output:["_col3","_col6","_col7"]
+                                            Conds:RS_75._col1=RS_249._col0(Inner),Output:["_col3","_col5","_col6"]
                                           <-Map 20 [SIMPLE_EDGE] vectorized
                                             SHUFFLE [RS_249]
                                               PartitionCols:_col0
@@ -133,7 +133,7 @@ Stage-0
                                               <-Map 10 [SIMPLE_EDGE] vectorized
                                                 SHUFFLE [RS_232]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_227] (rows=317 width=102)
+                                                  Select Operator [SEL_227] (rows=317 width=98)
                                                     Output:["_col0","_col1"]
                                                     Filter Operator [FIL_226] (rows=317 width=102)
                                                       predicate:(d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223)
@@ -196,9 +196,9 @@ Stage-0
                                                         SHUFFLE [RS_42]
                                                           PartitionCols:_col0, _col1, _col2
                                                           Group By Operator [GBY_41] (rows=49146883 width=274)
-                                                            Output:["_col0","_col1","_col2"],keys:_col7, _col6, _col3
+                                                            Output:["_col0","_col1","_col2"],keys:_col6, _col5, _col3
                                                             Merge Join Operator [MERGEJOIN_190] (rows=49146883 width=274)
-                                                              Conds:RS_37._col1=RS_248._col0(Inner),Output:["_col3","_col6","_col7"]
+                                                              Conds:RS_37._col1=RS_248._col0(Inner),Output:["_col3","_col5","_col6"]
                                                             <-Map 20 [SIMPLE_EDGE] vectorized
                                                               SHUFFLE [RS_248]
                                                                 PartitionCols:_col0
@@ -251,9 +251,9 @@ Stage-0
                                                         SHUFFLE [RS_17]
                                                           PartitionCols:_col0, _col1, _col2
                                                           Group By Operator [GBY_16] (rows=91197425 width=274)
-                                                            Output:["_col0","_col1","_col2"],keys:_col7, _col6, _col3
+                                                            Output:["_col0","_col1","_col2"],keys:_col6, _col5, _col3
                                                             Merge Join Operator [MERGEJOIN_188] (rows=91197425 width=274)
-                                                              Conds:RS_12._col1=RS_247._col0(Inner),Output:["_col3","_col6","_col7"]
+                                                              Conds:RS_12._col1=RS_247._col0(Inner),Output:["_col3","_col5","_col6"]
                                                             <-Map 20 [SIMPLE_EDGE] vectorized
                                                               SHUFFLE [RS_247]
                                                                 PartitionCols:_col0

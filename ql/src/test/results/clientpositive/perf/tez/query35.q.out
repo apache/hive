@@ -201,7 +201,7 @@ Stage-0
                                             <-Map 15 [SIMPLE_EDGE] vectorized
                                               PARTITION_ONLY_SHUFFLE [RS_194]
                                                 PartitionCols:_col0
-                                                Select Operator [SEL_193] (rows=217 width=12)
+                                                Select Operator [SEL_193] (rows=217 width=4)
                                                   Output:["_col0"]
                                                   Filter Operator [FIL_192] (rows=217 width=12)
                                                     predicate:((d_qoy < 4) and (d_year = 1999) and d_date_sk is not null)

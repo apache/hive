@@ -149,7 +149,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col10 (type: int)
+                          0 _col8 (type: int)
                           1 _col0 (type: int)
             Execution mode: vectorized
             Local Work:
@@ -267,14 +267,14 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int), _col2 (type: int), _col3 (type: int)
                   1 _col1 (type: int), _col2 (type: int), _col4 (type: int)
-                outputColumnNames: _col0, _col7, _col10
+                outputColumnNames: _col0, _col5, _col8
                 Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col7 (type: int)
+                  key expressions: _col5 (type: int)
                   sort order: +
-                  Map-reduce partition columns: _col7 (type: int)
+                  Map-reduce partition columns: _col5 (type: int)
                   Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: int), _col10 (type: int)
+                  value expressions: _col0 (type: int), _col8 (type: int)
         Reducer 4 
             Local Work:
               Map Reduce Local Work
@@ -283,22 +283,22 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col7 (type: int)
+                  0 _col5 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col7, _col10
+                outputColumnNames: _col0, _col5, _col8
                 Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 _col10 (type: int)
+                    0 _col8 (type: int)
                     1 _col0 (type: int)
-                  outputColumnNames: _col0, _col7, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
+                  outputColumnNames: _col0, _col5, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                   input vertices:
                     1 Map 10
                   Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col14 (type: string), _col15 (type: int), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), _col22 (type: string), _col23 (type: string), CASE WHEN (((_col0 - _col7) <= 30)) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((_col0 - _col7) > 30) and ((_col0 - _col7) <= 60))) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((_col0 - _col7) > 60) and ((_col0 - _col7) <= 90))) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((_col0 - _col7) > 90) and ((_col0 - _col7) <= 120))) THEN (1) ELSE (0) END (type: int), CASE WHEN (((_col0 - _col7) > 120)) THEN (1) ELSE (0) END (type: int)
+                    expressions: _col12 (type: string), _col13 (type: int), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: string), _col18 (type: string), _col19 (type: string), _col20 (type: string), _col21 (type: string), CASE WHEN (((_col0 - _col5) <= 30)) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((_col0 - _col5) > 30) and ((_col0 - _col5) <= 60))) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((_col0 - _col5) > 60) and ((_col0 - _col5) <= 90))) THEN (1) ELSE (0) END (type: int), CASE WHEN ((((_col0 - _col5) > 90) and ((_col0 - _col5) <= 120))) THEN (1) ELSE (0) END (type: int), CASE WHEN (((_col0 - _col5) > 120)) THEN (1) ELSE (0) END (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
                     Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator

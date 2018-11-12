@@ -141,7 +141,7 @@ Stage-0
                                     <-Map 16 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_260]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_259] (rows=12 width=91)
+                                        Select Operator [SEL_259] (rows=12 width=4)
                                           Output:["_col0"]
                                           Filter Operator [FIL_258] (rows=12 width=92)
                                             predicate:((web_company_name = 'pri') and web_site_sk is not null)
@@ -155,7 +155,7 @@ Stage-0
                                         <-Map 14 [SIMPLE_EDGE] vectorized
                                           SHUFFLE [RS_252]
                                             PartitionCols:_col0
-                                            Select Operator [SEL_251] (rows=784314 width=90)
+                                            Select Operator [SEL_251] (rows=784314 width=4)
                                               Output:["_col0"]
                                               Filter Operator [FIL_250] (rows=784314 width=90)
                                                 predicate:((ca_state = 'TX') and ca_address_sk is not null)

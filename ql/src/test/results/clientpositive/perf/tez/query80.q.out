@@ -286,7 +286,7 @@ Stage-0
                                   Select Operator [SEL_72] (rows=8592843 width=305)
                                     Output:["_col0","_col1","_col2","_col3"]
                                     Merge Join Operator [MERGEJOIN_369] (rows=8592843 width=305)
-                                      Conds:RS_69._col1=RS_475._col0(Inner),Output:["_col5","_col6","_col9","_col10","_col18"]
+                                      Conds:RS_69._col1=RS_475._col0(Inner),Output:["_col5","_col6","_col9","_col10","_col15"]
                                     <-Map 38 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_475]
                                         PartitionCols:_col0
@@ -304,7 +304,7 @@ Stage-0
                                         <-Map 30 [SIMPLE_EDGE] vectorized
                                           SHUFFLE [RS_429]
                                             PartitionCols:_col0
-                                            Select Operator [SEL_426] (rows=1150 width=89)
+                                            Select Operator [SEL_426] (rows=1150 width=4)
                                               Output:["_col0"]
                                               Filter Operator [FIL_425] (rows=1150 width=89)
                                                 predicate:((p_channel_tv = 'N') and p_promo_sk is not null)
@@ -318,7 +318,7 @@ Stage-0
                                             <-Map 26 [SIMPLE_EDGE] vectorized
                                               SHUFFLE [RS_413]
                                                 PartitionCols:_col0
-                                                Select Operator [SEL_410] (rows=154000 width=115)
+                                                Select Operator [SEL_410] (rows=154000 width=4)
                                                   Output:["_col0"]
                                                   Filter Operator [FIL_409] (rows=154000 width=115)
                                                     predicate:((i_current_price > 50) and i_item_sk is not null)
@@ -332,7 +332,7 @@ Stage-0
                                                 <-Map 12 [SIMPLE_EDGE] vectorized
                                                   SHUFFLE [RS_397]
                                                     PartitionCols:_col0
-                                                    Select Operator [SEL_394] (rows=8116 width=98)
+                                                    Select Operator [SEL_394] (rows=8116 width=4)
                                                       Output:["_col0"]
                                                       Filter Operator [FIL_393] (rows=8116 width=98)
                                                         predicate:(CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-09-03 00:00:00' and d_date_sk is not null)
@@ -413,7 +413,7 @@ Stage-0
                                   Select Operator [SEL_112] (rows=4714659 width=323)
                                     Output:["_col0","_col1","_col2","_col3"]
                                     Merge Join Operator [MERGEJOIN_374] (rows=4714659 width=323)
-                                      Conds:RS_109._col2=RS_495._col0(Inner),Output:["_col5","_col6","_col9","_col10","_col18"]
+                                      Conds:RS_109._col2=RS_495._col0(Inner),Output:["_col5","_col6","_col9","_col10","_col15"]
                                     <-Map 42 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_495]
                                         PartitionCols:_col0
@@ -525,7 +525,7 @@ Stage-0
                                   Select Operator [SEL_33] (rows=15038783 width=100)
                                     Output:["_col0","_col1","_col2","_col3"]
                                     Merge Join Operator [MERGEJOIN_364] (rows=15038783 width=100)
-                                      Conds:RS_30._col2=RS_449._col0(Inner),Output:["_col5","_col6","_col9","_col10","_col18"]
+                                      Conds:RS_30._col2=RS_449._col0(Inner),Output:["_col5","_col6","_col9","_col10","_col15"]
                                     <-Map 34 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_449]
                                         PartitionCols:_col0

@@ -287,12 +287,16 @@ STAGE PLANS:
                 Filter Operator
                   predicate: _col1 is not null (type: boolean)
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: UDFToDouble(_col1) (type: double)
-                    sort order: +
-                    Map-reduce partition columns: UDFToDouble(_col1) (type: double)
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: bigint), UDFToDouble(_col1) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string), _col1 (type: bigint)
+                    Reduce Output Operator
+                      key expressions: _col2 (type: double)
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: double)
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string), _col1 (type: bigint)
           TableScan
             alias: src
             filterExpr: value is not null (type: boolean)
@@ -301,21 +305,21 @@ STAGE PLANS:
               predicate: value is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string)
+                expressions: UDFToDouble(value) (type: double)
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: UDFToDouble(_col0) (type: double)
+                  key expressions: _col0 (type: double)
                   sort order: +
-                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Map-reduce partition columns: _col0 (type: double)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 UDFToDouble(_col1) (type: double)
-            1 UDFToDouble(_col0) (type: double)
+            0 _col2 (type: double)
+            1 _col0 (type: double)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator

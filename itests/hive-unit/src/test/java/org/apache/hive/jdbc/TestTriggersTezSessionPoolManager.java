@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 import org.apache.hadoop.hive.ql.wm.Trigger;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -48,7 +49,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("ELAPSED_TIME > 20000");
     Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -61,7 +62,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("ELAPSED_TIME > 100");
     Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -74,7 +75,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("EXECUTION_TIME > 1000");
     Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -104,7 +105,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("HDFS_BYTES_READ > 100");
     Trigger trigger = new ExecutionTrigger("big_read", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -117,7 +118,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("FILE_BYTES_WRITTEN > 100");
     Trigger trigger = new ExecutionTrigger("big_write", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -130,7 +131,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("VERTEX_TOTAL_TASKS > 20");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = getConfigs();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -143,7 +144,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("DAG_TOTAL_TASKS > 50");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = getConfigs();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -156,7 +157,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("HDFS_READ_OPS > 50");
     Trigger trigger = new ExecutionTrigger("high_read_ops", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = getConfigs();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -351,7 +352,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression execTimeExpression = ExpressionFactory.fromString("EXECUTION_TIME > 1000");
     Trigger execTimeTrigger = new ExecutionTrigger("slow_query", execTimeExpression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(shuffleTrigger, execTimeTrigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
@@ -366,7 +367,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression execTimeExpression = ExpressionFactory.fromString("EXECUTION_TIME > 100000");
     Trigger execTimeTrigger = new ExecutionTrigger("slow_query", execTimeExpression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(shuffleTrigger, execTimeTrigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
