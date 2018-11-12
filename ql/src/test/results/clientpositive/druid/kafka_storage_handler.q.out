@@ -176,13 +176,13 @@ key	0	6	NULL	Striker Eureka	speed
 key	0	7	NULL	Cherno Alpha	masterYi
 key	0	8	NULL	Crimson Typhoon	triplets
 key	0	9	NULL	Coyote Tango	stringer
-PREHOOK: query: Select `__partition`, `__offset`, `user`  from kafka_table where
-`__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS)
+PREHOOK: query: Select `__partition`, `__offset`, `user` from kafka_table where
+`__timestamp` >  to_epoch_milli(CURRENT_TIMESTAMP - interval '1' HOURS)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: Select `__partition`, `__offset`, `user`  from kafka_table where
-`__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS)
+POSTHOOK: query: Select `__partition`, `__offset`, `user` from kafka_table where
+`__timestamp` >  to_epoch_milli(CURRENT_TIMESTAMP - interval '1' HOURS)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###

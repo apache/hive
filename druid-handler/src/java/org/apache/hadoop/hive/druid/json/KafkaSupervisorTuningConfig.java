@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,16 +33,9 @@ import java.io.File;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    property = "type"
-)
-@JsonSubTypes({@JsonSubTypes.Type(
-    name = "kafka",
-    value = KafkaSupervisorTuningConfig.class
-)})
-public class KafkaSupervisorTuningConfig extends KafkaTuningConfig
-{
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type") @JsonSubTypes({
+    @JsonSubTypes.Type(name = "kafka", value = KafkaSupervisorTuningConfig.class) })
+public class KafkaSupervisorTuningConfig extends KafkaTuningConfig {
   private final Integer workerThreads;
   private final Integer chatThreads;
   private final Long chatRetries;
@@ -50,8 +43,7 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig
   private final Duration shutdownTimeout;
   private final Duration offsetFetchPeriod;
 
-  public KafkaSupervisorTuningConfig(
-      @JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+  public KafkaSupervisorTuningConfig(@JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
       @JsonProperty("maxRowsPerSegment") Integer maxRowsPerSegment,
       @JsonProperty("intermediatePersistPeriod") Period intermediatePersistPeriod,
       @JsonProperty("basePersistDirectory") File basePersistDirectory,
@@ -60,18 +52,16 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig
       // This parameter is left for compatibility when reading existing configs, to be removed in Druid 0.12.
       @JsonProperty("buildV9Directly") Boolean buildV9Directly,
       @JsonProperty("reportParseExceptions") Boolean reportParseExceptions,
-      @JsonProperty("handoffConditionTimeout") Long handoffConditionTimeout, // for backward compatibility
+      @JsonProperty("handoffConditionTimeout") Long handoffConditionTimeout,
+      // for backward compatibility
       @JsonProperty("resetOffsetAutomatically") Boolean resetOffsetAutomatically,
       @JsonProperty("workerThreads") Integer workerThreads,
       @JsonProperty("chatThreads") Integer chatThreads,
       @JsonProperty("chatRetries") Long chatRetries,
       @JsonProperty("httpTimeout") Period httpTimeout,
       @JsonProperty("shutdownTimeout") Period shutdownTimeout,
-      @JsonProperty("offsetFetchPeriod") Period offsetFetchPeriod
-  )
-  {
-    super(
-        maxRowsInMemory,
+      @JsonProperty("offsetFetchPeriod") Period offsetFetchPeriod) {
+    super(maxRowsInMemory,
         maxRowsPerSegment,
         intermediatePersistPeriod,
         basePersistDirectory,
@@ -82,8 +72,7 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig
         // Supervised kafka tasks should respect KafkaSupervisorIOConfig.completionTimeout instead of
         // handoffConditionTimeout
         handoffConditionTimeout,
-        resetOffsetAutomatically
-    );
+        resetOffsetAutomatically);
 
     this.workerThreads = workerThreads;
     this.chatThreads = chatThreads;
@@ -93,101 +82,104 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig
     this.offsetFetchPeriod = defaultDuration(offsetFetchPeriod, "PT30S");
   }
 
-  @JsonProperty
-  public Integer getWorkerThreads()
-  {
+  @JsonProperty public Integer getWorkerThreads() {
     return workerThreads;
   }
 
-  @JsonProperty
-  public Integer getChatThreads()
-  {
+  @JsonProperty public Integer getChatThreads() {
     return chatThreads;
   }
 
-  @JsonProperty
-  public Long getChatRetries()
-  {
+  @JsonProperty public Long getChatRetries() {
     return chatRetries;
   }
 
-  @JsonProperty
-  public Duration getHttpTimeout()
-  {
+  @JsonProperty public Duration getHttpTimeout() {
     return httpTimeout;
   }
 
-  @JsonProperty
-  public Duration getShutdownTimeout()
-  {
+  @JsonProperty public Duration getShutdownTimeout() {
     return shutdownTimeout;
   }
 
-  @JsonProperty
-  public Duration getOffsetFetchPeriod()
-  {
+  @JsonProperty public Duration getOffsetFetchPeriod() {
     return offsetFetchPeriod;
   }
 
-  @Override
-  public String toString()
-  {
-    return "KafkaSupervisorTuningConfig{" +
-        "maxRowsInMemory=" + getMaxRowsInMemory() +
-        ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
-        ", intermediatePersistPeriod=" + getIntermediatePersistPeriod() +
-        ", basePersistDirectory=" + getBasePersistDirectory() +
-        ", maxPendingPersists=" + getMaxPendingPersists() +
-        ", indexSpec=" + getIndexSpec() +
-        ", reportParseExceptions=" + isReportParseExceptions() +
-        ", handoffConditionTimeout=" + getHandoffConditionTimeout() +
-        ", resetOffsetAutomatically=" + isResetOffsetAutomatically() +
-        ", workerThreads=" + workerThreads +
-        ", chatThreads=" + chatThreads +
-        ", chatRetries=" + chatRetries +
-        ", httpTimeout=" + httpTimeout +
-        ", shutdownTimeout=" + shutdownTimeout +
-        ", offsetFetchPeriod=" + offsetFetchPeriod +
-        '}';
+  @Override public String toString() {
+    //noinspection deprecation
+    return "KafkaSupervisorTuningConfig{"
+        + "maxRowsInMemory="
+        + getMaxRowsInMemory()
+        + ", maxRowsPerSegment="
+        + getMaxRowsPerSegment()
+        + ", intermediatePersistPeriod="
+        + getIntermediatePersistPeriod()
+        + ", basePersistDirectory="
+        + getBasePersistDirectory()
+        + ", maxPendingPersists="
+        + getMaxPendingPersists()
+        + ", indexSpec="
+        + getIndexSpec()
+        + ", reportParseExceptions="
+        + isReportParseExceptions()
+        + ", handoffConditionTimeout="
+        + getHandoffConditionTimeout()
+        + ", resetOffsetAutomatically="
+        + isResetOffsetAutomatically()
+        + ", workerThreads="
+        + workerThreads
+        + ", chatThreads="
+        + chatThreads
+        + ", chatRetries="
+        + chatRetries
+        + ", httpTimeout="
+        + httpTimeout
+        + ", shutdownTimeout="
+        + shutdownTimeout
+        + ", offsetFetchPeriod="
+        + offsetFetchPeriod
+        + '}';
   }
 
-  private static Duration defaultDuration(final Period period, final String theDefault)
-  {
+  private static Duration defaultDuration(final Period period, final String theDefault) {
     return (period == null ? new Period(theDefault) : period).toStandardDuration();
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
+  @Override public boolean equals(Object o) {
+    if (this == o) {
       return true;
-    if (o == null || getClass() != o.getClass())
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
-    if (!super.equals(o))
+    }
+    if (!super.equals(o)) {
       return false;
+    }
 
     KafkaSupervisorTuningConfig that = (KafkaSupervisorTuningConfig) o;
 
-    if (workerThreads != null ?
-        !workerThreads.equals(that.workerThreads) :
-        that.workerThreads != null)
+    if (workerThreads != null ? !workerThreads.equals(that.workerThreads) : that.workerThreads != null) {
       return false;
-    if (chatThreads != null ? !chatThreads.equals(that.chatThreads) : that.chatThreads != null)
+    }
+    if (chatThreads != null ? !chatThreads.equals(that.chatThreads) : that.chatThreads != null) {
       return false;
-    if (chatRetries != null ? !chatRetries.equals(that.chatRetries) : that.chatRetries != null)
+    }
+    if (chatRetries != null ? !chatRetries.equals(that.chatRetries) : that.chatRetries != null) {
       return false;
-    if (httpTimeout != null ? !httpTimeout.equals(that.httpTimeout) : that.httpTimeout != null)
+    }
+    if (httpTimeout != null ? !httpTimeout.equals(that.httpTimeout) : that.httpTimeout != null) {
       return false;
-    if (shutdownTimeout != null ?
-        !shutdownTimeout.equals(that.shutdownTimeout) :
-        that.shutdownTimeout != null)
+    }
+    if (shutdownTimeout != null ? !shutdownTimeout.equals(that.shutdownTimeout) : that.shutdownTimeout != null) {
       return false;
+    }
     return offsetFetchPeriod != null ?
         offsetFetchPeriod.equals(that.offsetFetchPeriod) :
         that.offsetFetchPeriod == null;
   }
-  
-  @Override
-  public int hashCode() {
+
+  @Override public int hashCode() {
     int result = super.hashCode();
     result = 31 * result + (workerThreads != null ? workerThreads.hashCode() : 0);
     result = 31 * result + (chatThreads != null ? chatThreads.hashCode() : 0);

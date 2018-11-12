@@ -47,8 +47,7 @@ public class DruidWritable implements Writable {
 
   private final boolean compacted;
 
-  public DruidWritable(boolean compacted)
-  {
+  public DruidWritable(boolean compacted) {
     this.compacted = compacted;
     if (compacted) {
       compactedValue = Lists.newArrayList();
@@ -65,55 +64,49 @@ public class DruidWritable implements Writable {
     compacted = false;
   }
 
-  public DruidWritable(List<Object> value){
+  public DruidWritable(List<Object> value) {
     this.compacted = true;
     this.compactedValue = value;
     this.value = null;
   }
 
   public Map<String, Object> getValue() {
-    if(compacted){
-      throw new UnsupportedOperationException("compacted DruidWritable does not support getValue(), use getCompactedValue()");
+    if (compacted) {
+      throw new UnsupportedOperationException(
+          "compacted DruidWritable does not support getValue(), use getCompactedValue()");
     }
     return value;
   }
 
-  public List<Object> getCompactedValue() {
-    if(!compacted){
-      throw new UnsupportedOperationException("non compacted DruidWritable does not support getCompactedValue(), use getValue()");
+  List<Object> getCompactedValue() {
+    if (!compacted) {
+      throw new UnsupportedOperationException(
+          "non compacted DruidWritable does not support getCompactedValue(), use getValue()");
     }
     return compactedValue;
   }
 
-  public void setCompactedValue(List<Object> compactedValue)
-  {
+  void setCompactedValue(List<Object> compactedValue) {
     this.compactedValue = compactedValue;
   }
 
-  public boolean isCompacted(){
+  boolean isCompacted() {
     return compacted;
   }
 
-  @Override
-  public void write(DataOutput out) throws IOException {
+  @Override public void write(DataOutput out) throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public void readFields(DataInput in) throws IOException {
+  @Override public void readFields(DataInput in) throws IOException {
     throw new UnsupportedOperationException();
   }
 
-
-  @Override
-  public int hashCode()
-  {
+  @Override public int hashCode() {
     return Objects.hash(value, compactedValue, compacted);
   }
 
-  @Override
-  public boolean equals(Object o)
-  {
+  @Override public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -121,19 +114,18 @@ public class DruidWritable implements Writable {
       return false;
     }
     DruidWritable that = (DruidWritable) o;
-    return compacted == that.compacted &&
-           Objects.equals(value, that.value) &&
-           Objects.equals(compactedValue, that.compactedValue);
+    return compacted == that.compacted && Objects.equals(value, that.value) && Objects.equals(compactedValue,
+        that.compactedValue);
   }
 
-
-  @Override
-  public String toString()
-  {
-    return "DruidWritable{" +
-           "value=" + value +
-           ", compactedValue=" + compactedValue +
-           ", compacted=" + compacted +
-           '}';
+  @Override public String toString() {
+    return "DruidWritable{"
+        + "value="
+        + value
+        + ", compactedValue="
+        + compactedValue
+        + ", compacted="
+        + compacted
+        + '}';
   }
 }

@@ -59,6 +59,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -77,7 +78,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
 
   protected static final Logger LOG = LoggerFactory.getLogger(DruidQueryBasedInputFormat.class);
 
-  public static DruidQueryRecordReader getDruidQueryReader(String druidQueryType) {
+  @Nullable public static DruidQueryRecordReader getDruidQueryReader(String druidQueryType) {
     switch (druidQueryType) {
     case Query.TIMESERIES:
       return new DruidTimeseriesQueryRecordReader();
@@ -89,8 +90,9 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       return new DruidSelectQueryRecordReader();
     case Query.SCAN:
       return new DruidScanQueryRecordReader();
+    default:
+      return null;
     }
-    return null;
   }
 
   @Override
@@ -101,7 +103,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
 
   @Override
   public List<InputSplit> getSplits(JobContext context) throws IOException, InterruptedException {
-    return Arrays.<InputSplit>asList(getInputSplits(context.getConfiguration()));
+    return Arrays.asList(getInputSplits(context.getConfiguration()));
   }
 
   @SuppressWarnings("deprecation")
@@ -150,39 +152,35 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // Druid query with user timezone, as this is default Hive time semantics.
     // Then, create splits with the Druid queries.
     switch (druidQueryType) {
-      case Query.TIMESERIES:
-      case Query.TOPN:
-      case Query.GROUP_BY:
-        return new HiveDruidSplit[] {
-            new HiveDruidSplit(druidQuery, paths[0], new String[] { address }) };
-      case Query.SELECT:
-        SelectQuery selectQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(
-                druidQuery, SelectQuery.class);
-        return distributeSelectQuery(conf, address, selectQuery, paths[0]);
-      case Query.SCAN:
-        ScanQuery scanQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(
-            druidQuery, ScanQuery.class);
-        return distributeScanQuery(conf, address, scanQuery, paths[0]);
+    case Query.TIMESERIES:
+    case Query.TOPN:
+    case Query.GROUP_BY:
+      return new HiveDruidSplit[] {new HiveDruidSplit(druidQuery, paths[0], new String[] {address})};
+    case Query.SELECT:
+      SelectQuery selectQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, SelectQuery.class);
+      return distributeSelectQuery(address, selectQuery, paths[0]);
+    case Query.SCAN:
+      ScanQuery scanQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, ScanQuery.class);
+      return distributeScanQuery(address, scanQuery, paths[0]);
     default:
-        throw new IOException("Druid query type not recognized");
+      throw new IOException("Druid query type not recognized");
     }
   }
 
   /* New method that distributes the Select query by creating splits containing
    * information about different Druid nodes that have the data for the given
    * query. */
-  private static HiveDruidSplit[] distributeSelectQuery(Configuration conf, String address,
-      SelectQuery query, Path dummyPath) throws IOException {
+  private static HiveDruidSplit[] distributeSelectQuery(String address, SelectQuery query, Path dummyPath)
+      throws IOException {
     // If it has a limit, we use it and we do not distribute the query
-    final boolean isFetch = query.getContextBoolean(Constants.DRUID_QUERY_FETCH, false);
+    final boolean isFetch = query.getContextBoolean(DruidStorageHandlerUtils.DRUID_QUERY_FETCH, false);
     if (isFetch) {
-      return new HiveDruidSplit[] { new HiveDruidSplit(
-              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath,
-              new String[]{address} ) };
+      return new HiveDruidSplit[] {new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query),
+          dummyPath,
+          new String[] {address})};
     }
 
-    final List<LocatedSegmentDescriptor> segmentDescriptors = fetchLocatedSegmentDescriptors(
-        address, query);
+    final List<LocatedSegmentDescriptor> segmentDescriptors = fetchLocatedSegmentDescriptors(address, query);
 
     // Create one input split for each segment
     final int numSplits = segmentDescriptors.size();
@@ -211,14 +209,15 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   /* New method that distributes the Scan query by creating splits containing
    * information about different Druid nodes that have the data for the given
    * query. */
-  private static HiveDruidSplit[] distributeScanQuery(Configuration conf, String address,
-      ScanQuery query, Path dummyPath) throws IOException {
+  private static HiveDruidSplit[] distributeScanQuery(String address, ScanQuery query, Path dummyPath)
+      throws IOException {
     // If it has a limit, we use it and we do not distribute the query
     final boolean isFetch = query.getLimit() < Long.MAX_VALUE;
     if (isFetch) {
-      return new HiveDruidSplit[] { new HiveDruidSplit(
-          DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath,
-          new String[]{address} ) };
+      return new HiveDruidSplit[] {new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query),
+          dummyPath,
+          new String[] {address})
+      };
     }
 
     final List<LocatedSegmentDescriptor> segmentDescriptors = fetchLocatedSegmentDescriptors(
@@ -288,7 +287,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
           throws IOException {
     // We need to provide a different record reader for every type of Druid query.
     // The reason is that Druid results format is different for each type.
-    final DruidQueryRecordReader<?, ?> reader;
+    final DruidQueryRecordReader<?> reader;
     final String druidQueryType = job.get(Constants.DRUID_QUERY_TYPE);
     if (druidQueryType == null) {
       reader = new DruidScanQueryRecordReader(); // By default we use scan query as fallback.
@@ -314,7 +313,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     if (druidQueryType == null) {
       return new DruidScanQueryRecordReader(); // By default, we use druid scan query as fallback.
     }
-    final DruidQueryRecordReader<?, ?> reader =
+    final DruidQueryRecordReader<?> reader =
             getDruidQueryReader(druidQueryType);
     if (reader == null) {
       throw new IOException("Druid query type " + druidQueryType + " not recognized");

@@ -25,37 +25,39 @@ import org.slf4j.LoggerFactory;
 /**
  * Utils class for Druid SerDe.
  */
-public final class DruidSerDeUtils {
+final class DruidSerDeUtils {
+  private DruidSerDeUtils() {
+  }
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidSerDeUtils.class);
 
-  protected static final String FLOAT_TYPE = "FLOAT";
-  protected static final String DOUBLE_TYPE = "DOUBLE";
-  protected static final String LONG_TYPE = "LONG";
-  protected static final String STRING_TYPE = "STRING";
+  private static final String FLOAT_TYPE = "FLOAT";
+  private static final String DOUBLE_TYPE = "DOUBLE";
+  private static final String LONG_TYPE = "LONG";
+  private static final String STRING_TYPE = "STRING";
 
   /* This method converts from the String representation of Druid type
    * to the corresponding Hive type */
-  public static PrimitiveTypeInfo convertDruidToHiveType(String typeName) {
+  static PrimitiveTypeInfo convertDruidToHiveType(String typeName) {
     typeName = typeName.toUpperCase();
     switch (typeName) {
-      case FLOAT_TYPE:
-        return TypeInfoFactory.floatTypeInfo;
-      case DOUBLE_TYPE:
-        return TypeInfoFactory.doubleTypeInfo;
-      case LONG_TYPE:
-        return TypeInfoFactory.longTypeInfo;
-      case STRING_TYPE:
-        return TypeInfoFactory.stringTypeInfo;
-      default:
-        // This is a guard for special Druid types e.g. hyperUnique
-        // (http://druid.io/docs/0.9.1.1/querying/aggregations.html#hyperunique-aggregator).
-        // Currently, we do not support doing anything special with them in Hive.
-        // However, those columns are there, and they can be actually read as normal
-        // dimensions e.g. with a select query. Thus, we print the warning and just read them
-        // as String.
-        LOG.warn("Transformation to STRING for unknown type " + typeName);
-        return TypeInfoFactory.stringTypeInfo;
+    case FLOAT_TYPE:
+      return TypeInfoFactory.floatTypeInfo;
+    case DOUBLE_TYPE:
+      return TypeInfoFactory.doubleTypeInfo;
+    case LONG_TYPE:
+      return TypeInfoFactory.longTypeInfo;
+    case STRING_TYPE:
+      return TypeInfoFactory.stringTypeInfo;
+    default:
+      // This is a guard for special Druid types e.g. hyperUnique
+      // (http://druid.io/docs/0.9.1.1/querying/aggregations.html#hyperunique-aggregator).
+      // Currently, we do not support doing anything special with them in Hive.
+      // However, those columns are there, and they can be actually read as normal
+      // dimensions e.g. with a select query. Thus, we print the warning and just read them
+      // as String.
+      LOG.warn("Transformation to STRING for unknown type " + typeName);
+      return TypeInfoFactory.stringTypeInfo;
     }
   }
 
