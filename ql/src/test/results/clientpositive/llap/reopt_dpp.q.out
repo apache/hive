@@ -160,16 +160,16 @@ Stage-0
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_26]
                   PartitionCols:_col0
-                  Select Operator [SEL_25] (rows=28 width=8)
+                  Select Operator [SEL_25] (rows=28 width=4)
                     Output:["_col0"]
                     Filter Operator [FIL_24] (rows=28 width=8)
                       predicate:((d_year = 2000) and d_date_sk is not null)
                       TableScan [TS_3] (rows=56 width=8)
                         default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
-                Dynamic Partitioning Event Operator [EVENT_29] (rows=1 width=8)
-                  Group By Operator [GBY_28] (rows=1 width=8)
+                Dynamic Partitioning Event Operator [EVENT_29] (rows=1 width=4)
+                  Group By Operator [GBY_28] (rows=1 width=4)
                     Output:["_col0"],keys:_col0
-                    Select Operator [SEL_27] (rows=28 width=8)
+                    Select Operator [SEL_27] (rows=28 width=4)
                       Output:["_col0"]
                        Please refer to the previous Select Operator [SEL_25]
               <-Select Operator [SEL_30] (rows=123457 width=4)
@@ -260,16 +260,16 @@ Stage-0
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_26]
                   PartitionCols:_col0
-                  Select Operator [SEL_25] (runtime: rows=1 width=8)
+                  Select Operator [SEL_25] (runtime: rows=1 width=4)
                     Output:["_col0"]
                     Filter Operator [FIL_24] (runtime: rows=1 width=8)
                       predicate:((d_year = 2000) and d_date_sk is not null)
                       TableScan [TS_3] (runtime: rows=1 width=8)
                         default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
-                Dynamic Partitioning Event Operator [EVENT_29] (runtime: rows=1 width=8)
-                  Group By Operator [GBY_28] (runtime: rows=1 width=8)
+                Dynamic Partitioning Event Operator [EVENT_29] (runtime: rows=1 width=4)
+                  Group By Operator [GBY_28] (runtime: rows=1 width=4)
                     Output:["_col0"],keys:_col0
-                    Select Operator [SEL_27] (runtime: rows=1 width=8)
+                    Select Operator [SEL_27] (runtime: rows=1 width=4)
                       Output:["_col0"]
                        Please refer to the previous Select Operator [SEL_25]
               <-Select Operator [SEL_30] (runtime: rows=1 width=4)

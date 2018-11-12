@@ -76,7 +76,7 @@ Stage-0
                       <-Map 11 [SIMPLE_EDGE] vectorized
                         SHUFFLE [RS_95]
                           PartitionCols:_col0
-                          Select Operator [SEL_94] (rows=155 width=91)
+                          Select Operator [SEL_94] (rows=155 width=4)
                             Output:["_col0"]
                             Filter Operator [FIL_93] (rows=155 width=92)
                               predicate:((s_store_name = 'ese') and s_store_sk is not null)
@@ -90,7 +90,7 @@ Stage-0
                           <-Map 9 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_87]
                               PartitionCols:_col0
-                              Select Operator [SEL_86] (rows=655 width=8)
+                              Select Operator [SEL_86] (rows=655 width=4)
                                 Output:["_col0"]
                                 Filter Operator [FIL_85] (rows=655 width=8)
                                   predicate:((hd_dep_count = 5) and hd_demo_sk is not null)
@@ -104,7 +104,7 @@ Stage-0
                               <-Map 7 [SIMPLE_EDGE] vectorized
                                 PARTITION_ONLY_SHUFFLE [RS_79]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_78] (rows=1515 width=12)
+                                  Select Operator [SEL_78] (rows=1515 width=4)
                                     Output:["_col0"]
                                     Filter Operator [FIL_77] (rows=1515 width=12)
                                       predicate:((t_hour = 8) and (t_minute >= 30) and t_time_sk is not null)

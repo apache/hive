@@ -817,7 +817,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -826,25 +826,25 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [4]
-                            selectExpressions: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           Group By Vectorization:
@@ -889,26 +889,27 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [2]
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                      key expressions: _col0 (type: int)
                       sort order: +
-                      Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                      Map-reduce partition columns: _col0 (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 6:int
-                          keyExpressions: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -933,7 +934,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -942,25 +943,25 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        key expressions: _col0 (type: int)
                         sort order: +
-                        Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                        Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             keyColumns: 4:int
-                            keyExpressions: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -991,8 +992,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 day(CAST( _col0 AS DATE)) (type: int)
-                  1 day(CAST( _col0 AS DATE)) (type: int)
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1105,26 +1106,27 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [2]
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                      key expressions: _col0 (type: int)
                       sort order: +
-                      Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                      Map-reduce partition columns: _col0 (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 6:int
-                          keyExpressions: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1149,7 +1151,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1158,25 +1160,25 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        key expressions: _col0 (type: int)
                         sort order: +
-                        Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                        Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             keyColumns: 4:int
-                            keyExpressions: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -1207,8 +1209,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 day(CAST( _col0 AS DATE)) (type: int)
-                  1 day(CAST( _col0 AS DATE)) (type: int)
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1332,21 +1334,21 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: FuncAbsLongToLong(col 3:bigint)(children: LongColAddLongScalar(col 4:bigint, val 10)(children: LongColUnaryMinus(col 3:bigint)(children: CastStringToLong(col 6:string)(children: StringGroupColConcatStringScalar(col 5:string, val 0)(children: CastLongToString(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:string) -> 6:string) -> 3:bigint) -> 4:bigint) -> 3:bigint) -> 4:bigint
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        expressions: _col0 (type: bigint)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [4]
-                            selectExpressions: FuncAbsLongToLong(col 3:bigint)(children: LongColAddLongScalar(col 4:bigint, val 10)(children: LongColUnaryMinus(col 3:bigint)(children: CastStringToLong(col 6:string)(children: StringGroupColConcatStringScalar(col 5:string, val 0)(children: CastLongToString(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:string) -> 6:string) -> 3:bigint) -> 4:bigint) -> 3:bigint) -> 4:bigint
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           Group By Vectorization:
@@ -1404,21 +1406,21 @@ STAGE PLANS:
                     predicate: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2]
+                          projectedOutputColumnNums: [6]
+                          selectExpressions: FuncAbsLongToLong(col 5:bigint)(children: LongColAddLongScalar(col 6:bigint, val 10)(children: LongColUnaryMinus(col 5:bigint)(children: CastStringToLong(col 8:string)(children: StringGroupColConcatStringScalar(col 7:string, val 0)(children: CastLongToString(col 6:int)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:string) -> 8:string) -> 5:bigint) -> 6:bigint) -> 5:bigint) -> 6:bigint
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        key expressions: _col0 (type: bigint)
                         sort order: +
-                        Map-reduce partition columns: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             keyColumns: 6:bigint
-                            keyExpressions: FuncAbsLongToLong(col 5:bigint)(children: LongColAddLongScalar(col 6:bigint, val 10)(children: LongColUnaryMinus(col 5:bigint)(children: CastStringToLong(col 8:string)(children: StringGroupColConcatStringScalar(col 7:string, val 0)(children: CastLongToString(col 6:int)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:string) -> 8:string) -> 5:bigint) -> 6:bigint) -> 5:bigint) -> 6:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1456,21 +1458,21 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: FuncAbsLongToLong(col 3:bigint)(children: LongColAddLongScalar(col 4:bigint, val 10)(children: LongColUnaryMinus(col 3:bigint)(children: CastStringToLong(col 6:string)(children: StringGroupColConcatStringScalar(col 5:string, val 0)(children: CastLongToString(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:string) -> 6:string) -> 3:bigint) -> 4:bigint) -> 3:bigint) -> 4:bigint
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        key expressions: _col0 (type: bigint)
                         sort order: +
-                        Map-reduce partition columns: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             keyColumns: 4:bigint
-                            keyExpressions: FuncAbsLongToLong(col 3:bigint)(children: LongColAddLongScalar(col 4:bigint, val 10)(children: LongColUnaryMinus(col 3:bigint)(children: CastStringToLong(col 6:string)(children: StringGroupColConcatStringScalar(col 5:string, val 0)(children: CastLongToString(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:string) -> 6:string) -> 3:bigint) -> 4:bigint) -> 3:bigint) -> 4:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -1501,8 +1503,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
-                  1 abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1613,7 +1615,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1622,25 +1624,25 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [5]
+                          selectExpressions: CastLongToDecimal(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:decimal(10,0)
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        expressions: _col0 (type: decimal(10,0))
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [5]
-                            selectExpressions: CastLongToDecimal(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:decimal(10,0)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           Group By Vectorization:
@@ -1685,26 +1687,27 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [2]
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: CastLongToDecimal(col 6:smallint)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:decimal(10,0)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
+                      key expressions: _col0 (type: decimal(10,0))
                       sort order: +
-                      Map-reduce partition columns: CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
+                      Map-reduce partition columns: _col0 (type: decimal(10,0))
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumns: 7:decimal(10,0)
-                          keyExpressions: CastLongToDecimal(col 6:smallint)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:decimal(10,0)
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -1729,7 +1732,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1738,25 +1741,25 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [5]
+                          selectExpressions: CastLongToDecimal(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:decimal(10,0)
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        key expressions: _col0 (type: decimal(10,0))
                         sort order: +
-                        Map-reduce partition columns: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        Map-reduce partition columns: _col0 (type: decimal(10,0))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 5:decimal(10,0)
-                            keyExpressions: CastLongToDecimal(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:decimal(10,0)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
@@ -1787,8 +1790,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
-                  1 CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                  0 _col0 (type: decimal(10,0))
+                  1 _col0 (type: decimal(10,0))
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2645,7 +2648,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
@@ -2675,7 +2678,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
@@ -2782,16 +2785,16 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 2]
                       Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 0:string, 2:string
@@ -2826,7 +2829,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2997,16 +3000,16 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 2]
                       Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 0:string, 2:string
@@ -3041,7 +3044,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -3682,21 +3685,21 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [3]
+                          selectExpressions: CastLongToDouble(col 4:int)(children: CastDoubleToLong(col 3:double)(children: DoubleColDivideDoubleScalar(col 0:double, val 2.0) -> 3:double) -> 4:int) -> 3:double
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        expressions: _col0 (type: double)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [3]
-                            selectExpressions: CastLongToDouble(col 4:int)(children: CastDoubleToLong(col 3:double)(children: DoubleColDivideDoubleScalar(col 0:double, val 2.0) -> 3:double) -> 4:int) -> 3:double
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           Group By Vectorization:
@@ -3747,21 +3750,21 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: CastStringToDouble(col 3:string) -> 5:double
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToDouble(_col0) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumns: 5:double
-                          keyExpressions: CastStringToDouble(col 3:string) -> 5:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -3799,21 +3802,21 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [3]
+                          selectExpressions: CastLongToDouble(col 4:int)(children: CastDoubleToLong(col 3:double)(children: DoubleColDivideDoubleScalar(col 0:double, val 2.0) -> 3:double) -> 4:int) -> 3:double
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 3:double
-                            keyExpressions: CastLongToDouble(col 4:int)(children: CastDoubleToLong(col 3:double)(children: DoubleColDivideDoubleScalar(col 0:double, val 2.0) -> 3:double) -> 4:int) -> 3:double
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
@@ -3844,8 +3847,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                  0 _col0 (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -4033,21 +4036,21 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumns: 6:double
-                          keyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -4129,7 +4132,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                  0 _col0 (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -4249,21 +4252,21 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: CastStringToDouble(col 3:string) -> 5:double
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToDouble(_col0) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumns: 5:double
-                          keyExpressions: CastStringToDouble(col 3:string) -> 5:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -4301,21 +4304,21 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [3]
+                          selectExpressions: CastLongToDouble(col 4:int)(children: CastDoubleToLong(col 3:double)(children: DoubleColDivideDoubleScalar(col 0:double, val 2.0) -> 3:double) -> 4:int) -> 3:double
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 3:double
-                            keyExpressions: CastLongToDouble(col 4:int)(children: CastDoubleToLong(col 3:double)(children: DoubleColDivideDoubleScalar(col 0:double, val 2.0) -> 3:double) -> 4:int) -> 3:double
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
@@ -4346,8 +4349,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                  0 _col0 (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -4466,21 +4469,21 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumns: 6:double
-                          keyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -4562,7 +4565,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                  0 _col0 (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -4696,21 +4699,21 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: CAST( hr AS STRING) (type: string)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: CastDoubleToString(col 0:double) -> 4:string
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: CAST( _col0 AS STRING) (type: string)
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [4]
-                            selectExpressions: CastDoubleToString(col 0:double) -> 4:string
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           Group By Vectorization:
@@ -4761,21 +4764,21 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: CastDoubleToString(col 6:double)(children: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double) -> 7:string
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
+                      key expressions: _col0 (type: string)
                       sort order: +
-                      Map-reduce partition columns: CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
+                      Map-reduce partition columns: _col0 (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkStringOperator
                           keyColumns: 7:string
-                          keyExpressions: CastDoubleToString(col 6:double)(children: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double) -> 7:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -4813,21 +4816,21 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: CAST( hr AS STRING) (type: string)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: CastDoubleToString(col 0:double) -> 4:string
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: CAST( _col0 AS STRING) (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: CAST( _col0 AS STRING) (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             keyColumns: 4:string
-                            keyExpressions: CastDoubleToString(col 0:double) -> 4:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
@@ -4858,8 +4861,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
-                  1 CAST( _col0 AS STRING) (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -5293,7 +5296,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
@@ -5307,7 +5310,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string, 2:string
                         Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col2 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -5337,10 +5340,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col4
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 2000 Data size: 743248 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 = _col2) or (_col1 = _col4)) (type: boolean)
+                  predicate: ((_col0 = _col2) or (_col1 = _col3)) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 743248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     Statistics: Num rows: 2000 Data size: 743248 Basic stats: COMPLETE Column stats: NONE
@@ -5468,7 +5471,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
@@ -5498,7 +5501,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
@@ -5605,16 +5608,16 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 2]
                       Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumns: 0:string, 2:string
@@ -5649,7 +5652,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -6970,106 +6973,6 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour
-                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:hr:string, 1:hour:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 3:double, val 13.0)(children: CastStringToDouble(col 0:string) -> 3:double)
-                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: hr (type: string)
-                      outputColumnNames: _col0
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkStringOperator
-                            keyColumns: 0:string
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    includeColumns: [0]
-                    dataColumns: hr:string, hour:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [double]
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  filterExpr: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 13.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col1
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [2, 3]
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkStringOperator
-                            keyColumns: 3:string
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 2:string
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        value expressions: _col0 (type: string)
-            Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    includeColumns: []
-                    dataColumns: key:string, value:string, ds:string, hr:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [double]
-        Map 6 
-            Map Operator Tree:
-                TableScan
                   alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
@@ -7117,6 +7020,106 @@ STAGE PLANS:
                     dataColumns: ds:string, date:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 13.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 2:string))
+                    predicate: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [2, 3]
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            keyColumns: 2:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 3:string
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: []
+                    dataColumns: key:string, value:string, ds:string, hr:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [double]
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_hour
+                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:hr:string, 1:hour:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 3:double, val 13.0)(children: CastStringToDouble(col 0:string) -> 3:double)
+                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            keyColumns: 0:string
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: hr:string, hour:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [double]
         Reducer 2 
             Reduce Vectorization:
                 enabled: true
@@ -7129,14 +7132,14 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string)
-                  1 _col1 (type: string)
-                outputColumnNames: _col1
-                Statistics: Num rows: 1 Data size: 189 Basic stats: PARTIAL Column stats: NONE
+                  1 _col0 (type: string)
+                outputColumnNames: _col2
+                Statistics: Num rows: 1 Data size: 206 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col2 (type: string)
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 189 Basic stats: PARTIAL Column stats: NONE
+                  Map-reduce partition columns: _col2 (type: string)
+                  Statistics: Num rows: 1 Data size: 206 Basic stats: PARTIAL Column stats: NONE
         Reducer 3 
             Reduce Vectorization:
                 enabled: true
@@ -7148,9 +7151,9 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: string)
+                  0 _col2 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 1 Data size: 207 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 226 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -9449,7 +9452,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n0
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -9458,32 +9461,32 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08)
-                    predicate: (date = '2008-04-08') (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         Spark Hash Table Sink Vectorization:
                             className: VectorSparkHashTableSinkOperator
                             native: true
                         keys:
-                          0 day(CAST( _col0 AS DATE)) (type: int)
-                          1 day(CAST( _col0 AS DATE)) (type: int)
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
                       Select Operator
-                        expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [4]
-                            selectExpressions: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           Group By Vectorization:
@@ -9529,27 +9532,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [2]
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 day(CAST( _col0 AS DATE)) (type: int)
-                        1 day(CAST( _col0 AS DATE)) (type: int)
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
                       Map Join Vectorization:
                           bigTableKeyColumns: 6:int
-                          bigTableKeyExpressions: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int
                           bigTableRetainColumnNums: []
                           className: VectorMapJoinInnerBigOnlyLongOperator
                           native: true
@@ -10070,7 +10074,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
@@ -10082,7 +10086,7 @@ STAGE PLANS:
                             native: true
                         keys:
                           0 _col0 (type: string), _col1 (type: string)
-                          1 _col0 (type: string), _col2 (type: string)
+                          1 _col0 (type: string), _col1 (type: string)
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
@@ -10107,7 +10111,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
@@ -10175,7 +10179,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 _col0 (type: string), _col1 (type: string)
-                        1 _col0 (type: string), _col2 (type: string)
+                        1 _col0 (type: string), _col1 (type: string)
                       Map Join Vectorization:
                           bigTableKeyColumns: 2:string, 3:string
                           bigTableRetainColumnNums: []
@@ -10598,28 +10602,28 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0]
+                          projectedOutputColumnNums: [3]
+                          selectExpressions: CastLongToDouble(col 4:int)(children: CastDoubleToLong(col 3:double)(children: DoubleColDivideDoubleScalar(col 0:double, val 2.0) -> 3:double) -> 4:int) -> 3:double
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         Spark Hash Table Sink Vectorization:
                             className: VectorSparkHashTableSinkOperator
                             native: true
                         keys:
-                          0 UDFToDouble(_col0) (type: double)
-                          1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                          0 _col0 (type: double)
+                          1 _col0 (type: double)
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        expressions: _col0 (type: double)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [3]
-                            selectExpressions: CastLongToDouble(col 4:int)(children: CastDoubleToLong(col 3:double)(children: DoubleColDivideDoubleScalar(col 0:double, val 2.0) -> 3:double) -> 4:int) -> 3:double
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           Group By Vectorization:
@@ -10671,22 +10675,22 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: CastStringToDouble(col 3:string) -> 5:double
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        0 _col0 (type: double)
+                        1 _col0 (type: double)
                       Map Join Vectorization:
                           bigTableKeyColumns: 5:double
-                          bigTableKeyExpressions: CastStringToDouble(col 3:string) -> 5:double
                           bigTableRetainColumnNums: []
                           className: VectorMapJoinInnerBigOnlyMultiKeyOperator
                           native: true
@@ -10861,7 +10865,7 @@ STAGE PLANS:
                             className: VectorSparkHashTableSinkOperator
                             native: true
                         keys:
-                          0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                          0 _col0 (type: double)
                           1 _col0 (type: double)
                       Select Operator
                         expressions: _col0 (type: double)
@@ -10921,22 +10925,22 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                        0 _col0 (type: double)
                         1 _col0 (type: double)
                       Map Join Vectorization:
                           bigTableKeyColumns: 6:double
-                          bigTableKeyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                           bigTableRetainColumnNums: []
                           className: VectorMapJoinInnerBigOnlyMultiKeyOperator
                           native: true
@@ -12369,7 +12373,7 @@ STAGE PLANS:
                             native: true
                         keys:
                           0 _col0 (type: string)
-                          1 _col1 (type: string)
+                          1 _col0 (type: string)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -12387,62 +12391,6 @@ STAGE PLANS:
             Local Work:
               Map Reduce Local Work
         Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date_n0
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:ds:string, 1:date:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
-                  Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        Spark Hash Table Sink Vectorization:
-                            className: VectorSparkHashTableSinkOperator
-                            native: true
-                        keys:
-                          0 _col1 (type: string)
-                          1 _col0 (type: string)
-            Execution mode: vectorized
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 2
-                    includeColumns: [0, 1]
-                    dataColumns: ds:string, date:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
@@ -12466,12 +12414,68 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [0]
                       Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        Spark Hash Table Sink Vectorization:
+                            className: VectorSparkHashTableSinkOperator
+                            native: true
+                        keys:
+                          0 _col2 (type: string)
+                          1 _col0 (type: string)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: hr:string, hour:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [double]
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date_n0
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ds:string, 1:date:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 0:string))
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: string)
-                          1 _col1 (type: string)
+                          1 _col0 (type: string)
                         Map Join Vectorization:
                             bigTableKeyColumns: 0:string
                             bigTableRetainColumnNums: []
@@ -12479,21 +12483,21 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 4:string
-                            smallTableValueMapping: 4:string
+                            projectedOutput: 3:string
+                            smallTableValueMapping: 3:string
                             hashTableImplementationType: OPTIMIZED
-                        outputColumnNames: _col1
+                        outputColumnNames: _col2
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1 Data size: 189 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 206 Basic stats: PARTIAL Column stats: NONE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
                           keys:
-                            0 _col1 (type: string)
+                            0 _col2 (type: string)
                             1 _col0 (type: string)
                           Map Join Vectorization:
-                              bigTableKeyColumns: 4:string
+                              bigTableKeyColumns: 3:string
                               bigTableRetainColumnNums: []
                               className: VectorMapJoinInnerBigOnlyStringOperator
                               native: true
@@ -12502,7 +12506,7 @@ STAGE PLANS:
                               hashTableImplementationType: OPTIMIZED
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 1 Data size: 207 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 226 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: count()
                             Group By Vectorization:
@@ -12536,10 +12540,10 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    includeColumns: [0]
-                    dataColumns: hr:string, hour:string
+                    includeColumns: [0, 1]
+                    dataColumns: ds:string, date:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, string]
+                    scratchColumnTypeNames: [string]
             Local Work:
               Map Reduce Local Work
         Reducer 2 

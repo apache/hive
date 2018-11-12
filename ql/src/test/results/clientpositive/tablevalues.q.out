@@ -472,7 +472,7 @@ A	10	30
 A	10	30
 A	10	30
 A	10	30
-Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
@@ -523,9 +523,11 @@ STAGE PLANS:
               UDTF Operator
                 Statistics: Num rows: 1 Data size: 2440 Basic stats: COMPLETE Column stats: COMPLETE
                 function name: inline
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 2440 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -549,7 +551,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),

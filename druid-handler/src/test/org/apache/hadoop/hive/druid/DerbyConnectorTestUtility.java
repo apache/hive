@@ -18,13 +18,11 @@
 
 package org.apache.hadoop.hive.druid;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import io.druid.metadata.MetadataStorageConnectorConfig;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.storage.derby.DerbyConnector;
 import io.druid.metadata.storage.derby.DerbyMetadataStorage;
-
 import org.junit.Assert;
 import org.junit.rules.ExternalResource;
 import org.skife.jdbi.v2.DBI;
@@ -32,6 +30,7 @@ import org.skife.jdbi.v2.exceptions.UnableToObtainConnectionException;
 
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public class DerbyConnectorTestUtility extends DerbyConnector {
   private final String jdbcUri;
@@ -48,7 +47,7 @@ public class DerbyConnectorTestUtility extends DerbyConnector {
           Supplier<MetadataStorageTablesConfig> dbTables,
           String jdbcUri
   ) {
-    super(new DerbyMetadataStorage(config.get()), config, dbTables, new DBI(jdbcUri + ";create=true"));
+    super(new DerbyMetadataStorage(config.get()), config::get, dbTables::get, new DBI(jdbcUri + ";create=true"));
     this.jdbcUri = jdbcUri;
   }
 
@@ -86,7 +85,7 @@ public class DerbyConnectorTestUtility extends DerbyConnector {
     private DerbyConnectorRule(
             final String defaultBase
     ) {
-      this(Suppliers.ofInstance(MetadataStorageTablesConfig.fromBase(defaultBase)));
+      this(Suppliers.ofInstance(MetadataStorageTablesConfig.fromBase(defaultBase))::get);
     }
 
     public DerbyConnectorRule(
@@ -103,7 +102,7 @@ public class DerbyConnectorTestUtility extends DerbyConnector {
 
     @Override
     protected void before() throws Throwable {
-      connector = new DerbyConnectorTestUtility(Suppliers.ofInstance(connectorConfig), dbTables);
+      connector = new DerbyConnectorTestUtility(Suppliers.ofInstance(connectorConfig)::get, dbTables);
       connector.getDBI().open().close(); // create db
     }
 
@@ -114,10 +113,6 @@ public class DerbyConnectorTestUtility extends DerbyConnector {
 
     public DerbyConnectorTestUtility getConnector() {
       return connector;
-    }
-
-    public MetadataStorageConnectorConfig getMetadataConnectorConfig() {
-      return connectorConfig;
     }
 
     public Supplier<MetadataStorageTablesConfig> metadataTablesConfigSupplier() {

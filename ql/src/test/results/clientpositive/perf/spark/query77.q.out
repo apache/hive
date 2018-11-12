@@ -660,13 +660,13 @@ STAGE PLANS:
                   keys:
                     0 _col1 (type: int)
                     1 _col0 (type: int)
-                  outputColumnNames: _col2, _col3, _col6
+                  outputColumnNames: _col2, _col3, _col5
                   input vertices:
                     1 Map 13
                   Statistics: Num rows: 69685294 Data size: 5399255980 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: sum(_col2), sum(_col3)
-                    keys: _col6 (type: int)
+                    keys: _col5 (type: int)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 69685294 Data size: 5399255980 Basic stats: COMPLETE Column stats: NONE
@@ -747,13 +747,13 @@ STAGE PLANS:
                   keys:
                     0 _col1 (type: int)
                     1 _col0 (type: int)
-                  outputColumnNames: _col2, _col3, _col6
+                  outputColumnNames: _col2, _col3, _col5
                   input vertices:
                     1 Map 8
                   Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: sum(_col2), sum(_col3)
-                    keys: _col6 (type: int)
+                    keys: _col5 (type: int)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
@@ -781,13 +781,13 @@ STAGE PLANS:
                   keys:
                     0 _col1 (type: int)
                     1 _col0 (type: int)
-                  outputColumnNames: _col2, _col3, _col6
+                  outputColumnNames: _col2, _col3, _col5
                   input vertices:
                     1 Map 25
                   Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: sum(_col2), sum(_col3)
-                    keys: _col6 (type: int)
+                    keys: _col5 (type: int)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
@@ -854,13 +854,13 @@ STAGE PLANS:
                   keys:
                     0 _col1 (type: int)
                     1 _col0 (type: int)
-                  outputColumnNames: _col2, _col3, _col6
+                  outputColumnNames: _col2, _col3, _col5
                   input vertices:
                     1 Map 30
                   Statistics: Num rows: 17422145 Data size: 1603485031 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: sum(_col2), sum(_col3)
-                    keys: _col6 (type: int)
+                    keys: _col5 (type: int)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 17422145 Data size: 1603485031 Basic stats: COMPLETE Column stats: NONE

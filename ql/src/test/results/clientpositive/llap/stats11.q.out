@@ -311,7 +311,7 @@ OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_n15`
 WHERE `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+INNER JOIN (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_n16`
 WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
@@ -753,7 +753,7 @@ OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_n15`
 WHERE `key` IS NOT NULL) AS `t0`
-INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+INNER JOIN (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_n16`
 WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:

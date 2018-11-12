@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
+
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -102,7 +103,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     Trigger killTrigger = new ExecutionTrigger("slow_query_kill", killExpression,
       new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(moveTrigger), Lists.newArrayList(killTrigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.tez.session.events.print.summary=json");
@@ -138,7 +139,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     Trigger killTrigger = new ExecutionTrigger("slow_query_kill", killExpression,
       new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(moveTrigger, killTrigger), Lists.newArrayList());
-    String query = "select sleep(t1.under_col, 1), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 1), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col==t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.tez.session.events.print.summary=json");
@@ -173,7 +174,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     Trigger killTrigger = new ExecutionTrigger("slow_query_kill", killExpression,
       new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(moveTrigger1, killTrigger), Lists.newArrayList(moveTrigger2));
-    String query = "select sleep(t1.under_col, 1), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 1), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.tez.session.events.print.summary=json");
@@ -251,7 +252,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     Trigger killTrigger = new ExecutionTrigger("kill_big_read", killExpression,
       new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(moveTrigger, killTrigger), Lists.newArrayList());
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+    String query = "select sleep(t1.under_col+t2.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.tez.session.events.print.summary=json");

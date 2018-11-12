@@ -156,10 +156,10 @@ FROM `default`.`t1_new_n0`
 WHERE `ds` = '2011-10-13'
 UNION ALL
 SELECT `t4`.`key`, `t2`.`value`
-FROM (SELECT `keymap`, `value`, CAST('2011-10-13' AS STRING) AS `ds`
+FROM (SELECT `keymap`, `value`
 FROM `default`.`t1_old`
 WHERE `ds` = '2011-10-13' AND `keymap` IS NOT NULL) AS `t2`
-INNER JOIN (SELECT `key`, `keymap`, CAST('2011-10-13' AS STRING) AS `ds`
+INNER JOIN (SELECT `key`, `keymap`
 FROM `default`.`t1_mapping`
 WHERE '2011-10-13' = `ds` AND `keymap` IS NOT NULL) AS `t4` ON `t2`.`keymap` = `t4`.`keymap`) AS `t6`
 STAGE DEPENDENCIES:
@@ -234,13 +234,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: keymap (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 275 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 275 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
@@ -317,13 +317,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: key (type: string), keymap (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 179 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 1 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 179 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: _col0 (type: string)
                         auto parallelism: true
@@ -394,11 +394,11 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col1 (type: string)
-                outputColumnNames: _col1, _col3
+                outputColumnNames: _col1, _col2
                 Position of Big Table: 0
                 Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col3 (type: string), _col1 (type: string)
+                  expressions: _col2 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -498,10 +498,10 @@ FROM `default`.`t1_new_n0`
 WHERE `ds` = '2011-10-15'
 UNION ALL
 SELECT `t4`.`key`, `t2`.`value`
-FROM (SELECT `keymap`, `value`, CAST('2011-10-15' AS STRING) AS `ds`
+FROM (SELECT `keymap`, `value`
 FROM `default`.`t1_old`
 WHERE `ds` = '2011-10-15' AND `keymap` IS NOT NULL) AS `t2`
-INNER JOIN (SELECT `key`, `keymap`, CAST('2011-10-15' AS STRING) AS `ds`
+INNER JOIN (SELECT `key`, `keymap`
 FROM `default`.`t1_mapping`
 WHERE '2011-10-15' = `ds` AND `keymap` IS NOT NULL) AS `t4` ON `t2`.`keymap` = `t4`.`keymap`) AS `t6`
 STAGE DEPENDENCIES:
@@ -627,13 +627,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: keymap (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 462 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 462 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
@@ -655,13 +655,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: key (type: string), keymap (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 462 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 1 Data size: 462 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
                         tag: 1
                         value expressions: _col0 (type: string)
                         auto parallelism: true
@@ -677,11 +677,11 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col1 (type: string)
-                outputColumnNames: _col1, _col3
+                outputColumnNames: _col1, _col2
                 Position of Big Table: 0
                 Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
                 Select Operator
-                  expressions: _col3 (type: string), _col1 (type: string)
+                  expressions: _col2 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator

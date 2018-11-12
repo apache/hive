@@ -79,13 +79,13 @@ Stage-0
                   SHUFFLE [RS_17]
                     PartitionCols:_col0, _col1
                     Group By Operator [GBY_16] (rows=120 width=206)
-                      Output:["_col0","_col1","_col2"],aggregations:["sum(_col2)"],keys:_col7, _col8
+                      Output:["_col0","_col1","_col2"],aggregations:["sum(_col2)"],keys:_col5, _col6
                       Merge Join Operator [MERGEJOIN_54] (rows=2301098 width=94)
-                        Conds:RS_12._col1=RS_65._col0(Inner),Output:["_col2","_col7","_col8"]
+                        Conds:RS_12._col1=RS_65._col0(Inner),Output:["_col2","_col5","_col6"]
                       <-Map 8 [SIMPLE_EDGE] vectorized
                         PARTITION_ONLY_SHUFFLE [RS_65]
                           PartitionCols:_col0
-                          Select Operator [SEL_64] (rows=7333 width=101)
+                          Select Operator [SEL_64] (rows=7333 width=97)
                             Output:["_col0","_col1","_col2"]
                             Filter Operator [FIL_63] (rows=7333 width=101)
                               predicate:((i_manager_id = 1) and i_item_sk is not null)
@@ -99,7 +99,7 @@ Stage-0
                           <-Map 6 [SIMPLE_EDGE] vectorized
                             PARTITION_ONLY_SHUFFLE [RS_57]
                               PartitionCols:_col0
-                              Select Operator [SEL_56] (rows=50 width=12)
+                              Select Operator [SEL_56] (rows=50 width=4)
                                 Output:["_col0"]
                                 Filter Operator [FIL_55] (rows=50 width=12)
                                   predicate:((d_moy = 12) and (d_year = 1998) and d_date_sk is not null)

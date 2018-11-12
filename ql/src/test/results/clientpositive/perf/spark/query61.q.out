@@ -264,10 +264,10 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col2 (type: int)
-                outputColumnNames: _col8
+                outputColumnNames: _col7
                 Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: sum(_col8)
+                  aggregations: sum(_col7)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
@@ -510,10 +510,10 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col2 (type: int)
-                outputColumnNames: _col9
+                outputColumnNames: _col8
                 Statistics: Num rows: 927646829 Data size: 81837272625 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: sum(_col9)
+                  aggregations: sum(_col8)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE

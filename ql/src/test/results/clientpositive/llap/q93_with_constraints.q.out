@@ -323,10 +323,10 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int), _col2 (type: int)
                   1 _col0 (type: int), _col2 (type: int)
-                outputColumnNames: _col3, _col7, _col9, _col10
+                outputColumnNames: _col3, _col6, _col8, _col9
                 Statistics: Num rows: 570235690 Data size: 69340660054 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col7 (type: int), CASE WHEN (_col3 is not null) THEN ((CAST( (_col9 - _col3) AS decimal(10,0)) * _col10)) ELSE ((CAST( _col9 AS decimal(10,0)) * _col10)) END (type: decimal(18,2))
+                  expressions: _col6 (type: int), CASE WHEN (_col3 is not null) THEN ((CAST( (_col8 - _col3) AS decimal(10,0)) * _col9)) ELSE ((CAST( _col8 AS decimal(10,0)) * _col9)) END (type: decimal(18,2))
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 570235690 Data size: 69340660054 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator

@@ -465,16 +465,16 @@ POSTHOOK: Input: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t9`.`plan_key`, `t9`.`project_key`
 FROM (SELECT `t4`.`plan_key`, `t6`.`project_key`
-FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t2`.`project_object_id`, `t0`.`idp_data_date`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
-FROM (SELECT CAST(DATE '2017-12-28' AS DATE) AS `idp_data_date`, `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
+FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
+FROM (SELECT `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
 FROM `default`.`l3_monthly_dw_dimplan`
 WHERE `idp_data_date` = DATE '2017-12-28') AS `t0`
-RIGHT JOIN ((SELECT `plan_detail_object_id`, CAST(7147200 AS BIGINT) AS `project_object_id`
+RIGHT JOIN ((SELECT `plan_detail_object_id`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1`
 WHERE `project_object_id` = 7147200) AS `t2`,
 (SELECT `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id` AND `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number`) AS `t4`
-LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`, CAST(7147200 AS BIGINT) AS `project_object_id`, CAST(DATE '2017-12-28' AS DATE) AS `idp_data_date`
+LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1`
 WHERE `idp_data_date` = DATE '2017-12-28' AND `project_object_id` = 7147200) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
 ORDER BY `t4`.`plan_key`, `t6`.`project_key`
@@ -506,7 +506,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: plan_detail_object_id (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -514,7 +514,7 @@ STAGE PLANS:
                         keys:
                           0 
                           1 
-                        outputColumnNames: _col0, _col2
+                        outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 3
                         Position of Big Table: 0
@@ -524,16 +524,16 @@ STAGE PLANS:
                                Left Outer Join 0 to 1
                           Estimated key counts: Map 4 => 90170
                           keys:
-                            0 _col2 (type: bigint), _col0 (type: bigint)
-                            1 _col1 (type: bigint), _col3 (type: bigint)
-                          outputColumnNames: _col2, _col5
+                            0 _col1 (type: bigint), _col0 (type: bigint)
+                            1 _col0 (type: bigint), _col2 (type: bigint)
+                          outputColumnNames: _col1, _col3
                           input vertices:
                             1 Map 4
                           Position of Big Table: 0
                           Statistics: Num rows: 30 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: _col2 (type: bigint), _col5 (type: bigint)
-                            outputColumnNames: _col0, _col5
+                            expressions: _col1 (type: bigint), _col3 (type: bigint)
+                            outputColumnNames: _col0, _col3
                             Statistics: Num rows: 30 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -542,13 +542,13 @@ STAGE PLANS:
                               keys:
                                 0 _col0 (type: bigint)
                                 1 _col1 (type: bigint)
-                              outputColumnNames: _col5, _col7
+                              outputColumnNames: _col3, _col5
                               input vertices:
                                 1 Map 5
                               Position of Big Table: 0
                               Statistics: Num rows: 30 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                               Select Operator
-                                expressions: _col5 (type: bigint), _col7 (type: bigint)
+                                expressions: _col3 (type: bigint), _col5 (type: bigint)
                                 outputColumnNames: _col0, _col1
                                 Statistics: Num rows: 30 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
@@ -700,16 +700,16 @@ STAGE PLANS:
                     Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l3_snapshot_number (type: bigint), plan_key (type: bigint), finplan_detail_object_id (type: bigint)
-                      outputColumnNames: _col1, _col2, _col3
-                      Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 90170 Data size: 2164080 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: bigint), _col3 (type: bigint)
+                        key expressions: _col0 (type: bigint), _col2 (type: bigint)
                         null sort order: aa
                         sort order: ++
-                        Map-reduce partition columns: _col1 (type: bigint), _col3 (type: bigint)
-                        Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: bigint), _col2 (type: bigint)
+                        Statistics: Num rows: 90170 Data size: 2164080 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
-                        value expressions: _col2 (type: bigint)
+                        value expressions: _col1 (type: bigint)
                         auto parallelism: true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -782,13 +782,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: project_key (type: bigint), l3_snapshot_number (type: bigint)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: bigint)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: bigint)
-                        Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: true
@@ -974,16 +974,16 @@ POSTHOOK: Input: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t9`.`plan_key`, `t9`.`project_key`
 FROM (SELECT `t4`.`plan_key`, `t6`.`project_key`
-FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t2`.`project_object_id`, `t0`.`idp_data_date`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
-FROM (SELECT CAST(DATE '2017-12-28' AS DATE) AS `idp_data_date`, `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
+FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
+FROM (SELECT `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
 FROM `default`.`l3_monthly_dw_dimplan`
 WHERE `idp_data_date` = DATE '2017-12-28') AS `t0`
-RIGHT JOIN ((SELECT `plan_detail_object_id`, CAST(7147200 AS BIGINT) AS `project_object_id`
+RIGHT JOIN ((SELECT `plan_detail_object_id`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1`
 WHERE `project_object_id` = 7147200) AS `t2`,
 (SELECT `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id` AND `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number`) AS `t4`
-LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`, CAST(7147200 AS BIGINT) AS `project_object_id`, CAST(DATE '2017-12-28' AS DATE) AS `idp_data_date`
+LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1`
 WHERE `idp_data_date` = DATE '2017-12-28' AND `project_object_id` = 7147200) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
 ORDER BY `t4`.`plan_key`, `t6`.`project_key`
@@ -1015,7 +1015,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: plan_detail_object_id (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1023,7 +1023,7 @@ STAGE PLANS:
                         keys:
                           0 
                           1 
-                        outputColumnNames: _col0, _col2
+                        outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 3
                         Position of Big Table: 0
@@ -1033,16 +1033,16 @@ STAGE PLANS:
                                Left Outer Join 0 to 1
                           Estimated key counts: Map 4 => 90170
                           keys:
-                            0 _col2 (type: bigint), _col0 (type: bigint)
-                            1 _col1 (type: bigint), _col3 (type: bigint)
-                          outputColumnNames: _col2, _col5
+                            0 _col1 (type: bigint), _col0 (type: bigint)
+                            1 _col0 (type: bigint), _col2 (type: bigint)
+                          outputColumnNames: _col1, _col3
                           input vertices:
                             1 Map 4
                           Position of Big Table: 0
                           Statistics: Num rows: 30 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: _col2 (type: bigint), _col5 (type: bigint)
-                            outputColumnNames: _col0, _col5
+                            expressions: _col1 (type: bigint), _col3 (type: bigint)
+                            outputColumnNames: _col0, _col3
                             Statistics: Num rows: 30 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -1051,13 +1051,13 @@ STAGE PLANS:
                               keys:
                                 0 _col0 (type: bigint)
                                 1 _col1 (type: bigint)
-                              outputColumnNames: _col5, _col7
+                              outputColumnNames: _col3, _col5
                               input vertices:
                                 1 Map 5
                               Position of Big Table: 0
                               Statistics: Num rows: 30 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                               Select Operator
-                                expressions: _col5 (type: bigint), _col7 (type: bigint)
+                                expressions: _col3 (type: bigint), _col5 (type: bigint)
                                 outputColumnNames: _col0, _col1
                                 Statistics: Num rows: 30 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
@@ -1210,16 +1210,16 @@ STAGE PLANS:
                     Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l3_snapshot_number (type: bigint), plan_key (type: bigint), finplan_detail_object_id (type: bigint)
-                      outputColumnNames: _col1, _col2, _col3
-                      Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 90170 Data size: 2164080 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: bigint), _col3 (type: bigint)
+                        key expressions: _col0 (type: bigint), _col2 (type: bigint)
                         null sort order: aa
                         sort order: ++
-                        Map-reduce partition columns: _col1 (type: bigint), _col3 (type: bigint)
-                        Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: bigint), _col2 (type: bigint)
+                        Statistics: Num rows: 90170 Data size: 2164080 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
-                        value expressions: _col2 (type: bigint)
+                        value expressions: _col1 (type: bigint)
                         auto parallelism: true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1292,13 +1292,13 @@ STAGE PLANS:
                     Select Operator
                       expressions: project_key (type: bigint), l3_snapshot_number (type: bigint)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: bigint)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: bigint)
-                        Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: true

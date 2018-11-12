@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import io.druid.query.scan.ScanQuery;
 import io.druid.query.scan.ScanResultValue;
 
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
@@ -34,56 +33,45 @@ import java.util.List;
 /**
  * Record reader for results for Druid ScanQuery.
  */
-public class DruidScanQueryRecordReader
-    extends DruidQueryRecordReader<ScanQuery, ScanResultValue> {
+public class DruidScanQueryRecordReader extends DruidQueryRecordReader<ScanResultValue> {
 
-  private static final TypeReference<ScanResultValue> TYPE_REFERENCE =
-      new TypeReference<ScanResultValue>() {
-      };
-
-  private ScanResultValue current;
+  private static final TypeReference<ScanResultValue> TYPE_REFERENCE = new TypeReference<ScanResultValue>() {
+  };
 
   private Iterator<List<Object>> compactedValues = Iterators.emptyIterator();
 
-  @Override
-  protected JavaType getResultTypeDef() {
+  @Override protected JavaType getResultTypeDef() {
     return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
-  @Override
-  public boolean nextKeyValue() throws IOException {
+  @Override public boolean nextKeyValue() throws IOException {
     if (compactedValues.hasNext()) {
       return true;
     }
     if (queryResultsIterator.hasNext()) {
-      current = queryResultsIterator.next();
+      ScanResultValue current = queryResultsIterator.next();
       compactedValues = ((List<List<Object>>) current.getEvents()).iterator();
       return nextKeyValue();
     }
     return false;
   }
 
-  @Override
-  public NullWritable getCurrentKey() throws IOException, InterruptedException {
+  @Override public NullWritable getCurrentKey() throws IOException, InterruptedException {
     return NullWritable.get();
   }
 
-  @Override
-  public DruidWritable createValue()
-  {
+  @Override public DruidWritable createValue() {
     return new DruidWritable(true);
   }
 
-  @Override
-  public DruidWritable getCurrentValue() throws IOException, InterruptedException {
+  @Override public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable(true);
     value.setCompactedValue(compactedValues.next());
     return value;
   }
 
-  @Override
-  public boolean next(NullWritable key, DruidWritable value) throws IOException {
+  @Override public boolean next(NullWritable key, DruidWritable value) throws IOException {
     if (nextKeyValue()) {
       // Update value
       value.setCompactedValue(compactedValues.next());
@@ -92,8 +80,7 @@ public class DruidScanQueryRecordReader
     return false;
   }
 
-  @Override
-  public float getProgress() {
+  @Override public float getProgress() {
     return queryResultsIterator.hasNext() || compactedValues.hasNext() ? 0 : 1;
   }
 
