@@ -2837,7 +2837,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col2 (type: int), _col0 (type: int)
-                  1 _col0 (type: int), (_col0 + 121150) (type: int)
+                  1 _col0 (type: int), _col1 (type: int)
                 outputColumnNames: _col1, _col3
                 Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -2876,11 +2876,15 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int), (_col0 + 121150) (type: int)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: int), (_col0 + 121150) (type: int)
+                Select Operator
+                  expressions: _col0 (type: int), (_col0 + 121150) (type: int)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -2928,7 +2932,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col2 (type: int), _col0 (type: int)
-                  1 _col0 (type: int), (_col0 + 121150) (type: int)
+                  1 _col0 (type: int), _col1 (type: int)
                 outputColumnNames: _col1, _col3
                 Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -2966,11 +2970,15 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: int), (_col0 + 121150) (type: int)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: int), (_col0 + 121150) (type: int)
+                Select Operator
+                  expressions: _col0 (type: int), (_col0 + 121150) (type: int)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -3430,13 +3438,13 @@ STAGE PLANS:
                     predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: p_type (type: string), p_size (type: int)
+                      expressions: p_type (type: string), (p_size + 1) (type: int)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: (_col1 + 1) (type: int)
+                        key expressions: _col1 (type: int)
                         sort order: +
-                        Map-reduce partition columns: (_col1 + 1) (type: int)
+                        Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized
@@ -3450,13 +3458,13 @@ STAGE PLANS:
                     predicate: (p_size is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: p_type (type: string), p_size (type: int)
+                      expressions: p_type (type: string), (p_size + 1) (type: int)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: (_col1 + 1) (type: int)
+                        key expressions: _col1 (type: int)
                         sort order: +
-                        Map-reduce partition columns: (_col1 + 1) (type: int)
+                        Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized
@@ -3466,7 +3474,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (_col1 + 1) (type: int)
+                  0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2
                 Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -3557,7 +3565,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (_col1 + 1) (type: int)
+                  0 _col1 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2
                 Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
@@ -5906,13 +5914,13 @@ STAGE PLANS:
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: c1 (type: int)
-                      outputColumnNames: _col0
+                      expressions: c1 (type: int), UDFToDouble(c1) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col1 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Map-reduce partition columns: _col1 (type: double)
                         Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized
@@ -5926,13 +5934,13 @@ STAGE PLANS:
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: c1 (type: int)
-                      outputColumnNames: _col0
+                      expressions: c1 (type: int), UDFToDouble(c1) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col1 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Map-reduce partition columns: _col1 (type: double)
                         Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized
@@ -5942,12 +5950,12 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(_col0) (type: double)
-                outputColumnNames: _col0, _col1
+                  0 _col1 (type: double)
+                  1 _col1 (type: double)
+                outputColumnNames: _col0, _col2
                 Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: _col0 (type: int), _col1 (type: char(100))
+                  keys: _col0 (type: int), _col2 (type: char(100))
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -5982,12 +5990,16 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 2 Data size: 156 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: UDFToDouble(_col0) (type: double)
-                  sort order: +
-                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                Select Operator
+                  expressions: _col0 (type: char(100)), UDFToDouble(_col0) (type: double)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 156 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: char(100))
+                  Reduce Output Operator
+                    key expressions: _col1 (type: double)
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: double)
+                    Statistics: Num rows: 2 Data size: 156 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: char(100))
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -6034,13 +6046,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(_col0) (type: double)
-                outputColumnNames: _col0, _col1
+                  0 _col1 (type: double)
+                  1 _col1 (type: double)
+                outputColumnNames: _col0, _col2
                 Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(), count(_col0)
-                  keys: _col1 (type: char(100))
+                  keys: _col2 (type: char(100))
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -6073,12 +6085,16 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 2 Data size: 156 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: UDFToDouble(_col0) (type: double)
-                  sort order: +
-                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                Select Operator
+                  expressions: _col0 (type: char(100)), UDFToDouble(_col0) (type: double)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 156 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: char(100))
+                  Reduce Output Operator
+                    key expressions: _col1 (type: double)
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: double)
+                    Statistics: Num rows: 2 Data size: 156 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: char(100))
 
   Stage: Stage-0
     Fetch Operator

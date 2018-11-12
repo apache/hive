@@ -29,7 +29,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@dest_j1_n7
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
-FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM (SELECT `value`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `key`, `value`

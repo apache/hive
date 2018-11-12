@@ -120,7 +120,7 @@ Stage-0
                             <-Map 13 [SIMPLE_EDGE] vectorized
                               SHUFFLE [RS_122]
                                 PartitionCols:_col0
-                                Select Operator [SEL_121] (rows=56 width=102)
+                                Select Operator [SEL_121] (rows=56 width=4)
                                   Output:["_col0"]
                                   Filter Operator [FIL_120] (rows=56 width=102)
                                     predicate:((s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County') and s_store_sk is not null)
@@ -134,7 +134,7 @@ Stage-0
                                 <-Map 11 [SIMPLE_EDGE] vectorized
                                   SHUFFLE [RS_114]
                                     PartitionCols:_col0
-                                    Select Operator [SEL_113] (rows=480 width=104)
+                                    Select Operator [SEL_113] (rows=480 width=4)
                                       Output:["_col0"]
                                       Filter Operator [FIL_112] (rows=480 width=104)
                                         predicate:((hd_buy_potential) IN ('>10000', 'unknown') and (hd_vehicle_count > 0) and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.0D)) ELSE (null) END and hd_demo_sk is not null)
@@ -148,7 +148,7 @@ Stage-0
                                     <-Map 9 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_106]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_105] (rows=170 width=12)
+                                        Select Operator [SEL_105] (rows=170 width=4)
                                           Output:["_col0"]
                                           Filter Operator [FIL_104] (rows=170 width=12)
                                             predicate:((d_year) IN (2000, 2001, 2002) and d_date_sk is not null and d_dom BETWEEN 1 AND 2)

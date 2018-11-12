@@ -1410,10 +1410,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col2
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
+                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col1 (type: decimal(23,14))
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1619,10 +1619,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col2
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
+                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col1 (type: decimal(23,14))
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

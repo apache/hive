@@ -165,7 +165,7 @@ Stage-0
             <-Map 4 [SIMPLE_EDGE]
               SHUFFLE [RS_7]
                 PartitionCols:_col0
-                Select Operator [SEL_5] (rows=1019/10 width=8)
+                Select Operator [SEL_5] (rows=1019/10 width=2)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=1019/10 width=8)
                     predicate:(cbigint is not null and cint BETWEEN 1000000 AND 3000000)
@@ -267,7 +267,7 @@ Stage-0
                 <-Map 5 [SIMPLE_EDGE]
                   SHUFFLE [RS_7]
                     PartitionCols:_col0
-                    Select Operator [SEL_5] (rows=1019/10 width=8)
+                    Select Operator [SEL_5] (rows=1019/10 width=2)
                       Output:["_col0"]
                       Filter Operator [FIL_19] (rows=1019/10 width=8)
                         predicate:(cbigint is not null and cint BETWEEN 1000000 AND 3000000)

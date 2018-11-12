@@ -49,13 +49,13 @@ STAGE PLANS:
               predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string)
+                expressions: UDFToDouble(key) (type: double)
                 outputColumnNames: _col0
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
-                    1 UDFToDouble(_col0) (type: double)
+                    1 _col0 (type: double)
         $hdt$_0:$hdt$_1:src 
           TableScan
             alias: src
@@ -100,7 +100,7 @@ STAGE PLANS:
                          Inner Join 0 to 1
                     keys:
                       0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
-                      1 UDFToDouble(_col0) (type: double)
+                      1 _col0 (type: double)
                     outputColumnNames: _col1, _col2
                     Statistics: Num rows: 200 Data size: 2132 Basic stats: COMPLETE Column stats: NONE
                     Select Operator

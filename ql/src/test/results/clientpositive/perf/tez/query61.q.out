@@ -152,9 +152,9 @@ Stage-0
                     <-Reducer 3 [CUSTOM_SIMPLE_EDGE]
                       PARTITION_ONLY_SHUFFLE [RS_42]
                         Group By Operator [GBY_41] (rows=1 width=112)
-                          Output:["_col0"],aggregations:["sum(_col9)"]
+                          Output:["_col0"],aggregations:["sum(_col8)"]
                           Merge Join Operator [MERGEJOIN_264] (rows=505397 width=0)
-                            Conds:RS_37._col0=RS_38._col2(Inner),Output:["_col9"]
+                            Conds:RS_37._col0=RS_38._col2(Inner),Output:["_col8"]
                           <-Reducer 2 [SIMPLE_EDGE]
                             SHUFFLE [RS_37]
                               PartitionCols:_col0
@@ -172,7 +172,7 @@ Stage-0
                               <-Map 11 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_272]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_271] (rows=8000000 width=116)
+                                  Select Operator [SEL_271] (rows=8000000 width=4)
                                     Output:["_col0"]
                                     Filter Operator [FIL_270] (rows=8000000 width=112)
                                       predicate:((ca_gmt_offset = -7) and ca_address_sk is not null)
@@ -186,7 +186,7 @@ Stage-0
                               <-Map 29 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_316]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_315] (rows=2300 width=259)
+                                  Select Operator [SEL_315] (rows=2300 width=4)
                                     Output:["_col0"]
                                     Filter Operator [FIL_314] (rows=2300 width=259)
                                       predicate:(((p_channel_dmail = 'Y') or (p_channel_email = 'Y') or (p_channel_tv = 'Y')) and p_promo_sk is not null)
@@ -200,7 +200,7 @@ Stage-0
                                   <-Map 26 [SIMPLE_EDGE] vectorized
                                     PARTITION_ONLY_SHUFFLE [RS_299]
                                       PartitionCols:_col0
-                                      Select Operator [SEL_298] (rows=341 width=116)
+                                      Select Operator [SEL_298] (rows=341 width=4)
                                         Output:["_col0"]
                                         Filter Operator [FIL_297] (rows=341 width=115)
                                           predicate:((s_gmt_offset = -7) and s_store_sk is not null)
@@ -214,7 +214,7 @@ Stage-0
                                       <-Map 23 [SIMPLE_EDGE] vectorized
                                         PARTITION_ONLY_SHUFFLE [RS_287]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_286] (rows=46200 width=99)
+                                          Select Operator [SEL_286] (rows=46200 width=4)
                                             Output:["_col0"]
                                             Filter Operator [FIL_285] (rows=46200 width=94)
                                               predicate:((i_category = 'Electronics') and i_item_sk is not null)
@@ -228,7 +228,7 @@ Stage-0
                                           <-Map 17 [SIMPLE_EDGE] vectorized
                                             PARTITION_ONLY_SHUFFLE [RS_275]
                                               PartitionCols:_col0
-                                              Select Operator [SEL_274] (rows=50 width=12)
+                                              Select Operator [SEL_274] (rows=50 width=4)
                                                 Output:["_col0"]
                                                 Filter Operator [FIL_273] (rows=50 width=12)
                                                   predicate:((d_moy = 11) and (d_year = 1999) and d_date_sk is not null)
@@ -294,9 +294,9 @@ Stage-0
                     <-Reducer 8 [CUSTOM_SIMPLE_EDGE]
                       PARTITION_ONLY_SHUFFLE [RS_81]
                         Group By Operator [GBY_80] (rows=1 width=112)
-                          Output:["_col0"],aggregations:["sum(_col8)"]
+                          Output:["_col0"],aggregations:["sum(_col7)"]
                           Merge Join Operator [MERGEJOIN_265] (rows=529208 width=0)
-                            Conds:RS_76._col0=RS_77._col2(Inner),Output:["_col8"]
+                            Conds:RS_76._col0=RS_77._col2(Inner),Output:["_col7"]
                           <-Reducer 2 [SIMPLE_EDGE]
                             SHUFFLE [RS_76]
                               PartitionCols:_col0
