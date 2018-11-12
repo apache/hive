@@ -732,6 +732,10 @@ public class QTestUtil {
           "test-topic",
           new File(getScriptsDir(), "kafka_init_data.json")
       );
+      kafkaCluster.createTopicWithData(
+              "wiki_kafka_csv",
+              new File(getScriptsDir(), "kafka_init_data.csv")
+      );
       kafkaCluster.createTopicWithData("wiki_kafka_avro_table", getAvroRows());
     }
 
