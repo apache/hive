@@ -39,8 +39,8 @@ Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_tab
 
 -- Timestamp filter
 
-Select `__partition`, `__offset`, `user`  from kafka_table where
-`__timestamp` >  1000 * to_unix_timestamp(CURRENT_TIMESTAMP - interval '1' HOURS) ;
+Select `__partition`, `__offset`, `user` from kafka_table where
+`__timestamp` >  to_epoch_milli(CURRENT_TIMESTAMP - interval '1' HOURS) ;
 
 -- non existing partition
 Select  count(*) from kafka_table where `__partition` = 1;

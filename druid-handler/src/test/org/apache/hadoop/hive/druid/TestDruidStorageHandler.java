@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.druid;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import io.druid.indexer.JobHelper;
 import io.druid.indexer.SQLMetadataStorageUpdaterJobHandler;
 import io.druid.metadata.MetadataStorageTablesConfig;
@@ -29,7 +33,6 @@ import io.druid.timeline.DataSegment;
 import io.druid.timeline.partition.LinearShardSpec;
 import io.druid.timeline.partition.NoneShardSpec;
 import io.druid.timeline.partition.ShardSpec;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -39,12 +42,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.junit.After;
@@ -55,16 +52,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.HandleCallback;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -96,10 +89,9 @@ public class TestDruidStorageHandler {
   private DataSegment createSegment(String location, Interval interval, String version,
           ShardSpec shardSpec) throws IOException {
     FileUtils.writeStringToFile(new File(location), "dummySegmentData");
-    DataSegment dataSegment = DataSegment.builder().dataSource(DATA_SOURCE_NAME).version(version)
+    return DataSegment.builder().dataSource(DATA_SOURCE_NAME).version(version)
             .interval(interval).shardSpec(shardSpec)
             .loadSpec(ImmutableMap.of("path", location)).build();
-    return dataSegment;
   }
 
   @Before
@@ -133,7 +125,7 @@ public class TestDruidStorageHandler {
     temporaryFolder.delete();
   }
 
-  Table tableMock = Mockito.mock(Table.class);
+  private final Table tableMock = Mockito.mock(Table.class);
 
   @Test
   public void testPreCreateTableWillCreateSegmentsTable() throws MetaException {
@@ -160,7 +152,7 @@ public class TestDruidStorageHandler {
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     DataSegment dataSegment = createSegment(new Path(taskDirPath, "intermediatePath").toString());
 
-    sqlMetadataStorageUpdaterJobHandler.publishSegments(segmentsTable, Arrays.asList(dataSegment),
+    sqlMetadataStorageUpdaterJobHandler.publishSegments(segmentsTable, Collections.singletonList(dataSegment),
             DruidStorageHandlerUtils.JSON_MAPPER
     );
 
@@ -291,7 +283,7 @@ public class TestDruidStorageHandler {
             );
     Path indexPath = new Path(segmentOutputPath, "index.zip");
     DataSegment dataSegmentWithLoadspect = DataSegment.builder(dataSegment).loadSpec(
-            ImmutableMap.<String, Object>of("path", indexPath)).build();
+            ImmutableMap.of("path", indexPath)).build();
     OutputStream outputStream = localFileSystem.create(indexPath, true);
     outputStream.close();
     Assert.assertTrue("index file is not created ??", localFileSystem.exists(indexPath));
@@ -328,9 +320,11 @@ public class TestDruidStorageHandler {
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
 
     // This create and publish the segment to be overwritten
-    List<DataSegment> existingSegments = Arrays
-            .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(0)));
+    List<DataSegment> existingSegments =
+        Collections.singletonList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(100, 150, DateTimeZone.UTC),
+            "v0",
+            new LinearShardSpec(0)));
     DruidStorageHandlerUtils
             .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
@@ -381,9 +375,11 @@ public class TestDruidStorageHandler {
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
 
     // This create and publish the segment to be overwritten
-    List<DataSegment> existingSegments = Arrays
-            .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(0)));
+    List<DataSegment> existingSegments =
+        Collections.singletonList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(100, 150, DateTimeZone.UTC),
+            "v0",
+            new LinearShardSpec(0)));
     DruidStorageHandlerUtils
             .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
@@ -486,31 +482,20 @@ public class TestDruidStorageHandler {
   private List<DataSegment> getUsedSegmentsList(DerbyConnectorTestUtility connector,
           final MetadataStorageTablesConfig metadataStorageTablesConfig) {
     return connector.getDBI()
-            .withHandle(new HandleCallback<List<DataSegment>>() {
-              @Override
-              public List<DataSegment> withHandle(Handle handle) throws Exception {
-                return handle
-                        .createQuery(String.format(
-                                "SELECT payload FROM %s WHERE used=true ORDER BY created_date ASC",
-                                metadataStorageTablesConfig.getSegmentsTable()))
-                        .map(new ResultSetMapper<DataSegment>() {
-
-                          @Override
-                          public DataSegment map(int i, ResultSet resultSet,
-                                  StatementContext statementContext)
-                                  throws SQLException {
-                            try {
-                              return DruidStorageHandlerUtils.JSON_MAPPER.readValue(
-                                      resultSet.getBytes("payload"),
-                                      DataSegment.class
-                              );
-                            } catch (IOException e) {
-                              throw Throwables.propagate(e);
-                            }
-                          }
-                        }).list();
-              }
-            });
+            .withHandle(handle -> handle
+                    .createQuery(String.format(
+                            "SELECT payload FROM %s WHERE used=true ORDER BY created_date ASC",
+                            metadataStorageTablesConfig.getSegmentsTable()))
+                    .map((i, resultSet, statementContext) -> {
+                      try {
+                        return DruidStorageHandlerUtils.JSON_MAPPER.readValue(
+                                resultSet.getBytes("payload"),
+                                DataSegment.class
+                        );
+                      } catch (IOException e) {
+                        throw Throwables.propagate(e);
+                      }
+                    }).list());
   }
 
   @Test
@@ -521,9 +506,11 @@ public class TestDruidStorageHandler {
     druidStorageHandler.preCreateTable(tableMock);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
-    List<DataSegment> existingSegments = Arrays
-            .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(1)));
+    List<DataSegment> existingSegments =
+        Collections.singletonList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(100, 150, DateTimeZone.UTC),
+            "v0",
+            new LinearShardSpec(1)));
     HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
     pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
@@ -578,9 +565,11 @@ public class TestDruidStorageHandler {
     pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
 
-    List<DataSegment> existingSegments = Arrays
-            .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(0)));
+    List<DataSegment> existingSegments =
+        Collections.singletonList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(100, 150, DateTimeZone.UTC),
+            "v0",
+            new LinearShardSpec(0)));
     DruidStorageHandlerUtils
             .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
@@ -628,9 +617,11 @@ public class TestDruidStorageHandler {
     druidStorageHandler.preCreateTable(tableMock);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
-    List<DataSegment> existingSegments = Arrays
-            .asList(createSegment(new Path(taskDirPath, "index_old.zip").toString(),
-                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(1)));
+    List<DataSegment> existingSegments =
+        Collections.singletonList(createSegment(new Path(taskDirPath, "index_old.zip").toString(),
+            new Interval(100, 150, DateTimeZone.UTC),
+            "v0",
+            new LinearShardSpec(1)));
     HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
     pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
@@ -732,7 +723,7 @@ public class TestDruidStorageHandler {
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     List<DataSegment> existingSegments = Arrays
             .asList(createSegment(new Path(taskDirPath, "index_old_1.zip").toString(),
-                    new Interval(100, 150, DateTimeZone.UTC), "v0", new NoneShardSpec()),
+                    new Interval(100, 150, DateTimeZone.UTC), "v0", NoneShardSpec.instance()),
                     createSegment(new Path(taskDirPath, "index_old_2.zip").toString(),
                             new Interval(200, 250, DateTimeZone.UTC), "v0", new LinearShardSpec(0)),
                     createSegment(new Path(taskDirPath, "index_old_3.zip").toString(),

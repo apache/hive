@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,13 +17,11 @@
  */
 package org.apache.hadoop.hive.druid.json;
 
-import io.druid.java.util.common.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-
+import io.druid.java.util.common.StringUtils;
 import org.joda.time.Duration;
 import org.joda.time.Period;
 
@@ -33,8 +31,7 @@ import java.util.Map;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-public class KafkaSupervisorIOConfig
-{
+public class KafkaSupervisorIOConfig {
   public static final String BOOTSTRAP_SERVERS_KEY = "bootstrap.servers";
 
   private final String topic;
@@ -46,13 +43,11 @@ public class KafkaSupervisorIOConfig
   private final Duration period;
   private final boolean useEarliestOffset;
   private final Duration completionTimeout;
-  private final Optional<Duration> lateMessageRejectionPeriod;
-  private final Optional<Duration> earlyMessageRejectionPeriod;
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType") private final Optional<Duration> lateMessageRejectionPeriod;
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType") private final Optional<Duration> earlyMessageRejectionPeriod;
   private final boolean skipOffsetGaps;
 
-  @JsonCreator
-  public KafkaSupervisorIOConfig(
-      @JsonProperty("topic") String topic,
+  @JsonCreator public KafkaSupervisorIOConfig(@JsonProperty("topic") String topic,
       @JsonProperty("replicas") Integer replicas,
       @JsonProperty("taskCount") Integer taskCount,
       @JsonProperty("taskDuration") Period taskDuration,
@@ -63,15 +58,11 @@ public class KafkaSupervisorIOConfig
       @JsonProperty("completionTimeout") Period completionTimeout,
       @JsonProperty("lateMessageRejectionPeriod") Period lateMessageRejectionPeriod,
       @JsonProperty("earlyMessageRejectionPeriod") Period earlyMessageRejectionPeriod,
-      @JsonProperty("skipOffsetGaps") Boolean skipOffsetGaps
-  )
-  {
+      @JsonProperty("skipOffsetGaps") Boolean skipOffsetGaps) {
     this.topic = Preconditions.checkNotNull(topic, "topic");
     this.consumerProperties = Preconditions.checkNotNull(consumerProperties, "consumerProperties");
-    Preconditions.checkNotNull(
-        consumerProperties.get(BOOTSTRAP_SERVERS_KEY),
-        StringUtils.format("consumerProperties must contain entry for [%s]", BOOTSTRAP_SERVERS_KEY)
-    );
+    Preconditions.checkNotNull(consumerProperties.get(BOOTSTRAP_SERVERS_KEY),
+        StringUtils.format("consumerProperties must contain entry for [%s]", BOOTSTRAP_SERVERS_KEY));
 
     this.replicas = replicas != null ? replicas : 1;
     this.taskCount = taskCount != null ? taskCount : 1;
@@ -80,154 +71,152 @@ public class KafkaSupervisorIOConfig
     this.period = defaultDuration(period, "PT30S");
     this.useEarliestOffset = useEarliestOffset != null ? useEarliestOffset : false;
     this.completionTimeout = defaultDuration(completionTimeout, "PT30M");
-    this.lateMessageRejectionPeriod = lateMessageRejectionPeriod == null
-                                      ? Optional.<Duration>absent()
-                                      : Optional.of(lateMessageRejectionPeriod.toStandardDuration());
-    this.earlyMessageRejectionPeriod = earlyMessageRejectionPeriod == null
-                                       ? Optional.<Duration>absent()
-                                       : Optional.of(earlyMessageRejectionPeriod.toStandardDuration());
+    this.lateMessageRejectionPeriod =
+        lateMessageRejectionPeriod == null ?
+            Optional.absent() :
+            Optional.of(lateMessageRejectionPeriod.toStandardDuration());
+    this.earlyMessageRejectionPeriod =
+        earlyMessageRejectionPeriod == null ?
+            Optional.absent() :
+            Optional.of(earlyMessageRejectionPeriod.toStandardDuration());
     this.skipOffsetGaps = skipOffsetGaps != null ? skipOffsetGaps : false;
   }
 
-  @JsonProperty
-  public String getTopic()
-  {
+  @JsonProperty public String getTopic() {
     return topic;
   }
 
-  @JsonProperty
-  public Integer getReplicas()
-  {
+  @JsonProperty public Integer getReplicas() {
     return replicas;
   }
 
-  @JsonProperty
-  public Integer getTaskCount()
-  {
+  @JsonProperty public Integer getTaskCount() {
     return taskCount;
   }
 
-  @JsonProperty
-  public Duration getTaskDuration()
-  {
+  @JsonProperty public Duration getTaskDuration() {
     return taskDuration;
   }
 
-  @JsonProperty
-  public Map<String, String> getConsumerProperties()
-  {
+  @JsonProperty public Map<String, String> getConsumerProperties() {
     return consumerProperties;
   }
 
-  @JsonProperty
-  public Duration getStartDelay()
-  {
+  @JsonProperty public Duration getStartDelay() {
     return startDelay;
   }
 
-  @JsonProperty
-  public Duration getPeriod()
-  {
+  @JsonProperty public Duration getPeriod() {
     return period;
   }
 
-  @JsonProperty
-  public boolean isUseEarliestOffset()
-  {
+  @JsonProperty public boolean isUseEarliestOffset() {
     return useEarliestOffset;
   }
 
-  @JsonProperty
-  public Duration getCompletionTimeout()
-  {
+  @JsonProperty public Duration getCompletionTimeout() {
     return completionTimeout;
   }
 
-  @JsonProperty
-  public Optional<Duration> getEarlyMessageRejectionPeriod()
-  {
+  @JsonProperty public Optional<Duration> getEarlyMessageRejectionPeriod() {
     return earlyMessageRejectionPeriod;
   }
 
-  @JsonProperty
-  public Optional<Duration> getLateMessageRejectionPeriod()
-  {
+  @JsonProperty public Optional<Duration> getLateMessageRejectionPeriod() {
     return lateMessageRejectionPeriod;
   }
 
-  @JsonProperty
-  public boolean isSkipOffsetGaps()
-  {
+  @JsonProperty public boolean isSkipOffsetGaps() {
     return skipOffsetGaps;
   }
 
-  @Override
-  public String toString()
-  {
-    return "KafkaSupervisorIOConfig{" +
-           "topic='" + topic + '\'' +
-           ", replicas=" + replicas +
-           ", taskCount=" + taskCount +
-           ", taskDuration=" + taskDuration +
-           ", consumerProperties=" + consumerProperties +
-           ", startDelay=" + startDelay +
-           ", period=" + period +
-           ", useEarliestOffset=" + useEarliestOffset +
-           ", completionTimeout=" + completionTimeout +
-           ", lateMessageRejectionPeriod=" + lateMessageRejectionPeriod +
-           ", skipOffsetGaps=" + skipOffsetGaps +
-           '}';
+  @Override public String toString() {
+    return "KafkaSupervisorIOConfig{"
+        + "topic='"
+        + topic
+        + '\''
+        + ", replicas="
+        + replicas
+        + ", taskCount="
+        + taskCount
+        + ", taskDuration="
+        + taskDuration
+        + ", consumerProperties="
+        + consumerProperties
+        + ", startDelay="
+        + startDelay
+        + ", period="
+        + period
+        + ", useEarliestOffset="
+        + useEarliestOffset
+        + ", completionTimeout="
+        + completionTimeout
+        + ", lateMessageRejectionPeriod="
+        + lateMessageRejectionPeriod
+        + ", skipOffsetGaps="
+        + skipOffsetGaps
+        + '}';
   }
 
-  private static Duration defaultDuration(final Period period, final String theDefault)
-  {
+  private static Duration defaultDuration(final Period period, final String theDefault) {
     return (period == null ? new Period(theDefault) : period).toStandardDuration();
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
+  @Override public boolean equals(Object o) {
+    if (this == o) {
       return true;
-    if (o == null || getClass() != o.getClass())
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
+    }
 
     KafkaSupervisorIOConfig that = (KafkaSupervisorIOConfig) o;
 
-    if (useEarliestOffset != that.useEarliestOffset)
+    if (useEarliestOffset != that.useEarliestOffset) {
       return false;
-    if (skipOffsetGaps != that.skipOffsetGaps)
+    }
+    if (skipOffsetGaps != that.skipOffsetGaps) {
       return false;
-    if (topic != null ? !topic.equals(that.topic) : that.topic != null)
+    }
+    if (topic != null ? !topic.equals(that.topic) : that.topic != null) {
       return false;
-    if (replicas != null ? !replicas.equals(that.replicas) : that.replicas != null)
+    }
+    if (replicas != null ? !replicas.equals(that.replicas) : that.replicas != null) {
       return false;
-    if (taskCount != null ? !taskCount.equals(that.taskCount) : that.taskCount != null)
+    }
+    if (taskCount != null ? !taskCount.equals(that.taskCount) : that.taskCount != null) {
       return false;
-    if (taskDuration != null ? !taskDuration.equals(that.taskDuration) : that.taskDuration != null)
+    }
+    if (taskDuration != null ? !taskDuration.equals(that.taskDuration) : that.taskDuration != null) {
       return false;
+    }
     if (consumerProperties != null ?
         !consumerProperties.equals(that.consumerProperties) :
-        that.consumerProperties != null)
+        that.consumerProperties != null) {
       return false;
-    if (startDelay != null ? !startDelay.equals(that.startDelay) : that.startDelay != null)
+    }
+    if (startDelay != null ? !startDelay.equals(that.startDelay) : that.startDelay != null) {
       return false;
-    if (period != null ? !period.equals(that.period) : that.period != null)
+    }
+    if (period != null ? !period.equals(that.period) : that.period != null) {
       return false;
+    }
     if (completionTimeout != null ?
         !completionTimeout.equals(that.completionTimeout) :
-        that.completionTimeout != null)
+        that.completionTimeout != null) {
       return false;
-    if (lateMessageRejectionPeriod != null ?
+    }
+    if (lateMessageRejectionPeriod.isPresent() ?
         !lateMessageRejectionPeriod.equals(that.lateMessageRejectionPeriod) :
-        that.lateMessageRejectionPeriod != null)
+        that.lateMessageRejectionPeriod.isPresent()) {
       return false;
-    return earlyMessageRejectionPeriod != null ?
+    }
+    return earlyMessageRejectionPeriod.isPresent() ?
         earlyMessageRejectionPeriod.equals(that.earlyMessageRejectionPeriod) :
-        that.earlyMessageRejectionPeriod == null;
+        !that.earlyMessageRejectionPeriod.isPresent();
   }
 
-  @Override
-  public int hashCode() {
+  @Override public int hashCode() {
     int result = topic != null ? topic.hashCode() : 0;
     result = 31 * result + (replicas != null ? replicas.hashCode() : 0);
     result = 31 * result + (taskCount != null ? taskCount.hashCode() : 0);
@@ -237,10 +226,8 @@ public class KafkaSupervisorIOConfig
     result = 31 * result + (period != null ? period.hashCode() : 0);
     result = 31 * result + (useEarliestOffset ? 1 : 0);
     result = 31 * result + (completionTimeout != null ? completionTimeout.hashCode() : 0);
-    result = 31 * result +
-        (lateMessageRejectionPeriod != null ? lateMessageRejectionPeriod.hashCode() : 0);
-    result = 31 * result +
-        (earlyMessageRejectionPeriod != null ? earlyMessageRejectionPeriod.hashCode() : 0);
+    result = 31 * result + (lateMessageRejectionPeriod.isPresent() ? lateMessageRejectionPeriod.hashCode() : 0);
+    result = 31 * result + (earlyMessageRejectionPeriod.isPresent() ? earlyMessageRejectionPeriod.hashCode() : 0);
     result = 31 * result + (skipOffsetGaps ? 1 : 0);
     return result;
   }

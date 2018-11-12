@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,53 +31,45 @@ import java.io.IOException;
 import java.net.CookieManager;
 import java.net.URI;
 
-public class ResponseCookieHandler<Intermediate, Final> implements HttpResponseHandler<Intermediate, Final>
-{
-  protected static final Logger log = LoggerFactory.getLogger(ResponseCookieHandler.class);
+/**
+ * Class to handle Cookies used to cache the Kerberos Credentials.
+ * @param <Intermediate> intermediate response type.
+ * @param <Final> final response type.
+ */
+public class ResponseCookieHandler<Intermediate, Final> implements HttpResponseHandler<Intermediate, Final> {
+  private static final Logger LOG = LoggerFactory.getLogger(ResponseCookieHandler.class);
 
   private final URI uri;
   private final CookieManager manager;
   private final HttpResponseHandler<Intermediate, Final> delegate;
 
-  public ResponseCookieHandler(URI uri, CookieManager manager, HttpResponseHandler<Intermediate, Final> delegate)
-  {
+  ResponseCookieHandler(URI uri, CookieManager manager, HttpResponseHandler<Intermediate, Final> delegate) {
     this.uri = uri;
     this.manager = manager;
     this.delegate = delegate;
   }
 
-  @Override
-  public ClientResponse<Intermediate> handleResponse(HttpResponse httpResponse)
-  {
+  @Override public ClientResponse<Intermediate> handleResponse(HttpResponse httpResponse) {
     try {
       final HttpHeaders headers = httpResponse.headers();
-      manager.put(uri, Maps.asMap(headers.names(), input -> headers.getAll(input)));
-    }
-    catch (IOException e) {
-      log.error("Error while processing Cookies from header", e);
-    }
-    finally {
+      manager.put(uri, Maps.asMap(headers.names(), headers::getAll));
       return delegate.handleResponse(httpResponse);
+    } catch (IOException e) {
+      LOG.error("Error while processing Cookies from header", e);
+      throw new RuntimeException(e);
     }
   }
 
-  @Override
-  public ClientResponse<Intermediate> handleChunk(
-    ClientResponse<Intermediate> clientResponse, HttpChunk httpChunk
-  )
-  {
+  @Override public ClientResponse<Intermediate> handleChunk(ClientResponse<Intermediate> clientResponse,
+      HttpChunk httpChunk) {
     return delegate.handleChunk(clientResponse, httpChunk);
   }
 
-  @Override
-  public ClientResponse<Final> done(ClientResponse<Intermediate> clientResponse)
-  {
+  @Override public ClientResponse<Final> done(ClientResponse<Intermediate> clientResponse) {
     return delegate.done(clientResponse);
   }
 
-  @Override
-  public void exceptionCaught(ClientResponse<Intermediate> clientResponse, Throwable throwable)
-  {
+  @Override public void exceptionCaught(ClientResponse<Intermediate> clientResponse, Throwable throwable) {
     delegate.exceptionCaught(clientResponse, throwable);
   }
 }

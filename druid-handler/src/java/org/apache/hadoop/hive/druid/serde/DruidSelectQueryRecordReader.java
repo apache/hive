@@ -29,49 +29,41 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import io.druid.query.Result;
 import io.druid.query.select.EventHolder;
-import io.druid.query.select.SelectQuery;
 import io.druid.query.select.SelectResultValue;
 
 /**
  * Record reader for results for Druid SelectQuery.
  */
-public class DruidSelectQueryRecordReader
-        extends DruidQueryRecordReader<SelectQuery, Result<SelectResultValue>> {
+public class DruidSelectQueryRecordReader extends DruidQueryRecordReader<Result<SelectResultValue>> {
 
-  private static final TypeReference<Result<SelectResultValue>> TYPE_REFERENCE =
-          new TypeReference<Result<SelectResultValue>>()
-          {
-          };
-
-  private Result<SelectResultValue> current;
+  private static final TypeReference<Result<SelectResultValue>>
+      TYPE_REFERENCE =
+      new TypeReference<Result<SelectResultValue>>() {
+      };
 
   private Iterator<EventHolder> values = Collections.emptyIterator();
 
-  @Override
-  protected JavaType getResultTypeDef() {
+  @Override protected JavaType getResultTypeDef() {
     return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
-  @Override
-  public boolean nextKeyValue() throws IOException {
+  @Override public boolean nextKeyValue() throws IOException {
     if (values.hasNext()) {
       return true;
     }
     if (queryResultsIterator.hasNext()) {
-      current = queryResultsIterator.next();
+      Result<SelectResultValue> current = queryResultsIterator.next();
       values = current.getValue().getEvents().iterator();
       return nextKeyValue();
     }
     return false;
   }
 
-  @Override
-  public NullWritable getCurrentKey() throws IOException, InterruptedException {
+  @Override public NullWritable getCurrentKey() throws IOException, InterruptedException {
     return NullWritable.get();
   }
 
-  @Override
-  public DruidWritable getCurrentValue() throws IOException, InterruptedException {
+  @Override public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable(false);
     EventHolder e = values.next();
@@ -80,8 +72,7 @@ public class DruidSelectQueryRecordReader
     return value;
   }
 
-  @Override
-  public boolean next(NullWritable key, DruidWritable value) throws IOException {
+  @Override public boolean next(NullWritable key, DruidWritable value) throws IOException {
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
@@ -93,8 +84,7 @@ public class DruidSelectQueryRecordReader
     return false;
   }
 
-  @Override
-  public float getProgress() {
+  @Override public float getProgress() {
     return queryResultsIterator.hasNext() || values.hasNext() ? 0 : 1;
   }
 
