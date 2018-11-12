@@ -100,18 +100,18 @@ Stage-0
                       Select Operator [SEL_34] (rows=20854 width=159)
                         Output:["_col2"]
                         Filter Operator [FIL_33] (rows=20854 width=159)
-                          predicate:(_col2 > CAST( (1.3 * _col8) AS decimal(14,7)))
+                          predicate:(_col2 > _col6)
                           Merge Join Operator [MERGEJOIN_107] (rows=62562 width=159)
-                            Conds:RS_30._col5=RS_129._col0(Inner),Output:["_col2","_col8"]
+                            Conds:RS_30._col4=RS_129._col0(Inner),Output:["_col2","_col6"]
                           <-Reducer 3 [SIMPLE_EDGE]
                             SHUFFLE [RS_30]
-                              PartitionCols:_col5
+                              PartitionCols:_col4
                               Merge Join Operator [MERGEJOIN_105] (rows=2006075 width=113)
-                                Conds:RS_27._col1=RS_110._col0(Inner),Output:["_col2","_col5"]
+                                Conds:RS_27._col1=RS_110._col0(Inner),Output:["_col2","_col4"]
                               <-Map 10 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_110]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_109] (rows=669 width=8)
+                                  Select Operator [SEL_109] (rows=669 width=4)
                                     Output:["_col0"]
                                     Filter Operator [FIL_108] (rows=669 width=7)
                                       predicate:((i_manufact_id = 269) and i_item_sk is not null)
@@ -145,7 +145,7 @@ Stage-0
                                   <-Map 9 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_124]
                                       PartitionCols:_col0
-                                      Select Operator [SEL_123] (rows=8116 width=98)
+                                      Select Operator [SEL_123] (rows=8116 width=4)
                                         Output:["_col0"]
                                         Filter Operator [FIL_122] (rows=8116 width=98)
                                           predicate:(CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-18 00:00:00' AND TIMESTAMP'1998-06-16 00:00:00' and d_date_sk is not null)

@@ -1219,16 +1219,16 @@ STAGE PLANS:
                     predicate: CAST( ctimestamp1 AS timestamp with local time zone) is not null (type: boolean)
                     Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: ctimestamp1 (type: timestamp)
+                      expressions: CAST( ctimestamp1 AS timestamp with local time zone) (type: timestamp with local time zone)
                       outputColumnNames: _col0
                       Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: CAST( _col0 AS timestamp with local time zone) (type: timestamp with local time zone)
+                        key expressions: _col0 (type: timestamp with local time zone)
                         sort order: +
-                        Map-reduce partition columns: CAST( _col0 AS timestamp with local time zone) (type: timestamp with local time zone)
+                        Map-reduce partition columns: _col0 (type: timestamp with local time zone)
                         Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
-                        expressions: CAST( _col0 AS timestamp with local time zone) (type: timestamp with local time zone)
+                        expressions: _col0 (type: timestamp with local time zone)
                         outputColumnNames: _col0
                         Statistics: Num rows: 69 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
@@ -1270,7 +1270,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( _col0 AS timestamp with local time zone) (type: timestamp with local time zone)
+                  0 _col0 (type: timestamp with local time zone)
                   1 vc (type: timestamp with local time zone)
                 Statistics: Num rows: 10090 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -1529,16 +1529,16 @@ STAGE PLANS:
                     predicate: CAST( cint AS STRING) is not null (type: boolean)
                     Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: cint (type: int)
+                      expressions: CAST( cint AS STRING) (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: CAST( _col0 AS STRING) (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: CAST( _col0 AS STRING) (type: string)
-                        Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
-                        expressions: CAST( _col0 AS STRING) (type: string)
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
@@ -1580,7 +1580,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( _col0 AS STRING) (type: string)
+                  0 _col0 (type: string)
                   1 cintstring (type: string)
                 Statistics: Num rows: 10090 Data size: 1764118 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -1684,16 +1684,16 @@ STAGE PLANS:
                     predicate: CAST( cdouble AS STRING) is not null (type: boolean)
                     Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: cdouble (type: double)
+                      expressions: CAST( cdouble AS STRING) (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: CAST( _col0 AS STRING) (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: CAST( _col0 AS STRING) (type: string)
-                        Statistics: Num rows: 69 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
-                        expressions: CAST( _col0 AS STRING) (type: string)
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
@@ -1735,7 +1735,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( _col0 AS STRING) (type: string)
+                  0 _col0 (type: string)
                   1 cdoublestring (type: string)
                 Statistics: Num rows: 10090 Data size: 1764118 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -1839,16 +1839,16 @@ STAGE PLANS:
                     predicate: CAST( cfloat AS STRING) is not null (type: boolean)
                     Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: cfloat (type: float)
+                      expressions: CAST( cfloat AS STRING) (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: CAST( _col0 AS STRING) (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: CAST( _col0 AS STRING) (type: string)
-                        Statistics: Num rows: 69 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
-                        expressions: CAST( _col0 AS STRING) (type: string)
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 69 Data size: 12696 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
@@ -1890,7 +1890,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( _col0 AS STRING) (type: string)
+                  0 _col0 (type: string)
                   1 cfloatstring (type: string)
                 Statistics: Num rows: 10090 Data size: 1764118 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator

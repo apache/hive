@@ -213,7 +213,7 @@ Stage-0
             <-Map 4 [SIMPLE_EDGE] vectorized, llap
               SHUFFLE [RS_52]
                 PartitionCols:_col0
-                Select Operator [SEL_51] (rows=1/1 width=100)
+                Select Operator [SEL_51] (rows=1/1 width=4)
                   Output:["_col0"]
                   Filter Operator [FIL_50] (rows=1/1 width=99)
                     predicate:((type_name = 'galaxy class') and id is not null)

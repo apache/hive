@@ -701,11 +701,15 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col9, _col10
+                outputColumnNames: _col5, _col6
                 Statistics: Num rows: 574982058 Data size: 77969728405 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
+<<<<<<< HEAD
                   keys: _col10 (type: int), _col9 (type: int)
                   minReductionHashAggr: 0.99
+=======
+                  keys: _col6 (type: int), _col5 (type: int)
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 574982058 Data size: 77969728405 Basic stats: COMPLETE Column stats: NONE

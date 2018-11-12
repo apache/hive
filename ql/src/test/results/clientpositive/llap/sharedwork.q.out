@@ -100,8 +100,8 @@ POSTHOOK: Input: default@my_table_0001_00
 POSTHOOK: Input: default@my_table_0001_01
 POSTHOOK: Input: default@my_table_0003
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`col_7`, CAST(`t0`.`col_3` AS DATE) AS `col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
-FROM (SELECT `col_1`, `col_3`, `col_7`, `col_20`
+OPTIMIZED SQL: SELECT `t0`.`col_7`, `t0`.`CAST` AS `col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
+FROM (SELECT `col_1`, `col_7`, `col_20`, CAST(`col_3` AS DATE) AS `CAST`
 FROM `default`.`my_table_0001`
 WHERE (CAST(`col_7` AS DOUBLE) IS NOT NULL OR `col_7` IS NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
 LEFT JOIN (SELECT `col_24`, `col_21`
@@ -113,7 +113,7 @@ WHERE `col_1` IS NOT NULL) AS `t4` ON `t0`.`col_1` = `t4`.`col_1`
 LEFT JOIN (SELECT `col_24`, `col_21`
 FROM `default`.`my_table_0003`
 WHERE `col_24` IS NOT NULL) AS `t6` ON `t4`.`col_22` = `t6`.`col_24`
-LEFT JOIN (SELECT `col_1`, `col_100`
+LEFT JOIN (SELECT `col_1`
 FROM `default`.`my_table_0001_01`
 WHERE `col_100` = 210 AND `col_1` IS NOT NULL) AS `t8` ON `t0`.`col_1` = `t8`.`col_1`
 STAGE DEPENDENCIES:
@@ -143,17 +143,17 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(col_7) is not null or col_7 is null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
                     Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: col_1 (type: string), col_3 (type: timestamp), col_7 (type: string), col_20 (type: string)
+                      expressions: col_1 (type: string), col_7 (type: string), col_20 (type: string), CAST( col_3 AS DATE) (type: date)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col3 (type: string)
+                        key expressions: _col2 (type: string)
                         null sort order: a
                         sort order: +
-                        Map-reduce partition columns: _col3 (type: string)
+                        Map-reduce partition columns: _col2 (type: string)
                         Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
-                        value expressions: _col0 (type: string), _col1 (type: timestamp), _col2 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: date)
                         auto parallelism: true
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -471,7 +471,7 @@ STAGE PLANS:
                 condition map:
                      Left Outer Join 0 to 1
                 keys:
-                  0 _col3 (type: string)
+                  0 _col2 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col5
                 Position of Big Table: 0
@@ -483,7 +483,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 1 Data size: 651 Basic stats: COMPLETE Column stats: NONE
                   tag: 0
-                  value expressions: _col1 (type: timestamp), _col2 (type: string), _col3 (type: string), _col5 (type: string)
+                  value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: date), _col5 (type: string)
                   auto parallelism: true
         Reducer 3 
             Execution mode: llap
@@ -505,7 +505,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col7 (type: string)
                   Statistics: Num rows: 1 Data size: 716 Basic stats: COMPLETE Column stats: NONE
                   tag: 0
-                  value expressions: _col0 (type: string), _col1 (type: timestamp), _col2 (type: string), _col3 (type: string), _col5 (type: string), _col8 (type: int)
+                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: date), _col5 (type: string), _col8 (type: int)
                   auto parallelism: true
         Reducer 4 
             Execution mode: llap
@@ -527,7 +527,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 1 Data size: 787 Basic stats: COMPLETE Column stats: NONE
                   tag: 0
-                  value expressions: _col1 (type: timestamp), _col2 (type: string), _col3 (type: string), _col5 (type: string), _col7 (type: string), _col8 (type: int), _col10 (type: string)
+                  value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: date), _col5 (type: string), _col7 (type: string), _col8 (type: int), _col10 (type: string)
                   auto parallelism: true
         Reducer 5 
             Execution mode: llap
@@ -543,7 +543,7 @@ STAGE PLANS:
                 Position of Big Table: 0
                 Statistics: Num rows: 1 Data size: 865 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col2 (type: string), CAST( _col1 AS DATE) (type: date), _col3 (type: string), _col5 (type: string), _col0 (type: string), _col7 (type: string), _col10 (type: string), _col8 (type: int)
+                  expressions: _col1 (type: string), _col3 (type: date), _col2 (type: string), _col5 (type: string), _col0 (type: string), _col7 (type: string), _col10 (type: string), _col8 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                   Statistics: Num rows: 1 Data size: 865 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

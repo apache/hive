@@ -281,8 +281,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+<<<<<<< HEAD
             Execution mode: vectorized
         Map 13
+=======
+        Map 13 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -325,6 +329,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
 <<<<<<< HEAD
+<<<<<<< HEAD
                   alias: web_sales
                   filterExpr: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
@@ -333,6 +338,11 @@ STAGE PLANS:
                   filterExpr: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
+=======
+                  alias: web_sales
+                  filterExpr: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
                   Filter Operator
                     predicate: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
@@ -346,8 +356,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+<<<<<<< HEAD
             Execution mode: vectorized
         Map 19
+=======
+        Map 19 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -409,8 +423,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+<<<<<<< HEAD
             Execution mode: vectorized
         Map 25
+=======
+        Map 25 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -474,8 +492,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+<<<<<<< HEAD
             Execution mode: vectorized
         Map 31
+=======
+        Map 31 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -539,8 +561,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+<<<<<<< HEAD
             Execution mode: vectorized
         Map 37
+=======
+        Map 37 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Map Operator Tree:
                 TableScan
                   alias: date_dim
@@ -641,8 +667,12 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: decimal(14,6))
+<<<<<<< HEAD
             Execution mode: vectorized
         Reducer 10
+=======
+        Reducer 10 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -658,7 +688,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col1 (type: int)
                   Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: decimal(14,6))
+<<<<<<< HEAD
         Reducer 11
+=======
+        Reducer 11 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -680,7 +714,11 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                     Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col7 (type: decimal(24,6))
+<<<<<<< HEAD
         Reducer 12
+=======
+        Reducer 12 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -722,7 +760,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col1 (type: int)
                   Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: decimal(14,6))
+<<<<<<< HEAD
         Reducer 17
+=======
+        Reducer 17 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -744,7 +786,11 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                     Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col7 (type: decimal(24,6))
+<<<<<<< HEAD
         Reducer 18
+=======
+        Reducer 18 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -770,7 +816,11 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 29040539 Data size: 3948673454 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: decimal(24,6)), _col2 (type: boolean)
+<<<<<<< HEAD
         Reducer 2
+=======
+        Reducer 2 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -786,7 +836,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col1 (type: int)
                   Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: decimal(14,6))
+<<<<<<< HEAD
         Reducer 22
+=======
+        Reducer 22 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -802,7 +856,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col1 (type: int)
                   Statistics: Num rows: 316788826 Data size: 42899570777 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: decimal(14,6))
+<<<<<<< HEAD
         Reducer 23
+=======
+        Reducer 23 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -824,7 +882,11 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                     Statistics: Num rows: 348467716 Data size: 47189528877 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col7 (type: decimal(24,6))
+<<<<<<< HEAD
         Reducer 24
+=======
+        Reducer 24 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -850,7 +912,11 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 58077952 Data size: 7864921389 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: decimal(24,6)), _col2 (type: boolean)
+<<<<<<< HEAD
         Reducer 28
+=======
+        Reducer 28 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -866,7 +932,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col1 (type: int)
                   Statistics: Num rows: 316788826 Data size: 42899570777 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: decimal(14,6))
+<<<<<<< HEAD
         Reducer 29
+=======
+        Reducer 29 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -888,7 +958,11 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                     Statistics: Num rows: 348467716 Data size: 47189528877 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col7 (type: decimal(24,6))
+<<<<<<< HEAD
         Reducer 3
+=======
+        Reducer 3 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -910,7 +984,11 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                     Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col7 (type: decimal(24,6))
+<<<<<<< HEAD
         Reducer 30
+=======
+        Reducer 30 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -945,7 +1023,11 @@ STAGE PLANS:
                   Map-reduce partition columns: _col1 (type: int)
                   Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: decimal(14,6))
+<<<<<<< HEAD
         Reducer 35
+=======
+        Reducer 35 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -967,7 +1049,11 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: string), _col6 (type: string)
                     Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col7 (type: decimal(24,6))
+<<<<<<< HEAD
         Reducer 36
+=======
+        Reducer 36 
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator

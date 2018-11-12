@@ -2146,9 +2146,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
       }
+      rules.add(HiveProjectJoinTransposeRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_CONSTRAINTS_JOIN) &&
           profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
-        rules.add(HiveProjectJoinTransposeRule.INSTANCE);
         rules.add(HiveJoinConstraintsRule.INSTANCE);
       }
       rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);

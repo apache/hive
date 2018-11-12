@@ -164,7 +164,7 @@ POSTHOOK: Input: default@bucket_small_n15@ds=2008-04-08
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM (SELECT 0 AS `DUMMY`
 FROM `default`.`bucket_medium`) AS `t`,
-(SELECT *
+(SELECT 0 AS `DUMMY`
 FROM (SELECT `t5`.`key`, `t3`.`key` AS `key0`, `t1`.`key` AS `key1`
 FROM (SELECT `key`
 FROM `default`.`bucket_big_n15`
@@ -175,7 +175,7 @@ WHERE `key` IS NOT NULL) AS `t3` ON `t1`.`key` = `t3`.`key`
 INNER JOIN (SELECT `key`
 FROM `default`.`bucket_small_n15`
 WHERE `key` IS NOT NULL) AS `t5` ON `t3`.`key` = `t5`.`key`) AS `t6`
-WHERE `t6`.`key1` = `t6`.`key0`) AS `t7`
+WHERE `t6`.`key1` = `t6`.`key0`) AS `t8`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

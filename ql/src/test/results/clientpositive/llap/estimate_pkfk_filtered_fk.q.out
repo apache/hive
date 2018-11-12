@@ -208,7 +208,7 @@ Stage-0
             <-Map 1 [SIMPLE_EDGE] vectorized, llap
               SHUFFLE [RS_49]
                 PartitionCols:_col1
-                Select Operator [SEL_48] (rows=10/10 width=12)
+                Select Operator [SEL_48] (rows=10/10 width=8)
                   Output:["_col0","_col1"]
                   Filter Operator [FIL_47] (rows=10/10 width=12)
                     predicate:((crew_size = 2) and ship_type_id is not null and id is not null)
@@ -217,7 +217,7 @@ Stage-0
             <-Map 4 [SIMPLE_EDGE] vectorized, llap
               SHUFFLE [RS_52]
                 PartitionCols:_col0
-                Select Operator [SEL_51] (rows=1/1 width=100)
+                Select Operator [SEL_51] (rows=1/1 width=4)
                   Output:["_col0"]
                   Filter Operator [FIL_50] (rows=1/1 width=99)
                     predicate:((type_name = 'galaxy class') and id is not null)
@@ -294,7 +294,7 @@ Stage-0
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_28]
             PartitionCols:_col1
-            Select Operator [SEL_27] (rows=10/10 width=12)
+            Select Operator [SEL_27] (rows=10/10 width=8)
               Output:["_col0","_col1"]
               Filter Operator [FIL_26] (rows=10/10 width=12)
                 predicate:((crew_size = 2) and ship_type_id is not null)
@@ -303,7 +303,7 @@ Stage-0
         <-Map 3 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_31]
             PartitionCols:_col0
-            Select Operator [SEL_30] (rows=1/1 width=100)
+            Select Operator [SEL_30] (rows=1/1 width=4)
               Output:["_col0"]
               Filter Operator [FIL_29] (rows=1/1 width=99)
                 predicate:((type_name = 'galaxy class') and id is not null)

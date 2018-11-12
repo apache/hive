@@ -343,16 +343,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -519,12 +519,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -697,16 +697,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -742,16 +742,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -947,12 +947,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -976,12 +976,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1168,17 +1168,17 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -1192,9 +1192,9 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -1226,7 +1226,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
@@ -1360,13 +1360,13 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1386,7 +1386,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
@@ -1532,16 +1532,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -1708,12 +1708,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1849,14 +1849,14 @@ STAGE PLANS:
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: string)
+                      expressions: UDFToDouble(hr) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                        Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -1878,30 +1878,14 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.0
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Dynamic Partitioning Event Operator
-                            Target column: hr (string)
-                            Target Input: srcpart
-                            Partition key expr: UDFToDouble(hr)
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1910,7 +1894,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
@@ -1920,8 +1904,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                  0 _col0 (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
@@ -2028,14 +2012,14 @@ STAGE PLANS:
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: string)
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
-                        Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -2059,28 +2043,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: hr (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.0
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Dynamic Partitioning Event Operator
-                            Target column: hr (string)
-                            Target Input: srcpart
-                            Partition key expr: (UDFToDouble(hr) * 2.0D)
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -2089,7 +2057,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
@@ -2099,7 +2067,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                  0 _col0 (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
@@ -2207,14 +2175,14 @@ STAGE PLANS:
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: string)
+                      expressions: UDFToDouble(hr) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                        Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -2236,14 +2204,14 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -2262,8 +2230,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                  0 _col0 (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
@@ -2370,14 +2338,14 @@ STAGE PLANS:
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: string)
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
-                        Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -2401,12 +2369,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: hr (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -2425,7 +2393,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                  0 _col0 (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
@@ -2546,13 +2514,13 @@ STAGE PLANS:
                     predicate: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: string)
+                      expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -2575,30 +2543,14 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and CAST( hr AS STRING) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: CAST( hr AS STRING) (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: CAST( _col0 AS STRING) (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: CAST( _col0 AS STRING) (type: string)
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: CAST( _col0 AS STRING) (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          minReductionHashAggr: 0.0
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Dynamic Partitioning Event Operator
-                            Target column: hr (string)
-                            Target Input: srcpart
-                            Partition key expr: CAST( (UDFToDouble(hr) * 2.0D) AS STRING)
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -2607,7 +2559,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
@@ -2617,8 +2569,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
-                  1 CAST( _col0 AS STRING) (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
@@ -2925,12 +2877,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -2951,8 +2903,8 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col4
-                residual filter predicates: {((_col0 = _col2) or (_col1 = _col4))}
+                outputColumnNames: _col0, _col1, _col2, _col3
+                residual filter predicates: {((_col0 = _col2) or (_col1 = _col3))}
                 Statistics: Num rows: 2000 Data size: 1096000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   Statistics: Num rows: 2000 Data size: 1096000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3088,17 +3040,17 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -3112,9 +3064,9 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -3146,7 +3098,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
@@ -3281,16 +3233,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -3412,16 +3364,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -3595,16 +3547,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -3753,16 +3705,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -3798,16 +3750,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -3966,11 +3918,11 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string)
+                        value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: unknown
             Map Vectorization:
@@ -3981,6 +3933,35 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date_n8
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour_n2
@@ -4009,35 +3990,6 @@ STAGE PLANS:
                 allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date_n8
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -4045,14 +3997,14 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: string)
+                  0 _col0 (type: string)
                   1 _col0 (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string)
+                  key expressions: _col1 (type: string)
                   sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
+                  Map-reduce partition columns: _col1 (type: string)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             MergeJoin Vectorization:
                 enabled: false
@@ -4064,7 +4016,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col0 (type: string)
+                  0 _col1 (type: string)
                   1 _col0 (type: string)
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
@@ -5133,16 +5085,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -5326,16 +5278,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -5371,16 +5323,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -5515,7 +5467,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 _col0 (type: string), _col1 (type: string)
-                        1 _col0 (type: string), _col2 (type: string)
+                        1 _col0 (type: string), _col1 (type: string)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5551,17 +5503,17 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -5575,9 +5527,9 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -5746,16 +5698,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -5871,15 +5823,15 @@ STAGE PLANS:
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: string)
+                      expressions: UDFToDouble(hr) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 UDFToDouble(_col0) (type: double)
-                          1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                          0 _col0 (type: double)
+                          1 _col0 (type: double)
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5914,30 +5866,14 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and UDFToDouble(UDFToInteger((hr / 2.0D))) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.0
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Dynamic Partitioning Event Operator
-                            Target column: hr (string)
-                            Target Input: srcpart
-                            Partition key expr: UDFToDouble(hr)
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -5946,7 +5882,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
@@ -6041,14 +5977,14 @@ STAGE PLANS:
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: string)
+                      expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                          0 _col0 (type: double)
                           1 _col0 (type: double)
                         input vertices:
                           1 Map 3
@@ -6086,28 +6022,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: hr (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.0
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Dynamic Partitioning Event Operator
-                            Target column: hr (string)
-                            Target Input: srcpart
-                            Partition key expr: (UDFToDouble(hr) * 2.0D)
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -6116,7 +6036,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
@@ -6427,16 +6347,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -6535,7 +6455,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -6693,7 +6613,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Right Outer Join 0 to 1
@@ -6848,16 +6768,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -6893,16 +6813,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.0
@@ -7018,11 +6938,11 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col1 (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string)
+                        value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: unknown
             Map Vectorization:
@@ -7035,23 +6955,23 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour_n2
-                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: srcpart_date_n8
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: hr (type: string)
+                      expressions: ds (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col1 (type: string)
+                          0 _col0 (type: string)
                           1 _col0 (type: string)
-                        outputColumnNames: _col0
+                        outputColumnNames: _col1
                         input vertices:
                           0 Map 1
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7059,7 +6979,7 @@ STAGE PLANS:
                           condition map:
                                Inner Join 0 to 1
                           keys:
-                            0 _col0 (type: string)
+                            0 _col1 (type: string)
                             1 _col0 (type: string)
                           input vertices:
                             1 Map 4
@@ -7088,21 +7008,21 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date_n8
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: srcpart_hour_n2
+                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: hr (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -7510,15 +7430,15 @@ STAGE PLANS:
                     predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 376000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: ds (type: string), hr (type: int)
+                      expressions: ds (type: string), UDFToDouble(hr) (type: double)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2000 Data size: 376000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 384000 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col0 (type: string), UDFToDouble(_col1) (type: double)
-                          1 _col0 (type: string), UDFToDouble(_col2) (type: double)
+                          0 _col0 (type: string), _col1 (type: double)
+                          1 _col0 (type: string), _col1 (type: double)
                         input vertices:
                           1 Map 3
                         Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7544,18 +7464,18 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and (date) IN ('2008-04-08', '2008-04-09') and ds is not null and UDFToDouble(hr) is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: ds (type: string), UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), UDFToDouble(_col2) (type: double)
+                        key expressions: _col0 (type: string), _col1 (type: double)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), UDFToDouble(_col2) (type: double)
-                        Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: double)
+                        Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           minReductionHashAggr: 0.5
@@ -7566,22 +7486,6 @@ STAGE PLANS:
                             Target column: ds (string)
                             Target Input: srcpart_orc_n0
                             Partition key expr: ds
-                            Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
-                      Select Operator
-                        expressions: UDFToDouble(_col2) (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          minReductionHashAggr: 0.5
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                          Dynamic Partitioning Event Operator
-                            Target column: hr (int)
-                            Target Input: srcpart_orc_n0
-                            Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 1
             Execution mode: llap

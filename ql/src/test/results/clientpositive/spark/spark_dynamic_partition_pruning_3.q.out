@@ -371,7 +371,11 @@ STAGE PLANS:
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
+<<<<<<< HEAD
                           1 _col1 (type: int)
+=======
+                          1 _col0 (type: int)
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
@@ -403,22 +407,32 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: part_col (type: int)
-                      outputColumnNames: _col1
+                      outputColumnNames: _col0
                       Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
+<<<<<<< HEAD
                           1 _col1 (type: int)
                         outputColumnNames: _col0
+=======
+                          1 _col0 (type: int)
+                        outputColumnNames: _col1
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
                         input vertices:
                           0 Map 3
                         Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                         Group By Operator
                           keys: _col0 (type: int)
                           minReductionHashAggr: 0.99
                           mode: hash
+=======
+                        Select Operator
+                          expressions: _col1 (type: int)
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
                           outputColumnNames: _col0
                           Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                           Spark HashTable Sink Operator
@@ -1321,14 +1335,14 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: part_col (type: int)
-                      outputColumnNames: _col1
+                      outputColumnNames: _col0
                       Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
-                          1 _col1 (type: int)
+                          1 _col0 (type: int)
                       Select Operator
-                        expressions: _col1 (type: int)
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -1364,7 +1378,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 _col0 (type: int)
-                        1 _col1 (type: int)
+                        1 _col0 (type: int)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE

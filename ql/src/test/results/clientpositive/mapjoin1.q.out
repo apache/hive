@@ -154,7 +154,7 @@ STAGE PLANS:
                 HashTable Sink Operator
                   filter predicates:
                     0 
-                    1 {((UDFToDouble(_col0) * 10.0D) < 1000.0D)}
+                    1 {_col2}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -166,15 +166,15 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string), value (type: string), ((UDFToDouble(key) * 10.0D) < 1000.0D) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Right Outer Join 0 to 1
                 filter predicates:
                   0 
-                  1 {((UDFToDouble(_col0) * 10.0D) < 1000.0D)}
+                  1 {_col2}
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -257,7 +257,7 @@ STAGE PLANS:
                 HashTable Sink Operator
                   filter predicates:
                     0 
-                    1 {(UDFToDouble(_col1.key) > 200.0D)}
+                    1 {_col2}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -269,15 +269,15 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), named_struct('key',key,'value',value) (type: struct<key:string,value:string>)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string), named_struct('key',key,'value',value) (type: struct<key:string,value:string>), (UDFToDouble(named_struct('key',key,'value',value).key) > 200.0D) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Right Outer Join 0 to 1
                 filter predicates:
                   0 
-                  1 {(UDFToDouble(_col1.key) > 200.0D)}
+                  1 {_col2}
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -455,7 +455,7 @@ STAGE PLANS:
                 HashTable Sink Operator
                   filter predicates:
                     0 
-                    1 {((UDFToDouble(_col0) * 10.0D) < 1000.0D)}
+                    1 {_col2}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -467,15 +467,15 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string), value (type: string), ((UDFToDouble(key) * 10.0D) < 1000.0D) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Right Outer Join 0 to 1
                 filter predicates:
                   0 
-                  1 {((UDFToDouble(_col0) * 10.0D) < 1000.0D)}
+                  1 {_col2}
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -558,7 +558,7 @@ STAGE PLANS:
                 HashTable Sink Operator
                   filter predicates:
                     0 
-                    1 {(UDFToDouble(_col1.key) > 200.0D)}
+                    1 {_col2}
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -570,15 +570,15 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), named_struct('key',key,'value',value) (type: struct<key:string,value:string>)
-              outputColumnNames: _col0, _col1
+              expressions: key (type: string), named_struct('key',key,'value',value) (type: struct<key:string,value:string>), (UDFToDouble(named_struct('key',key,'value',value).key) > 200.0D) (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Right Outer Join 0 to 1
                 filter predicates:
                   0 
-                  1 {(UDFToDouble(_col1.key) > 200.0D)}
+                  1 {_col2}
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)

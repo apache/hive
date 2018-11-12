@@ -528,11 +528,11 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -559,13 +559,13 @@ STAGE PLANS:
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                      key expressions: _col0 (type: int)
                       sort order: +
-                      Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                      Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -577,13 +577,13 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        key expressions: _col0 (type: int)
                         sort order: +
-                        Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -591,8 +591,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 day(CAST( _col0 AS DATE)) (type: int)
-                  1 day(CAST( _col0 AS DATE)) (type: int)
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -681,13 +681,13 @@ STAGE PLANS:
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                      key expressions: _col0 (type: int)
                       sort order: +
-                      Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                      Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -699,13 +699,13 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        key expressions: _col0 (type: int)
                         sort order: +
-                        Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -713,8 +713,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 day(CAST( _col0 AS DATE)) (type: int)
-                  1 day(CAST( _col0 AS DATE)) (type: int)
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -804,11 +804,11 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        expressions: _col0 (type: bigint)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -838,13 +838,13 @@ STAGE PLANS:
                     predicate: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        key expressions: _col0 (type: bigint)
                         sort order: +
-                        Map-reduce partition columns: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -856,13 +856,13 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        key expressions: _col0 (type: bigint)
                         sort order: +
-                        Map-reduce partition columns: abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -870,8 +870,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
-                  1 abs(((- UDFToLong(concat(CAST( day(CAST( _col0 AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -961,11 +961,11 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        expressions: _col0 (type: decimal(10,0))
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -992,13 +992,13 @@ STAGE PLANS:
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
+                      key expressions: _col0 (type: decimal(10,0))
                       sort order: +
-                      Map-reduce partition columns: CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
+                      Map-reduce partition columns: _col0 (type: decimal(10,0))
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -1010,13 +1010,13 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        key expressions: _col0 (type: decimal(10,0))
                         sort order: +
-                        Map-reduce partition columns: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        Map-reduce partition columns: _col0 (type: decimal(10,0))
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -1024,8 +1024,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
-                  1 CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                  0 _col0 (type: decimal(10,0))
+                  1 _col0 (type: decimal(10,0))
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1512,7 +1512,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
@@ -1528,7 +1528,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -1573,12 +1573,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -1587,7 +1587,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1695,12 +1695,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -1709,7 +1709,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2093,11 +2093,11 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        expressions: _col0 (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -2124,13 +2124,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToDouble(_col0) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2142,13 +2142,13 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -2156,8 +2156,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                  0 _col0 (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2278,13 +2278,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2310,7 +2310,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                  0 _col0 (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -2400,13 +2400,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToDouble(_col0) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2418,13 +2418,13 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -2432,8 +2432,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                  0 _col0 (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2522,13 +2522,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2554,7 +2554,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                  0 _col0 (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -2654,11 +2654,11 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: CAST( hr AS STRING) (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: CAST( _col0 AS STRING) (type: string)
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -2685,13 +2685,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
+                      key expressions: _col0 (type: string)
                       sort order: +
-                      Map-reduce partition columns: CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2703,13 +2703,13 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: CAST( hr AS STRING) (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: CAST( _col0 AS STRING) (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: CAST( _col0 AS STRING) (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -2717,8 +2717,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( (UDFToDouble(_col0) * 2.0D) AS STRING) (type: string)
-                  1 CAST( _col0 AS STRING) (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2965,12 +2965,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col2 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -2979,10 +2979,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col4
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 2000 Data size: 77248 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 = _col2) or (_col1 = _col4)) (type: boolean)
+                  predicate: ((_col0 = _col2) or (_col1 = _col3)) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 77248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     Statistics: Num rows: 2000 Data size: 77248 Basic stats: COMPLETE Column stats: NONE
@@ -3076,7 +3076,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
@@ -3092,7 +3092,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -3137,12 +3137,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -3151,7 +3151,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -3852,43 +3852,6 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour_n1
-                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: hr (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  filterExpr: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  Filter Operator
-                    predicate: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        value expressions: _col0 (type: string)
-        Map 6 
-            Map Operator Tree:
-                TableScan
                   alias: srcpart_date_n4
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
@@ -3904,6 +3867,43 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_hour_n1
+                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -3911,23 +3911,23 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string)
-                  1 _col1 (type: string)
-                outputColumnNames: _col1
-                Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                  1 _col0 (type: string)
+                outputColumnNames: _col2
+                Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col2 (type: string)
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                  Map-reduce partition columns: _col2 (type: string)
+                  Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: string)
+                  0 _col2 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 25 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
@@ -5024,15 +5024,15 @@ STAGE PLANS:
                     predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 day(CAST( _col0 AS DATE)) (type: int)
-                          1 day(CAST( _col0 AS DATE)) (type: int)
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
                       Select Operator
-                        expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -5060,15 +5060,15 @@ STAGE PLANS:
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 day(CAST( _col0 AS DATE)) (type: int)
-                        1 day(CAST( _col0 AS DATE)) (type: int)
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -5359,12 +5359,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: string), _col1 (type: string)
-                          1 _col0 (type: string), _col2 (type: string)
+                          1 _col0 (type: string), _col1 (type: string)
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
@@ -5379,7 +5379,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -5414,7 +5414,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 _col0 (type: string), _col1 (type: string)
-                        1 _col0 (type: string), _col2 (type: string)
+                        1 _col0 (type: string), _col1 (type: string)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -5655,15 +5655,15 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 UDFToDouble(_col0) (type: double)
-                          1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                          0 _col0 (type: double)
+                          1 _col0 (type: double)
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        expressions: _col0 (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -5691,15 +5691,15 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        0 _col0 (type: double)
+                        1 _col0 (type: double)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -5798,7 +5798,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                          0 _col0 (type: double)
                           1 _col0 (type: double)
                       Select Operator
                         expressions: _col0 (type: double)
@@ -5829,14 +5829,14 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                        0 _col0 (type: double)
                         1 _col0 (type: double)
                       input vertices:
                         1 Map 3
@@ -6566,17 +6566,16 @@ POSTHOOK: Input: default@srcpart_date_n4
 POSTHOOK: Input: default@srcpart_hour_n1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-3
+  Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -6592,15 +6591,10 @@ STAGE PLANS:
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: string)
-                          1 _col1 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
-
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour_n1
@@ -6613,30 +6607,20 @@ STAGE PLANS:
                       expressions: hr (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
+                      Spark HashTable Sink Operator
                         keys:
-                          0 _col0 (type: string)
-                          1 _col1 (type: string)
-                        outputColumnNames: _col1
-                        input vertices:
-                          1 Map 2
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
-                        Spark HashTable Sink Operator
-                          keys:
-                            0 _col1 (type: string)
-                            1 _col0 (type: string)
+                          0 _col2 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
@@ -6653,9 +6637,11 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col1 (type: string)
+                          0 _col0 (type: string)
                           1 _col0 (type: string)
+                        outputColumnNames: _col2
                         input vertices:
+<<<<<<< HEAD
                           0 Map 1
                         Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
@@ -6666,11 +6652,31 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
+=======
+                          1 Map 3
+                        Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col2 (type: string)
+                            1 _col0 (type: string)
+                          input vertices:
+                            1 Map 4
+                          Statistics: Num rows: 1 Data size: 25 Basic stats: PARTIAL Column stats: NONE
+                          Group By Operator
+                            aggregations: count()
+                            mode: hash
+                            outputColumnNames: _col0
+>>>>>>> 558876462d2... HIVE-20850: Push case conditional from projections to dimension tables if possible (Zoltan Haindrich via Jesus Camacho Rodriguez)
                             Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                            Reduce Output Operator
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                              value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
-        Reducer 4 
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -7073,13 +7079,13 @@ STAGE PLANS:
 >>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                     Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      expressions: ds (type: string), UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col0 (type: string), UDFToDouble(_col1) (type: double)
-                          1 _col0 (type: string), UDFToDouble(_col2) (type: double)
+                          0 _col0 (type: string), _col1 (type: double)
+                          1 _col0 (type: string), _col1 (type: double)
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
@@ -7094,7 +7100,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(_col2) (type: double)
+                        expressions: _col1 (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -7121,15 +7127,15 @@ STAGE PLANS:
                   alias: srcpart_parquet
                   Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string), hr (type: int)
+                    expressions: ds (type: string), UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 _col0 (type: string), UDFToDouble(_col1) (type: double)
-                        1 _col0 (type: string), UDFToDouble(_col2) (type: double)
+                        0 _col0 (type: string), _col1 (type: double)
+                        1 _col0 (type: string), _col1 (type: double)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 4400 Basic stats: COMPLETE Column stats: NONE

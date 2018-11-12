@@ -95,7 +95,7 @@ Stage-0
                           <-Map 13 [SIMPLE_EDGE] vectorized
                             SHUFFLE [RS_157]
                               PartitionCols:_col0
-                              Select Operator [SEL_154] (rows=655 width=8)
+                              Select Operator [SEL_154] (rows=655 width=4)
                                 Output:["_col0"]
                                 Filter Operator [FIL_153] (rows=655 width=8)
                                   predicate:((hd_dep_count = 8) and hd_demo_sk is not null)
@@ -109,7 +109,7 @@ Stage-0
                               <-Map 12 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_173]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_171] (rows=9095 width=8)
+                                  Select Operator [SEL_171] (rows=9095 width=4)
                                     Output:["_col0"]
                                     Filter Operator [FIL_169] (rows=9095 width=8)
                                       predicate:(t_hour BETWEEN 14 AND 15 and t_time_sk is not null)
@@ -143,7 +143,7 @@ Stage-0
                                   <-Map 11 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_167]
                                       PartitionCols:_col0
-                                      Select Operator [SEL_166] (rows=511 width=7)
+                                      Select Operator [SEL_166] (rows=511 width=4)
                                         Output:["_col0"]
                                         Filter Operator [FIL_165] (rows=511 width=7)
                                           predicate:(wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null)
@@ -171,7 +171,7 @@ Stage-0
                               <-Map 12 [SIMPLE_EDGE] vectorized
                                 SHUFFLE [RS_172]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_170] (rows=9095 width=8)
+                                  Select Operator [SEL_170] (rows=9095 width=4)
                                     Output:["_col0"]
                                     Filter Operator [FIL_168] (rows=9095 width=8)
                                       predicate:(t_hour BETWEEN 6 AND 7 and t_time_sk is not null)
