@@ -41,10 +41,10 @@ import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.common.util.ZooKeeperHiveHelper;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.service.Service;
@@ -572,7 +572,7 @@ public class MiniHS2 extends AbstractHiveService {
   private String getZKBaseJdbcURL() throws Exception {
     HiveConf hiveConf = getServerConf();
     if (hiveConf != null) {
-      String zkEnsemble =  ZooKeeperHiveHelper.getQuorumServers(hiveConf);
+      String zkEnsemble =  hiveConf.getZKConfig().getQuorumServers();
       return "jdbc:hive2://" + zkEnsemble + "/";
     }
     throw new Exception("Server's HiveConf is null. Unable to read ZooKeeper configs.");

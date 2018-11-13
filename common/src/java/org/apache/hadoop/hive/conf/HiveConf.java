@@ -40,6 +40,7 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.HiveCompat;
+import org.apache.hive.common.util.ZooKeeperHiveHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -5277,6 +5278,21 @@ public class HiveConf extends Configuration {
     for (ConfVars one : ConfVars.values()) {
       ps.println(one.varname + "=" + ((get(one.varname) != null) ? get(one.varname) : ""));
     }
+  }
+
+  /**
+   * @return a ZooKeeperHiveHelper instance containing the ZooKeeper specifications from the
+   * given HiveConf.
+   */
+  public ZooKeeperHiveHelper getZKConfig() {
+    return new ZooKeeperHiveHelper(getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM),
+            getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT),
+            getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE),
+            (int) getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT,
+                    TimeUnit.MILLISECONDS),
+            (int) getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
+                    TimeUnit.MILLISECONDS),
+            getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES));
   }
 
   public HiveConf() {
