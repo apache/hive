@@ -167,35 +167,36 @@ public class Hive {
   private IMetaStoreClient metaStoreClient;
   private SynchronizedMetaStoreClient syncMetaStoreClient;
   private UserGroupInformation owner;
+  private boolean isAllowClose = true;
 
   // metastore calls timing information
   private final ConcurrentHashMap<String, Long> metaCallTimeMap = new ConcurrentHashMap<>();
 
-  // Static class to store thread local Hive object and allowClose flag.
+  // Static class to store thread local Hive object.
   private static class ThreadLocalHive extends ThreadLocal<Hive> {
-    private ThreadLocal<Boolean> allowClose = ThreadLocal.withInitial(() -> true);
-
     @Override
     protected Hive initialValue() {
       return null;
     }
 
     @Override
-    public synchronized void remove() {
-      if (allowClose() && (this.get() != null)) {
-        this.get().close();
+    public synchronized void set(Hive hiveObj) {
+      Hive currentHive = this.get();
+      if (currentHive != hiveObj) {
+        // Remove/close current thread-local Hive object before overwriting with new Hive object.
+        remove();
+        super.set(hiveObj);
       }
-      super.remove();
-      this.allowClose.set(true);
     }
 
-    public synchronized void set(Hive hiveObj, boolean allowClose) {
-      super.set(hiveObj);
-      this.allowClose.set(allowClose);
-    }
-
-    boolean allowClose() {
-      return this.allowClose.get();
+    @Override
+    public synchronized void remove() {
+      Hive currentHive = this.get();
+      if (currentHive != null) {
+        // Close the metastore connections before removing it from thread local hiveDB.
+        currentHive.close(false);
+        super.remove();
+      }
     }
   }
 
@@ -317,7 +318,12 @@ public class Hive {
     Hive db = hiveDB.get();
     if (db == null || !db.isCurrentUserOwner() || needsRefresh
         || (c != null && !isCompatible(db, c, isFastCheck))) {
-      db = create(c, false, db, doRegisterAllFns);
+      if (db != null) {
+        LOG.debug("Creating new db. db = " + db + ", needsRefresh = " + needsRefresh +
+                ", db.isCurrentUserOwner = " + db.isCurrentUserOwner());
+        closeCurrent();
+      }
+      db = create(c, doRegisterAllFns);
     }
     if (c != null) {
       db.conf = c;
@@ -325,25 +331,15 @@ public class Hive {
     return db;
   }
 
-  private static Hive create(HiveConf c, boolean needsRefresh, Hive db, boolean doRegisterAllFns)
-      throws HiveException {
-    if (db != null) {
-      LOG.debug("Creating new db. db = " + db + ", needsRefresh = " + needsRefresh +
-        ", db.isCurrentUserOwner = " + db.isCurrentUserOwner());
-      if (hiveDB.allowClose()) {
-        db.close();
-      }
-    }
-    closeCurrent();
+  private static Hive create(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     if (c == null) {
       c = createHiveConf();
     }
     c.set("fs.scheme.class", "dfs");
     Hive newdb = new Hive(c, doRegisterAllFns);
-    hiveDB.set(newdb, true);
+    hiveDB.set(newdb);
     return newdb;
   }
-
 
   private static HiveConf createHiveConf() {
     SessionState session = SessionState.get();
@@ -358,6 +354,18 @@ public class Hive {
       return (db.metaStoreClient == null || db.metaStoreClient.isCompatibleWith(c))
           && (db.syncMetaStoreClient == null || db.syncMetaStoreClient.isCompatibleWith(c));
     }
+  }
+
+  private boolean isCurrentUserOwner() throws HiveException {
+    try {
+      return owner == null || owner.equals(UserGroupInformation.getCurrentUser());
+    } catch(IOException e) {
+      throw new HiveException("Error getting current user: " + e.getMessage(), e);
+    }
+  }
+
+  public static Hive getThreadLocal() {
+    return hiveDB.get();
   }
 
   public static Hive get() throws HiveException {
@@ -383,19 +391,11 @@ public class Hive {
   }
 
   public static void set(Hive hive) {
-    hiveDB.set(hive, true);
-  }
-
-  public static void set(Hive hive, boolean allowClose) {
-    hiveDB.set(hive, allowClose);
+    hiveDB.set(hive);
   }
 
   public static void closeCurrent() {
     hiveDB.remove();
-  }
-
-  public static Hive getThreadLocal() {
-    return hiveDB.get();
   }
 
   /**
@@ -411,30 +411,49 @@ public class Hive {
     }
   }
 
-
-  private boolean isCurrentUserOwner() throws HiveException {
-    try {
-      return owner == null || owner.equals(UserGroupInformation.getCurrentUser());
-    } catch(IOException e) {
-      throw new HiveException("Error getting current user: " + e.getMessage(), e);
-    }
+  /**
+   * GC is attempting to destroy the object.
+   * No one references this Hive anymore, so HMS connection from this Hive object can be closed.
+   * @throws Throwable
+   */
+  @Override
+  protected void finalize() throws Throwable {
+    close(true);
+    super.finalize();
   }
 
-
+  /**
+   * Marks if the given Hive object is allowed to close metastore connections.
+   * @param allowClose
+   */
+  public void setAllowClose(boolean allowClose) {
+    isAllowClose = allowClose;
+  }
 
   /**
-   * closes the connection to metastore for the calling thread
+   * Gets the allowClose flag which determines if it is allowed to close metastore connections.
+   * @returns allowClose flag
    */
-  private void close() {
-    LOG.debug("Closing current thread's connection to Hive Metastore.");
-    if (metaStoreClient != null) {
-      metaStoreClient.close();
-      metaStoreClient = null;
-    }
-    // syncMetaStoreClient is wrapped on metaStoreClient. So, it is enough to close it once.
-    syncMetaStoreClient = null;
-    if (owner != null) {
-      owner = null;
+  public boolean allowClose() {
+    return isAllowClose;
+  }
+
+  /**
+   * Closes the connection to metastore for the calling thread if allow to close.
+   * @param forceClose - Override the isAllowClose flag to forcefully close the MS connections.
+   */
+  public void close(boolean forceClose) {
+    if (allowClose() || forceClose) {
+      LOG.debug("Closing current thread's connection to Hive Metastore.");
+      if (metaStoreClient != null) {
+        metaStoreClient.close();
+        metaStoreClient = null;
+      }
+      // syncMetaStoreClient is wrapped on metaStoreClient. So, it is enough to close it once.
+      syncMetaStoreClient = null;
+      if (owner != null) {
+        owner = null;
+      }
     }
   }
 
