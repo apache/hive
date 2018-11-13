@@ -569,8 +569,7 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   // obtain delegation token for the give user from metastore
-  // TODO: why is this synchronized?
-  public synchronized String getDelegationTokenFromMetaStore(String owner)
+  public String getDelegationTokenFromMetaStore(String owner)
       throws HiveSQLException, UnsupportedOperationException, LoginException, IOException {
     HiveConf hiveConf = getHiveConf();
     if (!hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL) ||
