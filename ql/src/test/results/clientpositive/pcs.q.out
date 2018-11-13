@@ -294,7 +294,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE ROW(`ds`, `key`) IN (ROW('2000-04-08', 1), ROW('2000-04-09', 2))
+WHERE ROW(`key`, `ds`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09'))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -305,10 +305,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-<<<<<<< ours
-=======
-            filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
->>>>>>> theirs
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -666,10 +662,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-<<<<<<< ours
-=======
-            filterExpr: ((key) IN (1, 2) and (ds) IN ('2000-04-08', '2000-04-09')) (type: boolean)
->>>>>>> theirs
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -691,10 +683,6 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: b
-<<<<<<< ours
-=======
-            filterExpr: (ds) IN ('2000-04-09', '2000-04-08') (type: boolean)
->>>>>>> theirs
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -883,6 +871,9 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`
+FROM `default`.`pcs_t1`
+WHERE ROW(`ds`, `key` + `key`) IN (ROW('2000-04-08', 1), ROW('2000-04-09', 2))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -893,10 +884,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-<<<<<<< ours
-=======
-            filterExpr: ((struct(ds,(key + key))) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
->>>>>>> theirs
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1075,10 +1062,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcs_t1
-<<<<<<< ours
-=======
-            filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
->>>>>>> theirs
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
@@ -1293,9 +1276,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('2000-04-08' AS STRING) AS `$f0`
+OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `ds` = '2000-04-08'
+WHERE `ds` = '2000-04-08' IS TRUE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1353,14 +1336,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-<<<<<<< ours
-=======
-          filterExpr: (ds = '2000-04-08') (type: boolean)
->>>>>>> theirs
           Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
-            expressions: '2000-04-08' (type: string)
+            expressions: ds (type: string)
             outputColumnNames: _col0
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -1407,6 +1386,9 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`
+FROM `default`.`pcs_t1`
+WHERE ROW(`ds`, `key`, RAND(100)) IN (ROW('2000-04-08', 1, 0.2), ROW('2000-04-09', 2, 0.3))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1573,58 +1555,18 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`
+FROM `default`.`pcs_t1`
+WHERE ROW(`key`, `ds` = '2000-04-08' OR `key` = 2) IN (ROW(2, TRUE), ROW(3, FALSE))
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: pcs_t1
-<<<<<<< ours
-=======
-            filterExpr: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
->>>>>>> theirs
-            Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
-              Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: ds (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0
-                        columns.types string
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.escape.crlf true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
           Partition
-            base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -1670,9 +1612,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcs_t1
             name: default.pcs_t1
-#### A masked pattern was here ####
           Partition
-            base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -1718,9 +1658,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcs_t1
             name: default.pcs_t1
-#### A masked pattern was here ####
           Partition
-            base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -1766,16 +1704,20 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcs_t1
             name: default.pcs_t1
-      Truncated Path -> Alias:
-        /pcs_t1/ds=2000-04-08 [pcs_t1]
-        /pcs_t1/ds=2000-04-09 [pcs_t1]
-        /pcs_t1/ds=2000-04-10 [pcs_t1]
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: pcs_t1
+          Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) (type: boolean)
+            Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ds (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+              ListSink
 
 PREHOOK: query: select ds from pcs_t1 where struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3))
 PREHOOK: type: QUERY
@@ -1808,58 +1750,18 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `ds`
+FROM `default`.`pcs_t1`
+WHERE `key` = 3 OR ROW(`key`, `ds` = '2000-04-08' OR `key` = 2) IN (ROW(2, TRUE), ROW(3, FALSE)) AND `key` + 5 > 0
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: pcs_t1
-<<<<<<< ours
-=======
-            filterExpr: ((key = 3) or ((struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) and ((key + 5) > 0))) (type: boolean)
->>>>>>> theirs
-            Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate: (((struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
-              Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: ds (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0
-                        columns.types string
-                        escape.delim \
-                        hive.serialization.extend.additional.nesting.levels true
-                        serialization.escape.crlf true
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
           Partition
-            base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -1905,9 +1807,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcs_t1
             name: default.pcs_t1
-#### A masked pattern was here ####
           Partition
-            base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -1953,9 +1853,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcs_t1
             name: default.pcs_t1
-#### A masked pattern was here ####
           Partition
-            base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -2001,16 +1899,20 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcs_t1
             name: default.pcs_t1
-      Truncated Path -> Alias:
-        /pcs_t1/ds=2000-04-08 [pcs_t1]
-        /pcs_t1/ds=2000-04-09 [pcs_t1]
-        /pcs_t1/ds=2000-04-10 [pcs_t1]
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: pcs_t1
+          Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+          GatherStats: false
+          Filter Operator
+            isSamplingPred: false
+            predicate: (((struct(key,((ds = '2000-04-08') or (key = 2)))) IN (const struct(2,true), const struct(3,false)) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
+            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: ds (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              ListSink
 
 PREHOOK: query: select ds from pcs_t1 where key = 3 or (struct(ds='2000-04-08' or key = 2, key) in (struct(true,2), struct(false,3)) and key+5 > 0)
 PREHOOK: type: QUERY
