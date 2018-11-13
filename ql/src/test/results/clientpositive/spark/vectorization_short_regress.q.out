@@ -615,10 +615,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-<<<<<<< ours
-=======
-                  filterExpr: ((ctimestamp1 = ctimestamp2) or (cfloat = 762.0) or (cstring1 = 'ss') or ((UDFToLong(csmallint) <= cbigint) and (cboolean2 = 1)) or (cboolean1 is not null and ctimestamp2 is not null and (cstring2 > 'a'))) (type: boolean)
->>>>>>> theirs
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -854,10 +850,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-<<<<<<< ours
-=======
-                  filterExpr: (((ctimestamp2 <= ctimestamp1) and (UDFToDouble(cbigint) <> cdouble) and (cstring1 >= 'ss')) or ((csmallint < UDFToShort(ctinyint)) and (UDFToDouble(ctimestamp1) >= 0.0D)) or (cfloat = 17.0)) (type: boolean)
->>>>>>> theirs
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

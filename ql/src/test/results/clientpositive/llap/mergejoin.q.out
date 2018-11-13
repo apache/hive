@@ -32,7 +32,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter)))) (type: boolean)
+                  filterExpr: (key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -85,7 +85,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -422,7 +421,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -434,7 +432,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2003,7 +2000,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null and (value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2057,7 +2053,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2139,7 +2134,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter)))) (type: boolean)
+                  filterExpr: (key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2411,7 +2406,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2464,7 +2458,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2637,7 +2630,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s3
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2649,7 +2641,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2676,7 +2667,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2729,7 +2719,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2881,7 +2870,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2934,7 +2922,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3106,7 +3093,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null and (value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3160,7 +3146,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3242,7 +3227,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter)))) (type: boolean)
+                  filterExpr: (key BETWEEN DynamicValue(RS_12_a_key_min) AND DynamicValue(RS_12_a_key_max) and in_bloom_filter(key, DynamicValue(RS_12_a_key_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3522,7 +3507,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s3
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -3534,7 +3518,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -3561,7 +3544,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3614,7 +3596,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3778,7 +3759,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3830,7 +3810,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

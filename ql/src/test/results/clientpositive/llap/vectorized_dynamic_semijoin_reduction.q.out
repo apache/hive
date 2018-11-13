@@ -57,7 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
+                  filterExpr: (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -100,7 +100,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key_int is not null (type: boolean)
                   Statistics: Num rows: 57 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -297,7 +296,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_str is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)))) (type: boolean)
+                  filterExpr: (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -340,7 +339,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key_str is not null (type: boolean)
                   Statistics: Num rows: 57 Data size: 10304 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -537,7 +535,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_str is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)))) (type: boolean)
+                  filterExpr: (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -580,7 +578,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key_str is not null (type: boolean)
                   Statistics: Num rows: 57 Data size: 10304 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -778,7 +775,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_10_b_key_int_min) AND DynamicValue(RS_10_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_10_b_key_int_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_11_c_key_int_min) AND DynamicValue(RS_11_c_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_11_c_key_int_bloom_filter)))) (type: boolean)
+                  filterExpr: (key_int BETWEEN DynamicValue(RS_11_c_key_int_min) AND DynamicValue(RS_11_c_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_11_c_key_int_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -821,7 +818,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key_int is not null (type: boolean)
                   Statistics: Num rows: 57 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -892,7 +888,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: key_int is not null (type: boolean)
                   Statistics: Num rows: 57 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1121,7 +1116,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_str is not null and key_int is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
+                  filterExpr: (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89488 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1164,7 +1159,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key_str is not null and key_int is not null) (type: boolean)
                   Statistics: Num rows: 57 Data size: 10528 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1418,7 +1412,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
+                  filterExpr: (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1461,7 +1455,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((value) IN ('nonexistent1', 'nonexistent2') and key_int is not null) (type: boolean)
                   Statistics: Num rows: 57 Data size: 10528 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1672,7 +1665,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
+                  filterExpr: (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) and key_int is not null) (type: boolean)
@@ -1692,7 +1685,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: key_int is not null (type: boolean)
                   Statistics: Num rows: 57 Data size: 228 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key_int is not null (type: boolean)

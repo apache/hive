@@ -595,7 +595,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: o1
-                  filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
                   Statistics: Num rows: 122880 Data size: 9724466 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cbigint is not null and csmallint is not null) (type: boolean)
@@ -616,7 +615,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: o2
-                  filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
                   Statistics: Num rows: 122880 Data size: 9906988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cbigint is not null and csmallint is not null) (type: boolean)
@@ -1073,7 +1071,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: o1
-                  filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
                   Statistics: Num rows: 245760 Data size: 19448826 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cbigint is not null and csmallint is not null) (type: boolean)
@@ -1094,7 +1091,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: o2
-                  filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
                   Statistics: Num rows: 245760 Data size: 19813868 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cbigint is not null and csmallint is not null) (type: boolean)

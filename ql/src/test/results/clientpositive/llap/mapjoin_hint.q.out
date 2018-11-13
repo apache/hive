@@ -157,7 +157,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n5
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n1_key1_min) AND DynamicValue(RS_7_srcpart_small_n1_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n1_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key BETWEEN DynamicValue(RS_7_srcpart_small_n1_key1_min) AND DynamicValue(RS_7_srcpart_small_n1_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n1_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n1_key1_min) AND DynamicValue(RS_7_srcpart_small_n1_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n1_key1_bloom_filter))) and key is not null) (type: boolean)
@@ -177,7 +177,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n1
-                  filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -294,7 +293,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n5
-                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -327,7 +325,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n1
-                  filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)

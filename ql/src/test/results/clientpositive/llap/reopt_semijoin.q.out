@@ -151,7 +151,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  filterExpr: (ss_sold_date_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter)))) (type: boolean)
+                  filterExpr: (ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 123456 Data size: 987648 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter))) and ss_sold_date_sk is not null) (type: boolean)
@@ -172,7 +172,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  filterExpr: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 28 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
@@ -326,7 +325,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  filterExpr: (ss_sold_date_sk is not null and (ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter)))) (type: boolean)
+                  filterExpr: (ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 123456 Data size: 987648 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ss_sold_date_sk BETWEEN DynamicValue(RS_7_d_d_date_sk_min) AND DynamicValue(RS_7_d_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_7_d_d_date_sk_bloom_filter))) and ss_sold_date_sk is not null) (type: boolean)
@@ -347,7 +346,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
-                  filterExpr: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
                   Statistics: (RUNTIME) Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((d_moy = 3) and d_date_sk is not null) (type: boolean)
