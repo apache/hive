@@ -1017,6 +1017,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Find " + policyContainer.size() + " policy to synchronize, start PrivilegeSynchronizer");
       Thread privilegeSynchronizerThread = new Thread(
           new PrivilegeSynchronizer(privilegeSynchronizerLatch, policyContainer, hiveConf), "PrivilegeSynchronizer");
+      privilegeSynchronizerThread.setDaemon(true);
       privilegeSynchronizerThread.start();
     } else {
       LOG.warn(
