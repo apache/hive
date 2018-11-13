@@ -708,6 +708,8 @@ public class MapJoinBytesTableContainer
      * This container does not normally support adding rows; this is for the dummy row.
      */
     private List<Object> dummyRow = null;
+    // TODO: the API here is not ideal, first/next + hasRows are redundant.
+    private boolean wasFirstCalledOnDummyRow = false;
 
     private final ByteArrayRef uselessIndirection; // LBStruct needs ByteArrayRef
     private final LazyBinaryStruct valueStruct;
@@ -747,6 +749,7 @@ public class MapJoinBytesTableContainer
       aliasFilter = hashMap.getValueResult(
               output.getData(), 0, output.getLength(), hashMapResult, /* matchTracker */ null);
       dummyRow = null;
+      wasFirstCalledOnDummyRow = false;
       if (hashMapResult.hasRows()) {
         return JoinUtil.JoinResult.MATCH;
       } else {
@@ -760,6 +763,7 @@ public class MapJoinBytesTableContainer
       aliasFilter = hashMap.getValueResult(
               output.getData(), 0, output.getLength(), hashMapResult, matchTracker);
       dummyRow = null;
+      wasFirstCalledOnDummyRow = false;
       if (hashMapResult.hasRows()) {
         return JoinUtil.JoinResult.MATCH;
       } else {
@@ -774,7 +778,7 @@ public class MapJoinBytesTableContainer
 
     @Override
     public boolean hasRows() {
-      return hashMapResult.hasRows() || (dummyRow != null);
+      return hashMapResult.hasRows() || (dummyRow != null && !wasFirstCalledOnDummyRow);
     }
 
     @Override
@@ -803,6 +807,7 @@ public class MapJoinBytesTableContainer
       // Doesn't clear underlying hashtable
       hashMapResult.forget();
       dummyRow = null;
+      wasFirstCalledOnDummyRow = false;
       aliasFilter = (byte) 0xff;
     }
 
@@ -819,12 +824,9 @@ public class MapJoinBytesTableContainer
     // Implementation of row iterator
     @Override
     public List<Object> first() throws HiveException {
-
-      // A little strange that we forget the dummy row on read.
       if (dummyRow != null) {
-        List<Object> result = dummyRow;
-        dummyRow = null;
-        return result;
+        wasFirstCalledOnDummyRow = true;
+        return dummyRow;
       }
 
       WriteBuffers.ByteSegmentRef byteSegmentRef = hashMapResult.first();
@@ -838,6 +840,13 @@ public class MapJoinBytesTableContainer
 
     @Override
     public List<Object> next() throws HiveException {
+      if (dummyRow != null) {
+        // TODO: what should we do if first was never called? for now, assert for clarity
+        if (!wasFirstCalledOnDummyRow) {
+          throw new AssertionError("next called without first");
+        }
+        return null;
+      }
 
       WriteBuffers.ByteSegmentRef byteSegmentRef = hashMapResult.next();
       if (byteSegmentRef == null) {
@@ -874,6 +883,7 @@ public class MapJoinBytesTableContainer
         throw new RuntimeException("Cannot add rows when not empty");
       }
       dummyRow = t;
+      wasFirstCalledOnDummyRow = false;
     }
 
     // Various unsupported methods.
