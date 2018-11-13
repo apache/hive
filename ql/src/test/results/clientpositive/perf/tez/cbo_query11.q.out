@@ -159,7 +159,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100])
   HiveProject(c_preferred_cust_flag=[$1])
-    HiveJoin(condition=[AND(=($0, $5), CASE(CAST(IS NOT NULL($6)):BOOLEAN, CASE(CAST(IS NOT NULL($8)):BOOLEAN, >(/($4, $8), /($2, $6)), false), false))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[AND(=($0, $5), OR(AND(IS NOT NULL($6), OR(AND(IS NOT NULL($8), >(/($4, $8), /($2, $6))), AND(null, IS NULL($8)))), AND(null, IS NULL($6))))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject($f0=[$0], $f4=[$3], $f9=[$7])
         HiveAggregate(group=[{0, 1, 2, 3, 4, 5, 6}], agg#0=[sum($7)])
           HiveProject($f0=[$1], $f1=[$2], $f2=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f9=[-($11, $10)])
