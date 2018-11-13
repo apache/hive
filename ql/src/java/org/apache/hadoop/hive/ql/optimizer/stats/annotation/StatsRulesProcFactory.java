@@ -112,7 +112,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import scala.math.Numeric;
 
 public class StatsRulesProcFactory {
 
@@ -296,7 +295,7 @@ public class StatsRulesProcFactory {
           // result in number of rows getting more than the input rows in
           // which case stats need not be updated
           if (newNumRows <= parentStats.getNumRows()) {
-            updateStats(st, newNumRows, true, fop, aspCtx.getAffectedColumns());
+            StatsUtils.updateStats(st, newNumRows, true, fop, aspCtx.getAffectedColumns());
           }
 
           if (LOG.isDebugEnabled()) {
@@ -306,7 +305,7 @@ public class StatsRulesProcFactory {
 
           // update only the basic statistics in the absence of column statistics
           if (newNumRows <= parentStats.getNumRows()) {
-            updateStats(st, newNumRows, false, fop);
+            StatsUtils.updateStats(st, newNumRows, false, fop);
           }
 
           if (LOG.isDebugEnabled()) {
@@ -357,9 +356,9 @@ public class StatsRulesProcFactory {
               // Ndv is reduced in a conservative manner - only taking affected columns
               // (which might be a subset of the actual *real* affected columns due to current limitation)
               // Goal is to not let a situation in which ndv-s asre underestimated happen.
-              updateStats(aspCtx.getAndExprStats(), newNumRows, true, op, aspCtx.getAffectedColumns());
+              StatsUtils.updateStats(aspCtx.getAndExprStats(), newNumRows, true, op, aspCtx.getAffectedColumns());
             } else {
-              updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
+              StatsUtils.updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
             }
           }
         } else if (udf instanceof GenericUDFOPOr) {
@@ -1433,7 +1432,7 @@ public class StatsRulesProcFactory {
         }
 
         // update stats, but don't update NDV as it will not change
-        updateStats(stats, cardinality, true, gop);
+        StatsUtils.updateStats(stats, cardinality, true, gop);
       } else {
 
         // NO COLUMN STATS
@@ -1470,7 +1469,7 @@ public class StatsRulesProcFactory {
             }
           }
 
-          updateStats(stats, cardinality, false, gop);
+          StatsUtils.updateStats(stats, cardinality, false, gop);
         }
       }
 
@@ -1501,7 +1500,7 @@ public class StatsRulesProcFactory {
           // only if the column stats is available, update the data size from
           // the column stats
           if (!stats.getColumnStatsState().equals(Statistics.State.NONE)) {
-            updateStats(stats, stats.getNumRows(), true, gop);
+            StatsUtils.updateStats(stats, stats.getNumRows(), true, gop);
           }
         }
 
@@ -1509,7 +1508,7 @@ public class StatsRulesProcFactory {
         // be full aggregation query like count(*) in which case number of
         // rows will be 1
         if (colExprMap.isEmpty()) {
-          updateStats(stats, 1, true, gop);
+          StatsUtils.updateStats(stats, 1, true, gop);
         }
       }
 
@@ -1869,7 +1868,7 @@ public class StatsRulesProcFactory {
           // result in number of rows getting more than the input rows in
           // which case stats need not be updated
           if (newNumRows <= joinRowCount) {
-            updateStats(stats, newNumRows, true, jop);
+            StatsUtils.updateStats(stats, newNumRows, true, jop);
           }
         }
 
@@ -1959,7 +1958,7 @@ public class StatsRulesProcFactory {
               aspCtx, jop.getSchema().getColumnNames(), jop, wcStats.getNumRows());
           // update only the basic statistics in the absence of column statistics
           if (newNumRows <= joinRowCount) {
-            updateStats(wcStats, newNumRows, false, jop);
+            StatsUtils.updateStats(wcStats, newNumRows, false, jop);
           }
         }
 
@@ -2581,7 +2580,7 @@ public class StatsRulesProcFactory {
         // if limit is greater than available rows then do not update
         // statistics
         if (limit <= parentStats.getNumRows()) {
-          updateStats(stats, limit, true, lop);
+          StatsUtils.updateStats(stats, limit, true, lop);
         }
         stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, lop);
         lop.setStatistics(stats);
@@ -2759,72 +2758,6 @@ public class StatsRulesProcFactory {
 
   public static NodeProcessor getDefaultRule() {
     return new DefaultStatsRule();
-  }
-
-  /**
-   * Update the basic statistics of the statistics object based on the row number
-   * @param stats
-   *          - statistics to be updated
-   * @param newNumRows
-   *          - new number of rows
-   * @param useColStats
-   *          - use column statistics to compute data size
-   */
-  static void updateStats(Statistics stats, long newNumRows,
-      boolean useColStats, Operator<? extends OperatorDesc> op) {
-    updateStats(stats, newNumRows, useColStats, op, Collections.EMPTY_SET);
-  }
-
-  static void updateStats(Statistics stats, long newNumRows,
-      boolean useColStats, Operator<? extends OperatorDesc> op,
-      Set<String> affectedColumns) {
-
-    if (newNumRows < 0) {
-      LOG.debug("STATS-" + op.toString() + ": Overflow in number of rows. "
-          + newNumRows + " rows will be set to Long.MAX_VALUE");
-      newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
-    }
-    if (newNumRows == 0) {
-      LOG.debug("STATS-" + op.toString() + ": Equals 0 in number of rows. "
-          + newNumRows + " rows will be set to 1");
-      newNumRows = 1;
-    }
-
-    long oldRowCount = stats.getNumRows();
-    double ratio = (double) newNumRows / (double) oldRowCount;
-    stats.setNumRows(newNumRows);
-
-    if (useColStats) {
-      List<ColStatistics> colStats = stats.getColumnStats();
-      for (ColStatistics cs : colStats) {
-        long oldNumNulls = cs.getNumNulls();
-        long oldDV = cs.getCountDistint();
-        long newNumNulls = Math.round(ratio * oldNumNulls);
-        cs.setNumNulls(newNumNulls);
-        if (affectedColumns.contains(cs.getColumnName())) {
-          long newDV = oldDV;
-
-          // if ratio is greater than 1, then number of rows increases. This can happen
-          // when some operators like GROUPBY duplicates the input rows in which case
-          // number of distincts should not change. Update the distinct count only when
-          // the output number of rows is less than input number of rows.
-          if (ratio <= 1.0) {
-            newDV = (long) Math.ceil(ratio * oldDV);
-          }
-          cs.setCountDistint(newDV);
-          oldDV = newDV;
-        }
-        if (oldDV > newNumRows) {
-          cs.setCountDistint(newNumRows);
-        }
-      }
-      stats.setColumnStats(colStats);
-      long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
-      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
-    } else {
-      long newDataSize = (long) (ratio * stats.getDataSize());
-      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
-    }
   }
 
   static boolean satisfyPrecondition(Statistics stats) {
