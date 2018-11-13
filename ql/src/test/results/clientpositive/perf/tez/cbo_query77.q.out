@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[212][bigTable=?] in task 'Reducer 11' is a cross product
+Warning: Shuffle Join MERGEJOIN[195][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 15' is a cross product
 PREHOOK: query: explain cbo
 with ss as
  (select s_store_sk,
