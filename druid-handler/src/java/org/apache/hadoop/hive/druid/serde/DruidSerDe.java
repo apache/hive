@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -169,7 +170,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
       throw new SerDeException(e);
     }
     for (Entry<String, ColumnAnalysis> columnInfo : schemaInfo.getColumns().entrySet()) {
-      if (columnInfo.getKey().equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+      if (columnInfo.getKey().equals(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
         // Special handling for timestamp column
         columnNames.add(columnInfo.getKey()); // field name
         PrimitiveTypeInfo type = tsTZTypeInfo; // field type
@@ -190,9 +191,9 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
   private void initFromProperties(final Properties properties) throws SerDeException {
 
     final List<String> columnNames = new ArrayList<>(Utilities.getColumnNames(properties));
-    if (!columnNames.contains(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+    if (!columnNames.contains(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
       throw new SerDeException("Timestamp column (' "
-          + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN
+          + DruidConstants.DEFAULT_TIMESTAMP_COLUMN
           + "') not specified in create table; list of columns is : "
           + properties.getProperty(serdeConstants.LIST_COLUMNS));
     }

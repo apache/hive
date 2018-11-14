@@ -23,6 +23,7 @@ import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JavaType;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -67,7 +68,7 @@ public class DruidSelectQueryRecordReader extends DruidQueryRecordReader<Result<
     // Create new value
     DruidWritable value = new DruidWritable(false);
     EventHolder e = values.next();
-    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+    value.getValue().put(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
     value.getValue().putAll(e.getEvent());
     return value;
   }
@@ -77,7 +78,7 @@ public class DruidSelectQueryRecordReader extends DruidQueryRecordReader<Result<
       // Update value
       value.getValue().clear();
       EventHolder e = values.next();
-      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+      value.getValue().put(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
       value.getValue().putAll(e.getEvent());
       return true;
     }

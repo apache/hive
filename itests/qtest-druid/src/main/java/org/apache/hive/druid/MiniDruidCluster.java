@@ -55,7 +55,8 @@ public class MiniDruidCluster extends AbstractService {
           "druid.metadata.storage.type", "derby",
           "druid.storage.type", "hdfs",
           "druid.processing.buffer.sizeBytes", "213870912",
-          "druid.processing.numThreads", "2"
+          "druid.processing.numThreads", "2",
+          "druid.worker.capacity", "4"
   );
 
   private static final Map<String, String> COMMON_DRUID_HISTORICAL = ImmutableMap.of(
