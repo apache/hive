@@ -18,11 +18,9 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -209,10 +207,10 @@ public class LoadTable {
       throws MetaException, SemanticException {
 
 
-    if (tblDesc.tableType().equals(TableType.EXTERNAL_TABLE)) {
+    if (tblDesc.isExternal()) {
       // For an external table, we need to use the path specified in the source table but the
       // scheme, authority and root path of the target file system.
-      return context.warehouse.getDnsPath(tblDesc.getTableLocationPath()).toString();
+      return context.warehouse.getDnsPath(tblDesc.getSourceTableLocationPath()).toString();
     } else if (!tableContext.waitOnPrecursor()) {
       return context.warehouse.getDefaultTablePath(
           parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString();

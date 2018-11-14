@@ -60,7 +60,8 @@ public class ImportTableDesc {
       case TABLE:
         this.createTblDesc = new CreateTableDesc(dbName,
                 table.getTableName(),
-                false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
+                // isExternal: can be overwritten by the IMPORT stmt
+                TableType.EXTERNAL_TABLE.equals(table.getTableType()),
                 false,
                 table.getSd().getCols(),
                 table.getPartitionKeys(),
@@ -342,11 +343,6 @@ public class ImportTableDesc {
   }
 
   public TableType tableType() {
-    if (isView()) {
-      return TableType.VIRTUAL_VIEW;
-    } else if (isMaterializedView()) {
-      return TableType.MATERIALIZED_VIEW;
-    }
     return table.getTableType();
   }
 
@@ -367,7 +363,7 @@ public class ImportTableDesc {
     }
   }
 
-  public Path getTableLocationPath() {
+  public Path getSourceTableLocationPath() {
     return table.getPath();
   }
 }

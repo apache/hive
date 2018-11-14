@@ -197,16 +197,14 @@ public class WarehouseInstance implements Closeable {
   }
 
   /**
-   * Delete location pointed by the given path with respect to the external table location root on
-   * DFS.
+   * Delete location pointed by the given path on DFS.
    * @param location
    * @throws IOException
    * @throws SemanticException
    */
-  public void deleteExternalLoc(String location) throws IOException, SemanticException {
-    String extLoc = extLocRoot + "/" + location;
+  public void deleteLocation(String location) throws IOException, SemanticException {
     DistributedFileSystem fs = miniDFSCluster.getFileSystem();
-    fs.delete(new Path(extLoc), true);
+    fs.delete(new Path(location), true);
   }
 
   public HiveConf getConf() {

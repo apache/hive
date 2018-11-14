@@ -1530,6 +1530,8 @@ public class TestReplicationScenariosAcrossInstances {
   public void testDumpExternalTableSetTrue() throws Throwable {
     String extTabName1 = "et1";
     String extTabLoc1 = primary.createExternalLoc(primaryDbName + "_" + extTabName1);
+    String extPartTabName1 = "ept1";
+    String extPartTabLoc1 = primary.createExternalLoc(primaryDbName + "_" + extPartTabName1);
 
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
@@ -1542,7 +1544,14 @@ public class TestReplicationScenariosAcrossInstances {
             .run("insert into table t2 partition(country='france') values ('paris')")
             .run("create external table " + extTabName1 + " (id int) location '" + extTabLoc1 + "'")
             .run("insert into " + extTabName1 + " values (3)")
+            .run("create external table " + extPartTabName1 + " (place string)" +
+                    " partitioned by (country string)" +
+                    " location '" + extPartTabLoc1 + "'")
+            .run("insert into table " + extPartTabName1 + " partition(country='india') values ('bangalore')")
+            .run("insert into table " + extPartTabName1 + " partition(country='us') values ('austin')")
+            .run("insert into table " + extPartTabName1 + " partition(country='france') values ('paris')")
             .verifyExternalTable(primaryDbName, extTabName1, extTabLoc1)
+            .verifyExternalTable(primaryDbName, extPartTabName1, extPartTabLoc1)
             .dump("repl dump " + primaryDbName + " with ('hive.repl.include.external.tables'='true')");
 
     replica.load(replicatedDbName, tuple.dumpLocation)
@@ -1561,12 +1570,18 @@ public class TestReplicationScenariosAcrossInstances {
             .verifyResult("france")
             .run("select id from " + extTabName1)
             .verifyResult("3")
+            .run("select country from " + extPartTabName1 + " where country = 'us'")
+            .verifyResult("us")
+            .run("select country from " + extPartTabName1 + " where country = 'france'")
+            .verifyResult("france")
             .verifyExternalTable(replicatedDbName, "t1",
                     primary.getTableLocation(primaryDbName, "t1"))
             .verifyExternalTable(replicatedDbName, "t2",
                     primary.getTableLocation(primaryDbName, "t2"))
             .verifyExternalTable(replicatedDbName, extTabName1,
-                    primary.getTableLocation(primaryDbName, extTabName1));
+                    primary.getTableLocation(primaryDbName, extTabName1))
+            .verifyExternalTable(replicatedDbName, extPartTabName1,
+                    primary.getTableLocation(primaryDbName, extPartTabName1));
 
     String extTabName2 = "et2";
     String extTabLoc2 = primary.createExternalLoc(primaryDbName + "_" + extTabName2);
@@ -1612,8 +1627,9 @@ public class TestReplicationScenariosAcrossInstances {
             .run("select id from " + extTabName2 + " where id = 6")
             .verifyResult("6");
 
-    primary.deleteExternalLoc(extTabLoc1);
-    primary.deleteExternalLoc(extTabLoc2);
+    primary.deleteLocation(extTabLoc1);
+    primary.deleteLocation(extTabLoc2);
+    primary.deleteLocation(extPartTabLoc1);
   }
 
   @Test

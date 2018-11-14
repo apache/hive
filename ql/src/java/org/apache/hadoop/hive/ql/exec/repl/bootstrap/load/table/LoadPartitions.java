@@ -103,7 +103,11 @@ public class LoadPartitions {
 
   private String location() throws MetaException, HiveException {
     Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
-    if (!tableContext.waitOnPrecursor()) {
+    if (tableDesc.isExternal()) {
+      // For an external table, we need to use the path specified in the source table but the
+      // scheme, authority and root path of the target file system.
+      return context.warehouse.getDnsPath(tableDesc.getSourceTableLocationPath()).toString();
+    } else if (!tableContext.waitOnPrecursor()) {
       return context.warehouse.getDefaultTablePath(
           parentDb, tableDesc.getTableName(), tableDesc.isExternal()).toString();
     } else {
