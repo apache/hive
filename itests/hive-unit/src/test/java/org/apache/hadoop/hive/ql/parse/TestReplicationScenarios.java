@@ -380,7 +380,7 @@ public class TestReplicationScenarios {
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
     replLoadTask.initialize(null, null, new DriverContext(new Context(driverMirror.getConf())), null);
     replLoadTask.executeTask(null);
-    Hive.getThreadLocal().closeCurrent();
+    Hive.closeCurrent();
     return replLoadWork.getRootTask();
   }
 
