@@ -140,9 +140,8 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       // Since there is no concept of a group, we don't invoke
       // startGroup/endGroup for a mapper
       mo.process((Writable) value);
-      if (LOG.isInfoEnabled()) {
-        logMemoryInfo();
-      }
+      incrementRowNumber();
+
     } catch (Throwable e) {
       abort = true;
       Utilities.setMapWork(jc, null);
@@ -164,11 +163,11 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
 
   @Override
   public void close() {
+    super.close();
     // No row was processed
     if (!anyRow) {
       LOG.trace("Close called. no row processed by map.");
     }
-
     // check if there are IOExceptions
     if (!abort) {
       abort = execContext.getIoCxt().getIOExceptions();
@@ -186,10 +185,6 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         for (Operator<? extends OperatorDesc> dummyOp : dummyOps) {
           dummyOp.close(abort);
         }
-      }
-
-      if (LOG.isInfoEnabled()) {
-        logCloseInfo();
       }
 
       ReportStats rps = new ReportStats(rp, jc);
