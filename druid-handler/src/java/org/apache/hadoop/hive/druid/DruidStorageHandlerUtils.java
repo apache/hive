@@ -69,6 +69,7 @@ import io.druid.query.expression.TimestampShiftExprMacro;
 import io.druid.query.expression.TrimExprMacro;
 import io.druid.query.filter.AndDimFilter;
 import io.druid.query.filter.BloomDimFilter;
+import io.druid.query.filter.BloomKFilterHolder;
 import io.druid.query.filter.BoundDimFilter;
 import io.druid.query.filter.DimFilter;
 import io.druid.query.filter.OrDimFilter;
@@ -1175,7 +1176,7 @@ public final class DruidStorageHandlerUtils {
           BloomKFilter bloomFilter = evaluateBloomFilter(child.get(1), configuration,
                   resolveDynamicValues
           );
-          return new BloomDimFilter(col, bloomFilter, null);
+          return new BloomDimFilter(col, BloomKFilterHolder.fromBloomKFilter(bloomFilter), null);
         } catch (HiveException e) {
           throw new RuntimeException(e);
         } catch (IOException e) {
