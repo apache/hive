@@ -81,7 +81,22 @@ dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;creat
   "d_fy_year" INTEGER, "d_fy_quarter_seq" INTEGER, "d_fy_week_seq" INTEGER, "d_day_name" CHAR(9), "d_quarter_name" CHAR(6),
   "d_holiday" CHAR(1), "d_weekend" CHAR(1), "d_following_holiday" CHAR(1), "d_first_dom" INTEGER, "d_last_dom" INTEGER,
   "d_same_day_ly" INTEGER, "d_same_day_lq" INTEGER, "d_current_day" CHAR(1), "d_current_week" CHAR(1), "d_current_month" CHAR(1),
-  "d_current_quarter" CHAR(1), "d_current_year" CHAR(1))' )
+  "d_current_quarter" CHAR(1), "d_current_year" CHAR(1))' ),
+dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+'CREATE TABLE STORE ("s_store_sk" INTEGER, "s_store_id" CHAR(16), "s_rec_start_date" DATE, "s_rec_end_date" DATE,
+  "s_closed_date_sk" INTEGER, "s_store_name" VARCHAR(50), "s_number_employees" INTEGER, "s_floor_space" INTEGER,
+  "s_hours" CHAR(20), "s_manager" VARCHAR(40), "s_market_id" INTEGER, "s_geography_class" VARCHAR(100),
+  "s_market_desc" VARCHAR(100), "s_market_manager" VARCHAR(40), "s_division_id" INTEGER, "s_division_name" VARCHAR(50),
+  "s_company_id" INTEGER, "s_company_name" VARCHAR(50), "s_street_number" VARCHAR(10), "s_street_name" VARCHAR(60),
+  "s_street_type" CHAR(15), "s_suite_number" CHAR(10), "s_city" VARCHAR(60), "s_county" VARCHAR(30),
+  "s_state" CHAR(2), "s_zip" CHAR(10), "s_country" VARCHAR(20), "s_gmt_offset" DECIMAL(5,2), "s_tax_precentage" DECIMAL(5,2))' ),
+dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+'CREATE TABLE HOUSEHOLD_DEMOGRAPHICS ("hd_demo_sk" INTEGER, "hd_income_band_sk" INTEGER, "hd_buy_potential" CHAR(15),
+  "hd_dep_count" INTEGER, "hd_vehicle_count" INTEGER)' ),
+dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+'CREATE TABLE TIME_DIM ("t_time_sk" INTEGER, "t_time_id" CHAR(16), "t_time" INTEGER, "t_hour" INTEGER,
+  "t_minute" INTEGER, "t_second" INTEGER, "t_am_pm" CHAR(2), "t_shift" CHAR(20), "t_sub_shift" CHAR(20),
+  "t_meal_time" CHAR(20))' )
 limit 1;
 
 
@@ -537,43 +552,94 @@ TBLPROPERTIES (
                 "hive.sql.dbcp.maxActive" = "1"
 );
 
+CREATE EXTERNAL TABLE store
+(
+    s_store_sk                int                           ,
+    s_store_id                char(16)                      ,
+    s_rec_start_date          date                          ,
+    s_rec_end_date            date                          ,
+    s_closed_date_sk          int                           ,
+    s_store_name              varchar(50)                   ,
+    s_number_employees        int                           ,
+    s_floor_space             int                           ,
+    s_hours                   char(20)                      ,
+    s_manager                 varchar(40)                   ,
+    s_market_id               int                           ,
+    s_geography_class         varchar(100)                  ,
+    s_market_desc             varchar(100)                  ,
+    s_market_manager          varchar(40)                   ,
+    s_division_id             int                           ,
+    s_division_name           varchar(50)                   ,
+    s_company_id              int                           ,
+    s_company_name            varchar(50)                   ,
+    s_street_number           varchar(10)                   ,
+    s_street_name             varchar(60)                   ,
+    s_street_type             char(15)                      ,
+    s_suite_number            char(10)                      ,
+    s_city                    varchar(60)                   ,
+    s_county                  varchar(30)                   ,
+    s_state                   char(2)                       ,
+    s_zip                     char(10)                      ,
+    s_country                 varchar(20)                   ,
+    s_gmt_offset              decimal(5,2)                  ,
+    s_tax_precentage          decimal(5,2)                  
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.dbcp.username" = "user1",
+                "hive.sql.dbcp.password" = "passwd1",
+                "hive.sql.table" = "STORE",
+                "hive.sql.dbcp.maxActive" = "1"
+);
+
+CREATE EXTERNAL TABLE household_demographics
+(
+    hd_demo_sk                int                           ,
+    hd_income_band_sk         int                           ,
+    hd_buy_potential          char(15)                      ,
+    hd_dep_count              int                           ,
+    hd_vehicle_count          int                           
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.dbcp.username" = "user1",
+                "hive.sql.dbcp.password" = "passwd1",
+                "hive.sql.table" = "HOUSEHOLD_DEMOGRAPHICS",
+                "hive.sql.dbcp.maxActive" = "1"
+);
+
+CREATE EXTERNAL TABLE time_dim
+(
+    t_time_sk                 int                           ,
+    t_time_id                 char(16)                      ,
+    t_time                    int                           ,
+    t_hour                    int                           ,
+    t_minute                  int                           ,
+    t_second                  int                           ,
+    t_am_pm                   char(2)                       ,
+    t_shift                   char(20)                      ,
+    t_sub_shift               char(20)                      ,
+    t_meal_time               char(20)                      
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.dbcp.username" = "user1",
+                "hive.sql.dbcp.password" = "passwd1",
+                "hive.sql.table" = "TIME_DIM",
+                "hive.sql.dbcp.maxActive" = "1"
+);
+
 
 explain
-select inv1.w_warehouse_sk, inv1.i_item_sk, inv1.d_moy, inv1.mean, inv1.cov,
-       inv2.w_warehouse_sk, inv2.i_item_sk, inv2.d_moy, inv2.mean, inv2.cov
-from (select w_warehouse_name, w_warehouse_sk, i_item_sk, d_moy,
-             stdev, mean, case mean when 0.0
-                                    then null else stdev/mean end cov
-      from (select w_warehouse_name, w_warehouse_sk, i_item_sk, d_moy,
-                   sum(inv_quantity_on_hand) as stdev,
-                   avg(inv_quantity_on_hand) as mean
-            from inventory
-            join item on inventory.inv_item_sk = item.i_item_sk
-            join warehouse on inventory.inv_warehouse_sk = warehouse.w_warehouse_sk
-            join date_dim on inventory.inv_date_sk = date_dim.d_date_sk
-            where d_year = 2001
-            group by w_warehouse_name, w_warehouse_sk, i_item_sk, d_moy) foo
-      where case mean when 0.0
-                      then 0.0 else stdev/mean end > 1) inv1
-join (select w_warehouse_name, w_warehouse_sk, i_item_sk, d_moy,
-             stdev, mean, case mean when 0.0
-                                    then null else stdev/mean end cov
-      from (select w_warehouse_name, w_warehouse_sk, i_item_sk, d_moy,
-                   sum(inv_quantity_on_hand) as stdev,
-                   avg(inv_quantity_on_hand) as mean
-            from inventory
-            join item on inventory.inv_item_sk = item.i_item_sk
-            join warehouse on inventory.inv_warehouse_sk = warehouse.w_warehouse_sk
-            join date_dim on inventory.inv_date_sk = date_dim.d_date_sk
-            where d_year = 2001
-            group by w_warehouse_name, w_warehouse_sk, i_item_sk, d_moy) foo
-      where case mean when 0.0
-                      then 0.0 else stdev/mean end > 1) inv2
-  on inv1.i_item_sk = inv2.i_item_sk
-     and inv1.w_warehouse_sk = inv2.w_warehouse_sk
-where inv1.d_moy = 1 and inv2.d_moy = 1+1
-order by inv1.w_warehouse_sk, inv1.i_item_sk, inv1.d_moy, inv1.mean, inv1.cov,
-         inv2.d_moy, inv2.mean, inv2.cov;
 select inv1.w_warehouse_sk, inv1.i_item_sk, inv1.d_moy, inv1.mean, inv1.cov,
        inv2.w_warehouse_sk, inv2.i_item_sk, inv2.d_moy, inv2.mean, inv2.cov
 from (select w_warehouse_name, w_warehouse_sk, i_item_sk, d_moy,
@@ -1100,82 +1166,6 @@ WHERE    sr_items.item_id=cr_items.item_id
 AND      sr_items.item_id=wr_items.item_id 
 ORDER BY sr_items.item_id , 
          sr_item_qty limit 100;
-WITH sr_items AS 
-( 
-         SELECT   i_item_id               item_id, 
-                  Sum(sr_return_quantity) sr_item_qty 
-         FROM     store_returns, 
-                  item, 
-                  date_dim 
-         WHERE    sr_item_sk = i_item_sk 
-         AND      d_date IN 
-                  ( 
-                         SELECT d_date 
-                         FROM   date_dim 
-                         WHERE  d_week_seq IN 
-                                ( 
-                                       SELECT d_week_seq 
-                                       FROM   date_dim 
-                                       WHERE  d_date IN ('1998-01-02', 
-                                                         '1998-10-15', 
-                                                         '1998-11-10'))) 
-         AND      sr_returned_date_sk = d_date_sk 
-         GROUP BY i_item_id), cr_items AS 
-( 
-         SELECT   i_item_id               item_id, 
-                  Sum(cr_return_quantity) cr_item_qty 
-         FROM     catalog_returns, 
-                  item, 
-                  date_dim 
-         WHERE    cr_item_sk = i_item_sk 
-         AND      d_date IN 
-                  ( 
-                         SELECT d_date 
-                         FROM   date_dim 
-                         WHERE  d_week_seq IN 
-                                ( 
-                                       SELECT d_week_seq 
-                                       FROM   date_dim 
-                                       WHERE  d_date IN ('1998-01-02', 
-                                                         '1998-10-15', 
-                                                         '1998-11-10'))) 
-         AND      cr_returned_date_sk = d_date_sk 
-         GROUP BY i_item_id), wr_items AS 
-( 
-         SELECT   i_item_id               item_id, 
-                  Sum(wr_return_quantity) wr_item_qty 
-         FROM     web_returns, 
-                  item, 
-                  date_dim 
-         WHERE    wr_item_sk = i_item_sk 
-         AND      d_date IN 
-                  ( 
-                         SELECT d_date 
-                         FROM   date_dim 
-                         WHERE  d_week_seq IN 
-                                ( 
-                                       SELECT d_week_seq 
-                                       FROM   date_dim 
-                                       WHERE  d_date IN ('1998-01-02', 
-                                                         '1998-10-15', 
-                                                         '1998-11-10'))) 
-         AND      wr_returned_date_sk = d_date_sk 
-         GROUP BY i_item_id) 
-SELECT   sr_items.item_id , 
-         sr_item_qty , 
-         sr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 sr_dev , 
-         cr_item_qty , 
-         cr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 cr_dev , 
-         wr_item_qty , 
-         wr_item_qty/(sr_item_qty+cr_item_qty+wr_item_qty)/3.0 * 100 wr_dev , 
-         (sr_item_qty+cr_item_qty+wr_item_qty)/3.0                   average 
-FROM     sr_items , 
-         cr_items , 
-         wr_items 
-WHERE    sr_items.item_id=cr_items.item_id 
-AND      sr_items.item_id=wr_items.item_id 
-ORDER BY sr_items.item_id , 
-         sr_item_qty limit 100;
 
 
 explain
@@ -1323,6 +1313,283 @@ with ss as (
 			 group by i_manufact_id
 			 order by total_sales
 			limit 100;
+
+
+explain
+select *
+                          from (select count(*) as h8_30_to_9
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 8
+                                  and time_dim.t_minute >= 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s1 join
+                               (select count(*) as h9_to_9_30
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 9
+                                  and time_dim.t_minute < 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s2 join
+                               (select count(*) as h9_30_to_10
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 9
+                                  and time_dim.t_minute >= 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s3 join
+                               (select count(*) as h10_to_10_30
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 10
+                                  and time_dim.t_minute < 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s4 join
+                               (select count(*) as h10_30_to_11
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 10
+                                  and time_dim.t_minute >= 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s5 join
+                               (select count(*) as h11_to_11_30
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 11
+                                  and time_dim.t_minute < 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s6 join
+                               (select count(*) as h11_30_to_12
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 11
+                                  and time_dim.t_minute >= 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s7 join
+                               (select count(*) as h12_to_12_30
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 12
+                                  and time_dim.t_minute < 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s8;
+select *
+                          from (select count(*) as h8_30_to_9
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 8
+                                  and time_dim.t_minute >= 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s1 join
+                               (select count(*) as h9_to_9_30
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 9
+                                  and time_dim.t_minute < 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s2 join
+                               (select count(*) as h9_30_to_10
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 9
+                                  and time_dim.t_minute >= 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s3 join
+                               (select count(*) as h10_to_10_30
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 10
+                                  and time_dim.t_minute < 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s4 join
+                               (select count(*) as h10_30_to_11
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 10
+                                  and time_dim.t_minute >= 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s5 join
+                               (select count(*) as h11_to_11_30
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 11
+                                  and time_dim.t_minute < 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s6 join
+                               (select count(*) as h11_30_to_12
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 11
+                                  and time_dim.t_minute >= 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s7 join
+                               (select count(*) as h12_to_12_30
+                                from store_sales
+                                join household_demographics
+                                  on store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+                                join time_dim
+                                  on store_sales.ss_sold_time_sk = time_dim.t_time_sk
+                                join store
+                                  on store_sales.ss_store_sk = store.s_store_sk
+                                where time_dim.t_hour = 12
+                                  and time_dim.t_minute < 30
+                                  and ((household_demographics.hd_dep_count = 4
+                                        and household_demographics.hd_vehicle_count <= 3+2)
+                                       or (household_demographics.hd_dep_count = 2
+                                           and household_demographics.hd_vehicle_count<=0+2)
+                                       or (household_demographics.hd_dep_count = 0
+                                           and household_demographics.hd_vehicle_count<=1+2))
+                                  and store.s_store_name = 'ese') s8;
 
 
 DROP TABLE catalog_sales;
@@ -1338,6 +1605,9 @@ DROP TABLE inventory;
 DROP TABLE item;
 DROP TABLE warehouse;
 DROP TABLE date_dim;
+DROP TABLE store;
+DROP TABLE household_demographics;
+DROP TABLE time_dim;
 
 FROM src
 SELECT
@@ -1366,5 +1636,11 @@ dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
 'DROP TABLE WAREHOUSE' ),
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
-'DROP TABLE DATE_DIM' )
+'DROP TABLE DATE_DIM' ),
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+'DROP TABLE STORE' ),
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+'DROP TABLE HOUSEHOLD_DEMOGRAPHICS' ),
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+'DROP TABLE TIME_DIM' )
 limit 1;

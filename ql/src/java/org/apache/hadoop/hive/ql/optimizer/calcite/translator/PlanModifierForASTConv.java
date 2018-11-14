@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelColumnsAlignment;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -117,6 +118,10 @@ public class PlanModifierForASTConv {
       DruidQuery dq = (DruidQuery) rel;
       return ((HiveTableScan) dq.getTableScan()).getTableAlias();
     }
+    if (rel instanceof HiveJdbcConverter) {
+      HiveJdbcConverter conv = (HiveJdbcConverter) rel;
+      return conv.getTableScan().getHiveTableScan().getTableAlias();
+    }
     if (rel instanceof Project) {
       return null;
     }
@@ -156,7 +161,9 @@ public class PlanModifierForASTConv {
         }
       }
     } else if (rel instanceof SingleRel) {
-      if (rel instanceof Filter) {
+      if (rel instanceof HiveJdbcConverter) {
+        introduceDerivedTable(rel, parent);
+      } else if (rel instanceof Filter) {
         if (!validFilterParent(rel, parent)) {
           introduceDerivedTable(rel, parent);
         }
