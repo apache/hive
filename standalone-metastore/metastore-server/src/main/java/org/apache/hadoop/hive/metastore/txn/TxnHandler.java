@@ -1520,7 +1520,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           txnIds = rqst.getTxnIds();
         }
 
-        Collections.sort(txnIds); //easier to read logs and for assumption done in replication flow
+        //Easiest check since we can't differentiate do we handle singleton list or list with multiple txn ids.
+        if(txnIds.size() > 1) {
+          Collections.sort(txnIds); //easier to read logs and for assumption done in replication flow
+        }
 
         // Check if all the input txns are in open state. Write ID should be allocated only for open transactions.
         if (!isTxnsInOpenState(txnIds, stmt)) {
