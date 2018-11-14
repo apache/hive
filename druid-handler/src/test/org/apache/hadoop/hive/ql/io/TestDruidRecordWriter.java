@@ -58,6 +58,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.joda.time.DateTime;
@@ -86,7 +87,7 @@ import java.util.stream.Collectors;
 
   final List<ImmutableMap<String, Object>>
       expectedRows =
-      ImmutableList.of(ImmutableMap.of(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+      ImmutableList.of(ImmutableMap.of(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
           DateTime.parse("2014-10-22T00:00:00.000Z").getMillis(),
           "host",
           ImmutableList.of("a.example.com"),
@@ -94,7 +95,7 @@ import java.util.stream.Collectors;
           190L,
           "unique_hosts",
           1.0d),
-          ImmutableMap.of(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+          ImmutableMap.of(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
               DateTime.parse("2014-10-22T01:00:00.000Z").getMillis(),
               "host",
               ImmutableList.of("b.example.com"),
@@ -102,7 +103,7 @@ import java.util.stream.Collectors;
               175L,
               "unique_hosts",
               1.0d),
-          ImmutableMap.of(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+          ImmutableMap.of(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
               DateTime.parse("2014-10-22T02:00:00.000Z").getMillis(),
               "host",
               ImmutableList.of("c.example.com"),
@@ -113,7 +114,7 @@ import java.util.stream.Collectors;
 
   @Test public void testTimeStampColumnName() {
     Assert.assertEquals("Time column name need to match to ensure serdeser compatibility",
-        DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+        DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
         DruidTable.DEFAULT_TIMESTAMP_COLUMN);
   }
 
@@ -127,7 +128,7 @@ import java.util.stream.Collectors;
 
     final InputRowParser
         inputRowParser =
-        new MapInputRowParser(new TimeAndDimsParseSpec(new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+        new MapInputRowParser(new TimeAndDimsParseSpec(new TimestampSpec(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
             "auto",
             null), new DimensionsSpec(ImmutableList.of(new StringDimensionSchema("host")), null, null)));
     final Map<String, Object>
@@ -183,7 +184,7 @@ import java.util.stream.Collectors;
         expectedRows.stream()
             .map(input -> new DruidWritable(ImmutableMap.<String, Object>builder().putAll(input)
                 .put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
-                    Granularities.DAY.bucketStart(new DateTime((long) input.get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)))
+                    Granularities.DAY.bucketStart(new DateTime((long) input.get(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)))
                         .getMillis())
                 .build()))
             .collect(Collectors.toList());
@@ -226,7 +227,7 @@ import java.util.stream.Collectors;
 
       Assert.assertEquals(ImmutableList.of("host"), actual.getDimensions());
 
-      Assert.assertEquals(expected.get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN),
+      Assert.assertEquals(expected.get(DruidConstants.DEFAULT_TIMESTAMP_COLUMN),
           actual.getTimestamp().getMillis());
       Assert.assertEquals(expected.get("host"), actual.getDimension("host"));
       Assert.assertEquals(expected.get("visited_sum"), actual.getMetric("visited_sum"));

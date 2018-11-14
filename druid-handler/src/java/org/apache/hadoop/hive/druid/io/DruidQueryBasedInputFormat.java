@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.serde.DruidGroupByQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidScanQueryRecordReader;
@@ -173,7 +174,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   private static HiveDruidSplit[] distributeSelectQuery(String address, SelectQuery query, Path dummyPath)
       throws IOException {
     // If it has a limit, we use it and we do not distribute the query
-    final boolean isFetch = query.getContextBoolean(DruidStorageHandlerUtils.DRUID_QUERY_FETCH, false);
+    final boolean isFetch = query.getContextBoolean(DruidConstants.DRUID_QUERY_FETCH, false);
     if (isFetch) {
       return new HiveDruidSplit[] {new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query),
           dummyPath,
