@@ -2138,4 +2138,4 @@ PREHOOK: Input: default@tmp_orcppd
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_orcppd_3_1
 Stage-1 LLAP IO COUNTERS:
-   SELECTED_ROWGROUPS: 3
+   SELECTED_ROWGROUPS: 4
