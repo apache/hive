@@ -363,10 +363,18 @@ public class TestVectorizedOrcAcidRowBatchReader {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
     testDeleteEventFiltering2();
   }
+  @Test
+  public void testDeleteEventFilteringOnWithoutIdx2() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP, true);
+    testDeleteEventFiltering2();
+  }
 
   private void testDeleteEventFiltering2() throws Exception {
     boolean filterOn =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.FILTER_DELETE_EVENTS);
+    boolean skipKeyIdx =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP);
     int bucket = 1;
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .filesystem(fs)
@@ -430,10 +438,18 @@ public class TestVectorizedOrcAcidRowBatchReader {
         vectorizedReader.getKeyInterval();
     SearchArgument sarg = vectorizedReader.getDeleteEventSarg();
     if(filterOn) {
-      assertEquals(new OrcRawRecordMerger.KeyInterval(
-              new RecordIdentifier(0, bucketProperty, 0),
-              new RecordIdentifier(10000001, bucketProperty, 0)),
-          keyInterval);
+      if (skipKeyIdx) {
+        // If key index is not present, the min max key interval uses stripe stats instead
+        assertEquals(new OrcRawRecordMerger.KeyInterval(
+                new RecordIdentifier(0, bucketProperty, 0),
+                new RecordIdentifier(10000001, bucketProperty, 2)),
+            keyInterval);
+      } else {
+        assertEquals(new OrcRawRecordMerger.KeyInterval(
+                new RecordIdentifier(0, bucketProperty, 0),
+                new RecordIdentifier(10000001, bucketProperty, 0)),
+            keyInterval);
+      }
       //key point is that in leaf-5 is (rowId <= 2) even though maxKey has
       //rowId 0.  more in VectorizedOrcAcidRowBatchReader.findMinMaxKeys
       assertEquals( "leaf-0 = (LESS_THAN originalTransaction 0)," +

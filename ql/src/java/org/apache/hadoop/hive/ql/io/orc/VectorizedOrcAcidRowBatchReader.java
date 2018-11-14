@@ -466,10 +466,16 @@ public class VectorizedOrcAcidRowBatchReader
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
     RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
-    if(keyIndex == null || keyIndex.length != stripes.size()) {
-      LOG.warn("Could not find keyIndex or length doesn't match (" +
-          firstStripeIndex + "," + lastStripeIndex + "," + stripes.size() + "," +
-          (keyIndex == null ? -1 : keyIndex.length) + ")");
+
+    if(keyIndex == null) {
+      LOG.warn("Could not find keyIndex (" + firstStripeIndex + "," +
+          lastStripeIndex + "," + stripes.size() + ")");
+    }
+
+    if(keyIndex != null && keyIndex.length != stripes.size()) {
+      LOG.warn("keyIndex length doesn't match (" +
+          firstStripeIndex + "," + lastStripeIndex + "," + stripes.size() +
+          "," + keyIndex.length + ")");
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
     /**
@@ -483,17 +489,19 @@ public class VectorizedOrcAcidRowBatchReader
     if(!columnStatsPresent) {
       LOG.debug("findMinMaxKeys() No ORC column stats");
     }
+
+    List<StripeStatistics> stats = reader.getStripeStatistics();
+    assert stripes.size() == stats.size() : "str.s=" + stripes.size() +
+        " sta.s=" + stats.size();
+
     RecordIdentifier minKey = null;
-    if(firstStripeIndex > 0) {
+    if(firstStripeIndex > 0 && keyIndex != null) {
       //valid keys are strictly > than this key
       minKey = keyIndex[firstStripeIndex - 1];
       //add 1 to make comparison >= to match the case of 0th stripe
       minKey.setRowId(minKey.getRowId() + 1);
     }
     else {
-      List<StripeStatistics> stats = reader.getStripeStatistics();
-      assert stripes.size() == stats.size() : "str.s=" + stripes.size() +
-          " sta.s=" + stats.size();
       if(columnStatsPresent) {
         ColumnStatistics[] colStats =
             stats.get(firstStripeIndex).getColumnStatistics();
@@ -513,15 +521,40 @@ public class VectorizedOrcAcidRowBatchReader
         //we may want to change bucketProperty from int to long in the
         // future(across the stack) this protects the following cast to int
         assert bucketProperty.getMinimum() <= Integer.MAX_VALUE :
-            "was bucketProper changed to a long (" +
+            "was bucketProperty changed to a long (" +
                 bucketProperty.getMinimum() + ")?!:" + orcSplit;
         //this a lower bound but not necessarily greatest lower bound
         minKey = new RecordIdentifier(origWriteId.getMinimum(),
             (int) bucketProperty.getMinimum(), rowId.getMinimum());
       }
     }
+
+    RecordIdentifier maxKey = null;
+
+    if (keyIndex != null) {
+      maxKey = keyIndex[lastStripeIndex];
+    } else {
+      if(columnStatsPresent) {
+        ColumnStatistics[] colStats =
+            stats.get(lastStripeIndex).getColumnStatistics();
+        IntegerColumnStatistics origWriteId = (IntegerColumnStatistics)
+            colStats[OrcRecordUpdater.ORIGINAL_WRITEID + 1];
+        IntegerColumnStatistics bucketProperty = (IntegerColumnStatistics)
+            colStats[OrcRecordUpdater.BUCKET + 1];
+        IntegerColumnStatistics rowId = (IntegerColumnStatistics)
+            colStats[OrcRecordUpdater.ROW_ID + 1];
+
+        assert bucketProperty.getMaximum() <= Integer.MAX_VALUE :
+            "was bucketProperty changed to a long (" +
+                bucketProperty.getMaximum() + ")?!:" + orcSplit;
+
+        // this is an upper bound but not necessarily the least upper bound
+        maxKey = new RecordIdentifier(origWriteId.getMaximum(),
+            (int) bucketProperty.getMaximum(), rowId.getMaximum());
+      }
+    }
     OrcRawRecordMerger.KeyInterval keyInterval =
-        new OrcRawRecordMerger.KeyInterval(minKey, keyIndex[lastStripeIndex]);
+        new OrcRawRecordMerger.KeyInterval(minKey, maxKey);
     LOG.info("findMinMaxKeys(): " + keyInterval +
         " stripes(" + firstStripeIndex + "," + lastStripeIndex + ")");
 
@@ -544,7 +577,6 @@ public class VectorizedOrcAcidRowBatchReader
        * So use stripe stats to find proper min/max for bucketProp and rowId
        * writeId is the same in both cases
        */
-      List<StripeStatistics> stats = reader.getStripeStatistics();
       for(int i = firstStripeIndex; i <= lastStripeIndex; i++) {
         ColumnStatistics[] colStats = stats.get(firstStripeIndex)
             .getColumnStatistics();
