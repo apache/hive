@@ -347,7 +347,9 @@ public class OrcRecordUpdater implements RecordUpdater {
         writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
       }
     }
-    writerOptions.fileSystem(fs).callback(indexBuilder);
+    if(!HiveConf.getBoolVar(options.getConfiguration(), HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP)) {
+      writerOptions.fileSystem(fs).callback(indexBuilder);
+    }
     rowInspector = (StructObjectInspector)options.getInspector();
     writerOptions.inspector(createEventObjectInspector(findRecId(options.getInspector(),
         options.getRecordIdColumn())));
@@ -621,6 +623,10 @@ public class OrcRecordUpdater implements RecordUpdater {
   static RecordIdentifier[] parseKeyIndex(Reader reader) {
     String[] stripes;
     try {
+      if (!reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
+        return null;
+      }
+
       ByteBuffer val =
           reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)
               .duplicate();
