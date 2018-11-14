@@ -434,6 +434,8 @@ public class TestOrcRawRecordMerger {
     Mockito.when(recordReader.next(row2)).thenReturn(row3);
     Mockito.when(recordReader.next(row3)).thenReturn(row5);
 
+    Mockito.when(reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
+        .thenReturn(true);
     Mockito.when(reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
         .thenReturn(ByteBuffer.wrap("10,20,30;40,50,60;40,50,61"
             .getBytes("UTF-8")));
