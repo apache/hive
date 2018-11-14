@@ -127,6 +127,13 @@ SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
 
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
 
+set hive.jdbc.pushdown.enable=false;
+
+EXPLAIN
+SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
+
+SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
+
 DROP TABLE db1_ext_auth1;
 DROP TABLE db2_ext_auth2;
 DROP TABLE db1_ext_auth2;
