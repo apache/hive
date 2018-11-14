@@ -280,6 +280,7 @@ public class TestSessionManagerMetrics {
       @Override
       public void run() {
         try {
+          Hive.set(session.getSessionHive());
           OperationHandle handle = session.getTables("catalog", "schema", "table", null);
           session.closeOperation(handle);
         } catch (Exception e) {
@@ -334,6 +335,7 @@ public class TestSessionManagerMetrics {
       @Override
       public void run() {
         try {
+          Hive.set(session.getSessionHive());
           OperationHandle handle = session.getTables("catalog", "schema", "table", null);
           session.closeOperation(handle);
         } catch (Exception e) {
