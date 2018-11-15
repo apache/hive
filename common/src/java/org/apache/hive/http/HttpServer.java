@@ -21,6 +21,9 @@ package org.apache.hive.http;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -558,6 +561,22 @@ public class HttpServer {
     addServlet("conf", "/conf", ConfServlet.class);
     addServlet("stacks", "/stacks", StackServlet.class);
     addServlet("conflog", "/conflog", Log4j2ConfiguratorServlet.class);
+    final String asyncProfilerHome = ProfileServlet.getAsyncProfilerHome();
+    if (asyncProfilerHome != null && !asyncProfilerHome.trim().isEmpty()) {
+      addServlet("prof", "/prof", ProfileServlet.class);
+      Path tmpDir = Paths.get(ProfileServlet.OUTPUT_DIR);
+      if (Files.notExists(tmpDir)) {
+        Files.createDirectories(tmpDir);
+      }
+      ServletContextHandler genCtx =
+        new ServletContextHandler(contexts, "/prof-output");
+      setContextAttributes(genCtx.getServletContext(), b.contextAttrs);
+      genCtx.addServlet(ProfileOutputServlet.class, "/*");
+      genCtx.setResourceBase(tmpDir.toAbsolutePath().toString());
+      genCtx.setDisplayName("prof-output");
+    } else {
+      LOG.info("ASYNC_PROFILER_HOME env or -Dasync.profiler.home not specified. Disabling /prof endpoint..");
+    }
 
     for (Pair<String, Class<? extends HttpServlet>> p : b.servlets) {
       addServlet(p.getFirst(), "/" + p.getFirst(), p.getSecond());

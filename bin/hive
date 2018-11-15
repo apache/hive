@@ -346,6 +346,8 @@ if [[ "$SERVICE" =~ ^(hiveserver2|beeline|cli)$ ]] ; then
   fi
 fi
 
+export JVM_PID="$$"
+
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"
   echo "Available Services: $SERVICE_LIST"
