@@ -101,7 +101,7 @@
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
     <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
-    <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
+    <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.compiler.plugin.version>3.6.1</maven.compiler.plugin.version>
     <maven.enforcer.plugin.version>1.3.1</maven.enforcer.plugin.version>
