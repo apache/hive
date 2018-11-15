@@ -121,7 +121,6 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.hive.druid.MiniDruidCluster;
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.kafka.SingleNodeKafkaCluster;
 import org.apache.hive.kafka.Wikipedia;
 import org.apache.logging.log4j.util.Strings;
@@ -683,15 +682,6 @@ public class QTestUtil {
         mr = shims.getMiniTezCluster(conf, numTrackers, uriString,
             EnumSet.of(MiniClusterType.llap, MiniClusterType.llap_local).contains(clusterType));
       }
-      try {
-        MiniHS2 miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LOCALFS_ONLY, true);
-        Map<String, String> confOverlay = new HashMap<String, String>();
-        miniHS2.start(confOverlay);
-        LOG.error("MiniHS2 url -  " + miniHS2.getJdbcURL());
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-
     } else if (clusterType == MiniClusterType.miniSparkOnYarn) {
       mr = shims.getMiniSparkCluster(conf, 2, uriString, 1);
     } else if (clusterType == MiniClusterType.mr) {
