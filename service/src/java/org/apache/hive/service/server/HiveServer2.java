@@ -562,8 +562,18 @@ public class HiveServer2 extends CompositeService {
       }
     }
   }
+
+  /**
+   * @return true if the server instance was deregistered from ZooKeeper, else false. The function might
+   * be called even when the instance is not registered with the ZooKeeper (See
+   * SessionManage.closeSessionInternal()). In that case, return false since the deregistration has
+   * not really happened.
+   */
   public boolean isDeregisteredWithZooKeeper() {
-    return zooKeeperHelper.isDeregisteredWithZooKeeper();
+    if (zooKeeperHelper != null) {
+      return zooKeeperHelper.isDeregisteredWithZooKeeper();
+    }
+    else {return false;}
   }
 
   private String getServerInstanceURI() throws Exception {
