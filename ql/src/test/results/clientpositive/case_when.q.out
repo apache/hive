@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE `Calcs`(
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `Calcs`(
    `bool0` boolean,
    `bool1` boolean,
    `bool2` boolean)
@@ -6,7 +6,7 @@ STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@Calcs
-POSTHOOK: query: CREATE TABLE `Calcs`(
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `Calcs`(
    `bool0` boolean,
    `bool1` boolean,
    `bool2` boolean)
@@ -100,3 +100,11 @@ true	false	false	false
 true	false	true	false
 true	true	false	true
 true	true	false	true
+PREHOOK: query: DROP TABLE IF EXISTS `Calcs`
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@calcs
+PREHOOK: Output: default@calcs
+POSTHOOK: query: DROP TABLE IF EXISTS `Calcs`
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@calcs
+POSTHOOK: Output: default@calcs
