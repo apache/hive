@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
@@ -320,6 +321,7 @@ public class TestDbNotificationListener {
     // Parse the message field
     CreateDatabaseMessage createDbMsg = md.getCreateDatabaseMessage(event.getMessage());
     assertEquals(dbName, createDbMsg.getDB());
+    assertEquals(db, createDbMsg.getDatabaseObject());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_DATABASE, firstEventId + 1);
@@ -336,6 +338,39 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
+  }
+
+  @Test
+  public void alterDatabase() throws Exception {
+    String dbName = "alterdb";
+    String dbLocationUri = "file:/tmp";
+    String dbDescription = "no description";
+    msClient.createDatabase(new Database(dbName, dbDescription, dbLocationUri, emptyParameters));
+    // get the db for comparison below since it may include additional parameters
+    Database dbBefore = msClient.getDatabase(dbName);
+    // create alter database notification
+    String newDesc = "test database";
+    Database dbAfter = dbBefore.deepCopy();
+    dbAfter.setDescription(newDesc);
+    msClient.alterDatabase(dbName, dbAfter);
+    dbAfter = msClient.getDatabase(dbName);
+
+    // Read notification from metastore
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+    // check the contents of alter database notification
+    NotificationEvent event = rsp.getEvents().get(1);
+    assertEquals(firstEventId + 2, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(EventType.ALTER_DATABASE.toString(), event.getEventType());
+    assertEquals(dbName, event.getDbName());
+    assertNull(event.getTableName());
+
+    // Parse the message field
+    AlterDatabaseMessage alterDatabaseMessage = md.getAlterDatabaseMessage(event.getMessage());
+    assertEquals(dbName, alterDatabaseMessage.getDB());
+    assertEquals(dbBefore, alterDatabaseMessage.getDbObjBefore());
+    assertEquals(dbAfter, alterDatabaseMessage.getDbObjAfter());
   }
 
   @Test
