@@ -51,7 +51,7 @@ public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
     try {
       this.dbJson = MessageBuilder.createDatabaseObjJson(db);
     } catch (TException ex) {
-      throw new IllegalArgumentException("Could not serialize Function object", ex);
+      throw new IllegalArgumentException("Could not serialize database object", ex);
     }
     checkValid();
   }
