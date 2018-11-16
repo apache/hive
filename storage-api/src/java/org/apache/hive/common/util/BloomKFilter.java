@@ -42,7 +42,7 @@ import java.util.Arrays;
   private static final int DEFAULT_BLOCK_OFFSET_MASK = DEFAULT_BLOCK_SIZE - 1;
   private static final int DEFAULT_BIT_OFFSET_MASK = Long.SIZE - 1;
   private final BitSet bitSet;
-  private final int m;
+  private final long m;
   private final int k;
   // spread k-1 bits to adjacent longs, default is 8
   // spreading hash bits within blockSize * longs will make bloom filter L1 cache friendly
@@ -59,9 +59,9 @@ import java.util.Arrays;
     checkArgument(maxNumEntries > 0, "expectedEntries should be > 0");
     long numBits = optimalNumOfBits(maxNumEntries, DEFAULT_FPP);
     this.k = optimalNumOfHashFunctions(maxNumEntries, numBits);
-    int nLongs = (int) Math.ceil((double) numBits / (double) Long.SIZE);
+    long nLongs = (long) Math.ceil((double) numBits / (double) Long.SIZE);
     // additional bits to pad long array to block size
-    int padLongs = DEFAULT_BLOCK_SIZE - nLongs % DEFAULT_BLOCK_SIZE;
+    long padLongs = DEFAULT_BLOCK_SIZE - nLongs % DEFAULT_BLOCK_SIZE;
     this.m = (nLongs + padLongs) * Long.SIZE;
     this.bitSet = new BitSet(m);
     checkArgument((bitSet.data.length % DEFAULT_BLOCK_SIZE) == 0, "bitSet has to be block aligned");
@@ -252,7 +252,7 @@ import java.util.Arrays;
     return k;
   }
 
-  public int getNumBits() {
+  public long getNumBits() {
     return m;
   }
 

@@ -944,9 +944,12 @@ public class TezCompiler extends TaskCompiler {
           long expectedEntries = udafBloomFilterEvaluator.getExpectedEntries();
           if (expectedEntries == -1 || expectedEntries >
               pCtx.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES)) {
-            if (sjInfo.getIsHint()) {
+            if (sjInfo.getIsHint() && expectedEntries == -1) {
               throw new SemanticException("Removing hinted semijoin due to lack to stats" +
                   " or exceeding max bloom filter entries");
+            } else if(sjInfo.getIsHint()) {
+              // do not remove if hint is provided
+              continue;
             }
             // Remove the semijoin optimization branch along with ALL the mappings
             // The parent GB2 has all the branches. Collect them and remove them.
