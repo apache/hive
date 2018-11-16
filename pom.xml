@@ -124,7 +124,7 @@
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.8.0</arrow.version>
-    <avatica.version>1.11.0</avatica.version>
+    <avatica.version>1.10.0.3.0.3.0-SNAPSHOT</avatica.version>
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.16.0.3.0.3.0-SNAPSHOT</calcite.version>
