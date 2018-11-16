@@ -616,9 +616,9 @@ public class HiveServer2 extends CompositeService {
             // so that the clients can read these and configure themselves properly.
             addConfsToPublish(hiveConf, confsToPublish, getServerInstanceURI());
             znodeData = Joiner.on(';').withKeyValueSeparator("=").join(confsToPublish);
-          }
-          else
+          } else {
             znodeData = instanceURI;
+          }
 
           // Add a Znode to the specified ZooKeeper with name: serverUri=host:port;
           // version=versionInfo; sequence=sequenceNumber
@@ -846,7 +846,9 @@ public class HiveServer2 extends CompositeService {
     // Remove this server instance from ZooKeeper if dynamic service discovery is set
     if (serviceDiscovery && !activePassiveHA) {
       try {
-        zooKeeperHelper.removeServerInstanceFromZooKeeper();
+        if (zooKeeperHelper != null) {
+          zooKeeperHelper.removeServerInstanceFromZooKeeper();
+        }
       } catch (Exception e) {
         LOG.error("Error removing znode for this HiveServer2 instance from ZooKeeper.", e);
       }
@@ -1007,8 +1009,7 @@ public class HiveServer2 extends CompositeService {
    */
   static void deleteServerInstancesFromZooKeeper(String versionNumber) throws Exception {
     HiveConf hiveConf = new HiveConf();
-    ZooKeeperHiveHelper ZKSpec = hiveConf.getZKConfig();
-    String zooKeeperEnsemble = ZKSpec.getQuorumServers();
+    String zooKeeperEnsemble = hiveConf.getZKConfig().getQuorumServers();
     String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
     int baseSleepTime = (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
     int maxRetries = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);

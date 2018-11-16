@@ -46,6 +46,11 @@ import org.slf4j.LoggerFactory;
 // in the first and the third.. Also note that the third functionality overlaps with
 // ZooKeeperHiveClientHelper class, but that overlap is very small. So for now all the three
 // functionality are bundled in a single class.
+
+/**
+ * ZooKeeperHiveHelper. A helper class to hold ZooKeeper related configuration, to register and
+ * deregister ZooKeeper node for a given server and to fetch registered server URIs for clients.
+ */
 public class ZooKeeperHiveHelper {
   public static final Logger LOG = LoggerFactory.getLogger(ZooKeeperHiveHelper.class.getName());
   public static final String ZOOKEEPER_PATH_SEPARATOR = "/";
@@ -74,8 +79,9 @@ public class ZooKeeperHiveHelper {
         quorumServers.append(clientPort);
       }
 
-      if (i != hosts.length - 1)
+      if (i != hosts.length - 1) {
         quorumServers.append(",");
+      }
     }
 
     this.quorum = quorumServers.toString();
@@ -89,7 +95,9 @@ public class ZooKeeperHiveHelper {
   /**
    * Get the ensemble server addresses. The format is: host1:port, host2:port..
    **/
-  public String getQuorumServers() {return quorum;}
+  public String getQuorumServers() {
+    return quorum;
+  }
 
   /**
    * Adds a server instance to ZooKeeper as a znode.
@@ -146,8 +154,9 @@ public class ZooKeeperHiveHelper {
             .connectString(zooKeeperEnsemble)
             .sessionTimeoutMs(sessionTimeout)
             .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries));
-    if (zooKeeperAclProvider != null)
-            builder =  builder.aclProvider(zooKeeperAclProvider);
+    if (zooKeeperAclProvider != null) {
+      builder = builder.aclProvider(zooKeeperAclProvider);
+    }
     CuratorFramework zkClient = builder.build();
     zkClient.start();
 

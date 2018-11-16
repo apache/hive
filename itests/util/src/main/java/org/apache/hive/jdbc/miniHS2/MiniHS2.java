@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.common.util.ZooKeeperHiveHelper;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.service.Service;

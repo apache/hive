@@ -27,7 +27,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.common.util.ZooKeeperHiveHelper;
 
 public class CuratorFrameworkSingleton {
   private static HiveConf conf = null;
