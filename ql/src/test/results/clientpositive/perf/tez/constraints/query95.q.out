@@ -109,19 +109,27 @@ Stage-0
                     Group By Operator [GBY_144] (rows=1 width=232)
                       Output:["_col0","_col1","_col2"],aggregations:["count(_col0)","sum(_col1)","sum(_col2)"]
 <<<<<<< HEAD
+<<<<<<< HEAD
                       Group By Operator [GBY_131] (rows=143895019 width=228)
 =======
                       Group By Operator [GBY_143] (rows=2511437 width=228)
 >>>>>>> a7f9584013... BUG-115301/HIVE-20988: Wrong results for group by queries with primary key on multiple columns (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
+=======
+                      Group By Operator [GBY_131] (rows=38111880083 width=228)
+>>>>>>> 350185ac11... BUG-115140/HIVE-20842: Fix logic introduced in HIVE-20660 to estimate statistics for group by (Vineet Garg, reviewed by Ashutosh Chauhan)
                         Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
                       <-Reducer 6 [SIMPLE_EDGE]
                         SHUFFLE [RS_109]
                           PartitionCols:_col0
 <<<<<<< HEAD
+<<<<<<< HEAD
                           Group By Operator [GBY_100] (rows=143895019 width=228)
 =======
                           Group By Operator [GBY_108] (rows=2511437 width=228)
 >>>>>>> a7f9584013... BUG-115301/HIVE-20988: Wrong results for group by queries with primary key on multiple columns (Vineet Garg, reviewed by Jesus Camacho Rodriguez)
+=======
+                          Group By Operator [GBY_100] (rows=38111880083 width=228)
+>>>>>>> 350185ac11... BUG-115140/HIVE-20842: Fix logic introduced in HIVE-20660 to estimate statistics for group by (Vineet Garg, reviewed by Ashutosh Chauhan)
                             Output:["_col0","_col2","_col3"],aggregations:["sum(_col4)","sum(_col5)"],keys:_col3
                             Merge Join Operator [MERGEJOIN_121] (rows=5022875 width=227)
                               Conds:RS_55._col3=RS_142._col0(Inner),Output:["_col3","_col4","_col5"]

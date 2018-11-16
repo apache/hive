@@ -1380,7 +1380,8 @@ public class StatsRulesProcFactory {
             } else {
               // Case 3: column stats, hash aggregation, NO grouping sets
               cardinality = Math.min(parentNumRows/2, StatsUtils.safeMult(ndvProduct, parallelism));
-              long orgParentNumRows = getParentNumRows(gop, gop.getConf().getKeys(), conf);
+              long orgParentNumRows = StatsUtils.safeMult(getParentNumRows(gop, gop.getConf().getKeys(), conf),
+                                                          parallelism);
               cardinality = Math.min(cardinality, orgParentNumRows);
 
               if (LOG.isDebugEnabled()) {
@@ -1408,8 +1409,8 @@ public class StatsRulesProcFactory {
 
           // in reduce side GBY, we don't know if the grouping set was present or not. so get it
           // from map side GBY
-          GroupByOperator mGop = OperatorUtils.findSingleOperatorUpstream(parent, GroupByOperator.class);
-          if (mGop != null) {
+          GroupByOperator mGop = OperatorUtils.findMapSideGb(gop);
+          if(mGop != null) {
             containsGroupingSet = mGop.getConf().isGroupingSetsPresent();
           }
 
@@ -1424,6 +1425,15 @@ public class StatsRulesProcFactory {
           } else {
             // Case 9: column stats, NO grouping sets
             cardinality = Math.min(parentNumRows, ndvProduct);
+            // to get to the source number of rows we should be using original group by
+            GroupByOperator gOpStats = mGop;
+            if(gOpStats == null) {
+              // it could be NULL in case the plan has single group by (instead of merge and final)
+              // e.g. autogather stats
+              gOpStats = gop;
+            }
+            long orgParentNumRows = getParentNumRows(gOpStats, gOpStats.getConf().getKeys(), conf);
+            cardinality = Math.min(orgParentNumRows, cardinality);
 
             if (LOG.isDebugEnabled()) {
               LOG.debug("[Case 9] STATS-" + gop.toString() + ": cardinality: " + cardinality);
