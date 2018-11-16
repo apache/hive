@@ -4590,7 +4590,7 @@ public class HiveConf extends Configuration {
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", false,
       "Merge adjacent joins into a single n-way join"),
-    HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
+    HIVE_LOG_N_RECORDS("hive.log.every.n.records", 1000000L, new RangeValidator(0L, null),
       "If value is greater than 0 logs in fixed intervals of size n rather than exponentially."),
     /**
      * @deprecated Use MetastoreConf.MSCK_PATH_VALIDATION
