@@ -139,6 +139,8 @@ public class LlapSliderUtils {
       }
       LOG.info("Uploading the app tarball");
       CoreFileSystem fs = new CoreFileSystem(conf);
+      fs.createWithPermissions(new Path(LLAP_PACKAGE_DIR),
+          FsPermission.getDirDefault());
       fs.copyLocalFileToHdfs(new File(packageDir.toString(), packageName),
           new Path(LLAP_PACKAGE_DIR), new FsPermission("755"));
 
