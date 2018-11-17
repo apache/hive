@@ -12013,6 +12013,7 @@ class CommitTxnRequest:
    - txnid
    - replPolicy
    - writeEventInfos
+   - replLastIdInfo
   """
 
   thrift_spec = (
@@ -12020,12 +12021,14 @@ class CommitTxnRequest:
     (1, TType.I64, 'txnid', None, None, ), # 1
     (2, TType.STRING, 'replPolicy', None, None, ), # 2
     (3, TType.LIST, 'writeEventInfos', (TType.STRUCT,(WriteEventInfo, WriteEventInfo.thrift_spec)), None, ), # 3
+    (4, TType.STRUCT, 'replLastIdInfo', (ReplLastIdInfo, ReplLastIdInfo.thrift_spec), None, ), # 4
   )
 
-  def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None,):
+  def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, replLastIdInfo=None,):
     self.txnid = txnid
     self.replPolicy = replPolicy
     self.writeEventInfos = writeEventInfos
+    self.replLastIdInfo = replLastIdInfo
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -12057,6 +12060,12 @@ class CommitTxnRequest:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.replLastIdInfo = ReplLastIdInfo()
+          self.replLastIdInfo.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -12082,6 +12091,10 @@ class CommitTxnRequest:
         iter536.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.replLastIdInfo is not None:
+      oprot.writeFieldBegin('replLastIdInfo', TType.STRUCT, 4)
+      self.replLastIdInfo.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -12096,6 +12109,7 @@ class CommitTxnRequest:
     value = (value * 31) ^ hash(self.txnid)
     value = (value * 31) ^ hash(self.replPolicy)
     value = (value * 31) ^ hash(self.writeEventInfos)
+    value = (value * 31) ^ hash(self.replLastIdInfo)
     return value
 
   def __repr__(self):
@@ -12247,6 +12261,129 @@ class WriteEventInfo:
     value = (value * 31) ^ hash(self.partition)
     value = (value * 31) ^ hash(self.tableObj)
     value = (value * 31) ^ hash(self.partitionObj)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ReplLastIdInfo:
+  """
+  Attributes:
+   - database
+   - table
+   - lastReplId
+   - catalog
+   - partition
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'database', None, None, ), # 1
+    (2, TType.STRING, 'table', None, None, ), # 2
+    (3, TType.I64, 'lastReplId', None, None, ), # 3
+    (4, TType.STRING, 'catalog', None, None, ), # 4
+    (5, TType.STRING, 'partition', None, None, ), # 5
+  )
+
+  def __init__(self, database=None, table=None, lastReplId=None, catalog=None, partition=None,):
+    self.database = database
+    self.table = table
+    self.lastReplId = lastReplId
+    self.catalog = catalog
+    self.partition = partition
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.database = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.table = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.lastReplId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.catalog = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.partition = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ReplLastIdInfo')
+    if self.database is not None:
+      oprot.writeFieldBegin('database', TType.STRING, 1)
+      oprot.writeString(self.database)
+      oprot.writeFieldEnd()
+    if self.table is not None:
+      oprot.writeFieldBegin('table', TType.STRING, 2)
+      oprot.writeString(self.table)
+      oprot.writeFieldEnd()
+    if self.lastReplId is not None:
+      oprot.writeFieldBegin('lastReplId', TType.I64, 3)
+      oprot.writeI64(self.lastReplId)
+      oprot.writeFieldEnd()
+    if self.catalog is not None:
+      oprot.writeFieldBegin('catalog', TType.STRING, 4)
+      oprot.writeString(self.catalog)
+      oprot.writeFieldEnd()
+    if self.partition is not None:
+      oprot.writeFieldBegin('partition', TType.STRING, 5)
+      oprot.writeString(self.partition)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.database is None:
+      raise TProtocol.TProtocolException(message='Required field database is unset!')
+    if self.table is None:
+      raise TProtocol.TProtocolException(message='Required field table is unset!')
+    if self.lastReplId is None:
+      raise TProtocol.TProtocolException(message='Required field lastReplId is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.database)
+    value = (value * 31) ^ hash(self.table)
+    value = (value * 31) ^ hash(self.lastReplId)
+    value = (value * 31) ^ hash(self.catalog)
+    value = (value * 31) ^ hash(self.partition)
     return value
 
   def __repr__(self):

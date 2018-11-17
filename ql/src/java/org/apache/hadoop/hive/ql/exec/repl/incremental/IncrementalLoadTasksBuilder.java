@@ -21,8 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.ReplTxnTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
@@ -32,8 +37,12 @@ import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -47,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
+import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 
@@ -160,7 +170,7 @@ public class IncrementalLoadTasksBuilder {
           taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
           this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
         } else {
-          taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail);
+          taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail, false);
           this.log.debug("no events to replay, set last repl id of table " + dbName + "." + tableName + " to " +
                   lastEventid);
         }
@@ -237,17 +247,31 @@ public class IncrementalLoadTasksBuilder {
 
   private Task<? extends Serializable> tableUpdateReplStateTask(String dbName, String tableName,
                                                     Map<String, String> partSpec, String replState,
-                                                    Task<? extends Serializable> preCursor) throws SemanticException {
-    HashMap<String, String> mapProp = new HashMap<>();
-    mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
+                                                    Task<? extends Serializable> preCursor,
+                                                    boolean needCommitTx) throws SemanticException {
+    Task<? extends Serializable> updateReplIdTask;
+    if (needCommitTx) {
+      ReplLastIdInfo replLastIdInfo = new ReplLastIdInfo(dbName, tableName, Long.parseLong(replState));
+      if (partSpec != null) {
+        try {
+          replLastIdInfo.setPartition(Warehouse.makePartName(partSpec, false));
+        } catch (MetaException e) {
+          throw new SemanticException(e.getMessage());
+        }
+      }
+      updateReplIdTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo), conf);
+    } else {
+      HashMap<String, String> mapProp = new HashMap<>();
+      mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
 
-    AlterTableDesc alterTblDesc =  new AlterTableDesc(
-            AlterTableDesc.AlterTableTypes.ADDPROPS, new ReplicationSpec(replState, replState));
-    alterTblDesc.setProps(mapProp);
-    alterTblDesc.setOldName(StatsUtils.getFullyQualifiedTableName(dbName, tableName));
-    alterTblDesc.setPartSpec((HashMap<String, String>)partSpec);
+      AlterTableDesc alterTblDesc = new AlterTableDesc(
+              AlterTableDesc.AlterTableTypes.ADDPROPS, new ReplicationSpec(replState, replState));
+      alterTblDesc.setProps(mapProp);
+      alterTblDesc.setOldName(StatsUtils.getFullyQualifiedTableName(dbName, tableName));
+      alterTblDesc.setPartSpec((HashMap<String, String>) partSpec);
 
-    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc), conf);
+      updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc), conf);
+    }
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {
@@ -291,20 +315,41 @@ public class IncrementalLoadTasksBuilder {
     List<Task<? extends Serializable>> tasks = new ArrayList<>();
     Task<? extends Serializable> updateReplIdTask;
 
+    boolean needCommitTx = false;
+    for (Task<? extends Serializable> t : importTasks) {
+      if (t instanceof ReplTxnTask) {
+        ReplTxnTask replTxnTask = (ReplTxnTask)t;
+        if (replTxnTask.getOperationType() == ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN) {
+          assert needCommitTx == false; // can not have more than one open txn task for migration per event
+          needCommitTx = true;
+        }
+      }
+    }
+
     // If any partition is updated, then update repl state in partition object
     for (UpdatedMetaDataTracker.UpdateMetaData updateMetaData : updatedMetaDataTracker.getUpdateMetaDataList()) {
       String replState = updateMetaData.getReplState();
       String dbName = updateMetaData.getDbName();
       String tableName = updateMetaData.getTableName();
+
+      // in case of table handle operations there should be only one partition/table per event.
+      if (needCommitTx) {
+        assert updateMetaData.getPartitionsList().size() <= 1;
+      }
+
       // If any partition is updated, then update repl state in partition object
       for (final Map<String, String> partSpec : updateMetaData.getPartitionsList()) {
-        updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, partSpec, replState, barrierTask);
+        updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, partSpec, replState, barrierTask, needCommitTx);
         tasks.add(updateReplIdTask);
       }
 
+      // if partition's last repl id is updated within transaction then for table its not required. For partitioned
+      // table, partition's last repl id will be checked before replaying the event.
+      needCommitTx = needCommitTx && updateMetaData.getPartitionsList().isEmpty();
+
       if (tableName != null) {
         // If any table/partition is updated, then update repl state in table object
-        updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, null, replState, barrierTask);
+        updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, null, replState, barrierTask, needCommitTx);
         tasks.add(updateReplIdTask);
       }
 

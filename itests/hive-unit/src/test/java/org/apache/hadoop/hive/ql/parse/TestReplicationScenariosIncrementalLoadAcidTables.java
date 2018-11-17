@@ -145,74 +145,86 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     String tableName = testName.getMethodName() + "testInsert";
     String tableNameMM = tableName + "_MM";
 
-    appendInsert(tableName, tableNameMM, selectStmtList, expectedValues);
-    appendDelete(selectStmtList, expectedValues);
-    appendUpdate(selectStmtList, expectedValues);
-    appendTruncate(selectStmtList, expectedValues);
-    appendInsertIntoFromSelect(tableName, tableNameMM, selectStmtList, expectedValues);
-    appendMerge(selectStmtList, expectedValues);
-    appendCreateAsSelect(tableName, tableNameMM, selectStmtList, expectedValues);
-    appendImport(tableName, tableNameMM, selectStmtList, expectedValues);
-    appendInsertOverwrite(tableName, tableNameMM, selectStmtList, expectedValues);
-    appendLoadLocal(tableName, tableNameMM, selectStmtList, expectedValues);
-    appendInsertUnion(tableName, tableNameMM, selectStmtList, expectedValues);
-    appendMultiStatementTxn(selectStmtList, expectedValues);
-    appendMultiStatementTxnUpdateDelete(selectStmtList, expectedValues);
-    appendAlterTable(selectStmtList, expectedValues);
+    appendInsert(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
+    appendDelete(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    appendUpdate(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    appendTruncate(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    appendInsertIntoFromSelect(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
+    appendMerge(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    appendCreateAsSelect(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
+    appendImport(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
+    appendInsertOverwrite(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
+    appendLoadLocal(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
+    appendInsertUnion(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
+    appendMultiStatementTxn(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    appendMultiStatementTxnUpdateDelete(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    appendAlterTable(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
 
     verifyIncrementalLoad(selectStmtList, expectedValues, bootStrapDump.lastReplicationId);
   }
 
-  private void appendInsert(String tableName, String tableNameMM,
+  public static void appendInsert(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                            String tableName, String tableNameMM,
                             List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
     selectStmtList.add("select key from " + tableName + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
-    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
     selectStmtList.add("select key from " + tableNameMM + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
-  private void appendDelete(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableName = testName.getMethodName() + "testDelete";
-    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+  private void appendDelete(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                            List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
+    String tableName = "testDelete";
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
     deleteRecords(tableName);
     selectStmtList.add("select count(*) from " + tableName);
     expectedValues.add(new String[] {"0"});
   }
 
-  private void appendUpdate(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableName = testName.getMethodName() + "testUpdate";
-    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+  private void appendUpdate(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                            List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
+    String tableName = "testUpdate";
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
     updateRecords(tableName);
     selectStmtList.add("select value from " + tableName + " order by value");
     expectedValues.add(new String[] {"1", "100", "100", "100", "100"});
   }
 
-  private void appendTruncate(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableName = testName.getMethodName() + "testTruncate";
+  public static void appendTruncate(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                              List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
+    String tableName = "testTruncate";
     String tableNameMM = tableName + "_MM";
 
-    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
-    truncateTable(primaryDbName, tableName);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    truncateTable(primary, primaryDbName, tableName);
     selectStmtList.add("select count(*) from " + tableName);
     expectedValues.add(new String[] {"0"});
     selectStmtList.add("select count(*) from " + tableName + "_nopart");
     expectedValues.add(new String[] {"0"});
 
-    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
-    truncateTable(primaryDbName, tableNameMM);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    truncateTable(primary, primaryDbName, tableNameMM);
     selectStmtList.add("select count(*) from " + tableNameMM);
     expectedValues.add(new String[] {"0"});
     selectStmtList.add("select count(*) from " + tableNameMM + "_nopart");
     expectedValues.add(new String[] {"0"});
   }
 
-  private void appendAlterTable(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableName = testName.getMethodName() + "testAlterTable";
+  public static  void appendAlterTable(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                                List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
+    String tableName = "testAlterTable";
     String tableNameMM = tableName + "_MM";
 
-    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
     primary.run("use " + primaryDbName)
             .run("alter table " + tableName + " change value value1 int ")
             .run("select value1 from " + tableName)
@@ -225,7 +237,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     selectStmtList.add("select value1 from " + tableName + "_nopart");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
 
-    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
     primary.run("use " + primaryDbName)
             .run("alter table " + tableNameMM + " change value value1 int ")
             .run("select value1 from " + tableNameMM)
@@ -239,25 +252,29 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
-  private void appendInsertIntoFromSelect(String tableName, String tableNameMM,
+  public static void appendInsertIntoFromSelect(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                                          String tableName, String tableNameMM,
                                           List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableNameSelect = testName.getMethodName() + "_Select";
-    String tableNameSelectMM = testName.getMethodName() + "_SelectMM";
+    String tableNameSelect = tableName + "_Select";
+    String tableNameSelectMM = tableName + "_SelectMM";
 
-    insertRecords(tableName, tableNameSelect, false, OperationType.REPL_TEST_ACID_INSERT_SELECT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, tableNameSelect, false, OperationType.REPL_TEST_ACID_INSERT_SELECT);
     selectStmtList.add("select key from " + tableNameSelect + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
 
-    insertRecords(tableNameMM, tableNameSelectMM, true, OperationType.REPL_TEST_ACID_INSERT_SELECT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, tableNameSelectMM, true, OperationType.REPL_TEST_ACID_INSERT_SELECT);
     selectStmtList.add("select key from " + tableNameSelectMM + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
-  private void appendMerge(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableName = testName.getMethodName() + "testMerge";
-    String tableNameMerge = testName.getMethodName() + "_Merge";
+  public static void appendMerge(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                           List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
+    String tableName = "testMerge";
+    String tableNameMerge = tableName + "_Merge";
 
-    insertForMerge(tableName, tableNameMerge, false);
+    insertForMerge(primary, primaryDbName, tableName, tableNameMerge, false);
     selectStmtList.add("select last_update_user from " + tableName + " order by last_update_user");
     expectedValues.add(new String[] {"creation", "creation", "creation", "creation", "creation",
             "creation", "creation", "merge_update", "merge_insert", "merge_insert"});
@@ -265,111 +282,130 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     expectedValues.add(new String[] {"1", "4", "7", "8", "8", "11"});
   }
 
-  private void appendCreateAsSelect(String tableName, String tableNameMM,
+  public static void appendCreateAsSelect(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                                    String tableName, String tableNameMM,
                                     List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-     String tableNameCTAS = testName.getMethodName() + "_CTAS";
-    String tableNameCTASMM = testName.getMethodName() + "_CTASMM";
+     String tableNameCTAS = tableName + "_CTAS";
+    String tableNameCTASMM = tableName + "_CTASMM";
 
-    insertRecords(tableName, tableNameCTAS, false, OperationType.REPL_TEST_ACID_CTAS);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, tableNameCTAS, false, OperationType.REPL_TEST_ACID_CTAS);
     selectStmtList.add("select key from " + tableNameCTAS + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
 
-    insertRecords(tableNameMM, tableNameCTASMM, true, OperationType.REPL_TEST_ACID_CTAS);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, tableNameCTASMM, true, OperationType.REPL_TEST_ACID_CTAS);
     selectStmtList.add("select key from " + tableNameCTASMM + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
-  private void appendImport(String tableName, String tableNameMM,
+  public static void appendImport(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                            String tableName, String tableNameMM,
                             List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-     String tableNameImport = testName.getMethodName() + "_Import";
-    String tableNameImportMM = testName.getMethodName() + "_ImportMM";
+    String tableNameImport = tableName + "_Import";
+    String tableNameImportMM = tableName + "_ImportMM";
 
-    insertRecords(tableName, tableNameImport, false, OperationType.REPL_TEST_ACID_INSERT_IMPORT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, tableNameImport, false, OperationType.REPL_TEST_ACID_INSERT_IMPORT);
     selectStmtList.add("select key from " + tableNameImport + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
 
-    insertRecords(tableNameMM, tableNameImportMM, true, OperationType.REPL_TEST_ACID_INSERT_IMPORT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, tableNameImportMM, true, OperationType.REPL_TEST_ACID_INSERT_IMPORT);
     selectStmtList.add("select key from " + tableNameImportMM + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
-  private void appendInsertOverwrite(String tableName, String tableNameMM,
+  public static void appendInsertOverwrite(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                                     String tableName, String tableNameMM,
                                      List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
     String tableNameOW = tableName + "_OW";
-    String tableNameOWMM = testName.getMethodName() +"_OWMM";
+    String tableNameOWMM = tableName +"_OWMM";
 
-    insertRecords(tableName, tableNameOW, false, OperationType.REPL_TEST_ACID_INSERT_OVERWRITE);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, tableNameOW, false, OperationType.REPL_TEST_ACID_INSERT_OVERWRITE);
     selectStmtList.add("select key from " + tableNameOW + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
 
-    insertRecords(tableNameMM, tableNameOWMM, true, OperationType.REPL_TEST_ACID_INSERT_OVERWRITE);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, tableNameOWMM, true, OperationType.REPL_TEST_ACID_INSERT_OVERWRITE);
     selectStmtList.add("select key from " + tableNameOWMM + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
   //TODO: need to check why its failing. Loading to acid table from local path is failing.
-  private void appendLoadLocal(String tableName, String tableNameMM,
+  public static void appendLoadLocal(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                               String tableName, String tableNameMM,
                                List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableNameLL = testName.getMethodName() +"_LL";
-    String tableNameLLMM = testName.getMethodName() +"_LLMM";
+    String tableNameLL = tableName +"_LL";
+    String tableNameLLMM = tableName +"_LLMM";
 
-    insertRecords(tableName, tableNameLL, false, OperationType.REPL_TEST_ACID_INSERT_LOADLOCAL);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, tableNameLL, false, OperationType.REPL_TEST_ACID_INSERT_LOADLOCAL);
     selectStmtList.add("select key from " + tableNameLL + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
 
-    insertRecords(tableNameMM, tableNameLLMM, true, OperationType.REPL_TEST_ACID_INSERT_LOADLOCAL);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, tableNameLLMM, true, OperationType.REPL_TEST_ACID_INSERT_LOADLOCAL);
     selectStmtList.add("select key from " + tableNameLLMM + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
-  private void appendInsertUnion(String tableName, String tableNameMM,
+  public static void appendInsertUnion(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                                 String tableName, String tableNameMM,
                                  List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableNameUnion = testName.getMethodName() +"_UNION";
-    String tableNameUnionMM = testName.getMethodName() +"_UNIONMM";
+    String tableNameUnion = tableName +"_UNION";
+    String tableNameUnionMM = tableName +"_UNIONMM";
     String[] resultArrayUnion = new String[]{"1", "1", "2", "2", "3", "3", "4", "4", "5", "5"};
 
-    insertRecords(tableName, tableNameUnion, false, OperationType.REPL_TEST_ACID_INSERT_UNION);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, tableNameUnion, false, OperationType.REPL_TEST_ACID_INSERT_UNION);
     selectStmtList.add( "select key from " + tableNameUnion + " order by key");
     expectedValues.add(resultArrayUnion);
     selectStmtList.add("select key from " + tableNameUnion + "_nopart" + " order by key");
     expectedValues.add(resultArrayUnion);
 
-    insertRecords(tableNameMM, tableNameUnionMM, true, OperationType.REPL_TEST_ACID_INSERT_UNION);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, tableNameUnionMM, true, OperationType.REPL_TEST_ACID_INSERT_UNION);
     selectStmtList.add( "select key from " + tableNameUnionMM + " order by key");
     expectedValues.add(resultArrayUnion);
     selectStmtList.add("select key from " + tableNameUnionMM + "_nopart" + " order by key");
     expectedValues.add(resultArrayUnion);
   }
 
-  private void appendMultiStatementTxn(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
-    String tableName = testName.getMethodName() + "testMultiStatementTxn";
+  public static void appendMultiStatementTxn(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                                       List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
+    String tableName = "testMultiStatementTxn";
     String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
     String tableNameMM = tableName + "_MM";
     String tableProperty = "'transactional'='true'";
+    String tableStorage = "STORED AS ORC";
 
-    insertIntoDB(primaryDbName, tableName, tableProperty, resultArray, true);
+    insertIntoDB(primary, primaryDbName, tableName, tableProperty, tableStorage, resultArray, true);
     selectStmtList.add("select key from " + tableName + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
 
     tableProperty = setMMtableProperty(tableProperty);
-    insertIntoDB(primaryDbName, tableNameMM, tableProperty, resultArray, true);
+    insertIntoDB(primary, primaryDbName, tableNameMM, tableProperty, tableStorage, resultArray, true);
     selectStmtList.add("select key from " + tableNameMM + " order by key");
     expectedValues.add(new String[]{"1", "2", "3", "4", "5"});
   }
 
-  private void appendMultiStatementTxnUpdateDelete(List<String> selectStmtList, List<String[]> expectedValues)
+  private void appendMultiStatementTxnUpdateDelete(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                                                   List<String> selectStmtList, List<String[]> expectedValues)
           throws Throwable {
-    String tableName = testName.getMethodName() + "testMultiStatementTxnUpdate";
-    String tableNameDelete = testName.getMethodName() + "testMultiStatementTxnDelete";
+    String tableName = "testMultiStatementTxnUpdate";
+    String tableNameDelete = "testMultiStatementTxnDelete";
     String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
     String tableProperty = "'transactional'='true'";
+    String tableStorage = "STORED AS ORC";
 
-    insertIntoDB(primaryDbName, tableName, tableProperty, resultArray, true);
+    insertIntoDB(primary, primaryDbName, tableName, tableProperty, tableStorage, resultArray, true);
     updateRecords(tableName);
     selectStmtList.add("select value from " + tableName + " order by value");
     expectedValues.add(new String[] {"1", "100", "100", "100", "100"});
 
-    insertIntoDB(primaryDbName, tableNameDelete, tableProperty, resultArray, true);
+    insertIntoDB(primary, primaryDbName, tableNameDelete, tableProperty, tableStorage, resultArray, true);
     deleteRecords(tableNameDelete);
     selectStmtList.add("select count(*) from " + tableNameDelete);
     expectedValues.add(new String[] {"0"});
@@ -377,8 +413,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   @Test
   public void testReplCM() throws Throwable {
-    String tableName = testName.getMethodName();
-    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableName = "testcm";
+    String tableNameMM = tableName + "_MM";
     String[] result = new String[]{"5"};
 
     WarehouseInstance.Tuple incrementalDump;
@@ -387,7 +423,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
     incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     primary.run("drop table " + primaryDbName + "." + tableName);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
@@ -396,7 +433,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
                                               "select count(*) from " + tableName + "_nopart"),
                             Lists.newArrayList(result, result));
 
-    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
     incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     primary.run("drop table " + primaryDbName + "." + tableNameMM);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
@@ -407,6 +445,11 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   }
 
   private void verifyResultsInReplica(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable  {
+    verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
+  }
+
+  private static void verifyResultsInReplica(WarehouseInstance replica ,String replicatedDbName,
+                                      List<String> selectStmtList, List<String[]> expectedValues) throws Throwable  {
     for (int idx = 0; idx < selectStmtList.size(); idx++) {
       replica.run("use " + replicatedDbName)
               .run(selectStmtList.get(idx))
@@ -415,15 +458,23 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   }
 
   private WarehouseInstance.Tuple verifyIncrementalLoad(List<String> selectStmtList,
+                                                List<String[]> expectedValues, String lastReplId) throws Throwable {
+    return verifyIncrementalLoad(primary, replica, primaryDbName,
+            replicatedDbName, selectStmtList, expectedValues, lastReplId);
+
+  }
+  public static WarehouseInstance.Tuple verifyIncrementalLoad(WarehouseInstance primary, WarehouseInstance replica,
+                                                              String primaryDbName, String replicatedDbName,
+                                                              List<String> selectStmtList,
                                                   List<String[]> expectedValues, String lastReplId) throws Throwable {
     WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, lastReplId);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
-    verifyResultsInReplica(selectStmtList, expectedValues);
+    verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
 
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
-    verifyResultsInReplica(selectStmtList, expectedValues);
+    verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
     return incrementalDump;
   }
 
@@ -441,7 +492,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
             .verifyResults(new String[] {"1", "100", "100", "100", "100"});
   }
 
-  private void truncateTable(String dbName, String tableName) throws Throwable {
+  private static void truncateTable(WarehouseInstance primary, String dbName, String tableName) throws Throwable {
     primary.run("use " + dbName)
             .run("truncate table " + tableName)
             .run("select count(*) from " + tableName)
@@ -465,7 +516,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
                     Lists.newArrayList(resultArray, resultArray, resultArray, resultArray), lastReplId);
   }
 
-  private void insertIntoDB(String dbName, String tableName, String tableProperty, String[] resultArray, boolean isTxn)
+  private static void insertIntoDB(WarehouseInstance primary, String dbName, String tableName,
+                                   String tableProperty, String storageType, String[] resultArray, boolean isTxn)
           throws Throwable {
     String txnStrStart = "START TRANSACTION";
     String txnStrCommit = "COMMIT";
@@ -475,11 +527,11 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     }
     primary.run("use " + dbName);
     primary.run("CREATE TABLE " + tableName + " (key int, value int) PARTITIONED BY (load_date date) " +
-            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+            "CLUSTERED BY(key) INTO 3 BUCKETS " + storageType + " TBLPROPERTIES ( " + tableProperty + ")")
             .run("SHOW TABLES LIKE '" + tableName + "'")
             .verifyResult(tableName)
             .run("CREATE TABLE " + tableName + "_nopart (key int, value int) " +
-                    "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+                    "CLUSTERED BY(key) INTO 3 BUCKETS " + storageType + " TBLPROPERTIES ( " + tableProperty + ")")
             .run("SHOW TABLES LIKE '" + tableName + "_nopart'")
             .run("ALTER TABLE " + tableName + " ADD PARTITION (load_date='2016-03-03')")
             .run(txnStrStart)
@@ -496,33 +548,52 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
             .run(txnStrCommit);
   }
 
-  private void insertIntoDB(String dbName, String tableName, String tableProperty, String[] resultArray)
+  private static void insertIntoDB(WarehouseInstance primary, String dbName, String tableName,
+                                   String tableProperty, String storageType, String[] resultArray)
           throws Throwable {
-    insertIntoDB(dbName, tableName, tableProperty, resultArray, false);
+    insertIntoDB(primary, dbName, tableName, tableProperty, storageType, resultArray, false);
   }
 
-  private void insertRecords(String tableName, String tableNameOp, boolean isMMTable,
+  private static void insertRecords(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
+                                    String tableName, String tableNameOp, boolean isMMTable,
                              OperationType opType) throws Throwable {
-    insertRecordsIntoDB(primaryDbName, tableName, tableNameOp, isMMTable, opType);
+    insertRecordsIntoDB(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameOp, isMMTable, opType);
   }
 
-  private void insertRecordsIntoDB(String DbName, String tableName, String tableNameOp, boolean isMMTable,
+  private static void insertRecordsIntoDB(WarehouseInstance primary, String DbName, String primaryDbNameExtra,
+                                          String tableName, String tableNameOp, boolean isMMTable,
                              OperationType opType) throws Throwable {
     String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
-    String tableProperty = "'transactional'='true'";
-    if (isMMTable) {
-      tableProperty = setMMtableProperty(tableProperty);
+    String tableProperty;
+    String tableStorage;
+
+    if (primary.isAcidEnabled()) {
+      tableProperty = "'transactional'='true'";
+      if (isMMTable) {
+        tableProperty = setMMtableProperty(tableProperty);
+      }
+      tableStorage = "STORED AS ORC";
+    } else {
+      tableProperty = "'transactional'='false'";
+      if (isMMTable) {
+        tableStorage = "";
+      } else {
+        tableStorage = "STORED AS ORC";
+      }
     }
+
     primary.run("use " + DbName);
 
     switch (opType) {
       case REPL_TEST_ACID_INSERT:
-        insertIntoDB(DbName, tableName, tableProperty, resultArray);
-        insertIntoDB(primaryDbNameExtra, tableName, tableProperty, resultArray);
+        insertIntoDB(primary, DbName, tableName, tableProperty, tableStorage, resultArray);
+        if (primaryDbNameExtra != null) {
+          insertIntoDB(primary, primaryDbNameExtra, tableName, tableProperty, tableStorage, resultArray);
+        }
         return;
       case REPL_TEST_ACID_INSERT_OVERWRITE:
         primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
-              "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( "+ tableProperty + " )")
+              "CLUSTERED BY(key) INTO 3 BUCKETS " + tableStorage + " TBLPROPERTIES ( "+ tableProperty + " )")
         .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-01') VALUES (2, 2)")
         .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-01') VALUES (10, 12)")
         .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-02') VALUES (11, 1)")
@@ -530,7 +601,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
         .verifyResults(new String[]{"2", "10", "11"})
         .run("insert overwrite table " + tableNameOp + " select * from " + tableName)
         .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
-                "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( "+ tableProperty + " )")
+                "CLUSTERED BY(key) INTO 3 BUCKETS " + tableStorage + " TBLPROPERTIES ( "+ tableProperty + " )")
         .run("INSERT INTO " + tableNameOp + "_nopart VALUES (2, 2)")
         .run("INSERT INTO " + tableNameOp + "_nopart VALUES (10, 12)")
         .run("INSERT INTO " + tableNameOp + "_nopart VALUES (11, 1)")
@@ -541,10 +612,10 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
         break;
       case REPL_TEST_ACID_INSERT_SELECT:
         primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
-            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + " )")
+            "CLUSTERED BY(key) INTO 3 BUCKETS " + tableStorage + " TBLPROPERTIES ( " + tableProperty + " )")
         .run("insert into " + tableNameOp + " partition (load_date) select * from " + tableName)
         .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
-                "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + " )")
+                "CLUSTERED BY(key) INTO 3 BUCKETS " + tableStorage + " TBLPROPERTIES ( " + tableProperty + " )")
         .run("insert into " + tableNameOp + "_nopart select * from " + tableName + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_IMPORT:
@@ -576,32 +647,32 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
           nextVal = true;
         }
 
-        primary.run("CREATE TABLE " + tableNameOp + "_temp (key int, value int) STORED AS ORC")
+        primary.run("CREATE TABLE " + tableNameOp + "_temp (key int, value int) " + tableStorage + "")
         .run("INSERT INTO TABLE " + tableNameOp + "_temp VALUES " + buf.toString())
         .run("SELECT key FROM " + tableNameOp + "_temp")
         .verifyResults(resultArray)
         .run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
-              "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+              "CLUSTERED BY(key) INTO 3 BUCKETS " + tableStorage + " TBLPROPERTIES ( " + tableProperty + ")")
         .run("SHOW TABLES LIKE '" + tableNameOp + "'")
         .verifyResult(tableNameOp)
-        .run("INSERT OVERWRITE LOCAL DIRECTORY './test.dat' STORED AS ORC SELECT * FROM " + tableNameOp + "_temp")
+        .run("INSERT OVERWRITE LOCAL DIRECTORY './test.dat' " + tableStorage + " SELECT * FROM " + tableNameOp + "_temp")
         .run("LOAD DATA LOCAL INPATH './test.dat/000000_0' OVERWRITE INTO TABLE " + tableNameOp +
                 " PARTITION (load_date='2008-08-15')")
         .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
-                      "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+                      "CLUSTERED BY(key) INTO 3 BUCKETS " + tableStorage + " TBLPROPERTIES ( " + tableProperty + ")")
         .run("SHOW TABLES LIKE '" + tableNameOp + "_nopart'")
         .verifyResult(tableNameOp + "_nopart")
         .run("LOAD DATA LOCAL INPATH './test.dat/000000_0' OVERWRITE INTO TABLE " + tableNameOp + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_UNION:
         primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
-                "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+                "CLUSTERED BY(key) INTO 3 BUCKETS " + tableStorage + " TBLPROPERTIES ( " + tableProperty + ")")
                 .run("SHOW TABLES LIKE '" + tableNameOp + "'")
                 .verifyResult(tableNameOp)
                 .run("insert overwrite table " + tableNameOp + " partition (load_date) select * from " + tableName +
                     " union all select * from " + tableName)
                 .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
-                "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+                "CLUSTERED BY(key) INTO 3 BUCKETS " + tableStorage + " TBLPROPERTIES ( " + tableProperty + ")")
                 .run("insert overwrite table " + tableNameOp + "_nopart select * from " + tableName +
                         "_nopart union all select * from " + tableName + "_nopart");
         resultArray = new String[]{"1", "2", "3", "4", "5", "1", "2", "3", "4", "5"};
@@ -613,11 +684,12 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     primary.run("select key from " + tableNameOp + "_nopart" + " order by key").verifyResults(resultArray);
   }
 
-  private String setMMtableProperty(String tableProperty) throws Throwable  {
+  private static String setMMtableProperty(String tableProperty) throws Throwable  {
     return tableProperty.concat(", 'transactional_properties' = 'insert_only'");
   }
 
-  private void insertForMerge(String tableName, String tableNameMerge, boolean isMMTable) throws Throwable  {
+  private static void insertForMerge(WarehouseInstance primary, String primaryDbName,
+                                     String tableName, String tableNameMerge, boolean isMMTable) throws Throwable  {
     String tableProperty = "'transactional'='true'";
     if (isMMTable) {
       tableProperty = setMMtableProperty(tableProperty);

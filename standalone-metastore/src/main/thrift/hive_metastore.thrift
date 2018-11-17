@@ -901,6 +901,8 @@ struct CommitTxnRequest {
     2: optional string replPolicy,
     // Information related to write operations done in this transaction.
     3: optional list<WriteEventInfo> writeEventInfos,
+    // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
+    4: optional ReplLastIdInfo replLastIdInfo,
 }
 
 struct WriteEventInfo {
@@ -911,6 +913,14 @@ struct WriteEventInfo {
     5: optional string partition,
     6: optional string tableObj, // repl txn task does not need table object for commit
     7: optional string partitionObj,
+}
+
+struct ReplLastIdInfo {
+    1: required string database,
+    2: required string table,
+    3: required i64    lastReplId,
+    4: optional string catalog,
+    5: optional string partition,
 }
 
 struct ReplTblWriteIdStateRequest {

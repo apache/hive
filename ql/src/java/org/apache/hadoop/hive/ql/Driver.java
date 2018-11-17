@@ -2069,7 +2069,10 @@ public class Driver implements IDriver {
         else if(plan.getOperation() == HiveOperation.ROLLBACK) {
           releaseLocksAndCommitOrRollback(false);
         }
-        else {
+        else if (!queryTxnMgr.isTxnOpen()) { // txn is closed by some other thread, clear the valid txn list
+          conf.unset(ValidTxnList.VALID_TXNS_KEY);
+          conf.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+        } else {
           //txn (if there is one started) is not finished
         }
       } catch (LockException e) {

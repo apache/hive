@@ -77,7 +77,7 @@ public class HiveStrictManagedMigration {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveStrictManagedMigration.class);
 
-  enum TableMigrationOption {
+  public enum TableMigrationOption {
     NONE,      // Do nothing
     VALIDATE,  // No migration, just validate that the tables
     AUTOMATIC, // Automatically determine if the table should be managed or external
@@ -438,6 +438,32 @@ public class HiveStrictManagedMigration {
     }
   }
 
+  public static boolean migrateTable(Table tableObj, TableType tableType, TableMigrationOption migrationOption,
+                                     boolean dryRun, HiveUpdater hiveUpdater, IMetaStoreClient hms, Configuration conf)
+          throws HiveException, IOException, TException {
+    switch (migrationOption) {
+      case EXTERNAL:
+        migrateToExternalTable(tableObj, tableType, dryRun, hiveUpdater);
+        break;
+      case MANAGED:
+        migrateToManagedTable(tableObj, tableType, dryRun, hiveUpdater, hms, conf);
+        break;
+      case NONE:
+        break;
+      case VALIDATE:
+        // Check that the table is valid under strict managed tables mode.
+        String reason = HiveStrictManagedUtils.validateStrictManagedTable(conf, tableObj);
+        if (reason != null) {
+          LOG.warn(reason);
+          return true;
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Unexpected table migration option " + migrationOption);
+    }
+    return false;
+  }
+
   void processTable(Database dbObj, String tableName, boolean modifyDefaultManagedLocation)
       throws HiveException, IOException, TException {
     String dbName = dbObj.getName();
@@ -445,41 +471,18 @@ public class HiveStrictManagedMigration {
 
     Table tableObj = hms.getTable(dbName, tableName);
     TableType tableType = TableType.valueOf(tableObj.getTableType());
-    boolean tableMigrated;
+
 
     TableMigrationOption migrationOption = runOptions.migrationOption;
     if (migrationOption == TableMigrationOption.AUTOMATIC) {
-      migrationOption = determineMigrationTypeAutomatically(tableObj, tableType);
+      migrationOption = determineMigrationTypeAutomatically(tableObj, tableType, ownerName, conf, hms, null);
     }
 
-    switch (migrationOption) {
-    case EXTERNAL:
-      tableMigrated = migrateToExternalTable(tableObj, tableType);
-      if (tableMigrated) {
-        tableType = TableType.EXTERNAL_TABLE;
-      }
-      break;
-    case MANAGED:
-      tableMigrated = migrateToManagedTable(tableObj, tableType);
-      if (tableMigrated) {
-        tableType = TableType.MANAGED_TABLE;
-      }
-      break;
-    case NONE:
-      break;
-    case VALIDATE:
-      // Check that the table is valid under strict managed tables mode.
-      String reason = HiveStrictManagedUtils.validateStrictManagedTable(conf, tableObj);
-      if (reason != null) {
-        LOG.warn(reason);
-        failedValidationChecks = true;
-      }
-      break;
-    default:
-      throw new IllegalArgumentException("Unexpected table migration option " + runOptions.migrationOption);
-    }
+    failedValidationChecks = migrateTable(tableObj, tableType, migrationOption,
+            runOptions.dryRun, getHiveUpdater(), hms, conf);
 
-    if (tableType == TableType.MANAGED_TABLE) {
+    // if its a managed table
+    if (!failedValidationChecks && (TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE)) {
       Path tablePath = new Path(tableObj.getSd().getLocation());
       if (modifyDefaultManagedLocation && shouldModifyTableLocation(dbObj, tableObj)) {
         Path newTablePath = wh.getDnsPath(
@@ -645,7 +648,8 @@ public class HiveStrictManagedMigration {
     }
   }
 
-  void renameFilesToConformToAcid(Table tableObj) throws IOException, TException {
+  static void renameFilesToConformToAcid(Table tableObj, IMetaStoreClient hms, Configuration conf, boolean dryRun)
+          throws IOException, TException {
     if (isPartitionedTable(tableObj)) {
       String dbName = tableObj.getDbName();
       String tableName = tableObj.getTableName();
@@ -656,7 +660,7 @@ public class HiveStrictManagedMigration {
         FileSystem fs = partPath.getFileSystem(conf);
         if (fs.exists(partPath)) {
           UpgradeTool.handleRenameFiles(tableObj, partPath,
-              !runOptions.dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
+              !dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
         }
       }
     } else {
@@ -664,13 +668,14 @@ public class HiveStrictManagedMigration {
       FileSystem fs = tablePath.getFileSystem(conf);
       if (fs.exists(tablePath)) {
         UpgradeTool.handleRenameFiles(tableObj, tablePath,
-            !runOptions.dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
+            !dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
       }
     }
   }
 
-  TableMigrationOption determineMigrationTypeAutomatically(Table tableObj, TableType tableType)
-      throws IOException, MetaException, TException {
+  public static TableMigrationOption determineMigrationTypeAutomatically(Table tableObj, TableType tableType,
+    String ownerName, Configuration conf, IMetaStoreClient hms, Boolean isPathOwnedByHive)
+      throws IOException, TException {
     TableMigrationOption result = TableMigrationOption.NONE;
     String msg;
     switch (tableType) {
@@ -679,7 +684,7 @@ public class HiveStrictManagedMigration {
         // Always keep transactional tables as managed tables.
         result = TableMigrationOption.MANAGED;
       } else {
-        String reason = shouldTableBeExternal(tableObj);
+        String reason = shouldTableBeExternal(tableObj, ownerName, conf, hms, isPathOwnedByHive);
         if (reason != null) {
           LOG.debug("Converting {} to external table. {}", getQualifiedName(tableObj), reason);
           result = TableMigrationOption.EXTERNAL;
@@ -719,7 +724,8 @@ public class HiveStrictManagedMigration {
     convertToMMTableProps.put("transactional_properties", "insert_only");
   }
 
-  boolean migrateToExternalTable(Table tableObj, TableType tableType) throws HiveException {
+  static boolean migrateToExternalTable(Table tableObj, TableType tableType, boolean dryRun, HiveUpdater hiveUpdater)
+          throws HiveException {
     String msg;
     switch (tableType) {
     case MANAGED_TABLE:
@@ -730,9 +736,9 @@ public class HiveStrictManagedMigration {
         return false;
       }
       LOG.info("Converting {} to external table ...", getQualifiedName(tableObj));
-      if (!runOptions.dryRun) {
+      if (!dryRun) {
         tableObj.setTableType(TableType.EXTERNAL_TABLE.toString());
-        getHiveUpdater().updateTableProperties(tableObj, convertToExternalTableProps);
+        hiveUpdater.updateTableProperties(tableObj, convertToExternalTableProps);
       }
       return true;
     case EXTERNAL_TABLE:
@@ -749,13 +755,13 @@ public class HiveStrictManagedMigration {
     return false;
   }
 
-  boolean canTableBeFullAcid(Table tableObj) throws MetaException {
+  static boolean canTableBeFullAcid(Table tableObj) throws MetaException {
     // Table must be acid-compatible table format, and no sorting columns.
     return TransactionalValidationListener.conformToAcid(tableObj) &&
         (tableObj.getSd().getSortColsSize() <= 0);
   }
 
-  Map<String, String> getTablePropsForConversionToTransactional(Map<String, String> props,
+  static Map<String, String> getTablePropsForConversionToTransactional(Map<String, String> props,
       boolean convertFromExternal) {
     if (convertFromExternal) {
       // Copy the properties to a new map so we can add EXTERNAL=FALSE
@@ -765,7 +771,9 @@ public class HiveStrictManagedMigration {
     return props;
   }
 
-  boolean migrateToManagedTable(Table tableObj, TableType tableType) throws HiveException, IOException, MetaException, TException {
+  static boolean migrateToManagedTable(Table tableObj, TableType tableType, boolean dryRun, HiveUpdater hiveUpdater,
+                               IMetaStoreClient hms, Configuration conf)
+          throws HiveException, IOException, MetaException, TException {
 
     boolean convertFromExternal = false;
     switch (tableType) {
@@ -806,20 +814,22 @@ public class HiveStrictManagedMigration {
         // TODO: option to allow converting ORC file to insert-only transactional?
         LOG.info("Converting {} to full transactional table", getQualifiedName(tableObj));
 
-        renameFilesToConformToAcid(tableObj);
+        if (hiveUpdater.doFileRename) {
+          renameFilesToConformToAcid(tableObj, hms, conf, dryRun);
+        }
 
-        if (!runOptions.dryRun) {
+        if (!dryRun) {
           Map<String, String> props = getTablePropsForConversionToTransactional(
               convertToAcidTableProps, convertFromExternal);
-          getHiveUpdater().updateTableProperties(tableObj, props);
+          hiveUpdater.updateTableProperties(tableObj, props);
         }
         return true;
       } else {
         LOG.info("Converting {} to insert-only transactional table", getQualifiedName(tableObj));
-        if (!runOptions.dryRun) {
+        if (!dryRun) {
           Map<String, String> props = getTablePropsForConversionToTransactional(
               convertToMMTableProps, convertFromExternal);
-          getHiveUpdater().updateTableProperties(tableObj, props);
+          hiveUpdater.updateTableProperties(tableObj, props);
         }
         return true;
       }
@@ -831,7 +841,8 @@ public class HiveStrictManagedMigration {
     }
   }
 
-  String shouldTableBeExternal(Table tableObj) throws IOException, MetaException, TException {
+  private static String shouldTableBeExternal(Table tableObj, String ownerName, Configuration conf,
+                              IMetaStoreClient hms, Boolean isPathOwnedByHive) throws IOException, TException {
     if (MetaStoreUtils.isNonNativeTable(tableObj)) {
       return "Table is a non-native (StorageHandler) table";
     }
@@ -846,14 +857,19 @@ public class HiveStrictManagedMigration {
     // then assume table is using storage-based auth - set external.
     // Transactional tables should still remain transactional,
     // but we should have already checked for that before this point.
-    if (shouldTablePathBeExternal(tableObj, ownerName)) {
+    if (isPathOwnedByHive != null) {
+      // for replication from 2.6 cluster, the path is verified at source cluster itself.
+      return isPathOwnedByHive ? null :
+              String.format("One or more table directories is not owned by hive or non-HDFS path at source cluster");
+    } else if (shouldTablePathBeExternal(tableObj, ownerName, conf, hms)) {
       return String.format("One or more table directories not owned by %s, or non-HDFS path", ownerName);
     }
 
     return null;
   }
 
-  boolean shouldTablePathBeExternal(Table tableObj, String userName) throws IOException, MetaException, TException {
+  static boolean shouldTablePathBeExternal(Table tableObj, String ownerName, Configuration conf, IMetaStoreClient hms)
+          throws IOException, TException {
     boolean shouldBeExternal = false;
     String dbName = tableObj.getDbName();
     String tableName = tableObj.getTableName();
@@ -898,9 +914,13 @@ public class HiveStrictManagedMigration {
     }
   }
 
+  public static HiveUpdater getHiveUpdater(HiveConf conf) throws HiveException {
+    return new HiveUpdater(conf, false);
+  }
+
   HiveUpdater getHiveUpdater() throws HiveException {
     if (hiveUpdater == null) {
-      hiveUpdater = new HiveUpdater();
+      hiveUpdater = new HiveUpdater(conf, true);
     }
     return hiveUpdater;
   }
@@ -917,12 +937,14 @@ public class HiveStrictManagedMigration {
     }
   }
 
-  class HiveUpdater {
+  public static class HiveUpdater {
     Hive hive;
+    boolean doFileRename;
 
-    HiveUpdater() throws HiveException {
+    HiveUpdater(HiveConf conf, boolean fileRename) throws HiveException {
       hive = Hive.get(conf);
       Hive.set(hive);
+      doFileRename = fileRename;
     }
 
     void close() {
@@ -1067,15 +1089,20 @@ public class HiveStrictManagedMigration {
       StringBuilder sb = new StringBuilder();
       boolean isTxn = TxnUtils.isTransactionalTable(table);
 
-      org.apache.hadoop.hive.ql.metadata.Table modifiedTable =
-          new org.apache.hadoop.hive.ql.metadata.Table(table);
+      org.apache.hadoop.hive.ql.metadata.Table modifiedTable = doFileRename ?
+          new org.apache.hadoop.hive.ql.metadata.Table(table) : null;
       if (props.size() == 0) {
         return;
       }
       boolean first = true;
       for (String key : props.keySet()) {
         String value = props.get(key);
-        modifiedTable.getParameters().put(key, value);
+
+        if (modifiedTable == null) {
+          table.getParameters().put(key, value);
+        } else {
+          modifiedTable.getParameters().put(key, value);
+        }
 
         // Build properties list for logging
         if (first) {
@@ -1095,7 +1122,9 @@ public class HiveStrictManagedMigration {
 
       // Note: for now, this is always called to convert the table to either external, or ACID/MM,
       //       so the original table would be non-txn and the transaction wouldn't be opened.
-      alterTableInternal(isTxn, table, modifiedTable);
+      if (modifiedTable != null) {
+        alterTableInternal(isTxn, table, modifiedTable);
+      }
     }
   }
 

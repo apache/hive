@@ -462,9 +462,12 @@ public class UpgradeTool {
   /**
    * @param fileName - matching {@link AcidUtils#ORIGINAL_PATTERN_COPY}
    */
-  private static String stripCopySuffix(String fileName) {
+  public static String stripCopySuffix(String fileName) {
     //0000_0_copy_N -> 0000_0
-    return fileName.substring(0, fileName.indexOf('_', 1 + fileName.indexOf('_', 0)));
+    if (org.apache.commons.lang.StringUtils.countMatches(fileName, "_") > 2) {
+      return fileName.substring(0, fileName.indexOf('_', 1 + fileName.indexOf('_', 0)));
+    }
+    return fileName;
   }
 
   /**

@@ -453,6 +453,8 @@ class CommitTxnRequest;
 
 class WriteEventInfo;
 
+class ReplLastIdInfo;
+
 class ReplTblWriteIdStateRequest;
 
 class GetValidWriteIdsRequest;
@@ -7306,9 +7308,10 @@ inline std::ostream& operator<<(std::ostream& out, const AbortTxnsRequest& obj)
 }
 
 typedef struct _CommitTxnRequest__isset {
-  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false) {}
+  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false) {}
   bool replPolicy :1;
   bool writeEventInfos :1;
+  bool replLastIdInfo :1;
 } _CommitTxnRequest__isset;
 
 class CommitTxnRequest {
@@ -7323,6 +7326,7 @@ class CommitTxnRequest {
   int64_t txnid;
   std::string replPolicy;
   std::vector<WriteEventInfo>  writeEventInfos;
+  ReplLastIdInfo replLastIdInfo;
 
   _CommitTxnRequest__isset __isset;
 
@@ -7331,6 +7335,8 @@ class CommitTxnRequest {
   void __set_replPolicy(const std::string& val);
 
   void __set_writeEventInfos(const std::vector<WriteEventInfo> & val);
+
+  void __set_replLastIdInfo(const ReplLastIdInfo& val);
 
   bool operator == (const CommitTxnRequest & rhs) const
   {
@@ -7343,6 +7349,10 @@ class CommitTxnRequest {
     if (__isset.writeEventInfos != rhs.__isset.writeEventInfos)
       return false;
     else if (__isset.writeEventInfos && !(writeEventInfos == rhs.writeEventInfos))
+      return false;
+    if (__isset.replLastIdInfo != rhs.__isset.replLastIdInfo)
+      return false;
+    else if (__isset.replLastIdInfo && !(replLastIdInfo == rhs.replLastIdInfo))
       return false;
     return true;
   }
@@ -7445,6 +7455,77 @@ class WriteEventInfo {
 void swap(WriteEventInfo &a, WriteEventInfo &b);
 
 inline std::ostream& operator<<(std::ostream& out, const WriteEventInfo& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ReplLastIdInfo__isset {
+  _ReplLastIdInfo__isset() : catalog(false), partition(false) {}
+  bool catalog :1;
+  bool partition :1;
+} _ReplLastIdInfo__isset;
+
+class ReplLastIdInfo {
+ public:
+
+  ReplLastIdInfo(const ReplLastIdInfo&);
+  ReplLastIdInfo& operator=(const ReplLastIdInfo&);
+  ReplLastIdInfo() : database(), table(), lastReplId(0), catalog(), partition() {
+  }
+
+  virtual ~ReplLastIdInfo() throw();
+  std::string database;
+  std::string table;
+  int64_t lastReplId;
+  std::string catalog;
+  std::string partition;
+
+  _ReplLastIdInfo__isset __isset;
+
+  void __set_database(const std::string& val);
+
+  void __set_table(const std::string& val);
+
+  void __set_lastReplId(const int64_t val);
+
+  void __set_catalog(const std::string& val);
+
+  void __set_partition(const std::string& val);
+
+  bool operator == (const ReplLastIdInfo & rhs) const
+  {
+    if (!(database == rhs.database))
+      return false;
+    if (!(table == rhs.table))
+      return false;
+    if (!(lastReplId == rhs.lastReplId))
+      return false;
+    if (__isset.catalog != rhs.__isset.catalog)
+      return false;
+    else if (__isset.catalog && !(catalog == rhs.catalog))
+      return false;
+    if (__isset.partition != rhs.__isset.partition)
+      return false;
+    else if (__isset.partition && !(partition == rhs.partition))
+      return false;
+    return true;
+  }
+  bool operator != (const ReplLastIdInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ReplLastIdInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ReplLastIdInfo &a, ReplLastIdInfo &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ReplLastIdInfo& obj)
 {
   obj.printTo(out);
   return out;
