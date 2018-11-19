@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.SocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +80,8 @@ public class MetaStoreTestUtils {
     thread.setDaemon(true);
     thread.start();
     map.put(port,thread);
-    MetaStoreTestUtils.loopUntilHMSReady(port);
+    MetaStoreTestUtils.loopUntilHMSReady(MetastoreConf.getVar(conf, ConfVars.THRIFT_BIND_HOST),
+        port);
   }
 
   public static void close(final int port){
@@ -175,13 +177,19 @@ public class MetaStoreTestUtils {
    * A simple connect test to make sure that the metastore is up
    * @throws Exception
    */
-  private static void loopUntilHMSReady(int port) throws Exception {
+  private static void loopUntilHMSReady(String msHost, int port) throws Exception {
     int retries = 0;
     Exception exc = null;
     while (true) {
       try {
         Socket socket = new Socket();
-        socket.connect(new InetSocketAddress(port), 5000);
+        SocketAddress sockAddr;
+        if (msHost == null) {
+          sockAddr = new InetSocketAddress(port);
+        } else {
+          sockAddr = new InetSocketAddress(msHost, port);
+        }
+        socket.connect(sockAddr, 5000);
         socket.close();
         return;
       } catch (Exception e) {

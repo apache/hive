@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -26,26 +25,12 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 @Category(MetastoreCheckinTest.class)
-public class TestRemoteHiveMetaStoreZK extends TestRemoteHiveMetaStore {
-  private static TestingServer zkServer = null;
-  private final static String zkRootNamespace = "hs2mszktest";
+public class TestRemoteHiveMetaStoreZKBindHost extends TestRemoteHiveMetaStoreZK {
 
     @Before
     public void setUp() throws Exception {
-        // Start ZooKeeper server if not done already.
-        if (zkServer == null) {
-            zkServer = new TestingServer();
-            // Add ZK specific configurations, so that the metastore can register itself to ZK when
-            // started.
-            MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, zkServer.getConnectString());
-            MetastoreConf.setVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE, zkRootNamespace);
-            MetastoreConf.setVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE, "zookeeper");
-        }
+      // Test that the metastore gets bound to the configured address.
+      MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
         super.setUp();
     }
-
-  @Override
-  protected HiveMetaStoreClient createClient() throws Exception {
-      return new HiveMetaStoreClient(conf);
-  }
 }

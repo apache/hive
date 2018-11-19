@@ -148,6 +148,7 @@ public class MetastoreConf {
       ConfVars.REPLDIR,
       ConfVars.THRIFT_URIS,
       ConfVars.SERVER_PORT,
+      ConfVars.THRIFT_BIND_HOST,
       ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT,
       ConfVars.THRIFT_ZOOKEEPER_NAMESPACE,
       ConfVars.THRIFT_CONNECTION_RETRIES,
@@ -880,6 +881,8 @@ public class MetastoreConf {
         "Number of retries while opening a connection to metastore"),
     THRIFT_FAILURE_RETRIES("metastore.failure.retries", "hive.metastore.failure.retries", 1,
         "Number of retries upon failure of Thrift metastore calls"),
+    THRIFT_BIND_HOST("metastore.thrift.bind.host", "hive.metastore.thrift.bind.host", "",
+        "Bind host on which to run the metastore thrift service."),
     THRIFT_URIS("metastore.thrift.uris", "hive.metastore.uris", "",
         "URIs Used by metastore client to connect to remotemetastore\n." +
                 "If dynamic service discovery mode is set, the URIs are used to connect to the" +
