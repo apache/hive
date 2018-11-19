@@ -900,19 +900,19 @@ public class MetastoreConf {
             new TimeValidator(TimeUnit.MILLISECONDS),
             "ZooKeeper client's session timeout (in milliseconds). The client is disconnected\n" +
                     "if a heartbeat is not sent in the timeout."),
-    THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT("hive.metastore.zookeeper.connection.timeout",
+    THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT("metastore.zookeeper.connection.timeout",
             "hive.metastore.zookeeper.connection.timeout", 15L, TimeUnit.SECONDS,
             new TimeValidator(TimeUnit.SECONDS),
             "ZooKeeper client's connection timeout in seconds. " +
                     "Connection timeout * hive.metastore.zookeeper.connection.max.retries\n" +
                     "with exponential backoff is when curator client deems connection is lost to zookeeper."),
-    THRIFT_ZOOKEEPER_NAMESPACE("hive.metastore.zookeeper.namespace",
-            "hive.metastore.zookeeper.namespace", "hive_metastore_zookeeper_namespace",
+    THRIFT_ZOOKEEPER_NAMESPACE("metastore.zookeeper.namespace",
+            "hive.metastore.zookeeper.namespace", "hive_metastore",
             "The parent node under which all ZooKeeper nodes for metastores are created."),
     THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES("metastore.zookeeper.connection.max.retries",
             "hive.metastore.zookeeper.connection.max.retries", 3,
             "Max number of times to retry when connecting to the ZooKeeper server."),
-    THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME("hive.metastore.zookeeper.connection.basesleeptime",
+    THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME("metastore.zookeeper.connection.basesleeptime",
             "hive.metastore.zookeeper.connection.basesleeptime", 1000L, TimeUnit.MILLISECONDS,
             new TimeValidator(TimeUnit.MILLISECONDS),
             "Initial amount of time (in milliseconds) to wait between retries\n" +

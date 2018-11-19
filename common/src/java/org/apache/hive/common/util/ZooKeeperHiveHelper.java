@@ -19,7 +19,7 @@
 package org.apache.hive.common.util;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
@@ -116,7 +116,7 @@ public class ZooKeeperHiveHelper {
     try {
       String pathPrefix = ZOOKEEPER_PATH_SEPARATOR + rootNamespace
                       + ZOOKEEPER_PATH_SEPARATOR + znodePathPrefix;
-      byte[] znodeDataUTF8 = znodeData.getBytes(Charset.forName("UTF-8"));
+      byte[] znodeDataUTF8 = znodeData.getBytes(StandardCharsets.UTF_8);
       znode =
               new PersistentEphemeralNode(zooKeeperClient,
                       PersistentEphemeralNode.Mode.EPHEMERAL_SEQUENTIAL, pathPrefix, znodeDataUTF8);
@@ -232,7 +232,7 @@ public class ZooKeeperHiveHelper {
         byte[] serverUriBytes = zkClient.getData()
                 .forPath(ZOOKEEPER_PATH_SEPARATOR + rootNamespace +
                         ZOOKEEPER_PATH_SEPARATOR + serverNode);
-        serverUris.add(new String(serverUriBytes, Charset.forName("UTF-8")));
+        serverUris.add(new String(serverUriBytes, StandardCharsets.UTF_8));
       }
       zkClient.close();
       return serverUris;
