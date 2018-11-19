@@ -31,6 +31,9 @@ public class OracleDatabaseAccessor extends GenericJdbcDatabaseAccessor {
     if (offset == 0) {
       return addLimitToQuery(sql, limit);
     } else {
+      if (limit == -1) {
+        return sql;
+      }
       // A simple ROWNUM > offset and ROWNUM <= (offset + limit) won't work, it will return nothing
       return "SELECT * FROM (SELECT t.*, ROWNUM AS " + ROW_NUM_COLUMN_NAME + " FROM (" + sql + ") t) WHERE "
           +  ROW_NUM_COLUMN_NAME + " >" + offset + " AND " + ROW_NUM_COLUMN_NAME + " <=" + (offset + limit);
@@ -40,6 +43,9 @@ public class OracleDatabaseAccessor extends GenericJdbcDatabaseAccessor {
 
   @Override
   protected String addLimitToQuery(String sql, int limit) {
+    if (limit == -1) {
+      return sql;
+    }
     return "SELECT * FROM (" + sql + ") WHERE ROWNUM <= " + limit;
   }
 
