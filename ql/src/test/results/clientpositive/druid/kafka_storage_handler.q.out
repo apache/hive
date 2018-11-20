@@ -1055,18 +1055,18 @@ test1	5	4.999	key	0	0	1536449552290
 test2	15	14.999666	NULL	0	1	1536449552285
 test4	-5	-4.999	key-2	0	3	1536449552291
 test5	-15	-14.9996666	key-3	0	5	1536449552284
-PREHOOK: query: select distinct `__key`, c_name from kafka_table_csv
+PREHOOK: query: select distinct `__key`, c_name from kafka_table_csv order by `__key`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table_csv
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select distinct `__key`, c_name from kafka_table_csv
+POSTHOOK: query: select distinct `__key`, c_name from kafka_table_csv order by `__key`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table_csv
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	test2
 key	test1
 key-2	test4
 key-3	test5
-NULL	test2
 PREHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
@@ -1192,7 +1192,6 @@ STAGE PLANS:
                     columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
                     columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                     columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
-                    discover.partitions true
 #### A masked pattern was here ####
                     hive.kafka.max.retries 6
                     hive.kafka.metadata.poll.timeout.ms 30000
@@ -1296,7 +1295,6 @@ STAGE PLANS:
                       columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
                       columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                       columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
-                      discover.partitions true
 #### A masked pattern was here ####
                       hive.kafka.max.retries 6
                       hive.kafka.metadata.poll.timeout.ms 30000
@@ -1362,35 +1360,37 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+order by `__offset`, `__key`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+order by `__offset`, `__key`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	2018-08-20 03:37:05.09	key-0
 1	2018-08-20 04:37:05.09	key-1
+2	2018-08-20 05:37:05.09	key-2
 3	2018-08-20 06:37:05.09	key-3
 4	2018-08-20 07:37:05.09	key-4
 5	2018-08-20 08:37:05.09	key-5
+6	2018-08-20 09:37:05.09	key-6
 7	2018-08-20 10:37:05.09	key-7
 8	2018-08-20 11:37:05.09	key-8
 9	2018-08-20 12:37:05.09	key-9
 10	2018-08-20 13:37:05.09	key-10
 11	2018-08-20 03:37:05.09	key-0
-13	2018-08-20 05:37:05.09	key-2
-15	2018-08-20 07:37:05.09	key-4
-17	2018-08-20 09:37:05.09	key-6
-19	2018-08-20 11:37:05.09	key-8
-21	2018-08-20 13:37:05.09	key-10
-2	2018-08-20 05:37:05.09	key-2
-6	2018-08-20 09:37:05.09	key-6
 12	2018-08-20 04:37:05.09	key-1
+13	2018-08-20 05:37:05.09	key-2
 14	2018-08-20 06:37:05.09	key-3
+15	2018-08-20 07:37:05.09	key-4
 16	2018-08-20 08:37:05.09	key-5
+17	2018-08-20 09:37:05.09	key-6
 18	2018-08-20 10:37:05.09	key-7
+19	2018-08-20 11:37:05.09	key-8
 20	2018-08-20 12:37:05.09	key-9
+21	2018-08-20 13:37:05.09	key-10
 PREHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
@@ -1516,7 +1516,6 @@ STAGE PLANS:
                     columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
                     columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                     columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
-                    discover.partitions true
 #### A masked pattern was here ####
                     hive.kafka.max.retries 6
                     hive.kafka.metadata.poll.timeout.ms 30000
@@ -1620,7 +1619,6 @@ STAGE PLANS:
                       columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
                       columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                       columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
-                      discover.partitions true
 #### A masked pattern was here ####
                       hive.kafka.max.retries 6
                       hive.kafka.metadata.poll.timeout.ms 30000
@@ -1686,32 +1684,34 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+order by `__offset`, `__key`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@wiki_kafka_avro_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+order by `__offset`, `__key`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	2018-08-20 03:37:05.09	key-0
 1	2018-08-20 04:37:05.09	key-1
+2	2018-08-20 05:37:05.09	key-2
 3	2018-08-20 06:37:05.09	key-3
 4	2018-08-20 07:37:05.09	key-4
 5	2018-08-20 08:37:05.09	key-5
+6	2018-08-20 09:37:05.09	key-6
 7	2018-08-20 10:37:05.09	key-7
 8	2018-08-20 11:37:05.09	key-8
 9	2018-08-20 12:37:05.09	key-9
 10	2018-08-20 13:37:05.09	key-10
 11	2018-08-20 03:37:05.09	key-0
-13	2018-08-20 05:37:05.09	key-2
-15	2018-08-20 07:37:05.09	key-4
-17	2018-08-20 09:37:05.09	key-6
-19	2018-08-20 11:37:05.09	key-8
-21	2018-08-20 13:37:05.09	key-10
-2	2018-08-20 05:37:05.09	key-2
-6	2018-08-20 09:37:05.09	key-6
 12	2018-08-20 04:37:05.09	key-1
+13	2018-08-20 05:37:05.09	key-2
 14	2018-08-20 06:37:05.09	key-3
+15	2018-08-20 07:37:05.09	key-4
 16	2018-08-20 08:37:05.09	key-5
+17	2018-08-20 09:37:05.09	key-6
 18	2018-08-20 10:37:05.09	key-7
+19	2018-08-20 11:37:05.09	key-8
 20	2018-08-20 12:37:05.09	key-9
+21	2018-08-20 13:37:05.09	key-10
