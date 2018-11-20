@@ -20,11 +20,7 @@ package org.apache.hadoop.hive.serde2;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Date;
@@ -127,24 +123,19 @@ public class JsonSerDe extends AbstractSerDe {
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
 
-    Object row;
-    Text t;
-
-    /*To check writable instance and then create Text object
-    * In case of sequence file format which writes in key: org.apache.hadoop.io.LongWritable & value: org.apache.hadoop.io.BytesWritable
-    * format.
-    */
-    if (blob instanceof BytesWritable) {
-      t = new Text(((BytesWritable) blob).getBytes());
-    } else {
-      t = (Text) blob;
-    }
+    String st;
 
     try {
-      row = structReader.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
-      return row;
+      if (blob instanceof BytesWritable) {
+        byte[] rowByteArr = ((BytesWritable) blob).getBytes();
+        st = Text.decode(rowByteArr, 0, rowByteArr.length).trim();
+      } else {
+        st = blob.toString().trim();
+      }
+
+      return structReader.parseStruct(new ByteArrayInputStream((st.getBytes()), 0, st.getBytes().length));
     } catch (Exception e) {
-      LOG.warn("Error [{}] parsing json text [{}].", e, t);
+      LOG.warn("Error [{}] parsing json text [{}].", e);
       throw new SerDeException(e);
     }
   }
