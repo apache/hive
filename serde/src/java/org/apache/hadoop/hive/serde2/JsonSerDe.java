@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -127,7 +128,18 @@ public class JsonSerDe extends AbstractSerDe {
   public Object deserialize(Writable blob) throws SerDeException {
 
     Object row;
-    Text t = (Text) blob;
+    Text t;
+
+    /*To check writable instance and then create Text object
+    * In case of sequence file format which writes in key: org.apache.hadoop.io.LongWritable & value: org.apache.hadoop.io.BytesWritable
+    * format.
+    */
+    if (blob instanceof BytesWritable) {
+      t = new Text(((BytesWritable) blob).getBytes());
+    } else {
+      t = (Text) blob;
+    }
+
     try {
       row = structReader.parseStruct(new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
       return row;
