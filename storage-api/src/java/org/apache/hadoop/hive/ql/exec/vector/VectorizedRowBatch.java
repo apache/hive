@@ -355,8 +355,8 @@ public class VectorizedRowBatch implements Writable {
    * Data is not preserved.
    */
   public void ensureSize(int rows) {
-    for(int i=0; i < cols.length; ++i) {
-      cols[i].ensureSize(rows, false);
+    for (ColumnVector col : cols) {
+      col.ensureSize(rows, false);
     }
   }
 }

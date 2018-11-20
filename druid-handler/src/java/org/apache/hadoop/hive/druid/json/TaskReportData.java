@@ -32,6 +32,9 @@ import javax.annotation.Nullable;
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
 public class TaskReportData {
+  /**
+   * Task type used by serializer but does not have any functionality as far i can tell.
+   */
   public enum TaskType {
     ACTIVE, PUBLISHING, UNKNOWN
   }

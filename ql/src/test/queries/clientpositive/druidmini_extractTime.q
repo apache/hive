@@ -1,5 +1,5 @@
 --! qt:dataset:druid_table_alltypesorc
-SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=true ;
 SET hive.ctas.external.tables=true;
 SET hive.external.table.purge.default = true;
 

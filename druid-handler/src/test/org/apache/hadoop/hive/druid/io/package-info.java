@@ -15,17 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.druid.json;
-
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 
 /**
- * This class is copied from druid source code
- * in order to avoid adding additional dependencies on druid-indexing-service.
+ * package info.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type") @JsonSubTypes(value = {
-    @JsonSubTypes.Type(name = "schema_inline", value = InlineSchemaAvroBytesDecoder.class) })
-public interface AvroBytesDecoder {
-}
+
+package org.apache.hadoop.hive.druid.io;

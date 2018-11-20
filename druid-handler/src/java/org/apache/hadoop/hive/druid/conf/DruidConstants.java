@@ -17,7 +17,12 @@
  */
 package org.apache.hadoop.hive.druid.conf;
 
-public class DruidConstants {
+/**
+ * Utility class for Druid Constants.
+ */
+public final class DruidConstants {
+  private DruidConstants() {
+  }
 
   public static final String DRUID_QUERY_FETCH = "druid.query.fetch";
 

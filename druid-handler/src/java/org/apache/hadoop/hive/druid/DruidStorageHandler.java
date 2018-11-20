@@ -672,7 +672,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     String
         dataSourceName =
         Preconditions.checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE), "DataSource name is null !");
-    // TODO: Move MetaStoreUtils.isExternalTablePurge(table) calls to a common place for all StorageHandlers
+    // Move MetaStoreUtils.isExternalTablePurge(table) calls to a common place for all StorageHandlers
     // deleteData flag passed down to StorageHandler should be true only if
     // MetaStoreUtils.isExternalTablePurge(table) returns true.
     if (deleteData && MetaStoreUtils.isExternalTablePurge(table)) {
@@ -954,7 +954,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
       }
       return new DruidStorageHandlerInfo(kafkaSupervisorReport);
     } else {
-      // TODO: Currently we do not expose any runtime info for non-streaming tables.
+      // Currently we do not expose any runtime info for non-streaming tables.
       // In future extend this add more information regarding table status.
       // e.g. Total size of segments in druid, load status of table on historical nodes etc.
       return null;

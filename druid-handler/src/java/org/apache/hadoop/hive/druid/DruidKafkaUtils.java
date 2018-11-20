@@ -134,9 +134,7 @@ final class DruidKafkaUtils {
     builder.put(KafkaSupervisorIOConfig.BOOTSTRAP_SERVERS_KEY, kafkaServers);
     for (Map.Entry<String, String> entry : table.getParameters().entrySet()) {
       if (entry.getKey().startsWith(DruidConstants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX)) {
-        String
-            propertyName =
-            entry.getKey().substring(DruidConstants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX.length());
+        String propertyName = entry.getKey().substring(DruidConstants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX.length());
         builder.put(propertyName, entry.getValue());
       }
     }
@@ -178,61 +176,47 @@ final class DruidKafkaUtils {
     return DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.KAFKA_TOPIC) != null;
   }
 
-  static InputRowParser getInputRowParser(Table table,
-          TimestampSpec timestampSpec,
-          DimensionsSpec dimensionsSpec
-  ) {
+  static InputRowParser getInputRowParser(Table table, TimestampSpec timestampSpec, DimensionsSpec dimensionsSpec) {
     String parseSpecFormat = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_FORMAT);
 
     // Default case JSON
-    if(parseSpecFormat == null || parseSpecFormat.equalsIgnoreCase("json")) {
-      return new StringInputRowParser(
-              new JSONParseSpec(timestampSpec,
-                      dimensionsSpec,
-                      null,
-                      null
-              ), "UTF-8");
-    } else if(parseSpecFormat.equalsIgnoreCase("csv")){
-      return new StringInputRowParser(
-              new CSVParseSpec(
-                      timestampSpec,
-                      dimensionsSpec,
-                      DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_LIST_DELIMITER),
-                      DruidStorageHandlerUtils.getListProperty(table, DruidConstants.DRUID_PARSE_SPEC_COLUMNS),
-                      DruidStorageHandlerUtils.getBooleanProperty(table, DruidConstants.DRUID_PARSE_SPEC_HAS_HEADER_ROWS, false),
-                      DruidStorageHandlerUtils.getIntegerProperty(table, DruidConstants.DRUID_PARSE_SPEC_SKIP_HEADER_ROWS, 0)
-              ), "UTF-8");
-    } else if (parseSpecFormat.equalsIgnoreCase("delimited")){
-      return new StringInputRowParser(
-              new DelimitedParseSpec(
-                      timestampSpec,
-                      dimensionsSpec,
-                      DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_DELIMITER),
-                      DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_LIST_DELIMITER),
-                      DruidStorageHandlerUtils.getListProperty(table, DruidConstants.DRUID_PARSE_SPEC_COLUMNS),
-                      DruidStorageHandlerUtils.getBooleanProperty(table, DruidConstants.DRUID_PARSE_SPEC_HAS_HEADER_ROWS, false),
-                      DruidStorageHandlerUtils.getIntegerProperty(table, DruidConstants.DRUID_PARSE_SPEC_SKIP_HEADER_ROWS, 0)
-              ), "UTF-8");
-    } else if(parseSpecFormat.equalsIgnoreCase("avro")) {
+    if ((parseSpecFormat == null) || "json".equalsIgnoreCase(parseSpecFormat)) {
+      return new StringInputRowParser(new JSONParseSpec(timestampSpec, dimensionsSpec, null, null), "UTF-8");
+    } else if ("csv".equalsIgnoreCase(parseSpecFormat)) {
+      return new StringInputRowParser(new CSVParseSpec(timestampSpec,
+          dimensionsSpec,
+          DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_LIST_DELIMITER),
+          DruidStorageHandlerUtils.getListProperty(table, DruidConstants.DRUID_PARSE_SPEC_COLUMNS),
+          DruidStorageHandlerUtils.getBooleanProperty(table, DruidConstants.DRUID_PARSE_SPEC_HAS_HEADER_ROWS, false),
+          DruidStorageHandlerUtils.getIntegerProperty(table, DruidConstants.DRUID_PARSE_SPEC_SKIP_HEADER_ROWS, 0)),
+          "UTF-8");
+    } else if ("delimited".equalsIgnoreCase(parseSpecFormat)) {
+      return new StringInputRowParser(new DelimitedParseSpec(timestampSpec,
+          dimensionsSpec,
+          DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_DELIMITER),
+          DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_LIST_DELIMITER),
+          DruidStorageHandlerUtils.getListProperty(table, DruidConstants.DRUID_PARSE_SPEC_COLUMNS),
+          DruidStorageHandlerUtils.getBooleanProperty(table, DruidConstants.DRUID_PARSE_SPEC_HAS_HEADER_ROWS, false),
+          DruidStorageHandlerUtils.getIntegerProperty(table, DruidConstants.DRUID_PARSE_SPEC_SKIP_HEADER_ROWS, 0)),
+          "UTF-8");
+    } else if ("avro".equalsIgnoreCase(parseSpecFormat)) {
       try {
         String avroSchemaLiteral = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.AVRO_SCHEMA_LITERAL);
-        Preconditions.checkNotNull(avroSchemaLiteral,
-                "Please specify avro schema literal when using avro parser"
-        );
-        Map<String, Object> avroSchema = JSON_MAPPER
-                .readValue(avroSchemaLiteral, new TypeReference<Map<String, Object>>() {
-                });
-        return new AvroStreamInputRowParser(new AvroParseSpec(
-                timestampSpec,
-                dimensionsSpec,
-                null
-        ), new InlineSchemaAvroBytesDecoder(avroSchema));
+        Preconditions.checkNotNull(avroSchemaLiteral, "Please specify avro schema literal when using avro parser");
+        Map<String, Object>
+            avroSchema =
+            JSON_MAPPER.readValue(avroSchemaLiteral, new TypeReference<Map<String, Object>>() {
+            });
+        return new AvroStreamInputRowParser(new AvroParseSpec(timestampSpec, dimensionsSpec, null),
+            new InlineSchemaAvroBytesDecoder(avroSchema));
       } catch (Exception e) {
         throw new IllegalStateException("Exception while creating avro schema", e);
       }
     }
 
-    throw new IllegalArgumentException("Invalid parse spec format [" + parseSpecFormat+"]. "
-            + "Supported types are : json, csv, tsv, avro");
+    throw new IllegalArgumentException("Invalid parse spec format ["
+        + parseSpecFormat
+        + "]. "
+        + "Supported types are : json, csv, tsv, avro");
   }
 }

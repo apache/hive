@@ -405,6 +405,11 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     return null;
   }
 
+  /**
+   * @param writable Druid Writable to be deserialized.
+   * @return List of Hive Writables.
+   * @throws SerDeException if there is Serde issues.
+   */
   @Override public Object deserialize(Writable writable) throws SerDeException {
     final DruidWritable input = (DruidWritable) writable;
     final List<Object> output = Lists.newArrayListWithExpectedSize(columns.length);
