@@ -36,7 +36,7 @@ limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1	0	0	0	0
+0	0	0	0	0
 PREHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
@@ -69,7 +69,7 @@ limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1	0	0	0	0
+0	0	0	0	0
 PREHOOK: query: FROM src
 SELECT
 #### A masked pattern was here ####
@@ -235,10 +235,6 @@ POSTHOOK: Input: default@db1_ext_auth1
 100	-15	65.0	-74.0
 20	20	20.0	20.0
 44	53	-455.454	330.76
-20	20	20.0	20.0
--20	-20	-20.0	-20.0
-100	-15	65.0	-74.0
-44	53	-455.454	330.76
 PREHOOK: query: SELECT * FROM db2_ext_auth2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@db2_ext_auth2
@@ -250,10 +246,6 @@ POSTHOOK: Input: default@db2_ext_auth2
 -20	8	9.0	11.0
 101	-16	66.0	-75.0
 20	20	20.0	20.0
-40	50	-455.4543	330.767
-20	20	20.0	20.0
--20	8	9.0	11.0
-101	-16	66.0	-75.0
 40	50	-455.4543	330.767
 PREHOOK: query: SELECT * FROM db1_ext_auth2
 PREHOOK: type: QUERY
@@ -375,12 +367,6 @@ POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
 -20	-20	-20.0	-20.0	-20	8	9.0	11.0
--20	-20	-20.0	-20.0	-20	8	9.0	11.0
--20	-20	-20.0	-20.0	-20	8	9.0	11.0
--20	-20	-20.0	-20.0	-20	8	9.0	11.0
-20	20	20.0	20.0	20	20	20.0	20.0
-20	20	20.0	20.0	20	20	20.0	20.0
-20	20	20.0	20.0	20	20	20.0	20.0
 20	20	20.0	20.0	20	20	20.0	20.0
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db1_ext_auth2 ON db1_ext_auth1.ikey = db1_ext_auth2.ikey
@@ -432,10 +418,13 @@ POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
 <<<<<<< HEAD
 20	20	20.0	20.0	20	20	20.0	20.0
+<<<<<<< HEAD
 20	20	20.0	20.0	20	20	20.0	20.0
 -20	-20	-20.0	-20.0	-20	8	9.0	11.0
 =======
 >>>>>>> d57cf79ca4... BUG-114128/HIVE-20976: Hive JDBC Storage Handler: TPCDS_GRP_3_88 doesn't output proper results
+=======
+>>>>>>> da2cf0db5a... BUG-114644: Resultset changes in external_jdbc_table2
 -20	-20	-20.0	-20.0	-20	8	9.0	11.0
 20	20	20.0	20.0	20	20	20.0	20.0
 Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
@@ -642,6 +631,7 @@ POSTHOOK: Input: default@db2_ext_auth2
 100	-15	65.0	-74.0
 44	53	-455.454	330.76
 20	20	20.0	20.0
+<<<<<<< HEAD
 -20	-20	-20.0	-20.0
 100	-15	65.0	-74.0
 44	53	-455.454	330.76
@@ -652,6 +642,8 @@ POSTHOOK: Input: default@db2_ext_auth2
 20	20	20.0	20.0
 =======
 >>>>>>> d57cf79ca4... BUG-114128/HIVE-20976: Hive JDBC Storage Handler: TPCDS_GRP_3_88 doesn't output proper results
+=======
+>>>>>>> da2cf0db5a... BUG-114644: Resultset changes in external_jdbc_table2
 -20	8	9.0	11.0
 100	-15	65.0	-74.0
 101	-16	66.0	-75.0
@@ -799,12 +791,15 @@ POSTHOOK: Input: default@db1_ext_auth2
 100	-15	65.0	-74.0
 44	53	-455.454	330.76
 20	20	20.0	20.0
+<<<<<<< HEAD
 -20	-20	-20.0	-20.0
 100	-15	65.0	-74.0
 44	53	-455.454	330.76
 20	20	20.0	20.0
 =======
 >>>>>>> d57cf79ca4... BUG-114128/HIVE-20976: Hive JDBC Storage Handler: TPCDS_GRP_3_88 doesn't output proper results
+=======
+>>>>>>> da2cf0db5a... BUG-114644: Resultset changes in external_jdbc_table2
 -20	8	9.0	11.0
 100	-15	65.0	-74.0
 101	-16	66.0	-75.0
@@ -812,8 +807,11 @@ POSTHOOK: Input: default@db1_ext_auth2
 20	20	20.0	20.0
 40	50	-455.4543	330.767
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 44	53	-455.454	330.76
+=======
+>>>>>>> da2cf0db5a... BUG-114644: Resultset changes in external_jdbc_table2
 PREHOOK: query: DROP TABLE db1_ext_auth1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth1
@@ -863,4 +861,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1	1	1
+<<<<<<< HEAD
 >>>>>>> d57cf79ca4... BUG-114128/HIVE-20976: Hive JDBC Storage Handler: TPCDS_GRP_3_88 doesn't output proper results
+=======
+>>>>>>> da2cf0db5a... BUG-114644: Resultset changes in external_jdbc_table2
