@@ -175,7 +175,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
   private void pushSegments(List<SegmentIdentifier> segmentsToPush) {
     try {
       SegmentsAndMetadata segmentsAndMetadata = appenderator.push(segmentsToPush, committerSupplier.get(), false).get();
-      final HashSet<String> pushedSegmentIdentifierHashSet = new HashSet<>();
+      final Set<String> pushedSegmentIdentifierHashSet = new HashSet<>();
 
       for (DataSegment pushedSegment : segmentsAndMetadata.getSegments()) {
         pushedSegmentIdentifierHashSet.add(SegmentIdentifier.fromDataSegment(pushedSegment).getIdentifierAsString());

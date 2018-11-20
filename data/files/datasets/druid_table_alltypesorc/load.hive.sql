@@ -32,5 +32,3 @@ SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
   cboolean1,
   cboolean2
   FROM alltypesorc1 where ctimestamp1 IS NOT NULL;
-
-DROP TABLE alltypesorc1;

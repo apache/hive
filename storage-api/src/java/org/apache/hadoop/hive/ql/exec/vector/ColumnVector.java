@@ -32,10 +32,10 @@ import java.util.Arrays;
  */
 public abstract class ColumnVector {
 
-  /*
+  /**
    * The current kinds of column vectors.
    */
-  public static enum Type {
+  public enum Type {
     NONE,    // Useful when the type of column vector has not be determined yet.
     LONG,
     DOUBLE,
@@ -107,7 +107,7 @@ public abstract class ColumnVector {
   /**
    * Sets the isRepeating flag. Recurses over structs and unions so that the
    * flags are set correctly.
-   * @param isRepeating
+   * @param isRepeating flag for repeating value.
    */
   public void setRepeating(boolean isRepeating) {
     this.isRepeating = isRepeating;

@@ -43,8 +43,10 @@ public class KafkaSupervisorIOConfig {
   private final Duration period;
   private final boolean useEarliestOffset;
   private final Duration completionTimeout;
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType") private final Optional<Duration> lateMessageRejectionPeriod;
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType") private final Optional<Duration> earlyMessageRejectionPeriod;
+  @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "Guava" }) private final Optional<Duration>
+      lateMessageRejectionPeriod;
+  @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "Guava" }) private final Optional<Duration>
+      earlyMessageRejectionPeriod;
   private final boolean skipOffsetGaps;
 
   @JsonCreator public KafkaSupervisorIOConfig(@JsonProperty("topic") String topic,
@@ -71,10 +73,12 @@ public class KafkaSupervisorIOConfig {
     this.period = defaultDuration(period, "PT30S");
     this.useEarliestOffset = useEarliestOffset != null ? useEarliestOffset : false;
     this.completionTimeout = defaultDuration(completionTimeout, "PT30M");
+    //noinspection Guava
     this.lateMessageRejectionPeriod =
         lateMessageRejectionPeriod == null ?
             Optional.absent() :
             Optional.of(lateMessageRejectionPeriod.toStandardDuration());
+    //noinspection Guava
     this.earlyMessageRejectionPeriod =
         earlyMessageRejectionPeriod == null ?
             Optional.absent() :
@@ -118,11 +122,11 @@ public class KafkaSupervisorIOConfig {
     return completionTimeout;
   }
 
-  @JsonProperty public Optional<Duration> getEarlyMessageRejectionPeriod() {
+  @SuppressWarnings("Guava") @JsonProperty public Optional<Duration> getEarlyMessageRejectionPeriod() {
     return earlyMessageRejectionPeriod;
   }
 
-  @JsonProperty public Optional<Duration> getLateMessageRejectionPeriod() {
+  @SuppressWarnings("Guava") @JsonProperty public Optional<Duration> getLateMessageRejectionPeriod() {
     return lateMessageRejectionPeriod;
   }
 

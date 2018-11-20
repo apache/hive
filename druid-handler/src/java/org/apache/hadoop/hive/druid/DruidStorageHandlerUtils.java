@@ -149,8 +149,7 @@ import java.util.stream.Collectors;
  * Utils class for Druid storage handler.
  */
 public final class DruidStorageHandlerUtils {
-  private DruidStorageHandlerUtils () {
-
+  private DruidStorageHandlerUtils() {
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandlerUtils.class);
@@ -462,7 +461,7 @@ public final class DruidStorageHandlerUtils {
         if (existingChunks.size() > 1) {
           // Not possible to expand since we have more than one chunk with a single segment.
           // This is the case when user wants to append a segment with coarser granularity.
-          // e.g If metadata storage already has segments for with granularity HOUR and segments to append have DAY granularity.
+          // case metadata storage has segments with granularity HOUR and segments to append have DAY granularity.
           // Druid shard specs does not support multiple partitions for same interval with different granularity.
           throw new IllegalStateException(String.format(
               "Cannot allocate new segment for dataSource[%s], interval[%s], already have [%,d] chunks. "
@@ -672,7 +671,7 @@ public final class DruidStorageHandlerUtils {
   }
 
   @Nullable public static List<String> getListProperty(Table table, String propertyName) {
-    List<String> rv = new ArrayList<String>();
+    List<String> rv = new ArrayList<>();
     String values = getTableProperty(table, propertyName);
     if(values == null) {
       return null;

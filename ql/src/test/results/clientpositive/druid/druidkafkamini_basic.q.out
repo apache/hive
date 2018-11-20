@@ -259,7 +259,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col0 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [languages]
@@ -336,7 +336,7 @@ STAGE PLANS:
                     tag: 1
                     value expressions: user (type: string)
                     auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_kafka_test]
