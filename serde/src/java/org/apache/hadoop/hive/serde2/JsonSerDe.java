@@ -123,7 +123,7 @@ public class JsonSerDe extends AbstractSerDe {
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
 
-    String st;
+    String st = null;
 
     try {
       if (blob instanceof BytesWritable) {
@@ -135,7 +135,7 @@ public class JsonSerDe extends AbstractSerDe {
 
       return structReader.parseStruct(new ByteArrayInputStream((st.getBytes()), 0, st.getBytes().length));
     } catch (Exception e) {
-      LOG.warn("Error [{}] parsing json text [{}].", e);
+      LOG.warn("Error [{}] parsing json text [{}].", e, st);
       throw new SerDeException(e);
     }
   }
