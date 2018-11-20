@@ -92,7 +92,6 @@
     <protobuf.version>2.5.0</protobuf.version>
     <sqlline.version>1.3.0</sqlline.version>
     <storage-api.version>2.7.0-SNAPSHOT</storage-api.version>
-    <common.version>4.0.0-SNAPSHOT</common.version>
     <hamcrest.version>1.3</hamcrest.version>
     <curator.version>2.12.0</curator.version>
 
@@ -212,11 +211,6 @@
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-storage-api</artifactId>
         <version>${storage-api.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>hive-common</artifactId>
-        <version>${common.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>

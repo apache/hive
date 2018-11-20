@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
-import org.apache.hive.common.util.ZooKeeperHiveHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

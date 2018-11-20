@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.common.util;
+package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
