@@ -180,7 +180,4 @@ public enum HiveOperationType {
   GET_TABLETYPES,// getTableTypes()
   GET_TYPEINFO, // getTypeInfo()
   // ==== HiveServer2 metadata api types ends here ==== //
-
-  // ==== Special operation just to test if user has admin privilege
-  ADMIN_TEST
 }
