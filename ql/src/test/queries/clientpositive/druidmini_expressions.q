@@ -65,6 +65,8 @@ select count(distinct cstring2), sum(2 * cdouble) FROM druid_table_alltypesorc G
 
 select count(DISTINCT cstring2) FROM druid_table_alltypesorc ;
 
+explain select count(DISTINCT cstring1) FROM druid_table_alltypesorc ;
+
 select count(DISTINCT cstring1) FROM druid_table_alltypesorc ;
 
 select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_alltypesorc ;
@@ -185,3 +187,16 @@ VALUES
 EXPLAIN SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1;
 
 SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1;
+
+EXPLAIN select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src;
+
+select count(*) from (select `__time` from druid_table_alltypesorc limit 1025) as src;
+
+-- No Vectorization since __time is timestamp with local time zone
+explain select `timets` from (select `__time` as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`;
+-- Vectorization is on now since we cast to Timestamp
+explain select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`;
+
+select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_alltypesorc order by timets_with_tz limit 10)  as src order by `timets_with_tz`;
+
+select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`;
