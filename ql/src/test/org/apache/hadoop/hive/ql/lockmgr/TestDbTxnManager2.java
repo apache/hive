@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.TestTxnCommands2;
 import org.junit.After;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -87,7 +88,7 @@ public class TestDbTxnManager2 {
   private static HiveConf conf = new HiveConf(Driver.class);
   private HiveTxnManager txnMgr;
   private Context ctx;
-  private Driver driver;
+  private Driver driver, driver2;
   private TxnStore txnHandler;
 
   public TestDbTxnManager2() throws Exception {
@@ -103,6 +104,7 @@ public class TestDbTxnManager2 {
     SessionState.start(conf);
     ctx = new Context(conf);
     driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build(), null);
+    driver2 = new Driver(new QueryState.Builder().withHiveConf(conf).build(), null);
     TxnDbUtil.cleanDb(conf);
     TxnDbUtil.prepDb(conf);
     SessionState ss = SessionState.get();
@@ -115,6 +117,7 @@ public class TestDbTxnManager2 {
   @After
   public void tearDown() throws Exception {
     driver.close();
+    driver2.close();
     if (txnMgr != null) {
       txnMgr.closeTxnManager();
     }
@@ -548,10 +551,10 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='i' and CQ_TYPE='i'");
     Assert.assertEquals(1, count);
-    org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker(conf);
+    TestTxnCommands2.runWorker(conf);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='r' and CQ_TYPE='i'");
     Assert.assertEquals(1, count);
-    org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner(conf);
+    TestTxnCommands2.runCleaner(conf);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11'");
     Assert.assertEquals(0, count);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t11' and CC_STATE='s' and CC_TYPE='i'");
@@ -561,10 +564,10 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='i' and CQ_TYPE='i'");
     Assert.assertEquals(1, count);
-    org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker(conf);
+    TestTxnCommands2.runWorker(conf);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='r' and CQ_TYPE='i'");
     Assert.assertEquals(1, count);
-    org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner(conf);
+    TestTxnCommands2.runCleaner(conf);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p'");
     Assert.assertEquals(0, count);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t12p' and CC_STATE='s' and CC_TYPE='i'");
@@ -576,7 +579,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='i' and CQ_TYPE='a'");
     Assert.assertEquals(1, count);
-    org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker(conf); // will fail
+    TestTxnCommands2.runWorker(conf); // will fail
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t11' and CQ_STATE='i' and CQ_TYPE='a'");
     Assert.assertEquals(0, count);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t11' and CC_STATE='f' and CC_TYPE='a'");
@@ -586,7 +589,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='i' and CQ_TYPE='a'");
     Assert.assertEquals(1, count);
-    org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker(conf); // will fail
+    TestTxnCommands2.runWorker(conf); // will fail
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_DATABASE='temp' and CQ_TABLE='t12p' and CQ_PARTITION='ds=tomorrow/hour=2' and CQ_STATE='i' and CQ_TYPE='a'");
     Assert.assertEquals(0, count);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_COMPACTIONS where CC_DATABASE='temp' and CC_TABLE='t12p' and CC_STATE='f' and CC_TYPE='a'");
@@ -824,7 +827,7 @@ public class TestDbTxnManager2 {
    * the TxnManager instance in the session (hacky but nothing is actually threading so it allows us
    * to write good tests)
    */
-  private static HiveTxnManager swapTxnManager(HiveTxnManager txnMgr) {
+  public static HiveTxnManager swapTxnManager(HiveTxnManager txnMgr) {
     return SessionState.get().setTxnMgr(txnMgr);
   }
   @Test
