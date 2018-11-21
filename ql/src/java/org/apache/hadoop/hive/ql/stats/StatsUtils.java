@@ -381,7 +381,7 @@ public class StatsUtils {
         // skip the step to connect to the metastore.
         if (neededColsToRetrieve.size() > 0 && partNames.size() > 0) {
           aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
-              neededColsToRetrieve, partNames, true);
+              neededColsToRetrieve, partNames, false);
         }
 
         boolean statsRetrieved = aggrStats != null &&
@@ -1021,7 +1021,7 @@ public class StatsUtils {
     List<ColStatistics> stats = null;
     try {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
-          dbName, tabName, colStatsToRetrieve, true);
+          dbName, tabName, colStatsToRetrieve, false);
       stats = convertColStats(colStat, tabName);
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
