@@ -176,6 +176,8 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr: UDFToDouble(key) is not null (type: boolean)
+            properties:
+              insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
