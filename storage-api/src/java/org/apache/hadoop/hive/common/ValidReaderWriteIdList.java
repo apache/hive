@@ -35,6 +35,12 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   private long minOpenWriteId = Long.MAX_VALUE;
   protected long highWatermark;
 
+  /**
+   * This seems like a bad c'tor.  It doesn't even have a table name in it and it's used every time
+   * ValidWriteIdList.VALID_WRITEIDS_KEY is not found in Configuration.
+   * But, if anything, that would indicate a bug if was done for an acid read since it
+   * considers everything valid - this should not be assumed.
+   */
   public ValidReaderWriteIdList() {
     this(null, new long[0], new BitSet(), Long.MAX_VALUE, Long.MAX_VALUE);
   }

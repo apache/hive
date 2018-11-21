@@ -1035,7 +1035,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           Options readerPairOptions = mergerOptions;
           if(mergerOptions.getBaseDir().getName().startsWith(AcidUtils.BASE_PREFIX)) {
             readerPairOptions = modifyForNonAcidSchemaRead(mergerOptions,
-              AcidUtils.parseBase(mergerOptions.getBaseDir()), mergerOptions.getBaseDir());
+                AcidUtils.ParsedBase.parseBase(mergerOptions.getBaseDir()).getWriteId(),
+                mergerOptions.getBaseDir());
           }
           pair = new OriginalReaderPairToCompact(baseKey, bucket, options, readerPairOptions,
             conf, validWriteIdList,
@@ -1223,7 +1224,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         boolean isDelta = parent.getName().startsWith(AcidUtils.DELTA_PREFIX);
         if(isBase || isDelta) {
           if(isBase) {
-            return new TransactionMetaData(AcidUtils.parseBase(parent), parent);
+            return new TransactionMetaData(AcidUtils.ParsedBase.parseBase(parent).getWriteId(),
+                parent);
           }
           else {
             AcidUtils.ParsedDelta pd = AcidUtils.parsedDelta(parent, AcidUtils.DELTA_PREFIX,
