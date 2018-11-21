@@ -18,14 +18,15 @@
 
 package org.apache.hadoop.hive.common.jsonexplain;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.hive.common.jsonexplain.tez.TezJsonParser;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 

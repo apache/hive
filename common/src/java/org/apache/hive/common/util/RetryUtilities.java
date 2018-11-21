@@ -17,8 +17,6 @@
  */
 package org.apache.hive.common.util;
 
-import java.util.concurrent.Callable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +36,7 @@ public class RetryUtilities {
   /**
    * Interface used to create a ExponentialBackOffRetry policy
    */
-  public static interface ExponentialBackOffRetry<T> {
+  public interface ExponentialBackOffRetry<T> {
     /**
      * This method should be called by implementations of this ExponentialBackOffRetry policy
      * It represents the actual work which needs to be done based on a given batch size
@@ -46,7 +44,7 @@ public class RetryUtilities {
      * @return
      * @throws Exception
      */
-    public T execute(int batchSize) throws Exception;
+    T execute(int batchSize) throws Exception;
   }
 
   /**

@@ -80,10 +80,7 @@ public interface Validator {
         if (lower != null && ivalue < (Integer)lower) {
           return false;
         }
-        if (upper != null && ivalue > (Integer)upper) {
-          return false;
-        }
-        return true;
+        return upper == null || ivalue <= (Integer) upper;
       }
     },
     LONG {
@@ -93,10 +90,7 @@ public interface Validator {
         if (lower != null && lvalue < (Long)lower) {
           return false;
         }
-        if (upper != null && lvalue > (Long)upper) {
-          return false;
-        }
-        return true;
+        return upper == null || lvalue <= (Long) upper;
       }
     },
     FLOAT {
@@ -106,10 +100,7 @@ public interface Validator {
         if (lower != null && fvalue < (Float)lower) {
           return false;
         }
-        if (upper != null && fvalue > (Float)upper) {
-          return false;
-        }
-        return true;
+        return upper == null || !(fvalue > (Float) upper);
       }
     };
 
@@ -343,14 +334,14 @@ public interface Validator {
       long current = 1;
       for (int i = 0; i < units.length && current > 0; ++i) {
         long next = current << 10;
-        if ((size & (next - 1)) != 0) return (long)(size / current) + units[i];
+        if ((size & (next - 1)) != 0) return (size / current) + units[i];
         current = next;
       }
-      return current > 0 ? ((long)(size / current) + "Pb") : (size + units[0]);
+      return current > 0 ? ((size / current) + "Pb") : (size + units[0]);
     }
   }
 
-  public class WritableDirectoryValidator implements Validator {
+  class WritableDirectoryValidator implements Validator {
 
     @Override
     public String validate(String value) {

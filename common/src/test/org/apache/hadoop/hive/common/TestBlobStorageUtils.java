@@ -22,14 +22,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;
 
-import static org.apache.hadoop.hive.common.BlobStorageUtils.*;
+import static org.apache.hadoop.hive.common.BlobStorageUtils.isBlobStorageFileSystem;
+import static org.apache.hadoop.hive.common.BlobStorageUtils.isBlobStoragePath;
+import static org.apache.hadoop.hive.common.BlobStorageUtils.isBlobStorageScheme;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;

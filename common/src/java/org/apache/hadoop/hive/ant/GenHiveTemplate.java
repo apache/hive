@@ -124,7 +124,7 @@ public class GenHiveTemplate extends Task {
     int prev = 0;
     StringBuilder builder = new StringBuilder(description.length() << 1);
     for (;index > 0; index = description.indexOf('\n', prev = index + 1)) {
-      builder.append("\n      ").append(description.substring(prev, index));
+      builder.append("\n      ").append(description, prev, index);
     }
     if (prev < description.length()) {
       builder.append("\n      ").append(description.substring(prev));

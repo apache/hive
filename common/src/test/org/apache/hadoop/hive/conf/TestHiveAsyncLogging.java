@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.conf;
 
+import junit.framework.TestCase;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.logging.log4j.LogManager;
@@ -25,8 +26,6 @@ import org.apache.logging.log4j.core.impl.Log4jContextFactory;
 import org.apache.logging.log4j.core.selector.ClassLoaderContextSelector;
 import org.apache.logging.log4j.core.selector.ContextSelector;
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 public class TestHiveAsyncLogging extends TestCase {
 

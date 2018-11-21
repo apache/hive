@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.common.jsonexplain;
 
 public final class Printer {
-  public static final String lineSeparator = System.getProperty("line.separator");;
+  public static final String lineSeparator = System.getProperty("line.separator");
   private final StringBuilder builder = new StringBuilder();
 
   public void print(String string) {

@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.conf;
 
 import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.Test;
 

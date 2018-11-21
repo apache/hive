@@ -18,6 +18,16 @@
 
 package org.apache.hive.common.util;
 
+import com.google.common.base.Splitter;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.EntityArrays;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.io.Text;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -38,16 +48,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Splitter;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
-import org.apache.commons.lang3.text.translate.EntityArrays;
-import org.apache.commons.lang3.text.translate.LookupTranslator;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.io.Text;
 
 /**
  * HiveStringUtils
@@ -771,7 +771,7 @@ public class HiveStringUtils {
    * which can be represented by a 64-bit integer.
    * TraditionalBinaryPrefix symbol are case insensitive.
    */
-  public static enum TraditionalBinaryPrefix {
+  public enum TraditionalBinaryPrefix {
     KILO(1024),
     MEGA(KILO.value << 10),
     GIGA(MEGA.value << 10),

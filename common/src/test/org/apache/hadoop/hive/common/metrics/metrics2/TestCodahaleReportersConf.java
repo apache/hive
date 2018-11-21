@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.common.metrics.metrics2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.lang.reflect.InvocationTargetException;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -29,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Unit tests for Codahale reporter config backward compatibility

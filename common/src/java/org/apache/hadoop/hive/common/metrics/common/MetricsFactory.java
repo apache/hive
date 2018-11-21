@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.common.metrics.common;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 

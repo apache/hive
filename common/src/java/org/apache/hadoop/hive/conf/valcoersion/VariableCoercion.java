@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.conf.valcoersion;
 
-import org.apache.hadoop.conf.Configuration;
-
 /**
  * VariableCoercions are used to enforce rules related to system variables.
  * These rules may transform the value of system properties returned by the

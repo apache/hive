@@ -18,20 +18,15 @@
 
 package org.apache.hadoop.hive.common;
 
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.Map;
-
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -42,7 +37,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Map;
 
 /**
  * Utilities common to logging operations.
@@ -191,11 +190,11 @@ public class LogUtils {
         + conf.getHiveDefaultLocation().getPath());
     }
     // Look for hive-site.xml on the CLASSPATH and log its location if found.
-    if (conf.getHiveSiteLocation() == null) {
+    if (HiveConf.getHiveSiteLocation() == null) {
       l4j.warn("hive-site.xml not found on CLASSPATH");
     } else {
       l4j.debug("Using hive-site.xml found on CLASSPATH at "
-        + conf.getHiveSiteLocation().getPath());
+        + HiveConf.getHiveSiteLocation().getPath());
     }
   }
 

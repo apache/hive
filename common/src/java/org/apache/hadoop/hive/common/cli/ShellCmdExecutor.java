@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.common.cli;
 
+import org.apache.hive.common.util.StreamPrinter;
+
 import java.io.IOException;
 import java.io.PrintStream;
-
-import org.apache.hive.common.util.StreamPrinter;
 
 public class ShellCmdExecutor {
   private String cmd;

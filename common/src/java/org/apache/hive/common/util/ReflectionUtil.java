@@ -18,15 +18,14 @@
 
 package org.apache.hive.common.util;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Same as Hadoop ReflectionUtils, but (1) does not leak classloaders (or shouldn't anyway, we

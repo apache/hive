@@ -18,14 +18,14 @@
 
 package org.apache.hadoop.hive.common.jsonexplain;
 
-import java.io.PrintStream;
-
 import org.json.JSONObject;
+
+import java.io.PrintStream;
 
 /**
  * JsonParser is the interface for classes that print a JSONObject
  * into outputStream.
  */
 public interface JsonParser {
-  public void print(JSONObject inputObject, PrintStream outputStream) throws Exception;
+  void print(JSONObject inputObject, PrintStream outputStream) throws Exception;
 }

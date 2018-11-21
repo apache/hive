@@ -17,16 +17,15 @@
  */
 package org.apache.hive.http;
 
-import java.io.IOException;
-import java.io.Writer;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConfUtil;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * A servlet to print out the running configuration data.

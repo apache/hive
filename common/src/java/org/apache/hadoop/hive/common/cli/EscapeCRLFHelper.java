@@ -51,7 +51,7 @@ public class EscapeCRLFHelper {
         if (lastNonCRLFIndex < index) {
 
           // Copy an intervening non-CRLF characters up to but not including current 'index'.
-          sb.append(line.substring(lastNonCRLFIndex, index));
+          sb.append(line, lastNonCRLFIndex, index);
         }
         lastNonCRLFIndex = ++index;
         if (ch == CARRIAGE_RETURN) {
@@ -71,7 +71,7 @@ public class EscapeCRLFHelper {
       if (lastNonCRLFIndex < index) {
 
         // Copy an intervening non-CRLF characters up to but not including current 'index'.
-        sb.append(line.substring(lastNonCRLFIndex, index));
+        sb.append(line, lastNonCRLFIndex, index);
       }
       return sb.toString();
     }

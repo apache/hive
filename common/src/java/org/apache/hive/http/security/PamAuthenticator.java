@@ -16,6 +16,7 @@
  */
 package org.apache.hive.http.security;
 
+import net.sf.jpam.Pam;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.security.ServerAuthException;
@@ -33,8 +34,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
-import net.sf.jpam.Pam;
 
 /*
 

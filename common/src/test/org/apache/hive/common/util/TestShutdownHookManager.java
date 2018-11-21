@@ -18,13 +18,12 @@
 
 package org.apache.hive.common.util;
 
+import org.apache.hadoop.hive.common.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-
-import org.apache.hadoop.hive.common.FileUtils;
 
 /**
  * TestShutdownHookManager.

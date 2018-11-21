@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.common.cli;
 
-import java.util.Properties;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -27,6 +25,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.Level;
+
+import java.util.Properties;
 
 /**
  * Reusable code for Hive Cli's.

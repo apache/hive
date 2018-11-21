@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.common.cli;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.io.IOUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
 
 /**
  * HiveFileProcessor is used for processing a file consist of Hive executable

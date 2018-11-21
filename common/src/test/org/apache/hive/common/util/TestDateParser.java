@@ -17,10 +17,13 @@
  */
 package org.apache.hive.common.util;
 
-import static org.junit.Assert.*;
-
 import org.apache.hadoop.hive.common.type.Date;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class TestDateParser {
   DateParser parser = new DateParser();

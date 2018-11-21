@@ -17,13 +17,12 @@
  */
 package org.apache.hive.common.util;
 
-import java.util.concurrent.atomic.AtomicLong;
-
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.Pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Simple object pool of limited size. Implemented as a lock-free ring buffer;
  * may fail to produce items if there are too many concurrent users. */

@@ -54,7 +54,7 @@ public class HiveConfUtil {
    * @return
    */
   public static boolean isEmbeddedMetaStore(String msUri) {
-    return (msUri == null) ? true : msUri.trim().isEmpty();
+    return (msUri == null) || msUri.trim().isEmpty();
   }
 
   /**

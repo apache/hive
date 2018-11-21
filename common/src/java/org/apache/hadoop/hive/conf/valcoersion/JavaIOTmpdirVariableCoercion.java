@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.conf.valcoersion;
 
-import java.io.IOException;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * Enforces absolute paths to be used for the java.io.tmpdir system variable.

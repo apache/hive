@@ -17,8 +17,9 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -32,9 +33,6 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TimestampTZUtil {
 
@@ -104,7 +102,7 @@ public class TimestampTZUtil {
     Matcher matcher = SINGLE_DIGIT_PATTERN.matcher(s);
     if (matcher.find()) {
       int index = matcher.start() + 1;
-      s = s.substring(0, index) + "0" + s.substring(index, s.length());
+      s = s.substring(0, index) + "0" + s.substring(index);
     }
     return s;
   }

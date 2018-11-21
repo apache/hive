@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.common.type;
 
+import org.apache.hive.common.util.Decimal128FastBuffer;
+
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-
-import org.apache.hive.common.util.Decimal128FastBuffer;
 
 /**
  * This code was based on code from Microsoft's PolyBase.
@@ -2519,7 +2519,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
   public int fastSerializeForHiveDecimal(Decimal128FastBuffer scratch, byte signum) {
     int bufferUsed = this.count;
     ByteBuffer buf = scratch.getByteBuffer(bufferUsed);
-    buf.put(0, (byte) (signum == 1 ? 0 : signum));
+    buf.put(0, (signum == 1 ? 0 : signum));
     int pos = 1;
     int firstNonZero = 0;
     while(firstNonZero < this.count && v[firstNonZero] == 0) {

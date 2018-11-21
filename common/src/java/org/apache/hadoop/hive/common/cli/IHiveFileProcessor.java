@@ -29,5 +29,5 @@ public interface IHiveFileProcessor {
    * @param fileName the name of the file
    * @exception IOException if an I/O error occurs.
    */
-  public int processFile(String fileName) throws IOException;
+  int processFile(String fileName) throws IOException;
 }

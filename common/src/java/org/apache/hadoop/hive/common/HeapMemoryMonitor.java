@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.management.NotificationEmitter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryNotificationInfo;
@@ -26,11 +30,6 @@ import java.lang.management.MemoryType;
 import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.management.NotificationEmitter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class that monitors memory usage and notifies the listeners when a certain of threshold of memory is used

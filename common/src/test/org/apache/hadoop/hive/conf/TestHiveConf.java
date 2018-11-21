@@ -18,10 +18,9 @@
 package org.apache.hadoop.hive.conf;
 
 import com.google.common.collect.Lists;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Assert;
 import org.junit.Test;

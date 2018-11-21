@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.common.type;
 
-import java.util.Random;
-
 import junit.framework.TestCase;
+
+import java.util.Random;
 
 public class TestHiveBaseChar extends TestCase {
   static Random rnd = new Random();

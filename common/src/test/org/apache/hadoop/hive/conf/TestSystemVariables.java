@@ -23,7 +23,6 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNull;
 
 public class TestSystemVariables {
   public static final String SYSTEM = "system";

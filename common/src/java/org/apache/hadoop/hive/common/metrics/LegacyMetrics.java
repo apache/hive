@@ -24,13 +24,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.management.ManagementFactory;
-import java.util.HashMap;
-
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
+import java.util.HashMap;
 
 /**
  * This class may eventually get superseded by org.apache.hadoop.hive.common.metrics2.Metrics.

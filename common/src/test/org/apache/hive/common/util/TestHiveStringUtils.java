@@ -18,12 +18,14 @@
 
 package org.apache.hive.common.util;
 
-import static org.apache.hive.common.util.HiveStringUtils.removeComments;
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import static org.apache.hive.common.util.HiveStringUtils.removeComments;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class TestHiveStringUtils {
   @Test

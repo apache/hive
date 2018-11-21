@@ -667,7 +667,7 @@ public final class SignedInt128 extends Number implements
     }
 
     byte signum = UnsignedInt128.difference(this.mag, right.mag, this.mag);
-    this.negative = (signum > 0 ? this.negative : !this.negative);
+    this.negative = ((signum > 0) == this.negative);
   }
 
   /**

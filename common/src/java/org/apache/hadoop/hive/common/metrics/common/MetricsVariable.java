@@ -22,5 +22,5 @@ package org.apache.hadoop.hive.common.metrics.common;
  * currently active connections.
  */
 public interface MetricsVariable<T> {
-  public T getValue();
+  T getValue();
 }

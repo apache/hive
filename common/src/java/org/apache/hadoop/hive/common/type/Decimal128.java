@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.common.type;
 
+import org.apache.hive.common.util.Decimal128FastBuffer;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-
-import org.apache.hive.common.util.Decimal128FastBuffer;
 
 /**
  * This code was based on code from Microsoft's PolyBase.

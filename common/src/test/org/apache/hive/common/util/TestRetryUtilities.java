@@ -17,13 +17,13 @@
  */
 package org.apache.hive.common.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.hive.common.util.RetryUtilities.ExponentiallyDecayingBatchWork;
 import org.apache.hive.common.util.RetryUtilities.RetryException;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestRetryUtilities {
 

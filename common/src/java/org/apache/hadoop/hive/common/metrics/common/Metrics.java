@@ -25,33 +25,33 @@ public interface Metrics {
   /**
    * Deinitializes the Metrics system.
    */
-  public void close() throws Exception;
+  void close() throws Exception;
 
   /**
    *
    * @param name starts a scope of a given name.  Scopes is stored as thread-local variable.
    */
-  public void startStoredScope(String name);
+  void startStoredScope(String name);
 
   /**
    * Closes the stored scope of a given name.
    * Note that this must be called on the same thread as where the scope was started.
    * @param name
    */
-  public void endStoredScope(String name);
+  void endStoredScope(String name);
 
   /**
    * Create scope with given name and returns it.
    * @param name
    * @return
    */
-  public MetricsScope createScope(String name);
+  MetricsScope createScope(String name);
 
   /**
    * Close the given scope.
    * @param scope
    */
-  public void endScope(MetricsScope scope);
+  void endScope(MetricsScope scope);
 
   //Counter-related methods
 
@@ -60,7 +60,7 @@ public interface Metrics {
    * @param name
    * @return
    */
-  public Long incrementCounter(String name);
+  Long incrementCounter(String name);
 
   /**
    * Increments a counter of the given name by "increment"
@@ -68,7 +68,7 @@ public interface Metrics {
    * @param increment
    * @return
    */
-  public Long incrementCounter(String name, long increment);
+  Long incrementCounter(String name, long increment);
 
 
   /**
@@ -76,7 +76,7 @@ public interface Metrics {
    * @param name
    * @return
    */
-  public Long decrementCounter(String name);
+  Long decrementCounter(String name);
 
   /**
    * Decrements a counter of the given name by "decrement"
@@ -84,7 +84,7 @@ public interface Metrics {
    * @param decrement
    * @return
    */
-  public Long decrementCounter(String name, long decrement);
+  Long decrementCounter(String name, long decrement);
 
 
   /**
@@ -92,14 +92,14 @@ public interface Metrics {
    * @param name name of gauge
    * @param variable variable to track.
    */
-  public void addGauge(String name, final MetricsVariable<?> variable);
+  void addGauge(String name, final MetricsVariable<?> variable);
 
 
   /**
    * Removed the gauge added by addGauge.
    * @param name name of gauge
    */
-  public void removeGauge(String name);
+  void removeGauge(String name);
 
 
   /**
@@ -108,13 +108,12 @@ public interface Metrics {
    * @param numerator numerator of the ratio
    * @param denominator denominator of the ratio
    */
-  public void addRatio(String name, MetricsVariable<Integer> numerator,
-                           MetricsVariable<Integer> denominator);
+  void addRatio(String name, MetricsVariable<Integer> numerator, MetricsVariable<Integer> denominator);
 
   /**
    * Mark an event occurance for a meter. Meters measure the rate of an event and track
    * 1/5/15 minute moving averages
    * @param name name of the meter
    */
-  public void markMeter(String name);
+  void markMeter(String name);
 }

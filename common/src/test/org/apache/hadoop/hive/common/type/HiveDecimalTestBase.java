@@ -17,11 +17,9 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import java.util.Random;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import java.util.Random;
 
 // A COPY of the one in storage-api since currently sharing test classes isn't supported in
 // our build.
@@ -30,14 +28,14 @@ public class HiveDecimalTestBase {
 
   public static int POUND_FACTOR = 1000;
 
-  public static enum BigDecimalFlavor {
+  public enum BigDecimalFlavor {
     NORMAL_RANGE,
     FRACTIONS_ONLY,
     NEGATIVE_SCALE,
     LONG_TAIL
   }
 
-  public static enum BigDecimalPairFlavor {
+  public enum BigDecimalPairFlavor {
     RANDOM,
     NEAR,
     INVERSE

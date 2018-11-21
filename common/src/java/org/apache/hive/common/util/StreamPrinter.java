@@ -18,13 +18,13 @@
 
 package org.apache.hive.common.util;
 
+import org.apache.hadoop.io.IOUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-
-import org.apache.hadoop.io.IOUtils;
 
 /**
  * StreamPrinter.

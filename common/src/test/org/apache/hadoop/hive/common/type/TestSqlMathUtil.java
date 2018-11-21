@@ -17,8 +17,9 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
 
 /**
  * This code was based on code from Microsoft's PolyBase.

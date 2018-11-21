@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.common;
 
-import static org.apache.hadoop.hive.common.JvmMetricsInfo.*;
-
 import org.apache.hadoop.log.metrics.EventCounter;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsInfo;
@@ -38,6 +36,29 @@ import java.lang.management.ThreadMXBean;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.GcCount;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.GcNumInfoThresholdExceeded;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.GcNumWarnThresholdExceeded;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.GcTimeMillis;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.GcTotalExtraSleepTime;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.JvmMetrics;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.LogError;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.LogFatal;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.LogInfo;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.LogWarn;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.MemHeapCommittedM;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.MemHeapMaxM;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.MemHeapUsedM;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.MemMaxM;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.MemNonHeapCommittedM;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.MemNonHeapMaxM;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.MemNonHeapUsedM;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.ThreadsBlocked;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.ThreadsNew;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.ThreadsRunnable;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.ThreadsTerminated;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.ThreadsTimedWaiting;
+import static org.apache.hadoop.hive.common.JvmMetricsInfo.ThreadsWaiting;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 

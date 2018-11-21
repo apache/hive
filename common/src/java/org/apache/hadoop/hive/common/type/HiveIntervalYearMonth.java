@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import org.apache.hive.common.util.DateUtils;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.hive.common.util.DateUtils;
 
 public class HiveIntervalYearMonth implements Comparable<HiveIntervalYearMonth> {
 

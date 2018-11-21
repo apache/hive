@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.common.metrics;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -32,6 +29,8 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MetricsMBeanImpl implements  MetricsMBean {

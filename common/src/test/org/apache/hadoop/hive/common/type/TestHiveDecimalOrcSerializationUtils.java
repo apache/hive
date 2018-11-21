@@ -17,22 +17,22 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import java.util.Random;
+import com.google.code.tempusfugit.concurrency.annotations.Concurrent;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
+import org.apache.orc.impl.SerializationUtils;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Random;
 
-import org.apache.orc.impl.SerializationUtils;
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
-
-import com.google.code.tempusfugit.concurrency.annotations.*;
-
-import org.junit.*;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
 
@@ -227,7 +227,7 @@ public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
 
     byteArrayInputStream = new ByteArrayInputStream(bytes);
     HiveDecimal resultDec =
-        dec.serializationUtilsRead(
+        HiveDecimal.serializationUtilsRead(
             byteArrayInputStream, dec.scale(),
             scratchBytes);
     assertTrue(resultDec != null);
@@ -260,7 +260,7 @@ public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
     // Now HiveDecimal
     byteArrayInputStream = new ByteArrayInputStream(bytes);
     resultDec =
-        dec.serializationUtilsRead(
+        HiveDecimal.serializationUtilsRead(
             byteArrayInputStream, dec.scale(),
             scratchBytes);
     assertTrue(resultDec != null);

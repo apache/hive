@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.common;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-
 import org.apache.hadoop.metrics2.MetricsInfo;
 
 /**

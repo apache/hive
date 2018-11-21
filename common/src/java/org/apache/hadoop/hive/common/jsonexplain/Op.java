@@ -18,6 +18,12 @@
 
 package org.apache.hadoop.hive.common.jsonexplain;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.hive.common.jsonexplain.Vertex.VertexType;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,12 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.apache.hadoop.hive.common.jsonexplain.Vertex.VertexType;
-import org.json.JSONArray;
-import com.google.common.annotations.VisibleForTesting;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public final class Op {
   public final String name;
@@ -52,7 +52,7 @@ public final class Op {
 
   public enum OpType {
     MAPJOIN, MERGEJOIN, RS, OTHERS
-  };
+  }
 
   public Op(String name, String id, String outputVertexName, Op parent, List<Op> children,
       Map<String, String> attrs, JSONObject opObject, Vertex vertex, DagJsonParser tezJsonParser)
@@ -176,7 +176,7 @@ public final class Op {
       JSONArray conditionMap = opObject.getJSONArray("condition map:");
       for (int index = 0; index < conditionMap.length(); index++) {
         JSONObject cond = conditionMap.getJSONObject(index);
-        String k = (String) cond.keys().next();
+        String k = cond.keys().next();
         JSONObject condObject = new JSONObject((String)cond.get(k));
         String type = condObject.getString("type");
         String left = condObject.getString("left");
@@ -256,7 +256,7 @@ public final class Op {
       JSONArray conditionMap = opObject.getJSONArray("condition map:");
       for (int index = 0; index < conditionMap.length(); index++) {
         JSONObject cond = conditionMap.getJSONObject(index);
-        String k = (String) cond.keys().next();
+        String k = cond.keys().next();
         JSONObject condObject = new JSONObject((String)cond.get(k));
         String type = condObject.getString("type");
         String left = condObject.getString("left");

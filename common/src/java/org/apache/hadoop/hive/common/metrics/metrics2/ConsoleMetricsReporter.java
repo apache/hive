@@ -20,10 +20,9 @@ package org.apache.hadoop.hive.common.metrics.metrics2;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Reporter;
-import java.io.Closeable;
-import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.conf.HiveConf;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**

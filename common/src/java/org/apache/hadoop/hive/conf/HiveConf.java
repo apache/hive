@@ -427,7 +427,7 @@ public class HiveConf extends Configuration {
    * with non-null values to this list as they will override any values defined
    * in the underlying Hadoop configuration.
    */
-  public static enum ConfVars {
+  public enum ConfVars {
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null, ""),
     PLAN("hive.exec.plan", "", ""),
@@ -2474,7 +2474,7 @@ public class HiveConf extends Configuration {
         "in the number of rows filtered by a certain operator, which in turn might lead to overprovision or\n" +
         "underprovision of resources. This factor is applied to the cardinality estimation of IN clauses in\n" +
         "filter operators."),
-    HIVE_STATS_IN_MIN_RATIO("hive.stats.filter.in.min.ratio", (float) 0.0f,
+    HIVE_STATS_IN_MIN_RATIO("hive.stats.filter.in.min.ratio", 0.0f,
         "Output estimation of an IN filter can't be lower than this ratio"),
     HIVE_STATS_UDTF_FACTOR("hive.stats.udtf.factor", (float) 1.0,
         "UDTFs change the number of rows of the output. A common UDTF is the explode() method that creates\n" +

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common.metrics.metrics2;
 
 import com.codahale.metrics.Reporter;
+
 import java.io.Closeable;
 
 public interface CodahaleReporter extends Closeable, Reporter {
@@ -25,5 +26,5 @@ public interface CodahaleReporter extends Closeable, Reporter {
   /**
    * Start the reporter.
    */
-  public void start();
+  void start();
 }

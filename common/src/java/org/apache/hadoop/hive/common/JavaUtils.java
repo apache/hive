@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -27,10 +30,6 @@ import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
-
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Collection of Java class loading/reflection related utilities common across

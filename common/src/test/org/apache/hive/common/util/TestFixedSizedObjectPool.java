@@ -17,7 +17,10 @@
  */
 package org.apache.hive.common.util;
 
-import static org.junit.Assert.*;
+import org.apache.hadoop.hive.common.Pool;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,11 +30,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import org.apache.hive.common.util.FixedSizedObjectPool;
-import org.apache.hadoop.hive.common.Pool;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class TestFixedSizedObjectPool {
 

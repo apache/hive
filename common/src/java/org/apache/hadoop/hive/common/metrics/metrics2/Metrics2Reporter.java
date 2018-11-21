@@ -19,11 +19,10 @@ package org.apache.hadoop.hive.common.metrics.metrics2;
 
 import com.codahale.metrics.MetricRegistry;
 import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
-import java.io.Closeable;
-import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
-import com.codahale.metrics.Reporter;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * A wrapper around Codahale HadoopMetrics2Reporter to make it a pluggable/configurable Hive Metrics reporter.

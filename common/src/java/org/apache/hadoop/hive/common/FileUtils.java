@@ -18,6 +18,28 @@
 
 package org.apache.hadoop.hive.common;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.GlobFilter;
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.ShutdownHookManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,32 +59,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.GlobFilter;
-import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.Trash;
-import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.HiveConfUtil;
-import org.apache.hadoop.hive.io.HdfsUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.util.ShutdownHookManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Collection of file manipulation utilities common across Hive.
@@ -366,7 +362,7 @@ public final class FileUtils {
 
   public static void checkFileAccessWithImpersonation(final FileSystem fs, final FileStatus stat,
       final FsAction action, final String user)
-      throws IOException, AccessControlException, InterruptedException, Exception {
+      throws Exception {
     checkFileAccessWithImpersonation(fs, stat, action, user, null);
   }
 
@@ -516,7 +512,7 @@ public final class FileUtils {
     try {
       // do best effort to determine if this is a local file
       FileSystem fsForFile = FileSystem.get(fileUri, conf);
-      return LocalFileSystem.class.isInstance(fsForFile);
+      return fsForFile instanceof LocalFileSystem;
     } catch (IOException e) {
       LOG.warn("Unable to get FileSystem for " + fileUri, e);
     }

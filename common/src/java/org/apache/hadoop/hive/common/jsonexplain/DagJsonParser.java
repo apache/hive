@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.common.jsonexplain;
 
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,11 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class DagJsonParser implements JsonParser {
   public final Map<String, Stage> stages = new LinkedHashMap<>();

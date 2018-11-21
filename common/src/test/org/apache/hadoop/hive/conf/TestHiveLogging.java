@@ -17,13 +17,12 @@
  */
 package org.apache.hadoop.hive.conf;
 
-import java.io.File;
-
+import junit.framework.TestCase;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.common.util.HiveTestUtils;
 
-import junit.framework.TestCase;
+import java.io.File;
 
 /**
  * TestHiveLogging

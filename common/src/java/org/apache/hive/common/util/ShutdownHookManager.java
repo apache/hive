@@ -18,16 +18,15 @@
 
 package org.apache.hive.common.util;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.fs.FileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.hadoop.fs.FileSystem;
-
-import com.google.common.annotations.VisibleForTesting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is just a wrapper around hadoop's ShutdownHookManager but also manages delete on exit hook for temp files.

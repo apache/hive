@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.common.log;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import jline.TerminalFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.fusesource.jansi.Ansi;
@@ -31,7 +30,9 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import static org.fusesource.jansi.Ansi.ansi;
-import static org.fusesource.jansi.internal.CLibrary.*;
+import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
+import static org.fusesource.jansi.internal.CLibrary.STDOUT_FILENO;
+import static org.fusesource.jansi.internal.CLibrary.isatty;
 
 /**
  * Renders information from ProgressMonitor to the stream provided.

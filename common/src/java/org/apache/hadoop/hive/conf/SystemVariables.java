@@ -17,16 +17,16 @@
  */
 package org.apache.hadoop.hive.conf;
 
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.valcoersion.JavaIOTmpdirVariableCoercion;
 import org.apache.hadoop.hive.conf.valcoersion.VariableCoercion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SystemVariables {
 
@@ -106,7 +106,7 @@ public class SystemVariables {
         } else {
           found = true;
         }
-        builder.append(eval.substring(prev, match.start())).append(substitute);
+        builder.append(eval, prev, match.start()).append(substitute);
         prev = match.end();
       }
       if (!found) {

@@ -46,7 +46,7 @@ public class HashCodeUtil {
 
   public static void calculateLongArrayHashCodes(long[] longs, int[] hashCodes, final int count) {
     for (int v = 0; v < count; v++) {
-      hashCodes[v] = (int) calculateLongHashCode(longs[v]);
+      hashCodes[v] = calculateLongHashCode(longs[v]);
     }
   }
 

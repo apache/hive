@@ -18,15 +18,6 @@
 
 package org.apache.hadoop.hive.common.jsonexplain;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
 import org.apache.hadoop.hive.common.jsonexplain.Op.OpType;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -35,6 +26,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public final class Vertex implements Comparable<Vertex>{
   public final String name;
@@ -68,14 +66,16 @@ public final class Vertex implements Comparable<Vertex>{
   public String tag;
   protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   
-  public static enum VertexType {
+  public enum VertexType {
     MAP, REDUCE, UNION, UNKNOWN
-  };
+  }
+
   public VertexType vertexType;
 
-  public static enum EdgeType {
+  public enum EdgeType {
     BROADCAST, SHUFFLE, MULTICAST, PARTITION_ONLY_SHUFFLE, FORWARD, XPROD_EDGE, UNKNOWN
-  };
+  }
+
   public String edgeType;
 
   public Vertex(String name, JSONObject vertexObject, Stage stage, DagJsonParser dagJsonParser) {
@@ -225,7 +225,7 @@ public final class Vertex implements Comparable<Vertex>{
   }
 
   public void print(Printer printer, int indentFlag, String type, Vertex callingVertex)
-      throws JSONException, Exception {
+      throws Exception {
     // print vertexname
     if (parser.printSet.contains(this) && numReduceOp <= 1) {
       if (type != null) {

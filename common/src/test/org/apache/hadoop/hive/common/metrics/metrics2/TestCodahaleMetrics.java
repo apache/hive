@@ -171,7 +171,7 @@ public class TestCodahaleMetrics {
     public void setValue(int gaugeVal) {
       this.gaugeVal = gaugeVal;
     }
-  };
+  }
 
   @Test
   public void testGauge() throws Exception {

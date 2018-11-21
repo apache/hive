@@ -17,10 +17,17 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import org.junit.*;
-import static org.junit.Assert.*;
-import com.google.code.tempusfugit.concurrency.annotations.*;
-import com.google.code.tempusfugit.concurrency.*;
+import com.google.code.tempusfugit.concurrency.ConcurrentRule;
+import com.google.code.tempusfugit.concurrency.RepeatingRule;
+import com.google.code.tempusfugit.concurrency.annotations.Concurrent;
+import com.google.code.tempusfugit.concurrency.annotations.Repeating;
+import org.junit.Rule;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestHiveIntervalYearMonth {
 

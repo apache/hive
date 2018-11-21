@@ -18,11 +18,11 @@
 
 package org.apache.hive.common.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class TestTimestampParser {
   public static class ValidTimestampCase {

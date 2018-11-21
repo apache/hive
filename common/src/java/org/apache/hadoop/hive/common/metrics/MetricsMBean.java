@@ -29,14 +29,14 @@ public interface MetricsMBean extends DynamicMBean {
     /**
      * Check if we're tracking a certain named key/metric
      */
-    public abstract boolean hasKey(String name);
+    boolean hasKey(String name);
 
     /**
      * Add a key/metric and its value to track
      * @param name Name of the key/metric
      * @param value value associated with the key
      */
-    public abstract void put(String name, Object value);
+    void put(String name, Object value);
 
     /**
      *
@@ -44,7 +44,7 @@ public interface MetricsMBean extends DynamicMBean {
      * @return value associated with the key
      * @throws JMException
      */
-    public abstract Object get(String name) throws JMException;
+    Object get(String name) throws JMException;
 
     /**
      * Removes all the keys and values from this MetricsMBean.

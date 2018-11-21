@@ -17,16 +17,16 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.math.BigInteger;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.math.BigInteger;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Testcases for {@link SignedInt128}

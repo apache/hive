@@ -18,18 +18,18 @@
 
 package org.apache.hadoop.hive.common.jsonexplain;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.jsonexplain.Vertex.VertexType;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.jsonexplain.Vertex.VertexType;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public final class Stage {
   //external name is used to show at the console
@@ -228,10 +228,7 @@ public final class Stage {
         || val instanceof Double || val instanceof Path) {
       return true;
     }
-    if (val != null && val.getClass().isPrimitive()) {
-      return true;
-    }
-    return false;
+    return val != null && val.getClass().isPrimitive();
   }
 
   public void print(Printer printer, int indentFlag) throws Exception {

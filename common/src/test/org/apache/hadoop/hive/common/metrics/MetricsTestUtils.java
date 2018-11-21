@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.common.metrics;
 
-import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
