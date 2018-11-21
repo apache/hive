@@ -229,9 +229,7 @@ public class ReduceSinkJoinDeDuplication extends Transform {
               rsOp.getChildOperators().get(0) instanceof CommonMergeJoinOperator) {
         for (Operator<?> p : rsOp.getChildOperators().get(0).getParentOperators()) {
           ReduceSinkOperator pRSOp = (ReduceSinkOperator) p;
-          pRSOp.getConf().setReducerTraits(EnumSet.of(ReducerTraits.FIXED));
-          pRSOp.getConf().setNumReducers(maxNumReducers);
-          LOG.debug("Set {} to FIXED parallelism: {}", pRSOp, maxNumReducers);
+          removeAutoparallel(pRSOp, maxNumReducers);
           if (pRSOp.getConf().isForwarding()) {
             ReduceSinkOperator newRSOp =
                 CorrelationUtilities.findFirstPossibleParent(
@@ -240,15 +238,25 @@ public class ReduceSinkJoinDeDuplication extends Transform {
           }
         }
       } else {
-        rsOp.getConf().setReducerTraits(EnumSet.of(ReducerTraits.FIXED));
-        rsOp.getConf().setNumReducers(maxNumReducers);
-        LOG.debug("Set {} to FIXED parallelism: {}", rsOp, maxNumReducers);
+        removeAutoparallel(rsOp, maxNumReducers);
         if (rsOp.getConf().isForwarding()) {
           ReduceSinkOperator newRSOp =
               CorrelationUtilities.findFirstPossibleParent(
                   rsOp, ReduceSinkOperator.class, dedupCtx.trustScript());
           propagateMaxNumReducers(dedupCtx, newRSOp, maxNumReducers);
         }
+      }
+    }
+
+    private static void removeAutoparallel(ReduceSinkOperator pRSOp, int maxNumReducers) {
+      pRSOp.getConf().setNumReducers(maxNumReducers);
+      if (pRSOp.getConf().getReducerTraits().contains(ReducerTraits.AUTOPARALLEL)) {
+        EnumSet<ReducerTraits> withoutAutoparallel = pRSOp.getConf().getReducerTraits().clone();
+        withoutAutoparallel.remove(ReducerTraits.AUTOPARALLEL);
+        pRSOp.getConf().setReducerTraits(withoutAutoparallel);
+        LOG.debug("Removed AUTOPARALLEL from {} : {}", pRSOp, maxNumReducers);
+      } else {
+        LOG.debug("Set {} parallelism to : {}", pRSOp, maxNumReducers);
       }
     }
   }
