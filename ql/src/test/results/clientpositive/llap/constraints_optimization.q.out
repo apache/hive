@@ -2250,7 +2250,7 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100])
   HiveProject(customer_preferred_cust_flag=[$1])
     HiveAggregate(group=[{1, 4}])
       HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -2325,7 +2325,7 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100])
   HiveProject(customer_preferred_cust_flag=[$1])
     HiveAggregate(group=[{1, 4}])
       HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -2484,7 +2484,7 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[100])
   HiveProject(customer_preferred_cust_flag=[$1])
     HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(c_customer_id=[$0], c_preferred_cust_flag=[$1])

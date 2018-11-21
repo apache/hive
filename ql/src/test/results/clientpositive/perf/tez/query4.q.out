@@ -262,15 +262,15 @@ Stage-0
       File Output Operator [FS_339]
         Limit [LIM_338] (rows=100 width=85)
           Number of rows:100
-          Select Operator [SEL_337] (rows=3254754 width=85)
+          Select Operator [SEL_337] (rows=7323197 width=85)
             Output:["_col0"]
           <-Reducer 9 [SIMPLE_EDGE]
             SHUFFLE [RS_147]
-              Select Operator [SEL_146] (rows=3254754 width=85)
+              Select Operator [SEL_146] (rows=7323197 width=85)
                 Output:["_col0"]
-                Filter Operator [FIL_145] (rows=3254754 width=533)
-                  predicate:((_col3 is not null and ((_col5 is not null and ((_col9 / _col5) > (_col12 / _col3))) or (null and _col5 is null))) or (null and _col3 is null))
-                  Merge Join Operator [MERGEJOIN_278] (rows=9764263 width=533)
+                Filter Operator [FIL_145] (rows=7323197 width=533)
+                  predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col12 / _col3))) ELSE (false) END) ELSE (false) END
+                  Merge Join Operator [MERGEJOIN_278] (rows=14646395 width=533)
                     Conds:RS_142._col2=RS_336._col0(Inner),Output:["_col3","_col5","_col9","_col11","_col12"]
                   <-Reducer 24 [SIMPLE_EDGE] vectorized
                     SHUFFLE [RS_336]
@@ -323,8 +323,8 @@ Stage-0
                   <-Reducer 8 [SIMPLE_EDGE]
                     SHUFFLE [RS_142]
                       PartitionCols:_col2
-                      Filter Operator [FIL_141] (rows=8165395 width=660)
-                        predicate:((_col7 is not null and ((_col5 is not null and ((_col9 / _col5) > (_col1 / _col7))) or (null and _col5 is null))) or (null and _col7 is null))
+                      Filter Operator [FIL_141] (rows=12248093 width=660)
+                        predicate:CASE WHEN (_col7 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col1 / _col7))) ELSE (false) END) ELSE (false) END
                         Merge Join Operator [MERGEJOIN_277] (rows=24496186 width=660)
                           Conds:RS_138._col2=RS_333._col0(Inner),Output:["_col1","_col2","_col3","_col5","_col7","_col9"]
                         <-Reducer 17 [SIMPLE_EDGE] vectorized

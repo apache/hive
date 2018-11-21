@@ -184,14 +184,14 @@ Stage-0
       File Output Operator [FS_215]
         Limit [LIM_214] (rows=100 width=85)
           Number of rows:100
-          Select Operator [SEL_213] (rows=8165395 width=85)
+          Select Operator [SEL_213] (rows=12248093 width=85)
             Output:["_col0"]
           <-Reducer 7 [SIMPLE_EDGE]
             SHUFFLE [RS_97]
-              Select Operator [SEL_96] (rows=8165395 width=85)
+              Select Operator [SEL_96] (rows=12248093 width=85)
                 Output:["_col0"]
-                Filter Operator [FIL_95] (rows=8165395 width=533)
-                  predicate:((_col3 is not null and ((_col5 is not null and ((_col1 / _col5) > (_col8 / _col3))) or (null and _col5 is null))) or (null and _col3 is null))
+                Filter Operator [FIL_95] (rows=12248093 width=533)
+                  predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col1 / _col5) > (_col8 / _col3))) ELSE (false) END) ELSE (false) END
                   Merge Join Operator [MERGEJOIN_172] (rows=24496186 width=533)
                     Conds:RS_92._col2=RS_212._col0(Inner),Output:["_col1","_col3","_col5","_col7","_col8"]
                   <-Reducer 15 [SIMPLE_EDGE] vectorized
