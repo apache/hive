@@ -481,7 +481,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
 
   /**
    * Function to convert Druid Primitive values to Hive Primitives. Main usage of this is to pipe data to VectorRow.
-   * This has the exact same logic as {@link this#deserialize(Writable)}, any modification here should be done there
+   * This has the exact same logic as {@link DruidSerDe#deserialize(Writable)}, any modification here should be done there
    * as well.
    * Reason to have 2 function is performance, merging both will bring an extra test on the hot loop.
    *
