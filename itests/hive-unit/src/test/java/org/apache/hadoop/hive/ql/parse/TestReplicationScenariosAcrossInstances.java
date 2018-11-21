@@ -1318,7 +1318,9 @@ public class TestReplicationScenariosAcrossInstances {
     };
     InjectableBehaviourObjectStore.setGetPartitionBehaviour(getPartitionStub);
 
-    List<String> withConfigs = Collections.singletonList("'hive.repl.approx.max.load.tasks'='1'");
+    // Make sure that there's some order in which the objects are loaded.
+    List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'",
+            "'hive.in.repl.test.files.sorted'='true'");
     replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
     InjectableBehaviourObjectStore.resetGetPartitionBehaviour(); // reset the behaviour
     getPartitionStub.assertInjectionsPerformed(true, false);
@@ -1329,24 +1331,21 @@ public class TestReplicationScenariosAcrossInstances {
             .run("show tables")
             .verifyResults(new String[] {"t2" })
             .run("select country from t2 order by country")
-        .verifyResults(Collections.singletonList("india"))
-            .run("show functions like '" + replicatedDbName + "*'")
-            .verifyResult(replicatedDbName + ".testFunctionOne");
+            .verifyResults(Collections.singletonList("india"));
 
     // Retry with different dump should fail.
     replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
 
-    // Verify if no create table/function calls. Only add partitions.
+    // Verify if no create table calls. Add partitions and create function calls expected.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
             = new BehaviourInjection<CallerArguments, Boolean>() {
       @Nullable
       @Override
       public Boolean apply(@Nullable CallerArguments args) {
-        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.tblName != null) || (args.funcName != null)) {
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.tblName != null)) {
           injectionPathCalled = true;
           LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
-                  + " Table: " + String.valueOf(args.tblName)
-                  + " Func: " + String.valueOf(args.funcName));
+                  + " Table: " + String.valueOf(args.tblName));
           return false;
         }
         return true;
@@ -1356,7 +1355,7 @@ public class TestReplicationScenariosAcrossInstances {
 
     try {
       // Retry with same dump with which it was already loaded should resume the bootstrap load.
-      // This time, it completes by adding remaining partitions.
+      // This time, it completes by adding remaining partitions and function.
       replica.load(replicatedDbName, tuple.dumpLocation);
       callerVerifier.assertInjectionsPerformed(false, false);
     } finally {
