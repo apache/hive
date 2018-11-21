@@ -1130,54 +1130,34 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //create a delta directory
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,17)");
 
-    //make sure we assign correct Ids
-    List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " +  Table.NONACIDORCTBL + " order by ROW__ID");
-    LOG.warn("before compact");
-    for(String s : rs) {
-      LOG.warn(s);
-    }
+    boolean isVectorized = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+    String query = "select ROW__ID, a, b" + (isVectorized ? " from  " : ", INPUT__FILE__NAME from ") +  Table.NONACIDORCTBL + " order by ROW__ID";
+    String[][] expected = new String[][] {
+      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/000001_0"},
+      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5", "nonacidorctbl/000001_0_copy_1"},
+      {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12", "nonacidorctbl/000001_0_copy_1"},
+      {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/delta_10000001_10000001_0000/bucket_00001"}
+    };
+    checkResult(expected, query, isVectorized, "before compact", LOG);
+
     Assert.assertEquals(536870912,
-      BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(0)));
+        BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(0)));
     Assert.assertEquals(536936448,
-      BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(1)));
-    Assert.assertEquals("", 4, rs.size());
-    Assert.assertTrue(rs.get(0),
-            rs.get(0).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("nonacidorctbl/000001_0"));
-    Assert.assertTrue(rs.get(1),
-            rs.get(1).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/000001_0_copy_1"));
-    Assert.assertTrue(rs.get(2),
-            rs.get(2).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("nonacidorctbl/000001_0_copy_1"));
-    Assert.assertTrue(rs.get(3),
-            rs.get(3).startsWith("{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17"));
-    Assert.assertTrue(rs.get(3), rs.get(3)
-        .endsWith("nonacidorctbl/delta_10000001_10000001_0000/bucket_00001"));
+        BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(1)));
+
     //run Compaction
     runStatementOnDriver("alter table "+ TestTxnCommands2.Table.NONACIDORCTBL +" compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
-    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " +
-        Table.NONACIDORCTBL + " order by ROW__ID");
-    LOG.warn("after compact");
-    for(String s : rs) {
-      LOG.warn(s);
-    }
-    Assert.assertEquals("", 4, rs.size());
-    Assert.assertTrue(rs.get(0),
-            rs.get(0).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("nonacidorctbl/base_10000001/bucket_00001"));
-    Assert.assertTrue(rs.get(1),
-            rs.get(1).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/base_10000001/bucket_00001"));
-    Assert.assertTrue(rs.get(2),
-            rs.get(2).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12"));
-    Assert.assertTrue(rs.get(2), rs.get(2).endsWith("nonacidorctbl/base_10000001/bucket_00001"));
-    Assert.assertTrue(rs.get(3),
-            rs.get(3)
-                .startsWith("{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17"));
-    Assert.assertTrue(rs.get(3), rs.get(3).endsWith("nonacidorctbl/base_10000001/bucket_00001"));
 
+    query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
+        + Table.NONACIDORCTBL + " order by ROW__ID";
+    String[][] expected2 = new String[][] {
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000020/bucket_00001"}
+    };
+    checkResult(expected2, query, isVectorized, "after major compact", LOG);
     //make sure they are the same before and after compaction
   }
   //@Ignore("see bucket_num_reducers_acid.q")

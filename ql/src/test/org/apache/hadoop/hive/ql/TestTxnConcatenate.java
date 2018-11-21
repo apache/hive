@@ -63,13 +63,13 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
     String[][] expected2 = new String[][] {
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t1\t4",
-            "acidtbl/base_0000003/bucket_00001"},
+            "acidtbl/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t4\t4",
-            "acidtbl/base_0000003/bucket_00001"},
+            "acidtbl/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t5\t6",
-            "acidtbl/base_0000003/bucket_00001"},
+            "acidtbl/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
-            "acidtbl/base_0000003/bucket_00001"}};
+            "acidtbl/base_0000003_v0000019/bucket_00001"}};
     checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
   }
   @Test
@@ -104,11 +104,11 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
     String[][] expected2 = new String[][] {
         {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t1\t4",
-            "acidtblpart/p=p1/base_0000003/bucket_00001"},
+            "acidtblpart/p=p1/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t4\t5",
             "acidtblpart/p=p2/delta_0000001_0000001_0000/bucket_00001"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t5\t6",
-            "acidtblpart/p=p1/base_0000003/bucket_00001"},
+            "acidtblpart/p=p1/base_0000003_v0000019/bucket_00001"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
             "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001"}};
 

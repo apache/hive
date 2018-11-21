@@ -608,11 +608,16 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
       LOG.warn(s);
     }
     String[][] expected2 = {
-       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "warehouse/t/base_-9223372036854775808/bucket_00000"},
-      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "warehouse/t/base_-9223372036854775808/bucket_00000"},
-      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6", "warehouse/t/base_-9223372036854775808/bucket_00000"},
-      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t7\t8", "warehouse/t/base_-9223372036854775808/bucket_00000"},
-      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10", "warehouse/t/base_-9223372036854775808/bucket_00000"}
+       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
+           "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
+          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
+          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t7\t8",
+          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10",
+          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"}
     };
     Assert.assertEquals("Unexpected row count after major compact", expected2.length, rs.size());
     for(int i = 0; i < expected2.length; i++) {

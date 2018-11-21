@@ -80,6 +80,9 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
   /**
    * Returns org.apache.hadoop.hive.common.ValidWriteIdList.RangeResponse.ALL if all write ids in
    * the range are resolved and RangeResponse.NONE otherwise
+   * Streaming ingest may create something like delta_11_20.  Compactor cannot include such delta in
+   * compaction until all transactions that write to it terminate.  (Otherwise compactor
+   * will produce delta that doesn't satisfy (D1 intersect D2 is empty or D1 intersect D2 = D2).
    */
   @Override
   public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId) {

@@ -16,6 +16,10 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -24,13 +28,19 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.orc.TestVectorizedOrcAcidRowBatchReader;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2.swapTxnManager;
 
 public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands3.class);
@@ -106,6 +116,74 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         "select count(*) from NEXT_WRITE_ID where NWI_TABLE='bar'"));
   }
 
+  @Test
+  public void testDeleteEventPruningOn() throws Exception {
+    HiveConf.setBoolVar(hiveConf,
+        HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
+    testDeleteEventPruning();
+  }
+  @Test
+  public void testDeleteEventPruningOff() throws Exception {
+    HiveConf.setBoolVar(hiveConf,
+        HiveConf.ConfVars.FILTER_DELETE_EVENTS, false);
+    testDeleteEventPruning();
+  }
+  /**
+   * run with and w/o event fitlering enabled - should get the same results
+   * {@link TestVectorizedOrcAcidRowBatchReader#testDeleteEventFiltering()}
+   *
+   * todo: add .q test using VerifyNumReducersHook.num.reducers to make sure
+   * it does have 1 split for each input file.
+   * Will need to crate VerifyNumMappersHook
+   *
+   * Also, consider
+   * HiveSplitGenerator.java
+   * RAW_INPUT_SPLITS and GROUPED_INPUT_SPLITS are the counters before and
+   * after grouping splits PostExecTezSummaryPrinter post exec hook can be
+   * used to printout specific counters
+   */
+  private void testDeleteEventPruning() throws Exception {
+    HiveConf.setBoolVar(hiveConf,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    dropTable(new String[]{"T"});
+    runStatementOnDriver(
+        "create transactional table T(a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(1,2),(4,5)");
+    runStatementOnDriver("insert into T values(4,6),(1,3)");
+    runStatementOnDriver("delete from T where a = 1");
+    List<String> rs = runStatementOnDriver(
+        "select ROW__ID, a, b from T order by a, b");
+
+    boolean isVectorized =
+        hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+    String testQuery = isVectorized ?
+        "select ROW__ID, a, b from T order by a, b" :
+        "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
+    String[][] expected = new String[][]{
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t4\t5",
+            "warehouse/t/delta_0000001_0000001_0000/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
+            "warehouse/t/delta_0000002_0000002_0000/bucket_00000"}};
+    checkResult(expected, testQuery, isVectorized, "after delete", LOG);
+
+    runStatementOnDriver("alter table T compact 'MAJOR'");
+    runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history",
+        1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state",
+        TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+    Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId()
+        .startsWith("job_local"));
+
+    String[][] expected2 = new String[][]{
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t4\t5",
+            "warehouse/t/base_0000001/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
+            "warehouse/t/base_0000002/bucket_00000"}};
+    checkResult(expected2, testQuery, isVectorized, "after compaction", LOG);
+  }
   /**
    * HIVE-19985
    */
@@ -149,6 +227,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     rs = runStatementOnDriver("select a, b from T order by a, b");
     Assert.assertEquals(stringifyValues(dataAll), rs);
   }
+
   /**
    * Test that rows are routed to proper files based on bucket col/ROW__ID
    * Only the Vectorized Acid Reader checks if bucketId in ROW__ID inside the file
@@ -210,71 +289,116 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     checkResult(expected2, testQuery, isVectorized, "after update", LOG);
   }
   @Test
-  public void testDeleteEventPruningOn() throws Exception {
-    HiveConf.setBoolVar(hiveConf,
-        HiveConf.ConfVars.FILTER_DELETE_EVENTS, true);
-    testDeleteEventPruning();
-  }
-  @Test
-  public void testDeleteEventPruningOff() throws Exception {
-    HiveConf.setBoolVar(hiveConf,
-        HiveConf.ConfVars.FILTER_DELETE_EVENTS, false);
-    testDeleteEventPruning();
-  }
-  /**
-   * run with and w/o event fitlering enabled - should get the same results
-   * {@link TestVectorizedOrcAcidRowBatchReader#testDeleteEventFiltering()}
-   *
-   * todo: add .q test using VerifyNumReducersHook.num.reducers to make sure
-   * it does have 1 split for each input file.
-   * Will need to crate VerifyNumMappersHook
-   *
-   * Also, consider
-   * HiveSplitGenerator.java
-   * RAW_INPUT_SPLITS and GROUPED_INPUT_SPLITS are the counters before and
-   * after grouping splits PostExecTezSummaryPrinter post exec hook can be
-   * used to printout specific counters
-   */
-  private void testDeleteEventPruning() throws Exception {
-    HiveConf.setBoolVar(hiveConf,
-        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+  public void testCleaner2() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
     dropTable(new String[] {"T"});
-    runStatementOnDriver(
-        "create transactional table T(a int, b int) stored as orc");
-    runStatementOnDriver("insert into T values(1,2),(4,5)");
-    runStatementOnDriver("insert into T values(4,6),(1,3)");
-    runStatementOnDriver("delete from T where a = 1");
-    List<String> rs = runStatementOnDriver(
-        "select ROW__ID, a, b from T order by a, b");
+    //note: transaction names T1, T2, etc below, are logical, the actual txnid will be different
+    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(0,2)");//makes delta_1_1 in T1
+    runStatementOnDriver("insert into T values(1,4)");//makes delta_2_2 in T2
 
-    boolean isVectorized =
-        hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-    String testQuery = isVectorized ?
-        "select ROW__ID, a, b from T order by a, b" :
-        "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
-    String[][] expected = new String[][]{
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t4\t5",
-            "warehouse/t/delta_0000001_0000001_0000/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "warehouse/t/delta_0000002_0000002_0000/bucket_00000"}};
-    checkResult(expected, testQuery, isVectorized, "after delete", LOG);
+    Driver driver2 = new Driver(new QueryState.Builder().withHiveConf(hiveConf).build(), null);
+    driver2.setMaxRows(10000);
 
-    runStatementOnDriver("alter table T compact 'MAJOR'");
-    runWorker(hiveConf);
-    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
-    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals("Unexpected number of compactions in history",
-        1, resp.getCompactsSize());
-    Assert.assertEquals("Unexpected 0 compaction state",
-        TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
-    Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId()
-        .startsWith("job_local"));
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);
+    HiveTxnManager txnMgr1 = swapTxnManager(txnMgr2);
+    Driver driver1 = swapDrivers(driver2);
+    runStatementOnDriver("start transaction");//T3
+         /* this select sees
+     target/warehouse/t/
+     ├── delta_0000001_0000001_0000
+     │   ├── _orc_acid_version
+     │   └── bucket_00000
+     └── delta_0000002_0000002_0000
+         ├── _orc_acid_version
+         └── bucket_00000*/
+    String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from T";
+    String[][] expected = new String[][] {
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2",
+            "t/delta_0000001_0000001_0000/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t4",
+            "t/delta_0000002_0000002_0000/bucket_00000"}};
+    checkResult(expected, testQuery, false, "check data", LOG);
 
-    String[][] expected2 = new String[][]{
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t4\t5",
-            "warehouse/t/base_0000001/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "warehouse/t/base_0000002/bucket_00000"}};
-    checkResult(expected2, testQuery, isVectorized, "after compaction", LOG);
+
+    txnMgr2 = swapTxnManager(txnMgr1);
+    driver2 = swapDrivers(driver1);
+    runStatementOnDriver("alter table T compact 'minor'");//T4
+    TestTxnCommands2.runWorker(hiveConf);//makes delta_1_2 & delete_delta_1_2
+         /* Now we should have
+     target/warehouse/t/
+     ├── delete_delta_0000001_0000002_v0000019
+     │   ├── _orc_acid_version
+     │   └── bucket_00000
+     ├── delta_0000001_0000001_0000
+     │   ├── _orc_acid_version
+     │   └── bucket_00000
+     ├── delta_0000001_0000002_v0000019
+     │   ├── _orc_acid_version
+     │   └── bucket_00000
+     └── delta_0000002_0000002_0000
+         ├── _orc_acid_version
+         └── bucket_00000*/
+    FileSystem fs = FileSystem.get(hiveConf);
+    Path warehousePath = new Path(getWarehouseDir());
+    FileStatus[] actualList = fs.listStatus(new Path(warehousePath + "/t"),
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
+
+    String[] expectedList = new String[] {
+        "/t/delete_delta_0000001_0000002_v0000019",
+        "/t/delta_0000001_0000002_v0000019",
+        "/t/delta_0000001_0000001_0000",
+        "/t/delta_0000002_0000002_0000",
+    };
+    checkExpectedFiles(actualList, expectedList, warehousePath.toString());
+
+
+    /*
+    T3 is still running and cannot see anything compactor produces with v0000019 suffix
+    so it may be reading delta_1_1 & delta_2_2 and so cleaner cannot delete any files
+     at this point*/
+    TestTxnCommands2.runCleaner(hiveConf);
+    actualList = fs.listStatus(new Path(warehousePath + "/t"),
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
+    checkExpectedFiles(actualList, expectedList, warehousePath.toString());
+
+    txnMgr1 = swapTxnManager(txnMgr2);
+    driver1 = swapDrivers(driver2);
+    runStatementOnDriver("commit");//commits T3
+    //so now cleaner should be able to delete delta_0000001_0000001_0000
+    // & delta_0000002_0000002_0000
+
+    //insert a row so that compactor makes a new delta (due to HIVE-20901)
+    runStatementOnDriver("insert into T values(2,5)");//makes delta_3_3 in T5
+
+    runStatementOnDriver("alter table T compact 'minor'");
+    TestTxnCommands2.runWorker(hiveConf);
+    /*
+    at this point delete|delta_0000001_0000003_v0000022 are visible to everyone
+    so cleaner removes all files shadowed by them (which is everything in this case)
+    */
+    TestTxnCommands2.runCleaner(hiveConf);
+
+    expectedList = new String[] {
+        "/t/delete_delta_0000001_0000003_v0000022",
+        "/t/delta_0000001_0000003_v0000022"
+    };
+    actualList = fs.listStatus(new Path(warehousePath + "/t"),
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
+    checkExpectedFiles(actualList, expectedList, warehousePath.toString());
+  }
+  private static void checkExpectedFiles(FileStatus[] actualList, String[] expectedList, String filePrefix) throws Exception {
+    Set<String> expectedSet = new HashSet<>();
+    Set<String> unexpectedSet = new HashSet<>();
+    for(String f : expectedList) {
+      expectedSet.add(f);
+    }
+    for(FileStatus fs : actualList) {
+      String endOfPath = fs.getPath().toString().substring(fs.getPath().toString().indexOf(filePrefix) + filePrefix.length());
+      if(!expectedSet.remove(endOfPath)) {
+        unexpectedSet.add(endOfPath);
+      }
+    }
+    Assert.assertTrue("not found set: " + expectedSet + " unexpected set: " + unexpectedSet, expectedSet.isEmpty() && unexpectedSet.isEmpty());
   }
 }

@@ -44,14 +44,14 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
-import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -61,10 +61,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverUtils;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -76,8 +73,6 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
@@ -102,6 +97,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.Ref;
+import org.apache.parquet.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -353,6 +349,7 @@ public class CompactorMR {
       // Set up the session for driver.
       conf = new HiveConf(conf);
       conf.set(ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
+      conf.unset(ValidTxnList.VALID_TXNS_KEY);//so Driver doesn't get confused
 
       String user = UserGroupInformation.getCurrentUser().getShortUserName();
       SessionState sessionState = DriverUtils.setUpSessionState(conf, user, false);
@@ -601,7 +598,6 @@ public class CompactorMR {
    * to use.
    * @param job the job to update
    * @param cols the columns of the table
-   * @param map
    */
   private void setColumnTypes(JobConf job, List<FieldSchema> cols) {
     StringBuilder colNames = new StringBuilder();
@@ -1008,7 +1004,17 @@ public class CompactorMR {
         deleteEventWriter.close(false);
       }
     }
-
+    private long getCompactorTxnId() {
+      String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
+      if(Strings.isNullOrEmpty(snapshot)) {
+        throw new IllegalStateException(ValidTxnList.VALID_TXNS_KEY + " not found for writing to "
+            + jobConf.get(FINAL_LOCATION));
+      }
+      ValidTxnList validTxnList = new ValidReadTxnList();
+      validTxnList.readFromString(snapshot);
+      //this is id of the current txn
+      return validTxnList.getHighWatermark();
+    }
     private void getWriter(Reporter reporter, ObjectInspector inspector,
                            int bucket) throws IOException {
       if (writer == null) {
@@ -1021,7 +1027,8 @@ public class CompactorMR {
             .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
             .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(bucket)
-            .statementId(-1);//setting statementId == -1 makes compacted delta files use
+            .statementId(-1)//setting statementId == -1 makes compacted delta files use
+            .visibilityTxnId(getCompactorTxnId());
         //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
@@ -1046,8 +1053,9 @@ public class CompactorMR {
           .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
           .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
           .bucket(bucket)
-          .statementId(-1);//setting statementId == -1 makes compacted delta files use
-        //delta_xxxx_yyyy format
+          .statementId(-1)//setting statementId == -1 makes compacted delta files use
+            // delta_xxxx_yyyy format
+          .visibilityTxnId(getCompactorTxnId());
 
         // Instantiate the underlying output format
         @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
@@ -1180,7 +1188,7 @@ public class CompactorMR {
       FileStatus[] contents = fs.listStatus(tmpLocation);//expect 1 base or delta dir in this list
       //we have MIN_TXN, MAX_TXN and IS_MAJOR in JobConf so we could figure out exactly what the dir
       //name is that we want to rename; leave it for another day
-      // TODO: if we expect one dir why don't we enforce it?
+      //todo: may actually have delta_x_y and delete_delta_x_y
       for (FileStatus fileStatus : contents) {
         //newPath is the base/delta dir
         Path newPath = new Path(finalLocation, fileStatus.getPath().getName());
@@ -1220,6 +1228,8 @@ public class CompactorMR {
       ValidWriteIdList actualWriteIds) throws IOException {
     Path fromPath = new Path(from), toPath = new Path(to);
     FileSystem fs = fromPath.getFileSystem(conf);
+    //todo: is that true?  can it be aborted? does it matter for compaction? probably OK since
+    //getAcidState() doesn't check if X is valid in base_X_cY for compacted base dirs.
     // Assume the high watermark can be used as maximum transaction ID.
     long maxTxn = actualWriteIds.getHighWatermark();
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)

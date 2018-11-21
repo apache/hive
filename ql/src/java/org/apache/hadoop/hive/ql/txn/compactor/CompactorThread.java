@@ -51,7 +51,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 /**
  * Superclass for all threads in the compactor.
  */
-abstract class CompactorThread extends Thread implements MetaStoreThread {
+public abstract class CompactorThread extends Thread implements MetaStoreThread {
   static final private String CLASS_NAME = CompactorThread.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
@@ -67,8 +67,9 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
     // TODO MS-SPLIT for now, keep a copy of HiveConf around as we need to call other methods with
     // it. This should be changed to Configuration once everything that this calls that requires
     // HiveConf is moved to the standalone metastore.
-    conf = (configuration instanceof HiveConf) ? (HiveConf)configuration :
-        new HiveConf(configuration, HiveConf.class);
+    //clone the conf - compactor needs to set properties in it which we don't
+    // want to bleed into the caller
+    conf = new HiveConf(configuration, HiveConf.class);
   }
 
   @Override

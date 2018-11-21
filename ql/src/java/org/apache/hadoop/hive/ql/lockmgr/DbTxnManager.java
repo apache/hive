@@ -431,14 +431,14 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         .setUser(username);
 
     if(plan.getInputs().isEmpty() && plan.getOutputs().isEmpty()) {
-      LOG.debug("No locks needed for queryId" + queryId);
+      LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
 
     List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(), conf);
     //It's possible there's nothing to lock even if we have w/r entities.
     if(lockComponents.isEmpty()) {
-      LOG.debug("No locks needed for queryId" + queryId);
+      LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
     rqstBuilder.addLockComponents(lockComponents);

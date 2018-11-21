@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -143,13 +144,15 @@ public class Initiator extends CompactorThread {
                     ", assuming it has been dropped and moving on.");
                 continue;
               }
-
-              // Compaction doesn't work under a transaction and hence pass null for validTxnList
+              ValidTxnList validTxnList = TxnUtils
+                  .createValidReadTxnList(txnHandler.getOpenTxns(), 0);
+              conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
               // The response will have one entry per table and hence we get only one ValidWriteIdList
               String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
               GetValidWriteIdsRequest rqst
                       = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
-              ValidWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
+              rqst.setValidTxnList(validTxnList.writeToString());
+              final ValidWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
                       txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
 
               StorageDescriptor sd = resolveStorageDescriptor(t, p);

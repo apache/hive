@@ -84,63 +84,6 @@ public class TestHiveMetaStoreTxns {
   }
 
   @Test
-  public void testTxnRange() throws Exception {
-    ValidTxnList validTxns = client.getValidTxns();
-    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
-        validTxns.isTxnRangeValid(1L, 3L));
-    List<Long> tids = client.openTxns("me", 5).getTxn_ids();
-
-    HeartbeatTxnRangeResponse rsp = client.heartbeatTxnRange(1, 5);
-    Assert.assertEquals(0, rsp.getNosuch().size());
-    Assert.assertEquals(0, rsp.getAborted().size());
-
-    client.rollbackTxn(1L);
-    client.commitTxn(2L);
-    client.commitTxn(3L);
-    client.commitTxn(4L);
-    validTxns = client.getValidTxns();
-    System.out.println("validTxns = " + validTxns);
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(2L, 2L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(2L, 3L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(2L, 4L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(3L, 4L));
-
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(1L, 4L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(2L, 5L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(1L, 2L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(4L, 5L));
-
-    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
-        validTxns.isTxnRangeValid(1L, 1L));
-    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
-        validTxns.isTxnRangeValid(5L, 10L));
-
-    validTxns = new ValidReadTxnList("10:5:4,5,6:");
-    Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
-        validTxns.isTxnRangeValid(4,6));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(7, 10));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(7, 11));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(3, 6));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(4, 7));
-    Assert.assertEquals(ValidTxnList.RangeResponse.SOME,
-        validTxns.isTxnRangeValid(1, 12));
-    Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
-        validTxns.isTxnRangeValid(1, 3));
-  }
-
-  @Test
   public void testLocks() throws Exception {
     LockRequestBuilder rqstBuilder = new LockRequestBuilder();
     rqstBuilder.addLockComponent(new LockComponentBuilder()

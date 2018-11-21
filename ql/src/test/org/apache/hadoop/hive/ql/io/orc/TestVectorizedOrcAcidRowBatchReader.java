@@ -19,12 +19,15 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -272,6 +275,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
         new DummyRow(-1, 2, 3, bucket));
     updater.close(false);
 
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     //HWM is not important - just make sure deltas created above are read as
     // if committed
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY,
@@ -410,6 +415,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
         new DummyRow(-1, 5, 10000003, bucket));
     updater.close(false);
 
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     //HWM is not important - just make sure deltas created above are read as
     // if committed
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY,
@@ -695,6 +702,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
     writer.close();
 
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
     int bucket = 0;
 
@@ -946,6 +955,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
     @Test
   public void testVectorizedOrcAcidRowBatchReader() throws Exception {
     conf.set("bucket_count", "1");
+      conf.set(ValidTxnList.VALID_TXNS_KEY,
+          new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
     int bucket = 0;
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)

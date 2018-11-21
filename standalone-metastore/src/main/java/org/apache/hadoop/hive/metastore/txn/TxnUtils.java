@@ -25,7 +25,10 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -42,12 +45,30 @@ import java.util.Map;
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
 
-  // Transactional stats states
-  static final public char STAT_OPEN = 'o';
-  static final public char STAT_INVALID = 'i';
-  static final public char STAT_COMMITTED = 'c';
-  static final public char STAT_OBSOLETE = 's';
-
+  public static ValidTxnList createValidTxnListForCleaner(GetOpenTxnsResponse txns, long minOpenTxnGLB) {
+    long highWaterMark = minOpenTxnGLB - 1;
+    long[] abortedTxns = new long[txns.getOpen_txnsSize()];
+    BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
+    int i = 0;
+    for(long txnId : txns.getOpen_txns()) {
+      if(txnId > highWaterMark) {
+        break;
+      }
+      if(abortedBits.get(i)) {
+        abortedTxns[i] = txnId;
+      }
+      else {
+        assert false : JavaUtils.txnIdToString(txnId) + " is open and <= hwm:" + highWaterMark;
+      }
+      ++i;
+    }
+    abortedTxns = Arrays.copyOf(abortedTxns, i);
+    BitSet bitSet = new BitSet(abortedTxns.length);
+    bitSet.set(0, abortedTxns.length);
+    //add ValidCleanerTxnList? - could be problematic for all the places that read it from
+    // string as they'd have to know which object to instantiate
+    return new ValidReadTxnList(abortedTxns, bitSet, highWaterMark, Long.MAX_VALUE);
+  }
   /**
    * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse} to a
    * {@link org.apache.hadoop.hive.common.ValidTxnList}.  This assumes that the caller intends to
@@ -106,7 +127,7 @@ public class TxnUtils {
    * {@link org.apache.hadoop.hive.common.ValidTxnWriteIdList}.  This assumes that the caller intends to
    * read the files, and thus treats both open and aborted transactions as invalid.
    * @param currentTxnId current txn ID for which we get the valid write ids list
-   * @param list valid write ids list from the metastore
+   * @param validIds valid write ids list from the metastore
    * @return a valid write IDs list for the whole transaction.
    */
   public static ValidTxnWriteIdList createValidTxnWriteIdList(Long currentTxnId,
@@ -179,17 +200,6 @@ public class TxnUtils {
     } else {
       return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, highWater, minOpenWriteId);
     }
-  }
-
-  public static ValidReaderWriteIdList updateForCompactionQuery(ValidReaderWriteIdList ids) {
-    // This is based on the existing valid write ID list that was built for a select query;
-    // therefore we assume all the aborted txns, etc. were already accounted for.
-    // All we do is adjust the high watermark to only include contiguous txns.
-    Long minOpenWriteId = ids.getMinOpenWriteId();
-    if (minOpenWriteId != null && minOpenWriteId != Long.MAX_VALUE) {
-      return ids.updateHighWatermark(ids.getMinOpenWriteId() - 1);
-    }
-    return ids;
   }
 
   /**

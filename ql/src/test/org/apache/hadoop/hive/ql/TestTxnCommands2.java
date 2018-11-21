@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -59,8 +61,10 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
@@ -246,14 +250,7 @@ public class TestTxnCommands2 {
     List<String> rs0 = runStatementOnDriver(query);
     Assert.assertEquals("Read failed", 0, rs0.size());
     runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean stop = new AtomicBoolean();
-    AtomicBoolean looped = new AtomicBoolean();
-    stop.set(true);
-    t.init(stop, looped);
-    t.run();
+    runWorker(hiveConf);
     //now we have base_0001 file
     int[][] tableData2 = {{1, 7}, {5, 6}, {7, 8}, {9, 10}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
@@ -293,14 +290,7 @@ public class TestTxnCommands2 {
     int[][] tableData = {{1,2}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean stop = new AtomicBoolean();
-    AtomicBoolean looped = new AtomicBoolean();
-    stop.set(true);
-    t.init(stop, looped);
-    t.run();
+    runWorker(hiveConf);
     int[][] tableData2 = {{5,6}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
     List<String> rs1 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " where b > 0 order by a,b");
@@ -746,7 +736,9 @@ public class TestTxnCommands2 {
     boolean sawNewBase = false;
     for (int i = 0; i < status.length; i++) {
       if (status[i].getPath().getName().matches("base_.*")) {
-        Assert.assertEquals("base_-9223372036854775808", status[i].getPath().getName());
+        //should be base_-9223372036854775808_v0000022 but 22 is a txn id not write id so it makes
+        //the tests fragile
+        Assert.assertTrue(status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000022"));
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
@@ -798,7 +790,7 @@ public class TestTxnCommands2 {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
       } else if (status[i].getPath().getName().matches("base_.*")) {
-        Assert.assertEquals("base_-9223372036854775808", status[i].getPath().getName());
+        Assert.assertTrue("base_-9223372036854775808", status[i].getPath().getName().startsWith("base_-9223372036854775808_v0000022"));//_v0000022
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
@@ -835,12 +827,12 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numBase == 1) {
-          Assert.assertEquals("base_-9223372036854775808", status[i].getPath().getName());
+          Assert.assertEquals("base_-9223372036854775808_v0000022", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_10000002", status[i].getPath().getName());
+          Assert.assertEquals("base_10000002_v0000030", status[i].getPath().getName());
           Assert.assertEquals(2, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -866,7 +858,7 @@ public class TestTxnCommands2 {
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_10000002", status[0].getPath().getName());
+    Assert.assertEquals("base_10000002_v0000030", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
@@ -1198,17 +1190,32 @@ public class TestTxnCommands2 {
     return compactionsByState;
   }
   public static void runWorker(HiveConf hiveConf) throws MetaException {
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
+    runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
   public static void runCleaner(HiveConf hiveConf) throws MetaException {
+    runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
+  }
+  public static void runInitiator(HiveConf hiveConf) throws MetaException {
+    runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
+  }
+  private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
+  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
+      throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
-    Cleaner t = new Cleaner();
+    CompactorThread t = null;
+    switch (type) {
+      case INITIATOR:
+        t = new Initiator();
+        break;
+      case WORKER:
+        t = new Worker();
+        break;
+      case CLEANER:
+        t = new Cleaner();
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown type: " + type);
+    }
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
@@ -1225,7 +1232,7 @@ public class TestTxnCommands2 {
     writeBetweenWorkerAndCleanerForVariousTblProperties("'transactional'='true'");
   }
 
-  protected void writeBetweenWorkerAndCleanerForVariousTblProperties(String tblProperties) throws Exception {
+  private void writeBetweenWorkerAndCleanerForVariousTblProperties(String tblProperties) throws Exception {
     String tblName = "hive12352";
     runStatementOnDriver("drop table if exists " + tblName);
     runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
@@ -1239,13 +1246,7 @@ public class TestTxnCommands2 {
     //run Worker to execute compaction
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
+    runWorker(hiveConf);
 
     //delete something, but make sure txn is rolled back
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
@@ -1259,21 +1260,23 @@ public class TestTxnCommands2 {
     Assert.assertEquals("", expected,
       runStatementOnDriver("select a,b from " + tblName + " order by a"));
 
-    //run Cleaner
-    Cleaner c = new Cleaner();
-    c.setThreadId((int)c.getId());
-    c.setConf(hiveConf);
-    c.init(stop, new AtomicBoolean());
-    c.run();
+    runCleaner(hiveConf);
 
-    //this seems odd, but we wan to make sure that to run CompactionTxnHandler.cleanEmptyAbortedTxns()
-    Initiator i = new Initiator();
-    i.setThreadId((int)i.getId());
-    i.setConf(hiveConf);
-    i.init(stop, new AtomicBoolean());
-    i.run();
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tblName.toLowerCase()),
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
+    Set<String> expectedDeltas = new HashSet<>();
+    expectedDeltas.add("delete_delta_0000001_0000002_v0000019");
+    expectedDeltas.add("delta_0000001_0000002_v0000019");
+    Set<String> actualDeltas = new HashSet<>();
+    for(FileStatus file : status) {
+      actualDeltas.add(file.getPath().getName());
+    }
+    Assert.assertEquals(expectedDeltas, actualDeltas);
 
-    //check that aborted operation didn't become committed
+    //this seems odd, but we want to make sure that run CompactionTxnHandler.cleanEmptyAbortedTxns()
+    runInitiator(hiveConf);
+    //and check that aborted delete operation didn't become committed
     Assert.assertEquals("", expected,
       runStatementOnDriver("select a,b from " + tblName + " order by a"));
   }
@@ -1338,18 +1341,11 @@ public class TestTxnCommands2 {
     int[][] tableData = {{1,2},{3,4}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean stop = new AtomicBoolean();
-    AtomicBoolean looped = new AtomicBoolean();
-    stop.set(true);
-    t.init(stop, looped);
-    t.run();
+    runWorker(hiveConf);
     runStatementOnDriver("delete from " + Table.ACIDTBL + " where b = 4");
     runStatementOnDriver("update " + Table.ACIDTBL + " set b = -2 where b = 2");
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MINOR'");
-    t.run();
+    runWorker(hiveConf);
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
