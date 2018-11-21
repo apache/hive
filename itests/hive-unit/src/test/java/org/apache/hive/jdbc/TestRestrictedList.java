@@ -108,6 +108,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.spark.client.rpc.server.address");
     addToExpectedRestrictedMap("spark.home");
     addToExpectedRestrictedMap("hive.privilege.synchronizer.interval");
+    addToExpectedRestrictedMap("hive.driver.parallel.compilation.global.limit");
   }
 
   @AfterClass
