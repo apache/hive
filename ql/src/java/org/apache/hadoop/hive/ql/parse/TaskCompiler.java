@@ -48,6 +48,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
+import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
+import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
@@ -65,7 +68,6 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.DefaultFetchFormatter;
 import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
@@ -653,6 +655,30 @@ public abstract class TaskCompiler {
    */
   protected abstract void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException;
+
+  /*
+   * Called for dynamic partitioning sort optimization.
+   */
+  protected void runDynPartitionSortOptimizations(ParseContext parseContext, HiveConf hConf) throws SemanticException {
+    // run Sorted dynamic partition optimization
+
+    if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
+        HiveConf.getVar(hConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
+        !HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+      new SortedDynPartitionOptimizer().transform(parseContext);
+
+      if(HiveConf.getBoolVar(hConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)
+          || parseContext.hasAcidWrite()) {
+
+        // Dynamic sort partition adds an extra RS therefore need to de-dup
+        new ReduceSinkDeDuplication().transform(parseContext);
+        // there is an issue with dedup logic wherein SELECT is created with wrong columns
+        // NonBlockingOpDeDupProc fixes that
+        new NonBlockingOpDeDupProc().transform(parseContext);
+
+      }
+    }
+  }
 
   /**
    * Create a clone of the parse context

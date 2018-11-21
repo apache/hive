@@ -118,6 +118,12 @@ public class MapReduceCompiler extends TaskCompiler {
     }
   }
 
+  @Override
+  protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
+    this.runDynPartitionSortOptimizations(pCtx, conf);
+  }
+
   private void setInputFormat(MapWork work, Operator<? extends OperatorDesc> op) {
     if (op.isUseBucketizedHiveInputFormat()) {
       work.setUseBucketizedHiveInputFormat(true);

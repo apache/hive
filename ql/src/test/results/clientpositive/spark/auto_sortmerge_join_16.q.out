@@ -442,20 +442,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 103	val_103	val_103	day1	1
 103	val_103	val_103	day1	1
 103	val_103	val_103	day1	1
-169	val_169	val_169	day1	1
-169	val_169	val_169	day1	1
-169	val_169	val_169	day1	1
-169	val_169	val_169	day1	1
-169	val_169	val_169	day1	1
-169	val_169	val_169	day1	1
-169	val_169	val_169	day1	1
-169	val_169	val_169	day1	1
+169	val_169	NULL	day1	1
 172	val_172	val_172	day1	1
 172	val_172	val_172	day1	1
 172	val_172	val_172	day1	1
 172	val_172	val_172	day1	1
-374	val_374	val_374	day1	1
-374	val_374	val_374	day1	1
+374	val_374	NULL	day1	1
 PREHOOK: query: drop table bucket_big_n17
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bucket_big_n17
