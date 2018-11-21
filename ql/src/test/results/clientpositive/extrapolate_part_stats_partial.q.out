@@ -267,7 +267,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 426
+              totalSize 425
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -313,7 +313,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 433
+              totalSize 432
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -340,12 +340,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d_n1
-          Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
             expressions: state (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
@@ -488,7 +488,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 426
+              totalSize 425
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -534,7 +534,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 433
+              totalSize 432
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -561,12 +561,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d_n1
-          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2000') compute statistics for columns state
@@ -737,7 +737,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 426
+              totalSize 425
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -783,7 +783,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 433
+              totalSize 432
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -958,7 +958,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 426
+              totalSize 425
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1004,7 +1004,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 433
+              totalSize 432
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1031,12 +1031,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d_n1
-          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: create table if not exists loc_orc_2d_n1 (
@@ -1681,12 +1681,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_2d_n1
-          Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
             expressions: state (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: explain extended select state,locid from loc_orc_2d_n1
@@ -2249,11 +2249,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_2d_n1
-          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 20 Data size: 1840 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 20 Data size: 1840 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 

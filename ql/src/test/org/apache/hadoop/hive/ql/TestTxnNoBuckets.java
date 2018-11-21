@@ -768,6 +768,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
   @Test
   public void testCompactStatsGather() throws Exception {
     hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, -1);
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("create table T(a int, b int) partitioned by (p int, q int) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
