@@ -160,9 +160,9 @@ Stage-0
               Reduce Output Operator [RS_396]
                 Group By Operator [GBY_395] (rows=1 width=112)
                   Output:["_col0"],aggregations:["sum(_col0)"]
-                  Select Operator [SEL_393] (rows=1 width=112)
+                  Select Operator [SEL_393] (rows=6 width=112)
                     Output:["_col0"]
-                    Merge Join Operator [MERGEJOIN_392] (rows=1 width=116)
+                    Merge Join Operator [MERGEJOIN_392] (rows=6 width=19)
                       Conds:RS_248._col2=RS_249._col0(Inner),Output:["_col3","_col4"]
                     <-Reducer 27 [SIMPLE_EDGE]
                       SHUFFLE [RS_249]
@@ -359,9 +359,9 @@ Stage-0
               Reduce Output Operator [RS_391]
                 Group By Operator [GBY_390] (rows=1 width=112)
                   Output:["_col0"],aggregations:["sum(_col0)"]
-                  Select Operator [SEL_388] (rows=1 width=112)
+                  Select Operator [SEL_388] (rows=12 width=112)
                     Output:["_col0"]
-                    Merge Join Operator [MERGEJOIN_387] (rows=1 width=116)
+                    Merge Join Operator [MERGEJOIN_387] (rows=12 width=9)
                       Conds:RS_122._col1=RS_123._col0(Inner),Output:["_col3","_col4"]
                     <-Reducer 23 [SIMPLE_EDGE]
                       SHUFFLE [RS_123]

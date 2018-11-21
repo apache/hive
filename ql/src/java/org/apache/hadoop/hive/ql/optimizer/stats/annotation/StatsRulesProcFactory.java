@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -2175,21 +2176,29 @@ public class StatsRulesProcFactory {
       // corresponding branch since only that branch will factor is the reduction
       if (multiParentOp instanceof JoinOperator) {
         JoinOperator jop = ((JoinOperator) multiParentOp);
-        isSelComputed = true;
         // check for two way join
         if (jop.getConf().getConds().length == 1) {
-          switch (jop.getConf().getCondsList().get(0).getType()) {
-          case JoinDesc.LEFT_OUTER_JOIN:
-            selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
-            break;
-          case JoinDesc.RIGHT_OUTER_JOIN:
-            selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
-            break;
-          default:
-            // for rest of the join type we will take min of the reduction.
+          isSelComputed = true;
+          int type = jop.getConf().getCondsList().get(0).getType();
+          if (jop.getConf().getJoinKeys()[0].length == 0 || type == JoinDesc.FULL_OUTER_JOIN) {
+            // This is just a cartesian product or a full outer join, we will take the max
             float selMultiParentLeft = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
             float selMultiParentRight = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
-            selMultiParent = Math.min(selMultiParentLeft, selMultiParentRight);
+            selMultiParent = Math.max(selMultiParentLeft, selMultiParentRight);
+          } else {
+            switch (type) {
+            case JoinDesc.LEFT_OUTER_JOIN:
+              selMultiParent = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
+              break;
+            case JoinDesc.RIGHT_OUTER_JOIN:
+              selMultiParent = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
+              break;
+            default:
+              // for rest of the join type we will take min of the reduction.
+              float selMultiParentLeft = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
+              float selMultiParentRight = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
+              selMultiParent = Math.min(selMultiParentLeft, selMultiParentRight);
+            }
           }
         }
       }
