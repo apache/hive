@@ -31,7 +31,7 @@ public class ObjectPair<F, S> {
    * the method does, so the code becomes less ugly.
    */
   public static <T1, T2> ObjectPair<T1, T2> create(T1 f, T2 s) {
-    return new ObjectPair<T1, T2>(f, s);
+    return new ObjectPair<>(f, s);
   }
 
   public ObjectPair(F first, S second) {

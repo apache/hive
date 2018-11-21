@@ -220,7 +220,7 @@ public class JvmPauseMonitor {
    * with a 1GB heap will very quickly go into "GC hell" and result in
    * log messages about the GC pauses.
    */
-  public static void main(String []args) throws Exception {
+  @SuppressWarnings("InfiniteLoopStatement") public static void main(String []args) throws Exception {
     new JvmPauseMonitor(new Configuration()).start();
     List<String> list = Lists.newArrayList();
     int i = 0;

@@ -25,12 +25,7 @@ import java.util.Comparator;
 
 public class SortPrintStream extends FetchConverter {
 
-  private static final Comparator<String> STR_COMP = new Comparator<String>() {
-    @Override
-    public int compare(String o1, String o2) {
-      return o1.compareTo(o2);
-    }
-  };
+  private static final Comparator<String> STR_COMP = Comparator.naturalOrder();
 
   protected final MinMaxPriorityQueue<String> outputs =
       MinMaxPriorityQueue.orderedBy(STR_COMP).create();

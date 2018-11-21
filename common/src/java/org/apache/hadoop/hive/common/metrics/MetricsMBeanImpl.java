@@ -35,7 +35,7 @@ import java.util.Map;
 
 public class MetricsMBeanImpl implements  MetricsMBean {
 
-    private final Map<String,Object> metricsMap = new HashMap<String,Object>();
+    private final Map<String,Object> metricsMap = new HashMap<>();
 
     private MBeanAttributeInfo[] attributeInfos;
     private boolean dirtyAttributeInfoCache = true;
@@ -153,7 +153,7 @@ public class MetricsMBeanImpl implements  MetricsMBean {
     public void reset() {
       synchronized(metricsMap) {
         for (String key : metricsMap.keySet()) {
-          metricsMap.put(key, Long.valueOf(0));
+          metricsMap.put(key, 0L);
         }
       }
     }

@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 import java.util.Random;
 
 public class TestHiveBaseChar extends TestCase {
-  static Random rnd = new Random();
+  static final Random rnd = new Random();
 
   public static int getRandomSupplementaryChar() {
     int lowSurrogate = 0xDC00 + rnd.nextInt(1024);
@@ -66,9 +66,8 @@ public class TestHiveBaseChar extends TestCase {
     int strLen = 20;
     int[] lengths = { 15, 20, 25 };
     // Try with supplementary characters
-    for (int idx1 = 0; idx1 < lengths.length; ++idx1) {
+    for (int curLen : lengths) {
       // Create random test string
-      int curLen = lengths[idx1];
       String testString = createRandomSupplementaryCharString(curLen);
       assertEquals(curLen, testString.codePointCount(0, testString.length()));
       String enforcedString = HiveBaseChar.enforceMaxLength(testString, strLen);
@@ -86,8 +85,7 @@ public class TestHiveBaseChar extends TestCase {
   public void testGetPaddedValue() {
     int strLen = 20;
     int[] lengths = { 15, 20, 25 };
-    for (int idx1 = 0; idx1 < lengths.length; ++idx1) {
-      int curLen = lengths[idx1];
+    for (int curLen : lengths) {
       // Random test string
       String testString = createRandomSupplementaryCharString(curLen);
       assertEquals(curLen, testString.codePointCount(0, testString.length()));

@@ -59,7 +59,7 @@ public class LogRedirector implements Runnable {
   @Override
   public void run() {
     try {
-      String line = null;
+      String line;
       while ((line = in.readLine()) != null) {
         logger.info(line);
         if (errLogs != null) {

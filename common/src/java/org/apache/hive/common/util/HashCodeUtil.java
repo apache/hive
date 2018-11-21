@@ -82,7 +82,7 @@ public class HashCodeUtil {
       k = k << 8;
       k = k | (data[i_4 + 1] & 0xff);
       k = k << 8;
-      k = k | (data[i_4 + 0] & 0xff);
+      k = k | (data[i_4] & 0xff);
       k *= m;
       k ^= k >>> r;
       k *= m;

@@ -38,7 +38,7 @@ public final class Op {
   // tezJsonParser
   public final DagJsonParser parser;
   public String operatorId;
-  public Op parent;
+  public final Op parent;
   public final List<Op> children;
   public final Map<String, String> attrs;
   // the jsonObject for this operator

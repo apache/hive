@@ -116,11 +116,9 @@ public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
         // System.out.println("TEST_FAST_SERIALIZATION_UTILS_WRITE_BIG_INTEGER bytesExpected " + displayBytes(bytesExpected, 0, bytesExpected.length));
       }
       // Deserialize and check...
-      which = 1;
       ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
       BigInteger deserializedBigInteger = SerializationUtils.readBigInteger(byteArrayInputStream);
 
-      which = 2;
       ByteArrayInputStream byteArrayInputStreamExpected = new ByteArrayInputStream(bytesExpected);
       BigInteger deserializedBigIntegerExpected = SerializationUtils.readBigInteger(byteArrayInputStreamExpected);
       // System.out.println("TEST_FAST_SERIALIZATION_UTILS_WRITE_BIG_INTEGER deserialized equals " +
@@ -131,7 +129,6 @@ public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
         fail();
       }
 
-      which = 3;
       ByteArrayInputStream byteArrayInputStreamRead = new ByteArrayInputStream(bytes);
       byte[] scratchBytes = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_SERIALIZATION_UTILS_READ];
       HiveDecimal readHiveDecimal =

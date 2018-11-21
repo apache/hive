@@ -88,8 +88,7 @@ public class JvmMetrics implements MetricsSource {
   final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
   final String processName, sessionId;
   private JvmPauseMonitor pauseMonitor = null;
-  final ConcurrentHashMap<String, MetricsInfo[]> gcInfoCache =
-      new ConcurrentHashMap<String, MetricsInfo[]>();
+  final ConcurrentHashMap<String, MetricsInfo[]> gcInfoCache = new ConcurrentHashMap<>();
 
   JvmMetrics(String processName, String sessionId) {
     this.processName = processName;

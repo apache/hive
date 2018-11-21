@@ -36,8 +36,8 @@ public class MetricsTestUtils {
   public static final MetricsCategory METER = new MetricsCategory("meters", "count");
 
   static class MetricsCategory {
-    String category;
-    String metricsHandle;
+    final String category;
+    final String metricsHandle;
     MetricsCategory(String category, String metricsHandle) {
       this.category = category;
       this.metricsHandle = metricsHandle;

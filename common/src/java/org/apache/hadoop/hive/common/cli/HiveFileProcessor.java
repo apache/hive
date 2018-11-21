@@ -72,7 +72,7 @@ public abstract class HiveFileProcessor implements IHiveFileProcessor {
    * @return the return code of the execution result
    */
   protected int processLine(String line) {
-    int lastRet = 0, ret = 0;
+    int lastRet = 0, ret;
     String command = "";
     for (String oneCmd : line.split(";")) {
       if (StringUtils.indexOf(oneCmd, "\\") != -1) {

@@ -116,7 +116,7 @@ public class HiveIntervalYearMonth implements Comparable<HiveIntervalYearMonth> 
   }
 
   public static HiveIntervalYearMonth valueOf(String strVal) {
-    HiveIntervalYearMonth result = null;
+    HiveIntervalYearMonth result;
     if (strVal == null) {
       throw new IllegalArgumentException("Interval year-month string was null");
     }
@@ -152,10 +152,6 @@ public class HiveIntervalYearMonth implements Comparable<HiveIntervalYearMonth> 
   private final static String PARSE_PATTERN =
       "([+|-])?(\\d+)-(\\d+)";
 
-  private static final ThreadLocal<Matcher> PATTERN_MATCHER = new ThreadLocal<Matcher>() {
-      @Override
-      protected Matcher initialValue() {
-        return Pattern.compile(PARSE_PATTERN).matcher("");
-      }
-  };
+  private static final ThreadLocal<Matcher> PATTERN_MATCHER =
+      ThreadLocal.withInitial(() -> Pattern.compile(PARSE_PATTERN).matcher(""));
 }

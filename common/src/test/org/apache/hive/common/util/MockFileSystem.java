@@ -47,14 +47,14 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class MockFileSystem extends FileSystem {
-  final List<MockFile> files = new ArrayList<MockFile>();
+  final List<MockFile> files = new ArrayList<>();
   final Map<MockFile, FileStatus> fileStatusMap = new HashMap<>();
   Path workingDir = new Path("/");
   // statics for when the mock fs is created via FileSystem.get
   private static String blockedUgi = null;
-  private final static List<MockFile> globalFiles = new ArrayList<MockFile>();
+  private final static List<MockFile> globalFiles = new ArrayList<>();
   protected Statistics statistics;
-  public boolean allowDelete = false;
+  public final boolean allowDelete = false;
 
   public MockFileSystem() {
     // empty
@@ -186,7 +186,7 @@ public class MockFileSystem extends FileSystem {
   public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f)
       throws IOException {
     return new RemoteIterator<LocatedFileStatus>() {
-      private Iterator<LocatedFileStatus> iterator = listLocatedFileStatuses(f).iterator();
+      private final Iterator<LocatedFileStatus> iterator = listLocatedFileStatuses(f).iterator();
 
       @Override
       public boolean hasNext() throws IOException {
@@ -207,7 +207,7 @@ public class MockFileSystem extends FileSystem {
     List<LocatedFileStatus> result = new ArrayList<>();
     String pathname = path.toString();
     String pathnameAsDir = pathname + "/";
-    Set<String> dirs = new TreeSet<String>();
+    Set<String> dirs = new TreeSet<>();
     MockFile file = findFile(path);
     if (file != null) {
       result.add(createLocatedStatus(file));
@@ -227,10 +227,10 @@ public class MockFileSystem extends FileSystem {
     statistics.incrementReadOps(1);
     checkAccess();
     path = path.makeQualified(this);
-    List<FileStatus> result = new ArrayList<FileStatus>();
+    List<FileStatus> result = new ArrayList<>();
     String pathname = path.toString();
     String pathnameAsDir = pathname + "/";
-    Set<String> dirs = new TreeSet<String>();
+    Set<String> dirs = new TreeSet<>();
     MockFile file = findFile(path);
     if (file != null) {
       return new FileStatus[]{createStatus(file)};
@@ -374,7 +374,7 @@ public class MockFileSystem extends FileSystem {
       statistics.incrementReadOps(1);
     }
     checkAccess();
-    List<BlockLocation> result = new ArrayList<BlockLocation>();
+    List<BlockLocation> result = new ArrayList<>();
     MockFile file = findFile(stat.getPath());
     if (file != null) {
       for(MockBlock block: file.blocks) {
@@ -473,11 +473,11 @@ public class MockFileSystem extends FileSystem {
 
   public static class MockFile {
     public final Path path;
-    public int blockSize;
+    public final int blockSize;
     public int length;
     public MockBlock[] blocks;
     public byte[] content;
-    public boolean cannotDelete = false;
+    public final boolean cannotDelete = false;
     // This is purely for testing convenience; has no bearing on FS operations such as list.
     public boolean isDeleted = false;
 

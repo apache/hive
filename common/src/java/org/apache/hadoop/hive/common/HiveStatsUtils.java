@@ -69,7 +69,7 @@ public class HiveStatsUtils {
 
     // if level is <0, the return all files/directories under the specified path
     if (level < 0) {
-      List<FileStatus> result = new ArrayList<FileStatus>();
+      List<FileStatus> result = new ArrayList<>();
       try {
         FileStatus fileStatus = fs.getFileStatus(path);
         FileUtils.listStatusRecursively(fs, fileStatus, filter, result);
@@ -93,7 +93,7 @@ public class HiveStatsUtils {
       return Lists.newArrayList(fs.globStatus(pathPattern, filter));
     }
     LinkedList<FileStatus> queue = new LinkedList<>();
-    List<FileStatus> results = new ArrayList<FileStatus>();
+    List<FileStatus> results = new ArrayList<>();
     for (FileStatus status : fs.globStatus(pathPattern)) {
       if (filter.accept(status.getPath())) {
         results.add(status);

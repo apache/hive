@@ -683,7 +683,7 @@ public final class SignedInt128 extends Number implements
    */
   public static void multiply(SignedInt128 left, SignedInt128 right,
       SignedInt128 result) {
-    if (result == left || result == right) {
+    if (result.equals(left) || result.equals(right)) {
       throw new IllegalArgumentException(
           "result object cannot be left or right operand");
     }
@@ -768,7 +768,7 @@ public final class SignedInt128 extends Number implements
    */
   public static void divide(SignedInt128 left, SignedInt128 right,
       SignedInt128 quotient, SignedInt128 remainder) {
-    if (quotient == left || quotient == right) {
+    if (quotient.equals(left) || quotient.equals(right)) {
       throw new IllegalArgumentException(
           "result object cannot be left or right operand");
     }

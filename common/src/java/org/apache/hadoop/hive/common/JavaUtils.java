@@ -115,8 +115,7 @@ public final class JavaUtils {
     } else if (SUN_MISC_UTIL_RELEASE != null && loader instanceof URLClassLoader) {
       PrintStream outputStream = System.out;
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      PrintStream newOutputStream = new PrintStream(byteArrayOutputStream);
-      try {
+      try (PrintStream newOutputStream = new PrintStream(byteArrayOutputStream)) {
         // SUN_MISC_UTIL_RELEASE.invoke prints to System.out
         // So we're changing the outputstream for that call,
         // and setting it back to original System.out when we're done
@@ -126,15 +125,13 @@ public final class JavaUtils {
         LOG.debug(output);
       } catch (InvocationTargetException e) {
         if (e.getTargetException() instanceof IOException) {
-          throw (IOException)e.getTargetException();
+          throw (IOException) e.getTargetException();
         }
         throw new IOException(e.getTargetException());
       } catch (Exception e) {
         throw new IOException(e);
-      }
-      finally {
+      } finally {
         System.setOut(outputStream);
-        newOutputStream.close();
       }
     }
   }

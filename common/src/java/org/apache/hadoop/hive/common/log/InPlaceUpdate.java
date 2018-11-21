@@ -17,17 +17,15 @@
  */
 package org.apache.hadoop.hive.common.log;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.fusesource.jansi.Ansi;
 
-import javax.annotation.Nullable;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
@@ -53,7 +51,7 @@ public class InPlaceUpdate {
   /* Pretty print the values */
   private final DecimalFormat secondsFormatter = new DecimalFormat("#0.00");
   private int lines = 0;
-  private PrintStream out;
+  private final PrintStream out;
 
   public InPlaceUpdate(PrintStream out) {
     this.out = out;
@@ -159,13 +157,8 @@ public class InPlaceUpdate {
 
 
     // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
-    List<String> printReady = Lists.transform(monitor.rows(), new Function<List<String>, String>() {
-      @Nullable
-      @Override
-      public String apply(@Nullable List<String> row) {
-        return String.format(VERTEX_FORMAT, row.toArray());
-      }
-    });
+    List<String> printReady =
+        monitor.rows().stream().map(row -> String.format(VERTEX_FORMAT, row.toArray())).collect(Collectors.toList());
     reprintMultiLine(StringUtils.join(printReady, "\n"));
 
     // -------------------------------------------------------------------------------

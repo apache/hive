@@ -42,7 +42,7 @@ public class HeapMemoryMonitor {
   private static final MemoryPoolMXBean tenuredGenPool = getTenuredGenPool();
 
   private final double threshold;
-  private List<Listener> listeners = new ArrayList<>();
+  private final List<Listener> listeners = new ArrayList<>();
 
   public interface Listener {
     void memoryUsageAboveThreshold(long usedMemory, long maxMemory);

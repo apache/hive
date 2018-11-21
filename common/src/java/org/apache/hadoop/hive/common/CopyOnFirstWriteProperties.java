@@ -49,8 +49,8 @@ public class CopyOnFirstWriteProperties extends Properties {
 
   private Properties interned;
 
-  private static Interner<Properties> INTERNER = Interners.newWeakInterner();
-  private static Field defaultsField;
+  private static final Interner<Properties> INTERNER = Interners.newWeakInterner();
+  private static final Field defaultsField;
   static {
     try {
       defaultsField = Properties.class.getDeclaredField("defaults");

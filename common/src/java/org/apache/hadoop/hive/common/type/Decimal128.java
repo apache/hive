@@ -23,6 +23,7 @@ import org.apache.hive.common.util.Decimal128FastBuffer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.IntBuffer;
+import java.util.Objects;
 
 /**
  * This code was based on code from Microsoft's PolyBase.
@@ -127,8 +128,6 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
   /** Construct a zero. */
   public Decimal128() {
     this.unscaledValue = new UnsignedInt128();
-    this.scale = 0;
-    this.signum = 0;
   }
 
   /**
@@ -181,7 +180,6 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
     this.unscaledValue = new UnsignedInt128(unscaledVal);
     this.scale = scale;
     if (unscaledValue.isZero()) {
-      this.signum = 0;
     } else {
       this.signum = negative ? (byte) -1 : (byte) 1;
     }
@@ -1099,7 +1097,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    */
   public static void multiply(Decimal128 left, Decimal128 right,
       Decimal128 result, short scale) {
-    if (result == left || result == right) {
+    if (Objects.equals(result, left) || Objects.equals(result, right)) {
       throw new IllegalArgumentException(
           "result object cannot be left or right operand");
     }
@@ -1209,7 +1207,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    */
   public static void divide(Decimal128 left, Decimal128 right,
       Decimal128 quotient, short scale) {
-    if (quotient == left || quotient == right) {
+    if (Objects.equals(quotient, left) || Objects.equals(quotient, right)) {
       throw new IllegalArgumentException(
           "result object cannot be left or right operand");
     }
@@ -1500,7 +1498,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
    */
   @Override
   public int compareTo(Decimal128 val) {
-    if (val == this) {
+    if (Objects.equals(val, this)) {
       return 0;
     }
 
@@ -1728,7 +1726,7 @@ public final class Decimal128 extends Number implements Comparable<Decimal128> {
   /**
    * Temporary array used in {@link #getHiveDecimalString}
    */
-  private int [] tmpArray = new int[2];
+  private final int [] tmpArray = new int[2];
 
   /**
    * Returns the string representation of this value. It discards the trailing zeros

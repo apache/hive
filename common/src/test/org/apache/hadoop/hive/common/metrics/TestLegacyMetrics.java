@@ -82,7 +82,7 @@ public class TestLegacyMetrics {
     assertTrue(resetFound);
 
     // add metric with a non-null value:
-    Attribute attr = new Attribute("fooMetric", Long.valueOf(-77));
+    Attribute attr = new Attribute("fooMetric", (long) -77);
     mbs.setAttribute(oname, attr);
 
     mBeanInfo = mbs.getMBeanInfo(oname);
@@ -104,7 +104,7 @@ public class TestLegacyMetrics {
 
     // check metric value:
     Object v = mbs.getAttribute(oname, "fooMetric");
-    assertEquals(Long.valueOf(-77), v);
+    assertEquals((long) -77, v);
 
     // reset the bean:
     Object result = mbs.invoke(oname, "reset", new Object[0], new String[0]);
@@ -112,7 +112,7 @@ public class TestLegacyMetrics {
 
     // the metric value must be zeroed:
     v = mbs.getAttribute(oname, "fooMetric");
-    assertEquals(Long.valueOf(0), v);
+    assertEquals(0L, v);
   }
 
   @Test
@@ -134,7 +134,7 @@ public class TestLegacyMetrics {
     metrics.endStoredScope(scopeName);
 
     assertEquals(Long.valueOf(1), fooScope.getNumCounter());
-    final long t1 = fooScope.getTimeCounter().longValue();
+    final long t1 = fooScope.getTimeCounter();
     assertTrue(t1 > periodMs);
 
     assertSame(fooScope, metrics.getStoredScope(scopeName));
@@ -151,16 +151,16 @@ public class TestLegacyMetrics {
     fooScope.reopen();
 
     assertEquals(Long.valueOf(2), fooScope.getNumCounter());
-    assertTrue(fooScope.getTimeCounter().longValue() > 2 * periodMs);
+    assertTrue(fooScope.getTimeCounter() > 2 * periodMs);
 
     Thread.sleep(periodMs + 1);
     // 3rd close:
     fooScope.close();
 
     assertEquals(Long.valueOf(3), fooScope.getNumCounter());
-    assertTrue(fooScope.getTimeCounter().longValue() > 3 * periodMs);
+    assertTrue(fooScope.getTimeCounter() > 3 * periodMs);
     Double avgT = (Double) metrics.get("foo.avg_t");
-    assertTrue(avgT.doubleValue() > periodMs);
+    assertTrue(avgT > periodMs);
   }
 
   @Test
@@ -171,12 +171,9 @@ public class TestLegacyMetrics {
     ExecutorService executorService = Executors.newFixedThreadPool(threads);
     for (int i=0; i<threads; i++) {
       final int n = i;
-      executorService.submit(new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          testScopeImpl(n);
-          return null;
-        }
+      executorService.submit((Callable<Void>) () -> {
+        testScopeImpl(n);
+        return null;
       });
     }
     executorService.shutdown();
@@ -184,9 +181,9 @@ public class TestLegacyMetrics {
 
     fooScope = (LegacyMetrics.LegacyMetricsScope) metrics.getStoredScope(scopeName);
     assertEquals(Long.valueOf(3 * threads), fooScope.getNumCounter());
-    assertTrue(fooScope.getTimeCounter().longValue() > 3 * periodMs * threads);
+    assertTrue(fooScope.getTimeCounter() > 3 * periodMs * threads);
     Double avgT = (Double) metrics.get("foo.avg_t");
-    assertTrue(avgT.doubleValue() > periodMs);
+    assertTrue(avgT > periodMs);
     metrics.endStoredScope(scopeName);
   }
 
@@ -224,8 +221,8 @@ public class TestLegacyMetrics {
     // 1st close:
     metrics.endStoredScope(scopeName); // closing of open scope should be ok.
 
-    assertTrue(fooScope.getNumCounter().longValue() >= 1);
-    final long t1 = fooScope.getTimeCounter().longValue();
+    assertTrue(fooScope.getNumCounter() >= 1);
+    final long t1 = fooScope.getTimeCounter();
     assertTrue(t1 > periodMs);
 
     assertSame(fooScope, metrics.getStoredScope(scopeName));
@@ -233,24 +230,24 @@ public class TestLegacyMetrics {
    // opening allowed after closing:
     metrics.startStoredScope(scopeName);
 
-    assertTrue(fooScope.getNumCounter().longValue() >= 1);
-    assertTrue(fooScope.getTimeCounter().longValue() >= t1);
+    assertTrue(fooScope.getNumCounter() >= 1);
+    assertTrue(fooScope.getTimeCounter() >= t1);
 
     assertSame(fooScope, metrics.getStoredScope(scopeName));
     Thread.sleep(periodMs + 1);
     // Reopening (close + open) allowed in opened state:
     fooScope.reopen();
 
-    assertTrue(fooScope.getNumCounter().longValue() >= 2);
-    assertTrue(fooScope.getTimeCounter().longValue() > 2 * periodMs);
+    assertTrue(fooScope.getNumCounter() >= 2);
+    assertTrue(fooScope.getTimeCounter() > 2 * periodMs);
 
     Thread.sleep(periodMs + 1);
     // 3rd close:
     fooScope.close();
 
-    assertTrue(fooScope.getNumCounter().longValue() >= 3);
-    assertTrue(fooScope.getTimeCounter().longValue() > 3 * periodMs);
+    assertTrue(fooScope.getNumCounter() >= 3);
+    assertTrue(fooScope.getTimeCounter() > 3 * periodMs);
     Double avgT = (Double) metrics.get("foo.avg_t");
-    assertTrue(avgT.doubleValue() > periodMs);
+    assertTrue(avgT > periodMs);
   }
 }

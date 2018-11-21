@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 public class SystemVariables {
 
   private static final Logger l4j = LoggerFactory.getLogger(SystemVariables.class);
-  protected static Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
+  protected static final Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
   private static final SystemVariables INSTANCE = new SystemVariables();
   private static final Map<String, VariableCoercion> COERCIONS =
       ImmutableMap.<String, VariableCoercion>builder()

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.conf;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -80,17 +79,17 @@ public class HiveConf extends Configuration {
   private static final Logger LOG = LoggerFactory.getLogger(HiveConf.class);
   private static boolean loadMetastoreConfig = false;
   private static boolean loadHiveServer2Config = false;
-  private static URL hiveDefaultURL = null;
-  private static URL hiveSiteURL = null;
-  private static URL hivemetastoreSiteUrl = null;
-  private static URL hiveServer2SiteUrl = null;
+  private static final URL hiveDefaultURL;
+  private static URL hiveSiteURL;
+  private static URL hivemetastoreSiteUrl;
+  private static final URL hiveServer2SiteUrl;
 
   private static byte[] confVarByteArray = null;
 
-  private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
-  private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
-  private final List<String> restrictList = new ArrayList<String>();
-  private final Set<String> hiddenSet = new HashSet<String>();
+  private static final Map<String, ConfVars> vars = new HashMap<>();
+  private static final Map<String, ConfVars> metaConfs = new HashMap<>();
+  private final List<String> restrictList = new ArrayList<>();
+  private final Set<String> hiddenSet = new HashSet<>();
   private final List<String> rscList = new ArrayList<>();
 
   private Pattern modWhiteListPattern = null;
@@ -407,7 +406,7 @@ public class HiveConf extends Configuration {
    * Get a set containing configuration parameter names used by LLAP Server isntances
    * @return an unmodifiable set containing llap ConfVars
    */
-  public static final Set<String> getLlapDaemonConfVars() {
+  public static Set<String> getLlapDaemonConfVars() {
     return llapDaemonVarsSet;
   }
 
@@ -3862,10 +3861,11 @@ public class HiveConf extends Configuration {
         "Whether we should try to create additional opportunities for dynamic pruning, e.g., considering\n" +
         "siblings that may not be created by normal dynamic pruning logic.\n" +
         "Only works when dynamic pruning is enabled."),
-    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE("hive.tez.dynamic.partition.pruning.max.event.size", 1*1024*1024L,
+    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE("hive.tez.dynamic.partition.pruning.max.event.size",
+        1024 * 1024L,
         "Maximum size of events sent by processors in dynamic pruning. If this size is crossed no pruning will take place."),
 
-    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.partition.pruning.max.data.size", 100*1024*1024L,
+    TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.partition.pruning.max.data.size", 100 * 1024 * 1024L,
         "Maximum total data size of events in dynamic pruning."),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION("hive.tez.dynamic.semijoin.reduction", true,
         "When dynamic semijoin is enabled, shuffle joins will perform a leaky semijoin before shuffle. This " +
@@ -4044,7 +4044,7 @@ public class HiveConf extends Configuration {
         "Enforce that col stats are available, before considering vertex"),
     LLAP_AUTO_MAX_INPUT("hive.llap.auto.max.input.size", 10*1024*1024*1024L,
         "Check input size, before considering vertex (-1 disables check)"),
-    LLAP_AUTO_MAX_OUTPUT("hive.llap.auto.max.output.size", 1*1024*1024*1024L,
+    LLAP_AUTO_MAX_OUTPUT("hive.llap.auto.max.output.size", 1024 * 1024 * 1024L,
         "Check output size, before considering vertex (-1 disables check)"),
     LLAP_SKIP_COMPILE_UDF_CHECK("hive.llap.skip.compile.udf.check", false,
         "Whether to skip the compile-time check for non-built-in UDFs when deciding whether to\n" +
@@ -4803,7 +4803,7 @@ public class HiveConf extends Configuration {
     }
 
     private Set<String> getValidStringValues() {
-      if (validator == null || !(validator instanceof StringSet)) {
+      if (!(validator instanceof StringSet)) {
         throw new RuntimeException(varname + " does not specify a list of valid values");
       }
       return ((StringSet)validator).getExpected();
@@ -4883,8 +4883,7 @@ public class HiveConf extends Configuration {
             + "It is not in list of params that are allowed to be modified at runtime");
       }
     }
-    if (Iterables.any(restrictList,
-        restrictedVar -> name != null && name.startsWith(restrictedVar))) {
+    if (restrictList.stream().anyMatch(restrictedVar -> name != null && name.startsWith(restrictedVar))) {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
           + " of parameters that can't be modified at runtime or is prefixed by a restricted variable");
     }
@@ -4900,13 +4899,12 @@ public class HiveConf extends Configuration {
   }
 
   public boolean isHiddenConfig(String name) {
-    return Iterables.any(hiddenSet, hiddenVar -> name.startsWith(hiddenVar));
+    return hiddenSet.stream().anyMatch(name::startsWith);
   }
 
   public static boolean isEncodedPar(String name) {
     for (ConfVars confVar : HiveConf.ENCODED_CONF) {
-      ConfVars confVar1 = confVar;
-      if (confVar1.varname.equals(name)) {
+      if (confVar.varname.equals(name)) {
         return true;
       }
     }
@@ -5011,17 +5009,17 @@ public class HiveConf extends Configuration {
     return new String[] {value.substring(0, i), value.substring(i)};
   }
 
-  private static Set<String> daysSet = ImmutableSet.of("d", "D", "day", "DAY", "days", "DAYS");
-  private static Set<String> hoursSet = ImmutableSet.of("h", "H", "hour", "HOUR", "hours", "HOURS");
-  private static Set<String> minutesSet = ImmutableSet.of("m", "M", "min", "MIN", "mins", "MINS",
+  private static final Set<String> daysSet = ImmutableSet.of("d", "D", "day", "DAY", "days", "DAYS");
+  private static final Set<String> hoursSet = ImmutableSet.of("h", "H", "hour", "HOUR", "hours", "HOURS");
+  private static final Set<String> minutesSet = ImmutableSet.of("m", "M", "min", "MIN", "mins", "MINS",
     "minute", "MINUTE", "minutes", "MINUTES");
-  private static Set<String> secondsSet = ImmutableSet.of("s", "S", "sec", "SEC", "secs", "SECS",
+  private static final Set<String> secondsSet = ImmutableSet.of("s", "S", "sec", "SEC", "secs", "SECS",
     "second", "SECOND", "seconds", "SECONDS");
-  private static Set<String> millisSet = ImmutableSet.of("ms", "MS", "msec", "MSEC", "msecs", "MSECS",
+  private static final Set<String> millisSet = ImmutableSet.of("ms", "MS", "msec", "MSEC", "msecs", "MSECS",
     "millisecond", "MILLISECOND", "milliseconds", "MILLISECONDS");
-  private static Set<String> microsSet = ImmutableSet.of("us", "US", "usec", "USEC", "usecs", "USECS",
+  private static final Set<String> microsSet = ImmutableSet.of("us", "US", "usec", "USEC", "usecs", "USECS",
     "microsecond", "MICROSECOND", "microseconds", "MICROSECONDS");
-  private static Set<String> nanosSet = ImmutableSet.of("ns", "NS", "nsec", "NSEC", "nsecs", "NSECS",
+  private static final Set<String> nanosSet = ImmutableSet.of("ns", "NS", "nsec", "NSEC", "nsecs", "NSECS",
     "nanosecond", "NANOSECOND", "nanoseconds", "NANOSECONDS");
   public static TimeUnit unitFor(String unit, TimeUnit defaultUnit) {
     unit = unit.trim().toLowerCase();
@@ -5388,7 +5386,7 @@ public class HiveConf extends Configuration {
     }
 
     if (getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
-      List<String> trimmed = new ArrayList<String>();
+      List<String> trimmed = new ArrayList<>();
       for (Map.Entry<String,String> entry : this) {
         String key = entry.getKey();
         if (key == null || !key.startsWith("hive.")) {
@@ -5634,7 +5632,7 @@ public class HiveConf extends Configuration {
 
   //Take care of conf overrides.
   //Includes values in ConfVars as well as underlying configuration properties (ie, hadoop)
-  public static final Map<String, String> overrides = new HashMap<String, String>();
+  public static final Map<String, String> overrides = new HashMap<>();
 
   /**
    * Apply system properties to this object if the property name is defined in ConfVars
@@ -5652,7 +5650,7 @@ public class HiveConf extends Configuration {
    * which have been set using System properties
    */
   public static Map<String, String> getConfSystemProperties() {
-    Map<String, String> systemProperties = new HashMap<String, String>();
+    Map<String, String> systemProperties = new HashMap<>();
 
     for (ConfVars oneVar : ConfVars.values()) {
       if (System.getProperty(oneVar.varname) != null) {
@@ -5939,17 +5937,17 @@ public class HiveConf extends Configuration {
   }
 
   public static String getNonMrEngines() {
-    String result = StringUtils.EMPTY;
+    StringBuilder result = new StringBuilder(StringUtils.EMPTY);
     for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
       if ("mr".equals(s)) {
         continue;
       }
-      if (!result.isEmpty()) {
-        result += ", ";
+      if (result.length() > 0) {
+        result.append(", ");
       }
-      result += s;
+      result.append(s);
     }
-    return result;
+    return result.toString();
   }
 
   public static String generateMrDeprecationWarning() {

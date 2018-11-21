@@ -26,7 +26,7 @@ import java.util.Random;
 
 public class HiveDecimalTestBase {
 
-  public static int POUND_FACTOR = 1000;
+  public static final int POUND_FACTOR = 1000;
 
   public enum BigDecimalFlavor {
     NORMAL_RANGE,
@@ -86,7 +86,6 @@ public class HiveDecimalTestBase {
     boolean negated = false;
     if (r.nextBoolean()) {
       bigInteger = bigInteger.negate();
-      negated = true;
     }
     int scale = 0 + r.nextInt(38 + 1);
     return new BigDecimal(bigInteger, scale);
@@ -98,7 +97,6 @@ public class HiveDecimalTestBase {
     boolean negated = false;
     if (r.nextBoolean()) {
       bigInteger = bigInteger.negate();
-      negated = true;
     }
     int scale = 0 + (r.nextBoolean() ? 0 : r.nextInt(38 + 1));
     if (r.nextBoolean()) {
@@ -115,7 +113,6 @@ public class HiveDecimalTestBase {
     boolean negated = false;
     if (r.nextBoolean()) {
       bigInteger = bigInteger.negate();
-      negated = true;
     }
     return new BigDecimal(bigInteger, scale);
   }
@@ -127,7 +124,6 @@ public class HiveDecimalTestBase {
     boolean negated = false;
     if (r.nextBoolean()) {
       bigInteger = bigInteger.negate();
-      negated = true;
     }
     return new BigDecimal(bigInteger, scale);
   }
@@ -156,7 +152,6 @@ public class HiveDecimalTestBase {
     boolean negated = false;
     if (r.nextBoolean()) {
       bigInteger = bigInteger.negate();
-      negated = true;
     }
     return bigInteger;
   }
@@ -180,7 +175,7 @@ public class HiveDecimalTestBase {
 
   //------------------------------------------------------------------------------------------------
 
-  public static String[] specialDecimalStrings = new String[] {
+  public static final String[] specialDecimalStrings = new String[] {
     "0",
     "1",
     "-1",
@@ -453,7 +448,7 @@ public class HiveDecimalTestBase {
     "234.79"
   };
 
-  public static BigDecimal[] specialBigDecimals = stringArrayToBigDecimals(specialDecimalStrings);
+  public static final BigDecimal[] specialBigDecimals = stringArrayToBigDecimals(specialDecimalStrings);
 
   // decimal_1_1.txt
   public static String[] decimal_1_1_txt = {
@@ -531,9 +526,9 @@ public class HiveDecimalTestBase {
     "1234567890.1234567800"
   };
 
-  public static String standardAlphabet = "0123456789";
+  public static final String standardAlphabet = "0123456789";
 
-  public static String[] sparseAlphabets = new String[] {
+  public static final String[] sparseAlphabets = new String[] {
 
     "0000000000000000000000000000000000000003",
     "0000000000000000000000000000000000000009",

@@ -118,7 +118,7 @@ public class HttpServer {
     private int port;
     private int maxThreads;
     private HiveConf conf;
-    private final Map<String, Object> contextAttrs = new HashMap<String, Object>();
+    private final Map<String, Object> contextAttrs = new HashMap<>();
     private String keyStorePassword;
     private String keyStorePath;
     private String spnegoPrincipal;
@@ -132,8 +132,7 @@ public class HttpServer {
     private String allowedHeaders;
     private PamAuthenticator pamAuthenticator;
     private String contextRootRewriteTarget = "/index.html";
-    private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
-        new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
+    private final List<Pair<String, Class<? extends HttpServlet>>> servlets = new LinkedList<>();
 
     public Builder(String name) {
       Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
@@ -245,7 +244,7 @@ public class HttpServer {
     }
 
     public Builder addServlet(String endpoint, Class<? extends HttpServlet> servlet) {
-      servlets.add(new Pair<String, Class<? extends HttpServlet>>(endpoint, servlet));
+      servlets.add(new Pair<>(endpoint, servlet));
       return this;
     }
   }
@@ -411,7 +410,7 @@ public class HttpServer {
    * Secure the web server with kerberos (AuthenticationFilter).
    */
   void setupSpnegoFilter(Builder b) throws IOException {
-    Map<String, String> params = new HashMap<String, String>();
+    Map<String, String> params = new HashMap<>();
     params.put("kerberos.principal",
       SecurityUtil.getServerPrincipal(b.spnegoPrincipal, b.host));
     params.put("kerberos.keytab", b.spnegoKeytab);

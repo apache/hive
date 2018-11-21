@@ -123,13 +123,10 @@ public class TestCodahaleMetrics {
     ExecutorService executorService = Executors.newFixedThreadPool(threads);
     for (int i=0; i< threads; i++) {
       final int n = i;
-      executorService.submit(new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          MetricsFactory.getInstance().startStoredScope("method2");
-          MetricsFactory.getInstance().endStoredScope("method2");
-          return null;
-        }
+      executorService.submit((Callable<Void>) () -> {
+        MetricsFactory.getInstance().startStoredScope("method2");
+        MetricsFactory.getInstance().endStoredScope("method2");
+        return null;
       });
     }
     executorService.shutdown();

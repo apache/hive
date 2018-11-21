@@ -34,9 +34,14 @@ public class StringInternUtils {
   // best if we could tell URI constructor to intern these strings right away.
   // Without this option, we can only use reflection to "fix" strings in these
   // fields after a URI has been created.
-  private static Class uriClass = URI.class;
-  private static Field stringField, schemeField, authorityField, hostField, pathField,
-      fragmentField, schemeSpecificPartField;
+  private static final Class uriClass = URI.class;
+  private static final Field stringField;
+  private static final Field schemeField;
+  private static final Field authorityField;
+  private static final Field hostField;
+  private static final Field pathField;
+  private static final Field fragmentField;
+  private static final Field schemeSpecificPartField;
 
   static {
     try {

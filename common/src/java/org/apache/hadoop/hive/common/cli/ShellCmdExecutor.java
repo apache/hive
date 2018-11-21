@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 public class ShellCmdExecutor {
-  private String cmd;
-  private PrintStream out;
-  private PrintStream err;
+  private final String cmd;
+  private final PrintStream out;
+  private final PrintStream err;
 
   public ShellCmdExecutor(String cmd, PrintStream out, PrintStream err) {
     this.cmd = cmd;

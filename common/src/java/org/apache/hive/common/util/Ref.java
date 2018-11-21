@@ -27,6 +27,6 @@ public final class Ref<T> {
   }
 
   public static <T> Ref<T> from(T t) {
-    return new Ref<T>(t);
+    return new Ref<>(t);
   }
 }

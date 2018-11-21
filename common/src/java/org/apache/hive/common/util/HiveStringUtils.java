@@ -110,7 +110,7 @@ public class HiveStringUtils {
     if(list == null) {
       return null;
     }
-    List<String> newList = new ArrayList<String>(list.size());
+    List<String> newList = new ArrayList<>(list.size());
     for(String str : list) {
       newList.add(intern(str));
     }
@@ -131,7 +131,7 @@ public class HiveStringUtils {
       // nothing to intern
       return map;
     }
-    Map<String, String> newMap = new HashMap<String, String>(map.size());
+    Map<String, String> newMap = new HashMap<>(map.size());
     for(Map.Entry<String, String> entry : map.entrySet()) {
       newMap.put(intern(entry.getKey()), intern(entry.getValue()));
     }
@@ -364,7 +364,7 @@ public class HiveStringUtils {
     if(values.size() == 0) {
       return null;
     }
-    return values.toArray(new String[values.size()]);
+    return values.toArray(new String[0]);
   }
 
   /**
@@ -373,12 +373,12 @@ public class HiveStringUtils {
    * @return an <code>ArrayList</code> of string values
    */
   public static Collection<String> getStringCollection(String str){
-    List<String> values = new ArrayList<String>();
+    List<String> values = new ArrayList<>();
     if (str == null) {
       return values;
     }
     StringTokenizer tokenizer = new StringTokenizer (str,",");
-    values = new ArrayList<String>();
+    values = new ArrayList<>();
     while (tokenizer.hasMoreTokens()) {
       values.add(tokenizer.nextToken());
     }
@@ -391,8 +391,7 @@ public class HiveStringUtils {
    * @return a <code>Collection</code> of <code>String</code> values
    */
   public static Collection<String> getTrimmedStringCollection(String str){
-    return new ArrayList<String>(
-      Arrays.asList(getTrimmedStrings(str)));
+    return new ArrayList<>(Arrays.asList(getTrimmedStrings(str)));
   }
 
   /**
@@ -435,7 +434,7 @@ public class HiveStringUtils {
     if (str==null) {
       return null;
     }
-    ArrayList<String> strList = new ArrayList<String>();
+    ArrayList<String> strList = new ArrayList<>();
     StringBuilder split = new StringBuilder();
     int index = 0;
     while ((index = findNext(str, separator, escapeChar, index, split)) >= 0) {
@@ -465,9 +464,9 @@ public class HiveStringUtils {
     if ("".equals(str)) {
       return new String[]{""};
     }
-    ArrayList<String> strList = new ArrayList<String>();
+    ArrayList<String> strList = new ArrayList<>();
     int startIndex = 0;
-    int nextIndex = 0;
+    int nextIndex;
     while ((nextIndex = str.indexOf((int)separator, startIndex)) != -1) {
       strList.add(str.substring(startIndex, nextIndex));
       startIndex = nextIndex + 1;
@@ -745,14 +744,8 @@ public class HiveStringUtils {
         )
       );
 
-    ShutdownHookManager.addShutdownHook(
-      new Runnable() {
-        @Override
-        public void run() {
-          LOG.info(toStartupShutdownString("SHUTDOWN_MSG: ", new String[]{
-            "Shutting down " + classname + " at " + hostname}));
-        }
-      }, SHUTDOWN_HOOK_PRIORITY);
+    ShutdownHookManager.addShutdownHook(() -> LOG.info(toStartupShutdownString("SHUTDOWN_MSG: ", new String[]{
+      "Shutting down " + classname + " at " + hostname})), SHUTDOWN_HOOK_PRIORITY);
 
   }
 
@@ -876,8 +869,8 @@ public class HiveStringUtils {
    * Return an abbreviated English-language desc of the byte length
    */
   public static String byteDesc(long len) {
-    double val = 0.0;
-    String ending = "";
+    double val;
+    String ending;
     if (len < 1024 * 1024) {
       val = (1.0 * len) / 1024;
       ending = " KB";
@@ -928,7 +921,7 @@ public class HiveStringUtils {
    * @param separator Separator to join with.
    */
   public static String joinIgnoringEmpty(String[] strings, char separator) {
-    ArrayList<String> list = new ArrayList<String>();
+    ArrayList<String> list = new ArrayList<>();
     for(String str : strings) {
       if (StringUtils.isNotBlank(str)) {
         list.add(str);
@@ -1004,7 +997,6 @@ public class HiveStringUtils {
     for (numSpaces = 0; numSpaces < length; ++numSpaces) {
       int curPos = start + (length - (numSpaces + 1));
       if (isAscii(bytes[curPos]) && Character.isWhitespace(bytes[curPos])) {
-        continue;
       } else {
         break; // non-space character
       }

@@ -41,7 +41,7 @@ public class TestRetryUtilities {
     }
 
     final List<Integer> batchSizes = new ArrayList<>();
-    int exceptionCount = 0;
+    int exceptionCount;
 
     @Override
     public Void execute(int size) throws Exception {

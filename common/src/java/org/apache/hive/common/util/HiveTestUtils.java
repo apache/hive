@@ -58,18 +58,15 @@ public class HiveTestUtils {
 
   private static void executeCmd(String[] cmdArr, File dir) throws IOException, InterruptedException {
     final Process p1 = Runtime.getRuntime().exec(cmdArr, null, dir);
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        BufferedReader input = new BufferedReader(new InputStreamReader(p1.getErrorStream()));
-        String line;
-        try {
-          while ((line = input.readLine()) != null) {
-            System.out.println(line);
-          }
-        } catch (IOException e) {
-          LOG.error("Failed to execute the command due the exception " + e);
+    new Thread(() -> {
+      BufferedReader input = new BufferedReader(new InputStreamReader(p1.getErrorStream()));
+      String line;
+      try {
+        while ((line = input.readLine()) != null) {
+          System.out.println(line);
         }
+      } catch (IOException e) {
+        LOG.error("Failed to execute the command due the exception " + e);
       }
     }).start();
     p1.waitFor();
@@ -77,7 +74,7 @@ public class HiveTestUtils {
 
   public static File genLocalJarForTest(String pathToClazzFile, String clazzName)
       throws IOException, InterruptedException {
-    return genLocalJarForTest(pathToClazzFile, clazzName, new HashMap<File, String>());
+    return genLocalJarForTest(pathToClazzFile, clazzName, new HashMap<>());
   }
 
   public static File genLocalJarForTest(String pathToClazzFile, String clazzName, Map<File,String>extraContent)

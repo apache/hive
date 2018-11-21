@@ -26,7 +26,7 @@ public class HiveInterruptUtils {
   /**
    * A list of currently running comments that needs cleanup when the command is canceled
    */
-  private static List<HiveInterruptCallback> interruptCallbacks = new ArrayList<HiveInterruptCallback>();
+  private static final List<HiveInterruptCallback> interruptCallbacks = new ArrayList<>();
 
   public static HiveInterruptCallback add(HiveInterruptCallback command) {
     synchronized (interruptCallbacks) {
@@ -47,7 +47,7 @@ public class HiveInterruptUtils {
    */
   public static void interrupt() {
     synchronized (interruptCallbacks) {
-      for (HiveInterruptCallback resource : new ArrayList<HiveInterruptCallback>(interruptCallbacks)) {
+      for (HiveInterruptCallback resource : new ArrayList<>(interruptCallbacks)) {
         resource.interrupt();
       }
     }

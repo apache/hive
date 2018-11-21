@@ -40,19 +40,11 @@ public class TestVariableSubstitution {
     return localSource.get();
   }
 
-  private static ThreadLocal<LocalMySource> localSource = new ThreadLocal<LocalMySource>() {
-    @Override protected LocalMySource initialValue() {
-      return new LocalMySource();
-    }
-  };
+  private static final ThreadLocal<LocalMySource> localSource = ThreadLocal.withInitial(LocalMySource::new);
 
   @Test public void testVariableSource() throws InterruptedException {
     final VariableSubstitution variableSubstitution =
-        new VariableSubstitution(new HiveVariableSource() {
-          @Override public Map<String, String> getHiveVariable() {
-            return TestVariableSubstitution.getMySource().map;
-          }
-        });
+        new VariableSubstitution(() -> TestVariableSubstitution.getMySource().map);
 
     String v = variableSubstitution.substitute(new HiveConf(), "${a}");
     Assert.assertEquals("${a}", v);

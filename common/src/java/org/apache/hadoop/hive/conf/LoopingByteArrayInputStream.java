@@ -44,13 +44,7 @@ public class LoopingByteArrayInputStream extends InputStream {
     this.buf = buf;
   }
 
-  private final ThreadLocal<ByteArrayInputStream> threadLocalByteArrayInputStream =
-      new ThreadLocal<ByteArrayInputStream>() {
-        @Override
-        protected ByteArrayInputStream initialValue() {
-          return null;
-        }
-      };
+  private final ThreadLocal<ByteArrayInputStream> threadLocalByteArrayInputStream = ThreadLocal.withInitial(() -> null);
 
   private ByteArrayInputStream getByteArrayInputStream() {
     ByteArrayInputStream bais = threadLocalByteArrayInputStream.get();

@@ -26,7 +26,7 @@ import java.util.Map.Entry;
 
 public class DagJsonParserUtils {
 
-  public static List<String> OperatorNoStats = Arrays.asList("File Output Operator", "Reduce Output Operator");
+  public static final List<String> OperatorNoStats = Arrays.asList("File Output Operator", "Reduce Output Operator");
 
   public static String renameReduceOutputOperator(String operatorName, Vertex vertex) {
     if (operatorName.equals("Reduce Output Operator") && vertex.edgeType != null) {

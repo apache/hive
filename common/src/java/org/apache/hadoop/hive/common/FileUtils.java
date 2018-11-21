@@ -69,20 +69,14 @@ public final class FileUtils {
   public static final int MAX_IO_ERROR_RETRY = 5;
   public static final int IO_ERROR_SLEEP_TIME = 100;
 
-  public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
-    @Override
-    public boolean accept(Path p) {
-      String name = p.getName();
-      return !name.startsWith("_") && !name.startsWith(".");
-    }
+  public static final PathFilter HIDDEN_FILES_PATH_FILTER = p -> {
+    String name = p.getName();
+    return !name.startsWith("_") && !name.startsWith(".");
   };
 
-  public static final PathFilter STAGING_DIR_PATH_FILTER = new PathFilter() {
-    @Override
-    public boolean accept(Path p) {
-      String name = p.getName();
-      return !name.startsWith(".");
-    }
+  public static final PathFilter STAGING_DIR_PATH_FILTER = p -> {
+    String name = p.getName();
+    return !name.startsWith(".");
   };
 
   /**
@@ -226,7 +220,7 @@ public final class FileUtils {
   // the partition with a hive version that now escapes the special char using
   // the list below, then the drop partition fails to work.
 
-  static BitSet charToEscape = new BitSet(128);
+  static final BitSet charToEscape = new BitSet(128);
   static {
     for (char c = 0; c < ' '; c++) {
       charToEscape.set(c);
@@ -250,7 +244,7 @@ public final class FileUtils {
   }
 
   static boolean needsEscaping(char c) {
-    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
+    return c < charToEscape.size() && charToEscape.get(c);
   }
 
   public static String escapePathName(String path) {
@@ -296,7 +290,7 @@ public final class FileUtils {
     for (int i = 0; i < path.length(); i++) {
       char c = path.charAt(i);
       if (c == '%' && i + 2 < path.length()) {
-        int code = -1;
+        int code;
         try {
           code = Integer.parseInt(path.substring(i + 1, i + 3), 16);
         } catch (Exception e) {
@@ -404,14 +398,11 @@ public final class FileUtils {
     UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
         user, UserGroupInformation.getLoginUser());
     try {
-      proxyUser.doAs(new PrivilegedExceptionAction<Object>() {
-        @Override
-        public Object run() throws Exception {
-          FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
-          ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
-          addChildren(fsAsUser, stat.getPath(), children);
-          return null;
-        }
+      proxyUser.doAs((PrivilegedExceptionAction<Object>) () -> {
+        FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
+        ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
+        addChildren(fsAsUser, stat.getPath(), children);
+        return null;
       });
     } finally {
       FileSystem.closeAllForUGI(proxyUser);
@@ -460,7 +451,7 @@ public final class FileUtils {
 
     List<FileStatus> subDirsToCheck = null;
     if (isDir && recurse) {
-      subDirsToCheck = new ArrayList<FileStatus>();
+      subDirsToCheck = new ArrayList<>();
     }
 
     try {
@@ -529,12 +520,9 @@ public final class FileUtils {
     UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(userName,
         UserGroupInformation.getLoginUser());
     try {
-      boolean isOwner = proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
-        @Override
-        public Boolean run() throws Exception {
-          FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
-          return checkIsOwnerOfFileHierarchy(fsAsUser, fileStatus, userName, recurse);
-        }
+      boolean isOwner = proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () -> {
+        FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
+        return checkIsOwnerOfFileHierarchy(fsAsUser, fileStatus, userName, recurse);
       });
       return isOwner;
     } finally {
@@ -634,7 +622,7 @@ public final class FileUtils {
   public static boolean distCp(FileSystem srcFS, List<Path> srcPaths, Path dst,
       boolean deleteSource, String doAsUser,
       HiveConf conf, HadoopShims shims) throws IOException {
-    boolean copied = false;
+    boolean copied;
     if (doAsUser == null){
       copied = shims.runDistCp(srcPaths, dst, conf);
     } else {
@@ -664,7 +652,7 @@ public final class FileUtils {
   public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean purge)
       throws IOException {
     LOG.debug("deleting  " + f);
-    boolean result = false;
+    boolean result;
     try {
       if(purge) {
         LOG.debug("purge is set to true. Not moving to Trash " + f);
@@ -995,7 +983,7 @@ public final class FileUtils {
    * @return            the list of the file names in the format of URI formats.
    */
   public static Set<String> getJarFilesByPath(String pathString, Configuration conf) {
-    Set<String> result = new HashSet<String>();
+    Set<String> result = new HashSet<>();
     if (pathString == null || org.apache.commons.lang.StringUtils.isBlank(pathString)) {
         return result;
     }
@@ -1034,7 +1022,7 @@ public final class FileUtils {
    * @throws EOFException the length bytes cannot be read. The buffer position is not modified.
    */
   public static void readFully(InputStream stream, int length, ByteBuffer bb) throws IOException {
-    byte[] b = null;
+    byte[] b;
     int offset = 0;
     if (bb.hasArray()) {
       b = bb.array();

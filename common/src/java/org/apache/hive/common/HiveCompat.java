@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 public class HiveCompat {
 
-  private static Logger LOG = LoggerFactory.getLogger(HiveCompat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveCompat.class);
 
   /**
    * Enum to represent a level of backward compatibility support.

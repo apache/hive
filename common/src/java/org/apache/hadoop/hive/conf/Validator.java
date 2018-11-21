@@ -41,7 +41,7 @@ public interface Validator {
   class StringSet implements Validator {
 
     private final boolean caseSensitive;
-    private final Set<String> expected = new LinkedHashSet<String>();
+    private final Set<String> expected = new LinkedHashSet<>();
 
     public StringSet(String... values) {
       this(false, values);
@@ -55,7 +55,7 @@ public interface Validator {
     }
 
     public Set<String> getExpected() {
-      return new HashSet<String>(expected);
+      return new HashSet<>(expected);
     }
 
     @Override
@@ -161,7 +161,7 @@ public interface Validator {
 
   class PatternSet implements Validator {
 
-    private final List<Pattern> expected = new ArrayList<Pattern>();
+    private final List<Pattern> expected = new ArrayList<>();
 
     public PatternSet(String... values) {
       for (String value : values) {

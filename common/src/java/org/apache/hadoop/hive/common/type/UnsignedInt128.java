@@ -65,7 +65,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
    * Int32 elements as little-endian (v[0] is least significant) unsigned
    * integers.
    */
-  private int[] v = new int[INT_COUNT];
+  private final int[] v = new int[INT_COUNT];
 
   /**
    * Number of leading non-zero elements in {@link #v}. For example, if the
@@ -1790,7 +1790,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
     final int roundCarryNoRestoreMask = 1 << 31;
     final int roundCarryMask = (1 << (bitShiftsInWord - 1));
     boolean roundCarry;
-    int z0 = 0, z1 = 0, z2 = 0, z3 = 0;
+    int z0, z1 = 0, z2 = 0, z3 = 0;
 
     switch (wordShifts) {
     case 3:
@@ -2184,7 +2184,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
       }
     }
 
-    int z4 = 0, z5 = 0, z6 = 0, z7 = 0; // because inverse is scaled 2^128,
+    int z4, z5, z6, z7; // because inverse is scaled 2^128,
                                         // these will become v0-v3
     int z8 = 0, z9 = 0, z10 = 0; // for wordshift
     long product = 0L;
@@ -2551,7 +2551,7 @@ public final class UnsignedInt128 implements Comparable<UnsignedInt128>, Seriali
    * @return
    */
     public byte fastUpdateFromInternalStorage(byte[] internalStorage) {
-        byte signum = 0;
+        byte signum;
         int skip = 0;
         this.count = 0;
         // Skip over any leading 0s or 0xFFs

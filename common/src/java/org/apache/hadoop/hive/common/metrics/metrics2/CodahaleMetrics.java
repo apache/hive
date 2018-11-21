@@ -75,21 +75,16 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   private final Lock gaugesLock = new ReentrantLock();
   private final Lock metersLock = new ReentrantLock();
 
-  private LoadingCache<String, Timer> timers;
-  private LoadingCache<String, Counter> counters;
-  private LoadingCache<String, Meter> meters;
-  private ConcurrentHashMap<String, Gauge> gauges;
+  private final LoadingCache<String, Timer> timers;
+  private final LoadingCache<String, Counter> counters;
+  private final LoadingCache<String, Meter> meters;
+  private final ConcurrentHashMap<String, Gauge> gauges;
 
-  private HiveConf conf;
-  private final Set<Closeable> reporters = new HashSet<Closeable>();
+  private final HiveConf conf;
+  private final Set<Closeable> reporters = new HashSet<>();
 
   private final ThreadLocal<HashMap<String, CodahaleMetricsScope>> threadLocalScopes
-    = new ThreadLocal<HashMap<String, CodahaleMetricsScope>>() {
-    @Override
-    protected HashMap<String, CodahaleMetricsScope> initialValue() {
-      return new HashMap<String, CodahaleMetricsScope>();
-    }
-  };
+    = ThreadLocal.withInitial(HashMap::new);
 
   public class CodahaleMetricsScope implements MetricsScope {
 
@@ -170,7 +165,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
           }
         }
     );
-    gauges = new ConcurrentHashMap<String, Gauge>();
+    gauges = new ConcurrentHashMap<>();
 
     //register JVM metrics
     registerAll("gc", new GarbageCollectorMetricSet());
@@ -186,10 +181,8 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
 
   @Override
   public void close() throws Exception {
-    if (reporters != null) {
-      for (Closeable reporter : reporters) {
-        reporter.close();
-      }
+    for (Closeable reporter : reporters) {
+      reporter.close();
     }
     for (Map.Entry<String, Metric> metric : metricRegistry.getMetrics().entrySet()) {
       metricRegistry.remove(metric.getKey());
@@ -272,12 +265,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
 
   @Override
   public void addGauge(String name, final MetricsVariable variable) {
-    Gauge gauge = new Gauge() {
-      @Override
-      public Object getValue() {
-        return variable.getValue();
-      }
-    };
+    Gauge gauge = variable::getValue;
     addGaugeInternal(name, gauge);
   }
 
@@ -402,7 +390,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
 
     for (String reporterClass : reporterClasses) {
-      Class name = null;
+      Class name;
       try {
         name = conf.getClassByName(reporterClass);
       } catch (ClassNotFoundException e) {
@@ -439,7 +427,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       return false;
     }
 
-    MetricsReporting reporter = null;
+    MetricsReporting reporter;
     for (String metricsReportingName : metricsReporterNames) {
       try {
         reporter = MetricsReporting.valueOf(metricsReportingName.trim().toUpperCase());
@@ -464,10 +452,8 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       default:
         LOGGER.warn("Unhandled reporter " + reporter + " provided.");
       }
-      if (codahaleReporter != null) {
-        codahaleReporter.start();
-        reporters.add(codahaleReporter);
-      }
+      codahaleReporter.start();
+      reporters.add(codahaleReporter);
     }
     return true;
   }

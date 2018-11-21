@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.conf;
 
-import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
@@ -30,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Hive Configuration utils
@@ -77,7 +77,7 @@ public class HiveConfUtil {
    * @return The list of the configuration values to hide
    */
   public static Set<String> getHiddenSet(Configuration configuration) {
-    Set<String> hiddenSet = new HashSet<String>();
+    Set<String> hiddenSet = new HashSet<>();
     String hiddenListStr = HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST);
     if (hiddenListStr != null) {
       for (String entry : hiddenListStr.split(",")) {
@@ -95,15 +95,14 @@ public class HiveConfUtil {
   public static void stripConfigurations(Configuration conf, Set<String> hiddenSet) {
 
     // Find all configurations where the key contains any string from hiddenSet
-    Iterable<Map.Entry<String, String>> matching =
-        Iterables.filter(conf, confEntry -> {
-          for (String name : hiddenSet) {
-            if (confEntry.getKey().startsWith(name)) {
-              return true;
-            }
-          }
-          return false;
-        });
+    Iterable<Map.Entry<String, String>> matching = StreamSupport.stream(conf.spliterator(), false).filter(confEntry -> {
+      for (String name : hiddenSet) {
+        if (confEntry.getKey().startsWith(name)) {
+          return true;
+        }
+      }
+      return false;
+    }).collect(Collectors.toList());
 
     // Remove the value of every key found matching
     matching.forEach(entry -> conf.set(entry.getKey(), StringUtils.EMPTY));
@@ -131,12 +130,7 @@ public class HiveConfUtil {
     while(configIter.hasNext()) {
       configVals.add(configIter.next());
     }
-    Collections.sort(configVals, new Comparator<Map.Entry<String, String>>() {
-      @Override
-      public int compare(Map.Entry<String, String> ent, Map.Entry<String, String> ent2) {
-        return ent.getKey().compareTo(ent2.getKey());
-      }
-    });
+    configVals.sort(Comparator.comparing(Map.Entry::getKey));
     for(Map.Entry<String, String> entry : configVals) {
       //use get() to make sure variable substitution works
       if(entry.getKey().toLowerCase().contains("path")) {
@@ -210,7 +204,7 @@ public class HiveConfUtil {
   public static String getJobCredentialProviderPassword(Configuration conf) {
     String jobKeyStoreLocation =
         conf.get(HiveConf.ConfVars.HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH.varname);
-    String password = null;
+    String password;
     if(StringUtils.isNotBlank(jobKeyStoreLocation)) {
       password = System.getenv(Constants.HIVE_SERVER2_JOB_CREDSTORE_PASSWORD_ENVVAR);
       if (StringUtils.isNotBlank(password)) {

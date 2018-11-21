@@ -26,8 +26,8 @@ import static org.junit.Assert.fail;
 
 public class TestTimestampParser {
   public static class ValidTimestampCase {
-    String strValue;
-    Timestamp expectedValue;
+    final String strValue;
+    final Timestamp expectedValue;
 
     public ValidTimestampCase(String strValue, Timestamp expectedValue) {
       this.strValue = strValue;

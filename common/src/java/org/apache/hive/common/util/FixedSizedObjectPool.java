@@ -63,7 +63,9 @@ public class FixedSizedObjectPool<T> implements Pool<T> {
       this.deltaShift = deltaShift;
       this.rcShift = rcShift;
     }
-    int markerShift, deltaShift, rcShift;
+    final int markerShift;
+    final int deltaShift;
+    final int rcShift;
 
     public final long setMarker(long dest, long val) {
       return setValue(dest, val, markerShift, MARKER_MASK);
@@ -89,11 +91,11 @@ public class FixedSizedObjectPool<T> implements Pool<T> {
       return getValue(src, rcShift, RC_MASK);
     }
 
-    private final long setValue(long dest, long val, int offset, long mask) {
+    private long setValue(long dest, long val, int offset, long mask) {
       return (dest & (~(mask << offset))) + (val << offset);
     }
 
-    private final long getValue(long src, int offset, long mask) {
+    private long getValue(long src, int offset, long mask) {
       return (src >>> offset) & mask;
     }
 

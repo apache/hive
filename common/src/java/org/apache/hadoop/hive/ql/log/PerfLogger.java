@@ -93,11 +93,11 @@ public class PerfLogger {
   public static final String LOAD_PARTITION = "LoadPartition";
   public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
-  protected final Map<String, Long> startTimes = new HashMap<String, Long>();
-  protected final Map<String, Long> endTimes = new HashMap<String, Long>();
+  protected final Map<String, Long> startTimes = new HashMap<>();
+  protected final Map<String, Long> endTimes = new HashMap<>();
 
   static final private Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
-  protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
+  protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<>();
 
 
   private PerfLogger() {
@@ -134,7 +134,7 @@ public class PerfLogger {
    */
   public void PerfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
-    startTimes.put(method, new Long(startTime));
+    startTimes.put(method, startTime);
     if (LOG.isDebugEnabled()) {
       LOG.debug("<PERFLOG method=" + method + " from=" + callerName + ">");
     }
@@ -159,8 +159,8 @@ public class PerfLogger {
   public long PerfLogEnd(String callerName, String method, String additionalInfo) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
-    endTimes.put(method, new Long(endTime));
-    long duration = startTime == null ? -1 : endTime - startTime.longValue();
+    endTimes.put(method, endTime);
+    long duration = startTime == null ? -1 : endTime - startTime;
 
     if (LOG.isDebugEnabled()) {
       StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
@@ -226,7 +226,7 @@ public class PerfLogger {
   }
 
   //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
-  transient Map<String, MetricsScope> openScopes = new HashMap<String, MetricsScope>();
+  final transient Map<String, MetricsScope> openScopes = new HashMap<>();
 
   private void beginMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();

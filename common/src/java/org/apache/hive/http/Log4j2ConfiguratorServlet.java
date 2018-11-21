@@ -152,7 +152,7 @@ public class Log4j2ConfiguratorServlet extends HttpServlet {
     }
 
     public String getLogger() {
-      return logger == null ? logger : logger.trim();
+      return logger == null ? null : logger.trim();
     }
 
     public void setLogger(final String logger) {
@@ -160,7 +160,7 @@ public class Log4j2ConfiguratorServlet extends HttpServlet {
     }
 
     public String getLevel() {
-      return level == null ? level : level.trim().toUpperCase();
+      return level == null ? null : level.trim().toUpperCase();
     }
 
     public void setLevel(final String level) {
@@ -256,9 +256,7 @@ public class Log4j2ConfiguratorServlet extends HttpServlet {
   }
 
   private void listLoggers(final HttpServletResponse response) throws IOException {
-    PrintWriter writer = null;
-    try {
-      writer = response.getWriter();
+    try (PrintWriter writer = response.getWriter()) {
       ConfLoggers confLoggers = new ConfLoggers();
       Collection<LoggerConfig> loggerConfigs = conf.getLoggers().values();
       loggerConfigs.forEach(lc -> confLoggers.getLoggers().add(new ConfLogger(lc.getName(), lc.getLevel().toString())));
@@ -268,10 +266,6 @@ public class Log4j2ConfiguratorServlet extends HttpServlet {
       LOG.error("Caught an exception while processing Log4j2 configuration request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       return;
-    } finally {
-      if (writer != null) {
-        writer.close();
-      }
     }
     response.setStatus(HttpServletResponse.SC_OK);
   }

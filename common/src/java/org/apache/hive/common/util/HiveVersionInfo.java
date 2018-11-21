@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 public class HiveVersionInfo {
   private static final Logger LOG = LoggerFactory.getLogger(HiveVersionInfo.class);
 
-  private static Package myPackage;
-  private static HiveVersionAnnotation version;
+  private static final Package myPackage;
+  private static final HiveVersionAnnotation version;
 
   static {
     myPackage = HiveVersionAnnotation.class.getPackage();

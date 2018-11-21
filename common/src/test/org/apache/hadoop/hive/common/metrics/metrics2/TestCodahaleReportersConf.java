@@ -35,7 +35,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class TestCodahaleReportersConf {
 
-  private static File workDir = new File(System.getProperty("test.tmp.dir"));
+  private static final File workDir = new File(System.getProperty("test.tmp.dir"));
   private static File jsonReportFile;
 
   @After

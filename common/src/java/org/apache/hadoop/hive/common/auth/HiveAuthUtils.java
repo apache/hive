@@ -102,12 +102,12 @@ public class HiveAuthUtils {
     TServerSocket thriftServerSocket =
         TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress.getAddress(), params);
     if (thriftServerSocket.getServerSocket() instanceof SSLServerSocket) {
-      List<String> sslVersionBlacklistLocal = new ArrayList<String>();
+      List<String> sslVersionBlacklistLocal = new ArrayList<>();
       for (String sslVersion : sslVersionBlacklist) {
         sslVersionBlacklistLocal.add(sslVersion.trim().toLowerCase());
       }
       SSLServerSocket sslServerSocket = (SSLServerSocket) thriftServerSocket.getServerSocket();
-      List<String> enabledProtocols = new ArrayList<String>();
+      List<String> enabledProtocols = new ArrayList<>();
       for (String protocol : sslServerSocket.getEnabledProtocols()) {
         if (sslVersionBlacklistLocal.contains(protocol.toLowerCase())) {
           LOG.debug("Disabling SSL Protocol: " + protocol);

@@ -110,7 +110,7 @@ public class ProfileServlet extends HttpServlet {
     MEM_BREAKPOINT("mem:breakpoint"),
     TRACE_TRACEPOINT("trace:tracepoint"),;
 
-    private String internalName;
+    private final String internalName;
 
     Event(final String internalName) {
       this.internalName = internalName;
@@ -141,9 +141,9 @@ public class ProfileServlet extends HttpServlet {
     JFR
   }
 
-  private Lock profilerLock = new ReentrantLock();
+  private final Lock profilerLock = new ReentrantLock();
   private Integer pid;
-  private String asyncProfilerHome;
+  private final String asyncProfilerHome;
   private Process process;
 
   public ProfileServlet() {

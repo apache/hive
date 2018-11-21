@@ -29,7 +29,7 @@ import java.util.List;
  * Process related utilities.
  */
 public class ProcessUtils {
-  private static Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ProcessUtils.class);
 
   public static Integer getPid() {
     // JVM_PID is exported by bin/hive

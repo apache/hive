@@ -38,7 +38,7 @@ public class TestHiveVarchar {
     super();
   }
 
-  static Random rnd = new Random();
+  static final Random rnd = new Random();
 
   public static int getRandomSupplementaryChar() {
     int lowSurrogate = 0xDC00 + rnd.nextInt(1024);
@@ -76,10 +76,10 @@ public class TestHiveVarchar {
     int strLen = 20;
     int[] lengths = { 15, 20, 25 };
     // Try with supplementary characters
-    for (int idx1 = 0; idx1 < lengths.length; ++idx1) {
+    for (int length : lengths) {
       // Create random test string
       StringBuilder sb = new StringBuilder();
-      int curLen = lengths[idx1];
+      int curLen = length;
       for (int idx2 = 0; idx2 < curLen; ++idx2) {
         sb.appendCodePoint(getRandomCodePoint(' '));
       }

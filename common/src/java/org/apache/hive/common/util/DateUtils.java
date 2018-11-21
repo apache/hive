@@ -28,15 +28,12 @@ import java.util.TimeZone;
  */
 public class DateUtils {
 
-  private static final ThreadLocal<SimpleDateFormat> dateFormatLocal = new ThreadLocal<SimpleDateFormat>() {
-    @Override
-    protected SimpleDateFormat initialValue() {
-      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-      simpleDateFormat.setLenient(false);
-      simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-      return simpleDateFormat;
-    }
-  };
+  private static final ThreadLocal<SimpleDateFormat> dateFormatLocal = ThreadLocal.withInitial(() -> {
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    simpleDateFormat.setLenient(false);
+    simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return simpleDateFormat;
+  });
 
   public static SimpleDateFormat getDateFormat() {
     return dateFormatLocal.get();

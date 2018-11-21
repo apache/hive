@@ -139,12 +139,8 @@ public class TimestampParser {
    * DateTimeParser to parse the date string as the millis since Unix epoch
    */
   public static class MillisDateFormatParser implements DateTimeParser {
-    private static final ThreadLocal<Matcher> numericMatcher = new ThreadLocal<Matcher>() {
-      @Override
-      protected Matcher initialValue() {
-        return Pattern.compile("(-?\\d+)(\\.\\d+)?$").matcher("");
-      }
-    };
+    private static final ThreadLocal<Matcher> numericMatcher =
+        ThreadLocal.withInitial(() -> Pattern.compile("(-?\\d+)(\\.\\d+)?$").matcher(""));
 
     private final static DateTimeFieldType[] dateTimeFields = {
       DateTimeFieldType.year(),

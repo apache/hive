@@ -70,7 +70,7 @@ public final class Vertex implements Comparable<Vertex>{
     MAP, REDUCE, UNION, UNKNOWN
   }
 
-  public VertexType vertexType;
+  public final VertexType vertexType;
 
   public enum EdgeType {
     BROADCAST, SHUFFLE, MULTICAST, PARTITION_ONLY_SHUFFLE, FORWARD, XPROD_EDGE, UNKNOWN
@@ -117,11 +117,15 @@ public final class Vertex implements Comparable<Vertex>{
       IOException, Exception {
     if (vertexObject.length() != 0) {
       for (String key : JSONObject.getNames(vertexObject)) {
-        if (key.equals("Map Operator Tree:")) {
+        switch (key) {
+        case "Map Operator Tree:":
           extractOp(vertexObject.getJSONArray(key).getJSONObject(0), null);
-        } else if (key.equals("Reduce Operator Tree:") || key.equals("Processor Tree:")) {
+          break;
+        case "Reduce Operator Tree:":
+        case "Processor Tree:":
           extractOp(vertexObject.getJSONObject(key), null);
-        } else if (key.equals("Join:")) {
+          break;
+        case "Join:":
           // this is the case when we have a map-side SMB join
           // one input of the join is treated as a dummy vertex
           JSONArray array = vertexObject.getJSONArray(key);
@@ -132,26 +136,33 @@ public final class Vertex implements Comparable<Vertex>{
             v.dummy = true;
             mergeJoinDummyVertexs.add(v);
           }
-        } else if (key.equals("Merge File Operator")) {
+          break;
+        case "Merge File Operator":
           JSONObject opTree = vertexObject.getJSONObject(key);
           if (opTree.has("Map Operator Tree:")) {
             extractOp(opTree.getJSONArray("Map Operator Tree:").getJSONObject(0), null);
           } else {
             throw new Exception("Merge File Operator does not have a Map Operator Tree");
           }
-        } else if (key.equals("Execution mode:")) {
+          break;
+        case "Execution mode:":
           executionMode = " " + vertexObject.getString(key);
-        } else if (key.equals("tagToInput:")) {
+          break;
+        case "tagToInput:":
           JSONObject tagToInput = vertexObject.getJSONObject(key);
           for (String tag : JSONObject.getNames(tagToInput)) {
             this.tagToInput.put(tag, (String) tagToInput.get(tag));
           }
-        } else if (key.equals("tag:")) {
+          break;
+        case "tag:":
           this.tag = vertexObject.getString(key);
-        } else if (key.equals("Local Work:")) {
+          break;
+        case "Local Work:":
           extractOp(vertexObject.getJSONObject(key), null);
-        } else {
+          break;
+        default:
           LOG.warn("Skip unsupported " + key + " in vertex " + this.name);
+          break;
         }
       }
     }
@@ -159,7 +170,6 @@ public final class Vertex implements Comparable<Vertex>{
 
   /**
    * @param object
-   * @param isInput
    * @param parent
    * @return
    * @throws JSONException
@@ -202,14 +212,18 @@ public final class Vertex implements Comparable<Vertex>{
                       + "'s children operator is neither a jsonobject nor a jsonarray");
             }
           } else {
-            if (attrName.equals("OperatorId:")) {
+            switch (attrName) {
+            case "OperatorId:":
               op.setOperatorId(attrObj.get(attrName).toString());
-            } else if (attrName.equals("outputname:")) {
+              break;
+            case "outputname:":
               op.outputVertexName = attrObj.get(attrName).toString();
-            } else {
+              break;
+            default:
               if (!attrObj.get(attrName).toString().isEmpty()) {
                 attrs.put(attrName, attrObj.get(attrName).toString());
               }
+              break;
             }
           }
         }
@@ -272,8 +286,7 @@ public final class Vertex implements Comparable<Vertex>{
     if (vertexType == VertexType.UNION) {
       // print dependent vertexs
       indentFlag++;
-      for (int index = 0; index < this.parentConnections.size(); index++) {
-        Connection connection = this.parentConnections.get(index);
+      for (Connection connection : this.parentConnections) {
         connection.from.print(printer, indentFlag, connection.type, this);
       }
     }

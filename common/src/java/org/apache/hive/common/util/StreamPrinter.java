@@ -31,9 +31,9 @@ import java.io.PrintStream;
  *
  */
 public class StreamPrinter extends Thread {
-  InputStream is;
-  String type;
-  PrintStream[] outputStreams;
+  final InputStream is;
+  final String type;
+  final PrintStream[] outputStreams;
 
   public StreamPrinter(InputStream is, String type, PrintStream... outputStreams) {
     this.is = is;
@@ -47,7 +47,7 @@ public class StreamPrinter extends Thread {
     try {
       InputStreamReader isr = new InputStreamReader(is);
       br = new BufferedReader(isr);
-      String line = null;
+      String line;
       if (type != null) {
         while ((line = br.readLine()) != null) {
           for (PrintStream os: outputStreams) {

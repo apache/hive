@@ -117,7 +117,7 @@ public class ShutdownHookManager {
   }
 
   private static class DeleteOnExitHook implements Runnable {
-    private final Set<File> deleteTargets = Collections.synchronizedSet(new HashSet<File>());
+    private final Set<File> deleteTargets = Collections.synchronizedSet(new HashSet<>());
 
     @Override
     public void run() {

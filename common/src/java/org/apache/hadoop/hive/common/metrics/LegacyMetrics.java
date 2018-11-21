@@ -126,7 +126,7 @@ public class LegacyMetrics implements Metrics {
           Long num = metrics.incrementCounter(numCounter);
           Long time = metrics.incrementCounter(timeCounter, endTime - startTime);
           if (num != null && time != null) {
-            metrics.set(avgTimeCounter, Double.valueOf(time.doubleValue() / num.doubleValue()));
+            metrics.set(avgTimeCounter, time.doubleValue() / num.doubleValue());
           }
         }
       } else {
@@ -161,12 +161,7 @@ public class LegacyMetrics implements Metrics {
   }
 
   private static final ThreadLocal<HashMap<String, LegacyMetricsScope>> threadLocalScopes
-    = new ThreadLocal<HashMap<String, LegacyMetricsScope>>() {
-    @Override
-    protected HashMap<String, LegacyMetricsScope> initialValue() {
-      return new HashMap<String, LegacyMetricsScope>();
-    }
-  };
+    = ThreadLocal.withInitial(HashMap::new);
 
   public LegacyMetrics(HiveConf conf) throws Exception {
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -174,14 +169,14 @@ public class LegacyMetrics implements Metrics {
   }
 
   public Long incrementCounter(String name) {
-    return incrementCounter(name,Long.valueOf(1));
+    return incrementCounter(name, 1L);
   }
 
   public Long incrementCounter(String name, long increment) {
     Long value = null;
     synchronized(metrics) {
       if (!metrics.hasKey(name)) {
-        value = Long.valueOf(increment);
+        value = increment;
         set(name, value);
       } else {
         try {
@@ -197,14 +192,14 @@ public class LegacyMetrics implements Metrics {
   }
 
   public Long decrementCounter(String name) {
-    return decrementCounter(name, Long.valueOf(1));
+    return decrementCounter(name, 1L);
   }
 
   public Long decrementCounter(String name, long decrement) {
     Long value = null;
     synchronized(metrics) {
       if (!metrics.hasKey(name)) {
-        value = Long.valueOf(decrement);
+        value = decrement;
         set(name, -value);
       } else {
         try {

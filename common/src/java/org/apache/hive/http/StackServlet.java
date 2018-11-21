@@ -32,7 +32,7 @@ import java.lang.management.ThreadMXBean;
  */
 public class StackServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
-  private static ThreadMXBean threadBean =
+  private static final ThreadMXBean threadBean =
       ManagementFactory.getThreadMXBean();
 
   @Override

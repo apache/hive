@@ -138,7 +138,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
     Path tmpFile = null;
     try {
       // Dump metrics to string as JSON
-      String json = null;
+      String json;
       try {
         json = jsonWriter.writeValueAsString(metricRegistry);
       } catch (JsonProcessingException e) {

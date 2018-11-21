@@ -44,7 +44,9 @@ public class GcTimeMonitor extends Thread {
 
   // Ring buffers containing GC timings and timestamps when timings were taken
   private final TsAndData[] gcDataBuf;
-  private int bufSize, startIdx, endIdx;
+  private final int bufSize;
+  private int startIdx;
+  private int endIdx;
 
   private long startTimeNanos;
   private final GcData curData = new GcData();
@@ -234,18 +236,12 @@ public class GcTimeMonitor extends Thread {
    * This main function just leaks memory. Running this class will quickly
    * result in a "GC hell" and subsequent alerts from the GcTimeMonitor.
    */
-  public static void main(String []args) throws Exception {
-    new GcTimeMonitor(20 * 1000, 500, 20,
-          new GcTimeMonitor.GcTimeAlertHandler() {
-            @Override
-            public void alert(GcData gcData) {
-              System.err.println(
-                  "GcTimeMonitor alert. Current GC time percentage = " +
-                  gcData.getGcTimePercentage() +
-                  ", total run time = " + (gcData.getGcMonitorRunTimeMs() / 1000) + " sec" +
-                  ", total GC time = " + (gcData.getAccumulatedGcTimeMs() / 1000) + " sec");
-            }
-          }).start();
+  @SuppressWarnings("InfiniteLoopStatement") public static void main(String []args) throws Exception {
+    new GcTimeMonitor(20 * 1000, 500, 20, gcData -> System.err.println(
+        "GcTimeMonitor alert. Current GC time percentage = " +
+        gcData.getGcTimePercentage() +
+        ", total run time = " + (gcData.getGcMonitorRunTimeMs() / 1000) + " sec" +
+        ", total GC time = " + (gcData.getAccumulatedGcTimeMs() / 1000) + " sec")).start();
 
     List<String> list = Lists.newArrayList();
     for (int i = 0; ; i++) {

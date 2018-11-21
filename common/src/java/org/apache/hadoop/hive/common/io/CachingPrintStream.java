@@ -28,7 +28,7 @@ import java.util.List;
 // A printStream that stores messages logged to it in a list.
 public class CachingPrintStream extends PrintStream {
 
-  List<String> output = new ArrayList<String>();
+  List<String> output = new ArrayList<>();
 
   public CachingPrintStream(OutputStream out, boolean autoFlush, String encoding)
       throws FileNotFoundException, UnsupportedEncodingException {
@@ -49,7 +49,7 @@ public class CachingPrintStream extends PrintStream {
 
   @Override
   public void flush() {
-    output = new ArrayList<String>();
+    output = new ArrayList<>();
     super.flush();
   }
 

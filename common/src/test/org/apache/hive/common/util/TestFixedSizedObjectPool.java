@@ -188,15 +188,15 @@ public class TestFixedSizedObjectPool {
     int ti = 0;
     for (int i = 0; i < takerCount; ++i, ++ti) {
       takers[i] = new TakeRunnable(pool, cdlIn, cdlOut, TAKECOUNT);
-      tasks[ti] = new FutureTask<Object>(takers[i], null);
+      tasks[ti] = new FutureTask<>(takers[i], null);
       executor.execute(tasks[ti]);
     }
     for (int i = 0; i < giverCount; ++i, ++ti) {
       givers[i] = new OfferRunnable(pool, cdlIn, cdlOut, GIVECOUNT);
-      tasks[ti] = new FutureTask<Object>(givers[i], null);
+      tasks[ti] = new FutureTask<>(givers[i], null);
       executor.execute(tasks[ti]);
     }
-    long time = 0;
+    long time;
     try {
       cdlIn.await(); // Wait for all threads to be ready.
       time = System.nanoTime();

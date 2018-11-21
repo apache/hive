@@ -66,16 +66,13 @@ public class CompressionUtils {
       TarArchiveOutputStream tOut = new TarArchiveOutputStream(
           new GzipCompressorOutputStream(new BufferedOutputStream(out)));
 
-      for (int i = 0; i < inputFiles.length; i++) {
-        File f = new File(parentDir, inputFiles[i]);
+      for (String inputFile : inputFiles) {
+        File f = new File(parentDir, inputFile);
         TarArchiveEntry tarEntry = new TarArchiveEntry(f, f.getName());
         tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
         tOut.putArchiveEntry(tarEntry);
-        FileInputStream input = new FileInputStream(f);
-        try {
+        try (FileInputStream input = new FileInputStream(f)) {
           IOUtils.copy(input, tOut); // copy with 8K buffer, not close
-        } finally {
-          input.close();
         }
         tOut.closeArchiveEntry();
       }
@@ -91,14 +88,11 @@ public class CompressionUtils {
     ZipOutputStream output = null;
     try {
       output = new ZipOutputStream(new FileOutputStream(new File(parentDir, outputFile)));
-      for (int i = 0; i < inputFiles.length; i++) {
-        File f = new File(parentDir, inputFiles[i]);
-        FileInputStream input = new FileInputStream(f);
-        output.putNextEntry(new ZipEntry(inputFiles[i]));
-        try {
+      for (String inputFile : inputFiles) {
+        File f = new File(parentDir, inputFile);
+        try (FileInputStream input = new FileInputStream(f)) {
+          output.putNextEntry(new ZipEntry(inputFile));
           IOUtils.copy(input, output);
-        } finally {
-          input.close();
         }
       }
     } finally {
@@ -145,7 +139,7 @@ public class CompressionUtils {
     File inputFile = new File(inputFileName);
     File outputDir = new File(outputDirName);
 
-    final List<File> untaredFiles = new LinkedList<File>();
+    final List<File> untaredFiles = new LinkedList<>();
     final InputStream is;
 
     if (inputFileName.endsWith(".gz")) {
@@ -156,7 +150,7 @@ public class CompressionUtils {
 
     final TarArchiveInputStream debInputStream =
         (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream("tar", is);
-    TarArchiveEntry entry = null;
+    TarArchiveEntry entry;
     while ((entry = (TarArchiveEntry) debInputStream.getNextEntry()) != null) {
       final File outputFile = new File(outputDir, entry.getName());
       if (!outputFile.toPath().toAbsolutePath().normalize()

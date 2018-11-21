@@ -26,8 +26,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class TestDateParser {
-  DateParser parser = new DateParser();
-  Date date = new Date();
+  final DateParser parser = new DateParser();
+  final Date date = new Date();
 
   void checkValidCase(String strValue, Date expected) {
     Date dateValue = parser.parseDate(strValue);
