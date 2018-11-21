@@ -3192,7 +3192,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PARALLEL_COMPILATION("hive.driver.parallel.compilation", false, "Whether to\n" +
         "enable parallel compilation of the queries between sessions and within the same session on HiveServer2. The default is false."),
     HIVE_SERVER2_PARALLEL_COMPILATION_LIMIT("hive.driver.parallel.compilation.global.limit", -1, "Determines the " +
-        "degree of parallelism for compilation queries between sessions on HiveServer2. The default is -1."),
+        "degree of parallelism for queries compilation between sessions on HiveServer2. The default is -1."),
     HIVE_SERVER2_COMPILE_LOCK_TIMEOUT("hive.server2.compile.lock.timeout", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Number of seconds a request will wait to acquire the compile lock before giving up. " +
@@ -4637,7 +4637,8 @@ public class HiveConf extends Configuration {
             "hikaricp.,"+
             "hadoop.bin.path,"+
             "yarn.bin.path,"+
-            "spark.home",
+            "spark.home,"+
+            "hive.driver.parallel.compilation.global.limit",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
