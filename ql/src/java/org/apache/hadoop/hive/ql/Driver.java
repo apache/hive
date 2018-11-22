@@ -36,6 +36,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
@@ -179,6 +181,8 @@ public class Driver implements CommandProcessor {
 
   // Query hooks that execute before compilation and after execution
   private List<QueryLifeTimeHook> queryHooks;
+
+  private static final Pattern pattern = Pattern.compile("((?i)insert\\s+(?i)into\\s+\\w+\\s*)(\\([a-zA-Z0-9_,]*\\))(\\s*.+)");
 
   public enum DriverState {
     INITIALIZED,
@@ -397,6 +401,8 @@ public class Driver implements CommandProcessor {
         return SessionState.get().getHiveVariables();
       }
     }).substitute(conf, command);
+
+    command = handleInsertCommands(command);
 
     String queryStr = command;
 
@@ -642,6 +648,14 @@ public class Driver implements CommandProcessor {
         LOG.info("Completed compiling command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
       }
     }
+  }
+
+  protected static String handleInsertCommands(String command) {
+    Matcher matcher = pattern.matcher(command);
+    if(matcher.find() && matcher.groupCount() == 3){
+      command = matcher.group(1) + matcher.group(2).toLowerCase() + matcher.group(3);
+    }
+    return command;
   }
 
 
