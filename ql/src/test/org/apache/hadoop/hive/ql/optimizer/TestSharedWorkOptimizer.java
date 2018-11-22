@@ -108,9 +108,9 @@ public class TestSharedWorkOptimizer {
     // FIXED
     ensureDeduplicate(fixed, 1, fixed, 1, fixed, 1);
     ensureNotDeduplicate(fixed, 1, fixed, 2);
-    ensureNotDeduplicate(fixed, 1, uniform, 1);
-    ensureNotDeduplicate(fixed, 1, autoparallel, 2);
-    ensureNotDeduplicate(fixed, 1, uniformAutoparallel, 2);
+    ensureDeduplicate(fixed, 1, uniform, 1, fixed, 1);
+    ensureDeduplicate(fixed, 1, autoparallel, 2, fixed, 1);
+    ensureDeduplicate(fixed, 1, uniformAutoparallel, 2, fixed, 1);
 
     // UNIFORM
     ensureDeduplicate(uniform, 1, uniform, 2, uniform, 2);

@@ -1483,49 +1483,16 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   static boolean canDeduplicateReduceTraits(ReduceSinkDesc retainable, ReduceSinkDesc discardable) {
-
-    final EnumSet<ReduceSinkDesc.ReducerTraits> retainableTraits = retainable.getReducerTraits();
-    final EnumSet<ReduceSinkDesc.ReducerTraits> discardableTraits = discardable.getReducerTraits();
-
-    final boolean x1 = retainableTraits.contains(UNSET);
-    final boolean f1 = retainableTraits.contains(FIXED);
-    final boolean u1 = retainableTraits.contains(UNIFORM);
-    final boolean a1 = retainableTraits.contains(AUTOPARALLEL);
-    final int n1 = retainable.getNumReducers();
-
-    final boolean x2 = discardableTraits.contains(UNSET);
-    final boolean f2 = discardableTraits.contains(FIXED);
-    final boolean u2 = discardableTraits.contains(UNIFORM);
-    final boolean a2 = discardableTraits.contains(AUTOPARALLEL);
-    final int n2 = discardable.getNumReducers();
-
-    // NOTE: UNSET is exclusive from other traits, so FIXED is.
-
-    if (x1 || x2) {
-      // UNSET + X = X
-      return true;
-    } else if (f1 || f2) {
-      if (f1 && f2 && n1 == n2) {
-        // FIXED(x) + FIXED(x) = FIXED(x)
-        return true;
-      } else {
-        // FIXED(x) + others = no deduplication
-        return false;
-      }
-    } else {
-      if (u1 && u2) {
-        // UNIFORM(x) + UNIFORM(y) = UNIFORM(max(x, y))
-        return true;
-      }
-      if (a1 && a2) {
-        // AUTOPARALLEL(x) + AUTOPARALLEL(y) = AUTOPARALLEL(max(x, y))
-        return true;
-      }
-    }
-    return false;
+    return deduplicateReduceTraits(retainable, discardable, false);
   }
 
   static boolean deduplicateReduceTraits(ReduceSinkDesc retainable, ReduceSinkDesc discardable) {
+    return deduplicateReduceTraits(retainable, discardable, true);
+  }
+
+  private static boolean deduplicateReduceTraits(ReduceSinkDesc retainable,
+      ReduceSinkDesc discardable, boolean apply) {
+
     final EnumSet<ReduceSinkDesc.ReducerTraits> retainableTraits = retainable.getReducerTraits();
     final EnumSet<ReduceSinkDesc.ReducerTraits> discardableTraits = discardable.getReducerTraits();
 
@@ -1559,13 +1526,22 @@ public class SharedWorkOptimizer extends Transform {
       u3 = u1 || u2;
       a3 = a1 || a2;
     } else if (f1 || f2) {
-      if (f1 && f2 && n1 == n2) {
+      if (f1 && f2) {
         // FIXED(x) + FIXED(x) = FIXED(x)
+        // FIXED(x) + FIXED(y) = no deduplication (where x != y)
+        if (n1 == n2) {
+          dedup = true;
+          f3 = true;
+        }
+      } else {
+        // FIXED(x) + others = FIXED(x)
         dedup = true;
         f3 = true;
-      } else {
-        // FIXED(x) + others = no deduplication
-        dedup = false;
+        if (f1) {
+          n3 = n1;
+        } else {
+          n3 = n2;
+        }
       }
     } else {
       if (u1 && u2) {
@@ -1583,7 +1559,7 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     // Gether the results into the retainable object
-    if (dedup) {
+    if (apply && dedup) {
       retainable.setNumReducers(n3);
 
       if (x3) {
