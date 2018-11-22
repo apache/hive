@@ -483,8 +483,10 @@ public class RexNodeConverter {
    */
   private List<RexNode> adjustCaseBranchTypes(List<RexNode> nodes, RelDataType retType) {
     List<RelDataType> branchTypes = new ArrayList<>();
-    for (int i = 1; i < nodes.size(); i += 2) {
-      branchTypes.add(nodes.get(i).getType());
+    for (int i = 0; i < nodes.size(); i++) {
+      if (i % 2 == 1 || i == nodes.size() - 1) {
+        branchTypes.add(nodes.get(i).getType());
+      }
     }
     RelDataType commonType = cluster.getTypeFactory().leastRestrictive(branchTypes);
     if (commonType != null) {
@@ -494,7 +496,7 @@ public class RexNodeConverter {
     List<RexNode> newNodes = new ArrayList<>();
     for (int i = 0; i < nodes.size(); i++) {
       RexNode node = nodes.get(i);
-      if (i % 2 == 1) {
+      if (i % 2 == 1 || i == nodes.size() - 1) {
         newNodes.add(cluster.getRexBuilder().makeCast(retType, node));
       } else {
         newNodes.add(node);
