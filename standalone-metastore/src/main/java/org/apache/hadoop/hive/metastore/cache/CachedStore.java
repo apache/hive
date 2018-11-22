@@ -1891,7 +1891,7 @@ public class CachedStore implements RawStore, Configurable {
     // TODO: we currently cannot do transactional checks for stats here
     //       (incl. due to lack of sync w.r.t. the below rawStore call).
     if (!shouldCacheTable(catName, dbName, tblName) || writeIdList != null) {
-      rawStore.get_aggr_stats_for(
+      return rawStore.get_aggr_stats_for(
           catName, dbName, tblName, partNames, colNames, writeIdList);
     }
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
