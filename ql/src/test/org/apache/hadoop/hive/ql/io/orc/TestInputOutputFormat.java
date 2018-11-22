@@ -31,6 +31,7 @@ import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +47,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.type.Date;
@@ -598,6 +600,8 @@ public class TestInputOutputFormat {
     conf.set("bucket_count", "2");
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/a/delta_000_001/bucket_000000", 1000, new byte[1], new MockBlock("host1")),
         new MockFile("mock:/a/delta_000_001/bucket_000001", 1000, new byte[1], new MockBlock("host1")),
@@ -621,6 +625,8 @@ public class TestInputOutputFormat {
     conf.set("bucket_count", "2");
     conf.set(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
     conf.set(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "default");
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
 
     // Case 1: Test with just originals => Single split strategy with two splits.
@@ -762,6 +768,8 @@ public class TestInputOutputFormat {
       //set up props for read
       conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
       AcidUtils.setAcidOperationalProperties(conf, true, null);
+      conf.set(ValidTxnList.VALID_TXNS_KEY,
+          new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
       conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS,
         TestVectorizedOrcAcidRowBatchReader.DummyRow.getColumnNamesProperty());
       conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES,
@@ -908,6 +916,8 @@ public class TestInputOutputFormat {
     AcidUtils.setAcidOperationalProperties(conf, true, null);
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     conf.set(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "default");
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     MockFileSystem fs = new MockFileSystem(conf,
@@ -2337,6 +2347,8 @@ public class TestInputOutputFormat {
     StructObjectInspector inspector = new BigRowInspector();
     JobConf conf = createMockExecutionEnvironment(workDir, new Path("mock:///"),
         "vectorizationAcid", inspector, true, 1);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));
@@ -2536,6 +2548,8 @@ public class TestInputOutputFormat {
 
     // call getsplits
     conf.setInt(hive_metastoreConstants.BUCKET_COUNT, BUCKETS);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     HiveInputFormat<?,?> inputFormat =
         new CombineHiveInputFormat<WritableComparable, Writable>();
     InputSplit[] splits = inputFormat.getSplits(conf, 1);
@@ -3644,6 +3658,8 @@ public class TestInputOutputFormat {
     //set up props for read
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     AcidUtils.setAcidOperationalProperties(conf, true, null);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
 
     OrcInputFormat orcInputFormat = new OrcInputFormat();
@@ -3724,6 +3740,8 @@ public class TestInputOutputFormat {
     //set up props for read
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     AcidUtils.setAcidOperationalProperties(conf, true, null);
+    conf.set(ValidTxnList.VALID_TXNS_KEY,
+        new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
     OrcInputFormat orcInputFormat = new OrcInputFormat();
     InputSplit[] splits = orcInputFormat.getSplits(conf, 2);
