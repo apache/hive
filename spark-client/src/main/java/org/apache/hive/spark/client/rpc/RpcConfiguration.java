@@ -51,7 +51,8 @@ public final class RpcConfiguration {
     HiveConf.ConfVars.SPARK_RPC_MAX_MESSAGE_SIZE.varname,
     HiveConf.ConfVars.SPARK_RPC_MAX_THREADS.varname,
     HiveConf.ConfVars.SPARK_RPC_SECRET_RANDOM_BITS.varname,
-    HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname
+    HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname,
+    HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname
   );
   public static final ImmutableSet<String> HIVE_SPARK_TIME_CONFIGS = ImmutableSet.of(
     HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
