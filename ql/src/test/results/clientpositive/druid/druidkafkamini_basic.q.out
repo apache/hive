@@ -258,6 +258,8 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col0 (type: string)
                         auto parallelism: true
+            Execution mode: llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [languages]
             Path -> Partition:
@@ -333,6 +335,8 @@ STAGE PLANS:
                     tag: 1
                     value expressions: user (type: string)
                     auto parallelism: true
+            Execution mode: llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_kafka_test]
             Path -> Partition:
@@ -427,6 +431,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_kafka_test [druid_kafka_test]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Merge Join Operator
