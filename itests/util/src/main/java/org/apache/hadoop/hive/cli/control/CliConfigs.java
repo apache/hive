@@ -155,6 +155,7 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillap.query.files");
         includesFrom(testConfigProps, "minillap.shared.query.files");
+        excludeQuery("cbo_limit.q"); //Disabled in HIVE-20860
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
