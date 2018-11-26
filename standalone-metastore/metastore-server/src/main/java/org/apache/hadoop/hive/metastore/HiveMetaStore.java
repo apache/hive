@@ -9360,14 +9360,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     tServer.serve();
   }
 
+  /**
+   * @param port where metastore server is running
+   * @return metastore server instance URL. If the metastore server was bound to a configured
+   * host, return that appended by port. Otherwise return the externally visible URL of the local
+   * host with the given port
+   * @throws Exception
+   */
   private static String getServerInstanceURI(int port) throws Exception {
-    InetAddress serverIPAddress;
+    String hostName;
     if (msHost != null && !msHost.trim().isEmpty()) {
-      serverIPAddress = InetAddress.getByName(msHost);
+      hostName = msHost;
     } else {
-      serverIPAddress = InetAddress.getLocalHost();
+      hostName = InetAddress.getLocalHost().getHostName();
     }
-    return serverIPAddress.getHostName() + ":" + port;
+    return hostName + ":" + port;
   }
 
   private static void cleanupRawStore() {
