@@ -677,16 +677,16 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col3, _col5, _col7, _col8
                 Statistics: Num rows: 1149975359 Data size: 101451160012 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col3 is not null and ((_col5 is not null and ((_col1 / _col5) > (_col8 / _col3))) or (null and _col5 is null))) or (null and _col3 is null)) (type: boolean)
-                  Statistics: Num rows: 1149975359 Data size: 101451160012 Basic stats: COMPLETE Column stats: NONE
+                  predicate: CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col1 / _col5) > (_col8 / _col3))) ELSE (false) END) ELSE (false) END (type: boolean)
+                  Statistics: Num rows: 574987679 Data size: 50725579961 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col7 (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1149975359 Data size: 101451160012 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 574987679 Data size: 50725579961 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
-                      Statistics: Num rows: 1149975359 Data size: 101451160012 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 574987679 Data size: 50725579961 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
         Reducer 6 
             Execution mode: vectorized
@@ -694,7 +694,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1149975359 Data size: 101451160012 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 574987679 Data size: 50725579961 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 100
                   Statistics: Num rows: 100 Data size: 8800 Basic stats: COMPLETE Column stats: NONE

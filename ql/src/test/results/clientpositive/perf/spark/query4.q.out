@@ -998,16 +998,16 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col3, _col5, _col7, _col9, _col11, _col12
                 Statistics: Num rows: 1916625598 Data size: 169085266687 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (((_col3 is not null and ((_col5 is not null and ((_col9 / _col5) > (_col12 / _col3))) or (null and _col5 is null))) or (null and _col3 is null)) and ((_col7 is not null and ((_col5 is not null and ((_col9 / _col5) > (_col1 / _col7))) or (null and _col5 is null))) or (null and _col7 is null))) (type: boolean)
-                  Statistics: Num rows: 1916625598 Data size: 169085266687 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col12 / _col3))) ELSE (false) END) ELSE (false) END and CASE WHEN (_col7 is not null) THEN (CASE WHEN (_col5 is not null) THEN (((_col9 / _col5) > (_col1 / _col7))) ELSE (false) END) ELSE (false) END) (type: boolean)
+                  Statistics: Num rows: 479156399 Data size: 42271316627 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col11 (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1916625598 Data size: 169085266687 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 479156399 Data size: 42271316627 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
-                      Statistics: Num rows: 1916625598 Data size: 169085266687 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 479156399 Data size: 42271316627 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
         Reducer 6 
             Execution mode: vectorized
@@ -1015,7 +1015,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1916625598 Data size: 169085266687 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 479156399 Data size: 42271316627 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 100
                   Statistics: Num rows: 100 Data size: 8800 Basic stats: COMPLETE Column stats: NONE
