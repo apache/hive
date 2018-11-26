@@ -153,7 +153,7 @@ public class HiveServer2 extends CompositeService {
   // used for testing
   private SettableFuture<Boolean> isLeaderTestFuture = SettableFuture.create();
   private SettableFuture<Boolean> notLeaderTestFuture = SettableFuture.create();
-  private ZooKeeperHiveHelper zooKeeperHelper;
+  private ZooKeeperHiveHelper zooKeeperHelper = null;
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -570,10 +570,14 @@ public class HiveServer2 extends CompositeService {
    * not really happened.
    */
   public boolean isDeregisteredWithZooKeeper() {
-    if (zooKeeperHelper != null) {
-      return zooKeeperHelper.isDeregisteredWithZooKeeper();
+    if (serviceDiscovery && !activePassiveHA) {
+      synchronized(this) {
+        if (zooKeeperHelper != null) {
+          return zooKeeperHelper.isDeregisteredWithZooKeeper();
+        }
+      }
     }
-    else {return false;}
+    return false;
   }
 
   private String getServerInstanceURI() throws Exception {
@@ -925,7 +929,7 @@ public class HiveServer2 extends CompositeService {
 
     if (policyContainer.size() > 0) {
       setUpZooKeeperAuth(hiveConf);
-      zKClientForPrivSync = zooKeeperHelper.startZookeeperClient(zooKeeperAclProvider, true);
+      zKClientForPrivSync = hiveConf.getZKConfig().startZookeeperClient(zooKeeperAclProvider, true);
       String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
       String path = ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
           + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "leader";
