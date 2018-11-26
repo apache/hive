@@ -17,11 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +30,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -1484,10 +1485,14 @@ public class TezCompiler extends TaskCompiler {
     List<ReduceSinkOperator> semijoinRsToRemove = new ArrayList<>();
     double semijoinReductionThreshold = procCtx.conf.getFloatVar(
         HiveConf.ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD);
-    List<ReduceSinkOperator> semiJoinRsOps = Lists.newArrayList(map.keySet());
+    // Using SortedSet to make iteration order deterministic
+    final Comparator<ReduceSinkOperator> rsOpComp =
+        (ReduceSinkOperator o1, ReduceSinkOperator o2) -> (o1.toString().compareTo(o2.toString()));
+    SortedSet<ReduceSinkOperator> semiJoinRsOps = new TreeSet<>(rsOpComp);
+    semiJoinRsOps.addAll(map.keySet());
     while (!semiJoinRsOps.isEmpty()) {
       Map<FilterOperator, SemijoinOperatorInfo> reductionFactorMap = new HashMap<>();
-      List<ReduceSinkOperator> semiJoinRsOpsNewIter = new ArrayList<>();
+      SortedSet<ReduceSinkOperator> semiJoinRsOpsNewIter = new TreeSet<>(rsOpComp);
       for (ReduceSinkOperator rs : semiJoinRsOps) {
         SemiJoinBranchInfo sjInfo = map.get(rs);
         if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
