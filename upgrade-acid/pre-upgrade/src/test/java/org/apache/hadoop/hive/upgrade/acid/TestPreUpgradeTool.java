@@ -39,8 +39,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,7 +46,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TestPreUpgradeTool {
-  private static final Logger LOG = LoggerFactory.getLogger(TestPreUpgradeTool.class);
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
       File.separator + TestPreUpgradeTool.class.getCanonicalName() + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
