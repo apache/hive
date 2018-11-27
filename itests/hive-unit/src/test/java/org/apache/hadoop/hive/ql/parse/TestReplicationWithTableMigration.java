@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -29,13 +28,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 
 import org.junit.*;
@@ -56,9 +48,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * TestReplicationScenariosAcidTables - test replication for ACID tables
+ * TestReplicationWithTableMigration - test replication for Hive2 to Hive3 (Strict managed tables)
  */
-public class TestMigrationIncrementalLoad {
+public class TestReplicationWithTableMigration {
   @Rule
   public final TestName testName = new TestName();
 
@@ -77,7 +69,7 @@ public class TestMigrationIncrementalLoad {
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    conf = new HiveConf(TestMigrationIncrementalLoad.class);
+    conf = new HiveConf(TestReplicationWithTableMigration.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
@@ -241,7 +233,15 @@ public class TestMigrationIncrementalLoad {
   }
 
   @Test
-  public void testMigrationManagedToAcid() throws Throwable {
+  public void testBootstrapLoadMigrationManagedToAcid() throws Throwable {
+    WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, tuple.dumpLocation);
+
+    verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
+  }
+
+  @Test
+  public void testIncrementalLoadMigrationManagedToAcid() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
 
@@ -252,7 +252,7 @@ public class TestMigrationIncrementalLoad {
   }
 
   @Test
-  public void testMigrationManagedToAcidFailure() throws Throwable {
+  public void testIncrementalLoadMigrationManagedToAcidFailure() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
 
@@ -266,7 +266,7 @@ public class TestMigrationIncrementalLoad {
   }
 
   @Test
-  public void testMigrationManagedToAcidFailurePart() throws Throwable {
+  public void testIncrementalLoadMigrationManagedToAcidFailurePart() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
 
@@ -280,7 +280,7 @@ public class TestMigrationIncrementalLoad {
   }
 
   @Test
-  public void testMigrationManagedToAcidAllOp() throws Throwable {
+  public void testIncrementalLoadMigrationManagedToAcidAllOp() throws Throwable {
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
