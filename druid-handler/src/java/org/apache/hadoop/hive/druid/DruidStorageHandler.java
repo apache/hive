@@ -926,6 +926,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     } catch (IOException e) {
       throw new MetaException(e.getMessage());
     } catch (CallbackFailedException c) {
+      LOG.error("Error while committing transaction to druid metadata storage", c);
       throw new MetaException(c.getCause().getMessage());
     } finally {
       cleanWorkingDir();
