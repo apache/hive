@@ -1,5 +1,7 @@
 --! qt:dataset:src
 
+-- SORT_QUERY_RESULTS
+
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
 
 FROM src
@@ -116,6 +118,11 @@ EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db1_ext_auth2 ON db1_ext_auth1.ikey = db1_ext_auth2.ikey;
 
 SELECT * FROM db1_ext_auth1 JOIN db1_ext_auth2 ON db1_ext_auth1.ikey = db1_ext_auth2.ikey;
+
+EXPLAIN
+SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b;
+
+SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b;
 
 EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db2_ext_auth2;

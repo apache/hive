@@ -86,4 +86,8 @@ import org.slf4j.LoggerFactory;
 
   public static final String TABLE_BUCKETING_VERSION = "bucketing_version";
 
+  public static final String DRUID_CONFIG_PREFIX = "druid.";
+
+  public static final String JDBC_CONFIG_PREFIX = "hive.sql.";
+
 }

@@ -1313,10 +1313,11 @@ public class MetaStoreUtils {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
         String key = param.getKey();
         if (schema.get(key) != null &&
-                (key.equals(cols) || key.equals(colTypes) || key.equals(parts) ||
-                        // skip Druid properties which are used in DruidSerde, since they are also updated
-                        // after SerDeInfo properties are copied.
-                        key.startsWith("druid."))) {
+            ((key.equals(cols) || key.equals(colTypes) || key.equals(parts) ||
+                // Skip Druid and JDBC properties which are used in respective SerDes,
+                // since they are also updated after SerDeInfo properties are copied.
+                key.startsWith(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DRUID_CONFIG_PREFIX) ||
+                key.startsWith(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.JDBC_CONFIG_PREFIX)))) {
           continue;
         }
         schema.put(key, (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
