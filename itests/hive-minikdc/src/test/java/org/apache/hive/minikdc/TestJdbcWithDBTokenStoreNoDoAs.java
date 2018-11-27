@@ -41,7 +41,7 @@ public class TestJdbcWithDBTokenStoreNoDoAs extends TestJdbcWithMiniKdc{
     HiveConf hiveConf = new HiveConf();
     hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-    miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMS(miniHiveKdc, hiveConf);
+    miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMSWithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(confOverlay);
     String metastorePrincipal = miniHS2.getConfProperty(ConfVars.METASTORE_KERBEROS_PRINCIPAL.varname);
     String hs2Principal = miniHS2.getConfProperty(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname);
@@ -53,6 +53,11 @@ public class TestJdbcWithDBTokenStoreNoDoAs extends TestJdbcWithMiniKdc{
         MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
     System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
         MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.THRIFT_URIS));
-    Thread.sleep(2000);
+    System.setProperty(ConfVars.METASTORE_USE_THRIFT_SASL.varname,
+        String.valueOf(MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.USE_THRIFT_SASL)));
+    System.setProperty(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL.varname,
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.KERBEROS_PRINCIPAL));
+    System.setProperty(ConfVars.METASTORE_KERBEROS_KEYTAB_FILE.varname,
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.KERBEROS_KEYTAB_FILE));
   }
 }
