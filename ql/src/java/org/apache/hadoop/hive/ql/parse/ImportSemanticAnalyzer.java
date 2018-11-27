@@ -277,7 +277,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       // The table can be non acid in case of replication from 2.6 cluster.
       if (!TxnUtils.isTransactionalTable(tblObj) && replicationSpec.isInReplicationScope() &&
-              !x.getConf().getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+              x.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
+              (TableType.valueOf(tblObj.getTableType()) == TableType.MANAGED_TABLE)) {
         //TODO : dump metadata should be read to make sure that migration is required.
         upgradeTableDesc(tblObj, rv, x);
 
@@ -285,8 +286,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (TxnUtils.isTransactionalTable(tblObj)) {
           replicationSpec.setDoingMigration();
         }
+        tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
+        if (TableType.valueOf(tblObj.getTableType()) == TableType.EXTERNAL_TABLE) {
+          tblDesc.setExternal(true);
+        }
+      } else {
+        tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
       }
-      tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
     } catch (Exception e) {
       throw new HiveException(e);
     }

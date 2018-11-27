@@ -93,7 +93,7 @@ public class TestMigrationIncrementalLoad {
         put("hive.mapred.mode", "nonstrict");
         put("mapred.input.dir.recursive", "true");
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-        put("hive.in.test", "false");
+        put("hive.strict.managed.tables", "true");
     }};
     replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
 
@@ -108,6 +108,7 @@ public class TestMigrationIncrementalLoad {
       put("hive.metastore.disallow.incompatible.col.type.changes", "false");
       put("hive.support.concurrency", "false");
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+      put("hive.strict.managed.tables", "false");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
