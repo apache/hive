@@ -61,8 +61,7 @@ public abstract class Operation {
   private final OperationHandle opHandle;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
-  protected boolean hasResultSet = false;
-  protected boolean hasResultSetIsSet = false;
+  protected Boolean hasResultSet = null;
   protected volatile HiveSQLException operationException;
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
@@ -140,17 +139,16 @@ public abstract class Operation {
     } catch (HiveSQLException sqlException) {
       LOG.error("Error getting task status for " + opHandle.toString(), sqlException);
     }
-    return new OperationStatus(state, taskStatus, operationStart, operationComplete, hasResultSet,
-            operationException, hasResultSetIsSet);
+    return new OperationStatus(state, taskStatus, operationStart, operationComplete, hasResultSet(),
+            operationException, hasResultSet != null);
   }
 
   public boolean hasResultSet() {
-    return hasResultSet;
+    return hasResultSet == null ? false : hasResultSet;
   }
 
   protected void setHasResultSet(boolean hasResultSet) {
     this.hasResultSet = hasResultSet;
-    this.hasResultSetIsSet = true;
     opHandle.setHasResultSet(hasResultSet);
   }
 
