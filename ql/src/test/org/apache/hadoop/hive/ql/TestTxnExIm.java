@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.tools.HiveMetaTool;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
