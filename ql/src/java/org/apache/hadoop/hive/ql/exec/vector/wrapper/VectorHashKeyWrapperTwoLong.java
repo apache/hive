@@ -44,9 +44,7 @@ public class VectorHashKeyWrapperTwoLong extends VectorHashKeyWrapperTwoBase {
                 HashCodeUtil.calculateLongHashCode(longValue0) ^
                 null1Hashcode));
     } else {
-      hashcode =
-          HashCodeUtil.calculateLongHashCode(longValue0) >>> 16 ^
-          HashCodeUtil.calculateLongHashCode(longValue1);
+      hashcode = HashCodeUtil.calculateTwoLongHashCode(longValue0, longValue1);
     }
   }
 
