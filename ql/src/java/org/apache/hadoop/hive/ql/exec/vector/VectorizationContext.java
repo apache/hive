@@ -2240,7 +2240,7 @@ import com.google.common.annotations.VisibleForTesting;
 
       // Coalesce is a special case because it can take variable number of arguments.
       // Nvl is a specialization of the Coalesce.
-      ve = getCoalesceExpression(childExpr, returnType);
+      ve = getCoalesceExpression(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFElt) {
 
       // Elt is a special case because it can take variable number of arguments.
@@ -2311,7 +2311,8 @@ import com.google.common.annotations.VisibleForTesting;
     }
   }
 
-  private VectorExpression getCoalesceExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
+  private VectorExpression getCoalesceExpression(List<ExprNodeDesc> childExpr,
+      VectorExpressionDescriptor.Mode mode, TypeInfo returnType)
       throws HiveException {
     int[] inputColumns = new int[childExpr.size()];
     VectorExpression[] vectorChildren =
@@ -2339,7 +2340,33 @@ import com.google.common.annotations.VisibleForTesting;
     vectorCoalesce.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
 
     freeNonColumns(vectorChildren);
-    return vectorCoalesce;
+
+    boolean isFilter = false;    // Assume.
+    if (mode == VectorExpressionDescriptor.Mode.FILTER) {
+
+      // Is output type a BOOLEAN?
+      if (returnType.getCategory() == Category.PRIMITIVE &&
+          ((PrimitiveTypeInfo) returnType).getPrimitiveCategory() == PrimitiveCategory.BOOLEAN) {
+        isFilter = true;
+      } else {
+        return null;
+      }
+    }
+
+    if (isFilter) {
+
+      // Wrap the PROJECTION IF expression output with a filter.
+      SelectColumnIsTrue filterVectorExpr = new SelectColumnIsTrue(vectorCoalesce.getOutputColumnNum());
+
+      filterVectorExpr.setChildExpressions(new VectorExpression[] {vectorCoalesce});
+
+      filterVectorExpr.setInputTypeInfos(vectorCoalesce.getOutputTypeInfo());
+      filterVectorExpr.setInputDataTypePhysicalVariations(vectorCoalesce.getOutputDataTypePhysicalVariation());
+
+      return filterVectorExpr;
+    } else {
+      return vectorCoalesce;
+    }
   }
 
   private VectorExpression getEltExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
