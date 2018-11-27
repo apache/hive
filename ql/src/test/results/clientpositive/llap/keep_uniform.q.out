@@ -1,0 +1,1173 @@
+PREHOOK: query: drop table if exists customer_address
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists customer_address
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table customer_address
+(
+    ca_address_sk             int,
+    ca_address_id             string,
+    ca_street_number          string,
+    ca_street_name            string,
+    ca_street_type            string,
+    ca_suite_number           string,
+    ca_city                   string,
+    ca_county                 string,
+    ca_state                  string,
+    ca_zip                    string,
+    ca_country                string,
+    ca_gmt_offset             decimal(5,2),
+    ca_location_type          string
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_address
+POSTHOOK: query: create table customer_address
+(
+    ca_address_sk             int,
+    ca_address_id             string,
+    ca_street_number          string,
+    ca_street_name            string,
+    ca_street_type            string,
+    ca_suite_number           string,
+    ca_city                   string,
+    ca_county                 string,
+    ca_state                  string,
+    ca_zip                    string,
+    ca_country                string,
+    ca_gmt_offset             decimal(5,2),
+    ca_location_type          string
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_address
+PREHOOK: query: drop table if exists date_dim
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists date_dim
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table date_dim
+(
+    d_date_sk                 int,
+    d_date_id                 string,
+    d_date                    string,
+    d_month_seq               int,
+    d_week_seq                int,
+    d_quarter_seq             int,
+    d_year                    int,
+    d_dow                     int,
+    d_moy                     int,
+    d_dom                     int,
+    d_qoy                     int,
+    d_fy_year                 int,
+    d_fy_quarter_seq          int,
+    d_fy_week_seq             int,
+    d_day_name                string,
+    d_quarter_name            string,
+    d_holiday                 string,
+    d_weekend                 string,
+    d_following_holiday       string,
+    d_first_dom               int,
+    d_last_dom                int,
+    d_same_day_ly             int,
+    d_same_day_lq             int,
+    d_current_day             string,
+    d_current_week            string,
+    d_current_month           string,
+    d_current_quarter         string,
+    d_current_year            string
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim
+POSTHOOK: query: create table date_dim
+(
+    d_date_sk                 int,
+    d_date_id                 string,
+    d_date                    string,
+    d_month_seq               int,
+    d_week_seq                int,
+    d_quarter_seq             int,
+    d_year                    int,
+    d_dow                     int,
+    d_moy                     int,
+    d_dom                     int,
+    d_qoy                     int,
+    d_fy_year                 int,
+    d_fy_quarter_seq          int,
+    d_fy_week_seq             int,
+    d_day_name                string,
+    d_quarter_name            string,
+    d_holiday                 string,
+    d_weekend                 string,
+    d_following_holiday       string,
+    d_first_dom               int,
+    d_last_dom                int,
+    d_same_day_ly             int,
+    d_same_day_lq             int,
+    d_current_day             string,
+    d_current_week            string,
+    d_current_month           string,
+    d_current_quarter         string,
+    d_current_year            string
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim
+PREHOOK: query: drop table if exists web_returns
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists web_returns
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table web_returns
+(
+    wr_returned_date_sk        int,
+    wr_returned_time_sk        int,
+    wr_item_sk                 int,
+    wr_refunded_customer_sk    int,
+    wr_refunded_cdemo_sk       int,
+    wr_refunded_hdemo_sk       int,
+    wr_refunded_addr_sk        int,
+    wr_returning_customer_sk   int,
+    wr_returning_cdemo_sk      int,
+    wr_returning_hdemo_sk      int,
+    wr_returning_addr_sk       int,
+    wr_web_page_sk             int,
+    wr_reason_sk               int,
+    wr_order_number            int,
+    wr_return_quantity         int,
+    wr_return_amt              decimal(7,2),
+    wr_return_tax              decimal(7,2),
+    wr_return_amt_inc_tax      decimal(7,2),
+    wr_fee                     decimal(7,2),
+    wr_return_ship_cost        decimal(7,2),
+    wr_refunded_cash           decimal(7,2),
+    wr_reversed_charge         decimal(7,2),
+    wr_account_credit          decimal(7,2),
+    wr_net_loss                decimal(7,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@web_returns
+POSTHOOK: query: create table web_returns
+(
+    wr_returned_date_sk        int,
+    wr_returned_time_sk        int,
+    wr_item_sk                 int,
+    wr_refunded_customer_sk    int,
+    wr_refunded_cdemo_sk       int,
+    wr_refunded_hdemo_sk       int,
+    wr_refunded_addr_sk        int,
+    wr_returning_customer_sk   int,
+    wr_returning_cdemo_sk      int,
+    wr_returning_hdemo_sk      int,
+    wr_returning_addr_sk       int,
+    wr_web_page_sk             int,
+    wr_reason_sk               int,
+    wr_order_number            int,
+    wr_return_quantity         int,
+    wr_return_amt              decimal(7,2),
+    wr_return_tax              decimal(7,2),
+    wr_return_amt_inc_tax      decimal(7,2),
+    wr_fee                     decimal(7,2),
+    wr_return_ship_cost        decimal(7,2),
+    wr_refunded_cash           decimal(7,2),
+    wr_reversed_charge         decimal(7,2),
+    wr_account_credit          decimal(7,2),
+    wr_net_loss                decimal(7,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@web_returns
+PREHOOK: query: drop table if exists web_sales
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists web_sales
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table web_sales
+(
+    ws_sold_date_sk           int,
+    ws_sold_time_sk           int,
+    ws_ship_date_sk           int,
+    ws_item_sk                int,
+    ws_bill_customer_sk       int,
+    ws_bill_cdemo_sk          int,
+    ws_bill_hdemo_sk          int,
+    ws_bill_addr_sk           int,
+    ws_ship_customer_sk       int,
+    ws_ship_cdemo_sk          int,
+    ws_ship_hdemo_sk          int,
+    ws_ship_addr_sk           int,
+    ws_web_page_sk            int,
+    ws_web_site_sk            int,
+    ws_ship_mode_sk           int,
+    ws_warehouse_sk           int,
+    ws_promo_sk               int,
+    ws_order_number           int,
+    ws_quantity               int,
+    ws_wholesale_cost         decimal(7,2),
+    ws_list_price             decimal(7,2),
+    ws_sales_price            decimal(7,2),
+    ws_ext_discount_amt       decimal(7,2),
+    ws_ext_sales_price        decimal(7,2),
+    ws_ext_wholesale_cost     decimal(7,2),
+    ws_ext_list_price         decimal(7,2),
+    ws_ext_tax                decimal(7,2),
+    ws_coupon_amt             decimal(7,2),
+    ws_ext_ship_cost          decimal(7,2),
+    ws_net_paid               decimal(7,2),
+    ws_net_paid_inc_tax       decimal(7,2),
+    ws_net_paid_inc_ship      decimal(7,2),
+    ws_net_paid_inc_ship_tax  decimal(7,2),
+    ws_net_profit             decimal(7,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: create table web_sales
+(
+    ws_sold_date_sk           int,
+    ws_sold_time_sk           int,
+    ws_ship_date_sk           int,
+    ws_item_sk                int,
+    ws_bill_customer_sk       int,
+    ws_bill_cdemo_sk          int,
+    ws_bill_hdemo_sk          int,
+    ws_bill_addr_sk           int,
+    ws_ship_customer_sk       int,
+    ws_ship_cdemo_sk          int,
+    ws_ship_hdemo_sk          int,
+    ws_ship_addr_sk           int,
+    ws_web_page_sk            int,
+    ws_web_site_sk            int,
+    ws_ship_mode_sk           int,
+    ws_warehouse_sk           int,
+    ws_promo_sk               int,
+    ws_order_number           int,
+    ws_quantity               int,
+    ws_wholesale_cost         decimal(7,2),
+    ws_list_price             decimal(7,2),
+    ws_sales_price            decimal(7,2),
+    ws_ext_discount_amt       decimal(7,2),
+    ws_ext_sales_price        decimal(7,2),
+    ws_ext_wholesale_cost     decimal(7,2),
+    ws_ext_list_price         decimal(7,2),
+    ws_ext_tax                decimal(7,2),
+    ws_coupon_amt             decimal(7,2),
+    ws_ext_ship_cost          decimal(7,2),
+    ws_net_paid               decimal(7,2),
+    ws_net_paid_inc_tax       decimal(7,2),
+    ws_net_paid_inc_ship      decimal(7,2),
+    ws_net_paid_inc_ship_tax  decimal(7,2),
+    ws_net_profit             decimal(7,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@web_sales
+PREHOOK: query: drop table if exists web_site
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists web_site
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table web_site
+(
+    web_site_sk             int,
+    web_site_id             string,
+    web_rec_start_date      string,
+    web_rec_end_date        string,
+    web_name                string,
+    web_open_date_sk        int,
+    web_close_date_sk       int,
+    web_class               string,
+    web_manager             string,
+    web_mkt_id              int,
+    web_mkt_class           string,
+    web_mkt_desc            string,
+    web_market_manager      string,
+    web_company_id          int,
+    web_company_name        string,
+    web_street_number       string,
+    web_street_name         string,
+    web_street_type         string,
+    web_suite_number        string,
+    web_city                string,
+    web_county              string,
+    web_state               string,
+    web_zip                 string,
+    web_country             string,
+    web_gmt_offset          decimal(5,2),
+    web_tax_percentage      decimal(5,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@web_site
+POSTHOOK: query: create table web_site
+(
+    web_site_sk             int,
+    web_site_id             string,
+    web_rec_start_date      string,
+    web_rec_end_date        string,
+    web_name                string,
+    web_open_date_sk        int,
+    web_close_date_sk       int,
+    web_class               string,
+    web_manager             string,
+    web_mkt_id              int,
+    web_mkt_class           string,
+    web_mkt_desc            string,
+    web_market_manager      string,
+    web_company_id          int,
+    web_company_name        string,
+    web_street_number       string,
+    web_street_name         string,
+    web_street_type         string,
+    web_suite_number        string,
+    web_city                string,
+    web_county              string,
+    web_state               string,
+    web_zip                 string,
+    web_country             string,
+    web_gmt_offset          decimal(5,2),
+    web_tax_percentage      decimal(5,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("transactional"="true", "orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@web_site
+PREHOOK: query: explain
+vectorization detail
+with ws_wh as
+(select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
+ from web_sales ws1,web_sales ws2
+ where ws1.ws_order_number = ws2.ws_order_number
+   and ws1.ws_warehouse_sk <> ws2.ws_warehouse_sk)
+ select
+   count(distinct ws_order_number) as `order count`
+  ,sum(ws_ext_ship_cost) as `total shipping cost`
+  ,sum(ws_net_profit) as `total net profit`
+from
+   web_sales ws1
+  ,date_dim
+  ,customer_address
+  ,web_site
+where
+    d_date between '1999-5-01' and
+           (cast('1999-5-01' as date) + 60 days)
+and ws1.ws_ship_date_sk = d_date_sk
+and ws1.ws_ship_addr_sk = ca_address_sk
+and ca_state = 'TX'
+and ws1.ws_web_site_sk = web_site_sk
+and web_company_name = 'pri'
+and ws1.ws_order_number in (select ws_order_number
+                            from ws_wh)
+and ws1.ws_order_number in (select wr_order_number
+                            from web_returns,ws_wh
+                            where wr_order_number = ws_wh.ws_order_number)
+order by count(distinct ws_order_number)
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+PREHOOK: Input: default@web_site
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+vectorization detail
+with ws_wh as
+(select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
+ from web_sales ws1,web_sales ws2
+ where ws1.ws_order_number = ws2.ws_order_number
+   and ws1.ws_warehouse_sk <> ws2.ws_warehouse_sk)
+ select
+   count(distinct ws_order_number) as `order count`
+  ,sum(ws_ext_ship_cost) as `total shipping cost`
+  ,sum(ws_net_profit) as `total net profit`
+from
+   web_sales ws1
+  ,date_dim
+  ,customer_address
+  ,web_site
+where
+    d_date between '1999-5-01' and
+           (cast('1999-5-01' as date) + 60 days)
+and ws1.ws_ship_date_sk = d_date_sk
+and ws1.ws_ship_addr_sk = ca_address_sk
+and ca_state = 'TX'
+and ws1.ws_web_site_sk = web_site_sk
+and web_company_name = 'pri'
+and ws1.ws_order_number in (select ws_order_number
+                            from ws_wh)
+and ws1.ws_order_number in (select wr_order_number
+                            from web_returns,ws_wh
+                            where wr_order_number = ws_wh.ws_order_number)
+order by count(distinct ws_order_number)
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Input: default@web_site
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 11 <- Map 10 (SIMPLE_EDGE), Map 15 (SIMPLE_EDGE)
+        Reducer 12 <- Reducer 11 (SIMPLE_EDGE)
+        Reducer 13 <- Map 16 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
+        Reducer 14 <- Reducer 13 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 12 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Map 17 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Map 18 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ws1
+                  Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ws_sold_date_sk:int, 1:ws_sold_time_sk:int, 2:ws_ship_date_sk:int, 3:ws_item_sk:int, 4:ws_bill_customer_sk:int, 5:ws_bill_cdemo_sk:int, 6:ws_bill_hdemo_sk:int, 7:ws_bill_addr_sk:int, 8:ws_ship_customer_sk:int, 9:ws_ship_cdemo_sk:int, 10:ws_ship_hdemo_sk:int, 11:ws_ship_addr_sk:int, 12:ws_web_page_sk:int, 13:ws_web_site_sk:int, 14:ws_ship_mode_sk:int, 15:ws_warehouse_sk:int, 16:ws_promo_sk:int, 17:ws_order_number:int, 18:ws_quantity:int, 19:ws_wholesale_cost:decimal(7,2)/DECIMAL_64, 20:ws_list_price:decimal(7,2)/DECIMAL_64, 21:ws_sales_price:decimal(7,2)/DECIMAL_64, 22:ws_ext_discount_amt:decimal(7,2)/DECIMAL_64, 23:ws_ext_sales_price:decimal(7,2)/DECIMAL_64, 24:ws_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, 25:ws_ext_list_price:decimal(7,2)/DECIMAL_64, 26:ws_ext_tax:decimal(7,2)/DECIMAL_64, 27:ws_coupon_amt:decimal(7,2)/DECIMAL_64, 28:ws_ext_ship_cost:decimal(7,2)/DECIMAL_64, 29:ws_net_paid:decimal(7,2)/DECIMAL_64, 30:ws_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, 31:ws_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, 32:ws_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, 33:ws_net_profit:decimal(7,2)/DECIMAL_64, 34:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 17:int), SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 11:int), SelectColumnIsNotNull(col 13:int))
+                    predicate: (ws_order_number is not null and ws_ship_addr_sk is not null and ws_ship_date_sk is not null and ws_web_site_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ws_ship_date_sk (type: int), ws_ship_addr_sk (type: int), ws_web_site_sk (type: int), ws_order_number (type: int), ws_ext_ship_cost (type: decimal(7,2)), ws_net_profit (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [2, 11, 13, 17, 28, 33]
+                      Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumnNums: [2]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [11, 13, 17, 28, 33]
+                        Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 34
+                    includeColumns: [2, 11, 13, 17, 28, 33]
+                    dataColumns: ws_sold_date_sk:int, ws_sold_time_sk:int, ws_ship_date_sk:int, ws_item_sk:int, ws_bill_customer_sk:int, ws_bill_cdemo_sk:int, ws_bill_hdemo_sk:int, ws_bill_addr_sk:int, ws_ship_customer_sk:int, ws_ship_cdemo_sk:int, ws_ship_hdemo_sk:int, ws_ship_addr_sk:int, ws_web_page_sk:int, ws_web_site_sk:int, ws_ship_mode_sk:int, ws_warehouse_sk:int, ws_promo_sk:int, ws_order_number:int, ws_quantity:int, ws_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_list_price:decimal(7,2)/DECIMAL_64, ws_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_discount_amt:decimal(7,2)/DECIMAL_64, ws_ext_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_ext_list_price:decimal(7,2)/DECIMAL_64, ws_ext_tax:decimal(7,2)/DECIMAL_64, ws_coupon_amt:decimal(7,2)/DECIMAL_64, ws_ext_ship_cost:decimal(7,2)/DECIMAL_64, ws_net_paid:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, ws_net_profit:decimal(7,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: ws1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ws_sold_date_sk:int, 1:ws_sold_time_sk:int, 2:ws_ship_date_sk:int, 3:ws_item_sk:int, 4:ws_bill_customer_sk:int, 5:ws_bill_cdemo_sk:int, 6:ws_bill_hdemo_sk:int, 7:ws_bill_addr_sk:int, 8:ws_ship_customer_sk:int, 9:ws_ship_cdemo_sk:int, 10:ws_ship_hdemo_sk:int, 11:ws_ship_addr_sk:int, 12:ws_web_page_sk:int, 13:ws_web_site_sk:int, 14:ws_ship_mode_sk:int, 15:ws_warehouse_sk:int, 16:ws_promo_sk:int, 17:ws_order_number:int, 18:ws_quantity:int, 19:ws_wholesale_cost:decimal(7,2)/DECIMAL_64, 20:ws_list_price:decimal(7,2)/DECIMAL_64, 21:ws_sales_price:decimal(7,2)/DECIMAL_64, 22:ws_ext_discount_amt:decimal(7,2)/DECIMAL_64, 23:ws_ext_sales_price:decimal(7,2)/DECIMAL_64, 24:ws_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, 25:ws_ext_list_price:decimal(7,2)/DECIMAL_64, 26:ws_ext_tax:decimal(7,2)/DECIMAL_64, 27:ws_coupon_amt:decimal(7,2)/DECIMAL_64, 28:ws_ext_ship_cost:decimal(7,2)/DECIMAL_64, 29:ws_net_paid:decimal(7,2)/DECIMAL_64, 30:ws_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, 31:ws_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, 32:ws_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, 33:ws_net_profit:decimal(7,2)/DECIMAL_64, 34:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 17:int)
+                    predicate: ws_order_number is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ws_warehouse_sk (type: int), ws_order_number (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [15, 17]
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            keyColumnNums: [17]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            partitionColumnNums: [17]
+                            valueColumnNums: [15]
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 34
+                    includeColumns: [15, 17]
+                    dataColumns: ws_sold_date_sk:int, ws_sold_time_sk:int, ws_ship_date_sk:int, ws_item_sk:int, ws_bill_customer_sk:int, ws_bill_cdemo_sk:int, ws_bill_hdemo_sk:int, ws_bill_addr_sk:int, ws_ship_customer_sk:int, ws_ship_cdemo_sk:int, ws_ship_hdemo_sk:int, ws_ship_addr_sk:int, ws_web_page_sk:int, ws_web_site_sk:int, ws_ship_mode_sk:int, ws_warehouse_sk:int, ws_promo_sk:int, ws_order_number:int, ws_quantity:int, ws_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_list_price:decimal(7,2)/DECIMAL_64, ws_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_discount_amt:decimal(7,2)/DECIMAL_64, ws_ext_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_ext_list_price:decimal(7,2)/DECIMAL_64, ws_ext_tax:decimal(7,2)/DECIMAL_64, ws_coupon_amt:decimal(7,2)/DECIMAL_64, ws_ext_ship_cost:decimal(7,2)/DECIMAL_64, ws_net_paid:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, ws_net_profit:decimal(7,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 15 
+            Map Operator Tree:
+                TableScan
+                  alias: ws2
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ws_sold_date_sk:int, 1:ws_sold_time_sk:int, 2:ws_ship_date_sk:int, 3:ws_item_sk:int, 4:ws_bill_customer_sk:int, 5:ws_bill_cdemo_sk:int, 6:ws_bill_hdemo_sk:int, 7:ws_bill_addr_sk:int, 8:ws_ship_customer_sk:int, 9:ws_ship_cdemo_sk:int, 10:ws_ship_hdemo_sk:int, 11:ws_ship_addr_sk:int, 12:ws_web_page_sk:int, 13:ws_web_site_sk:int, 14:ws_ship_mode_sk:int, 15:ws_warehouse_sk:int, 16:ws_promo_sk:int, 17:ws_order_number:int, 18:ws_quantity:int, 19:ws_wholesale_cost:decimal(7,2)/DECIMAL_64, 20:ws_list_price:decimal(7,2)/DECIMAL_64, 21:ws_sales_price:decimal(7,2)/DECIMAL_64, 22:ws_ext_discount_amt:decimal(7,2)/DECIMAL_64, 23:ws_ext_sales_price:decimal(7,2)/DECIMAL_64, 24:ws_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, 25:ws_ext_list_price:decimal(7,2)/DECIMAL_64, 26:ws_ext_tax:decimal(7,2)/DECIMAL_64, 27:ws_coupon_amt:decimal(7,2)/DECIMAL_64, 28:ws_ext_ship_cost:decimal(7,2)/DECIMAL_64, 29:ws_net_paid:decimal(7,2)/DECIMAL_64, 30:ws_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, 31:ws_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, 32:ws_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, 33:ws_net_profit:decimal(7,2)/DECIMAL_64, 34:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 17:int)
+                    predicate: ws_order_number is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ws_warehouse_sk (type: int), ws_order_number (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [15, 17]
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumnNums: [17]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [15]
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 34
+                    includeColumns: [15, 17]
+                    dataColumns: ws_sold_date_sk:int, ws_sold_time_sk:int, ws_ship_date_sk:int, ws_item_sk:int, ws_bill_customer_sk:int, ws_bill_cdemo_sk:int, ws_bill_hdemo_sk:int, ws_bill_addr_sk:int, ws_ship_customer_sk:int, ws_ship_cdemo_sk:int, ws_ship_hdemo_sk:int, ws_ship_addr_sk:int, ws_web_page_sk:int, ws_web_site_sk:int, ws_ship_mode_sk:int, ws_warehouse_sk:int, ws_promo_sk:int, ws_order_number:int, ws_quantity:int, ws_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_list_price:decimal(7,2)/DECIMAL_64, ws_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_discount_amt:decimal(7,2)/DECIMAL_64, ws_ext_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_ext_list_price:decimal(7,2)/DECIMAL_64, ws_ext_tax:decimal(7,2)/DECIMAL_64, ws_coupon_amt:decimal(7,2)/DECIMAL_64, ws_ext_ship_cost:decimal(7,2)/DECIMAL_64, ws_net_paid:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, ws_net_profit:decimal(7,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 16 
+            Map Operator Tree:
+                TableScan
+                  alias: web_returns
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:wr_returned_date_sk:int, 1:wr_returned_time_sk:int, 2:wr_item_sk:int, 3:wr_refunded_customer_sk:int, 4:wr_refunded_cdemo_sk:int, 5:wr_refunded_hdemo_sk:int, 6:wr_refunded_addr_sk:int, 7:wr_returning_customer_sk:int, 8:wr_returning_cdemo_sk:int, 9:wr_returning_hdemo_sk:int, 10:wr_returning_addr_sk:int, 11:wr_web_page_sk:int, 12:wr_reason_sk:int, 13:wr_order_number:int, 14:wr_return_quantity:int, 15:wr_return_amt:decimal(7,2)/DECIMAL_64, 16:wr_return_tax:decimal(7,2)/DECIMAL_64, 17:wr_return_amt_inc_tax:decimal(7,2)/DECIMAL_64, 18:wr_fee:decimal(7,2)/DECIMAL_64, 19:wr_return_ship_cost:decimal(7,2)/DECIMAL_64, 20:wr_refunded_cash:decimal(7,2)/DECIMAL_64, 21:wr_reversed_charge:decimal(7,2)/DECIMAL_64, 22:wr_account_credit:decimal(7,2)/DECIMAL_64, 23:wr_net_loss:decimal(7,2)/DECIMAL_64, 24:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 13:int)
+                    predicate: wr_order_number is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: wr_order_number (type: int)
+                      outputColumnNames: _col13
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [13]
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col13 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col13 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            keyColumnNums: [13]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            partitionColumnNums: [13]
+                            valueColumnNums: []
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 24
+                    includeColumns: [13]
+                    dataColumns: wr_returned_date_sk:int, wr_returned_time_sk:int, wr_item_sk:int, wr_refunded_customer_sk:int, wr_refunded_cdemo_sk:int, wr_refunded_hdemo_sk:int, wr_refunded_addr_sk:int, wr_returning_customer_sk:int, wr_returning_cdemo_sk:int, wr_returning_hdemo_sk:int, wr_returning_addr_sk:int, wr_web_page_sk:int, wr_reason_sk:int, wr_order_number:int, wr_return_quantity:int, wr_return_amt:decimal(7,2)/DECIMAL_64, wr_return_tax:decimal(7,2)/DECIMAL_64, wr_return_amt_inc_tax:decimal(7,2)/DECIMAL_64, wr_fee:decimal(7,2)/DECIMAL_64, wr_return_ship_cost:decimal(7,2)/DECIMAL_64, wr_refunded_cash:decimal(7,2)/DECIMAL_64, wr_reversed_charge:decimal(7,2)/DECIMAL_64, wr_account_credit:decimal(7,2)/DECIMAL_64, wr_net_loss:decimal(7,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 17 
+            Map Operator Tree:
+                TableScan
+                  alias: customer_address
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ca_address_sk:int, 1:ca_address_id:string, 2:ca_street_number:string, 3:ca_street_name:string, 4:ca_street_type:string, 5:ca_suite_number:string, 6:ca_city:string, 7:ca_county:string, 8:ca_state:string, 9:ca_zip:string, 10:ca_country:string, 11:ca_gmt_offset:decimal(5,2)/DECIMAL_64, 12:ca_location_type:string, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 8:string, val TX), SelectColumnIsNotNull(col 0:int))
+                    predicate: ((ca_state = 'TX') and ca_address_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ca_address_sk (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 13
+                    includeColumns: [0, 8]
+                    dataColumns: ca_address_sk:int, ca_address_id:string, ca_street_number:string, ca_street_name:string, ca_street_type:string, ca_suite_number:string, ca_city:string, ca_county:string, ca_state:string, ca_zip:string, ca_country:string, ca_gmt_offset:decimal(5,2)/DECIMAL_64, ca_location_type:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 18 
+            Map Operator Tree:
+                TableScan
+                  alias: web_site
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:web_site_sk:int, 1:web_site_id:string, 2:web_rec_start_date:string, 3:web_rec_end_date:string, 4:web_name:string, 5:web_open_date_sk:int, 6:web_close_date_sk:int, 7:web_class:string, 8:web_manager:string, 9:web_mkt_id:int, 10:web_mkt_class:string, 11:web_mkt_desc:string, 12:web_market_manager:string, 13:web_company_id:int, 14:web_company_name:string, 15:web_street_number:string, 16:web_street_name:string, 17:web_street_type:string, 18:web_suite_number:string, 19:web_city:string, 20:web_county:string, 21:web_state:string, 22:web_zip:string, 23:web_country:string, 24:web_gmt_offset:decimal(5,2)/DECIMAL_64, 25:web_tax_percentage:decimal(5,2)/DECIMAL_64, 26:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14:string, val pri), SelectColumnIsNotNull(col 0:int))
+                    predicate: ((web_company_name = 'pri') and web_site_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: web_site_sk (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 26
+                    includeColumns: [0, 14]
+                    dataColumns: web_site_sk:int, web_site_id:string, web_rec_start_date:string, web_rec_end_date:string, web_name:string, web_open_date_sk:int, web_close_date_sk:int, web_class:string, web_manager:string, web_mkt_id:int, web_mkt_class:string, web_mkt_desc:string, web_market_manager:string, web_company_id:int, web_company_name:string, web_street_number:string, web_street_name:string, web_street_type:string, web_suite_number:string, web_city:string, web_county:string, web_state:string, web_zip:string, web_country:string, web_gmt_offset:decimal(5,2)/DECIMAL_64, web_tax_percentage:decimal(5,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:d_date_sk:int, 1:d_date_id:string, 2:d_date:string, 3:d_month_seq:int, 4:d_week_seq:int, 5:d_quarter_seq:int, 6:d_year:int, 7:d_dow:int, 8:d_moy:int, 9:d_dom:int, 10:d_qoy:int, 11:d_fy_year:int, 12:d_fy_quarter_seq:int, 13:d_fy_week_seq:int, 14:d_day_name:string, 15:d_quarter_name:string, 16:d_holiday:string, 17:d_weekend:string, 18:d_following_holiday:string, 19:d_first_dom:int, 20:d_last_dom:int, 21:d_same_day_ly:int, 22:d_same_day_lq:int, 23:d_current_day:string, 24:d_current_week:string, 25:d_current_month:string, 26:d_current_quarter:string, 27:d_current_year:string, 28:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterTimestampColumnBetween(col 29:timestamp, left 1999-04-30 17:00:00.0, right 1999-06-29 17:00:00.0)(children: CastStringToTimestamp(col 2:string) -> 29:timestamp), SelectColumnIsNotNull(col 0:int))
+                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 28
+                    includeColumns: [0, 2]
+                    dataColumns: d_date_sk:int, d_date_id:string, d_date:string, d_month_seq:int, d_week_seq:int, d_quarter_seq:int, d_year:int, d_dow:int, d_moy:int, d_dom:int, d_qoy:int, d_fy_year:int, d_fy_quarter_seq:int, d_fy_week_seq:int, d_day_name:string, d_quarter_name:string, d_holiday:string, d_weekend:string, d_following_holiday:string, d_first_dom:int, d_last_dom:int, d_same_day_ly:int, d_same_day_lq:int, d_current_day:string, d_current_week:string, d_current_month:string, d_current_quarter:string, d_current_year:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [timestamp]
+        Reducer 11 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                residual filter predicates: {(_col0 <> _col2)}
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: int)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col1 (type: int)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 12 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: KEY._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:int
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      keyColumnNums: [0]
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      partitionColumnNums: [0]
+                      valueColumnNums: []
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 13 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col13 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col13
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col13 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+        Reducer 14 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: KEY._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:int
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      keyColumnNums: [0]
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      partitionColumnNums: [0]
+                      valueColumnNums: []
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col3 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col3 (type: int)
+                  Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: int), _col2 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                keys:
+                  0 _col3 (type: int)
+                  1 _col0 (type: int)
+                  2 _col0 (type: int)
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 2 Data size: 580 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: int)
+                  Statistics: Num rows: 2 Data size: 580 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col2, _col3, _col4, _col5
+                Statistics: Num rows: 2 Data size: 638 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col2 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col2 (type: int)
+                  Statistics: Num rows: 2 Data size: 638 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col2 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col3, _col4, _col5
+                Statistics: Num rows: 2 Data size: 701 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col4), sum(_col5)
+                  keys: _col3 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col2, _col3
+                  Statistics: Num rows: 2 Data size: 701 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 2 Data size: 701 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col2 (type: decimal(17,2)), _col3 (type: decimal(17,2))
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:int, VALUE._col0:decimal(17,2), VALUE._col1:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                    className: VectorGroupByOperator
+                    groupByMode: PARTIAL2
+                    keyExpressions: col 0:int
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1]
+                keys: KEY._col0 (type: int)
+                mode: partial2
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 701 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(_col0), sum(_col1), sum(_col2)
+                  Group By Vectorization:
+                      aggregators: VectorUDAFCount(col 0:int) -> bigint, VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                      className: VectorGroupByOperator
+                      groupByMode: PARTIAL2
+                      native: false
+                      vectorProcessingMode: STREAMING
+                      projectedOutputColumnNums: [0, 1, 2]
+                  mode: partial2
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkEmptyKeyOperator
+                        keyColumnNums: []
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumnNums: [0, 1, 2]
+                    Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint), _col1 (type: decimal(17,2)), _col2 (type: decimal(17,2))
+        Reducer 7 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: VALUE._col0:bigint, VALUE._col1:decimal(17,2), VALUE._col2:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint, VectorUDAFSumDecimal(col 1:decimal(17,2)) -> decimal(17,2), VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: decimal(17,2)), _col2 (type: decimal(17,2)), _col0 (type: bigint)
+                  outputColumnNames: _col1, _col2, _col3
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1, 2, 0]
+                  Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col3 (type: bigint)
+                    sort order: +
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkObjectHashOperator
+                        keyColumnNums: [0]
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumnNums: [1, 2]
+                    Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col1 (type: decimal(17,2)), _col2 (type: decimal(17,2))
+        Reducer 8 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:bigint, VALUE._col0:decimal(17,2), VALUE._col1:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: decimal(17,2)), VALUE._col1 (type: decimal(17,2))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2]
+                Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                  Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
