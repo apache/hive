@@ -221,16 +221,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
-                  Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: bigint)
-                      Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -244,14 +244,14 @@ STAGE PLANS:
                   0 _col0 (type: bigint)
                   1 _col0 (type: bigint)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 3436 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: bigint), _col1 (type: string), _col3 (type: string), 'day1' (type: string), 1 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 5276 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 5276 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -368,11 +368,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
-                  Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17
@@ -388,14 +388,14 @@ STAGE PLANS:
                         0 _col0 (type: bigint)
                         1 _col0 (type: bigint)
                       outputColumnNames: _col0, _col1, _col3
-                      Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 20 Data size: 3436 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: bigint), _col1 (type: string), _col3 (type: string), 'day1' (type: string), 1 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                        Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 5276 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 5276 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -622,11 +622,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_small_n17
-                  Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 236 Data size: 45636 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17
@@ -642,14 +642,14 @@ STAGE PLANS:
                         0 _col0 (type: bigint)
                         1 _col0 (type: bigint)
                       outputColumnNames: _col0, _col1, _col3
-                      Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 20 Data size: 3436 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: bigint), _col1 (type: string), _col3 (type: string), 'day1' (type: string), 1 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                        Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 5276 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 259 Data size: 50199 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 20 Data size: 5276 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

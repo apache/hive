@@ -4,6 +4,7 @@ set hive.fetch.task.conversion=none;
 
 -- Check if vectorization code is handling partitioning on DATE and the other data types.
 
+
 CREATE TABLE flights_tiny_n1 (
   origin_city_name STRING,
   dest_city_name STRING,
@@ -17,8 +18,6 @@ LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABL
 CREATE TABLE flights_tiny_orc STORED AS ORC AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
 FROM flights_tiny_n1;
-
--- SORT_QUERY_RESULTS
 
 SELECT * FROM flights_tiny_orc;
 

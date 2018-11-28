@@ -2217,16 +2217,6 @@ public class HiveConf extends Configuration {
         "When enabled dynamic partitioning column will be globally sorted.\n" +
         "This way we can keep only one record writer open for each partition value\n" +
         "in the reducer thereby reducing the memory pressure on reducers."),
-    HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD("hive.optimize.sort.dynamic.partition.threshold", 0,
-                                "When enabled dynamic partitioning column will be globally sorted.\n" +
-                                    "This way we can keep only one record writer open for each partition value\n" +
-                                    "in the reducer thereby reducing the memory pressure on reducers.\n" +
-                                    "This config has following possible values: \n" +
-                                    "\t-1 - This completely disables the optimization. \n" +
-                                    "\t1 - This always enable the optimization. \n" +
-                                    "\t0 - This makes the optimization a cost based decision. \n" +
-                                    "Setting it to any other positive integer will make Hive use this as threshold for number of writers."),
-
 
     HIVESAMPLINGFORORDERBY("hive.optimize.sampling.orderby", false, "Uses sampling on order-by clause for parallel execution."),
     HIVESAMPLINGNUMBERFORORDERBY("hive.optimize.sampling.orderby.number", 1000, "Total number of samples to be obtained."),
