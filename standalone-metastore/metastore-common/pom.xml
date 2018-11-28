@@ -148,7 +148,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- This is our one and only Hive dependency.-->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-storage-api</artifactId>
