@@ -96,7 +96,9 @@ dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;creat
 dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
 'CREATE TABLE TIME_DIM ("t_time_sk" INTEGER, "t_time_id" CHAR(16), "t_time" INTEGER, "t_hour" INTEGER,
   "t_minute" INTEGER, "t_second" INTEGER, "t_am_pm" CHAR(2), "t_shift" CHAR(20), "t_sub_shift" CHAR(20),
-  "t_meal_time" CHAR(20))' )
+  "t_meal_time" CHAR(20))' ),
+dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+'CREATE TABLE REASON ("r_reason_sk" INTEGER, "r_reason_id" CHAR(16), "r_reason_desc" CHAR(100))' )
 limit 1;
 
 
@@ -635,6 +637,23 @@ TBLPROPERTIES (
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "TIME_DIM",
+                "hive.sql.dbcp.maxActive" = "1"
+);
+
+CREATE EXTERNAL TABLE reason
+(
+    r_reason_sk               int                           ,
+    r_reason_id               char(16)                      ,
+    r_reason_desc             char(100)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.dbcp.username" = "user1",
+                "hive.sql.dbcp.password" = "passwd1",
+                "hive.sql.table" = "REASON",
                 "hive.sql.dbcp.maxActive" = "1"
 );
 
@@ -1592,6 +1611,109 @@ select *
                                   and store.s_store_name = 'ese') s8;
 
 
+explain
+select substr(r_reason_desc, 1, 20) as r,
+avg(ws_quantity) as wq,
+avg(wr_refunded_cash) as ref,
+avg(wr_fee) as fee
+from web_sales
+join web_returns
+on web_sales.ws_item_sk = web_returns.wr_item_sk
+and web_sales.ws_order_number = web_returns.wr_order_number
+join customer_demographics cd1
+on cd1.cd_demo_sk = web_returns.wr_refunded_cdemo_sk
+join customer_demographics cd2
+on cd2.cd_demo_sk = web_returns.wr_returning_cdemo_sk
+join customer_address
+on customer_address.ca_address_sk = web_returns.wr_refunded_addr_sk
+join date_dim
+on web_sales.ws_sold_date_sk = date_dim.d_date_sk
+join reason
+on reason.r_reason_sk = web_returns.wr_reason_sk
+where d_year = 2000
+and ((cd1.cd_marital_status = 'M'
+and cd1.cd_marital_status = cd2.cd_marital_status
+and cd1.cd_education_status = 'Advanced Degree'
+and cd1.cd_education_status = cd2.cd_education_status
+and ws_sales_price between 100.00 and 150.00)
+or
+(cd1.cd_marital_status = 'S'
+and cd1.cd_marital_status = cd2.cd_marital_status
+and cd1.cd_education_status = 'College'
+and cd1.cd_education_status = cd2.cd_education_status
+and ws_sales_price between 50.00 and 100.00)
+or
+(cd1.cd_marital_status = 'W'
+and cd1.cd_marital_status = cd2.cd_marital_status
+and cd1.cd_education_status = '2 yr Degree'
+and cd1.cd_education_status = cd2.cd_education_status
+and ws_sales_price between 150.00 and 200.00))
+and ((ca_country = 'United States'
+and ca_state in ('IN', 'OH', 'NJ')
+and ws_net_profit between 100 and 200)
+or
+(ca_country = 'United States'
+and ca_state in ('WI', 'CT', 'KY')
+and ws_net_profit between 150 and 300)
+or
+(ca_country = 'United States'
+and ca_state in ('LA', 'IA', 'AR')
+and ws_net_profit between 50 and 250))
+group by r_reason_desc
+order by r, wq, ref, fee
+limit 100;
+select substr(r_reason_desc, 1, 20) as r,
+avg(ws_quantity) as wq,
+avg(wr_refunded_cash) as ref,
+avg(wr_fee) as fee
+from web_sales
+join web_returns
+on web_sales.ws_item_sk = web_returns.wr_item_sk
+and web_sales.ws_order_number = web_returns.wr_order_number
+join customer_demographics cd1
+on cd1.cd_demo_sk = web_returns.wr_refunded_cdemo_sk
+join customer_demographics cd2
+on cd2.cd_demo_sk = web_returns.wr_returning_cdemo_sk
+join customer_address
+on customer_address.ca_address_sk = web_returns.wr_refunded_addr_sk
+join date_dim
+on web_sales.ws_sold_date_sk = date_dim.d_date_sk
+join reason
+on reason.r_reason_sk = web_returns.wr_reason_sk
+where d_year = 2000
+and ((cd1.cd_marital_status = 'M'
+and cd1.cd_marital_status = cd2.cd_marital_status
+and cd1.cd_education_status = 'Advanced Degree'
+and cd1.cd_education_status = cd2.cd_education_status
+and ws_sales_price between 100.00 and 150.00)
+or
+(cd1.cd_marital_status = 'S'
+and cd1.cd_marital_status = cd2.cd_marital_status
+and cd1.cd_education_status = 'College'
+and cd1.cd_education_status = cd2.cd_education_status
+and ws_sales_price between 50.00 and 100.00)
+or
+(cd1.cd_marital_status = 'W'
+and cd1.cd_marital_status = cd2.cd_marital_status
+and cd1.cd_education_status = '2 yr Degree'
+and cd1.cd_education_status = cd2.cd_education_status
+and ws_sales_price between 150.00 and 200.00))
+and ((ca_country = 'United States'
+and ca_state in ('IN', 'OH', 'NJ')
+and ws_net_profit between 100 and 200)
+or
+(ca_country = 'United States'
+and ca_state in ('WI', 'CT', 'KY')
+and ws_net_profit between 150 and 300)
+or
+(ca_country = 'United States'
+and ca_state in ('LA', 'IA', 'AR')
+and ws_net_profit between 50 and 250))
+group by r_reason_desc
+order by r, wq, ref, fee
+limit 100;
+
+
 DROP TABLE catalog_sales;
 DROP TABLE catalog_returns;
 DROP TABLE store_sales;
@@ -1608,6 +1730,7 @@ DROP TABLE date_dim;
 DROP TABLE store;
 DROP TABLE household_demographics;
 DROP TABLE time_dim;
+DROP TABLE reason;
 
 FROM src
 SELECT
@@ -1642,5 +1765,7 @@ dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
 'DROP TABLE HOUSEHOLD_DEMOGRAPHICS' ),
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
-'DROP TABLE TIME_DIM' )
+'DROP TABLE TIME_DIM' ),
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+'DROP TABLE REASON' )
 limit 1;
