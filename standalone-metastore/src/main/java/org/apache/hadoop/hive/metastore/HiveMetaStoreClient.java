@@ -226,8 +226,28 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   private void resolveUris() throws MetaException {
-    String metastoreUrisString[] =  MetastoreConf.getVar(conf,
-            ConfVars.THRIFT_URIS).split(",");
+    String thriftUris = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
+    String serviceDiscoveryMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE);
+    List<String> metastoreUrisString = null;
+
+    // The metastore URIs can come from THRIFT_URIS directly or need to be fetched from the
+    // Zookeeper
+    try {
+      if (serviceDiscoveryMode == null || serviceDiscoveryMode.trim().isEmpty()) {
+        metastoreUrisString = Arrays.asList(thriftUris.split(","));
+      } else if (serviceDiscoveryMode.equalsIgnoreCase("zookeeper")) {
+          metastoreUrisString = new ArrayList<String>();
+          // Add scheme to the bare URI we get.
+          for (String s : MetastoreConf.getZKConfig(conf).getServerUris()) {
+            metastoreUrisString.add("thrift://" + s);
+          }
+      } else {
+        throw new IllegalArgumentException("Invalid metastore dynamic service discovery mode " +
+                serviceDiscoveryMode);
+      }
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
 
     List<URI> metastoreURIArray = new ArrayList<URI>();
     try {

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
@@ -123,6 +124,9 @@ public class MetastoreConf {
       ConfVars.REPLDIR,
       ConfVars.THRIFT_URIS,
       ConfVars.SERVER_PORT,
+      ConfVars.THRIFT_BIND_HOST,
+      ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT,
+      ConfVars.THRIFT_ZOOKEEPER_NAMESPACE,
       ConfVars.THRIFT_CONNECTION_RETRIES,
       ConfVars.THRIFT_FAILURE_RETRIES,
       ConfVars.CLIENT_CONNECT_RETRY_DELAY,
@@ -841,13 +845,50 @@ public class MetastoreConf {
         "Number of retries while opening a connection to metastore"),
     THRIFT_FAILURE_RETRIES("metastore.failure.retries", "hive.metastore.failure.retries", 1,
         "Number of retries upon failure of Thrift metastore calls"),
+    THRIFT_BIND_HOST("metastore.thrift.bind.host", "hive.metastore.thrift.bind.host", "",
+        "Bind host on which to run the metastore thrift service."),
     THRIFT_URIS("metastore.thrift.uris", "hive.metastore.uris", "",
-        "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
+        "URIs Used by metastore client to connect to remotemetastore\n." +
+                "If dynamic service discovery mode is set, the URIs are used to connect to the" +
+                " corresponding service discovery servers e.g. a zookeeper. Otherwise they are " +
+                "used as URIs for remote metastore."),
+    THRIFT_SERVICE_DISCOVERY_MODE("metastore.service.discovery.mode",
+            "hive.metastore.service.discovery.mode",
+            "",
+            "Specifies which dynamic service discovery method to use. Currently we support only " +
+                    "\"zookeeper\" to specify ZooKeeper based service discovery."),
+    THRIFT_ZOOKEEPER_CLIENT_PORT("metastore.zookeeper.client.port",
+            "hive.metastore.zookeeper.client.port", "2181",
+            "The port of ZooKeeper servers to talk to.\n" +
+                    "If the list of Zookeeper servers specified in hive.metastore.thrift.uris" +
+                    " does not contain port numbers, this value is used."),
+    THRIFT_ZOOKEEPER_SESSION_TIMEOUT("metastore.zookeeper.session.timeout",
+            "hive.metastore.zookeeper.session.timeout", 120000L, TimeUnit.MILLISECONDS,
+            new TimeValidator(TimeUnit.MILLISECONDS),
+            "ZooKeeper client's session timeout (in milliseconds). The client is disconnected\n" +
+                    "if a heartbeat is not sent in the timeout."),
+    THRIFT_ZOOKEEPER_CONNECTION_TIMEOUT("metastore.zookeeper.connection.timeout",
+            "hive.metastore.zookeeper.connection.timeout", 15L, TimeUnit.SECONDS,
+            new TimeValidator(TimeUnit.SECONDS),
+            "ZooKeeper client's connection timeout in seconds. " +
+                    "Connection timeout * hive.metastore.zookeeper.connection.max.retries\n" +
+                    "with exponential backoff is when curator client deems connection is lost to zookeeper."),
+    THRIFT_ZOOKEEPER_NAMESPACE("metastore.zookeeper.namespace",
+            "hive.metastore.zookeeper.namespace", "hive_metastore",
+            "The parent node under which all ZooKeeper nodes for metastores are created."),
+    THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES("metastore.zookeeper.connection.max.retries",
+            "hive.metastore.zookeeper.connection.max.retries", 3,
+            "Max number of times to retry when connecting to the ZooKeeper server."),
+    THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME("metastore.zookeeper.connection.basesleeptime",
+            "hive.metastore.zookeeper.connection.basesleeptime", 1000L, TimeUnit.MILLISECONDS,
+            new TimeValidator(TimeUnit.MILLISECONDS),
+            "Initial amount of time (in milliseconds) to wait between retries\n" +
+                    "when connecting to the ZooKeeper server when using ExponentialBackoffRetry policy."),
     THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
         new StringSetValidator("RANDOM", "SEQUENTIAL"),
         "Determines the selection mechanism used by metastore client to connect to remote " +
         "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
-        "as part of hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
+        "through hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
         "will be picked randomly"),
     TIMEDOUT_TXN_REAPER_START("metastore.timedout.txn.reaper.start",
         "hive.timedout.txn.reaper.start", 100, TimeUnit.SECONDS,
@@ -1702,6 +1743,17 @@ public class MetastoreConf {
    */
   public static boolean isEmbeddedMetaStore(String msUri) {
     return (msUri == null) || msUri.trim().isEmpty();
+  }
+
+  public static ZooKeeperHiveHelper getZKConfig(Configuration conf) {
+    return new ZooKeeperHiveHelper(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS),
+            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT),
+            MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE),
+            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_SESSION_TIMEOUT,
+                    TimeUnit.MILLISECONDS),
+            (int) MetastoreConf.getTimeVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_BASESLEEPTIME,
+                    TimeUnit.MILLISECONDS),
+            MetastoreConf.getIntVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES));
   }
 
   /**
