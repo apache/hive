@@ -190,9 +190,8 @@ public abstract class HCatBaseInputFormat
     PartInfo partitionInfo = hcatSplit.getPartitionInfo();
     // Ensure PartInfo's TableInfo is initialized.
     if (partitionInfo.getTableInfo() == null) {
-      partitionInfo.setTableInfo(((InputJobInfo)HCatUtil.deserialize(
-          taskContext.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO)
-      )).getTableInfo());
+      partitionInfo.setTableInfo(
+              HCatUtil.getLastInputJobInfosFromConf(taskContext.getConfiguration()).getTableInfo());
     }
     JobContext jobContext = taskContext;
     Configuration conf = jobContext.getConfiguration();
@@ -281,14 +280,13 @@ public abstract class HCatBaseInputFormat
    */
   private static InputJobInfo getJobInfo(Configuration conf)
     throws IOException {
-    String jobString = conf.get(
-      HCatConstants.HCAT_KEY_JOB_INFO);
-    if (jobString == null) {
+    InputJobInfo inputJobInfo = HCatUtil.getLastInputJobInfosFromConf(conf);
+    if (inputJobInfo == null) {
       throw new IOException("job information not found in JobContext."
         + " HCatInputFormat.setInput() not called?");
     }
 
-    return (InputJobInfo) HCatUtil.deserialize(jobString);
+    return inputJobInfo;
   }
 
   private List<String> setInputPath(JobConf jobConf, String location)

@@ -78,6 +78,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
   private static final String COMPLEX_TABLE = "junit_unparted_complex";
   private static final String PARTITIONED_TABLE = "junit_parted_basic";
   private static final String SPECIFIC_SIZE_TABLE = "junit_specific_size";
+  private static final String SPECIFIC_SIZE_TABLE_2 = "junit_specific_size2";
   private static final String PARTITIONED_DATE_TABLE = "junit_parted_date";
 
   private Map<Integer, Pair<Integer, String>> basicInputData;
@@ -149,6 +150,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
 
     createTable(PARTITIONED_TABLE, "a int, b string", "bkt string");
     createTable(SPECIFIC_SIZE_TABLE, "a int, b string");
+    createTable(SPECIFIC_SIZE_TABLE_2, "a int, b string");
     createTable(PARTITIONED_DATE_TABLE, "b string", "dt date");
     AllTypesTable.setupAllTypesTable(driver);
 
@@ -211,6 +213,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
         dropTable(COMPLEX_TABLE);
         dropTable(PARTITIONED_TABLE);
         dropTable(SPECIFIC_SIZE_TABLE);
+        dropTable(SPECIFIC_SIZE_TABLE_2);
         dropTable(PARTITIONED_DATE_TABLE);
         dropTable(AllTypesTable.ALL_PRIMITIVE_TYPES_TABLE);
       }
@@ -560,9 +563,62 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     HCatLoader hCatLoader = new HCatLoader();
     hCatLoader.setUDFContextSignature("testGetInputBytes");
     hCatLoader.setLocation(SPECIFIC_SIZE_TABLE, job);
-    ResourceStatistics statistics = hCatLoader.getStatistics(file.getAbsolutePath(), job);
+    ResourceStatistics statistics = hCatLoader.getStatistics(SPECIFIC_SIZE_TABLE, job);
     assertEquals(2048, (long) statistics.getmBytes());
   }
+
+  /**
+   * Simulates Pig relying on HCatLoader to inform about input size of multiple tables.
+   * @throws Exception
+   */
+  @Test
+  public void testGetInputBytesMultipleTables() throws Exception {
+    File file = new File(TEST_WAREHOUSE_DIR + "/" + SPECIFIC_SIZE_TABLE + "/part-m-00000");
+    file.deleteOnExit();
+    RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+    randomAccessFile.setLength(987654321L);
+    randomAccessFile.close();
+    file = new File(TEST_WAREHOUSE_DIR + "/" + SPECIFIC_SIZE_TABLE_2 + "/part-m-00000");
+    file.deleteOnExit();
+    randomAccessFile = new RandomAccessFile(file, "rw");
+    randomAccessFile.setLength(12345678L);
+    randomAccessFile.close();
+    Job job = new Job();
+    HCatLoader hCatLoader = new HCatLoader();
+
+    //Mocking that Pig would assign different signature for each POLoad operator
+    hCatLoader.setUDFContextSignature("testGetInputBytesMultipleTables" + SPECIFIC_SIZE_TABLE);
+    hCatLoader.setLocation(SPECIFIC_SIZE_TABLE, job);
+
+    hCatLoader.setUDFContextSignature("testGetInputBytesMultipleTables" + SPECIFIC_SIZE_TABLE_2);
+    hCatLoader.setLocation(SPECIFIC_SIZE_TABLE_2, job);
+
+    hCatLoader.setUDFContextSignature("testGetInputBytesMultipleTables" + PARTITIONED_TABLE);
+    hCatLoader.setLocation(PARTITIONED_TABLE, job);
+
+    long specificTableSize = -1;
+    long specificTableSize2 = -1;
+    long partitionedTableSize = -1;
+
+    ResourceStatistics statistics = hCatLoader.getStatistics(SPECIFIC_SIZE_TABLE, job);
+    specificTableSize=statistics.getSizeInBytes();
+    assertEquals(987654321, specificTableSize);
+
+    statistics = hCatLoader.getStatistics(SPECIFIC_SIZE_TABLE_2, job);
+    specificTableSize2=statistics.getSizeInBytes();
+    assertEquals(12345678, specificTableSize2);
+
+    statistics = hCatLoader.getStatistics(PARTITIONED_TABLE, job);
+    partitionedTableSize=statistics.getSizeInBytes();
+    //Partitioned table size here is dependent on underlying storage format, it's ~ 20<x<2000
+    assertTrue(20 < partitionedTableSize && partitionedTableSize < 2000);
+
+    //No-op here, just a reminder that Pig would do the calculation of the sum itself
+    //e.g. when joining the 3 tables is requested
+    assertTrue(Math.abs((specificTableSize + specificTableSize2 + partitionedTableSize) -
+        (987654321+12345678+1010)) < 1010);
+  }
+
 
   @Test
   public void testConvertBooleanToInt() throws Exception {
