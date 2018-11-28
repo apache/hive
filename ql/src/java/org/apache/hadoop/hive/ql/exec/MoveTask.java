@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -374,6 +375,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         Table table = db.getTable(tbd.getTable().getTableName());
 
         checkFileFormats(db, tbd, table);
+
+        // for transactional table if write id is not set (mostly during replication from 2.6), then set it now.
+        if (tbd.getWriteId() == 0 && AcidUtils.isTransactionalTable(table.getParameters())) {
+          HiveTxnManager txnMgr = driverContext.getCtx().getHiveTxnManager();
+          tbd.setWriteId(txnMgr.getTableWriteId(table.getDbName(), table.getTableName()));
+          tbd.setStmtId(txnMgr.getStmtIdAndIncrement());
+        }
 
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
             && !tbd.isMmTable(); //it seems that LoadTableDesc has Operation.INSERT only for CTAS...

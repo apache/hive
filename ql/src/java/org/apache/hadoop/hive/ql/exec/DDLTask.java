@@ -4701,7 +4701,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // create the table
     if (crtTbl.getReplaceMode()) {
       ReplicationSpec replicationSpec = crtTbl.getReplicationSpec();
-      long writeId = replicationSpec != null && replicationSpec.isInReplicationScope() ? crtTbl.getReplWriteId() : 0L;
+      long writeId = 0;
+      if (replicationSpec != null && replicationSpec.isInReplicationScope()) {
+        if (replicationSpec.isDoingMigration()) {
+          // for migration we start the transaction and allocate write id in repl txn task for migration.
+          writeId =
+            driverContext.getCtx().getHiveTxnManager().getTableWriteId(crtTbl.getDatabaseName(), crtTbl.getTableName());
+        } else {
+          writeId = crtTbl.getReplWriteId();
+        }
+      }
+
       // replace-mode creates are really alters using CreateTableDesc.
       db.alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false, null,
               true, writeId);

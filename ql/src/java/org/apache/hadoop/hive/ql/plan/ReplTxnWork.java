@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-
+import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -43,13 +43,15 @@ public class ReplTxnWork implements Serializable {
   private List<TxnToWriteId> txnToWriteIdList;
   private ReplicationSpec replicationSpec;
   private List<WriteEventInfo> writeEventInfos;
+  private ReplLastIdInfo replLastIdInfo;
 
   /**
    * OperationType.
    * Different kind of events supported for replaying.
    */
   public enum OperationType {
-    REPL_OPEN_TXN, REPL_ABORT_TXN, REPL_COMMIT_TXN, REPL_ALLOC_WRITE_ID, REPL_WRITEID_STATE
+    REPL_OPEN_TXN, REPL_ABORT_TXN, REPL_COMMIT_TXN, REPL_ALLOC_WRITE_ID, REPL_WRITEID_STATE,
+    REPL_MIGRATION_OPEN_TXN, REPL_MIGRATION_COMMIT_TXN
   }
 
   OperationType operation;
@@ -64,6 +66,7 @@ public class ReplTxnWork implements Serializable {
     this.txnToWriteIdList = txnToWriteIdList;
     this.replicationSpec = replicationSpec;
     this.writeEventInfos = null;
+    this.replLastIdInfo = null;
   }
 
   public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
@@ -88,6 +91,16 @@ public class ReplTxnWork implements Serializable {
     this.partNames = partNames;
     this.validWriteIdList = validWriteIdList;
     this.operation = type;
+  }
+
+  public ReplTxnWork(String dbName, String tableName) {
+    this(null, dbName, tableName, null, OperationType.REPL_MIGRATION_OPEN_TXN,
+            null, null);
+  }
+  public ReplTxnWork(ReplLastIdInfo replLastIdInfo) {
+    this(null, null, null, null, OperationType.REPL_MIGRATION_COMMIT_TXN,
+            null, null);
+    this.replLastIdInfo = replLastIdInfo;
   }
 
   public void addWriteEventInfo(WriteEventInfo writeEventInfo) {
@@ -135,5 +148,9 @@ public class ReplTxnWork implements Serializable {
 
   public List<WriteEventInfo> getWriteEventInfos() {
     return writeEventInfos;
+  }
+
+  public ReplLastIdInfo getReplLastIdInfo() {
+    return replLastIdInfo;
   }
 }

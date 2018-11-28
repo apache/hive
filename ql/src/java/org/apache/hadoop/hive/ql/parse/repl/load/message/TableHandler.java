@@ -21,11 +21,14 @@ import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.hadoop.hive.ql.parse.repl.DumpType.EVENT_ALTER_PARTITION;
@@ -58,6 +61,14 @@ public class TableHandler extends AbstractMessageHandler {
       ImportSemanticAnalyzer.prepareImport(false, false, false, false,
           (context.precursor != null), null, context.tableName, context.dbName,
           null, context.location, x, updatedMetadata, context.getTxnMgr(), writeId);
+
+      Task<? extends Serializable> openTxnTask = x.getOpenTxnTask();
+      if (openTxnTask != null && !importTasks.isEmpty()) {
+        for (Task<? extends Serializable> t : importTasks) {
+          openTxnTask.addDependentTask(t);
+        }
+        importTasks.add(openTxnTask);
+      }
 
       return importTasks;
     } catch (Exception e) {

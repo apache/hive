@@ -2955,6 +2955,10 @@ public class HiveConf extends Configuration {
         " on the assumption that data changes by external applications may have negative effects" +
         " on these operations."),
 
+    HIVE_STRICT_MANAGED_TABLES("hive.strict.managed.tables", false,
+            "Whether strict managed tables mode is enabled. With this mode enabled, " +
+            "only transactional tables (both full and insert-only) are allowed to be created as managed tables"),
+
     HIVE_EXTERNALTABLE_PURGE_DEFAULT("hive.external.table.purge.default", false,
         "Set to true to set external.table.purge=true on newly created external tables," +
         " which will specify that the table data should be deleted when the table is dropped." +

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import java.util.List;
+import org.apache.hadoop.hive.common.ValidTxnList;
 
 /**
  * ReplTxnTask.
@@ -91,12 +92,35 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         LOG.info("Replayed OpenTxn Event for policy " + replPolicy + " with srcTxn " +
                 work.getTxnIds().toString() + " and target txn id " + txnIds.toString());
         return 0;
+      case REPL_MIGRATION_OPEN_TXN:
+          // if transaction is already opened (mostly by repl load command), then close it.
+          if (txnManager.isTxnOpen()) {
+            LOG.info(" committed txn from REPL_MIGRATION_OPEN_TXN : " + txnManager.getCurrentTxnId());
+            txnManager.commitTxn();
+          }
+          Long txnIdMigration = txnManager.openTxn(driverContext.getCtx(), user);
+          long writeId = txnManager.getTableWriteId(work.getDbName(), work.getTableName());
+          String validTxnList = txnManager.getValidTxns().toString();
+          conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList);
+          LOG.info("Started open txn for migration : " + txnIdMigration + " with  valid txn list : " +
+                  validTxnList + " and write id " + writeId);
+          return 0;
       case REPL_ABORT_TXN:
         for (long txnId : work.getTxnIds()) {
           txnManager.replRollbackTxn(replPolicy, txnId);
           LOG.info("Replayed AbortTxn Event for policy " + replPolicy + " with srcTxn " + txnId);
         }
         return 0;
+      case REPL_MIGRATION_COMMIT_TXN:
+          assert (work.getReplLastIdInfo() != null);
+          long txnIdMigrationCommit = txnManager.getCurrentTxnId();
+          CommitTxnRequest commitTxnRequestMigr = new CommitTxnRequest(txnIdMigrationCommit);
+          commitTxnRequestMigr.setReplLastIdInfo(work.getReplLastIdInfo());
+          txnManager.replCommitTxn(commitTxnRequestMigr);
+          conf.unset(ValidTxnList.VALID_TXNS_KEY);
+          LOG.info("Replayed CommitTxn Event for replLastIdInfo: " + work.getReplLastIdInfo() + " with srcTxn: " +
+                  txnIdMigrationCommit);
+          return 0;
       case REPL_COMMIT_TXN:
         // Currently only one commit txn per event is supported.
         assert (work.getTxnIds().size() == 1);
@@ -144,5 +168,9 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
   @Override
   public String getName() {
     return "REPL_TRANSACTION";
+  }
+
+  public ReplTxnWork.OperationType getOperationType() {
+    return work.getOperationType();
   }
 }

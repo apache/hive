@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 
 import java.io.Serializable;
@@ -63,6 +64,15 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
     context.log.debug("Added truncate ptn task : {}:{}:{}", truncatePtnTask.getId(),
         truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, partSpec);
+    if (msg.getWriteId() <= 0) {
+      // write id will be 0, in case of migration from 2.6.
+      //TODO : need to check if migration is from non acid to acid, then only start the transaction.
+      Task<? extends Serializable> replTxnTaskTask =
+              TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName), context.hiveConf);
+      replTxnTaskTask.addDependentTask(truncatePtnTask);
+      context.log.debug(" added repl txn task " + replTxnTaskTask.toString());
+      return Collections.singletonList(replTxnTaskTask);
+    }
     return Collections.singletonList(truncatePtnTask);
   }
 }

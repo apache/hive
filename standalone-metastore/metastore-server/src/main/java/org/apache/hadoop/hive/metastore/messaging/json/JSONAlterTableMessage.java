@@ -121,7 +121,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
 
   @Override
   public Long getWriteId() {
-    return writeId ;
+    return writeId == null ? 0 : writeId;
   }
 
   @Override

@@ -445,6 +445,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   @Override
   public void replCommitTxn(CommitTxnRequest rqst) throws LockException {
     try {
+      if (rqst.isSetReplLastIdInfo()) {
+        lockMgr.clearLocalLockRecords();
+        stopHeartbeat();
+      }
       getMS().replCommitTxn(rqst);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(rqst.getTxnid()));
@@ -456,6 +460,13 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw le;
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    } finally {
+      if (rqst.isSetReplLastIdInfo()) {
+        txnId = 0;
+        stmtId = -1;
+        numStatements = 0;
+        tableWriteIds.clear();
+      }
     }
   }
 

@@ -17407,6 +17407,10 @@ class CommitTxnRequest {
    * @var \metastore\CommitTxnKeyValue
    */
   public $keyValue = null;
+  /**
+   * @var \metastore\ReplLastIdInfo
+   */
+  public $replLastIdInfo = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -17433,6 +17437,11 @@ class CommitTxnRequest {
           'type' => TType::STRUCT,
           'class' => '\metastore\CommitTxnKeyValue',
           ),
+        5 => array(
+          'var' => 'replLastIdInfo',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\ReplLastIdInfo',
+          ),
         );
     }
     if (is_array($vals)) {
@@ -17447,6 +17456,9 @@ class CommitTxnRequest {
       }
       if (isset($vals['keyValue'])) {
         $this->keyValue = $vals['keyValue'];
+      }
+      if (isset($vals['replLastIdInfo'])) {
+        $this->replLastIdInfo = $vals['replLastIdInfo'];
       }
     }
   }
@@ -17510,6 +17522,14 @@ class CommitTxnRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRUCT) {
+            $this->replLastIdInfo = new \metastore\ReplLastIdInfo();
+            $xfer += $this->replLastIdInfo->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -17556,6 +17576,181 @@ class CommitTxnRequest {
       }
       $xfer += $output->writeFieldBegin('keyValue', TType::STRUCT, 4);
       $xfer += $this->keyValue->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->replLastIdInfo !== null) {
+      if (!is_object($this->replLastIdInfo)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('replLastIdInfo', TType::STRUCT, 5);
+      $xfer += $this->replLastIdInfo->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ReplLastIdInfo {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $database = null;
+  /**
+   * @var string
+   */
+  public $table = null;
+  /**
+   * @var int
+   */
+  public $lastReplId = null;
+  /**
+   * @var string
+   */
+  public $catalog = null;
+  /**
+   * @var string
+   */
+  public $partition = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'database',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'table',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'lastReplId',
+          'type' => TType::I64,
+          ),
+        4 => array(
+          'var' => 'catalog',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'partition',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['database'])) {
+        $this->database = $vals['database'];
+      }
+      if (isset($vals['table'])) {
+        $this->table = $vals['table'];
+      }
+      if (isset($vals['lastReplId'])) {
+        $this->lastReplId = $vals['lastReplId'];
+      }
+      if (isset($vals['catalog'])) {
+        $this->catalog = $vals['catalog'];
+      }
+      if (isset($vals['partition'])) {
+        $this->partition = $vals['partition'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ReplLastIdInfo';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->database);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->table);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->lastReplId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->catalog);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->partition);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ReplLastIdInfo');
+    if ($this->database !== null) {
+      $xfer += $output->writeFieldBegin('database', TType::STRING, 1);
+      $xfer += $output->writeString($this->database);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->table !== null) {
+      $xfer += $output->writeFieldBegin('table', TType::STRING, 2);
+      $xfer += $output->writeString($this->table);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->lastReplId !== null) {
+      $xfer += $output->writeFieldBegin('lastReplId', TType::I64, 3);
+      $xfer += $output->writeI64($this->lastReplId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->catalog !== null) {
+      $xfer += $output->writeFieldBegin('catalog', TType::STRING, 4);
+      $xfer += $output->writeString($this->catalog);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partition !== null) {
+      $xfer += $output->writeFieldBegin('partition', TType::STRING, 5);
+      $xfer += $output->writeString($this->partition);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -2871,8 +2871,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
     int size = addPartitionDesc.getPartitionCount();
     List<org.apache.hadoop.hive.metastore.api.Partition> in =
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>(size);
-    AcidUtils.TableSnapshot tableSnapshot =
-        AcidUtils.getTableSnapshot(conf, tbl);
+    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
+    long writeId;
+    String validWriteIdList;
+    if (tableSnapshot != null && tableSnapshot.getWriteId() > 0) {
+      writeId = tableSnapshot.getWriteId();
+      validWriteIdList = tableSnapshot.getValidWriteIdList();
+    } else {
+      writeId = -1;
+      validWriteIdList = null;
+    }
     for (int i = 0; i < size; ++i) {
       org.apache.hadoop.hive.metastore.api.Partition tmpPart =
           convertAddSpecToMetaPartition(tbl, addPartitionDesc.getPartition(i), conf);
@@ -2916,7 +2924,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           out.add(new Partition(tbl, outPart));
         }
         getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),
-            partsToAlter, new EnvironmentContext(), null, -1);
+            partsToAlter, new EnvironmentContext(), validWriteIdList, writeId);
 
         for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
         getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){

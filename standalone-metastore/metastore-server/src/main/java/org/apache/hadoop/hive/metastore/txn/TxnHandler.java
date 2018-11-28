@@ -83,10 +83,13 @@ import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -864,6 +867,74 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  private void updateReplId(Connection dbConn, ReplLastIdInfo replLastIdInfo) throws SQLException, MetaException {
+    PreparedStatement pst = null;
+    ResultSet rs = null;
+    String lastReplId = quoteString(Long.toString(replLastIdInfo.getLastReplId()));
+    Statement stmt = dbConn.createStatement();
+    String catalog = replLastIdInfo.isSetCatalog() ? normalizeIdentifier(replLastIdInfo.getCatalog()) :
+            MetaStoreUtils.getDefaultCatalog(conf);
+    String db = normalizeIdentifier(replLastIdInfo.getDatabase());
+    String table = normalizeIdentifier(replLastIdInfo.getTable());
+    String part = replLastIdInfo.isSetPartition() ? replLastIdInfo.getPartition() : null;
+    try {
+      if (sqlGenerator.getDbProduct() == MYSQL) {
+        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      }
+      if (part == null || part.isEmpty()) {
+        String s = sqlGenerator.addForUpdateClause(
+            "select \"TBL_ID\" from \"TBLS\", \"DBS\"  where \"DBS\".\"NAME\" = ? " +
+            " and \"DBS\".\"CTLG_NAME\" = ? and \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"DB_ID\" = \"TBLS\".\"DB_ID\"");
+        List<String> params = Arrays.asList(db, catalog, table);
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
+        LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
+                quoteString(db), quoteString(catalog), quoteString(table));
+        rs = pst.executeQuery();
+        if (rs == null || !rs.next()) {
+          throw new MetaException(" table with name " + table + " does not exist in db " + catalog + "." + db);
+        }
+        long tblId = rs.getLong(1);
+        rs = stmt.executeQuery("select PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = " +
+                "'repl.last.id' and TBL_ID = " + tblId);
+        if (rs == null || !rs.next()) {
+          stmt.executeUpdate("insert into TABLE_PARAMS values ( " + tblId +
+                  " , 'repl.last.id' , " + lastReplId + ")");
+        } else {
+          stmt.executeUpdate("update TABLE_PARAMS set PARAM_VALUE = " + lastReplId + " where TBL_ID = " + tblId +
+                  " and PARAM_KEY = 'repl.last.id'");
+        }
+      } else {
+        String s = sqlGenerator.addForUpdateClause(
+            "select \"PART_ID\" from \"PARTITIONS\", \"DBS\", \"TBLS\" where \"DBS\".\"NAME\" = ? " +
+            " and \"DBS\".\"CTLG_NAME\" = ? and \"TBLS\".\"TBL_NAME\" = ? and \"PARTITIONS\".\"PART_NAME\" = ? and " +
+            " \"DBS\".\"DB_ID\" =  \"TBLS\".\"DB_ID\" and \"PARTITIONS\".\"TBL_ID\" = \"TBLS\".\"TBL_ID\"");
+        List<String> params = Arrays.asList(db, catalog, table, part);
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
+        LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
+                quoteString(db), quoteString(catalog), quoteString(table), quoteString(part));
+        rs = pst.executeQuery();
+        if (rs == null || !rs.next()) {
+          throw new MetaException(" partition with name " + part + " does not exist in table " +
+                  catalog + "." + db + "." + table);
+        }
+        long partId = rs.getLong(1);
+        rs = stmt.executeQuery("select PARAM_VALUE from PARTITION_PARAMS where PARAM_KEY " +
+                " = 'repl.last.id' and PART_ID = " + partId);
+        if (rs == null || !rs.next()) {
+          stmt.executeUpdate("insert into PARTITION_PARAMS values ( " + partId +
+                  " , 'repl.last.id' , " + lastReplId + ")");
+        } else {
+          stmt.executeUpdate("update PARTITION_PARAMS set PARAM_VALUE = " + lastReplId +
+                  " where PART_ID = " + partId + " and PARAM_KEY = 'repl.last.id'");
+        }
+      }
+    } finally {
+      closeStmt(stmt);
+      close(rs);
+      closeStmt(pst);
+    }
+  }
+
   /**
    * Concurrency/isolation notes:
    * This is mutexed with {@link #openTxns(OpenTxnRequest)} and other {@link #commitTxn(CommitTxnRequest)}
@@ -907,6 +978,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplLastIdInfo()) {
+          updateReplId(dbConn, rqst.getReplLastIdInfo());
+        }
 
         if (rqst.isSetReplPolicy()) {
           sourceTxnId = rqst.getTxnid();

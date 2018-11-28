@@ -47,6 +47,7 @@ public class ReplicationSpec {
   //TxnIds snapshot
   private String validTxnList = null;
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
+  private boolean isDoingMigration = false;
 
   // Key definitions related to replication
   public enum KEY {
@@ -401,5 +402,12 @@ public class ReplicationSpec {
     } else {
       return SCOPE.NO_REPL;
     }
+  }
+
+  public boolean isDoingMigration() {
+    return isDoingMigration;
+  }
+  public void setDoingMigration() {
+    isDoingMigration = true;
   }
 }

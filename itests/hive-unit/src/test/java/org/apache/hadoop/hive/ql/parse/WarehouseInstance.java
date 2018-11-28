@@ -433,6 +433,10 @@ public class WarehouseInstance implements Closeable {
     assertEquals(expectedCount, client.getNotificationEventsCount(rqst).getEventsCount());
   }
 
+  public boolean isAcidEnabled() {
+    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+  }
+
   @Override
   public void close() throws IOException {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {
