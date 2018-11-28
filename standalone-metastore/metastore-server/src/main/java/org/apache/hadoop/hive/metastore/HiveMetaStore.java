@@ -75,6 +75,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
@@ -221,6 +223,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
   static final String NO_FILTER_STRING = "";
   static final int UNLIMITED_MAX_PARTITIONS = -1;
+  private static ZooKeeperHiveHelper zooKeeperHelper = null;
+  private static String msHost = null;
 
   private static final class ChainedTTransportFactory extends TTransportFactory {
     private final TTransportFactory parentTransFactory;
@@ -9103,6 +9107,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 + e.getMessage(), e);
           }
         }
+        // Remove from zookeeper if it's configured
+        try {
+          if (MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE)
+              .equalsIgnoreCase("zookeeper")) {
+            zooKeeperHelper.removeServerInstanceFromZooKeeper();
+          }
+        } catch (Exception e) {
+          LOG.error("Error removing znode for this metastore instance from ZooKeeper.", e);
+        }
         ThreadPool.shutdown();
       }, 10);
 
@@ -9244,8 +9257,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    msHost = MetastoreConf.getVar(conf, ConfVars.THRIFT_BIND_HOST);
+    if (msHost != null && !msHost.trim().isEmpty()) {
+      LOG.info("Binding host " + msHost + " for metastore server");
+    }
+
     if (!useSSL) {
-      serverSocket = SecurityUtils.getServerSocket(null, port);
+      serverSocket = SecurityUtils.getServerSocket(msHost, port);
     } else {
       String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
       if (keyStorePath.isEmpty()) {
@@ -9261,7 +9279,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         sslVersionBlacklist.add(sslVersion);
       }
 
-      serverSocket = SecurityUtils.getServerSSLSocket(null, port, keyStorePath,
+      serverSocket = SecurityUtils.getServerSSLSocket(msHost, port, keyStorePath,
           keyStorePassword, sslVersionBlacklist);
     }
 
@@ -9322,7 +9340,41 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if (startLock != null) {
       signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
     }
+
+    // If dynamic service discovery through ZooKeeper is enabled, add this server to the ZooKeeper.
+    if (MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE)
+            .equalsIgnoreCase("zookeeper")) {
+      try {
+        zooKeeperHelper = MetastoreConf.getZKConfig(conf);
+        String serverInstanceURI = getServerInstanceURI(port);
+        zooKeeperHelper.addServerInstanceToZooKeeper(serverInstanceURI, serverInstanceURI, null,
+            new ZKDeRegisterWatcher(zooKeeperHelper));
+        HMSHandler.LOG.info("Metastore server instance with URL " + serverInstanceURI + " added to " +
+            "the zookeeper");
+      } catch (Exception e) {
+        LOG.error("Error adding this metastore instance to ZooKeeper: ", e);
+        throw e;
+      }
+    }
+
     tServer.serve();
+  }
+
+  /**
+   * @param port where metastore server is running
+   * @return metastore server instance URL. If the metastore server was bound to a configured
+   * host, return that appended by port. Otherwise return the externally visible URL of the local
+   * host with the given port
+   * @throws Exception
+   */
+  private static String getServerInstanceURI(int port) throws Exception {
+    String hostName;
+    if (msHost != null && !msHost.trim().isEmpty()) {
+      hostName = msHost;
+    } else {
+      hostName = InetAddress.getLocalHost().getHostName();
+    }
+    return hostName + ":" + port;
   }
 
   private static void cleanupRawStore() {
