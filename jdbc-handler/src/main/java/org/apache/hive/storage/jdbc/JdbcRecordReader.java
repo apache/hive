@@ -110,6 +110,9 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
     if (iterator != null) {
       iterator.close();
     }
+    if (dbAccessor != null) {
+      dbAccessor = null;
+    }
   }
 
 
@@ -122,15 +125,4 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
       return split.getLength() > 0 ? pos / (float) split.getLength() : 1.0f;
     }
   }
-
-
-  public void setDbAccessor(DatabaseAccessor dbAccessor) {
-    this.dbAccessor = dbAccessor;
-  }
-
-
-  public void setIterator(JdbcRecordIterator iterator) {
-    this.iterator = iterator;
-  }
-
 }

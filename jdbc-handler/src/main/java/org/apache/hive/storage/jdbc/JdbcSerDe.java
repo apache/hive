@@ -119,6 +119,11 @@ public class JdbcSerDe extends AbstractSerDe {
       LOGGER.error("Caught exception while initializing the SqlSerDe", e);
       throw new SerDeException(e);
     }
+
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("JdbcSerDe initialized with\n" + "\t columns: " + Arrays.toString(hiveColumnNames) + "\n\t types: " + Arrays
+          .toString(hiveColumnTypes));
+    }
   }
 
   @Override
