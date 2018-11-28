@@ -231,9 +231,9 @@ POSTHOOK: query: SELECT * FROM db1_ext_auth1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@db1_ext_auth1
 #### A masked pattern was here ####
-20	20	20.0	20.0
 -20	-20	-20.0	-20.0
 100	-15	65.0	-74.0
+20	20	20.0	20.0
 44	53	-455.454	330.76
 PREHOOK: query: SELECT * FROM db2_ext_auth2
 PREHOOK: type: QUERY
@@ -243,9 +243,9 @@ POSTHOOK: query: SELECT * FROM db2_ext_auth2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
-20	20	20.0	20.0
 -20	8	9.0	11.0
 101	-16	66.0	-75.0
+20	20	20.0	20.0
 40	50	-455.4543	330.767
 PREHOOK: query: SELECT * FROM db1_ext_auth2
 PREHOOK: type: QUERY
@@ -255,9 +255,9 @@ POSTHOOK: query: SELECT * FROM db1_ext_auth2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
-20	20	20.0	20.0
 -20	8	9.0	11.0
 101	-16	66.0	-75.0
+20	20	20.0	20.0
 40	50	-455.4543	330.767
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 JOIN db2_ext_auth2 ON db1_ext_auth1.ikey = db2_ext_auth2.ikey
@@ -295,12 +295,16 @@ WHERE "ikey" IS NOT NULL
                     hive.sql.query.fieldTypes int,bigint,float,double
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ikey (type: int)
-                    sort order: +
-                    Map-reduce partition columns: ikey (type: int)
+                  Select Operator
+                    expressions: ikey (type: int), bkey (type: bigint), fkey (type: float), dkey (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: bkey (type: bigint), fkey (type: float), dkey (type: double)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: bigint), _col2 (type: float), _col3 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
@@ -315,12 +319,16 @@ WHERE "ikey" IS NOT NULL
                     hive.sql.query.fieldTypes int,bigint,float,double
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: ikey (type: int)
-                    sort order: +
-                    Map-reduce partition columns: ikey (type: int)
+                  Select Operator
+                    expressions: ikey (type: int), bkey (type: bigint), fkey (type: float), dkey (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: bkey (type: bigint), fkey (type: float), dkey (type: double)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: bigint), _col2 (type: float), _col3 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -330,8 +338,8 @@ WHERE "ikey" IS NOT NULL
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 ikey (type: int)
-                  1 ikey (type: int)
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                 Statistics: Num rows: 1 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -408,8 +416,123 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
-20	20	20.0	20.0	20	20	20.0	20.0
 -20	-20	-20.0	-20.0	-20	8	9.0	11.0
+20	20	20.0	20.0	20	20	20.0	20.0
+Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: db1_ext_auth1
+                  properties:
+                    hive.sql.query SELECT "ikey"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
+                    hive.sql.query.fieldNames ikey
+                    hive.sql.query.fieldTypes int
+                    hive.sql.query.split true
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ikey (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: db1_ext_auth1
+                  properties:
+                    hive.sql.query SELECT "ikey" * 2 AS "*"
+FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
+                    hive.sql.query.fieldNames *
+                    hive.sql.query.fieldTypes int
+                    hive.sql.query.split true
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: * (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+-20	-40
+-20	200
+-20	40
+-20	88
+100	-40
+100	200
+100	40
+100	88
+20	-40
+20	200
+20	40
+20	88
+44	-40
+44	200
+44	40
+44	88
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db2_ext_auth2
 PREHOOK: type: QUERY
@@ -490,14 +613,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db2_ext_auth2
 #### A masked pattern was here ####
-20	20	20.0	20.0
 -20	-20	-20.0	-20.0
-100	-15	65.0	-74.0
-44	53	-455.454	330.76
-20	20	20.0	20.0
 -20	8	9.0	11.0
+100	-15	65.0	-74.0
 101	-16	66.0	-75.0
+20	20	20.0	20.0
+20	20	20.0	20.0
 40	50	-455.4543	330.767
+44	53	-455.454	330.76
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
 PREHOOK: type: QUERY
@@ -545,14 +668,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
-20	20	20.0	20.0
 -20	-20	-20.0	-20.0
-100	-15	65.0	-74.0
-44	53	-455.454	330.76
-20	20	20.0	20.0
 -20	8	9.0	11.0
+100	-15	65.0	-74.0
 101	-16	66.0	-75.0
+20	20	20.0	20.0
+20	20	20.0	20.0
 40	50	-455.4543	330.767
+44	53	-455.454	330.76
 PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
 PREHOOK: type: QUERY
@@ -633,14 +756,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@db1_ext_auth1
 POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
-20	20	20.0	20.0
 -20	-20	-20.0	-20.0
-100	-15	65.0	-74.0
-44	53	-455.454	330.76
-20	20	20.0	20.0
 -20	8	9.0	11.0
+100	-15	65.0	-74.0
 101	-16	66.0	-75.0
+20	20	20.0	20.0
+20	20	20.0	20.0
 40	50	-455.4543	330.767
+44	53	-455.454	330.76
 PREHOOK: query: DROP TABLE db1_ext_auth1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth1
