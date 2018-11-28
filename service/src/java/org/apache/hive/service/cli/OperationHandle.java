@@ -24,7 +24,7 @@ public class OperationHandle extends Handle {
 
   private final OperationType opType;
   private final TProtocolVersion protocol;
-  private Boolean hasResultSet = null;
+  private boolean hasResultSet = false;
 
   public OperationHandle(OperationType opType, TProtocolVersion protocol) {
     super();
@@ -53,19 +53,14 @@ public class OperationHandle extends Handle {
   }
 
   public boolean hasResultSet() {
-    // null check to retain the old behavior
-    return hasResultSet == null ? false : hasResultSet;
-  }
-
-  public boolean isHasResultSetIsSet() {
-    return hasResultSet != null;
+    return hasResultSet;
   }
 
   public TOperationHandle toTOperationHandle() {
     TOperationHandle tOperationHandle = new TOperationHandle();
     tOperationHandle.setOperationId(getHandleIdentifier().toTHandleIdentifier());
     tOperationHandle.setOperationType(opType.toTOperationType());
-    tOperationHandle.setHasResultSet(hasResultSet());
+    tOperationHandle.setHasResultSet(hasResultSet);
     return tOperationHandle;
   }
 
