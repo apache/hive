@@ -999,31 +999,29 @@ public final class FileUtils {
    * @return            the list of the file names in the format of URI formats.
    */
   public static Set<String> getJarFilesByPath(String pathString, Configuration conf) {
-    Set<String> result = new HashSet<String>();
-    if (pathString == null || org.apache.commons.lang.StringUtils.isBlank(pathString)) {
-        return result;
+    if (org.apache.commons.lang.StringUtils.isBlank(pathString)) {
+      return Collections.emptySet();
     }
-
+    Set<String> result = new HashSet<>();
     String[] paths = pathString.split(",");
-    for(String path : paths) {
+    for (final String path : paths) {
       try {
         Path p = new Path(getURI(path));
         FileSystem fs = p.getFileSystem(conf);
-        if (!fs.exists(p)) {
-          LOG.error("The jar file path " + path + " doesn't exist");
-          continue;
-        }
-        if (fs.isDirectory(p)) {
+        FileStatus fileStatus = fs.getFileStatus(p);
+        if (fileStatus.isDirectory()) {
           // add all jar files under the folder
           FileStatus[] files = fs.listStatus(p, new GlobFilter("*.jar"));
-          for(FileStatus file : files) {
+          for (FileStatus file : files) {
             result.add(file.getPath().toUri().toString());
           }
         } else {
           result.add(p.toUri().toString());
         }
-      } catch(URISyntaxException | IOException e) {
-        LOG.error("Invalid file path " + path, e);
+      } catch (FileNotFoundException fnfe) {
+        LOG.error("The jar file path {} does not exist", path);
+      } catch (URISyntaxException | IOException e) {
+        LOG.error("Invalid file path {}", path, e);
       }
     }
     return result;
