@@ -422,7 +422,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             notifyMetaListeners(key, oldVal, currVal);
           }
         }
-        logInfo("Meta listeners shutdown notification completed.");
+        logAndAudit("Meta listeners shutdown notification completed.");
       } catch (MetaException e) {
         LOG.error("Failed to notify meta listeners on shutdown: ", e);
       }
@@ -907,14 +907,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private static void logInfo(String m) {
-      LOG.info(threadLocalId.get().toString() + ": " + m);
+    private static void logAndAudit(final String m) {
+      LOG.debug("{}: {}", threadLocalId.get(), m);
       logAuditEvent(m);
     }
 
     private String startFunction(String function, String extraLogInfo) {
       incrementCounter(function);
-      logInfo((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
+      logAndAudit((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
           function + extraLogInfo);
       com.codahale.metrics.Timer timer =
           Metrics.getOrCreateTimer(MetricsConstants.API_PREFIX + function);
@@ -3321,7 +3321,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private List<Partition> add_partitions_core(final RawStore ms, String catName,
         String dbName, String tblName, List<Partition> parts, final boolean ifNotExists)
         throws TException {
-      logInfo("add_partitions");
+      logAndAudit("add_partitions");
       boolean success = false;
       // Ensures that the list doesn't have dups, and keeps track of directories we have created.
       final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
@@ -3651,7 +3651,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public int add_partitions_pspec(final List<PartitionSpec> partSpecs)
         throws TException {
-      logInfo("add_partitions_pspec");
+      logAndAudit("add_partitions_pspec");
 
       if (partSpecs.isEmpty()) {
         return 0;
@@ -9381,7 +9381,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     try {
       RawStore rs = HMSHandler.getRawStore();
       if (rs != null) {
-        HMSHandler.logInfo("Cleaning up thread local RawStore...");
+        HMSHandler.logAndAudit("Cleaning up thread local RawStore...");
         rs.shutdown();
       }
     } finally {
@@ -9393,7 +9393,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler.threadLocalConf.remove();
       HMSHandler.threadLocalModifiedConfig.remove();
       HMSHandler.removeRawStore();
-      HMSHandler.logInfo("Done cleaning up thread local RawStore");
+      HMSHandler.logAndAudit("Done cleaning up thread local RawStore");
     }
   }
 
