@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 
 public class SmallTableCache {
-  private static final Logger LOG = LoggerFactory.getLogger(SmallTableCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(SmallTableCache.class);
 
   private static final ConcurrentHashMap<Path, MapJoinTableContainer>
     tableContainerMap = new ConcurrentHashMap<Path, MapJoinTableContainer>();
@@ -47,9 +47,7 @@ public class SmallTableCache {
               tableContainer.clear();
             }
             tableContainerMap.clear();
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Cleaned up small table cache for query " + queryId);
-            }
+            LOG.debug("Cleaned up small table cache for query {}", queryId);
           }
         }
       }
@@ -58,16 +56,14 @@ public class SmallTableCache {
   }
 
   public static void cache(Path path, MapJoinTableContainer tableContainer) {
-    if (tableContainerMap.putIfAbsent(path, tableContainer) == null && LOG.isDebugEnabled()) {
-      LOG.debug("Cached small table file " + path + " for query " + queryId);
+    if (tableContainerMap.putIfAbsent(path, tableContainer) == null) {
+      LOG.debug("Cached small table file {} for query {}", path, queryId);
     }
   }
 
   public static MapJoinTableContainer get(Path path) {
     MapJoinTableContainer tableContainer = tableContainerMap.get(path);
-    if (tableContainer != null && LOG.isDebugEnabled()) {
-      LOG.debug("Loaded small table file " + path + " from cache for query " + queryId);
-    }
+    LOG.debug("Loaded small table file {} from cache for query {}", path, queryId);
     return tableContainer;
   }
 }
