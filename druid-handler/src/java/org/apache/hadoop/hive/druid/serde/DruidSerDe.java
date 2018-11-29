@@ -42,14 +42,6 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -73,11 +65,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -209,7 +196,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     final List<ObjectInspector>
         inspectors =
         columnTypes.stream()
-            .map(PrimitiveObjectInspectorFactory::getPrimitiveWritableObjectInspector)
+            .map(PrimitiveObjectInspectorFactory::getPrimitiveJavaObjectInspector)
             .collect(Collectors.toList());
     columns = columnNames.toArray(new String[0]);
     types = columnTypes.toArray(new PrimitiveTypeInfo[0]);
@@ -254,7 +241,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
     for (int i = 0; i < columnTypes.size(); ++i) {
       columns[i] = columnNames.get(i);
       types[i] = columnTypes.get(i);
-      inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(types[i]));
+      inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(types[i]));
     }
     inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
   }
@@ -417,63 +404,8 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
       final Object value = input.isCompacted() ? input.getCompactedValue().get(i) : input.getValue().get(columns[i]);
       if (value == null) {
         output.add(null);
-        continue;
-      }
-      switch (types[i].getPrimitiveCategory()) {
-      case TIMESTAMP:
-        output.add(new TimestampWritableV2(Timestamp.ofEpochMilli(deserializeToMillis(value))));
-        break;
-      case TIMESTAMPLOCALTZ:
-        output.add(new TimestampLocalTZWritable(new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(
-            deserializeToMillis(value)), ((TimestampLocalTZTypeInfo) types[i]).timeZone()))));
-        break;
-      case DATE:
-        output.add(new DateWritableV2(Date.ofEpochMilli(deserializeToMillis(value))));
-        break;
-      case BYTE:
-        output.add(new ByteWritable(((Number) value).byteValue()));
-        break;
-      case SHORT:
-        output.add(new ShortWritable(((Number) value).shortValue()));
-        break;
-      case INT:
-        if (value instanceof Number) {
-          output.add(new IntWritable(((Number) value).intValue()));
-        } else {
-          // This is a corner case where we have an extract of time unit like day/month pushed as Extraction Fn
-          //@TODO The best way to fix this is to add explicit output Druid types to Calcite Extraction Functions impls
-          output.add(new IntWritable(Integer.valueOf((String) value)));
-        }
-
-        break;
-      case LONG:
-        output.add(new LongWritable(((Number) value).longValue()));
-        break;
-      case FLOAT:
-        output.add(new FloatWritable(((Number) value).floatValue()));
-        break;
-      case DOUBLE:
-        output.add(new DoubleWritable(((Number) value).doubleValue()));
-        break;
-      case CHAR:
-        output.add(new HiveCharWritable(new HiveChar(value.toString(), ((CharTypeInfo) types[i]).getLength())));
-        break;
-      case VARCHAR:
-        output.add(new HiveVarcharWritable(new HiveVarchar(value.toString(),
-            ((VarcharTypeInfo) types[i]).getLength())));
-        break;
-      case STRING:
-        output.add(new Text(value.toString()));
-        break;
-      case BOOLEAN:
-        if (value instanceof Number) {
-          output.add(new BooleanWritable(((Number) value).intValue() != 0));
-        } else {
-          output.add(new BooleanWritable(Boolean.valueOf(value.toString())));
-        }
-        break;
-      default:
-        throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
+      } else {
+        output.add(convertAsPrimitive(value, types[i]));
       }
     }
     return output;
@@ -483,76 +415,64 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
    * Function to convert Druid Primitive values to Hive Primitives. Main usage of this is to pipe data to VectorRow.
    * This has the exact same logic as {@link DruidSerDe#deserialize(Writable)}, any modification here should be done
    * there as well.
-   * Reason to have 2 function is to avoid extra objects allocations.
+   * Reason to have 2 function is that no vectorized path expects writables.
    *
    * @param writable Druid Writable.
-   * @param output Rowboat used to carry columns values.
+   * @param rowBoat   Rowboat used to carry columns values.
    * @throws SerDeException in case of deserialization errors.
    */
-  public void deserializeAsPrimitive(Writable writable, final Object[] output) throws SerDeException {
+  public void deserializeAsPrimitive(Writable writable, final Object[] rowBoat) throws SerDeException {
     final DruidWritable input = (DruidWritable) writable;
     for (int i = 0; i < columns.length; i++) {
       final Object value = input.isCompacted() ? input.getCompactedValue().get(i) : input.getValue().get(columns[i]);
-      if (value == null) {
-        output[i] = (null);
-        continue;
+      rowBoat[i] = null;
+      if (value != null) {
+        rowBoat[i] = convertAsPrimitive(value, types[i]);
       }
-      switch (types[i].getPrimitiveCategory()) {
-      case TIMESTAMP:
-        output[i] = (Timestamp.ofEpochMilli(deserializeToMillis(value)));
-        break;
-      case TIMESTAMPLOCALTZ:
-        output[i] =
-            (new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(deserializeToMillis(value)),
-                ((TimestampLocalTZTypeInfo) types[i]).timeZone())));
-        break;
-      case DATE:
-        output[i] = (Date.ofEpochMilli(deserializeToMillis(value)));
-        break;
-      case BYTE:
-        output[i] = (((Number) value).byteValue());
-        break;
-      case SHORT:
-        output[i] = (((Number) value).shortValue());
-        break;
-      case INT:
-        if (value instanceof Number) {
-          output[i] = (((Number) value).intValue());
-        } else {
-          // This is a corner case where we have an extract of time unit like day/month pushed as Extraction Fn
-          //@TODO The best way to fix this is to add explicit output Druid types to Calcite Extraction Functions impls
-          output[i] = (Integer.valueOf((String) value));
-        }
+    }
+  }
 
-        break;
-      case LONG:
-        output[i] = (((Number) value).longValue());
-        break;
-      case FLOAT:
-        output[i] = (((Number) value).floatValue());
-        break;
-      case DOUBLE:
-        output[i] = (((Number) value).doubleValue());
-        break;
-      case CHAR:
-        output[i] = (new HiveChar(value.toString(), ((CharTypeInfo) types[i]).getLength()));
-        break;
-      case VARCHAR:
-        output[i] = (new HiveVarchar(value.toString(), ((VarcharTypeInfo) types[i]).getLength()));
-        break;
-      case STRING:
-        output[i] = (value.toString());
-        break;
-      case BOOLEAN:
-        if (value instanceof Number) {
-          output[i] = (((Number) value).intValue() != 0);
-        } else {
-          output[i] = (Boolean.valueOf(value.toString()));
-        }
-        break;
-      default:
-        throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
+  private static Object convertAsPrimitive(Object value, PrimitiveTypeInfo typeInfo) throws SerDeException {
+    switch (typeInfo.getPrimitiveCategory()) {
+    case TIMESTAMP:
+      return Timestamp.ofEpochMilli(deserializeToMillis(value));
+    case TIMESTAMPLOCALTZ:
+      return new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(deserializeToMillis(value)),
+          ((TimestampLocalTZTypeInfo) typeInfo).timeZone()));
+    case DATE:
+      return (Date.ofEpochMilli(deserializeToMillis(value)));
+    case BYTE:
+      return ((Number) value).byteValue();
+    case SHORT:
+      return ((Number) value).shortValue();
+    case INT:
+      if (value instanceof Number) {
+        return ((Number) value).intValue();
+      } else {
+        // This is a corner case where we have an extract of time unit like day/month pushed as Extraction Fn
+        //@TODO The best way to fix this is to add explicit output Druid types to Calcite Extraction Functions impls
+        return (Integer.valueOf((String) value));
       }
+    case LONG:
+      return ((Number) value).longValue();
+    case FLOAT:
+      return ((Number) value).floatValue();
+    case DOUBLE:
+      return ((Number) value).doubleValue();
+    case CHAR:
+      return new HiveChar(value.toString(), ((CharTypeInfo) typeInfo).getLength());
+    case VARCHAR:
+      return new HiveVarchar(value.toString(), ((VarcharTypeInfo) typeInfo).getLength());
+    case STRING:
+      return value.toString();
+    case BOOLEAN:
+      if (value instanceof Number) {
+        return (((Number) value).intValue() != 0);
+      } else {
+        return (Boolean.valueOf(value.toString()));
+      }
+    default:
+      throw new SerDeException("Unknown type: " + typeInfo.getPrimitiveCategory());
     }
   }
 
