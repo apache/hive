@@ -2498,7 +2498,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // get the databases for the desired pattern - populate the output stream
     List<String> databases = null;
     if (showDatabasesDesc.getPattern() != null) {
-      LOG.info("pattern: {}", showDatabasesDesc.getPattern());
+      LOG.debug("pattern: {}", showDatabasesDesc.getPattern());
       databases = db.getDatabasesByPattern(showDatabasesDesc.getPattern());
     } else {
       databases = db.getAllDatabases();
@@ -2670,7 +2670,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // get the tables for the desired patten - populate the output stream
     Set<String> funcs = null;
     if (showFuncs.getPattern() != null) {
-      LOG.info("pattern: {}", showFuncs.getPattern());
+      LOG.debug("pattern: {}", showFuncs.getPattern());
       if (showFuncs.getIsLikePattern()) {
          funcs = FunctionRegistry.getFunctionNamesByLikePattern(showFuncs.getPattern());
       } else {
@@ -3251,7 +3251,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       tbls.add(tbl);
     } else {
-      LOG.info("pattern: {}", showTblStatus.getPattern());
+      LOG.debug("pattern: {}", showTblStatus.getPattern());
       List<String> tblStr = db.getTablesForDb(showTblStatus.getDbName(),
           showTblStatus.getPattern());
       SortedSet<String> sortedTbls = new TreeSet<String>(tblStr);
