@@ -206,10 +206,13 @@ public class FunctionTask extends Task<FunctionWork> {
     );
     try {
       db.createFunction(func);
-    } catch (HiveException he) {
+    } catch (Exception e) {
       // Addition to metastore failed, remove the function from the registry.
       FunctionRegistry.unregisterPermanentFunction(registeredName);
-      throw he;
+      setException(e);
+      LOG.error("Failed to add function " + createFunctionDesc.getFunctionName() +
+              " to the metastore.", e);
+      return 1;
     }
     return 0;
   }

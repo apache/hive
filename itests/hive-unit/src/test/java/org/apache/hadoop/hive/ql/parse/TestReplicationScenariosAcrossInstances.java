@@ -170,20 +170,20 @@ public class TestReplicationScenariosAcrossInstances {
     // Allow create function only on f1. Create should fail for the second function.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
             = new BehaviourInjection<CallerArguments, Boolean>() {
-      @Override
-      public Boolean apply(CallerArguments args) {
-        injectionPathCalled = true;
-        if (!args.dbName.equalsIgnoreCase(replicatedDbName)) {
-          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName));
-          return false;
-        }
-        if (args.funcName != null) {
-          LOG.warn("Verifier - Function : " + String.valueOf(args.funcName));
-          return args.funcName.equals(funcName1);
-        }
-        return true;
-      }
-    };
+              @Override
+              public Boolean apply(CallerArguments args) {
+                injectionPathCalled = true;
+                if (!args.dbName.equalsIgnoreCase(replicatedDbName)) {
+                  LOG.warn("Verifier - DB: " + String.valueOf(args.dbName));
+                  return false;
+                }
+                if (args.funcName != null) {
+                  LOG.debug("Verifier - Function: " + String.valueOf(args.funcName));
+                  return args.funcName.equals(funcName1);
+                }
+                return true;
+              }
+            };
     InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
 
     // Trigger bootstrap dump which just creates function f1 but not f2
@@ -208,9 +208,12 @@ public class TestReplicationScenariosAcrossInstances {
       @Override
       public Boolean apply(CallerArguments args) {
         injectionPathCalled = true;
-        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.funcName != null)) {
-          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
-                  + " Function : " + String.valueOf(args.funcName));
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName));
+          return false;
+        }
+        if (args.funcName != null) {
+          LOG.debug("Verifier - Function: " + String.valueOf(args.funcName));
           return args.funcName.equals(funcName2);
         }
         return true;
@@ -233,7 +236,7 @@ public class TestReplicationScenariosAcrossInstances {
             .verifyResult(tuple.lastReplicationId)
             .run("show functions like '" + replicatedDbName +"*'")
             .verifyResults(new String[] {replicatedDbName + "." + funcName1,
-                    replicatedDbName +"." +funcName2});
+                                         replicatedDbName +"." +funcName2});
   }
 
   @Test
