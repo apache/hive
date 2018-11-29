@@ -62,19 +62,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jdo.Query;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 @Category(MetastoreUnitTest.class)
@@ -511,8 +517,8 @@ public class TestObjectStore {
     localConf.set(key1, value1);
     objectStore = new ObjectStore();
     objectStore.setConf(localConf);
-    Assert.assertEquals(value, objectStore.getProp().getProperty(key));
-    Assert.assertNull(objectStore.getProp().getProperty(key1));
+    Assert.assertEquals(value, PersistenceManagerProvider.getProperty(key));
+    Assert.assertNull(PersistenceManagerProvider.getProperty(key1));
   }
 
   /**
@@ -714,6 +720,52 @@ public class TestObjectStore {
     Assert.assertTrue("Expect no active transactions.", !objectStore.isActiveTransaction());
   }
 
+  /**
+   * This test calls ObjectStore.setConf methods from multiple threads. Each threads uses its
+   * own instance of ObjectStore to simulate thread-local objectstore behaviour.
+   * @throws Exception
+   */
+  @Test
+  public void testConcurrentPMFInitialize() throws Exception {
+    final String dataSourceProp = "datanucleus.connectionPool.maxPoolSize";
+    // Barrier is used to ensure that all threads start race at the same time
+    final int numThreads = 10;
+    final int numIteration = 50;
+    final CyclicBarrier barrier = new CyclicBarrier(numThreads);
+    final AtomicInteger counter = new AtomicInteger(0);
+    ExecutorService executor = newFixedThreadPool(numThreads);
+    List<Future<Void>> results = new ArrayList<>(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      final Random random = new Random();
+      Configuration conf = MetastoreConf.newMetastoreConf();
+      MetaStoreTestUtils.setConfForStandloneMode(conf);
+      results.add(executor.submit(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          // each thread gets its own ObjectStore to simulate threadLocal store
+          ObjectStore objectStore = new ObjectStore();
+          barrier.await();
+          for (int j = 0; j < numIteration; j++) {
+            // set connectionPool to a random value to increase the likelihood of pmf
+            // re-initialization
+            int randomNumber = random.nextInt(100);
+            if (randomNumber % 2 == 0) {
+              objectStore.setConf(conf);
+            } else {
+              Assert.assertNotNull(objectStore.getPersistenceManager());
+            }
+            counter.getAndIncrement();
+          }
+          return null;
+        }
+      }));
+    }
+    for (Future<Void> future : results) {
+      future.get(120, TimeUnit.SECONDS);
+    }
+    Assert.assertEquals("Unexpected number of setConf calls", numIteration * numThreads,
+        counter.get());
+  }
 
   private void createTestCatalog(String catName) throws MetaException {
     Catalog cat = new CatalogBuilder()
