@@ -5576,6 +5576,7 @@ public class HiveConf extends Configuration {
     "hive\\.index\\..*",
     "hive\\.index\\..*",
     "hive\\.intermediate\\..*",
+    "hive\\.jdbc\\..*",
     "hive\\.join\\..*",
     "hive\\.limit\\..*",
     "hive\\.log\\..*",
