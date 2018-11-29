@@ -130,5 +130,5 @@ LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.level=${LLAP_DAEMON_LOG_
 export MALLOC_ARENA_MAX=4
 
 export JVM_PID="$$"
-exec "$JAVA" -Dproc_llapdaemon -Xms${LLAP_DAEMON_HEAPSIZE}m -Xmx${LLAP_DAEMON_HEAPSIZE}m ${LLAP_DAEMON_OPTS} -classpath "$CLASSPATH" $CLASS "$@"
+exec "$JAVA" -Dproc_llapdaemon -Xms$(( ${LLAP_DAEMON_HEAPSIZE} / 2 ))m -Xmx${LLAP_DAEMON_HEAPSIZE}m ${LLAP_DAEMON_OPTS} -classpath "$CLASSPATH" $CLASS "$@"
 
