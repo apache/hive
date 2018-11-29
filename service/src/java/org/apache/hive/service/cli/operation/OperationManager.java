@@ -198,7 +198,8 @@ public class OperationManager extends AbstractService {
   }
 
   private void addOperation(Operation operation) {
-    LOG.info("Adding operation: " + operation.getHandle());
+    LOG.info("Adding operation: {} {}", operation.getHandle(),
+        operation.getParentSession().getSessionHandle());
     queryIdOperation.put(getQueryId(operation), operation);
     handleToOperation.put(operation.getHandle(), operation);
     if (operation instanceof SQLOperation) {
