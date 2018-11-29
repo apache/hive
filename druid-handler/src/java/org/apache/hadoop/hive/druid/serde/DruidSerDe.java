@@ -483,79 +483,77 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
    * Function to convert Druid Primitive values to Hive Primitives. Main usage of this is to pipe data to VectorRow.
    * This has the exact same logic as {@link DruidSerDe#deserialize(Writable)}, any modification here should be done
    * there as well.
-   * Reason to have 2 function is performance, merging both will bring an extra test on the hot loop.
+   * Reason to have 2 function is to avoid extra objects allocations.
    *
-   * @param writable Druid Writable container.
-   * @return ArrayList of Hive Primitives.
+   * @param writable Druid Writable.
+   * @param output Rowboat used to carry columns values.
+   * @throws SerDeException in case of deserialization errors.
    */
-  public ArrayList<Object> deserializeAsPrimitive(Writable writable) throws SerDeException {
+  public void deserializeAsPrimitive(Writable writable, final Object[] output) throws SerDeException {
     final DruidWritable input = (DruidWritable) writable;
-    final ArrayList<Object> output = Lists.newArrayListWithExpectedSize(columns.length);
-
     for (int i = 0; i < columns.length; i++) {
       final Object value = input.isCompacted() ? input.getCompactedValue().get(i) : input.getValue().get(columns[i]);
       if (value == null) {
-        output.add(null);
+        output[i] = (null);
         continue;
       }
       switch (types[i].getPrimitiveCategory()) {
       case TIMESTAMP:
-        output.add(Timestamp.ofEpochMilli(deserializeToMillis(value)));
+        output[i] = (Timestamp.ofEpochMilli(deserializeToMillis(value)));
         break;
       case TIMESTAMPLOCALTZ:
-        output.add(new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(deserializeToMillis(value)),
-            ((TimestampLocalTZTypeInfo) types[i]).timeZone())));
+        output[i] =
+            (new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(deserializeToMillis(value)),
+                ((TimestampLocalTZTypeInfo) types[i]).timeZone())));
         break;
       case DATE:
-        output.add(Date.ofEpochMilli(deserializeToMillis(value)));
+        output[i] = (Date.ofEpochMilli(deserializeToMillis(value)));
         break;
       case BYTE:
-        output.add(((Number) value).byteValue());
+        output[i] = (((Number) value).byteValue());
         break;
       case SHORT:
-        output.add(((Number) value).shortValue());
+        output[i] = (((Number) value).shortValue());
         break;
       case INT:
         if (value instanceof Number) {
-          output.add(((Number) value).intValue());
+          output[i] = (((Number) value).intValue());
         } else {
           // This is a corner case where we have an extract of time unit like day/month pushed as Extraction Fn
           //@TODO The best way to fix this is to add explicit output Druid types to Calcite Extraction Functions impls
-          output.add(Integer.valueOf((String) value));
+          output[i] = (Integer.valueOf((String) value));
         }
 
         break;
       case LONG:
-        output.add(((Number) value).longValue());
+        output[i] = (((Number) value).longValue());
         break;
       case FLOAT:
-        output.add(((Number) value).floatValue());
+        output[i] = (((Number) value).floatValue());
         break;
       case DOUBLE:
-        output.add(((Number) value).doubleValue());
+        output[i] = (((Number) value).doubleValue());
         break;
       case CHAR:
-        output.add(new HiveChar(value.toString(), ((CharTypeInfo) types[i]).getLength()));
+        output[i] = (new HiveChar(value.toString(), ((CharTypeInfo) types[i]).getLength()));
         break;
       case VARCHAR:
-        output.add(new HiveVarchar(value.toString(), ((VarcharTypeInfo) types[i]).getLength()));
+        output[i] = (new HiveVarchar(value.toString(), ((VarcharTypeInfo) types[i]).getLength()));
         break;
       case STRING:
-        output.add(value.toString());
+        output[i] = (value.toString());
         break;
       case BOOLEAN:
         if (value instanceof Number) {
-          output.add(((Number) value).intValue() != 0);
+          output[i] = (((Number) value).intValue() != 0);
         } else {
-          output.add(Boolean.valueOf(value.toString()));
+          output[i] = (Boolean.valueOf(value.toString()));
         }
         break;
       default:
         throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
       }
     }
-
-    return output;
   }
 
   private static long deserializeToMillis(Object value) {
