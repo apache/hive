@@ -96,7 +96,7 @@ public abstract class VectorMapJoinFastLongHashTable
 
   public void add(long key, BytesWritable currentValue) {
 
-    if (resizeThreshold <= keysAssigned) {
+    if (checkResize()) {
       expandAndRehash();
     }
 
@@ -157,7 +157,7 @@ public abstract class VectorMapJoinFastLongHashTable
     if (logicalHashBucketCount > ONE_QUARTER_LIMIT) {
       throwExpandError(ONE_QUARTER_LIMIT, "Long");
     }
-    int newLogicalHashBucketCount = logicalHashBucketCount * 2;
+    int newLogicalHashBucketCount = Math.max(FIRST_SIZE_UP, logicalHashBucketCount * 2);
     int newLogicalHashBucketMask = newLogicalHashBucketCount - 1;
     int newMetricPutConflict = 0;
     int newLargestNumberOfSteps = 0;
