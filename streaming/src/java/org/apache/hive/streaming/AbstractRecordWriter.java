@@ -396,7 +396,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     try {
       this.fs.close();
     } catch (IOException e) {
-      LOG.error("Error while closing FileSystem", e);
+      throw new StreamingIOFailure("Error while closing FileSystem", e);
     }
     if (haveError) {
       throw new StreamingIOFailure("Encountered errors while closing (see logs) " + getWatermark(partition));
