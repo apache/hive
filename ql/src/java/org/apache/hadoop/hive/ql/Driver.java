@@ -182,7 +182,7 @@ public class Driver implements CommandProcessor {
   // Query hooks that execute before compilation and after execution
   private List<QueryLifeTimeHook> queryHooks;
 
-  private static final Pattern pattern = Pattern.compile("((?i)insert\\s+(?i)into\\s+\\w+\\s*)(\\([a-zA-Z0-9_,]*\\))(\\s*.+)");
+  private static final Pattern pattern = Pattern.compile("((?i)insert\\s+(?i)into\\s+\\w+\\s*)(\\([a-zA-Z0-9_\\s,]*\\))(\\s*.+)");
 
   public enum DriverState {
     INITIALIZED,

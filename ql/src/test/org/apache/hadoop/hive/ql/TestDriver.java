@@ -9,8 +9,8 @@ import org.junit.Test;
  */
 public class TestDriver {
 
-    private final static String INSERT_INTO = "INSERT INTO wkf101351_43_1_ALL";
-    private final static String COLUMNS = "(sUserid,biPk,biUserpk,biStatuspk)";
+    private final static String INSERT_INTO = "INSERT INTO wkf101351_43_1_ALL ";
+    private final static String COLUMNS = "( sUserid, biPk, biUserpk, biStatuspk )";
     private final static String SELECT = "SELECT sUserid,biPk,biUserpk,biStatuspk FROM wkf101351_42_1;";
 
     @Test
