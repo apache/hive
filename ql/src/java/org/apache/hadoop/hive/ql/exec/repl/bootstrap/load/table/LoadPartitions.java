@@ -284,19 +284,29 @@ public class LoadPartitions {
   private Task<?> movePartitionTask(Table table, AddPartitionDesc.OnePartitionDesc partSpec, Path tmpPath,
                                     LoadFileType loadFileType) {
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
-    if (AcidUtils.isTransactionalTable(table) && !event.replicationSpec().isDoingMigration()) {
-      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-              Collections.singletonList(tmpPath),
-              Collections.singletonList(new Path(partSpec.getLocation())),
-              true, null, null);
-      moveWork.setMultiFilesDesc(loadFilesWork);
+    if (AcidUtils.isTransactionalTable(table)) {
+      if (event.replicationSpec().isDoingMigration()) {
+        // Write-id is hardcoded to 1 so that for migration, we just move all original files under delta_1_1 dir.
+        // It is used only for transactional tables created after migrating from non-ACID table.
+        // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
+        LoadTableDesc loadTableWork = new LoadTableDesc(
+                tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
+                loadFileType, 1L
+        );
+        loadTableWork.setInheritTableSpecs(false);
+        moveWork.setLoadTableWork(loadTableWork);
+      } else {
+        LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+                Collections.singletonList(tmpPath),
+                Collections.singletonList(new Path(partSpec.getLocation())),
+                true, null, null);
+        moveWork.setMultiFilesDesc(loadFilesWork);
+      }
     } else {
-      // Write-id is hardcoded to 1 so that for migration, we just move all original files under delta_1_1 dir.
-      // It is used only for transactional tables created after migrating from non-ACID table.
-      // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
+      // Non-transactional table case.
       LoadTableDesc loadTableWork = new LoadTableDesc(
               tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
-              loadFileType, 1L
+              loadFileType, 0L
       );
       loadTableWork.setInheritTableSpecs(false);
       moveWork.setLoadTableWork(loadTableWork);

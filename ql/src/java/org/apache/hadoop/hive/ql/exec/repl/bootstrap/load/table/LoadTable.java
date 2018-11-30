@@ -254,19 +254,28 @@ public class LoadTable {
             false, false);
 
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
-    if (AcidUtils.isTransactionalTable(table) && !replicationSpec.isDoingMigration()) {
-      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-              Collections.singletonList(tmpPath),
-              Collections.singletonList(tgtPath),
-              true, null, null);
-      moveWork.setMultiFilesDesc(loadFilesWork);
+    if (AcidUtils.isTransactionalTable(table)) {
+      if (replicationSpec.isDoingMigration()) {
+        // Write-id is hardcoded to 1 so that for migration, we just move all original files under delta_1_1 dir.
+        // However, it unused if it is non-ACID table.
+        // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
+        LoadTableDesc loadTableWork = new LoadTableDesc(
+                tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
+                loadFileType, 1L
+        );
+        moveWork.setLoadTableWork(loadTableWork);
+      } else {
+        LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+                Collections.singletonList(tmpPath),
+                Collections.singletonList(tgtPath),
+                true, null, null);
+        moveWork.setMultiFilesDesc(loadFilesWork);
+      }
     } else {
-      // Write-id is hardcoded to 1 so that for migration, we just move all original files under delta_1_1 dir.
-      // However, it unused if it is non-ACID table.
-      // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
+      // Non-transactional table case
       LoadTableDesc loadTableWork = new LoadTableDesc(
               tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
-              loadFileType, 1L
+              loadFileType, 0L
       );
       moveWork.setLoadTableWork(loadTableWork);
     }
