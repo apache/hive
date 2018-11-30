@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -306,6 +307,7 @@ public class QTestUtil {
       conf.set("hive.druid.metadata.uri", druidCluster.getMetadataURI());
       conf.set("hive.druid.coordinator.address.default", druidCluster.getCoordinatorURI());
       conf.set("hive.druid.overlord.address.default", druidCluster.getOverlordURI());
+      conf.set("hive.druid.broker.address.default", druidCluster.getBrokerURI());
       final Path scratchDir = fs
               .makeQualified(new Path(System.getProperty("test.tmp.dir"), "druidStagingDir"));
       fs.mkdirs(scratchDir);
@@ -607,7 +609,8 @@ public class QTestUtil {
     if (clusterType == MiniClusterType.druidKafka
         || clusterType == MiniClusterType.druidLocal) {
       final String tempDir = System.getProperty("test.tmp.dir");
-      druidCluster = new MiniDruidCluster("mini-druid",
+      String randomId = UUID.randomUUID().toString();
+      druidCluster = new MiniDruidCluster("mini-druid-" + randomId,
           logDir,
           tempDir,
           setup.zkPort,

@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class ForkingDruidNode extends DruidNode {
@@ -56,7 +57,7 @@ public class ForkingDruidNode extends DruidNode {
 
   private Process druidProcess = null;
 
-  private Boolean started = false;
+  private final AtomicBoolean started = new AtomicBoolean(false);
 
   private final List<String> allowedPrefixes = Lists.newArrayList(
           "com.metamx",
@@ -122,9 +123,9 @@ public class ForkingDruidNode extends DruidNode {
   @Override
   public void start() throws IOException {
     synchronized (started) {
-      if (started == false) {
+      if (started.get() == false) {
         druidProcess = processBuilder.start();
-        started = true;
+        started.compareAndSet(false, true);
       }
       log.info("Started " + getNodeType());
     }
@@ -133,7 +134,7 @@ public class ForkingDruidNode extends DruidNode {
   @Override
   public boolean isAlive() {
     synchronized (started) {
-      return started && druidProcess != null && druidProcess.isAlive();
+      return started.get() && druidProcess != null && druidProcess.isAlive();
     }
   }
 
