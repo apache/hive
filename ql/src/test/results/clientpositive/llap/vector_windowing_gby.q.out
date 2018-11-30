@@ -228,7 +228,7 @@ STAGE PLANS:
                     dataColumnCount: 4
                     dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:double, VALUE._col1:bigint, VALUE._col2:bigint
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, double, double, double, double]
+                    scratchColumnTypeNames: [bigint, bigint, double, double, double, double, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: bigint), VALUE._col2 (type: bigint)
@@ -261,7 +261,7 @@ STAGE PLANS:
                   PTF Vectorization:
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
-                      functionInputExpressions: [DoubleColDivideDoubleColumn(col 6:double, col 7:double)(children: CastLongToDouble(col 2:bigint) -> 6:double, CastLongToDouble(col 3:bigint) -> 7:double) -> 9:double]
+                      functionInputExpressions: [DoubleColDivideDoubleColumn(col 9:double, col 10:double)(children: CastLongToDouble(col 2:bigint) -> 9:double, CastLongToDouble(col 3:bigint) -> 10:double) -> 11:double]
                       functionNames: [rank]
                       keyInputColumns: []
                       native: true

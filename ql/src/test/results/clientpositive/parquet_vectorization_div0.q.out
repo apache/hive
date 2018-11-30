@@ -217,8 +217,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [13, 16, 18]
-                    selectExpressions: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 13:bigint, DoubleColDivideDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 15:double) -> 16:double, DecimalScalarDivideDecimalColumn(val 1.2, col 17:decimal(19,0))(children: CastLongToDecimal(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 17:decimal(19,0)) -> 18:decimal(22,21)
+                    projectedOutputColumnNums: [13, 16, 19]
+                    selectExpressions: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 13:bigint, DoubleColDivideDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 15:double) -> 16:double, DecimalScalarDivideDecimalColumn(val 1.2, col 18:decimal(19,0))(children: CastLongToDecimal(col 17:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 17:bigint) -> 18:decimal(19,0)) -> 19:decimal(22,21)
                 Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: bigint), _col1 (type: double)
@@ -419,8 +419,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [13, 16, 17, 15, 18]
-                    selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 13:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 17:double, DoubleScalarDivideDoubleColumn(val 3.0, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 15:double, DoubleScalarDivideDoubleColumn(val 1.2, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 18:double
+                    projectedOutputColumnNums: [13, 16, 19, 21, 23]
+                    selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 13:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 17:double, col 18:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 17:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 18:double) -> 19:double, DoubleScalarDivideDoubleColumn(val 3.0, col 20:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 20:double) -> 21:double, DoubleScalarDivideDoubleColumn(val 1.2, col 22:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 22:double) -> 23:double
                 Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: double), _col1 (type: double)

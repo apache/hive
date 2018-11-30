@@ -123,8 +123,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [0, 3]
-                            selectExpressions: IfExprColumnNull(col 5:boolean, col 2:bigint, null)(children: ColOrCol(col 3:boolean, col 4:boolean)(children: LongColGreaterLongScalar(col 2:bigint, val 1) -> 3:boolean, IsNull(col 2:bigint) -> 4:boolean) -> 5:boolean, col 2:bigint) -> 3:bigint
+                            projectedOutputColumnNums: [0, 6]
+                            selectExpressions: IfExprColumnNull(col 5:boolean, col 2:bigint, null)(children: ColOrCol(col 3:boolean, col 4:boolean)(children: LongColGreaterLongScalar(col 2:bigint, val 1) -> 3:boolean, IsNull(col 2:bigint) -> 4:boolean) -> 5:boolean, col 2:bigint) -> 6:bigint
                         Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -152,7 +152,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: member:bigint
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint]
         Map 2 
             Map Operator Tree:
                 TableScan

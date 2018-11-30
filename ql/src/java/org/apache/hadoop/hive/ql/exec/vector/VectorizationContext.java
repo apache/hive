@@ -546,7 +546,6 @@ public class VectorizationContext {
     private final int initialOutputCol;
     private int outputColCount = 0;
     private boolean reuseScratchColumns = true;
-    private boolean dontReuseTrackedScratchColumns = false;
 
     protected OutputColumnManager(int initialOutputCol) {
       this.initialOutputCol = initialOutputCol;
@@ -562,6 +561,7 @@ public class VectorizationContext {
     private boolean[] scratchColumnTrackWasUsed = new boolean[100];
 
     private final Set<Integer> usedOutputColumns = new HashSet<Integer>();
+    private boolean[] markedScratchColumns;
 
     int allocateOutputColumn(TypeInfo typeInfo) throws HiveException {
       return allocateOutputColumn(typeInfo, DataTypePhysicalVariation.NONE);
@@ -591,7 +591,7 @@ public class VectorizationContext {
               scratchDataTypePhysicalVariations[i] == dataTypePhysicalVariation)) {
           continue;
         }
-        if (dontReuseTrackedScratchColumns && scratchColumnTrackWasUsed[i]) {
+        if (scratchColumnTrackWasUsed[i]) {
           continue;
         }
         //Use i
@@ -656,13 +656,25 @@ public class VectorizationContext {
       this.reuseScratchColumns = reuseColumns;
     }
 
-    public void clearScratchColumnWasUsedTracking() {
-      Arrays.fill(scratchColumnTrackWasUsed, false);
+    public void freeMarkedScratchColumns() {
+      if (markedScratchColumns == null) {
+        throw new RuntimeException("Illegal call");
+      }
+      for (int i = 0; i < markedScratchColumns.length; i++) {
+        if (markedScratchColumns[i]) {
+          scratchColumnTrackWasUsed[i] = false;
+        }
+      }
+      markedScratchColumns = null;
     }
 
-    public void setDontReuseTrackedScratchColumns(boolean dontReuseTrackedScratchColumns) {
-      this.dontReuseTrackedScratchColumns = dontReuseTrackedScratchColumns;
+    public void markScratchColumns() {
+      if (markedScratchColumns != null) {
+        throw new RuntimeException("Illegal call");
+      }
+      markedScratchColumns = Arrays.copyOf(scratchColumnTrackWasUsed, scratchColumnTrackWasUsed.length);
     }
+
   }
 
   public int allocateScratchColumn(TypeInfo typeInfo) throws HiveException {
@@ -673,12 +685,12 @@ public class VectorizationContext {
     return ocm.currentScratchColumns();
   }
 
-  public void clearScratchColumnWasUsedTracking() {
-    ocm.clearScratchColumnWasUsedTracking();
+  public void markActualScratchColumns() {
+    ocm.markScratchColumns();
   }
 
-  public void setDontReuseTrackedScratchColumns(boolean dontReuseTrackedScratchColumns) {
-    ocm.setDontReuseTrackedScratchColumns(dontReuseTrackedScratchColumns);
+  public void freeMarkedScratchColumns() {
+    ocm.freeMarkedScratchColumns();
   }
 
   private VectorExpression getFilterOnBooleanColumnExpression(ExprNodeColumnDesc exprDesc,

@@ -65,13 +65,22 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
+<<<<<<< HEAD
                   projectedOutputColumnNums: [1, 6]
                   selectExpressions: CastStringToLong(col 5:string)(children: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string) -> 6:int
+=======
+                  projectedOutputColumnNums: [1, 5]
+                  selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
+>>>>>>> bedfefbcee... BUG-114962 HIVE-20985: If select operator inputs are temporary columns vectorization may reuse some of them as output (patch#3)
               Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
+<<<<<<< HEAD
                     aggregators: VectorUDAFSumLong(col 6:int) -> bigint
+=======
+                    aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+>>>>>>> bedfefbcee... BUG-114962 HIVE-20985: If select operator inputs are temporary columns vectorization may reuse some of them as output (patch#3)
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     keyExpressions: col 1:string
@@ -268,13 +277,22 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
+<<<<<<< HEAD
                   projectedOutputColumnNums: [1, 6]
                   selectExpressions: CastStringToLong(col 5:string)(children: IfExprColumnCondExpr(col 3:boolean, col 0:stringcol 4:string)(children: IsNotNull(col 0:string) -> 3:boolean, col 0:string, ConstantVectorExpression(val 0) -> 4:string) -> 5:string) -> 6:int
+=======
+                  projectedOutputColumnNums: [1, 5]
+                  selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
+>>>>>>> bedfefbcee... BUG-114962 HIVE-20985: If select operator inputs are temporary columns vectorization may reuse some of them as output (patch#3)
               Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
+<<<<<<< HEAD
                     aggregators: VectorUDAFSumLong(col 6:int) -> bigint
+=======
+                    aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+>>>>>>> bedfefbcee... BUG-114962 HIVE-20985: If select operator inputs are temporary columns vectorization may reuse some of them as output (patch#3)
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     keyExpressions: col 1:string

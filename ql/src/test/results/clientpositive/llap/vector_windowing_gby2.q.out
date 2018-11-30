@@ -529,13 +529,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 7, 8, 2, 10]
-                        selectExpressions: DoubleColSubtractDoubleColumn(col 6:float, col 3:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 6:float) -> 7:float, DoubleColDivideDoubleColumn(col 3:double, col 6:double)(children: col 3:float, CastLongToDouble(col 2:int) -> 6:double) -> 8:double, DoubleColSubtractDoubleColumn(col 9:double, col 6:double)(children: DoubleColDivideDoubleColumn(col 3:double, col 6:double)(children: col 3:float, CastLongToDouble(col 2:int) -> 6:double) -> 9:double, CastLongToDouble(col 2:int) -> 6:double) -> 10:double
+                        projectedOutputColumnNums: [0, 1, 7, 9, 2, 13]
+                        selectExpressions: DoubleColSubtractDoubleColumn(col 6:float, col 3:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 6:float) -> 7:float, DoubleColDivideDoubleColumn(col 3:double, col 8:double)(children: col 3:float, CastLongToDouble(col 2:int) -> 8:double) -> 9:double, DoubleColSubtractDoubleColumn(col 11:double, col 12:double)(children: DoubleColDivideDoubleColumn(col 3:double, col 10:double)(children: col 3:float, CastLongToDouble(col 2:int) -> 10:double) -> 11:double, CastLongToDouble(col 2:int) -> 12:double) -> 13:double
                     Statistics: Num rows: 20 Data size: 3382 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col2), sum(_col3), max(_col4), sum(_col5)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDouble(col 7:float) -> double, VectorUDAFSumDouble(col 8:double) -> double, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFSumDouble(col 10:double) -> double
+                          aggregators: VectorUDAFSumDouble(col 7:float) -> double, VectorUDAFSumDouble(col 9:double) -> double, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFSumDouble(col 13:double) -> double
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 0:string, col 1:string
@@ -574,7 +574,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3]
                     dataColumns: key:string, value:string, c_int:int, c_float:float, c_boolean:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1080,7 +1080,7 @@ STAGE PLANS:
                     dataColumnCount: 4
                     dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:double, VALUE._col1:bigint, VALUE._col2:bigint
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, double, double, double, double]
+                    scratchColumnTypeNames: [bigint, bigint, double, double, double, double, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: bigint), VALUE._col2 (type: bigint)
@@ -1113,7 +1113,7 @@ STAGE PLANS:
                   PTF Vectorization:
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
-                      functionInputExpressions: [DoubleColDivideDoubleColumn(col 6:double, col 7:double)(children: CastLongToDouble(col 2:bigint) -> 6:double, CastLongToDouble(col 3:bigint) -> 7:double) -> 9:double]
+                      functionInputExpressions: [DoubleColDivideDoubleColumn(col 9:double, col 10:double)(children: CastLongToDouble(col 2:bigint) -> 9:double, CastLongToDouble(col 3:bigint) -> 10:double) -> 11:double]
                       functionNames: [rank]
                       keyInputColumns: []
                       native: true

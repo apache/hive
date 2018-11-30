@@ -224,16 +224,16 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [8, 9, 10]
-                    selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 9:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 10:double
+                    projectedOutputColumnNums: [9, 10, 11]
+                    selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 9:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 10:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 11:double
                 Statistics: Num rows: 511 Data size: 3577 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col1), sum(_col2)
                   Group By Vectorization:
-                      aggregators: VectorUDAFSumLong(col 9:int) -> bigint, VectorUDAFSumDouble(col 10:double) -> double
+                      aggregators: VectorUDAFSumLong(col 10:int) -> bigint, VectorUDAFSumDouble(col 11:double) -> double
                       className: VectorGroupByOperator
                       groupByMode: HASH
-                      keyExpressions: col 8:string
+                      keyExpressions: col 9:string
                       native: false
                       vectorProcessingMode: HASH
                       projectedOutputColumnNums: [0, 1]

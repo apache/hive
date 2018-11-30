@@ -101,13 +101,13 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 10, 5, 6, 0, 2, 8, 4, 13, 14, 17, 15, 19]
-                          selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 13:double, CastLongToDouble(col 0:tinyint) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 16:double)(children: CastLongToDouble(col 0:tinyint) -> 15:double, CastLongToDouble(col 0:tinyint) -> 16:double) -> 17:double, CastLongToDouble(col 2:int) -> 15:double, DoubleColMultiplyDoubleColumn(col 16:double, col 18:double)(children: CastLongToDouble(col 2:int) -> 16:double, CastLongToDouble(col 2:int) -> 18:double) -> 19:double
+                          projectedOutputColumnNums: [4, 10, 5, 6, 0, 2, 8, 4, 13, 14, 17, 18, 21]
+                          selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 13:double, CastLongToDouble(col 0:tinyint) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 16:double)(children: CastLongToDouble(col 0:tinyint) -> 15:double, CastLongToDouble(col 0:tinyint) -> 16:double) -> 17:double, CastLongToDouble(col 2:int) -> 18:double, DoubleColMultiplyDoubleColumn(col 19:double, col 20:double)(children: CastLongToDouble(col 2:int) -> 19:double, CastLongToDouble(col 2:int) -> 20:double) -> 21:double
                       Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(_col8), sum(_col7), count(_col0), min(_col2), sum(_col10), sum(_col9), count(_col4), sum(_col12), sum(_col11), count(_col5)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:float) -> bigint, VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFSumDouble(col 17:double) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCount(col 2:int) -> bigint
+                            aggregators: VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:float) -> bigint, VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFSumDouble(col 17:double) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFSumDouble(col 21:double) -> double, VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFCount(col 2:int) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             keyExpressions: col 4:float, col 10:boolean, col 5:double, col 6:string, col 0:tinyint, col 2:int, col 8:timestamp
@@ -145,7 +145,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 4, 5, 6, 7, 8, 10]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, double, double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double, double, double, double, double, double]
         Reducer 2 
             Reduce Vectorization:
                 enabled: false

@@ -78,7 +78,7 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val -28800.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 988888.0), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -28815.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 3569.0))))
+                  predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val -28800.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 988888.0), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 14:double, val -28815.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 3569.0))))
               predicate: (((UDFToDouble(ctimestamp1) <= -28800.0D) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and ((cdouble > 988888.0D) or ((UDFToDouble(ctimestamp2) > -28815.0D) and (cdouble <= 3569.0D))) and (ctinyint <> 0Y)) (type: boolean)
               Statistics: Num rows: 5461 Data size: 1292362 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -87,8 +87,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 14, 15, 16, 17, 19, 20, 18, 21, 23]
-                    selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 14:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 15:int, LongColUnaryMinus(col 1:smallint) -> 16:smallint, LongColUnaryMinus(col 0:tinyint) -> 17:tinyint, LongColAddLongScalar(col 18:int, val 17)(children: LongColUnaryMinus(col 0:tinyint) -> 18:tinyint) -> 19:int, LongColMultiplyLongColumn(col 3:bigint, col 18:bigint)(children: LongColUnaryMinus(col 1:smallint) -> 18:smallint) -> 20:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 18:int, LongColUnaryMinus(col 0:tinyint) -> 21:tinyint, LongColModuloLongColumn(col 22:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 22:tinyint) -> 23:tinyint
+                    projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 15, 16, 17, 18, 20, 22, 23, 24, 26]
+                    selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 15:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 16:int, LongColUnaryMinus(col 1:smallint) -> 17:smallint, LongColUnaryMinus(col 0:tinyint) -> 18:tinyint, LongColAddLongScalar(col 19:int, val 17)(children: LongColUnaryMinus(col 0:tinyint) -> 19:tinyint) -> 20:int, LongColMultiplyLongColumn(col 3:bigint, col 21:bigint)(children: LongColUnaryMinus(col 1:smallint) -> 21:smallint) -> 22:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 23:int, LongColUnaryMinus(col 0:tinyint) -> 24:tinyint, LongColModuloLongColumn(col 25:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 25:tinyint) -> 26:tinyint
                 Statistics: Num rows: 5461 Data size: 1292362 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: boolean), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: tinyint), _col4 (type: timestamp), _col5 (type: string), _col6 (type: bigint), _col7 (type: int), _col8 (type: smallint), _col9 (type: tinyint), _col10 (type: int), _col11 (type: bigint), _col12 (type: int), _col13 (type: tinyint), _col14 (type: tinyint)
@@ -115,7 +115,7 @@ STAGE PLANS:
               includeColumns: [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: [double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+              scratchColumnTypeNames: [double, double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -302,7 +302,7 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val -28800.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 988888.0), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -28792.315)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 3569.0))))
+                  predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val -28800.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 988888.0), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 14:double, val -28792.315)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 3569.0))))
               predicate: (((UDFToDouble(ctimestamp1) <= -28800.0D) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and ((cdouble > 988888.0D) or ((UDFToDouble(ctimestamp2) > -28792.315D) and (cdouble <= 3569.0D))) and (ctinyint <> 0Y)) (type: boolean)
               Statistics: Num rows: 5461 Data size: 1292362 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -311,8 +311,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 14, 15, 16, 17, 19, 20, 18, 21, 23]
-                    selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 14:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 15:int, LongColUnaryMinus(col 1:smallint) -> 16:smallint, LongColUnaryMinus(col 0:tinyint) -> 17:tinyint, LongColAddLongScalar(col 18:int, val 17)(children: LongColUnaryMinus(col 0:tinyint) -> 18:tinyint) -> 19:int, LongColMultiplyLongColumn(col 3:bigint, col 18:bigint)(children: LongColUnaryMinus(col 1:smallint) -> 18:smallint) -> 20:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 18:int, LongColUnaryMinus(col 0:tinyint) -> 21:tinyint, LongColModuloLongColumn(col 22:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 22:tinyint) -> 23:tinyint
+                    projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 15, 16, 17, 18, 20, 22, 23, 24, 26]
+                    selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 15:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 16:int, LongColUnaryMinus(col 1:smallint) -> 17:smallint, LongColUnaryMinus(col 0:tinyint) -> 18:tinyint, LongColAddLongScalar(col 19:int, val 17)(children: LongColUnaryMinus(col 0:tinyint) -> 19:tinyint) -> 20:int, LongColMultiplyLongColumn(col 3:bigint, col 21:bigint)(children: LongColUnaryMinus(col 1:smallint) -> 21:smallint) -> 22:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 23:int, LongColUnaryMinus(col 0:tinyint) -> 24:tinyint, LongColModuloLongColumn(col 25:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 25:tinyint) -> 26:tinyint
                 Statistics: Num rows: 5461 Data size: 1292362 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: boolean), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: tinyint), _col4 (type: timestamp), _col5 (type: string), _col6 (type: bigint), _col7 (type: int), _col8 (type: smallint), _col9 (type: tinyint), _col10 (type: int), _col11 (type: bigint), _col12 (type: int), _col13 (type: tinyint), _col14 (type: tinyint)

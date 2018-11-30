@@ -1339,19 +1339,19 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 5:int, val 413)(children: CastStringToLong(col 0:string) -> 5:int), FilterLongColEqualLongScalar(col 5:int, val 43)(children: CastStringToLong(col 0:string) -> 5:int))
+                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 5:int, val 413)(children: CastStringToLong(col 0:string) -> 5:int), FilterLongColEqualLongScalar(col 6:int, val 43)(children: CastStringToLong(col 0:string) -> 6:int))
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 6, 2]
-                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 6:string
+                          projectedOutputColumnNums: [4, 0, 7, 2]
+                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumnNums: [4]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumnNums: [5]
-                            valueColumnNums: [0, 6, 2]
+                            valueColumnNums: [0, 7, 2]
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1370,7 +1370,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, string]
+                    scratchColumnTypeNames: [bigint, bigint, string]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -2188,19 +2188,19 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 5:int, val 413)(children: CastStringToLong(col 0:string) -> 5:int), FilterLongColEqualLongScalar(col 5:int, val 43)(children: CastStringToLong(col 0:string) -> 5:int))
+                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 5:int, val 413)(children: CastStringToLong(col 0:string) -> 5:int), FilterLongColEqualLongScalar(col 6:int, val 43)(children: CastStringToLong(col 0:string) -> 6:int))
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 6, 2]
-                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 6:string
+                          projectedOutputColumnNums: [4, 0, 7, 2]
+                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumnNums: [4]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumnNums: [5]
-                            valueColumnNums: [0, 6, 2]
+                            valueColumnNums: [0, 7, 2]
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2219,7 +2219,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, string]
+                    scratchColumnTypeNames: [bigint, bigint, string]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

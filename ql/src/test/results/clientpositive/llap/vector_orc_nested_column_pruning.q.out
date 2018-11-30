@@ -700,8 +700,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [10]
-                          selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 1:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 10:double
+                          projectedOutputColumnNums: [11]
+                          selectExpressions: VectorUDFStructField(col 10:struct<f4:int,f5:double>, col 1:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 10:struct<f4:int,f5:double>) -> 11:double
                       Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -775,7 +775,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 8:string, val foo)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 1:int) -> 8:string), FilterLongColGreaterLongScalar(col 11:int, val 1)(children: VectorUDFAdaptor(size(s2.f8.f10))(children: VectorUDFStructField(col 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 1:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 10:array<int>) -> 11:int), SelectColumnIsTrue(col 11:boolean)(children: VectorUDFAdaptor(s2.f8.f11['key1'])(children: VectorUDFStructField(col 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 2:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 12:map<string,boolean>) -> 11:boolean))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 8:string, val foo)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 1:int) -> 8:string), FilterLongColGreaterLongScalar(col 11:int, val 1)(children: VectorUDFAdaptor(size(s2.f8.f10))(children: VectorUDFStructField(col 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 1:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 10:array<int>) -> 11:int), SelectColumnIsTrue(col 14:boolean)(children: VectorUDFAdaptor(s2.f8.f11['key1'])(children: VectorUDFStructField(col 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 2:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 13:map<string,boolean>) -> 14:boolean))
                     predicate: ((s1.f2 = 'foo') and (size(s2.f8.f10) > 1) and s2.f8.f11['key1']) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -784,8 +784,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9]
-                          selectExpressions: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>
+                          projectedOutputColumnNums: [15]
+                          selectExpressions: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 15:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>
                       Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1106,13 +1106,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [9, 10]
-                        selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 1:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 9:double, VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 10:int
+                        projectedOutputColumnNums: [9, 11]
+                        selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 1:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 9:double, VectorUDFStructField(col 10:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 10:struct<f4:int,f5:double>) -> 11:int
                     Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 10:int) -> bigint
+                          aggregators: VectorUDAFCount(col 11:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 9:double
@@ -1494,7 +1494,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 9:boolean, val 0)(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean), SelectColumnIsNotNull(col 9:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 9:int))
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 9:boolean, val 0)(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean), SelectColumnIsNotNull(col 10:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 10:int))
                     predicate: ((s2.f8.f9 = false) and s1.f6 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1769,8 +1769,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 9]
-                          selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 9:int
+                          projectedOutputColumnNums: [1, 11]
+                          selectExpressions: VectorUDFStructField(col 10:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 10:struct<f4:int,f5:double>) -> 11:int
                       Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int), true (type: boolean)
@@ -1778,7 +1778,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int), true (type: boolean)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyExpressions: ConstantVectorExpression(val 1) -> 10:boolean
+                            keyExpressions: ConstantVectorExpression(val 1) -> 9:boolean
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
@@ -1806,7 +1806,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 10:boolean)(children: VectorUDFAdaptor((s2.f8.f9 and s1.f6 is not null and s2.f8.f9 is not null))(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean, IsNotNull(col 10:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 10:int) -> 11:boolean, IsNotNull(col 10:boolean)(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 10:boolean) -> 12:boolean) -> 10:boolean)
+                        predicateExpression: SelectColumnIsTrue(col 15:boolean)(children: VectorUDFAdaptor((s2.f8.f9 and s1.f6 is not null and s2.f8.f9 is not null))(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean, IsNotNull(col 10:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 10:int) -> 11:boolean, IsNotNull(col 13:boolean)(children: VectorUDFStructField(col 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 13:boolean) -> 14:boolean) -> 15:boolean)
                     predicate: (s1.f6 is not null and s2.f8.f9 and s2.f8.f9 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1815,14 +1815,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 12]
-                          selectExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 9:int, LongColEqualLongScalar(col 11:boolean, val 1)(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 11:boolean) -> 12:boolean
+                          projectedOutputColumnNums: [16, 19]
+                          selectExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 16:int, LongColEqualLongScalar(col 18:boolean, val 1)(children: VectorUDFStructField(col 17:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 17:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 18:boolean) -> 19:boolean
                       Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 9:int, col 12:boolean
+                            keyExpressions: col 16:int, col 19:boolean
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
@@ -2085,8 +2085,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 9]
-                          selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 9:int
+                          projectedOutputColumnNums: [1, 11]
+                          selectExpressions: VectorUDFStructField(col 10:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 10:struct<f4:int,f5:double>) -> 11:int
                       Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
@@ -2130,8 +2130,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 8]
-                          selectExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 8:int
+                          projectedOutputColumnNums: [2, 9]
+                          selectExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 9:int
                       Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)

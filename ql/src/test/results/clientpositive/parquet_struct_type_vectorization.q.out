@@ -232,16 +232,16 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [4]
-                    selectExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 4:int
+                    projectedOutputColumnNums: [5]
+                    selectExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 5:int
                 Statistics: Num rows: 341 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col0)
                   Group By Vectorization:
-                      aggregators: VectorUDAFSumLong(col 4:int) -> bigint
+                      aggregators: VectorUDAFSumLong(col 5:int) -> bigint
                       className: VectorGroupByOperator
                       groupByMode: HASH
-                      keyExpressions: col 4:int
+                      keyExpressions: col 5:int
                       native: false
                       vectorProcessingMode: HASH
                       projectedOutputColumnNums: [0]

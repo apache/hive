@@ -75,13 +75,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 4, 2, 5, 13, 16, 14]
-                    selectExpressions: CastLongToDouble(col 0:tinyint) -> 13:double, DoubleColMultiplyDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 0:tinyint) -> 14:double, CastLongToDouble(col 0:tinyint) -> 15:double) -> 16:double, DoubleColMultiplyDoubleColumn(col 5:double, col 5:double) -> 14:double
+                    projectedOutputColumnNums: [0, 4, 2, 5, 14, 17, 18]
+                    selectExpressions: CastLongToDouble(col 0:tinyint) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 16:double)(children: CastLongToDouble(col 0:tinyint) -> 15:double, CastLongToDouble(col 0:tinyint) -> 16:double) -> 17:double, DoubleColMultiplyDoubleColumn(col 5:double, col 5:double) -> 18:double
                 Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col5), sum(_col4), count(_col0), sum(_col1), max(_col0), max(_col2), sum(_col6), sum(_col3), count(_col3), count(_col2)
                   Group By Vectorization:
-                      aggregators: VectorUDAFSumDouble(col 16:double) -> double, VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFCount(col 2:int) -> bigint
+                      aggregators: VectorUDAFSumDouble(col 17:double) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFCount(col 2:int) -> bigint
                       className: VectorGroupByOperator
                       groupByMode: HASH
                       native: false
@@ -114,7 +114,7 @@ STAGE PLANS:
               includeColumns: [0, 2, 3, 4, 5, 10, 11]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: [double, double, double, double]
+              scratchColumnTypeNames: [double, double, double, double, double, double]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

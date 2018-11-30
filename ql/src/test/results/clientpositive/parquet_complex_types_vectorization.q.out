@@ -208,16 +208,16 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [6, 7]
-                    selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                    projectedOutputColumnNums: [7, 8]
+                    selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
                 Statistics: Num rows: 341 Data size: 1705 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col1)
                   Group By Vectorization:
-                      aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                      aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                       className: VectorGroupByOperator
                       groupByMode: HASH
-                      keyExpressions: col 6:int
+                      keyExpressions: col 7:int
                       native: false
                       vectorProcessingMode: HASH
                       projectedOutputColumnNums: [0]
@@ -488,16 +488,16 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [6, 7]
-                    selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                    projectedOutputColumnNums: [7, 8]
+                    selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
                 Statistics: Num rows: 341 Data size: 1705 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col1)
                   Group By Vectorization:
-                      aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                      aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                       className: VectorGroupByOperator
                       groupByMode: HASH
-                      keyExpressions: col 6:int
+                      keyExpressions: col 7:int
                       native: false
                       vectorProcessingMode: HASH
                       projectedOutputColumnNums: [0]
@@ -768,16 +768,16 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [6, 7]
-                    selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                    projectedOutputColumnNums: [7, 8]
+                    selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
                 Statistics: Num rows: 341 Data size: 1705 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col1)
                   Group By Vectorization:
-                      aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                      aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                       className: VectorGroupByOperator
                       groupByMode: HASH
-                      keyExpressions: col 6:int
+                      keyExpressions: col 7:int
                       native: false
                       vectorProcessingMode: HASH
                       projectedOutputColumnNums: [0]

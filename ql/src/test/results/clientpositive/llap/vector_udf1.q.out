@@ -600,8 +600,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [10, 11, 14]
-                        selectExpressions: VectorUDFAdaptor(decode(encode(c2,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c2,'US-ASCII')) -> 9:binary) -> 10:string, VectorUDFAdaptor(decode(encode(c4,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c4,'US-ASCII')) -> 9:binary) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(decode(encode(c2,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c2,'US-ASCII')) -> 9:binary) -> 12:string, VectorUDFAdaptor(decode(encode(c4,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c4,'US-ASCII')) -> 9:binary) -> 13:string) -> 14:boolean
+                        projectedOutputColumnNums: [10, 12, 17]
+                        selectExpressions: VectorUDFAdaptor(decode(encode(c2,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c2,'US-ASCII')) -> 9:binary) -> 10:string, VectorUDFAdaptor(decode(encode(c4,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c4,'US-ASCII')) -> 11:binary) -> 12:string, StringGroupColEqualStringGroupColumn(col 14:string, col 16:string)(children: VectorUDFAdaptor(decode(encode(c2,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c2,'US-ASCII')) -> 13:binary) -> 14:string, VectorUDFAdaptor(decode(encode(c4,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c4,'US-ASCII')) -> 15:binary) -> 16:string) -> 17:boolean
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 1
@@ -635,7 +635,7 @@ STAGE PLANS:
                     includeColumns: [1, 3]
                     dataColumns: c1:string, c2:string, c3:varchar(10), c4:varchar(20), d1:string, d2:string, d3:varchar(10), d4:varchar(10)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [string, string, string, string, string, bigint]
+                    scratchColumnTypeNames: [string, string, string, string, string, string, string, string, bigint]
 
   Stage: Stage-0
     Fetch Operator

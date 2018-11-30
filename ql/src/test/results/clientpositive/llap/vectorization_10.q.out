@@ -84,8 +84,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5, 8, 0, 10, 6, 13, 17, 16, 18, 20, 21, 19, 23, 24, 26]
-                          selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleColAddDoubleColumn(col 5:double, col 16:double)(children: CastLongToDouble(col 1:smallint) -> 16:double) -> 17:double, DoubleColModuloDoubleScalar(col 18:double, val 33.0)(children: DoubleColAddDoubleColumn(col 5:double, col 16:double)(children: CastLongToDouble(col 1:smallint) -> 16:double) -> 18:double) -> 16:double, DoubleColUnaryMinus(col 5:double) -> 18:double, DoubleColModuloDoubleColumn(col 19:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 19:double) -> 20:double, LongColModuloLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint) -> 21:smallint, DoubleColUnaryMinus(col 5:double) -> 19:double, LongColMultiplyLongColumn(col 3:bigint, col 22:bigint)(children: LongColModuloLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint) -> 22:smallint) -> 23:bigint, DoubleScalarSubtractDoubleColumn(val 9763215.5639, col 25:double)(children: DoubleColAddDoubleColumn(col 5:double, col 24:double)(children: CastLongToDouble(col 1:smallint) -> 24:double) -> 25:double) -> 24:double, DoubleColUnaryMinus(col 25:double)(children: DoubleColUnaryMinus(col 5:double) -> 25:double) -> 26:double
+                          projectedOutputColumnNums: [5, 8, 0, 10, 6, 16, 18, 21, 22, 24, 25, 26, 28, 31, 33]
+                          selectExpressions: DoubleColUnaryMinus(col 5:double) -> 16:double, DoubleColAddDoubleColumn(col 5:double, col 17:double)(children: CastLongToDouble(col 1:smallint) -> 17:double) -> 18:double, DoubleColModuloDoubleScalar(col 20:double, val 33.0)(children: DoubleColAddDoubleColumn(col 5:double, col 19:double)(children: CastLongToDouble(col 1:smallint) -> 19:double) -> 20:double) -> 21:double, DoubleColUnaryMinus(col 5:double) -> 22:double, DoubleColModuloDoubleColumn(col 23:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 23:double) -> 24:double, LongColModuloLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint) -> 25:smallint, DoubleColUnaryMinus(col 5:double) -> 26:double, LongColMultiplyLongColumn(col 3:bigint, col 27:bigint)(children: LongColModuloLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint) -> 27:smallint) -> 28:bigint, DoubleScalarSubtractDoubleColumn(val 9763215.5639, col 30:double)(children: DoubleColAddDoubleColumn(col 5:double, col 29:double)(children: CastLongToDouble(col 1:smallint) -> 29:double) -> 30:double) -> 31:double, DoubleColUnaryMinus(col 32:double)(children: DoubleColUnaryMinus(col 5:double) -> 32:double) -> 33:double
                       Statistics: Num rows: 9557 Data size: 1893568 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -113,7 +113,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 3, 5, 6, 7, 8, 10]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, decimal(6,2), decimal(11,4), double, double, double, double, double, bigint, bigint, bigint, double, double, double]
+                    scratchColumnTypeNames: [double, decimal(6,2), decimal(11,4), double, double, double, double, double, double, double, double, double, bigint, double, bigint, bigint, double, double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator

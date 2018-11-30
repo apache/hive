@@ -2243,7 +2243,7 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:int, VALUE._col4:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: int), VALUE._col4 (type: double), KEY.reducesinkkey0 (type: string)
@@ -2292,8 +2292,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 4]
-                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2)(children: DoubleColSubtractDoubleColumn(col 4:double, col 5:double)(children: DoubleColAddDoubleScalar(col 3:double, val 10.0) -> 4:double, DoubleColSubtractDoubleScalar(col 3:double, val 10.0) -> 5:double) -> 6:double) -> 4:double
+                        projectedOutputColumnNums: [0, 1, 7]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2)(children: DoubleColSubtractDoubleColumn(col 4:double, col 5:double)(children: DoubleColAddDoubleScalar(col 3:double, val 10.0) -> 4:double, DoubleColSubtractDoubleScalar(col 3:double, val 10.0) -> 5:double) -> 6:double) -> 7:double
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 7

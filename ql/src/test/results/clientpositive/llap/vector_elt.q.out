@@ -43,8 +43,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [14, 6, 2, 17]
-                          selectExpressions: LongColAddLongScalar(col 13:int, val 1)(children: LongColModuloLongScalar(col 0:int, val 2)(children: col 0:tinyint) -> 13:int) -> 14:int, VectorElt(columns [15, 6, 16])(children: LongColAddLongScalar(col 13:int, val 1)(children: LongColModuloLongScalar(col 0:int, val 2)(children: col 0:tinyint) -> 13:int) -> 15:int, col 6:string, CastLongToString(col 2:int) -> 16:string) -> 17:string
+                          projectedOutputColumnNums: [14, 6, 2, 18]
+                          selectExpressions: LongColAddLongScalar(col 13:int, val 1)(children: LongColModuloLongScalar(col 0:int, val 2)(children: col 0:tinyint) -> 13:int) -> 14:int, VectorElt(columns [16, 6, 17])(children: LongColAddLongScalar(col 15:int, val 1)(children: LongColModuloLongScalar(col 0:int, val 2)(children: col 0:tinyint) -> 15:int) -> 16:int, col 6:string, CastLongToString(col 2:int) -> 17:string) -> 18:string
                       Statistics: Num rows: 4096 Data size: 1069830 Basic stats: COMPLETE Column stats: COMPLETE
                       Limit
                         Number of rows: 10

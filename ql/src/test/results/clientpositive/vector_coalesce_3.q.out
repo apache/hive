@@ -134,8 +134,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 2]
-                      selectExpressions: IfExprColumnNull(col 4:boolean, col 1:bigint, null)(children: ColOrCol(col 2:boolean, col 3:boolean)(children: LongColGreaterLongScalar(col 1:bigint, val 1) -> 2:boolean, IsNull(col 1:bigint) -> 3:boolean) -> 4:boolean, col 1:bigint) -> 2:bigint
+                      projectedOutputColumnNums: [0, 5]
+                      selectExpressions: IfExprColumnNull(col 4:boolean, col 1:bigint, null)(children: ColOrCol(col 2:boolean, col 3:boolean)(children: LongColGreaterLongScalar(col 1:bigint, val 1) -> 2:boolean, IsNull(col 1:bigint) -> 3:boolean) -> 4:boolean, col 1:bigint) -> 5:bigint
                   Statistics: Num rows: 5 Data size: 35 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false

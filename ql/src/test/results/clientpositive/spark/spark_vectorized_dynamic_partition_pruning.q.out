@@ -1339,7 +1339,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 4:bigint)(children: FuncAbsLongToLong(col 3:bigint)(children: LongColAddLongScalar(col 4:bigint, val 10)(children: LongColUnaryMinus(col 3:bigint)(children: CastStringToLong(col 6:string)(children: StringGroupColConcatStringScalar(col 5:string, val 0)(children: CastLongToString(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:string) -> 6:string) -> 3:bigint) -> 4:bigint) -> 3:bigint) -> 4:bigint))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 10:bigint)(children: FuncAbsLongToLong(col 9:bigint)(children: LongColAddLongScalar(col 8:bigint, val 10)(children: LongColUnaryMinus(col 7:bigint)(children: CastStringToLong(col 6:string)(children: StringGroupColConcatStringScalar(col 5:string, val 0)(children: CastLongToString(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:string) -> 6:string) -> 7:bigint) -> 8:bigint) -> 9:bigint) -> 10:bigint))
                     predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1389,7 +1389,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: ds:string, date:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, string, string]
+                    scratchColumnTypeNames: [bigint, bigint, string, string, bigint, bigint, bigint, bigint]
 
   Stage: Stage-1
     Spark
@@ -1411,7 +1411,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 6:bigint)(children: FuncAbsLongToLong(col 5:bigint)(children: LongColAddLongScalar(col 6:bigint, val 10)(children: LongColUnaryMinus(col 5:bigint)(children: CastStringToLong(col 8:string)(children: StringGroupColConcatStringScalar(col 7:string, val 0)(children: CastLongToString(col 6:int)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:string) -> 8:string) -> 5:bigint) -> 6:bigint) -> 5:bigint) -> 6:bigint)
+                        predicateExpression: SelectColumnIsNotNull(col 12:bigint)(children: FuncAbsLongToLong(col 11:bigint)(children: LongColAddLongScalar(col 10:bigint, val 10)(children: LongColUnaryMinus(col 9:bigint)(children: CastStringToLong(col 8:string)(children: StringGroupColConcatStringScalar(col 7:string, val 0)(children: CastLongToString(col 6:int)(children: VectorUDFDayOfMonthDate(col 5, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 5:date) -> 6:int) -> 7:string) -> 8:string) -> 9:bigint) -> 10:bigint) -> 11:bigint) -> 12:bigint)
                     predicate: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1450,7 +1450,7 @@ STAGE PLANS:
                     dataColumns: key:string, value:string
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, bigint, string, string]
+                    scratchColumnTypeNames: [bigint, bigint, string, string, bigint, bigint, bigint, bigint]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1464,7 +1464,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 4:bigint)(children: FuncAbsLongToLong(col 3:bigint)(children: LongColAddLongScalar(col 4:bigint, val 10)(children: LongColUnaryMinus(col 3:bigint)(children: CastStringToLong(col 6:string)(children: StringGroupColConcatStringScalar(col 5:string, val 0)(children: CastLongToString(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:string) -> 6:string) -> 3:bigint) -> 4:bigint) -> 3:bigint) -> 4:bigint))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), SelectColumnIsNotNull(col 10:bigint)(children: FuncAbsLongToLong(col 9:bigint)(children: LongColAddLongScalar(col 8:bigint, val 10)(children: LongColUnaryMinus(col 7:bigint)(children: CastStringToLong(col 6:string)(children: StringGroupColConcatStringScalar(col 5:string, val 0)(children: CastLongToString(col 4:int)(children: VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int) -> 5:string) -> 6:string) -> 7:bigint) -> 8:bigint) -> 9:bigint) -> 10:bigint))
                     predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1502,7 +1502,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: ds:string, date:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, string, string]
+                    scratchColumnTypeNames: [bigint, bigint, string, string, bigint, bigint, bigint, bigint]
         Reducer 2 
             Reduce Vectorization:
                 enabled: true
@@ -6678,7 +6678,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 4:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 4:double))
                     predicate: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -6727,7 +6727,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: hr:string, hour:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double]
+                    scratchColumnTypeNames: [double, double]
 
   Stage: Stage-1
     Spark
@@ -6846,7 +6846,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 4:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 4:double))
                     predicate: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -6883,7 +6883,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: hr:string, hour:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double]
+                    scratchColumnTypeNames: [double, double]
         Reducer 2 
             Reduce Vectorization:
                 enabled: true
@@ -12147,7 +12147,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 4:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 4:double))
                     predicate: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -12203,7 +12203,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: hr:string, hour:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double]
+                    scratchColumnTypeNames: [double, double]
             Local Work:
               Map Reduce Local Work
 

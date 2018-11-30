@@ -143,8 +143,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [4, 13]
-                    selectExpressions: LongColSubtractLongScalarChecked(col 4:int, val 2) -> 13:int
+                    projectedOutputColumnNums: [4, 14]
+                    selectExpressions: LongColSubtractLongScalarChecked(col 4:int, val 2) -> 14:int
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
@@ -251,8 +251,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [5, 13]
-                    selectExpressions: LongColAddLongScalarChecked(col 5:int, val 2) -> 13:int
+                    projectedOutputColumnNums: [5, 14]
+                    selectExpressions: LongColAddLongScalarChecked(col 5:int, val 2) -> 14:int
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
@@ -357,8 +357,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [5, 13]
-                    selectExpressions: LongColMultiplyLongScalarChecked(col 5:int, val 2) -> 13:int
+                    projectedOutputColumnNums: [5, 14]
+                    selectExpressions: LongColMultiplyLongScalarChecked(col 5:int, val 2) -> 14:int
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
@@ -463,8 +463,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 13]
-                    selectExpressions: LongColSubtractLongScalarChecked(col 0:tinyint, val 2) -> 13:tinyint
+                    projectedOutputColumnNums: [0, 14]
+                    selectExpressions: LongColSubtractLongScalarChecked(col 0:tinyint, val 2) -> 14:tinyint
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: tinyint)
@@ -571,8 +571,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 13]
-                    selectExpressions: LongColAddLongScalarChecked(col 1:tinyint, val 2) -> 13:int
+                    projectedOutputColumnNums: [1, 14]
+                    selectExpressions: LongColAddLongScalarChecked(col 1:tinyint, val 2) -> 14:int
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: tinyint)
@@ -677,8 +677,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [3, 13]
-                    selectExpressions: LongColMultiplyLongScalarChecked(col 3:smallint, val 2) -> 13:int
+                    projectedOutputColumnNums: [3, 14]
+                    selectExpressions: LongColMultiplyLongScalarChecked(col 3:smallint, val 2) -> 14:int
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: smallint)
@@ -927,8 +927,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 5]
-                    selectExpressions: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 5:int
+                    projectedOutputColumnNums: [2, 3, 6]
+                    selectExpressions: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 6:int
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col2 (type: int)
