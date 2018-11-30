@@ -82,7 +82,7 @@ public class MiniDruidCluster extends AbstractService {
           "PT2S",
           "druid.manager.segments.pollDuration",
           "PT2S");
-  private static final int MIN_PORT_NUMBER = 8080;
+  private static final int MIN_PORT_NUMBER = 1999;
   private static final int MAX_PORT_NUMBER = 65535;
 
   private final DruidNode historical;
@@ -108,7 +108,7 @@ public class MiniDruidCluster extends AbstractService {
     super(name);
     this.dataDirectory = new File(tmpDir, name + "-data");
     this.logDirectory = new File(logDir, name + "-log");
-    int start = ThreadLocalRandom.current().nextInt(2000, MAX_PORT_NUMBER - 4);
+    int start = ThreadLocalRandom.current().nextInt(MIN_PORT_NUMBER + 1, MAX_PORT_NUMBER - 4);
     coordinatorPort = findPort(start, MAX_PORT_NUMBER);
     brokerPort = findPort(coordinatorPort + 1, MAX_PORT_NUMBER);
     historicalPort = findPort(brokerPort + 1, MAX_PORT_NUMBER);
