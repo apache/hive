@@ -25,9 +25,12 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.shims.Utils;
 
 import org.junit.*;
@@ -159,13 +162,16 @@ public class TestReplicationWithTableMigration {
             .run("insert into tacidpartloc partition(country='india') values('mumbai')")
             .run("insert into tacidpartloc partition(country='us') values('sf')")
             .run("insert into tacidpartloc partition(country='france') values('paris')")
+            .run("create table avro_table ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' " +
+                    "stored as avro tblproperties ('avro.schema.url'='" + primary.avroSchemaFile.toUri().toString() + "')")
+            .run("insert into avro_table values('str1', 10)")
             .dump(primaryDbName, fromReplId);
   }
 
   private void verifyLoadExecution(String replicatedDbName, String lastReplId) throws Throwable {
     replica.run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"tacid", "tacidpart", "tflat", "tflattext", "tflattextpart", "tacidloc", "tacidpartloc"})
+            .verifyResults(new String[] {"tacid", "tacidpart", "tflat", "tflattext", "tflattextpart", "tacidloc", "tacidpartloc", "avro_table"})
             .run("repl status " + replicatedDbName)
             .verifyResult(lastReplId)
             .run("select id from tacid order by id")
@@ -181,7 +187,9 @@ public class TestReplicationWithTableMigration {
             .run("select id from tacidloc order by id")
             .verifyResults(new String[]{"1", "2", "3"})
             .run("select country from tacidpartloc order by country")
-            .verifyResults(new String[] {"france", "india", "us"});
+            .verifyResults(new String[] {"france", "india", "us"})
+            .run("select col1 from avro_table")
+            .verifyResults(new String[] {"str1"});
 
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacid")));
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacidpart")));
@@ -202,6 +210,13 @@ public class TestReplicationWithTableMigration {
     for (Partition part : partitions) {
       tablePath.equals(new Path(part.getSd().getLocation()).getParent());
     }
+
+    Table avroTable = replica.getTable(replicatedDbName, "avro_table");
+    assertTrue(MetaStoreUtils.isExternalTable(avroTable));
+    tablePath = new PathBuilder(replica.externalTableWarehouseRoot.toString()).addDescendant(replicatedDbName + ".db")
+                                                                   .addDescendant("avro_table")
+                                                                   .build();
+    assertEquals(avroTable.getSd().getLocation().toLowerCase(), tablePath.toUri().toString().toLowerCase());
   }
 
   private void loadWithFailureInAddNotification(String tbl, String dumpLocation) throws Throwable {
