@@ -16,7 +16,8 @@ CREATE EXTERNAL TABLE druid_kafka_test(`__time` timestamp, page string, `user` s
 
 ALTER TABLE druid_kafka_test SET TBLPROPERTIES('druid.kafka.ingestion' = 'START');
 
-!curl --noproxy * -ss http://localhost:8081/druid/indexer/v1/supervisor;
+--@TODO Nishant can you explain why this needed ?
+--!curl --noproxy * -ss http://localhost:8081/druid/indexer/v1/supervisor;
 
 -- Sleep for some time for ingestion tasks to ingest events
 !sleep 60;
