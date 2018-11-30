@@ -97,7 +97,6 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -182,7 +181,9 @@ public class Driver implements CommandProcessor {
   // Query hooks that execute before compilation and after execution
   private List<QueryLifeTimeHook> queryHooks;
 
-  private static final Pattern pattern = Pattern.compile("((?i)insert\\s+(?i)into\\s+\\w+\\s*)(\\([a-zA-Z0-9_\\s,]*\\))(\\s*.+)");
+  private static final Pattern pattern_insert = Pattern.compile("((?i)insert\\s+(?i)into\\s+\\w+\\s*)(\\([a-zA-Z0-9_\\s,]*\\))(\\s*.+)");
+
+  private static final Pattern pattern_select = Pattern.compile("\\((?i)(select.+)\\)\\s*");
 
   public enum DriverState {
     INITIALIZED,
@@ -651,13 +652,20 @@ public class Driver implements CommandProcessor {
   }
 
   protected static String handleInsertCommands(String command) {
-    Matcher matcher = pattern.matcher(command);
+    Matcher matcher = pattern_insert.matcher(command);
     if(matcher.find() && matcher.groupCount() == 3){
-      command = matcher.group(1) + matcher.group(2).toLowerCase() + matcher.group(3);
+      command = matcher.group(1) + matcher.group(2).trim().toLowerCase() + matcher.group(3);
     }
     return command;
   }
 
+  protected static String handleSelectCommands(String command) {
+    Matcher matcher = pattern_select.matcher(command);
+    if(matcher.find() && matcher.groupCount() == 1){
+      command = matcher.group(1);
+    }
+    return command;
+  }
 
   private int handleInterruption(String msg) {
     SQLState = "HY008";  //SQLState for cancel operation

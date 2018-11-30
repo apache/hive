@@ -28,4 +28,20 @@ public class TestDriver {
                 )
         );
     }
+
+    @Test
+    public void testHandleSelectCommands(){
+        Assert.assertEquals(
+                SELECT,
+                Driver.handleSelectCommands(
+                        "(" + SELECT + ")"
+                )
+        );
+        Assert.assertEquals(
+                SELECT,
+                Driver.handleSelectCommands(
+                        SELECT
+                )
+        );
+    }
 }
