@@ -61,7 +61,7 @@ public abstract class Operation {
   private final OperationHandle opHandle;
   public static final FetchOrientation DEFAULT_FETCH_ORIENTATION = FetchOrientation.FETCH_NEXT;
   public static final Logger LOG = LoggerFactory.getLogger(Operation.class.getName());
-  protected boolean hasResultSet;
+  protected Boolean hasResultSet = null;
   protected volatile HiveSQLException operationException;
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
@@ -143,7 +143,7 @@ public abstract class Operation {
   }
 
   public boolean hasResultSet() {
-    return hasResultSet;
+    return hasResultSet == null ? false : hasResultSet;
   }
 
   protected void setHasResultSet(boolean hasResultSet) {
