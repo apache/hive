@@ -428,3 +428,10 @@ GROUP BY
 ,	C_LOGIN
 ;
 
+create table web_sales(ws_order_number int, ws_item_sk int, ws_price float,
+    constraint pk1 primary key(ws_order_number, ws_item_sk) disable rely);
+insert into web_sales values(1, 1, 1.2);
+insert into web_sales values(1, 1, 1.2);
+ explain cbo select count(distinct ws_order_number) from web_sales;
+ select count(distinct ws_order_number) from web_sales;
+ drop table web_sales;
