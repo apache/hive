@@ -706,7 +706,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setTaskStatus(operationStatus.getTaskStatus());
       resp.setOperationStarted(operationStatus.getOperationStarted());
       resp.setOperationCompleted(operationStatus.getOperationCompleted());
-      resp.setHasResultSet(operationStatus.getHasResultSet());
+      if (operationStatus.isHasResultSetIsSet()) {
+        resp.setHasResultSet(operationStatus.getHasResultSet());
+      }
       JobProgressUpdate progressUpdate = operationStatus.jobProgressUpdate();
       ProgressMonitorStatusMapper mapper = ProgressMonitorStatusMapper.DEFAULT;
       if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
