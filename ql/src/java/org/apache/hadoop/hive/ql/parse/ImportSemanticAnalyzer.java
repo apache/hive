@@ -1107,12 +1107,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                           tblDesc.getDatabaseName(),
                           tblDesc.getTableName(),
                           null);
-    }
-
-    //TODO : need to check possibility of more than one partition update in same event (other than commit txn).
-    if (replicationSpec.isDoingMigration()) {
-      x.setOpenTxnTask(TaskFactory.get(new ReplTxnWork(tblDesc.getDatabaseName(),
-              tblDesc.getTableName()), x.getConf()));
+      if (replicationSpec.isDoingMigration()) {
+        x.setOpenTxnTask(TaskFactory.get(new ReplTxnWork(tblDesc.getDatabaseName(),
+                tblDesc.getTableName()), x.getConf()));
+        updatedMetadata.setNeedCommitTxn(true);
+        x.getLOG().info("Mahesh : added open txn task for table " +
+                tblDesc.getDatabaseName() + "." + tblDesc.getTableName());
+      }
     }
 
     if (tblDesc.getLocation() == null) {

@@ -919,10 +919,10 @@ struct CommitTxnRequest {
 
 struct ReplLastIdInfo {
     1: required string database,
-    2: required string table,
-    3: required i64    lastReplId,
+    2: required i64    lastReplId,
+    3: optional string table,
     4: optional string catalog,
-    5: optional string partition,
+    5: optional list<string> partitionList,
 }
 
 struct WriteEventInfo {

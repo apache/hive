@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -52,7 +55,9 @@ public class DropPartitionHandler extends AbstractMessageHandler {
         context.log.debug("Added drop ptn task : {}:{},{}", dropPtnTask.getId(),
             dropPtnDesc.getTableName(), msg.getPartitions());
         updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
-        return Collections.singletonList(dropPtnTask);
+
+        return Collections.singletonList(ReplUtils.appendOpenTxnTaskForMigration(actualDbName, actualTblName,
+                context.hiveConf, updatedMetadata, dropPtnTask, msg.getTableObj()));
       } else {
         throw new SemanticException(
             "DROP PARTITION EVENT does not return any part descs for event message :"

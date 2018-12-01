@@ -184,7 +184,6 @@ public class TestReplicationScenarios {
     Path testPath = new Path(TEST_PATH);
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
     fs.mkdirs(testPath);
-
     driver = DriverFactory.newDriver(hconf);
     SessionState.start(new CliSessionState(hconf));
     metaStoreClient = new HiveMetaStoreClient(hconf);
@@ -196,6 +195,10 @@ public class TestReplicationScenarios {
     hconfMirror = new HiveConf(hconf);
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
+    hconfMirror.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES, true);
+    hconfMirror.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+    hconfMirror.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
+            "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
@@ -1563,7 +1566,10 @@ public class TestReplicationScenarios {
       InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
     }
 
-    verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data, driverMirror);
+    // as the move is done using a different event, load will be done within a different transaction and thus
+    // we will get two records.
+    verifyRun("SELECT a from " + replDbName + ".unptned",
+            new String[] {unptn_data[0], unptn_data[0] }, driverMirror);
   }
 
   @Test
@@ -2670,6 +2676,8 @@ public class TestReplicationScenarios {
 
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
     run("ALTER TABLE " + dbName + ".unptned CONCATENATE", driver);
+
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
     // Replicate all the events happened after bootstrap
     Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);

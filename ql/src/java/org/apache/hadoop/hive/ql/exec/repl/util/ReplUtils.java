@@ -18,7 +18,9 @@
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -29,6 +31,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -36,12 +39,14 @@ import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.io.Serializable;
 
 
 public class ReplUtils {
@@ -120,5 +125,24 @@ public class ReplUtils {
               props.get(REPL_CHECKPOINT_KEY)));
     }
     return false;
+  }
+
+  public static Task<? extends Serializable> appendOpenTxnTaskForMigration(String actualDbName,
+                                                                   String actualTblName, HiveConf conf,
+                                                                   UpdatedMetaDataTracker updatedMetaDataTracker,
+                                                                   Task<? extends Serializable> childTask,
+                                                                   org.apache.hadoop.hive.metastore.api.Table tableObj)
+  {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) && updatedMetaDataTracker != null &&
+            !TxnUtils.isTransactionalTable(tableObj) &&
+            TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
+      //TODO : need to check if migration is from non acid to acid, then only start the transaction.
+      Task<? extends Serializable> replTxnTaskTask =
+              TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName), conf);
+      replTxnTaskTask.addDependentTask(childTask);
+      updatedMetaDataTracker.setNeedCommitTxn(true);
+      return replTxnTaskTask;
+    }
+    return childTask;
   }
 }

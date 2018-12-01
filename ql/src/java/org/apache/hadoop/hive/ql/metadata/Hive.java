@@ -4116,7 +4116,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void recycleDirToCmPath(Path dataPath, boolean isPurge) throws HiveException {
     try {
       CmRecycleRequest request = new CmRecycleRequest(dataPath.toString(), isPurge);
-      getMSC().recycleDirToCmPath(request);
+      getSynchronizedMSC().recycleDirToCmPath(request);
     } catch (Exception e) {
       throw new HiveException(e);
     }

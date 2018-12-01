@@ -875,13 +875,35 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     String catalog = replLastIdInfo.isSetCatalog() ? normalizeIdentifier(replLastIdInfo.getCatalog()) :
             MetaStoreUtils.getDefaultCatalog(conf);
     String db = normalizeIdentifier(replLastIdInfo.getDatabase());
-    String table = normalizeIdentifier(replLastIdInfo.getTable());
-    String part = replLastIdInfo.isSetPartition() ? replLastIdInfo.getPartition() : null;
+    String table = replLastIdInfo.isSetTable() ? normalizeIdentifier(replLastIdInfo.getTable()) : null;
+    List<String> partList = replLastIdInfo.isSetPartitionList() ? replLastIdInfo.getPartitionList() : null;
     try {
       if (sqlGenerator.getDbProduct() == MYSQL) {
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
-      if (part == null || part.isEmpty()) {
+      if (table == null) {
+        String s = sqlGenerator.addForUpdateClause(
+                "select \"DB_ID\" from \"DBS\"  where \"DBS\".\"NAME\" = ? " +
+                        " and \"DBS\".\"CTLG_NAME\" = ?");
+        List<String> params = Arrays.asList(db, catalog);
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
+        LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
+                quoteString(db), quoteString(catalog));
+        rs = pst.executeQuery();
+        if (rs == null || !rs.next()) {
+          throw new MetaException(" db with name " + db + " does not exist in catalog " + catalog);
+        }
+        long dbId = rs.getLong(1);
+        rs = stmt.executeQuery("select PARAM_VALUE from DATABASE_PARAMS where PARAM_KEY = " +
+                "'repl.last.id' and DB_ID = " + dbId);
+        if (rs == null || !rs.next()) {
+          stmt.executeUpdate("insert into DATABASE_PARAMS values ( " + dbId +
+                  " , 'repl.last.id' , " + lastReplId + ")");
+        } else {
+          stmt.executeUpdate("update DATABASE_PARAMS set PARAM_VALUE = " + lastReplId + " where DB_ID = " + dbId +
+                  " and PARAM_KEY = 'repl.last.id'");
+        }
+      } else if (partList == null || partList.isEmpty()) {
         String s = sqlGenerator.addForUpdateClause(
             "select \"TBL_ID\" from \"TBLS\", \"DBS\"  where \"DBS\".\"NAME\" = ? " +
             " and \"DBS\".\"CTLG_NAME\" = ? and \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"DB_ID\" = \"TBLS\".\"DB_ID\"");
@@ -904,28 +926,30 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   " and PARAM_KEY = 'repl.last.id'");
         }
       } else {
-        String s = sqlGenerator.addForUpdateClause(
+        for (String part : partList) {
+          String s = sqlGenerator.addForUpdateClause(
             "select \"PART_ID\" from \"PARTITIONS\", \"DBS\", \"TBLS\" where \"DBS\".\"NAME\" = ? " +
             " and \"DBS\".\"CTLG_NAME\" = ? and \"TBLS\".\"TBL_NAME\" = ? and \"PARTITIONS\".\"PART_NAME\" = ? and " +
             " \"DBS\".\"DB_ID\" =  \"TBLS\".\"DB_ID\" and \"PARTITIONS\".\"TBL_ID\" = \"TBLS\".\"TBL_ID\"");
-        List<String> params = Arrays.asList(db, catalog, table, part);
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
-        LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
-                quoteString(db), quoteString(catalog), quoteString(table), quoteString(part));
-        rs = pst.executeQuery();
-        if (rs == null || !rs.next()) {
-          throw new MetaException(" partition with name " + part + " does not exist in table " +
-                  catalog + "." + db + "." + table);
-        }
-        long partId = rs.getLong(1);
-        rs = stmt.executeQuery("select PARAM_VALUE from PARTITION_PARAMS where PARAM_KEY " +
-                " = 'repl.last.id' and PART_ID = " + partId);
-        if (rs == null || !rs.next()) {
-          stmt.executeUpdate("insert into PARTITION_PARAMS values ( " + partId +
-                  " , 'repl.last.id' , " + lastReplId + ")");
-        } else {
-          stmt.executeUpdate("update PARTITION_PARAMS set PARAM_VALUE = " + lastReplId +
-                  " where PART_ID = " + partId + " and PARAM_KEY = 'repl.last.id'");
+          List<String> params = Arrays.asList(db, catalog, table, part);
+          pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
+          LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
+                  quoteString(db), quoteString(catalog), quoteString(table), quoteString(part));
+          rs = pst.executeQuery();
+          if (rs == null || !rs.next()) {
+            throw new MetaException(" partition with name " + part + " does not exist in table " +
+                    catalog + "." + db + "." + table);
+          }
+          long partId = rs.getLong(1);
+          rs = stmt.executeQuery("select PARAM_VALUE from PARTITION_PARAMS where PARAM_KEY " +
+                  " = 'repl.last.id' and PART_ID = " + partId);
+          if (rs == null || !rs.next()) {
+            stmt.executeUpdate("insert into PARTITION_PARAMS values ( " + partId +
+                    " , 'repl.last.id' , " + lastReplId + ")");
+          } else {
+            stmt.executeUpdate("update PARTITION_PARAMS set PARAM_VALUE = " + lastReplId +
+                    " where PART_ID = " + partId + " and PARAM_KEY = 'repl.last.id'");
+          }
         }
       }
     } finally {

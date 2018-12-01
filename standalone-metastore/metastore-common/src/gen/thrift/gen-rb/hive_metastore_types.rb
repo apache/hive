@@ -2729,24 +2729,23 @@ end
 class ReplLastIdInfo
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DATABASE = 1
-  TABLE = 2
-  LASTREPLID = 3
+  LASTREPLID = 2
+  TABLE = 3
   CATALOG = 4
-  PARTITION = 5
+  PARTITIONLIST = 5
 
   FIELDS = {
     DATABASE => {:type => ::Thrift::Types::STRING, :name => 'database'},
-    TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
     LASTREPLID => {:type => ::Thrift::Types::I64, :name => 'lastReplId'},
+    TABLE => {:type => ::Thrift::Types::STRING, :name => 'table', :optional => true},
     CATALOG => {:type => ::Thrift::Types::STRING, :name => 'catalog', :optional => true},
-    PARTITION => {:type => ::Thrift::Types::STRING, :name => 'partition', :optional => true}
+    PARTITIONLIST => {:type => ::Thrift::Types::LIST, :name => 'partitionList', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field database is unset!') unless @database
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lastReplId is unset!') unless @lastReplId
   end
 

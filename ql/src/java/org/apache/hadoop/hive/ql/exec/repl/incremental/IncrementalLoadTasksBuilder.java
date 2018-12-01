@@ -170,7 +170,7 @@ public class IncrementalLoadTasksBuilder {
           taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
           this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
         } else {
-          taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail, false);
+          taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail);
           this.log.debug("no events to replay, set last repl id of table " + dbName + "." + tableName + " to " +
                   lastEventid);
         }
@@ -243,33 +243,46 @@ public class IncrementalLoadTasksBuilder {
     return addUpdateReplStateTasks(StringUtils.isEmpty(context.tableName), messageHandler.getUpdatedMetadata(), tasks);
   }
 
-  private Task<? extends Serializable> tableUpdateReplStateTask(String dbName, String tableName,
-                                                    Map<String, String> partSpec, String replState,
-                                                    Task<? extends Serializable> preCursor,
-                                                    boolean needCommitTx) throws SemanticException {
-    Task<? extends Serializable> updateReplIdTask;
-    if (needCommitTx) {
-      ReplLastIdInfo replLastIdInfo = new ReplLastIdInfo(dbName, tableName, Long.parseLong(replState));
-      if (partSpec != null) {
+  private Task<? extends Serializable> getMigrationCommitTxnTask(String dbName, String tableName,
+                                                    List<Map <String, String>> partSpec, String replState,
+                                                    Task<? extends Serializable> preCursor) throws SemanticException {
+    ReplLastIdInfo replLastIdInfo = new ReplLastIdInfo(dbName, Long.parseLong(replState));
+    replLastIdInfo.setTable(tableName);
+    if (partSpec != null && !partSpec.isEmpty()) {
+      List<String> partitionList = new ArrayList<>();
+      for (Map <String, String> part : partSpec) {
         try {
-          replLastIdInfo.setPartition(Warehouse.makePartName(partSpec, false));
+          partitionList.add(Warehouse.makePartName(part, false));
         } catch (MetaException e) {
           throw new SemanticException(e.getMessage());
         }
       }
-      updateReplIdTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo), conf);
-    } else {
-      HashMap<String, String> mapProp = new HashMap<>();
-      mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
-
-      AlterTableDesc alterTblDesc = new AlterTableDesc(
-              AlterTableDesc.AlterTableTypes.ADDPROPS, new ReplicationSpec(replState, replState));
-      alterTblDesc.setProps(mapProp);
-      alterTblDesc.setOldName(StatsUtils.getFullyQualifiedTableName(dbName, tableName));
-      alterTblDesc.setPartSpec((HashMap<String, String>) partSpec);
-
-      updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc), conf);
+      replLastIdInfo.setPartitionList(partitionList);
     }
+
+    Task<? extends Serializable> updateReplIdTxnTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo), conf);
+
+    if (preCursor != null) {
+      preCursor.addDependentTask(updateReplIdTxnTask);
+      log.debug("Added {}:{} as a precursor of {}:{}", preCursor.getClass(), preCursor.getId(),
+              updateReplIdTxnTask.getClass(), updateReplIdTxnTask.getId());
+    }
+    return updateReplIdTxnTask;
+  }
+
+  private Task<? extends Serializable> tableUpdateReplStateTask(String dbName, String tableName,
+                                                    Map<String, String> partSpec, String replState,
+                                                    Task<? extends Serializable> preCursor) throws SemanticException {
+    HashMap<String, String> mapProp = new HashMap<>();
+    mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
+
+    AlterTableDesc alterTblDesc = new AlterTableDesc(
+            AlterTableDesc.AlterTableTypes.ADDPROPS, new ReplicationSpec(replState, replState));
+    alterTblDesc.setProps(mapProp);
+    alterTblDesc.setOldName(StatsUtils.getFullyQualifiedTableName(dbName, tableName));
+    alterTblDesc.setPartSpec((HashMap<String, String>) partSpec);
+
+    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterTblDesc), conf);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {
@@ -312,43 +325,48 @@ public class IncrementalLoadTasksBuilder {
     List<Task<? extends Serializable>> tasks = new ArrayList<>();
     Task<? extends Serializable> updateReplIdTask;
 
-    boolean needCommitTx = false;
-    for (Task<? extends Serializable> t : importTasks) {
-      if (t instanceof ReplTxnTask) {
-        ReplTxnTask replTxnTask = (ReplTxnTask)t;
-        if (replTxnTask.getOperationType() == ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN) {
-          assert needCommitTx == false; // can not have more than one open txn task for migration per event
-          needCommitTx = true;
-        }
-      }
-    }
+    boolean needCommitTx = updatedMetaDataTracker.isNeedCommitTxn();
 
     for (UpdatedMetaDataTracker.UpdateMetaData updateMetaData : updatedMetaDataTracker.getUpdateMetaDataList()) {
       String replState = updateMetaData.getReplState();
       String dbName = updateMetaData.getDbName();
       String tableName = updateMetaData.getTableName();
+
       // If any partition is updated, then update repl state in partition object
-      for (final Map<String, String> partSpec : updateMetaData.getPartitionsList()) {
-        updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, partSpec, replState, barrierTask, needCommitTx);
-        tasks.add(updateReplIdTask);
-      }
-
-      // in case of table handle operations there should be only one partition/table per event.
       if (needCommitTx) {
-        assert updateMetaData.getPartitionsList().size() <= 1;
-        // if partition last repl id is updated within a transaction, then table repl id update can be done outside.
-        needCommitTx = updateMetaData.getPartitionsList().size() == 0;
+        if (updateMetaData.getPartitionsList().size() > 0) {
+          updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName,
+                  updateMetaData.getPartitionsList(), replState, barrierTask);
+          tasks.add(updateReplIdTask);
+
+          // if partition last repl id is updated within a transaction, then table repl id update can be done outside.
+          needCommitTx = false;
+        }
+      } else {
+        for (final Map<String, String> partSpec : updateMetaData.getPartitionsList()) {
+          updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, partSpec, replState, barrierTask);
+          tasks.add(updateReplIdTask);
+        }
       }
 
+      // If any table/partition is updated, then update repl state in table object
       if (tableName != null) {
-        // If any table/partition is updated, then update repl state in table object
-        updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, null, replState, barrierTask, needCommitTx);
+        if (needCommitTx) {
+          updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName, null, replState, barrierTask);
+          needCommitTx = false;
+        } else {
+          updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, null, replState, barrierTask);
+        }
         tasks.add(updateReplIdTask);
       }
 
-      // For table level load, need not update replication state for the database
-      if (isDatabaseLoad) {
-        // If any table/partition is updated, then update repl state in db object
+      // If any table/partition is updated, then update repl state in db object
+      if (needCommitTx) {
+        updateReplIdTask = getMigrationCommitTxnTask(dbName, null, null, replState, barrierTask);
+        needCommitTx = false;
+        tasks.add(updateReplIdTask);
+      } else if (isDatabaseLoad) {
+        // For table level load, need not update replication state for the database
         updateReplIdTask = dbUpdateReplStateTask(dbName, replState, barrierTask);
         tasks.add(updateReplIdTask);
       }

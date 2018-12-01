@@ -23,6 +23,8 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.CmRecycleResponse;
+import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
@@ -116,6 +118,10 @@ public final class SynchronizedMetaStoreClient {
 
   public synchronized void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
     client.addWriteNotificationLog(rqst);
+  }
+
+  public synchronized CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException {
+    return client.recycleDirToCmPath(request);
   }
 
   public synchronized void close() {
