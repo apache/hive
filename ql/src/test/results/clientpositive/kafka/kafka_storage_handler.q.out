@@ -6,7 +6,7 @@ STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 WITH SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd\'T\'HH:mm:ss\'Z\'")
 TBLPROPERTIES
 ("kafka.topic" = "test-topic",
-"kafka.bootstrap.servers"="localhost:9092",
+"kafka.bootstrap.servers"="localhost:9093",
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.JsonSerDe")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -19,7 +19,7 @@ STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 WITH SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd\'T\'HH:mm:ss\'Z\'")
 TBLPROPERTIES
 ("kafka.topic" = "test-topic",
-"kafka.bootstrap.servers"="localhost:9092",
+"kafka.bootstrap.servers"="localhost:9093",
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.JsonSerDe")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -561,7 +561,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE kafka_table_2
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 TBLPROPERTIES
 ("kafka.topic" = "test-topic",
-"kafka.bootstrap.servers"="localhost:9092")
+"kafka.bootstrap.servers"="localhost:9093")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@kafka_table_2
@@ -572,7 +572,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE kafka_table_2
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 TBLPROPERTIES
 ("kafka.topic" = "test-topic",
-"kafka.bootstrap.servers"="localhost:9092")
+"kafka.bootstrap.servers"="localhost:9093")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kafka_table_2
@@ -611,7 +611,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE wiki_kafka_avro_table
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 TBLPROPERTIES
 ("kafka.topic" = "wiki_kafka_avro_table",
-"kafka.bootstrap.servers"="localhost:9092",
+"kafka.bootstrap.servers"="localhost:9093",
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.avro.AvroSerDe",
 'avro.schema.literal'='{
   "type" : "record",
@@ -682,7 +682,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE wiki_kafka_avro_table
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 TBLPROPERTIES
 ("kafka.topic" = "wiki_kafka_avro_table",
-"kafka.bootstrap.servers"="localhost:9092",
+"kafka.bootstrap.servers"="localhost:9093",
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.avro.AvroSerDe",
 'avro.schema.literal'='{
   "type" : "record",
@@ -853,7 +853,7 @@ STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 WITH SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd\'T\'HH:mm:ss\'Z\'")
 TBLPROPERTIES
 ("kafka.topic" = "test-topic-write-json",
-"kafka.bootstrap.servers"="localhost:9092",
+"kafka.bootstrap.servers"="localhost:9093",
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.JsonSerDe")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -864,7 +864,7 @@ STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 WITH SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd\'T\'HH:mm:ss\'Z\'")
 TBLPROPERTIES
 ("kafka.topic" = "test-topic-write-json",
-"kafka.bootstrap.servers"="localhost:9092",
+"kafka.bootstrap.servers"="localhost:9093",
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.JsonSerDe")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -992,7 +992,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE kafka_table_csv
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 TBLPROPERTIES
 ("kafka.topic" = "test-topic-write-csv",
-"kafka.bootstrap.servers"="localhost:9092",
+"kafka.bootstrap.servers"="localhost:9093",
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.OpenCSVSerde")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1002,7 +1002,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE kafka_table_csv
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
 TBLPROPERTIES
 ("kafka.topic" = "test-topic-write-csv",
-"kafka.bootstrap.servers"="localhost:9092",
+"kafka.bootstrap.servers"="localhost:9093",
 "kafka.serde.class"="org.apache.hadoop.hive.serde2.OpenCSVSerde")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -1198,7 +1198,7 @@ STAGE PLANS:
                     hive.kafka.metadata.poll.timeout.ms 30000
                     hive.kafka.optimistic.commit false
                     hive.kafka.poll.timeout.ms 5000
-                    kafka.bootstrap.servers localhost:9092
+                    kafka.bootstrap.servers localhost:9093
                     kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
                     kafka.topic wiki_kafka_avro_table
                     kafka.write.semantic AT_LEAST_ONCE
@@ -1222,7 +1222,7 @@ STAGE PLANS:
                       hive.kafka.metadata.poll.timeout.ms 30000
                       hive.kafka.optimistic.commit false
                       hive.kafka.poll.timeout.ms 5000
-                      kafka.bootstrap.servers localhost:9092
+                      kafka.bootstrap.servers localhost:9093
                       kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
                       kafka.topic wiki_kafka_avro_table
                       kafka.write.semantic AT_LEAST_ONCE
@@ -1302,7 +1302,7 @@ STAGE PLANS:
                       hive.kafka.metadata.poll.timeout.ms 30000
                       hive.kafka.optimistic.commit false
                       hive.kafka.poll.timeout.ms 5000
-                      kafka.bootstrap.servers localhost:9092
+                      kafka.bootstrap.servers localhost:9093
                       kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
                       kafka.topic wiki_kafka_avro_table
                       kafka.write.semantic AT_LEAST_ONCE
@@ -1522,7 +1522,7 @@ STAGE PLANS:
                     hive.kafka.metadata.poll.timeout.ms 30000
                     hive.kafka.optimistic.commit false
                     hive.kafka.poll.timeout.ms 5000
-                    kafka.bootstrap.servers localhost:9092
+                    kafka.bootstrap.servers localhost:9093
                     kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
                     kafka.topic wiki_kafka_avro_table
                     kafka.write.semantic AT_LEAST_ONCE
@@ -1546,7 +1546,7 @@ STAGE PLANS:
                       hive.kafka.metadata.poll.timeout.ms 30000
                       hive.kafka.optimistic.commit false
                       hive.kafka.poll.timeout.ms 5000
-                      kafka.bootstrap.servers localhost:9092
+                      kafka.bootstrap.servers localhost:9093
                       kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
                       kafka.topic wiki_kafka_avro_table
                       kafka.write.semantic AT_LEAST_ONCE
@@ -1626,7 +1626,7 @@ STAGE PLANS:
                       hive.kafka.metadata.poll.timeout.ms 30000
                       hive.kafka.optimistic.commit false
                       hive.kafka.poll.timeout.ms 5000
-                      kafka.bootstrap.servers localhost:9092
+                      kafka.bootstrap.servers localhost:9093
                       kafka.serde.class org.apache.hadoop.hive.serde2.avro.AvroSerDe
                       kafka.topic wiki_kafka_avro_table
                       kafka.write.semantic AT_LEAST_ONCE

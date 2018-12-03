@@ -865,11 +865,11 @@ POSTHOOK: query: DROP TABLE druid_test_table_n9
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: druid_test_dst@druid_test_table_n9
 POSTHOOK: Output: druid_test_dst@druid_test_table_n9
-PREHOOK: query: drop   database druid_test_dst
+PREHOOK: query: drop database druid_test_dst
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:druid_test_dst
 PREHOOK: Output: database:druid_test_dst
-POSTHOOK: query: drop   database druid_test_dst
+POSTHOOK: query: drop database druid_test_dst
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:druid_test_dst
 POSTHOOK: Output: database:druid_test_dst

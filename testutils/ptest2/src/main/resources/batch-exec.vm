@@ -93,7 +93,7 @@ date +"%Y-%m-%d %T.%3N"
 mkdir ${logDir}/logs
 find ./ -type f -name 'TEST-*.xml' | \
 xargs -I {} sh -c 'f=TEST-${batchName}-$(basename {}); test -f ${logDir}/$f && f=$f-$(uuidgen); mv {} ${logDir}/$f'
-find ./ -type f -name hive.log -o -name spark.log -o -name derby.log | \
+find ./ -type f -name hive.log -o -name spark.log -o -name derby.log -o -name coordinator.log -o -name broker.log -o -name historical.log | \
   xargs -I {} sh -c 'f=$(basename {}); test -f ${logDir}/logs/$f && f=$f-$(uuidgen); mv {} ${logDir}/logs/$f'
 find ./ -path "*/spark/work" | \
   xargs -I {} sh -c 'mv {} ${logDir}/logs/spark-log'
