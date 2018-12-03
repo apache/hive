@@ -36,8 +36,8 @@ import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.complex.ListVector;
-import org.apache.arrow.vector.complex.MapVector;
-import org.apache.arrow.vector.complex.NullableMapVector;
+import org.apache.arrow.vector.complex.NonNullableStructVector;
+import org.apache.arrow.vector.complex.StructVector;
 import org.apache.arrow.vector.types.TimeUnit;
 import org.apache.arrow.vector.types.Types;
 import org.apache.arrow.vector.types.pojo.ArrowType;
@@ -97,7 +97,7 @@ class Serializer {
   private final VectorAssignRow vectorAssignRow;
   private int batchSize;
 
-  private final NullableMapVector rootVector;
+  private final StructVector rootVector;
 
   Serializer(ArrowColumnarBatchSerDe serDe) throws SerDeException {
     MAX_BUFFERED_ROWS = HiveConf.getIntVar(serDe.conf, HIVE_ARROW_BATCH_SIZE);
@@ -109,7 +109,7 @@ class Serializer {
     fieldSize = fieldTypeInfos.size();
 
     // Init Arrow stuffs
-    rootVector = NullableMapVector.empty(null, serDe.rootAllocator);
+    rootVector = StructVector.empty(null, serDe.rootAllocator);
 
     // Init Hive stuffs
     vectorizedRowBatch = new VectorizedRowBatch(fieldSize);
@@ -216,7 +216,7 @@ class Serializer {
         writeList((ListVector) arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo, size);
         break;
       case STRUCT:
-        writeStruct((MapVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size);
+        writeStruct((NonNullableStructVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size);
         break;
       case UNION:
         writeUnion(arrowVector, hiveVector, typeInfo, size);
@@ -260,7 +260,7 @@ class Serializer {
     write(arrowVector, hiveObjectVector, objectTypeInfo, size);
   }
 
-  private void writeStruct(MapVector arrowVector, StructColumnVector hiveVector,
+  private void writeStruct(NonNullableStructVector arrowVector, StructColumnVector hiveVector,
       StructTypeInfo typeInfo, int size) {
     final List<String> fieldNames = typeInfo.getAllStructFieldNames();
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
