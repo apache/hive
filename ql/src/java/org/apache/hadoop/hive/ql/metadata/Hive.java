@@ -695,7 +695,7 @@ public class Hive {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
         if (replWriteId > 0) {
-          ValidWriteIdList writeIds = getMSC().getValidWriteIds(getFullTableName(dbName, tblName), replWriteId);
+          ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
           tableSnapshot = new TableSnapshot(replWriteId, writeIds.writeToString());
         } else {
           // Make sure we pass in the names, so we can get the correct snapshot for rename table.
@@ -1903,8 +1903,17 @@ public class Hive {
             inheritLocation, isSkewedStoreAsSubdir, isSrcLocal, isAcidIUDoperation,
             hasFollowingStatsTask, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles);
 
-    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf,
-            newTPart.getTable(), true);
+    AcidUtils.TableSnapshot tableSnapshot = null;
+    if (isTxnTable) {
+      if ((writeId != null) && (writeId > 0)) {
+        ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
+                conf, tbl.getDbName(), tbl.getTableName());
+        tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
+      } else {
+        // Make sure we pass in the names, so we can get the correct snapshot for rename table.
+        tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(), true);
+      }
+    }
     if (tableSnapshot != null) {
       newTPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
     }
@@ -2829,7 +2838,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
 
-    alterTable(tbl, false, environmentContext, true);
+    alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false, environmentContext,
+            true, ((writeId == null) ? 0 : writeId));
 
     if (AcidUtils.isTransactionalTable(tbl)) {
       addWriteNotificationLog(tbl, null, newFiles, writeId);
