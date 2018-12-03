@@ -204,7 +204,16 @@ public class FunctionTask extends Task<FunctionWork> {
         org.apache.hadoop.hive.metastore.api.FunctionType.JAVA,
         resources
     );
-    db.createFunction(func);
+    try {
+      db.createFunction(func);
+    } catch (Exception e) {
+      // Addition to metastore failed, remove the function from the registry.
+      FunctionRegistry.unregisterPermanentFunction(registeredName);
+      setException(e);
+      LOG.error("Failed to add function " + createFunctionDesc.getFunctionName() +
+              " to the metastore.", e);
+      return 1;
+    }
     return 0;
   }
 
