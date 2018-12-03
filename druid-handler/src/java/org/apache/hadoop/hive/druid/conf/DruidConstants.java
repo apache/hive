@@ -69,7 +69,7 @@ public final class DruidConstants {
   // value delimiter for druid columns
   public static final String DRUID_PARSE_SPEC_DELIMITER = "druid.parseSpec.delimiter";
 
-  // list demiliter for multi-valued columns
+  // list delimiter for multi-valued columns
   public static final String DRUID_PARSE_SPEC_LIST_DELIMITER = "druid.parseSpec.listDelimiter";
 
   // order of columns for delimiter and csv parse specs.

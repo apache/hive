@@ -173,11 +173,11 @@ import java.util.stream.Collectors;
     }, objectMapper);
 
     Path
-        segmentDescriptroPath =
+        segmentDescriptorPath =
         new Path(workingDir.getAbsolutePath(), DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME);
     DruidRecordWriter
         druidRecordWriter =
-        new DruidRecordWriter(dataSchema, tuningConfig, dataSegmentPusher, 20, segmentDescriptroPath, localFileSystem);
+        new DruidRecordWriter(dataSchema, tuningConfig, dataSegmentPusher, 20, segmentDescriptorPath, localFileSystem);
 
     List<DruidWritable>
         druidWritables =
@@ -194,7 +194,7 @@ import java.util.stream.Collectors;
       druidRecordWriter.write(druidWritable);
     }
     druidRecordWriter.close(false);
-    List<DataSegment> dataSegmentList = DruidStorageHandlerUtils.getCreatedSegments(segmentDescriptroPath, config);
+    List<DataSegment> dataSegmentList = DruidStorageHandlerUtils.getCreatedSegments(segmentDescriptorPath, config);
     Assert.assertEquals(1, dataSegmentList.size());
     File tmpUnzippedSegmentDir = temporaryFolder.newFolder();
     new LocalDataSegmentPuller().getSegmentFiles(dataSegmentList.get(0), tmpUnzippedSegmentDir);

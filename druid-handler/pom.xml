@@ -158,13 +158,13 @@
       <groupId>io.druid.extensions</groupId>
       <artifactId>mysql-metadata-storage</artifactId>
       <version>${druid.version}</version>
-       <exclusions>
+      <exclusions>
         <exclusion>
           <groupId>mysql</groupId>
           <artifactId>mysql-connector-java</artifactId>
         </exclusion>
       </exclusions>
-   </dependency>
+    </dependency>
     <dependency>
       <groupId>io.druid.extensions</groupId>
       <artifactId>postgresql-metadata-storage</artifactId>
@@ -346,7 +346,7 @@
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
-			<exclude>static/</exclude>
+                        <exclude>static/</exclude>
                       </excludes>
                     </filter>
                   </filters>

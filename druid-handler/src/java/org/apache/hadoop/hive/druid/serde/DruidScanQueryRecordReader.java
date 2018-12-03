@@ -50,6 +50,7 @@ public class DruidScanQueryRecordReader extends DruidQueryRecordReader<ScanResul
     }
     if (queryResultsIterator.hasNext()) {
       ScanResultValue current = queryResultsIterator.next();
+      //noinspection unchecked
       compactedValues = ((List<List<Object>>) current.getEvents()).iterator();
       return nextKeyValue();
     }

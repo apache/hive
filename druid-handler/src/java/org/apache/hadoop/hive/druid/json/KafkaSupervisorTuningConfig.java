@@ -33,7 +33,7 @@ import java.io.File;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type") @JsonSubTypes({
+@SuppressWarnings("ALL") @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type") @JsonSubTypes({
     @JsonSubTypes.Type(name = "kafka", value = KafkaSupervisorTuningConfig.class) })
 public class KafkaSupervisorTuningConfig extends KafkaTuningConfig {
   private final Integer workerThreads;
