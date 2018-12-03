@@ -37,16 +37,21 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
+import org.apache.thrift.TException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.io.Serializable;
+
+import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMigrationOption.MANAGED;
 
 
 public class ReplUtils {
@@ -132,16 +137,22 @@ public class ReplUtils {
                                                                    UpdatedMetaDataTracker updatedMetaDataTracker,
                                                                    Task<? extends Serializable> childTask,
                                                                    org.apache.hadoop.hive.metastore.api.Table tableObj)
-  {
+          throws IOException, TException {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) && updatedMetaDataTracker != null &&
             !TxnUtils.isTransactionalTable(tableObj) &&
             TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
-      //TODO : need to check if migration is from non acid to acid, then only start the transaction.
-      Task<? extends Serializable> replTxnTaskTask =
-              TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName), conf);
-      replTxnTaskTask.addDependentTask(childTask);
-      updatedMetaDataTracker.setNeedCommitTxn(true);
-      return replTxnTaskTask;
+
+      HiveStrictManagedMigration.TableMigrationOption migrationOption =
+              HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
+                      null, conf, null, true);
+      if (migrationOption == MANAGED) {
+        //if conversion to managed table.
+        Task<? extends Serializable> replTxnTaskTask =
+                TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName), conf);
+        replTxnTaskTask.addDependentTask(childTask);
+        updatedMetaDataTracker.setNeedCommitTxn(true);
+        return replTxnTaskTask;
+      }
     }
     return childTask;
   }
