@@ -858,7 +858,7 @@ public class HiveStrictManagedMigration {
     // Transactional tables should still remain transactional,
     // but we should have already checked for that before this point.
     if (isPathOwnedByHive != null) {
-      // for replication from 2.6 cluster, the path is verified at source cluster itself.
+      // for replication flow, the path is verified at source cluster itself.
       return isPathOwnedByHive ? null :
               String.format("One or more table directories is not owned by hive or non-HDFS path at source cluster");
     } else if (shouldTablePathBeExternal(tableObj, ownerName, conf, hms)) {

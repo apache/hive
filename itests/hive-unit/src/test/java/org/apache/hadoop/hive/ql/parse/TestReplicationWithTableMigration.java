@@ -104,6 +104,7 @@ public class TestReplicationWithTableMigration {
       put("hive.support.concurrency", "false");
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
       put("hive.strict.managed.tables", "false");
+      put("hive.repl.approx.max.load.tasks", "1");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }

@@ -18,12 +18,11 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
-import org.apache.hadoop.hive.ql.exec.ReplTxnTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 
 import java.io.Serializable;
@@ -47,15 +46,11 @@ public class TruncateTableHandler extends AbstractMessageHandler {
     context.log.debug("Added truncate tbl task : {}:{}:{}", truncateTableTask.getId(),
         truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
-    if (msg.getWriteId() <= 0) {
-      // write id will be 0, in case of migration from 2.6.
-      //TODO : need to check if migration is from non acid to acid, then only start the transaction.
-      Task<? extends Serializable> replTxnTaskTask =
-              TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName), context.hiveConf);
-      replTxnTaskTask.addDependentTask(truncateTableTask);
-      context.log.debug(" added repl txn task " + replTxnTaskTask.toString());
-      return Collections.singletonList(replTxnTaskTask);
+    try {
+      return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
+              context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore());
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage());
     }
-    return Collections.singletonList(truncateTableTask);
   }
 }

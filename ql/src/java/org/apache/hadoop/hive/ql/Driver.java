@@ -2069,9 +2069,10 @@ public class Driver implements IDriver {
         else if(plan.getOperation() == HiveOperation.ROLLBACK) {
           releaseLocksAndCommitOrRollback(false);
         }
-        else if (!queryTxnMgr.isTxnOpen()) { // txn is closed by some other thread, clear the valid txn list
-          conf.unset(ValidTxnList.VALID_TXNS_KEY);
-          conf.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+        else if (!queryTxnMgr.isTxnOpen() && queryState.getHiveOperation() == HiveOperation.REPLLOAD) {
+          // repl load during migration, commits the explicit txn and start some internal txns. Call
+          // releaseLocksAndCommitOrRollback to clean up.
+          releaseLocksAndCommitOrRollback(false);
         } else {
           //txn (if there is one started) is not finished
         }

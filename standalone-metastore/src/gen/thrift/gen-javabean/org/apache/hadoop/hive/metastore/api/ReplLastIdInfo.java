@@ -39,10 +39,11 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ReplLastIdInfo");
 
   private static final org.apache.thrift.protocol.TField DATABASE_FIELD_DESC = new org.apache.thrift.protocol.TField("database", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField LAST_REPL_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("lastReplId", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField LAST_REPL_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("lastReplId", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField CATALOG_FIELD_DESC = new org.apache.thrift.protocol.TField("catalog", org.apache.thrift.protocol.TType.STRING, (short)4);
-  private static final org.apache.thrift.protocol.TField PARTITION_FIELD_DESC = new org.apache.thrift.protocol.TField("partition", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField PARTITION_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionList", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField NEED_UPDATE_DBREPL_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("needUpdateDBReplId", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,18 +52,20 @@ import org.slf4j.LoggerFactory;
   }
 
   private String database; // required
-  private String table; // required
   private long lastReplId; // required
+  private String table; // optional
   private String catalog; // optional
-  private String partition; // optional
+  private List<String> partitionList; // optional
+  private boolean needUpdateDBReplId; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     DATABASE((short)1, "database"),
-    TABLE((short)2, "table"),
-    LAST_REPL_ID((short)3, "lastReplId"),
+    LAST_REPL_ID((short)2, "lastReplId"),
+    TABLE((short)3, "table"),
     CATALOG((short)4, "catalog"),
-    PARTITION((short)5, "partition");
+    PARTITION_LIST((short)5, "partitionList"),
+    NEED_UPDATE_DBREPL_ID((short)6, "needUpdateDBReplId");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -79,14 +82,16 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // DATABASE
           return DATABASE;
-        case 2: // TABLE
-          return TABLE;
-        case 3: // LAST_REPL_ID
+        case 2: // LAST_REPL_ID
           return LAST_REPL_ID;
+        case 3: // TABLE
+          return TABLE;
         case 4: // CATALOG
           return CATALOG;
-        case 5: // PARTITION
-          return PARTITION;
+        case 5: // PARTITION_LIST
+          return PARTITION_LIST;
+        case 6: // NEED_UPDATE_DBREPL_ID
+          return NEED_UPDATE_DBREPL_ID;
         default:
           return null;
       }
@@ -128,21 +133,25 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __LASTREPLID_ISSET_ID = 0;
+  private static final int __NEEDUPDATEDBREPLID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CATALOG,_Fields.PARTITION};
+  private static final _Fields optionals[] = {_Fields.TABLE,_Fields.CATALOG,_Fields.PARTITION_LIST,_Fields.NEED_UPDATE_DBREPL_ID};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.DATABASE, new org.apache.thrift.meta_data.FieldMetaData("database", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.LAST_REPL_ID, new org.apache.thrift.meta_data.FieldMetaData("lastReplId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CATALOG, new org.apache.thrift.meta_data.FieldMetaData("catalog", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PARTITION, new org.apache.thrift.meta_data.FieldMetaData("partition", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PARTITION_LIST, new org.apache.thrift.meta_data.FieldMetaData("partitionList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.NEED_UPDATE_DBREPL_ID, new org.apache.thrift.meta_data.FieldMetaData("needUpdateDBReplId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ReplLastIdInfo.class, metaDataMap);
   }
@@ -152,12 +161,10 @@ import org.slf4j.LoggerFactory;
 
   public ReplLastIdInfo(
     String database,
-    String table,
     long lastReplId)
   {
     this();
     this.database = database;
-    this.table = table;
     this.lastReplId = lastReplId;
     setLastReplIdIsSet(true);
   }
@@ -170,16 +177,18 @@ import org.slf4j.LoggerFactory;
     if (other.isSetDatabase()) {
       this.database = other.database;
     }
+    this.lastReplId = other.lastReplId;
     if (other.isSetTable()) {
       this.table = other.table;
     }
-    this.lastReplId = other.lastReplId;
     if (other.isSetCatalog()) {
       this.catalog = other.catalog;
     }
-    if (other.isSetPartition()) {
-      this.partition = other.partition;
+    if (other.isSetPartitionList()) {
+      List<String> __this__partitionList = new ArrayList<String>(other.partitionList);
+      this.partitionList = __this__partitionList;
     }
+    this.needUpdateDBReplId = other.needUpdateDBReplId;
   }
 
   public ReplLastIdInfo deepCopy() {
@@ -189,11 +198,13 @@ import org.slf4j.LoggerFactory;
   @Override
   public void clear() {
     this.database = null;
-    this.table = null;
     setLastReplIdIsSet(false);
     this.lastReplId = 0;
+    this.table = null;
     this.catalog = null;
-    this.partition = null;
+    this.partitionList = null;
+    setNeedUpdateDBReplIdIsSet(false);
+    this.needUpdateDBReplId = false;
   }
 
   public String getDatabase() {
@@ -219,6 +230,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public long getLastReplId() {
+    return this.lastReplId;
+  }
+
+  public void setLastReplId(long lastReplId) {
+    this.lastReplId = lastReplId;
+    setLastReplIdIsSet(true);
+  }
+
+  public void unsetLastReplId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __LASTREPLID_ISSET_ID);
+  }
+
+  /** Returns true if field lastReplId is set (has been assigned a value) and false otherwise */
+  public boolean isSetLastReplId() {
+    return EncodingUtils.testBit(__isset_bitfield, __LASTREPLID_ISSET_ID);
+  }
+
+  public void setLastReplIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LASTREPLID_ISSET_ID, value);
+  }
+
   public String getTable() {
     return this.table;
   }
@@ -240,28 +273,6 @@ import org.slf4j.LoggerFactory;
     if (!value) {
       this.table = null;
     }
-  }
-
-  public long getLastReplId() {
-    return this.lastReplId;
-  }
-
-  public void setLastReplId(long lastReplId) {
-    this.lastReplId = lastReplId;
-    setLastReplIdIsSet(true);
-  }
-
-  public void unsetLastReplId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __LASTREPLID_ISSET_ID);
-  }
-
-  /** Returns true if field lastReplId is set (has been assigned a value) and false otherwise */
-  public boolean isSetLastReplId() {
-    return EncodingUtils.testBit(__isset_bitfield, __LASTREPLID_ISSET_ID);
-  }
-
-  public void setLastReplIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LASTREPLID_ISSET_ID, value);
   }
 
   public String getCatalog() {
@@ -287,27 +298,64 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public String getPartition() {
-    return this.partition;
+  public int getPartitionListSize() {
+    return (this.partitionList == null) ? 0 : this.partitionList.size();
   }
 
-  public void setPartition(String partition) {
-    this.partition = partition;
+  public java.util.Iterator<String> getPartitionListIterator() {
+    return (this.partitionList == null) ? null : this.partitionList.iterator();
   }
 
-  public void unsetPartition() {
-    this.partition = null;
-  }
-
-  /** Returns true if field partition is set (has been assigned a value) and false otherwise */
-  public boolean isSetPartition() {
-    return this.partition != null;
-  }
-
-  public void setPartitionIsSet(boolean value) {
-    if (!value) {
-      this.partition = null;
+  public void addToPartitionList(String elem) {
+    if (this.partitionList == null) {
+      this.partitionList = new ArrayList<String>();
     }
+    this.partitionList.add(elem);
+  }
+
+  public List<String> getPartitionList() {
+    return this.partitionList;
+  }
+
+  public void setPartitionList(List<String> partitionList) {
+    this.partitionList = partitionList;
+  }
+
+  public void unsetPartitionList() {
+    this.partitionList = null;
+  }
+
+  /** Returns true if field partitionList is set (has been assigned a value) and false otherwise */
+  public boolean isSetPartitionList() {
+    return this.partitionList != null;
+  }
+
+  public void setPartitionListIsSet(boolean value) {
+    if (!value) {
+      this.partitionList = null;
+    }
+  }
+
+  public boolean isNeedUpdateDBReplId() {
+    return this.needUpdateDBReplId;
+  }
+
+  public void setNeedUpdateDBReplId(boolean needUpdateDBReplId) {
+    this.needUpdateDBReplId = needUpdateDBReplId;
+    setNeedUpdateDBReplIdIsSet(true);
+  }
+
+  public void unsetNeedUpdateDBReplId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __NEEDUPDATEDBREPLID_ISSET_ID);
+  }
+
+  /** Returns true if field needUpdateDBReplId is set (has been assigned a value) and false otherwise */
+  public boolean isSetNeedUpdateDBReplId() {
+    return EncodingUtils.testBit(__isset_bitfield, __NEEDUPDATEDBREPLID_ISSET_ID);
+  }
+
+  public void setNeedUpdateDBReplIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NEEDUPDATEDBREPLID_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -320,19 +368,19 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case TABLE:
-      if (value == null) {
-        unsetTable();
-      } else {
-        setTable((String)value);
-      }
-      break;
-
     case LAST_REPL_ID:
       if (value == null) {
         unsetLastReplId();
       } else {
         setLastReplId((Long)value);
+      }
+      break;
+
+    case TABLE:
+      if (value == null) {
+        unsetTable();
+      } else {
+        setTable((String)value);
       }
       break;
 
@@ -344,11 +392,19 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case PARTITION:
+    case PARTITION_LIST:
       if (value == null) {
-        unsetPartition();
+        unsetPartitionList();
       } else {
-        setPartition((String)value);
+        setPartitionList((List<String>)value);
+      }
+      break;
+
+    case NEED_UPDATE_DBREPL_ID:
+      if (value == null) {
+        unsetNeedUpdateDBReplId();
+      } else {
+        setNeedUpdateDBReplId((Boolean)value);
       }
       break;
 
@@ -360,17 +416,20 @@ import org.slf4j.LoggerFactory;
     case DATABASE:
       return getDatabase();
 
-    case TABLE:
-      return getTable();
-
     case LAST_REPL_ID:
       return getLastReplId();
+
+    case TABLE:
+      return getTable();
 
     case CATALOG:
       return getCatalog();
 
-    case PARTITION:
-      return getPartition();
+    case PARTITION_LIST:
+      return getPartitionList();
+
+    case NEED_UPDATE_DBREPL_ID:
+      return isNeedUpdateDBReplId();
 
     }
     throw new IllegalStateException();
@@ -385,14 +444,16 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case DATABASE:
       return isSetDatabase();
-    case TABLE:
-      return isSetTable();
     case LAST_REPL_ID:
       return isSetLastReplId();
+    case TABLE:
+      return isSetTable();
     case CATALOG:
       return isSetCatalog();
-    case PARTITION:
-      return isSetPartition();
+    case PARTITION_LIST:
+      return isSetPartitionList();
+    case NEED_UPDATE_DBREPL_ID:
+      return isSetNeedUpdateDBReplId();
     }
     throw new IllegalStateException();
   }
@@ -419,21 +480,21 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_table = true && this.isSetTable();
-    boolean that_present_table = true && that.isSetTable();
-    if (this_present_table || that_present_table) {
-      if (!(this_present_table && that_present_table))
-        return false;
-      if (!this.table.equals(that.table))
-        return false;
-    }
-
     boolean this_present_lastReplId = true;
     boolean that_present_lastReplId = true;
     if (this_present_lastReplId || that_present_lastReplId) {
       if (!(this_present_lastReplId && that_present_lastReplId))
         return false;
       if (this.lastReplId != that.lastReplId)
+        return false;
+    }
+
+    boolean this_present_table = true && this.isSetTable();
+    boolean that_present_table = true && that.isSetTable();
+    if (this_present_table || that_present_table) {
+      if (!(this_present_table && that_present_table))
+        return false;
+      if (!this.table.equals(that.table))
         return false;
     }
 
@@ -446,12 +507,21 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_partition = true && this.isSetPartition();
-    boolean that_present_partition = true && that.isSetPartition();
-    if (this_present_partition || that_present_partition) {
-      if (!(this_present_partition && that_present_partition))
+    boolean this_present_partitionList = true && this.isSetPartitionList();
+    boolean that_present_partitionList = true && that.isSetPartitionList();
+    if (this_present_partitionList || that_present_partitionList) {
+      if (!(this_present_partitionList && that_present_partitionList))
         return false;
-      if (!this.partition.equals(that.partition))
+      if (!this.partitionList.equals(that.partitionList))
+        return false;
+    }
+
+    boolean this_present_needUpdateDBReplId = true && this.isSetNeedUpdateDBReplId();
+    boolean that_present_needUpdateDBReplId = true && that.isSetNeedUpdateDBReplId();
+    if (this_present_needUpdateDBReplId || that_present_needUpdateDBReplId) {
+      if (!(this_present_needUpdateDBReplId && that_present_needUpdateDBReplId))
+        return false;
+      if (this.needUpdateDBReplId != that.needUpdateDBReplId)
         return false;
     }
 
@@ -467,25 +537,30 @@ import org.slf4j.LoggerFactory;
     if (present_database)
       list.add(database);
 
-    boolean present_table = true && (isSetTable());
-    list.add(present_table);
-    if (present_table)
-      list.add(table);
-
     boolean present_lastReplId = true;
     list.add(present_lastReplId);
     if (present_lastReplId)
       list.add(lastReplId);
+
+    boolean present_table = true && (isSetTable());
+    list.add(present_table);
+    if (present_table)
+      list.add(table);
 
     boolean present_catalog = true && (isSetCatalog());
     list.add(present_catalog);
     if (present_catalog)
       list.add(catalog);
 
-    boolean present_partition = true && (isSetPartition());
-    list.add(present_partition);
-    if (present_partition)
-      list.add(partition);
+    boolean present_partitionList = true && (isSetPartitionList());
+    list.add(present_partitionList);
+    if (present_partitionList)
+      list.add(partitionList);
+
+    boolean present_needUpdateDBReplId = true && (isSetNeedUpdateDBReplId());
+    list.add(present_needUpdateDBReplId);
+    if (present_needUpdateDBReplId)
+      list.add(needUpdateDBReplId);
 
     return list.hashCode();
   }
@@ -508,22 +583,22 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetTable()).compareTo(other.isSetTable());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTable()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetLastReplId()).compareTo(other.isSetLastReplId());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetLastReplId()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.lastReplId, other.lastReplId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTable()).compareTo(other.isSetTable());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTable()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, other.table);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -538,12 +613,22 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPartition()).compareTo(other.isSetPartition());
+    lastComparison = Boolean.valueOf(isSetPartitionList()).compareTo(other.isSetPartitionList());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPartition()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partition, other.partition);
+    if (isSetPartitionList()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partitionList, other.partitionList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNeedUpdateDBReplId()).compareTo(other.isSetNeedUpdateDBReplId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNeedUpdateDBReplId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.needUpdateDBReplId, other.needUpdateDBReplId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -576,17 +661,19 @@ import org.slf4j.LoggerFactory;
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("table:");
-    if (this.table == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.table);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("lastReplId:");
     sb.append(this.lastReplId);
     first = false;
+    if (isSetTable()) {
+      if (!first) sb.append(", ");
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+    }
     if (isSetCatalog()) {
       if (!first) sb.append(", ");
       sb.append("catalog:");
@@ -597,14 +684,20 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
-    if (isSetPartition()) {
+    if (isSetPartitionList()) {
       if (!first) sb.append(", ");
-      sb.append("partition:");
-      if (this.partition == null) {
+      sb.append("partitionList:");
+      if (this.partitionList == null) {
         sb.append("null");
       } else {
-        sb.append(this.partition);
+        sb.append(this.partitionList);
       }
+      first = false;
+    }
+    if (isSetNeedUpdateDBReplId()) {
+      if (!first) sb.append(", ");
+      sb.append("needUpdateDBReplId:");
+      sb.append(this.needUpdateDBReplId);
       first = false;
     }
     sb.append(")");
@@ -615,10 +708,6 @@ import org.slf4j.LoggerFactory;
     // check for required fields
     if (!isSetDatabase()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'database' is unset! Struct:" + toString());
-    }
-
-    if (!isSetTable()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'table' is unset! Struct:" + toString());
     }
 
     if (!isSetLastReplId()) {
@@ -672,18 +761,18 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TABLE
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.table = iprot.readString();
-              struct.setTableIsSet(true);
+          case 2: // LAST_REPL_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.lastReplId = iprot.readI64();
+              struct.setLastReplIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // LAST_REPL_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.lastReplId = iprot.readI64();
-              struct.setLastReplIdIsSet(true);
+          case 3: // TABLE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.table = iprot.readString();
+              struct.setTableIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -696,10 +785,28 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // PARTITION
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.partition = iprot.readString();
-              struct.setPartitionIsSet(true);
+          case 5: // PARTITION_LIST
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list610 = iprot.readListBegin();
+                struct.partitionList = new ArrayList<String>(_list610.size);
+                String _elem611;
+                for (int _i612 = 0; _i612 < _list610.size; ++_i612)
+                {
+                  _elem611 = iprot.readString();
+                  struct.partitionList.add(_elem611);
+                }
+                iprot.readListEnd();
+              }
+              struct.setPartitionListIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // NEED_UPDATE_DBREPL_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.needUpdateDBReplId = iprot.readBool();
+              struct.setNeedUpdateDBReplIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -722,14 +829,16 @@ import org.slf4j.LoggerFactory;
         oprot.writeString(struct.database);
         oprot.writeFieldEnd();
       }
-      if (struct.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(struct.table);
-        oprot.writeFieldEnd();
-      }
       oprot.writeFieldBegin(LAST_REPL_ID_FIELD_DESC);
       oprot.writeI64(struct.lastReplId);
       oprot.writeFieldEnd();
+      if (struct.table != null) {
+        if (struct.isSetTable()) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          oprot.writeString(struct.table);
+          oprot.writeFieldEnd();
+        }
+      }
       if (struct.catalog != null) {
         if (struct.isSetCatalog()) {
           oprot.writeFieldBegin(CATALOG_FIELD_DESC);
@@ -737,12 +846,24 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
-      if (struct.partition != null) {
-        if (struct.isSetPartition()) {
-          oprot.writeFieldBegin(PARTITION_FIELD_DESC);
-          oprot.writeString(struct.partition);
+      if (struct.partitionList != null) {
+        if (struct.isSetPartitionList()) {
+          oprot.writeFieldBegin(PARTITION_LIST_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partitionList.size()));
+            for (String _iter613 : struct.partitionList)
+            {
+              oprot.writeString(_iter613);
+            }
+            oprot.writeListEnd();
+          }
           oprot.writeFieldEnd();
         }
+      }
+      if (struct.isSetNeedUpdateDBReplId()) {
+        oprot.writeFieldBegin(NEED_UPDATE_DBREPL_ID_FIELD_DESC);
+        oprot.writeBool(struct.needUpdateDBReplId);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -762,21 +883,38 @@ import org.slf4j.LoggerFactory;
     public void write(org.apache.thrift.protocol.TProtocol prot, ReplLastIdInfo struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.database);
-      oprot.writeString(struct.table);
       oprot.writeI64(struct.lastReplId);
       BitSet optionals = new BitSet();
-      if (struct.isSetCatalog()) {
+      if (struct.isSetTable()) {
         optionals.set(0);
       }
-      if (struct.isSetPartition()) {
+      if (struct.isSetCatalog()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetPartitionList()) {
+        optionals.set(2);
+      }
+      if (struct.isSetNeedUpdateDBReplId()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetTable()) {
+        oprot.writeString(struct.table);
+      }
       if (struct.isSetCatalog()) {
         oprot.writeString(struct.catalog);
       }
-      if (struct.isSetPartition()) {
-        oprot.writeString(struct.partition);
+      if (struct.isSetPartitionList()) {
+        {
+          oprot.writeI32(struct.partitionList.size());
+          for (String _iter614 : struct.partitionList)
+          {
+            oprot.writeString(_iter614);
+          }
+        }
+      }
+      if (struct.isSetNeedUpdateDBReplId()) {
+        oprot.writeBool(struct.needUpdateDBReplId);
       }
     }
 
@@ -785,18 +923,33 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.database = iprot.readString();
       struct.setDatabaseIsSet(true);
-      struct.table = iprot.readString();
-      struct.setTableIsSet(true);
       struct.lastReplId = iprot.readI64();
       struct.setLastReplIdIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
+        struct.table = iprot.readString();
+        struct.setTableIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.catalog = iprot.readString();
         struct.setCatalogIsSet(true);
       }
-      if (incoming.get(1)) {
-        struct.partition = iprot.readString();
-        struct.setPartitionIsSet(true);
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TList _list615 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.partitionList = new ArrayList<String>(_list615.size);
+          String _elem616;
+          for (int _i617 = 0; _i617 < _list615.size; ++_i617)
+          {
+            _elem616 = iprot.readString();
+            struct.partitionList.add(_elem616);
+          }
+        }
+        struct.setPartitionListIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.needUpdateDBReplId = iprot.readBool();
+        struct.setNeedUpdateDBReplIdIsSet(true);
       }
     }
   }

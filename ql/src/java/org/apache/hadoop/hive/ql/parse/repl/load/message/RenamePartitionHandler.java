@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
@@ -66,6 +67,11 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
     context.log.debug("Added rename ptn task : {}:{}->{}",
                       renamePtnTask.getId(), oldPartSpec, newPartSpec);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, newPartSpec);
-    return Collections.singletonList(renamePtnTask);
+    try {
+      return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
+              context.hiveConf, updatedMetadata, renamePtnTask, msg.getTableObj());
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage());
+    }
   }
 }

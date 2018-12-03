@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -72,7 +73,9 @@ public class RenameTableHandler extends AbstractMessageHandler {
       // Note : edge-case here in interaction with table-level REPL LOAD, where that nukes out
       // tablesUpdated. However, we explicitly don't support repl of that sort, and error out above
       // if so. If that should ever change, this will need reworking.
-      return Collections.singletonList(renameTableTask);
+      return ReplUtils.addOpenTxnTaskForMigration(newDbName,
+              msg.getTableObjAfter().getTableName(),
+              context.hiveConf, updatedMetadata, renameTableTask, msg.getTableObjBefore());
     } catch (Exception e) {
       throw (e instanceof SemanticException)
           ? (SemanticException) e

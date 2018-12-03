@@ -95,8 +95,9 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
       case REPL_MIGRATION_OPEN_TXN:
         // if transaction is already opened (mostly by repl load command), then close it.
         if (txnManager.isTxnOpen()) {
-          LOG.info(" committed txn from REPL_MIGRATION_OPEN_TXN : " + txnManager.getCurrentTxnId());
+          long txnId = txnManager.getCurrentTxnId();
           txnManager.commitTxn();
+          LOG.info(" committed txn from REPL_MIGRATION_OPEN_TXN : " + txnId);
         }
         Long txnIdMigration = txnManager.openTxn(driverContext.getCtx(), user);
         long writeId = txnManager.getTableWriteId(work.getDbName(), work.getTableName());
@@ -130,7 +131,7 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         commitTxnRequestMigr.setReplLastIdInfo(work.getReplLastIdInfo());
         txnManager.replCommitTxn(commitTxnRequestMigr);
         conf.unset(ValidTxnList.VALID_TXNS_KEY);
-        LOG.info("Replayed CommitTxn Event for replLastIdInfo: " + work.getReplLastIdInfo() + " with srcTxn: " +
+        LOG.info("Replayed CommitTxn Event with replLastIdInfo: " + work.getReplLastIdInfo() + " for txn : " +
                 txnIdMigrationCommit);
         return 0;
       case REPL_ALLOC_WRITE_ID:

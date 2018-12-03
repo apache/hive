@@ -241,8 +241,8 @@ public class LoadTable {
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
       loadFileType = LoadFileType.IGNORE;
     } else {
-      loadFileType =
-              replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+      loadFileType = replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL :
+              replicationSpec.isDoingMigration() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
       tmpPath = PathUtils.getExternalTmpPath(tgtPath, context.pathInfo);
     }
 

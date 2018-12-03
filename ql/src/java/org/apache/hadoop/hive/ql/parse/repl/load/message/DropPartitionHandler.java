@@ -52,7 +52,8 @@ public class DropPartitionHandler extends AbstractMessageHandler {
         context.log.debug("Added drop ptn task : {}:{},{}", dropPtnTask.getId(),
             dropPtnDesc.getTableName(), msg.getPartitions());
         updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
-        return Collections.singletonList(dropPtnTask);
+        return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
+                context.hiveConf, updatedMetadata, dropPtnTask, msg.getTableObj());
       } else {
         throw new SemanticException(
             "DROP PARTITION EVENT does not return any part descs for event message :"
