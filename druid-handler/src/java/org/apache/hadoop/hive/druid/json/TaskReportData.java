@@ -31,11 +31,11 @@ import javax.annotation.Nullable;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-public class TaskReportData {
+@SuppressWarnings("unused") public class TaskReportData {
   /**
    * Task type used by serializer but does not have any functionality as far i can tell.
    */
-  public enum TaskType {
+  @SuppressWarnings("unused") public enum TaskType {
     ACTIVE, PUBLISHING, UNKNOWN
   }
 

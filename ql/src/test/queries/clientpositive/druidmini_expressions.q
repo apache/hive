@@ -200,3 +200,13 @@ explain select `timets` from (select cast(`__time` as timestamp ) as timets from
 select `timets_with_tz` from (select `__time` as timets_with_tz from druid_table_alltypesorc order by timets_with_tz limit 10)  as src order by `timets_with_tz`;
 
 select `timets` from (select cast(`__time` as timestamp ) as timets from druid_table_alltypesorc order by timets limit 10)  as src order by `timets`;
+
+select count(cfloat) from (select `cfloat`, `cstring1` from druid_table_alltypesorc limit 1025) as src;
+
+select count(cstring1) from (select `cfloat`, `cstring1` from druid_table_alltypesorc limit 90000) as src;
+
+explain select count(cstring1) from (select `cfloat`, `cstring1`, `cint` from druid_table_alltypesorc limit 90000) as src;
+
+select max(cint * cdouble) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src;
+
+explain select max(cint * cfloat) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src;

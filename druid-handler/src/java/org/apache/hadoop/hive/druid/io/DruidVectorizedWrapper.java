@@ -35,11 +35,10 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.RecordReader;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Properties;
 
 /**
- * A Wrapper class that takes a row-by-row Druid Record Reader and provides a Vectorized one.
+ * A Wrapper class that consumes row-by-row from base Druid Record Reader and provides a Vectorized one.
  * @param <T> type of the Druid query.
  */
 public class DruidVectorizedWrapper<T extends Comparable<T>> implements RecordReader<NullWritable, VectorizedRowBatch> {
@@ -47,6 +46,7 @@ public class DruidVectorizedWrapper<T extends Comparable<T>> implements RecordRe
   private final DruidQueryRecordReader baseReader;
   private final VectorizedRowBatchCtx rbCtx;
   private final DruidSerDe serDe;
+  private final Object[] rowBoat;
 
   /**
    * Actual projected columns needed by the query, this can be empty in case of query like: select count(*) from src.
@@ -77,21 +77,21 @@ public class DruidVectorizedWrapper<T extends Comparable<T>> implements RecordRe
     }
 
     druidWritable = baseReader.createValue();
+    rowBoat = new Object[projectedColumns.length];
   }
 
   @Override public boolean next(NullWritable nullWritable, VectorizedRowBatch vectorizedRowBatch) throws IOException {
     vectorizedRowBatch.reset();
-    ArrayList<Object> row;
     int rowsCount = 0;
     while (rowsCount < vectorizedRowBatch.getMaxSize() && baseReader.next(nullWritable, druidWritable)) {
       if (projectedColumns.length > 0) {
         try {
-          row = serDe.deserializeAsPrimitive(druidWritable);
+          serDe.deserializeAsPrimitive(druidWritable, rowBoat);
         } catch (SerDeException e) {
           throw new IOException(e);
         }
         for (int i : projectedColumns) {
-          vectorAssignRow.assignRowColumn(vectorizedRowBatch, rowsCount, i, row.get(i));
+          vectorAssignRow.assignRowColumn(vectorizedRowBatch, rowsCount, i, rowBoat[i]);
         }
       }
       rowsCount++;
