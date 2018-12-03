@@ -29,8 +29,8 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <druid.metamx.util.version>1.3.2</druid.metamx.util.version>
     <druid.guava.version>16.0.1</druid.guava.version>
+    <druid.guice.version>4.1.0</druid.guice.version>
   </properties>
 
   <dependencies>
@@ -87,32 +87,12 @@
       <version>${druid.guava.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.metamx</groupId>
-      <artifactId>java-util</artifactId>
-      <version>${druid.metamx.util.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
       <version>${joda.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-server</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -129,14 +109,22 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>io.druid</groupId>
+          <groupId>org.apache.druid</groupId>
           <artifactId>druid-aws-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.inject</groupId>
+          <artifactId>guice</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.inject.extensions</groupId>
+          <artifactId>guice-servlet</artifactId>
         </exclusion>
       </exclusions>
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-processing</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -149,7 +137,7 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>druid-hdfs-storage</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -176,23 +164,23 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>mysql-metadata-storage</artifactId>
       <version>${druid.version}</version>
-       <exclusions>
+      <exclusions>
         <exclusion>
           <groupId>mysql</groupId>
           <artifactId>mysql-connector-java</artifactId>
         </exclusion>
       </exclusions>
-   </dependency>
+    </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>postgresql-metadata-storage</artifactId>
       <version>${druid.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>druid-bloom-filter</artifactId>
       <version>${druid.version}</version>
     </dependency>
@@ -212,7 +200,7 @@
           <artifactId>guava</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commmons-logging</groupId>
+          <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
         <exclusion>
@@ -266,7 +254,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-indexing-hadoop</artifactId>
       <version>${druid.version}</version>
       <scope>test</scope>
@@ -317,12 +305,8 @@
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <relocations>
                     <relocation>
-                      <pattern>io.druid</pattern>
-                      <shadedPattern>org.apache.hive.druid.io.druid</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>com.metamx</pattern>
-                      <shadedPattern>org.apache.hive.druid.com.metamx</shadedPattern>
+                      <pattern>org.apache.druid</pattern>
+                      <shadedPattern>org.apache.hive.druid.org.apache.druid</shadedPattern>
                     </relocation>
                     <relocation>
                       <pattern>io.netty</pattern>
@@ -351,9 +335,8 @@
                   </relocations>
                   <artifactSet>
                     <includes>
-                      <include>io.druid:*</include>
-                      <include>io.druid.extensions:*</include>
-                      <include>com.metamx:*</include>
+                      <include>org.apache.druid:*</include>
+                      <include>org.apache.druid.extensions:*</include>
                       <include>io.netty:*</include>
                       <include>org.apache.calcite:*</include>
                       <include>com.fasterxml.jackson.core:*</include>
@@ -377,7 +360,7 @@
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
-			<exclude>static/</exclude>
+                        <exclude>static/</exclude>
                       </excludes>
                     </filter>
                   </filters>

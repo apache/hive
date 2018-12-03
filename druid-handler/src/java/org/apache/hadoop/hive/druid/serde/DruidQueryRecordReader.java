@@ -24,15 +24,14 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.Request;
-import com.metamx.http.client.response.InputStreamResponseHandler;
-import io.druid.java.util.common.IAE;
-import io.druid.java.util.common.RE;
-import io.druid.java.util.common.guava.CloseQuietly;
-import io.druid.query.BaseQuery;
-import io.druid.query.Query;
-import io.druid.query.QueryInterruptedException;
+import org.apache.druid.java.util.common.IAE;
+import org.apache.druid.java.util.common.RE;
+import org.apache.druid.java.util.common.guava.CloseQuietly;
+import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.java.util.http.client.Request;
+import org.apache.druid.java.util.http.client.response.InputStreamResponseHandler;
+import org.apache.druid.query.Query;
+import org.apache.druid.query.QueryInterruptedException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
@@ -52,6 +51,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -59,24 +59,21 @@ import java.util.concurrent.Future;
  * Base record reader for given a Druid query. This class contains the logic to
  * send the query to the broker and retrieve the results. The transformation to
  * emit records needs to be done by the classes that extend the reader.
- *
+ * <p>
  * The key for each record will be a NullWritable, while the value will be a
  * DruidWritable containing the timestamp as well as all values resulting from
  * the query.
  */
-public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends Comparable<R>>
-        extends RecordReader<NullWritable, DruidWritable>
-        implements org.apache.hadoop.mapred.RecordReader<NullWritable, DruidWritable> {
+public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends RecordReader<NullWritable, DruidWritable>
+    implements org.apache.hadoop.mapred.RecordReader<NullWritable, DruidWritable> {
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidQueryRecordReader.class);
-
-  private HttpClient httpClient;
-  private ObjectMapper mapper;
+  private final Object initLock = new Object();
   // Smile mapper is used to read query results that are serialized as binary instead of json
   private ObjectMapper smileMapper;
   private Configuration conf;
   private String[] locations;
-
+  private HttpClient httpClient;
   /**
    * Query that Druid executes.
    */
@@ -85,152 +82,136 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
   /**
    * Query results as a streaming iterator.
    */
-  private JsonParserIterator<R> queryResultsIterator =  null;
+  private volatile JsonParserIterator<R> queryResultsIterator = null;
 
   public JsonParserIterator<R> getQueryResultsIterator() {
-    if (this.queryResultsIterator != null) {
-      return queryResultsIterator;
-    } else {
-      String filterExprSerialized = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
-      if (filterExprSerialized != null) {
-        ExprNodeGenericFuncDesc filterExpr =
-            SerializationUtilities.deserializeExpression(filterExprSerialized);
-        query = DruidStorageHandlerUtils.addDynamicFilters(query, filterExpr, conf, true);
-      }
-      boolean initlialized = false;
-      int currentLocationIndex = 0;
-      Exception ex = null;
-      while (!initlialized && currentLocationIndex < locations.length) {
-        String address = locations[currentLocationIndex++];
-        if (Strings.isNullOrEmpty(address)) {
-          throw new RE("can not fetch results from empty or null host value");
-        }
-        // Execute query
-        LOG.debug("Retrieving data from druid location[{}] using query:[{}] ", address, query);
-        try {
-          Request request = DruidStorageHandlerUtils.createSmileRequest(address, query);
-          Future<InputStream> inputStreamFuture =
-              this.httpClient.go(request, new InputStreamResponseHandler());
-          queryResultsIterator =
-              new JsonParserIterator(this.smileMapper, resultsType, inputStreamFuture,
-                  request.getUrl().toString(), query
-              );
-          queryResultsIterator.init();
-          initlialized = true;
-        } catch (IOException | ExecutionException | InterruptedException e) {
-          if (queryResultsIterator != null) {
-            // We got exception while querying results from this host.
-            queryResultsIterator.close();
-          }
-          queryResultsIterator = null;
-          LOG.error("Failure getting results for query[{}] from host[{}] because of [{}]", query,
-              address, e.getMessage()
-          );
-          if (ex == null) {
-            ex = e;
-          } else {
-            ex.addSuppressed(e);
-          }
+    if (this.queryResultsIterator == null) {
+      synchronized (initLock) {
+        if (this.queryResultsIterator == null) {
+          this.queryResultsIterator = createQueryResultsIterator();
         }
       }
-
-      if (!initlialized) {
-        throw new RE(ex, "Failure getting results for query[%s] from locations[%s] because of [%s]",
-            query, locations, ex.getMessage()
-        );
-      }
-      return queryResultsIterator;
     }
+    return this.queryResultsIterator;
   }
 
+  public JsonParserIterator<R> createQueryResultsIterator() {
+    JsonParserIterator<R> iterator = null;
+    String filterExprSerialized = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+    if (filterExprSerialized != null) {
+      ExprNodeGenericFuncDesc filterExpr = SerializationUtilities.deserializeExpression(filterExprSerialized);
+      query = DruidStorageHandlerUtils.addDynamicFilters(query, filterExpr, conf, true);
+    }
 
+    // Result type definition used to read the rows, this is query dependent.
+    JavaType resultsType = getResultTypeDef();
+    boolean initialized = false;
+    int currentLocationIndex = 0;
+    Exception ex = null;
+    while (!initialized && currentLocationIndex < locations.length) {
+      String address = locations[currentLocationIndex++];
+      if (Strings.isNullOrEmpty(address)) {
+        throw new RE("can not fetch results from empty or null host value");
+      }
+      // Execute query
+      LOG.debug("Retrieving data from druid location[{}] using query:[{}] ", address, query);
+      try {
+        Request request = DruidStorageHandlerUtils.createSmileRequest(address, query);
+        Future<InputStream> inputStreamFuture = httpClient.go(request, new InputStreamResponseHandler());
+        //noinspection unchecked
+        iterator =
+            new JsonParserIterator(smileMapper, resultsType, inputStreamFuture, request.getUrl().toString(), query);
+        iterator.init();
+        initialized = true;
+      } catch (Exception e) {
+        if (iterator != null) {
+          // We got exception while querying results from this host.
+          CloseQuietly.close(iterator);
+        }
+        LOG.error("Failure getting results for query[{}] from host[{}] because of [{}]", query, address, e.getMessage());
+        if (ex == null) {
+          ex = e;
+        } else {
+          ex.addSuppressed(e);
+        }
+      }
+    }
 
-  /**
-   * Result type definition used to read the rows, this is query dependent.
-   */
-  protected JavaType resultsType = null;
+    if (!initialized) {
+      throw new RE(ex, "Failure getting results for query[%s] from locations[%s] because of [%s]", query, locations,
+          Objects.requireNonNull(ex).getMessage());
+    }
+    return iterator;
+  }
 
-  @Override
-  public void initialize(InputSplit split, TaskAttemptContext context) throws IOException {
+  @Override public void initialize(InputSplit split, TaskAttemptContext context) throws IOException {
     initialize(split, context.getConfiguration());
   }
 
-  public void initialize(InputSplit split, Configuration conf, ObjectMapper mapper,
-          ObjectMapper smileMapper, HttpClient httpClient
-  ) throws IOException {
+  public void initialize(InputSplit split, ObjectMapper mapper, ObjectMapper smileMapper, HttpClient httpClient,
+      Configuration conf) throws IOException {
     this.conf = conf;
     HiveDruidSplit hiveDruidSplit = (HiveDruidSplit) split;
     Preconditions.checkNotNull(hiveDruidSplit, "input split is null ???");
-    this.mapper = Preconditions.checkNotNull(mapper, "object Mapper can not be null");
-    // Smile mapper is used to read query results that are serilized as binary instead of json
+    Preconditions.checkNotNull(httpClient, "need Http Client can not be null");
+    // Smile mapper is used to read query results that are serialized as binary instead of json
     this.smileMapper = Preconditions.checkNotNull(smileMapper, "Smile Mapper can not be null");
     // Create query
-    this.query = this.mapper.readValue(Preconditions.checkNotNull(hiveDruidSplit.getDruidQuery()), Query.class);
-
+    this.query = mapper.readValue(Preconditions.checkNotNull(hiveDruidSplit.getDruidQuery()), Query.class);
     Preconditions.checkNotNull(query);
-    this.resultsType = getResultTypeDef();
-    this.httpClient = Preconditions.checkNotNull(httpClient, "need Http Client");
 
-    locations = hiveDruidSplit.getLocations();
+    this.locations = hiveDruidSplit.getLocations();
+    this.httpClient = httpClient;
   }
 
   public void initialize(InputSplit split, Configuration conf) throws IOException {
-    initialize(split, conf, DruidStorageHandlerUtils.JSON_MAPPER,
-            DruidStorageHandlerUtils.SMILE_MAPPER, DruidStorageHandler.getHttpClient()
-    );
+    initialize(split,
+        DruidStorageHandlerUtils.JSON_MAPPER,
+        DruidStorageHandlerUtils.SMILE_MAPPER, DruidStorageHandler.getHttpClient(), conf);
   }
 
   protected abstract JavaType getResultTypeDef();
 
-  @Override
-  public NullWritable createKey() {
+  @Override public NullWritable createKey() {
     return NullWritable.get();
   }
 
-  @Override
-  public DruidWritable createValue() {
+  @Override public DruidWritable createValue() {
     return new DruidWritable(false);
   }
 
-  @Override
-  public abstract boolean next(NullWritable key, DruidWritable value) throws IOException;
+  @Override public abstract boolean next(NullWritable key, DruidWritable value) throws IOException;
 
-  @Override
-  public long getPos() {
+  @Override public long getPos() {
     // HiveContextAwareRecordReader uses this position to track the block position and check
     // whether to skip header and footer. return -1 to since we need not skip any header and
     // footer rows for druid.
     return -1;
   }
 
-  @Override
-  public abstract boolean nextKeyValue() throws IOException;
+  @Override public abstract boolean nextKeyValue() throws IOException;
 
-  @Override
-  public abstract NullWritable getCurrentKey() throws IOException, InterruptedException;
+  @Override public abstract NullWritable getCurrentKey() throws IOException, InterruptedException;
 
-  @Override
-  // TODO: we could generate vector row batches so that vectorized execution may get triggered
-  public abstract DruidWritable getCurrentValue() throws IOException, InterruptedException;
+  @Override public abstract DruidWritable getCurrentValue() throws IOException, InterruptedException;
 
-  @Override
-  public abstract float getProgress() throws IOException;
+  @Override public abstract float getProgress() throws IOException;
 
-  @Override
-  public void close() {
-    if(queryResultsIterator != null) {
+  @Override public void close() {
+    if (queryResultsIterator != null) {
       CloseQuietly.close(queryResultsIterator);
     }
   }
 
   /**
    * This is a helper wrapper class used to create an iterator of druid rows out of InputStream.
-   * The type of the rows is defined by org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader.JsonParserIterator#typeRef
+   * The type of the rows is defined by
+   * org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader.JsonParserIterator#typeRef
    *
    * @param <R> druid Row type returned as result
    */
-  protected class JsonParserIterator<R extends Comparable<R>> implements Iterator<R>, Closeable
-  {
+  @SuppressWarnings("TypeParameterHidesVisibleType") protected class JsonParserIterator<R extends Comparable<R>>
+      implements Iterator<R>, Closeable {
     private JsonParser jp;
     private ObjectCodec objectCodec;
     private final ObjectMapper mapper;
@@ -240,19 +221,19 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
     private final String url;
 
     /**
-     * @param mapper mapper used to deserialize the stream of data (we use smile factory)
+     * @param mapper  mapper used to deserialize the stream of data (we use smile factory)
      * @param typeRef Type definition of the results objects
-     * @param future Future holding the input stream (the input stream is not owned but it will be closed when org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader.JsonParserIterator#close() is called or reach the end of the steam)
-     * @param url URL used to fetch the data, used mostly as message with exception stack to identify the faulty stream, thus this can be empty string.
-     * @param query Query used to fetch the data, used mostly as message with exception stack, thus can be empty string.
+     * @param future  Future holding the input stream (the input stream is not owned but it will be closed
+     *                when org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader.JsonParserIterator#close() is
+     *                called
+     *                or reach the end of the steam)
+     * @param url     URL used to fetch the data, used mostly as message with exception stack to identify the faulty
+     *                stream,
+     *                thus this can be empty string.
+     * @param query   Query used to fetch the data, used mostly as message with exception stack, thus can be empty
+     *                string.
      */
-    public JsonParserIterator(ObjectMapper mapper,
-            JavaType typeRef,
-            Future<InputStream> future,
-            String url,
-            Query query
-    )
-    {
+    JsonParserIterator(ObjectMapper mapper, JavaType typeRef, Future<InputStream> future, String url, Query query) {
       this.typeRef = typeRef;
       this.future = future;
       this.url = url;
@@ -261,9 +242,7 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
       jp = null;
     }
 
-    @Override
-    public boolean hasNext()
-    {
+    @Override public boolean hasNext() {
       if (jp.isClosed()) {
         return false;
       }
@@ -275,52 +254,49 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
       return true;
     }
 
-    @Override
-    public R next()
-    {
+    @Override public R next() {
       try {
         final R retVal = objectCodec.readValue(jp, typeRef);
         jp.nextToken();
         return retVal;
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         throw Throwables.propagate(e);
       }
     }
 
-    @Override
-    public void remove()
-    {
+    @Override public void remove() {
       throw new UnsupportedOperationException();
     }
 
-    private void init() throws IOException, ExecutionException, InterruptedException {
+    private void init() {
       if (jp == null) {
-        InputStream is = future.get();
-        if (is == null) {
-          throw  new IOException(String.format("query[%s] url[%s] timed out", query, url));
-        } else {
-          jp = mapper.getFactory().createParser(is).configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
-        }
-        final JsonToken nextToken = jp.nextToken();
-        if (nextToken == JsonToken.START_OBJECT) {
-          QueryInterruptedException cause = jp.getCodec().readValue(jp, QueryInterruptedException.class);
-          throw new QueryInterruptedException(cause);
-        } else if (nextToken != JsonToken.START_ARRAY) {
-          throw new IAE("Next token wasn't a START_ARRAY, was[%s] from url [%s]", jp.getCurrentToken(), url);
-        } else {
-          jp.nextToken();
-          objectCodec = jp.getCodec();
+        try {
+          InputStream is = future.get();
+          if (is == null) {
+            throw new IOException(String.format("query[%s] url[%s] timed out", query, url));
+          } else {
+            jp = mapper.getFactory().createParser(is).configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
+          }
+          final JsonToken nextToken = jp.nextToken();
+          if (nextToken == JsonToken.START_OBJECT) {
+            QueryInterruptedException cause = jp.getCodec().readValue(jp, QueryInterruptedException.class);
+            throw new QueryInterruptedException(cause);
+          } else if (nextToken != JsonToken.START_ARRAY) {
+            throw new IAE("Next token wasn't a START_ARRAY, was[%s] from url [%s]", jp.getCurrentToken(), url);
+          } else {
+            jp.nextToken();
+            objectCodec = jp.getCodec();
+          }
+
+        } catch (IOException | InterruptedException | ExecutionException e) {
+          throw new RE(e, "Failure getting results for query[%s] url[%s] because of [%s]", query, url, e.getMessage());
         }
       }
     }
 
-    @Override
-    public void close()
-    {
+    @Override public void close() throws IOException {
       CloseQuietly.close(jp);
     }
   }
-
 
 }

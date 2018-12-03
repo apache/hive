@@ -1,4 +1,5 @@
 --! qt:dataset:srcpart
+--! qt:dataset:druid_table_alltypesorc
 --! qt:dataset:alltypesorc
 
 set hive.compute.query.using.stats=false;
@@ -16,26 +17,6 @@ set hive.tez.min.bloom.filter.entries=1;
 set hive.stats.fetch.column.stats=true;
 set hive.disable.unsafe.external.table.operations=false;
 set hive.tez.dynamic.semijoin.reduction.for.mapjoin=true;
-
-CREATE EXTERNAL TABLE druid_table_alltypesorc
-STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
-TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
-AS
-SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
-  cstring1,
-  cstring2,
-  cdouble,
-  cfloat,
-  ctinyint,
-  csmallint,
-  cint,
-  cbigint,
-  cboolean1,
-  cboolean2,
-  cast(cint as string) as cintstring,
-  cast(cfloat as string) as cfloatstring,
-  cast(cdouble as string) as cdoublestring
-  FROM alltypesorc where ctimestamp1 IS NOT NULL;
 
 DROP TABLE IF EXISTS alltypesorc_small;
 CREATE TABLE alltypesorc_small(
@@ -58,7 +39,6 @@ Select count(*) from druid_table_alltypesorc;
 
 DESCRIBE druid_table_alltypesorc;
 DESCRIBE alltypesorc_small;
-
 
 -- Test Joins on all column types one by one
 -- String
@@ -106,9 +86,9 @@ select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypes
 -- double
 set hive.disable.unsafe.external.table.operations=false;
 EXPLAIN select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cdouble = druid_table_alltypesorc.cdouble);
-select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cdouble = druid_table_alltypesorc.cdouble);
 set hive.disable.unsafe.external.table.operations=true;
 select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cdouble = druid_table_alltypesorc.cdouble);
+set hive.disable.unsafe.external.table.operations=true;
 
 -- timestamp
 set hive.disable.unsafe.external.table.operations=false;
@@ -128,24 +108,25 @@ select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypes
 -- Test Casts
 
 set hive.disable.unsafe.external.table.operations=false;
-EXPLAIN select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cint = druid_table_alltypesorc.cintstring);
-select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cint = druid_table_alltypesorc.cintstring);
+EXPLAIN select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cint as string) = druid_table_alltypesorc.cintstring);
+select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cint as string) = druid_table_alltypesorc.cintstring);
 set hive.disable.unsafe.external.table.operations=true;
-select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cint = druid_table_alltypesorc.cintstring);
+select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cint as string) = druid_table_alltypesorc.cintstring);
 
 
 set hive.disable.unsafe.external.table.operations=false;
-EXPLAIN select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cdouble = druid_table_alltypesorc.cdoublestring);
-select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cdouble = druid_table_alltypesorc.cdoublestring);
+EXPLAIN select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cdouble as string) = druid_table_alltypesorc.cdoublestring);
 set hive.disable.unsafe.external.table.operations=true;
-select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cdouble = druid_table_alltypesorc.cdoublestring);
+select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cdouble as string) = druid_table_alltypesorc.cdoublestring);
+set hive.disable.unsafe.external.table.operations=true;
+select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cdouble as string) = druid_table_alltypesorc.cdoublestring);
 
 
 set hive.disable.unsafe.external.table.operations=false;
-EXPLAIN select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cfloat = druid_table_alltypesorc.cfloatstring);
-select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cfloat = druid_table_alltypesorc.cfloatstring);
+EXPLAIN select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cfloat as string) = druid_table_alltypesorc.cfloatstring);
+select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cfloat as string) = druid_table_alltypesorc.cfloatstring);
 set hive.disable.unsafe.external.table.operations=true;
-select count(*) from alltypesorc_small join druid_table_alltypesorc on (alltypesorc_small.cfloat = druid_table_alltypesorc.cfloatstring);
+select count(*) from alltypesorc_small join druid_table_alltypesorc on (cast(alltypesorc_small.cfloat as string) = druid_table_alltypesorc.cfloatstring);
 
 
 

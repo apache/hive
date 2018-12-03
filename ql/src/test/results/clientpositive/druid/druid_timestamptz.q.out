@@ -48,8 +48,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tstz1_n1
 PREHOOK: query: EXPLAIN select `__time` from tstz1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select `__time` from tstz1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -81,8 +85,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34.0 US/Pacific
 PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -114,8 +122,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34
 PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -147,8 +159,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34
 PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -180,8 +196,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
 PREHOOK: query: EXPLAIN SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -213,8 +233,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:00:00
 PREHOOK: query: EXPLAIN SELECT `__time`, max(v) FROM tstz1_n0 GROUP BY `__time`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT `__time`, max(v) FROM tstz1_n0 GROUP BY `__time`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -246,8 +270,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34.0 US/Pacific	10
 PREHOOK: query: EXPLAIN select `__time` from tstz1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select `__time` from tstz1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -279,8 +307,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34
 PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -312,8 +344,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
 PREHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -345,8 +381,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:00:00
 PREHOOK: query: EXPLAIN SELECT `__time`, max(v) FROM tstz1_n1 GROUP BY `__time`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT `__time`, max(v) FROM tstz1_n1 GROUP BY `__time`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -378,8 +418,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34	10
 PREHOOK: query: EXPLAIN select `__time` from tstz1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select `__time` from tstz1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -411,8 +455,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34.0 UTC
 PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -444,8 +492,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
 PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -477,8 +529,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
 PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -510,8 +566,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
 PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -543,8 +603,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
 PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -576,8 +640,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 20
 PREHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -609,8 +677,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:00:00
 PREHOOK: query: EXPLAIN SELECT `__time`, max(v) FROM tstz1_n0 GROUP BY `__time`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT `__time`, max(v) FROM tstz1_n0 GROUP BY `__time`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -642,8 +714,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34.0 UTC	10
 PREHOOK: query: EXPLAIN select `__time` from tstz1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select `__time` from tstz1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -675,8 +751,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34
 PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -708,8 +788,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
 PREHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -741,8 +825,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:00:00
 PREHOOK: query: EXPLAIN SELECT `__time`, max(v) FROM tstz1_n1 GROUP BY `__time`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT `__time`, max(v) FROM tstz1_n1 GROUP BY `__time`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

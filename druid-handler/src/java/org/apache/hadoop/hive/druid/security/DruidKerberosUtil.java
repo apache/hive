@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,27 +37,28 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class DruidKerberosUtil
-{
-  protected static final Logger log = LoggerFactory.getLogger(DruidKerberosUtil.class);
+/**
+ * Utils class for Druid Kerberos stuff.
+ */
+public final class DruidKerberosUtil {
+  protected static final Logger LOG = LoggerFactory.getLogger(DruidKerberosUtil.class);
+  private static final Base64 BASE_64_CODEC = new Base64(0);
+  private static final ReentrantLock KERBEROS_LOCK = new ReentrantLock(true);
 
-  private static final Base64 base64codec = new Base64(0);
-
-  // A fair reentrant lock
-  private static ReentrantLock kerberosLock = new ReentrantLock(true);
+  private DruidKerberosUtil() {
+  }
 
   /**
    * This method always needs to be called within a doAs block so that the client's TGT credentials
    * can be read from the Subject.
    *
-   * @return Kerberos Challenge String
+   * @return Kerberos Challenge String.
    *
-   * @throws Exception
+   * @throws AuthenticationException on authentication errors.
    */
 
-  public static String kerberosChallenge(String server) throws AuthenticationException
-  {
-    kerberosLock.lock();
+  static String kerberosChallenge(String server) throws AuthenticationException {
+    KERBEROS_LOCK.lock();
     try {
       // This Oid for Kerberos GSS-API mechanism.
       Oid mechOid = KerberosUtil.getOidInstance("GSS_KRB5_MECH_OID");
@@ -66,8 +67,9 @@ public class DruidKerberosUtil
       GSSName serverName = manager.createName("HTTP@" + server, GSSName.NT_HOSTBASED_SERVICE);
       // Create a GSSContext for authentication with the service.
       // We're passing client credentials as null since we want them to be read from the Subject.
-      GSSContext gssContext =
-        manager.createContext(serverName.canonicalize(mechOid), mechOid, null, GSSContext.DEFAULT_LIFETIME);
+      GSSContext
+          gssContext =
+          manager.createContext(serverName.canonicalize(mechOid), mechOid, null, GSSContext.DEFAULT_LIFETIME);
       gssContext.requestMutualAuth(true);
       gssContext.requestCredDeleg(true);
       // Establish context
@@ -75,32 +77,26 @@ public class DruidKerberosUtil
       byte[] outToken = gssContext.initSecContext(inToken, 0, inToken.length);
       gssContext.dispose();
       // Base64 encoded and stringified token for server
-      log.debug("Got valid challenge for host {}", serverName);
-      return new String(base64codec.encode(outToken), StandardCharsets.US_ASCII);
-    }
-    catch (GSSException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
+      LOG.debug("Got valid challenge for host {}", serverName);
+      return new String(BASE_64_CODEC.encode(outToken), StandardCharsets.US_ASCII);
+    } catch (GSSException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
       throw new AuthenticationException(e);
-    }
-    finally {
-      kerberosLock.unlock();
+    } finally {
+      KERBEROS_LOCK.unlock();
     }
   }
 
-
-
-  public static HttpCookie getAuthCookie(CookieStore cookieStore, URI uri)
-  {
+  static HttpCookie getAuthCookie(CookieStore cookieStore, URI uri) {
     if (cookieStore == null) {
       return null;
     }
     boolean isSSL = uri.getScheme().equals("https");
     List<HttpCookie> cookies = cookieStore.getCookies();
 
-    for (int i = 0; i < cookies.size(); i++) {
+    for (HttpCookie c : cookies) {
       // If this is a secured cookie and the current connection is non-secured,
       // then, skip this cookie. We need to skip this cookie because, the cookie
       // replay will not be transmitted to the server.
-      HttpCookie c = cookies.get(i);
       if (c.getSecure() && !isSSL) {
         continue;
       }
@@ -111,16 +107,14 @@ public class DruidKerberosUtil
     return null;
   }
 
-  public static void removeAuthCookie(CookieStore cookieStore, URI uri)
-  {
+  static void removeAuthCookie(CookieStore cookieStore, URI uri) {
     HttpCookie authCookie = getAuthCookie(cookieStore, uri);
     if (authCookie != null) {
       cookieStore.remove(uri, authCookie);
     }
   }
 
-
-  public static boolean needToSendCredentials(CookieStore cookieStore, URI uri){
+  static boolean needToSendCredentials(CookieStore cookieStore, URI uri) {
     return getAuthCookie(cookieStore, uri) == null;
   }
 

@@ -6,30 +6,32 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.druid.io;
 
-import io.druid.data.input.impl.DimensionSchema;
-import io.druid.data.input.impl.DimensionsSpec;
-import io.druid.data.input.impl.InputRowParser;
-import io.druid.data.input.impl.MapInputRowParser;
-import io.druid.data.input.impl.TimeAndDimsParseSpec;
-import io.druid.data.input.impl.TimestampSpec;
-import io.druid.java.util.common.Pair;
-import io.druid.query.aggregation.AggregatorFactory;
-import io.druid.segment.IndexSpec;
-import io.druid.segment.indexing.DataSchema;
-import io.druid.segment.indexing.RealtimeTuningConfig;
-import io.druid.segment.indexing.granularity.GranularitySpec;
-import io.druid.segment.realtime.plumber.CustomVersioningPolicy;
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.druid.data.input.impl.DimensionSchema;
+import org.apache.druid.data.input.impl.DimensionsSpec;
+import org.apache.druid.data.input.impl.InputRowParser;
+import org.apache.druid.data.input.impl.MapInputRowParser;
+import org.apache.druid.data.input.impl.TimeAndDimsParseSpec;
+import org.apache.druid.data.input.impl.TimestampSpec;
+import org.apache.druid.java.util.common.Pair;
+import org.apache.druid.query.aggregation.AggregatorFactory;
+import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.indexing.DataSchema;
+import org.apache.druid.segment.indexing.RealtimeTuningConfig;
+import org.apache.druid.segment.indexing.granularity.GranularitySpec;
+import org.apache.druid.segment.realtime.plumber.CustomVersioningPolicy;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -44,6 +46,7 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
@@ -65,9 +68,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritable> {
+/**
+ * Druid Output format class used to write data as Native Druid Segment.
+ */
+public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWritable> {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(DruidOutputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DruidOutputFormat.class);
 
   @Override
   public FileSinkOperator.RecordWriter getHiveRecordWriter(
@@ -104,17 +110,17 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
               ));
     }
     ArrayList<String> columnNames = Lists.newArrayList(columnNameProperty.split(","));
-    if (!columnNames.contains(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
-      throw new IllegalStateException("Timestamp column (' " + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN +
+    if (!columnNames.contains(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
+      throw new IllegalStateException("Timestamp column (' " + DruidConstants.DEFAULT_TIMESTAMP_COLUMN +
               "') not specified in create table; list of columns is : " +
               tableProperties.getProperty(serdeConstants.LIST_COLUMNS));
     }
     ArrayList<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
     Pair<List<DimensionSchema>, AggregatorFactory[]> dimensionsAndAggregates = DruidStorageHandlerUtils
-        .getDimensionsAndAggregates(jc, columnNames, columnTypes);
+        .getDimensionsAndAggregates(columnNames, columnTypes);
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
-            new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
+            new TimestampSpec(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
             new DimensionsSpec(dimensionsAndAggregates.lhs, Lists
                 .newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
                     Constants.DRUID_SHARD_KEY_COL_NAME
@@ -122,8 +128,10 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             )
     ));
 
-    Map<String, Object> inputParser = DruidStorageHandlerUtils.JSON_MAPPER
-            .convertValue(inputRowParser, Map.class);
+    Map<String, Object>
+        inputParser =
+        DruidStorageHandlerUtils.JSON_MAPPER.convertValue(inputRowParser, new TypeReference<Map<String, Object>>() {
+        });
 
     final DataSchema dataSchema = new DataSchema(
             Preconditions.checkNotNull(dataSource, "Data source name is null"),
@@ -147,6 +155,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory,
             null,
             null,
+            null,
             new File(basePersistDirectory, dataSource),
             new CustomVersioningPolicy(version),
             null,
@@ -159,7 +168,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             true,
             null,
             0L,
-        null
+        null,
+            null
     );
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
@@ -171,7 +181,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
   }
 
   @Override
-  public RecordWriter<K, DruidWritable> getRecordWriter(
+  public RecordWriter<NullWritable, DruidWritable> getRecordWriter(
           FileSystem ignored, JobConf job, String name, Progressable progress
   ) throws IOException {
     throw new UnsupportedOperationException("please implement me !");

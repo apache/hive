@@ -1,4 +1,5 @@
-SET hive.vectorized.execution.enabled=false;
+--! qt:dataset:alltypesorc
+SET hive.vectorized.execution.enabled=true ;
 SET hive.ctas.external.tables=true;
 SET hive.external.table.purge.default = true;
 CREATE EXTERNAL TABLE druid_partitioned_table_0

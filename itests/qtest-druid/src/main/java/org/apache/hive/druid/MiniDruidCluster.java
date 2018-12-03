@@ -42,8 +42,8 @@ public class MiniDruidCluster extends AbstractService {
 
   private static final String
       COMMON_DRUID_JVM_PROPERTIES =
-      "-Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager "
-          + "-Ddruid.emitter=logging -Ddruid.emitter.logging.logLevel=info";
+      "-Duser.timezone=UTC -Dfile.encoding=UTF-8 "
+          + "-Ddruid.emitter=logging -Ddruid.emitter.logging.logLevel=info ";
 
   private static final List<String>
       HISTORICAL_JVM_CONF =

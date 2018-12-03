@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,88 +31,89 @@ import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
-import com.google.common.io.CharStreams;
-import com.metamx.common.JodaUtils;
-import com.metamx.common.MapUtils;
-import com.metamx.emitter.EmittingLogger;
-import com.metamx.emitter.core.NoopEmitter;
-import com.metamx.emitter.service.ServiceEmitter;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.Request;
-import com.metamx.http.client.response.FullResponseHandler;
-import com.metamx.http.client.response.FullResponseHolder;
-import com.metamx.http.client.response.InputStreamResponseHandler;
-import io.druid.data.input.impl.DimensionSchema;
-import io.druid.data.input.impl.StringDimensionSchema;
-import io.druid.guice.BloomFilterSerializersModule;
-import io.druid.jackson.DefaultObjectMapper;
-import io.druid.java.util.common.Pair;
-import io.druid.java.util.common.granularity.Granularity;
-import io.druid.math.expr.ExprMacroTable;
-import io.druid.metadata.MetadataStorageTablesConfig;
-import io.druid.metadata.SQLMetadataConnector;
-import io.druid.metadata.storage.mysql.MySQLConnector;
-import io.druid.query.Druids;
-import io.druid.query.Query;
-import io.druid.query.aggregation.AggregatorFactory;
-import io.druid.query.aggregation.DoubleSumAggregatorFactory;
-import io.druid.query.aggregation.FloatSumAggregatorFactory;
-import io.druid.query.aggregation.LongSumAggregatorFactory;
-import io.druid.query.expression.LikeExprMacro;
-import io.druid.query.expression.RegexpExtractExprMacro;
-import io.druid.query.expression.TimestampCeilExprMacro;
-import io.druid.query.expression.TimestampExtractExprMacro;
-import io.druid.query.expression.TimestampFloorExprMacro;
-import io.druid.query.expression.TimestampFormatExprMacro;
-import io.druid.query.expression.TimestampParseExprMacro;
-import io.druid.query.expression.TimestampShiftExprMacro;
-import io.druid.query.expression.TrimExprMacro;
-import io.druid.query.filter.AndDimFilter;
-import io.druid.query.filter.BloomDimFilter;
-import io.druid.query.filter.BloomKFilterHolder;
-import io.druid.query.filter.BoundDimFilter;
-import io.druid.query.filter.DimFilter;
-import io.druid.query.filter.OrDimFilter;
-import io.druid.query.groupby.GroupByQuery;
-import io.druid.query.ordering.StringComparator;
-import io.druid.query.ordering.StringComparators;
-import io.druid.query.scan.ScanQuery;
-import io.druid.query.select.SelectQuery;
-import io.druid.query.select.SelectQueryConfig;
-import io.druid.query.spec.MultipleIntervalSegmentSpec;
-import io.druid.query.timeseries.TimeseriesQuery;
-import io.druid.query.topn.TopNQuery;
-import io.druid.query.topn.TopNQueryBuilder;
-import io.druid.segment.IndexIO;
-import io.druid.segment.IndexMergerV9;
-import io.druid.segment.IndexSpec;
-import io.druid.segment.VirtualColumn;
-import io.druid.segment.VirtualColumns;
-import io.druid.segment.column.ValueType;
-import io.druid.segment.data.ConciseBitmapSerdeFactory;
-import io.druid.segment.data.RoaringBitmapSerdeFactory;
-import io.druid.segment.indexing.granularity.GranularitySpec;
-import io.druid.segment.indexing.granularity.UniformGranularitySpec;
-import io.druid.segment.loading.DataSegmentPusher;
-import io.druid.segment.realtime.appenderator.SegmentIdentifier;
-import io.druid.segment.virtual.ExpressionVirtualColumn;
-import io.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
-import io.druid.storage.hdfs.HdfsDataSegmentPusher;
-import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
-import io.druid.timeline.DataSegment;
-import io.druid.timeline.TimelineObjectHolder;
-import io.druid.timeline.VersionedIntervalTimeline;
-import io.druid.timeline.partition.LinearShardSpec;
-import io.druid.timeline.partition.NoneShardSpec;
-import io.druid.timeline.partition.NumberedShardSpec;
-import io.druid.timeline.partition.PartitionChunk;
-import io.druid.timeline.partition.ShardSpec;
+import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
+import org.apache.druid.data.input.impl.DimensionSchema;
+import org.apache.druid.data.input.impl.StringDimensionSchema;
+import org.apache.druid.guice.BloomFilterSerializersModule;
+import org.apache.druid.jackson.DefaultObjectMapper;
+import org.apache.druid.java.util.common.JodaUtils;
+import org.apache.druid.java.util.common.MapUtils;
+import org.apache.druid.java.util.common.Pair;
+import org.apache.druid.java.util.common.granularity.Granularity;
+import org.apache.druid.java.util.emitter.EmittingLogger;
+import org.apache.druid.java.util.emitter.core.NoopEmitter;
+import org.apache.druid.java.util.emitter.service.ServiceEmitter;
+import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.java.util.http.client.Request;
+import org.apache.druid.java.util.http.client.response.FullResponseHandler;
+import org.apache.druid.java.util.http.client.response.FullResponseHolder;
+import org.apache.druid.java.util.http.client.response.InputStreamResponseHandler;
+import org.apache.druid.math.expr.ExprMacroTable;
+import org.apache.druid.metadata.MetadataStorageTablesConfig;
+import org.apache.druid.metadata.SQLMetadataConnector;
+import org.apache.druid.metadata.storage.mysql.MySQLConnector;
+import org.apache.druid.query.DruidProcessingConfig;
+import org.apache.druid.query.Druids;
+import org.apache.druid.query.aggregation.AggregatorFactory;
+import org.apache.druid.query.aggregation.DoubleSumAggregatorFactory;
+import org.apache.druid.query.aggregation.FloatSumAggregatorFactory;
+import org.apache.druid.query.aggregation.LongSumAggregatorFactory;
+import org.apache.druid.query.expression.LikeExprMacro;
+import org.apache.druid.query.expression.RegexpExtractExprMacro;
+import org.apache.druid.query.expression.TimestampCeilExprMacro;
+import org.apache.druid.query.expression.TimestampExtractExprMacro;
+import org.apache.druid.query.expression.TimestampFloorExprMacro;
+import org.apache.druid.query.expression.TimestampFormatExprMacro;
+import org.apache.druid.query.expression.TimestampParseExprMacro;
+import org.apache.druid.query.expression.TimestampShiftExprMacro;
+import org.apache.druid.query.expression.TrimExprMacro;
+import org.apache.druid.query.filter.AndDimFilter;
+import org.apache.druid.query.filter.BloomDimFilter;
+import org.apache.druid.query.filter.BloomKFilter;
+import org.apache.druid.query.filter.BloomKFilterHolder;
+import org.apache.druid.query.filter.BoundDimFilter;
+import org.apache.druid.query.filter.DimFilter;
+import org.apache.druid.query.filter.OrDimFilter;
+import org.apache.druid.query.groupby.GroupByQuery;
+import org.apache.druid.query.ordering.StringComparator;
+import org.apache.druid.query.ordering.StringComparators;
+import org.apache.druid.query.scan.ScanQuery;
+import org.apache.druid.query.select.SelectQuery;
+import org.apache.druid.query.select.SelectQueryConfig;
+import org.apache.druid.query.spec.MultipleIntervalSegmentSpec;
+import org.apache.druid.query.timeseries.TimeseriesQuery;
+import org.apache.druid.query.topn.TopNQuery;
+import org.apache.druid.query.topn.TopNQueryBuilder;
+import org.apache.druid.segment.IndexIO;
+import org.apache.druid.segment.IndexMergerV9;
+import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.VirtualColumn;
+import org.apache.druid.segment.VirtualColumns;
+import org.apache.druid.segment.column.ValueType;
+import org.apache.druid.segment.data.BitmapSerdeFactory;
+import org.apache.druid.segment.data.ConciseBitmapSerdeFactory;
+import org.apache.druid.segment.data.RoaringBitmapSerdeFactory;
+import org.apache.druid.segment.indexing.granularity.GranularitySpec;
+import org.apache.druid.segment.indexing.granularity.UniformGranularitySpec;
+import org.apache.druid.segment.loading.DataSegmentPusher;
+import org.apache.druid.segment.realtime.appenderator.SegmentIdWithShardSpec;
+import org.apache.druid.segment.virtual.ExpressionVirtualColumn;
+import org.apache.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
+import org.apache.druid.storage.hdfs.HdfsDataSegmentPusher;
+import org.apache.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
+import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.TimelineObjectHolder;
+import org.apache.druid.timeline.VersionedIntervalTimeline;
+import org.apache.druid.timeline.partition.LinearShardSpec;
+import org.apache.druid.timeline.partition.NoneShardSpec;
+import org.apache.druid.timeline.partition.NumberedShardSpec;
+import org.apache.druid.timeline.partition.PartitionChunk;
+import org.apache.druid.timeline.partition.ShardSpec;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.conf.DruidConstants;
@@ -146,7 +147,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.util.BloomKFilter;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
@@ -157,6 +157,7 @@ import org.joda.time.chrono.ISOChronology;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.PreparedBatch;
+import org.skife.jdbi.v2.Query;
 import org.skife.jdbi.v2.ResultIterator;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.skife.jdbi.v2.tweak.HandleCallback;
@@ -164,15 +165,15 @@ import org.skife.jdbi.v2.util.ByteArrayMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -181,8 +182,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -194,6 +195,8 @@ import java.util.stream.Collectors;
  * Utils class for Druid storage handler.
  */
 public final class DruidStorageHandlerUtils {
+  private DruidStorageHandlerUtils() {
+  }
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandlerUtils.class);
 
@@ -202,56 +205,55 @@ public final class DruidStorageHandlerUtils {
   private static final int DEFAULT_FS_BUFFER_SIZE = 1 << 18; // 256KB
   private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
-  //Druid storage timestamp column name
-  public static final String DEFAULT_TIMESTAMP_COLUMN = "__time";
-  //Druid Json timestamp column name
-  public static final String EVENT_TIMESTAMP_COLUMN = "timestamp";
-  public static final String INDEX_ZIP = "index.zip";
-  public static final String DESCRIPTOR_JSON = "descriptor.json";
-  public static final Interval DEFAULT_INTERVAL = new Interval(
-          new DateTime("1900-01-01", ISOChronology.getInstanceUTC()),
-          new DateTime("3000-01-01", ISOChronology.getInstanceUTC())
-  ).withChronology(ISOChronology.getInstanceUTC());
 
-  public static ExprMacroTable EXPR_MACRO_TABLE = new ExprMacroTable(ImmutableList
-      .of(new LikeExprMacro(), new RegexpExtractExprMacro(), new TimestampCeilExprMacro(),
-          new TimestampExtractExprMacro(), new TimestampFormatExprMacro(),
-          new TimestampParseExprMacro(), new TimestampShiftExprMacro(),
-          new TimestampFloorExprMacro(), new TrimExprMacro.BothTrimExprMacro(),
-          new TrimExprMacro.LeftTrimExprMacro(), new TrimExprMacro.RightTrimExprMacro()
-      ));
+  static final String INDEX_ZIP = "index.zip";
+  private static final String DESCRIPTOR_JSON = "descriptor.json";
+  private static final Interval
+      DEFAULT_INTERVAL =
+      new Interval(new DateTime("1900-01-01", ISOChronology.getInstanceUTC()),
+          new DateTime("3000-01-01", ISOChronology.getInstanceUTC())).withChronology(ISOChronology.getInstanceUTC());
 
   /**
-   * Mapper to use to serialize/deserialize Druid objects (JSON)
+   * Mapper to use to serialize/deserialize Druid objects (JSON).
    */
   public static final ObjectMapper JSON_MAPPER = new DefaultObjectMapper();
 
   /**
-   * Mapper to use to serialize/deserialize Druid objects (SMILE)
+   * Mapper to use to serialize/deserialize Druid objects (SMILE).
    */
   public static final ObjectMapper SMILE_MAPPER = new DefaultObjectMapper(new SmileFactory());
   private static final int DEFAULT_MAX_TRIES = 10;
 
   static {
     // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
-    InjectableValues.Std injectableValues = new InjectableValues.Std()
-        .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
-        // Expressions macro table used when we deserialize the query from calcite plan
-        .addValue(ExprMacroTable.class, EXPR_MACRO_TABLE)
-        .addValue(ObjectMapper.class, JSON_MAPPER)
-        .addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
+    InjectableValues.Std
+        injectableValues =
+        new InjectableValues.Std().addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
+            // Expressions macro table used when we deserialize the query from calcite plan
+            .addValue(ExprMacroTable.class,
+                new ExprMacroTable(ImmutableList.of(new LikeExprMacro(),
+                    new RegexpExtractExprMacro(),
+                    new TimestampCeilExprMacro(),
+                    new TimestampExtractExprMacro(),
+                    new TimestampFormatExprMacro(),
+                    new TimestampParseExprMacro(),
+                    new TimestampShiftExprMacro(),
+                    new TimestampFloorExprMacro(),
+                    new TrimExprMacro.BothTrimExprMacro(),
+                    new TrimExprMacro.LeftTrimExprMacro(),
+                    new TrimExprMacro.RightTrimExprMacro())))
+            .addValue(ObjectMapper.class, JSON_MAPPER)
+            .addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
 
     JSON_MAPPER.setInjectableValues(injectableValues);
     SMILE_MAPPER.setInjectableValues(injectableValues);
     // Register the shard sub type to be used by the mapper
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
     JSON_MAPPER.registerSubtypes(new NamedType(NumberedShardSpec.class, "numbered"));
-
     JSON_MAPPER.registerSubtypes(new NamedType(AvroParseSpec.class, "avro"));
     SMILE_MAPPER.registerSubtypes(new NamedType(AvroParseSpec.class, "avro"));
     JSON_MAPPER.registerSubtypes(new NamedType(AvroStreamInputRowParser.class, "avro_stream"));
     SMILE_MAPPER.registerSubtypes(new NamedType(AvroStreamInputRowParser.class, "avro_stream"));
-
     // Register Bloom Filter Serializers
     BloomFilterSerializersModule bloomFilterSerializersModule = new BloomFilterSerializersModule();
     JSON_MAPPER.registerModule(bloomFilterSerializersModule);
@@ -262,110 +264,95 @@ public final class DruidStorageHandlerUtils {
     JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
     try {
       // No operation emitter will be used by some internal druid classes.
-      EmittingLogger.registerEmitter(
-              new ServiceEmitter("druid-hive-indexer", InetAddress.getLocalHost().getHostName(),
-                      new NoopEmitter()
-              ));
+      EmittingLogger.registerEmitter(new ServiceEmitter("druid-hive-indexer",
+          InetAddress.getLocalHost().getHostName(),
+          new NoopEmitter()));
     } catch (UnknownHostException e) {
       throw Throwables.propagate(e);
     }
   }
 
   /**
-   * Used by druid to perform IO on indexes
+   * Used by druid to perform IO on indexes.
    */
-  public static final IndexIO INDEX_IO =
-      new IndexIO(JSON_MAPPER, TmpFileSegmentWriteOutMediumFactory.instance(), () -> 0);
+  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, new DruidProcessingConfig() {
+    @Override public String getFormatString() {
+      return "%s-%s";
+    }
+  });
 
   /**
-   * Used by druid to merge indexes
+   * Used by druid to merge indexes.
    */
-  public static final IndexMergerV9 INDEX_MERGER_V9 = new IndexMergerV9(JSON_MAPPER,
-          DruidStorageHandlerUtils.INDEX_IO,TmpFileSegmentWriteOutMediumFactory.instance()
-  );
+  public static final IndexMergerV9
+      INDEX_MERGER_V9 =
+      new IndexMergerV9(JSON_MAPPER, DruidStorageHandlerUtils.INDEX_IO, TmpFileSegmentWriteOutMediumFactory.instance());
 
   /**
-   * Generic Interner implementation used to read segments object from metadata storage
+   * Generic Interner implementation used to read segments object from metadata storage.
    */
-  public static final Interner<DataSegment> DATA_SEGMENT_INTERNER = Interners.newWeakInterner();
+  private static final Interner<DataSegment> DATA_SEGMENT_INTERNER = Interners.newWeakInterner();
 
   /**
    * Method that creates a request for Druid query using SMILE format.
    *
-   * @param address
-   * @param query
-   *
-   * @return
-   *
-   * @throws IOException
+   * @param address of the host target.
+   * @param query   druid query.
+   * @return Request object to be submitted.
    */
-  public static Request createSmileRequest(String address, io.druid.query.Query query)
-          throws IOException {
-    return new Request(HttpMethod.POST, new URL(String.format("%s/druid/v2/", "http://" + address)))
-            .setContent(SMILE_MAPPER.writeValueAsBytes(query))
-            .setHeader(HttpHeaders.Names.CONTENT_TYPE, SMILE_CONTENT_TYPE);
+  public static Request createSmileRequest(String address, org.apache.druid.query.Query query) {
+    try {
+      return new Request(HttpMethod.POST, new URL(String.format("%s/druid/v2/", "http://" + address))).setContent(
+          SMILE_MAPPER.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE, SMILE_CONTENT_TYPE);
+    } catch (MalformedURLException e) {
+      LOG.error("URL Malformed  address {}", address);
+      throw new RuntimeException(e);
+    } catch (JsonProcessingException e) {
+      LOG.error("can not Serialize the Query [{}]", query.toString());
+      throw new RuntimeException(e);
+    }
   }
 
   /**
    * Method that submits a request to an Http address and retrieves the result.
    * The caller is responsible for closing the stream once it finishes consuming it.
    *
-   * @param client
-   * @param request
-   *
-   * @return
-   *
-   * @throws IOException
+   * @param client  Http Client will be used to submit request.
+   * @param request Http request to be submitted.
+   * @return response object.
+   * @throws IOException in case of request IO error.
    */
-  public static InputStream submitRequest(HttpClient client, Request request)
-          throws IOException {
-    InputStream response;
+  public static InputStream submitRequest(HttpClient client, Request request) throws IOException {
     try {
-      response = client.go(request, new InputStreamResponseHandler()).get();
-    } catch (ExecutionException e) {
-      throw new IOException(e.getCause());
-    } catch (InterruptedException e) {
+      return client.go(request, new InputStreamResponseHandler()).get();
+    } catch (ExecutionException | InterruptedException e) {
       throw new IOException(e.getCause());
     }
-    return response;
+
   }
 
-  public static String getURL(HttpClient client, URL url) throws IOException {
-    try (Reader reader = new InputStreamReader(
-            DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, url)))) {
-      return CharStreams.toString(reader);
-    }
-  }
-
-  public static FullResponseHolder getResponseFromCurrentLeader(HttpClient client, Request request,
-          FullResponseHandler fullResponseHandler)
-          throws ExecutionException, InterruptedException {
-    FullResponseHolder responseHolder = client.go(request,
-            fullResponseHandler).get();
+  static FullResponseHolder getResponseFromCurrentLeader(HttpClient client,
+      Request request,
+      FullResponseHandler fullResponseHandler) throws ExecutionException, InterruptedException {
+    FullResponseHolder responseHolder = client.go(request, fullResponseHandler).get();
     if (HttpResponseStatus.TEMPORARY_REDIRECT.equals(responseHolder.getStatus())) {
       String redirectUrlStr = responseHolder.getResponse().headers().get("Location");
-      LOG.debug("Request[%s] received redirect response to location [%s].", request.getUrl(),
-              redirectUrlStr);
+      LOG.debug("Request[%s] received redirect response to location [%s].", request.getUrl(), redirectUrlStr);
       final URL redirectUrl;
       try {
         redirectUrl = new URL(redirectUrlStr);
       } catch (MalformedURLException ex) {
-        throw new ExecutionException(
-                String.format(
-                        "Malformed redirect location is found in response from url[%s], new location[%s].",
-                        request.getUrl(),
-                        redirectUrlStr),
-                ex
-        );
+        throw new ExecutionException(String.format(
+            "Malformed redirect location is found in response from url[%s], new location[%s].",
+            request.getUrl(),
+            redirectUrlStr), ex);
       }
-      responseHolder = client.go(withUrl(request, redirectUrl),
-              fullResponseHandler).get();
+      responseHolder = client.go(withUrl(request, redirectUrl), fullResponseHandler).get();
     }
     return responseHolder;
   }
 
-  private static Request withUrl(Request old, URL url)
-  {
+  private static Request withUrl(Request old, URL url) {
     Request req = new Request(old.getMethod(), url);
     req.addHeaderValues(old.getHeaders());
     if (old.hasContent()) {
@@ -376,118 +363,86 @@ public final class DruidStorageHandlerUtils {
 
   /**
    * @param taskDir path to the  directory containing the segments descriptor info
-   *                the descriptor path will be .../workingPath/task_id/{@link DruidStorageHandler#SEGMENTS_DESCRIPTOR_DIR_NAME}/*.json
+   *                the descriptor path will be
+   *                ../workingPath/task_id/{@link DruidStorageHandler#SEGMENTS_DESCRIPTOR_DIR_NAME}/*.json
    * @param conf    hadoop conf to get the file system
-   *
    * @return List of DataSegments
-   *
    * @throws IOException can be for the case we did not produce data.
    */
-  public static List<DataSegment> getCreatedSegments(Path taskDir, Configuration conf)
-          throws IOException {
+  public static List<DataSegment> getCreatedSegments(Path taskDir, Configuration conf) throws IOException {
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
     FileSystem fs = taskDir.getFileSystem(conf);
     FileStatus[] fss;
     fss = fs.listStatus(taskDir);
     for (FileStatus fileStatus : fss) {
-      final DataSegment segment = JSON_MAPPER
-              .readValue((InputStream) fs.open(fileStatus.getPath()), DataSegment.class);
+      final DataSegment segment = JSON_MAPPER.readValue((InputStream) fs.open(fileStatus.getPath()), DataSegment.class);
       publishedSegmentsBuilder.add(segment);
     }
     return publishedSegmentsBuilder.build();
   }
 
   /**
-   * This function will write to filesystem serialized from of segment descriptor
-   * if an existing file exists it will try to replace it.
+   * Writes to filesystem serialized form of segment descriptor if an existing file exists it will try to replace it.
    *
-   * @param outputFS       filesystem
-   * @param segment        DataSegment object
-   * @param descriptorPath path
-   *
-   * @throws IOException
+   * @param outputFS       filesystem.
+   * @param segment        DataSegment object.
+   * @param descriptorPath path.
+   * @throws IOException in case any IO issues occur.
    */
-  public static void writeSegmentDescriptor(
-          final FileSystem outputFS,
-          final DataSegment segment,
-          final Path descriptorPath
-  )
-          throws IOException {
-    final DataPusher descriptorPusher = (DataPusher) RetryProxy.create(
-            DataPusher.class, () -> {
-              try {
-                if (outputFS.exists(descriptorPath)) {
-                  if (!outputFS.delete(descriptorPath, false)) {
-                    throw new IOException(
-                            String.format("Failed to delete descriptor at [%s]", descriptorPath));
-                  }
-                }
-                try (final OutputStream descriptorOut = outputFS.create(
-                        descriptorPath,
-                        true,
-                        DEFAULT_FS_BUFFER_SIZE
-                )) {
-                  JSON_MAPPER.writeValue(descriptorOut, segment);
-                  descriptorOut.flush();
-                }
-              } catch (RuntimeException | IOException ex) {
-                throw ex;
-              }
-              return -1;
-            },
-            RetryPolicies
-                    .exponentialBackoffRetry(NUM_RETRIES, SECONDS_BETWEEN_RETRIES, TimeUnit.SECONDS)
-    );
+  public static void writeSegmentDescriptor(final FileSystem outputFS,
+      final DataSegment segment,
+      final Path descriptorPath) throws IOException {
+    final DataPusher descriptorPusher = (DataPusher) RetryProxy.create(DataPusher.class, () -> {
+      if (outputFS.exists(descriptorPath)) {
+        if (!outputFS.delete(descriptorPath, false)) {
+          throw new IOException(String.format("Failed to delete descriptor at [%s]", descriptorPath));
+        }
+      }
+      try (final OutputStream descriptorOut = outputFS.create(descriptorPath, true, DEFAULT_FS_BUFFER_SIZE)) {
+        JSON_MAPPER.writeValue(descriptorOut, segment);
+        descriptorOut.flush();
+      }
+    }, RetryPolicies.exponentialBackoffRetry(NUM_RETRIES, SECONDS_BETWEEN_RETRIES, TimeUnit.SECONDS));
     descriptorPusher.push();
   }
 
   /**
    * @param connector                   SQL metadata connector to the metadata storage
    * @param metadataStorageTablesConfig Table config
-   *
    * @return all the active data sources in the metadata storage
    */
-  public static Collection<String> getAllDataSourceNames(SQLMetadataConnector connector,
-          final MetadataStorageTablesConfig metadataStorageTablesConfig
-  ) {
-    return connector.getDBI().withHandle(
-            (HandleCallback<List<String>>) handle -> handle.createQuery(
-                    String.format("SELECT DISTINCT(datasource) FROM %s WHERE used = true",
-                            metadataStorageTablesConfig.getSegmentsTable()
-                    ))
-                    .fold(Lists.<String>newArrayList(),
-                        (druidDataSources, stringObjectMap, foldController, statementContext) -> {
-                          druidDataSources.add(
-                                  MapUtils.getString(stringObjectMap, "datasource")
-                          );
-                          return druidDataSources;
-                        }
-                    )
-    );
+  static Collection<String> getAllDataSourceNames(SQLMetadataConnector connector,
+      final MetadataStorageTablesConfig metadataStorageTablesConfig) {
+    return connector.getDBI()
+        .withHandle((HandleCallback<List<String>>) handle -> handle.createQuery(String.format(
+            "SELECT DISTINCT(datasource) FROM %s WHERE used = true",
+            metadataStorageTablesConfig.getSegmentsTable()))
+            .fold(Lists.<String>newArrayList(),
+                (druidDataSources, stringObjectMap, foldController, statementContext) -> {
+                  druidDataSources.add(MapUtils.getString(stringObjectMap, "datasource"));
+                  return druidDataSources;
+                }));
   }
 
   /**
    * @param connector                   SQL connector to metadata
    * @param metadataStorageTablesConfig Tables configuration
    * @param dataSource                  Name of data source
-   *
    * @return true if the data source was successfully disabled false otherwise
    */
-  public static boolean disableDataSource(SQLMetadataConnector connector,
-          final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
-  ) {
+  static boolean disableDataSource(SQLMetadataConnector connector,
+      final MetadataStorageTablesConfig metadataStorageTablesConfig,
+      final String dataSource) {
     try {
       if (!getAllDataSourceNames(connector, metadataStorageTablesConfig).contains(dataSource)) {
         LOG.warn("Cannot delete data source {}, does not exist", dataSource);
         return false;
       }
 
-      connector.getDBI().withHandle(
-              (HandleCallback<Void>) handle -> {
-                disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
-                return null;
-              }
-      );
+      connector.getDBI().withHandle((HandleCallback<Void>) handle -> {
+        disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
+        return null;
+      });
 
     } catch (Exception e) {
       LOG.error(String.format("Error removing dataSource %s", dataSource), e);
@@ -497,213 +452,173 @@ public final class DruidStorageHandlerUtils {
   }
 
   /**
-   * First computes the segments timeline to accommodate new segments for insert into case
-   * Then moves segments to druid deep storage with updated metadata/version
+   * First computes the segments timeline to accommodate new segments for insert into case.
+   * Then moves segments to druid deep storage with updated metadata/version.
    * ALL IS DONE IN ONE TRANSACTION
    *
-   * @param connector DBI connector to commit
+   * @param connector                   DBI connector to commit
    * @param metadataStorageTablesConfig Druid metadata tables definitions
-   * @param dataSource Druid datasource name
-   * @param segments List of segments to move and commit to metadata
-   * @param overwrite if it is an insert overwrite
-   * @param conf Configuration
-   * @param dataSegmentPusher segment pusher
-   *
+   * @param dataSource                  Druid datasource name
+   * @param segments                    List of segments to move and commit to metadata
+   * @param overwrite                   if it is an insert overwrite
+   * @param conf                        Configuration
+   * @param dataSegmentPusher           segment pusher
    * @return List of successfully published Druid segments.
    * This list has the updated versions and metadata about segments after move and timeline sorting
-   *
-   * @throws CallbackFailedException
+   * @throws CallbackFailedException in case the connector can not add the segment to the DB.
    */
-  public static List<DataSegment> publishSegmentsAndCommit(final SQLMetadataConnector connector,
-          final MetadataStorageTablesConfig metadataStorageTablesConfig,
-          final String dataSource,
-          final List<DataSegment> segments,
-          boolean overwrite,
-          Configuration conf,
-          DataSegmentPusher dataSegmentPusher
-  ) throws CallbackFailedException {
-    return connector.getDBI().inTransaction(
-            (handle, transactionStatus) -> {
-              // We create the timeline for the existing and new segments
-              VersionedIntervalTimeline<String, DataSegment> timeline;
-              if (overwrite) {
-                // If we are overwriting, we disable existing sources
-                disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
+  @SuppressWarnings("unchecked") static List<DataSegment> publishSegmentsAndCommit(final SQLMetadataConnector connector,
+      final MetadataStorageTablesConfig metadataStorageTablesConfig,
+      final String dataSource,
+      final List<DataSegment> segments,
+      boolean overwrite,
+      Configuration conf,
+      DataSegmentPusher dataSegmentPusher) throws CallbackFailedException {
+    return connector.getDBI().inTransaction((handle, transactionStatus) -> {
+      // We create the timeline for the existing and new segments
+      VersionedIntervalTimeline<String, DataSegment> timeline;
+      if (overwrite) {
+        // If we are overwriting, we disable existing sources
+        disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
 
-                // When overwriting, we just start with empty timeline,
-                // as we are overwriting segments with new versions
-                timeline = new VersionedIntervalTimeline<>(Ordering.natural());
-              } else {
-                // Append Mode
-                if (segments.isEmpty()) {
-                  // If there are no new segments, we can just bail out
-                  return Collections.EMPTY_LIST;
-                }
-                // Otherwise, build a timeline of existing segments in metadata storage
-                Interval indexedInterval = JodaUtils
-                        .umbrellaInterval(Iterables.transform(segments,
-                                input -> input.getInterval()
-                        ));
-                LOG.info("Building timeline for umbrella Interval [{}]", indexedInterval);
-                timeline = getTimelineForIntervalWithHandle(
-                        handle, dataSource, indexedInterval, metadataStorageTablesConfig);
-              }
+        // When overwriting, we just start with empty timeline,
+        // as we are overwriting segments with new versions
+        timeline = new VersionedIntervalTimeline<>(Ordering.natural());
+      } else {
+        // Append Mode
+        if (segments.isEmpty()) {
+          // If there are no new segments, we can just bail out
+          return Collections.EMPTY_LIST;
+        }
+        // Otherwise, build a timeline of existing segments in metadata storage
+        Interval
+            indexedInterval =
+            JodaUtils.umbrellaInterval(segments.stream().map(DataSegment::getInterval).collect(Collectors.toList()));
+        LOG.info("Building timeline for umbrella Interval [{}]", indexedInterval);
+        timeline = getTimelineForIntervalWithHandle(handle, dataSource, indexedInterval, metadataStorageTablesConfig);
+      }
 
-              final List<DataSegment> finalSegmentsToPublish = Lists.newArrayList();
-              for (DataSegment segment : segments) {
-                List<TimelineObjectHolder<String, DataSegment>> existingChunks = timeline
-                        .lookup(segment.getInterval());
-                if (existingChunks.size() > 1) {
-                  // Not possible to expand since we have more than one chunk with a single segment.
-                  // This is the case when user wants to append a segment with coarser granularity.
-                  // e.g If metadata storage already has segments for with granularity HOUR and segments to append have DAY granularity.
-                  // Druid shard specs does not support multiple partitions for same interval with different granularity.
-                  throw new IllegalStateException(
-                          String.format(
-                                  "Cannot allocate new segment for dataSource[%s], interval[%s], already have [%,d] chunks. Not possible to append new segment.",
-                                  dataSource,
-                                  segment.getInterval(),
-                                  existingChunks.size()
-                          )
-                  );
-                }
-                // Find out the segment with latest version and maximum partition number
-                SegmentIdentifier max = null;
-                final ShardSpec newShardSpec;
-                final String newVersion;
-                if (!existingChunks.isEmpty()) {
-                  // Some existing chunk, Find max
-                  TimelineObjectHolder<String, DataSegment> existingHolder = Iterables
-                          .getOnlyElement(existingChunks);
-                  for (PartitionChunk<DataSegment> existing : existingHolder.getObject()) {
-                    if (max == null ||
-                            max.getShardSpec().getPartitionNum() < existing.getObject()
-                                    .getShardSpec()
-                                    .getPartitionNum()) {
-                      max = SegmentIdentifier.fromDataSegment(existing.getObject());
-                    }
-                  }
-                }
-
-                if (max == null) {
-                  // No existing shard present in the database, use the current version.
-                  newShardSpec = segment.getShardSpec();
-                  newVersion = segment.getVersion();
-                } else {
-                  // use version of existing max segment to generate new shard spec
-                  newShardSpec = getNextPartitionShardSpec(max.getShardSpec());
-                  newVersion = max.getVersion();
-                }
-                DataSegment publishedSegment = publishSegmentWithShardSpec(
-                        segment,
-                        newShardSpec,
-                        newVersion,
-                        getPath(segment).getFileSystem(conf),
-                        dataSegmentPusher
-                );
-                finalSegmentsToPublish.add(publishedSegment);
-                timeline.add(
-                        publishedSegment.getInterval(),
-                        publishedSegment.getVersion(),
-                        publishedSegment.getShardSpec().createChunk(publishedSegment)
-                );
-
-              }
-
-              // Publish new segments to metadata storage
-              final PreparedBatch batch = handle.prepareBatch(
-                      String.format(
-                              "INSERT INTO %1$s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) "
-                                      + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",
-                              metadataStorageTablesConfig.getSegmentsTable()
-                      )
-
-              );
-
-              for (final DataSegment segment : finalSegmentsToPublish) {
-
-                batch.add(
-                        new ImmutableMap.Builder<String, Object>()
-                                .put("id", segment.getIdentifier())
-                                .put("dataSource", segment.getDataSource())
-                                .put("created_date", new DateTime().toString())
-                                .put("start", segment.getInterval().getStart().toString())
-                                .put("end", segment.getInterval().getEnd().toString())
-                                .put("partitioned",
-                                        (segment.getShardSpec() instanceof NoneShardSpec) ?
-                                                false :
-                                                true
-                                )
-                                .put("version", segment.getVersion())
-                                .put("used", true)
-                                .put("payload", JSON_MAPPER.writeValueAsBytes(segment))
-                                .build()
-                );
-
-                LOG.info("Published {}", segment.getIdentifier());
-              }
-              batch.execute();
-
-              return finalSegmentsToPublish;
+      final List<DataSegment> finalSegmentsToPublish = Lists.newArrayList();
+      for (DataSegment segment : segments) {
+        List<TimelineObjectHolder<String, DataSegment>> existingChunks = timeline.lookup(segment.getInterval());
+        if (existingChunks.size() > 1) {
+          // Not possible to expand since we have more than one chunk with a single segment.
+          // This is the case when user wants to append a segment with coarser granularity.
+          // case metadata storage has segments with granularity HOUR and segments to append have DAY granularity.
+          // Druid shard specs does not support multiple partitions for same interval with different granularity.
+          throw new IllegalStateException(String.format(
+              "Cannot allocate new segment for dataSource[%s], interval[%s], already have [%,d] chunks. "
+                  + "Not possible to append new segment.",
+              dataSource,
+              segment.getInterval(),
+              existingChunks.size()));
+        }
+        // Find out the segment with latest version and maximum partition number
+        SegmentIdWithShardSpec max = null;
+        final ShardSpec newShardSpec;
+        final String newVersion;
+        if (!existingChunks.isEmpty()) {
+          // Some existing chunk, Find max
+          TimelineObjectHolder<String, DataSegment> existingHolder = Iterables.getOnlyElement(existingChunks);
+          for (PartitionChunk<DataSegment> existing : existingHolder.getObject()) {
+            if (max == null || max.getShardSpec().getPartitionNum() < existing.getObject()
+                .getShardSpec()
+                .getPartitionNum()) {
+              max = SegmentIdWithShardSpec.fromDataSegment(existing.getObject());
             }
-    );
+          }
+        }
+
+        if (max == null) {
+          // No existing shard present in the database, use the current version.
+          newShardSpec = segment.getShardSpec();
+          newVersion = segment.getVersion();
+        } else {
+          // use version of existing max segment to generate new shard spec
+          newShardSpec = getNextPartitionShardSpec(max.getShardSpec());
+          newVersion = max.getVersion();
+        }
+        DataSegment
+            publishedSegment =
+            publishSegmentWithShardSpec(segment,
+                newShardSpec,
+                newVersion,
+                getPath(segment).getFileSystem(conf),
+                dataSegmentPusher);
+        finalSegmentsToPublish.add(publishedSegment);
+        timeline.add(publishedSegment.getInterval(),
+            publishedSegment.getVersion(),
+            publishedSegment.getShardSpec().createChunk(publishedSegment));
+
+      }
+
+      // Publish new segments to metadata storage
+      final PreparedBatch
+          batch =
+          handle.prepareBatch(String.format(
+              "INSERT INTO %1$s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) "
+                  + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",
+              metadataStorageTablesConfig.getSegmentsTable())
+
+          );
+
+      for (final DataSegment segment : finalSegmentsToPublish) {
+
+        batch.add(new ImmutableMap.Builder<String, Object>().put("id", segment.getId().toString())
+            .put("dataSource", segment.getDataSource())
+            .put("created_date", new DateTime().toString())
+            .put("start", segment.getInterval().getStart().toString())
+            .put("end", segment.getInterval().getEnd().toString())
+            .put("partitioned", !(segment.getShardSpec() instanceof NoneShardSpec))
+            .put("version", segment.getVersion())
+            .put("used", true)
+            .put("payload", JSON_MAPPER.writeValueAsBytes(segment))
+            .build());
+
+        LOG.info("Published {}", segment.getId().toString());
+      }
+      batch.execute();
+
+      return finalSegmentsToPublish;
+    });
   }
 
-  public static void disableDataSourceWithHandle(Handle handle,
-          MetadataStorageTablesConfig metadataStorageTablesConfig, String dataSource
-  ) {
-    handle.createStatement(
-            String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource",
-                    metadataStorageTablesConfig.getSegmentsTable()
-            )
-    )
-            .bind("dataSource", dataSource)
-            .execute();
+  private static void disableDataSourceWithHandle(Handle handle,
+      MetadataStorageTablesConfig metadataStorageTablesConfig,
+      String dataSource) {
+    handle.createStatement(String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource",
+        metadataStorageTablesConfig.getSegmentsTable())).bind("dataSource", dataSource).execute();
   }
 
   /**
    * @param connector                   SQL connector to metadata
    * @param metadataStorageTablesConfig Tables configuration
    * @param dataSource                  Name of data source
-   *
    * @return List of all data segments part of the given data source
    */
-  public static List<DataSegment> getDataSegmentList(final SQLMetadataConnector connector,
-          final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
-  ) {
-    List<DataSegment> segmentList = connector.retryTransaction(
-            (handle, status) -> handle
-                    .createQuery(String.format(
-                            "SELECT payload FROM %s WHERE dataSource = :dataSource",
-                            metadataStorageTablesConfig.getSegmentsTable()
-                    ))
-                    .setFetchSize(getStreamingFetchSize(connector))
-                    .bind("dataSource", dataSource)
-                    .map(ByteArrayMapper.FIRST)
-                    .fold(
-                            new ArrayList<>(),
-                            (Folder3<List<DataSegment>, byte[]>) (accumulator, payload, control, ctx) -> {
-                              try {
-                                final DataSegment segment = DATA_SEGMENT_INTERNER.intern(
-                                        JSON_MAPPER.readValue(
-                                                payload,
-                                                DataSegment.class
-                                        ));
+  static List<DataSegment> getDataSegmentList(final SQLMetadataConnector connector,
+      final MetadataStorageTablesConfig metadataStorageTablesConfig,
+      final String dataSource) {
+    return connector.retryTransaction((handle, status) -> handle.createQuery(String.format(
+        "SELECT payload FROM %s WHERE dataSource = :dataSource",
+        metadataStorageTablesConfig.getSegmentsTable()))
+        .setFetchSize(getStreamingFetchSize(connector))
+        .bind("dataSource", dataSource)
+        .map(ByteArrayMapper.FIRST)
+        .fold(new ArrayList<>(), (Folder3<List<DataSegment>, byte[]>) (accumulator, payload, control, ctx) -> {
+          try {
+            final DataSegment segment = DATA_SEGMENT_INTERNER.intern(JSON_MAPPER.readValue(payload, DataSegment.class));
 
-                                accumulator.add(segment);
-                                return accumulator;
-                              } catch (Exception e) {
-                                throw new SQLException(e.toString());
-                              }
-                            }
-                    )
-            , 3, DEFAULT_MAX_TRIES);
-    return segmentList;
+            accumulator.add(segment);
+            return accumulator;
+          } catch (Exception e) {
+            throw new SQLException(e.toString());
+          }
+        }), 3, DEFAULT_MAX_TRIES);
   }
 
   /**
-   * @param connector
-   *
+   * @param connector SQL DBI connector.
    * @return streaming fetch size.
    */
   private static int getStreamingFetchSize(SQLMetadataConnector connector) {
@@ -714,33 +629,28 @@ public final class DruidStorageHandlerUtils {
   }
 
   /**
-   * @param pushedSegment
-   * @param segmentsDescriptorDir
-   *
+   * @param pushedSegment         the pushed data segment object
+   * @param segmentsDescriptorDir actual directory path for descriptors.
    * @return a sanitize file name
    */
-  public static Path makeSegmentDescriptorOutputPath(DataSegment pushedSegment,
-          Path segmentsDescriptorDir
-  ) {
-    return new Path(
-            segmentsDescriptorDir,
-            String.format("%s.json", pushedSegment.getIdentifier().replace(":", ""))
-    );
+  public static Path makeSegmentDescriptorOutputPath(DataSegment pushedSegment, Path segmentsDescriptorDir) {
+    return new Path(segmentsDescriptorDir, String.format("%s.json", pushedSegment.getId().toString().replace(":", "")));
   }
 
   public static String createScanAllQuery(String dataSourceName, List<String> columns) throws JsonProcessingException {
-    final ScanQuery.ScanQueryBuilder scanQueryBuilder = ScanQuery.newScanQueryBuilder();
-    final List<Interval> intervals = Arrays.asList(DEFAULT_INTERVAL);
-    ScanQuery scanQuery = scanQueryBuilder
-        .dataSource(dataSourceName)
-        .resultFormat(ScanQuery.RESULT_FORMAT_COMPACTED_LIST)
-        .intervals(new MultipleIntervalSegmentSpec(intervals))
-        .columns(columns)
-        .build();
+    final Druids.ScanQueryBuilder scanQueryBuilder = Druids.newScanQueryBuilder();
+    final List<Interval> intervals = Collections.singletonList(DEFAULT_INTERVAL);
+    ScanQuery
+        scanQuery =
+        scanQueryBuilder.dataSource(dataSourceName)
+            .resultFormat(ScanQuery.ResultFormat.RESULT_FORMAT_COMPACTED_LIST)
+            .intervals(new MultipleIntervalSegmentSpec(intervals))
+            .columns(columns)
+            .build();
     return JSON_MAPPER.writeValueAsString(scanQuery);
   }
 
-  static <T> Boolean getBooleanProperty(Table table, String propertyName) {
+  @Nullable static Boolean getBooleanProperty(Table table, String propertyName) {
     String val = getTableProperty(table, propertyName);
     if (val == null) {
       return null;
@@ -753,7 +663,7 @@ public final class DruidStorageHandlerUtils {
     return val == null ? defaultVal : val;
   }
 
-  static <T> Integer getIntegerProperty(Table table, String propertyName) {
+  @Nullable static Integer getIntegerProperty(Table table, String propertyName) {
     String val = getTableProperty(table, propertyName);
     if (val == null) {
       return null;
@@ -761,9 +671,9 @@ public final class DruidStorageHandlerUtils {
     try {
       return Integer.parseInt(val);
     } catch (NumberFormatException e) {
-      throw new NumberFormatException(String
-          .format("Exception while parsing property[%s] with Value [%s] as Integer", propertyName,
-              val));
+      throw new NumberFormatException(String.format("Exception while parsing property[%s] with Value [%s] as Integer",
+          propertyName,
+          val));
     }
   }
 
@@ -772,7 +682,7 @@ public final class DruidStorageHandlerUtils {
     return val == null ? defaultVal : val;
   }
 
-  static <T> Long getLongProperty(Table table, String propertyName) {
+  @Nullable static Long getLongProperty(Table table, String propertyName) {
     String val = getTableProperty(table, propertyName);
     if (val == null) {
       return null;
@@ -780,13 +690,13 @@ public final class DruidStorageHandlerUtils {
     try {
       return Long.parseLong(val);
     } catch (NumberFormatException e) {
-      throw new NumberFormatException(String
-          .format("Exception while parsing property[%s] with Value [%s] as Long", propertyName,
-              val));
+      throw new NumberFormatException(String.format("Exception while parsing property[%s] with Value [%s] as Long",
+          propertyName,
+          val));
     }
   }
 
-  static <T> Period getPeriodProperty(Table table, String propertyName) {
+  @Nullable static Period getPeriodProperty(Table table, String propertyName) {
     String val = getTableProperty(table, propertyName);
     if (val == null) {
       return null;
@@ -794,19 +704,18 @@ public final class DruidStorageHandlerUtils {
     try {
       return Period.parse(val);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(String
-          .format("Exception while parsing property[%s] with Value [%s] as Period", propertyName,
-              val));
+      throw new IllegalArgumentException(String.format("Exception while parsing property[%s] with Value [%s] as Period",
+          propertyName,
+          val));
     }
   }
 
-  static String getTableProperty(Table table, String propertyName) {
-    return table.getParameters().get(propertyName);
-  }
-
-  public static List<String> getListProperty(Table table, String propertyName) {
-    List<String> rv = new ArrayList<String>();
+  @Nullable public static List<String> getListProperty(Table table, String propertyName) {
+    List<String> rv = new ArrayList<>();
     String values = getTableProperty(table, propertyName);
+    if (values == null) {
+      return null;
+    }
     String[] vals = values.trim().split(",");
     for (String val : vals) {
       if (org.apache.commons.lang.StringUtils.isNotBlank(val)) {
@@ -816,87 +725,78 @@ public final class DruidStorageHandlerUtils {
     return rv;
   }
 
+  static String getTableProperty(Table table, String propertyName) {
+    return table.getParameters().get(propertyName);
+  }
+
   /**
-   * Simple interface for retry operations
+   * Simple interface for retry operations.
    */
   public interface DataPusher {
-    long push() throws IOException;
+    void push() throws IOException;
   }
 
   // Thanks, HBase Storage handler
-  public static void addDependencyJars(Configuration conf, Class<?>... classes) throws IOException {
+  @SuppressWarnings("SameParameterValue") static void addDependencyJars(Configuration conf, Class<?>... classes)
+      throws IOException {
     FileSystem localFs = FileSystem.getLocal(conf);
-    Set<String> jars = new HashSet<String>();
-    jars.addAll(conf.getStringCollection("tmpjars"));
+    Set<String> jars = new HashSet<>(conf.getStringCollection("tmpjars"));
     for (Class<?> clazz : classes) {
       if (clazz == null) {
         continue;
       }
-      String path = Utilities.jarFinderGetJar(clazz);
+      final String path = Utilities.jarFinderGetJar(clazz);
       if (path == null) {
-        throw new RuntimeException(
-                "Could not find jar for class " + clazz + " in order to ship it to the cluster.");
+        throw new RuntimeException("Could not find jar for class " + clazz + " in order to ship it to the cluster.");
       }
       if (!localFs.exists(new Path(path))) {
         throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
       }
-      jars.add(path.toString());
+      jars.add(path);
     }
     if (jars.isEmpty()) {
       return;
     }
+    //noinspection ToArrayCallWithZeroLengthArrayArgument
     conf.set("tmpjars", StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
   }
 
-  private static VersionedIntervalTimeline<String, DataSegment> getTimelineForIntervalWithHandle(
-          final Handle handle,
-          final String dataSource,
-          final Interval interval,
-          final MetadataStorageTablesConfig dbTables
-  ) throws IOException {
-    org.skife.jdbi.v2.Query<Map<String, Object>> sql = handle.createQuery(
-            String.format(
-                    "SELECT payload FROM %s WHERE used = true AND dataSource = ? AND start <= ? AND \"end\" >= ?",
-                    dbTables.getSegmentsTable()
-            )
-    ).bind(0, dataSource)
+  private static VersionedIntervalTimeline<String, DataSegment> getTimelineForIntervalWithHandle(final Handle handle,
+      final String dataSource,
+      final Interval interval,
+      final MetadataStorageTablesConfig dbTables) throws IOException {
+    Query<Map<String, Object>>
+        sql =
+        handle.createQuery(String.format(
+            "SELECT payload FROM %s WHERE used = true AND dataSource = ? AND start <= ? AND \"end\" >= ?",
+            dbTables.getSegmentsTable()))
+            .bind(0, dataSource)
             .bind(1, interval.getEnd().toString())
             .bind(2, interval.getStart().toString());
 
-    final VersionedIntervalTimeline<String, DataSegment> timeline = new VersionedIntervalTimeline<>(
-            Ordering.natural()
-    );
-    final ResultIterator<byte[]> dbSegments = sql
-            .map(ByteArrayMapper.FIRST)
-            .iterator();
-    try {
+    final VersionedIntervalTimeline<String, DataSegment> timeline = new VersionedIntervalTimeline<>(Ordering.natural());
+    try (ResultIterator<byte[]> dbSegments = sql.map(ByteArrayMapper.FIRST).iterator()) {
       while (dbSegments.hasNext()) {
         final byte[] payload = dbSegments.next();
-        DataSegment segment = JSON_MAPPER.readValue(
-                payload,
-                DataSegment.class
-        );
-        timeline.add(segment.getInterval(), segment.getVersion(),
-                segment.getShardSpec().createChunk(segment)
-        );
+        DataSegment segment = JSON_MAPPER.readValue(payload, DataSegment.class);
+        timeline.add(segment.getInterval(), segment.getVersion(), segment.getShardSpec().createChunk(segment));
       }
-    } finally {
-      dbSegments.close();
     }
     return timeline;
   }
 
-  public static DataSegmentPusher createSegmentPusherForDirectory(String segmentDirectory,
-          Configuration configuration) throws IOException {
+  public static DataSegmentPusher createSegmentPusherForDirectory(String segmentDirectory, Configuration configuration)
+      throws IOException {
     final HdfsDataSegmentPusherConfig hdfsDataSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
     hdfsDataSegmentPusherConfig.setStorageDirectory(segmentDirectory);
-    return new HdfsDataSegmentPusher(
-            hdfsDataSegmentPusherConfig, configuration, JSON_MAPPER);
+    return new HdfsDataSegmentPusher(hdfsDataSegmentPusherConfig, configuration, JSON_MAPPER);
   }
 
-  public static DataSegment publishSegmentWithShardSpec(DataSegment segment, ShardSpec shardSpec,
-          String version, FileSystem fs, DataSegmentPusher dataSegmentPusher
-  ) throws IOException {
+  private static DataSegment publishSegmentWithShardSpec(DataSegment segment,
+      ShardSpec shardSpec,
+      String version,
+      FileSystem fs,
+      DataSegmentPusher dataSegmentPusher) throws IOException {
     boolean retry = true;
     DataSegment.Builder dataSegmentBuilder = new DataSegment.Builder(segment).version(version);
     Path finalPath = null;
@@ -905,8 +805,9 @@ public final class DruidStorageHandlerUtils {
       dataSegmentBuilder.shardSpec(shardSpec);
       final Path intermediatePath = getPath(segment);
 
-      finalPath = new Path(dataSegmentPusher.getPathForHadoop(), dataSegmentPusher
-              .makeIndexPathName(dataSegmentBuilder.build(), DruidStorageHandlerUtils.INDEX_ZIP));
+      finalPath =
+          new Path(dataSegmentPusher.getPathForHadoop(),
+              dataSegmentPusher.makeIndexPathName(dataSegmentBuilder.build(), DruidStorageHandlerUtils.INDEX_ZIP));
       // Create parent if it does not exist, recreation is not an error
       fs.mkdirs(finalPath.getParent());
 
@@ -917,16 +818,13 @@ public final class DruidStorageHandlerUtils {
           retry = true;
         } else {
           throw new IOException(String.format(
-                  "Failed to rename intermediate segment[%s] to final segment[%s] is not present.",
-                  intermediatePath,
-                  finalPath
-          ));
+              "Failed to rename intermediate segment[%s] to final segment[%s] is not present.",
+              intermediatePath,
+              finalPath));
         }
       }
     }
-    DataSegment dataSegment = dataSegmentBuilder
-            .loadSpec(dataSegmentPusher.makeLoadSpec(finalPath.toUri()))
-            .build();
+    DataSegment dataSegment = dataSegmentBuilder.loadSpec(dataSegmentPusher.makeLoadSpec(finalPath.toUri())).build();
 
     writeSegmentDescriptor(fs, dataSegment, new Path(finalPath.getParent(), DruidStorageHandlerUtils.DESCRIPTOR_JSON));
 
@@ -937,61 +835,58 @@ public final class DruidStorageHandlerUtils {
     if (shardSpec instanceof LinearShardSpec) {
       return new LinearShardSpec(shardSpec.getPartitionNum() + 1);
     } else if (shardSpec instanceof NumberedShardSpec) {
-      return new NumberedShardSpec(shardSpec.getPartitionNum(),
-              ((NumberedShardSpec) shardSpec).getPartitions()
-      );
+      return new NumberedShardSpec(shardSpec.getPartitionNum(), ((NumberedShardSpec) shardSpec).getPartitions());
     } else {
       // Druid only support appending more partitions to Linear and Numbered ShardSpecs.
-      throw new IllegalStateException(
-              String.format(
-                      "Cannot expand shard spec [%s]",
-                      shardSpec
-              )
-      );
+      throw new IllegalStateException(String.format("Cannot expand shard spec [%s]", shardSpec));
     }
   }
 
-  public static Path getPath(DataSegment dataSegment) {
-    return new Path(String.valueOf(dataSegment.getLoadSpec().get("path")));
+  static Path getPath(DataSegment dataSegment) {
+    return new Path(String.valueOf(Objects.requireNonNull(dataSegment.getLoadSpec()).get("path")));
   }
 
   public static GranularitySpec getGranularitySpec(Configuration configuration, Properties tableProperties) {
-    final String segmentGranularity =
+    final String
+        segmentGranularity =
         tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) != null ?
             tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
             HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
-    final boolean rollup = tableProperties.getProperty(DruidConstants.DRUID_ROLLUP) != null ?
-        Boolean.parseBoolean(tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY)):
-        HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_DRUID_ROLLUP);
-    return new UniformGranularitySpec(
-        Granularity.fromString(segmentGranularity),
-        Granularity.fromString(
-            tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY) == null
-                ? "NONE"
-                : tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY)),
+    final boolean
+        rollup =
+        tableProperties.getProperty(DruidConstants.DRUID_ROLLUP) != null ?
+            Boolean.parseBoolean(tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY)) :
+            HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_DRUID_ROLLUP);
+    return new UniformGranularitySpec(Granularity.fromString(segmentGranularity),
+        Granularity.fromString(tableProperties.getProperty(DruidConstants.DRUID_QUERY_GRANULARITY) == null ?
+            "NONE" :
+            tableProperties.getProperty(DruidConstants.DRUID_QUERY_GRANULARITY)),
         rollup,
-        null
-    );
+        null);
   }
 
   public static IndexSpec getIndexSpec(Configuration jc) {
-    IndexSpec indexSpec;
+    final BitmapSerdeFactory bitmapSerdeFactory;
     if ("concise".equals(HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BITMAP_FACTORY_TYPE))) {
-      indexSpec = new IndexSpec(new ConciseBitmapSerdeFactory(), null, null, null);
+      bitmapSerdeFactory = new ConciseBitmapSerdeFactory();
     } else {
-      indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
+      bitmapSerdeFactory = new RoaringBitmapSerdeFactory(true);
     }
-    return indexSpec;
+    return new IndexSpec(bitmapSerdeFactory,
+        IndexSpec.DEFAULT_DIMENSION_COMPRESSION,
+        IndexSpec.DEFAULT_METRIC_COMPRESSION,
+        IndexSpec.DEFAULT_LONG_ENCODING);
   }
 
-  public static Pair<List<DimensionSchema>, AggregatorFactory[]> getDimensionsAndAggregates(Configuration jc, List<String> columnNames,
+  public static Pair<List<DimensionSchema>, AggregatorFactory[]> getDimensionsAndAggregates(List<String> columnNames,
       List<TypeInfo> columnTypes) {
     // Default, all columns that are not metrics or timestamp, are treated as dimensions
     final List<DimensionSchema> dimensions = new ArrayList<>();
     ImmutableList.Builder<AggregatorFactory> aggregatorFactoryBuilder = ImmutableList.builder();
     for (int i = 0; i < columnTypes.size(); i++) {
-      final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) columnTypes
-          .get(i)).getPrimitiveCategory();
+      final PrimitiveObjectInspector.PrimitiveCategory
+          primitiveCategory =
+          ((PrimitiveTypeInfo) columnTypes.get(i)).getPrimitiveCategory();
       AggregatorFactory af;
       switch (primitiveCategory) {
       case BYTE:
@@ -1007,38 +902,39 @@ public final class DruidStorageHandlerUtils {
         af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
         break;
       case DECIMAL:
-        throw new UnsupportedOperationException(
-            String.format("Druid does not support decimal column type cast column "
-                + "[%s] to double", columnNames.get(i)));
-
+        throw new UnsupportedOperationException(String.format("Druid does not support decimal column type cast column "
+            + "[%s] to double", columnNames.get(i)));
       case TIMESTAMP:
         // Granularity column
         String tColumnName = columnNames.get(i);
-        if (!tColumnName.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME) &&
-            !tColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
-          throw new IllegalArgumentException(
-              "Dimension " + tColumnName + " does not have STRING type: " +
-                  primitiveCategory);
+        if (!tColumnName.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)
+            && !tColumnName.equals(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
+          throw new IllegalArgumentException("Dimension "
+              + tColumnName
+              + " does not have STRING type: "
+              + primitiveCategory);
         }
         continue;
       case TIMESTAMPLOCALTZ:
         // Druid timestamp column
         String tLocalTZColumnName = columnNames.get(i);
-        if (!tLocalTZColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
-          throw new IllegalArgumentException(
-              "Dimension " + tLocalTZColumnName + " does not have STRING type: " +
-                  primitiveCategory);
+        if (!tLocalTZColumnName.equals(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
+          throw new IllegalArgumentException("Dimension "
+              + tLocalTZColumnName
+              + " does not have STRING type: "
+              + primitiveCategory);
         }
         continue;
       default:
         // Dimension
         String dColumnName = columnNames.get(i);
-        if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) !=
-            PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP
+        if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory)
+            != PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP
             && primitiveCategory != PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN) {
-          throw new IllegalArgumentException(
-              "Dimension " + dColumnName + " does not have STRING type: " +
-                  primitiveCategory);
+          throw new IllegalArgumentException("Dimension "
+              + dColumnName
+              + " does not have STRING type: "
+              + primitiveCategory);
         }
         dimensions.add(new StringDimensionSchema(dColumnName));
         continue;
@@ -1046,140 +942,109 @@ public final class DruidStorageHandlerUtils {
       aggregatorFactoryBuilder.add(af);
     }
     ImmutableList<AggregatorFactory> aggregatorFactories = aggregatorFactoryBuilder.build();
-    return Pair.of(dimensions,
-        aggregatorFactories.toArray(new AggregatorFactory[aggregatorFactories.size()]));
+    return Pair.of(dimensions, aggregatorFactories.toArray(new AggregatorFactory[0]));
   }
 
   // Druid only supports String,Long,Float,Double selectors
-  private static Set<TypeInfo> DRUID_SUPPORTED_TYPE_INFOS = ImmutableSet.<TypeInfo>of(
-          TypeInfoFactory.stringTypeInfo, TypeInfoFactory.charTypeInfo,
-          TypeInfoFactory.varcharTypeInfo, TypeInfoFactory.byteTypeInfo,
-          TypeInfoFactory.intTypeInfo, TypeInfoFactory.longTypeInfo,
-          TypeInfoFactory.shortTypeInfo, TypeInfoFactory.doubleTypeInfo
-  );
+  private static Set<TypeInfo> druidSupportedTypeInfos =
+      ImmutableSet.<TypeInfo>of(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.charTypeInfo,
+          TypeInfoFactory.varcharTypeInfo, TypeInfoFactory.byteTypeInfo, TypeInfoFactory.intTypeInfo,
+          TypeInfoFactory.longTypeInfo, TypeInfoFactory.shortTypeInfo, TypeInfoFactory.doubleTypeInfo);
 
-  private static Set<TypeInfo> STRING_TYPE_INFOS = ImmutableSet.<TypeInfo>of(
-          TypeInfoFactory.stringTypeInfo,
-          TypeInfoFactory.charTypeInfo, TypeInfoFactory.varcharTypeInfo
-  );
+  private static Set<TypeInfo> stringTypeInfos =
+      ImmutableSet.<TypeInfo>of(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.charTypeInfo,
+          TypeInfoFactory.varcharTypeInfo);
 
-
-  public static Query addDynamicFilters(Query query,
-          ExprNodeGenericFuncDesc filterExpr, Configuration conf, boolean resolveDynamicValues
-  ) {
-    List<VirtualColumn> virtualColumns = Lists.newArrayList(getVirtualColumns(query).getVirtualColumns());
-    Query rv = query;
-    DimFilter joinReductionFilter = toDruidFilter(filterExpr, conf, virtualColumns,
-            resolveDynamicValues
-    );
-    if(joinReductionFilter != null) {
+  public static org.apache.druid.query.Query addDynamicFilters(org.apache.druid.query.Query query,
+      ExprNodeGenericFuncDesc filterExpr, Configuration conf, boolean resolveDynamicValues) {
+    List<VirtualColumn> virtualColumns = Arrays.asList(getVirtualColumns(query).getVirtualColumns());
+    org.apache.druid.query.Query rv = query;
+    DimFilter joinReductionFilter = toDruidFilter(filterExpr, conf, virtualColumns, resolveDynamicValues);
+    if (joinReductionFilter != null) {
       String type = query.getType();
       DimFilter filter = new AndDimFilter(joinReductionFilter, query.getFilter());
       switch (type) {
-        case io.druid.query.Query.TIMESERIES:
-          rv = Druids.TimeseriesQueryBuilder.copy((TimeseriesQuery) query)
-                  .filters(filter)
-                  .virtualColumns(VirtualColumns.create(virtualColumns))
-                  .build();
-          break;
-        case Query.TOPN:
-          rv = new TopNQueryBuilder((TopNQuery) query)
-                  .filters(filter)
-                  .virtualColumns(VirtualColumns.create(virtualColumns))
-                  .build();
-          break;
-        case Query.GROUP_BY:
-          rv = new GroupByQuery.Builder((GroupByQuery) query)
-                  .setDimFilter(filter)
-                  .setVirtualColumns(VirtualColumns.create(virtualColumns))
-                  .build();
-          break;
-        case Query.SCAN:
-          rv = ScanQuery.ScanQueryBuilder.copy((ScanQuery) query)
-                  .filters(filter)
-                  .virtualColumns(VirtualColumns.create(virtualColumns))
-                  .build();
-          break;
-        case Query.SELECT:
-          rv = Druids.SelectQueryBuilder.copy((SelectQuery) query)
-                  .filters(filter)
-                  .virtualColumns(VirtualColumns.create(virtualColumns))
-                  .build();
+      case org.apache.druid.query.Query.TIMESERIES:
+        rv = Druids.TimeseriesQueryBuilder.copy((TimeseriesQuery) query).filters(filter)
+            .virtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      case org.apache.druid.query.Query.TOPN:
+        rv = new TopNQueryBuilder((TopNQuery) query).filters(filter)
+            .virtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      case org.apache.druid.query.Query.GROUP_BY:
+        rv = new GroupByQuery.Builder((GroupByQuery) query).setDimFilter(filter)
+            .setVirtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      case org.apache.druid.query.Query.SCAN:
+        rv = Druids.ScanQueryBuilder.copy((ScanQuery) query).filters(filter)
+                                    .virtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      case org.apache.druid.query.Query.SELECT:
+        rv = Druids.SelectQueryBuilder.copy((SelectQuery) query).filters(filter)
+            .virtualColumns(VirtualColumns.create(virtualColumns)).build();
+        break;
+      default:
+        throw new UnsupportedOperationException("Unsupported Query type " + type);
       }
     }
     return rv;
   }
 
-  private static DimFilter toDruidFilter(ExprNodeDesc filterExpr, Configuration configuration,
-          List<VirtualColumn> virtualColumns, boolean resolveDynamicValues
-  ) {
-    if(filterExpr == null) {
+  @Nullable private static DimFilter toDruidFilter(ExprNodeDesc filterExpr, Configuration configuration,
+      List<VirtualColumn> virtualColumns, boolean resolveDynamicValues) {
+    if (filterExpr == null) {
       return null;
     }
     Class<? extends GenericUDF> genericUDFClass = getGenericUDFClassFromExprDesc(filterExpr);
-    if(FunctionRegistry.isOpAnd(filterExpr)) {
+    if (FunctionRegistry.isOpAnd(filterExpr)) {
       Iterator<ExprNodeDesc> iterator = filterExpr.getChildren().iterator();
       List<DimFilter> delegates = Lists.newArrayList();
       while (iterator.hasNext()) {
-        DimFilter filter = toDruidFilter(iterator.next(), configuration, virtualColumns,
-                resolveDynamicValues
-        );
-        if(filter != null) {
+        DimFilter filter = toDruidFilter(iterator.next(), configuration, virtualColumns, resolveDynamicValues);
+        if (filter != null) {
           delegates.add(filter);
         }
       }
-      if(delegates != null && !delegates.isEmpty()) {
+      if (!delegates.isEmpty()) {
         return new AndDimFilter(delegates);
       }
     }
-    if(FunctionRegistry.isOpOr(filterExpr)) {
+    if (FunctionRegistry.isOpOr(filterExpr)) {
       Iterator<ExprNodeDesc> iterator = filterExpr.getChildren().iterator();
       List<DimFilter> delegates = Lists.newArrayList();
       while (iterator.hasNext()) {
-        DimFilter filter = toDruidFilter(iterator.next(), configuration, virtualColumns,
-                resolveDynamicValues
-        );
-        if(filter != null) {
+        DimFilter filter = toDruidFilter(iterator.next(), configuration, virtualColumns, resolveDynamicValues);
+        if (filter != null) {
           delegates.add(filter);
         }
       }
-      if(delegates != null) {
+      if (!delegates.isEmpty()) {
         return new OrDimFilter(delegates);
       }
-    } else if(GenericUDFBetween.class == genericUDFClass) {
+    } else if (GenericUDFBetween.class == genericUDFClass) {
       List<ExprNodeDesc> child = filterExpr.getChildren();
       String col = extractColName(child.get(1), virtualColumns);
-      if(col != null) {
+      if (col != null) {
         try {
-          StringComparator comparator = STRING_TYPE_INFOS.contains(child.get(1).getTypeInfo())
-                  ? StringComparators.LEXICOGRAPHIC
-                  : StringComparators.NUMERIC;
+          StringComparator comparator = stringTypeInfos
+              .contains(child.get(1).getTypeInfo()) ? StringComparators.LEXICOGRAPHIC : StringComparators.NUMERIC;
           String lower = evaluate(child.get(2), configuration, resolveDynamicValues);
           String upper = evaluate(child.get(3), configuration, resolveDynamicValues);
-          if(lower == null && upper == null){
-            // Both lower and upper are null, no bounded values
-            return null;
-          }
-          return new BoundDimFilter(col, lower, upper, false, false, null, null,
-                  comparator
-          );
+          return new BoundDimFilter(col, lower, upper, false, false, null, null, comparator);
 
         } catch (HiveException e) {
           throw new RuntimeException(e);
         }
       }
-    } else if(GenericUDFInBloomFilter.class == genericUDFClass) {
+    } else if (GenericUDFInBloomFilter.class == genericUDFClass) {
       List<ExprNodeDesc> child = filterExpr.getChildren();
       String col = extractColName(child.get(0), virtualColumns);
-      if(col != null) {
+      if (col != null) {
         try {
-          BloomKFilter bloomFilter = evaluateBloomFilter(child.get(1), configuration,
-                  resolveDynamicValues
-          );
+          BloomKFilter bloomFilter = evaluateBloomFilter(child.get(1), configuration, resolveDynamicValues);
           return new BloomDimFilter(col, BloomKFilterHolder.fromBloomKFilter(bloomFilter), null);
-        } catch (HiveException e) {
-          throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (HiveException | IOException e) {
           throw new RuntimeException(e);
         }
       }
@@ -1187,120 +1052,106 @@ public final class DruidStorageHandlerUtils {
     return null;
   }
 
-  private static String evaluate(ExprNodeDesc desc, Configuration configuration,
-          boolean resolveDynamicValue
-  ) throws HiveException {
+  private static String evaluate(ExprNodeDesc desc, Configuration configuration, boolean resolveDynamicValue)
+      throws HiveException {
     ExprNodeEvaluator exprNodeEvaluator = ExprNodeEvaluatorFactory.get(desc, configuration);
-    if(exprNodeEvaluator instanceof ExprNodeDynamicValueEvaluator && !resolveDynamicValue) {
+    if (exprNodeEvaluator instanceof ExprNodeDynamicValueEvaluator && !resolveDynamicValue) {
       return desc.getExprStringForExplain();
     } else {
-      Object result = exprNodeEvaluator.evaluate(null);
-      return result == null ? null : result.toString();
+      return exprNodeEvaluator.evaluate(null).toString();
     }
   }
 
   private static BloomKFilter evaluateBloomFilter(ExprNodeDesc desc, Configuration configuration,
-          boolean resolveDynamicValue
-  )
-          throws HiveException, IOException {
-    if(!resolveDynamicValue) {
+      boolean resolveDynamicValue) throws HiveException, IOException {
+    if (!resolveDynamicValue) {
       // return a dummy bloom filter for explain
       return new BloomKFilter(1);
     } else {
-      BytesWritable bw = (BytesWritable) ExprNodeEvaluatorFactory.get(desc, configuration)
-              .evaluate(null);
-      byte[] bytes = new byte[bw.getLength()];
-      System.arraycopy(bw.getBytes(), 0, bytes, 0, bw.getLength());
-      InputStream in = new NonSyncByteArrayInputStream(bytes);
-      return BloomKFilter.deserialize(in);
+      BytesWritable bw = (BytesWritable) ExprNodeEvaluatorFactory.get(desc, configuration).evaluate(null);
+      return BloomKFilter.deserialize(ByteBuffer.wrap(bw.getBytes()));
     }
   }
 
-  public static String extractColName(ExprNodeDesc expr, List<VirtualColumn> virtualColumns) {
-    if(!DRUID_SUPPORTED_TYPE_INFOS.contains(expr.getTypeInfo())) {
+  @Nullable public static String extractColName(ExprNodeDesc expr, List<VirtualColumn> virtualColumns) {
+    if (!druidSupportedTypeInfos.contains(expr.getTypeInfo())) {
       // This column type is currently not supported in druid.(e.g boolean)
       // We cannot pass the bloom filter to druid since bloom filter tests for exact object bytes.
       return null;
     }
-    if(expr instanceof ExprNodeColumnDesc) {
+    if (expr instanceof ExprNodeColumnDesc) {
       return ((ExprNodeColumnDesc) expr).getColumn();
     }
 
     ExprNodeGenericFuncDesc funcDesc = null;
-    if(expr instanceof ExprNodeGenericFuncDesc) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
       funcDesc = (ExprNodeGenericFuncDesc) expr;
     }
-    if(null == funcDesc) {
+    if (null == funcDesc) {
       return null;
     }
     GenericUDF udf = funcDesc.getGenericUDF();
     // bail out if its not a simple cast expression.
-    if(funcDesc.getChildren().size() != 1 || !(funcDesc.getChildren()
-            .get(0) instanceof ExprNodeColumnDesc)) {
+    if (funcDesc.getChildren().size() == 1 && funcDesc.getChildren().get(0) instanceof ExprNodeColumnDesc) {
       return null;
     }
-    String columnName = ((ExprNodeColumnDesc) (funcDesc.getChildren()
-            .get(0))).getColumn();
+    String columnName = ((ExprNodeColumnDesc) (funcDesc.getChildren().get(0))).getColumn();
     ValueType targetType = null;
-    if(udf instanceof GenericUDFBridge) {
+    if (udf instanceof GenericUDFBridge) {
       Class<? extends UDF> udfClass = ((GenericUDFBridge) udf).getUdfClass();
-      if(udfClass.equals(UDFToDouble.class)) {
+      if (udfClass.equals(UDFToDouble.class)) {
         targetType = ValueType.DOUBLE;
-      } else if(udfClass.equals(UDFToFloat.class)) {
+      } else if (udfClass.equals(UDFToFloat.class)) {
         targetType = ValueType.FLOAT;
-      } else if(udfClass.equals(UDFToLong.class)) {
+      } else if (udfClass.equals(UDFToLong.class)) {
         targetType = ValueType.LONG;
-      } else if(udfClass.equals(GenericUDFToString.class)) {
-        targetType = ValueType.STRING;
       }
+    } else if (udf instanceof GenericUDFToString) {
+      targetType = ValueType.STRING;
     }
 
-    if(targetType == null) {
+    if (targetType == null) {
       return null;
     }
-    String virtualColumnExpr = String
-            .format(Locale.ENGLISH, "CAST(%s, '%s')", columnName, targetType.toString());
-    for(VirtualColumn column : virtualColumns) {
-      if(column instanceof ExpressionVirtualColumn && ((ExpressionVirtualColumn) column)
-              .getExpression().equals(virtualColumnExpr)) {
+    String virtualColumnExpr = DruidQuery.format("CAST(%s, '%s')", columnName, targetType.toString());
+    for (VirtualColumn column : virtualColumns) {
+      if (column instanceof ExpressionVirtualColumn && ((ExpressionVirtualColumn) column).getExpression()
+          .equals(virtualColumnExpr)) {
         // Found an existing virtual column with same expression, no need to add another virtual column
         return column.getOutputName();
       }
     }
-    Set<String> usedColumnNames = virtualColumns.stream().map(col -> col.getOutputName())
-            .collect(Collectors.toSet());
-    final String name = SqlValidatorUtil
-            .uniquify("vc", usedColumnNames, SqlValidatorUtil.EXPR_SUGGESTER);
-    ExpressionVirtualColumn expressionVirtualColumn = new ExpressionVirtualColumn(name,
-            virtualColumnExpr, targetType, EXPR_MACRO_TABLE
-    );
+    Set<String> usedColumnNames = virtualColumns.stream().map(col -> col.getOutputName()).collect(Collectors.toSet());
+    final String name = SqlValidatorUtil.uniquify("vc", usedColumnNames, SqlValidatorUtil.EXPR_SUGGESTER);
+    ExpressionVirtualColumn expressionVirtualColumn =
+        new ExpressionVirtualColumn(name, virtualColumnExpr, targetType, ExprMacroTable.nil());
     virtualColumns.add(expressionVirtualColumn);
     return name;
   }
 
-  public static VirtualColumns getVirtualColumns(Query query) {
+  public static VirtualColumns getVirtualColumns(org.apache.druid.query.Query query) {
     String type = query.getType();
     switch (type) {
-      case Query.TIMESERIES:
-        return ((TimeseriesQuery) query).getVirtualColumns();
-      case Query.TOPN:
-        return ((TopNQuery) query).getVirtualColumns();
-      case Query.GROUP_BY:
-        return ((GroupByQuery) query).getVirtualColumns();
-      case Query.SCAN:
-        return ((ScanQuery) query).getVirtualColumns();
-      case Query.SELECT:
-        return ((SelectQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.TIMESERIES:
+      return ((TimeseriesQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.TOPN:
+      return ((TopNQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.GROUP_BY:
+      return ((GroupByQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.SCAN:
+      return ((ScanQuery) query).getVirtualColumns();
+    case org.apache.druid.query.Query.SELECT:
+      return ((SelectQuery) query).getVirtualColumns();
+    default:
+      throw new UnsupportedOperationException("Unsupported Query type " + query);
     }
-    throw new UnsupportedOperationException("Unsupported Query type" + query);
   }
 
-  private static Class<? extends GenericUDF> getGenericUDFClassFromExprDesc(ExprNodeDesc desc) {
-    if(!(desc instanceof ExprNodeGenericFuncDesc)) {
+  @Nullable private static Class<? extends GenericUDF> getGenericUDFClassFromExprDesc(ExprNodeDesc desc) {
+    if (!(desc instanceof ExprNodeGenericFuncDesc)) {
       return null;
     }
     ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) desc;
     return genericFuncDesc.getGenericUDF().getClass();
   }
-
 }

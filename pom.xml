@@ -107,7 +107,7 @@
     <maven.install.plugin.version>2.4</maven.install.plugin.version>
     <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
     <maven.javadoc.plugin.version>2.4</maven.javadoc.plugin.version>
-    <maven.shade.plugin.version>3.1.0</maven.shade.plugin.version>
+    <maven.shade.plugin.version>3.2.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>2.21.0</maven.surefire.plugin.version>
     <maven.war.plugin.version>2.4</maven.war.plugin.version>
     <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
@@ -133,7 +133,7 @@
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.7</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
-    <commons-compress.version>1.9</commons-compress.version>
+    <commons-compress.version>1.18</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
@@ -144,7 +144,7 @@
     <derby.version>10.14.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.12.1.7.0.2.0-SNAPSHOT</druid.version>
+    <druid.version>0.15.2-incubating-SNAPSHOT</druid.version>
     <flatbuffers.version>1.2.0-3f79e055</flatbuffers.version>
     <guava.version>19.0</guava.version>
     <groovy.version>2.4.11</groovy.version>

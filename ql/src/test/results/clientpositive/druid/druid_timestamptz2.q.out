@@ -18,66 +18,23 @@ POSTHOOK: query: create external table test_base_table(`timecolumn` timestamp, `
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:druid_test_dst
 POSTHOOK: Output: druid_test_dst@test_base_table
-PREHOOK: query: insert into test_base_table values ('2015-03-08 00:00:00', 'i1-start', 4)
+PREHOOK: query: insert into test_base_table values
+('2015-03-08 00:00:00', 'i1-start', 4),
+('2015-03-08 23:59:59', 'i1-end', 1),
+('2015-03-09 00:00:00', 'i2-start', 4),
+('2015-03-09 23:59:59', 'i2-end', 1),
+('2015-03-10 00:00:00', 'i3-start', 2),
+('2015-03-10 23:59:59', 'i3-end', 2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: query: insert into test_base_table values ('2015-03-08 00:00:00', 'i1-start', 4)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
-POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
-POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
-PREHOOK: query: insert into test_base_table values ('2015-03-08 23:59:59', 'i1-end', 1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: query: insert into test_base_table values ('2015-03-08 23:59:59', 'i1-end', 1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
-POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
-POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
-PREHOOK: query: insert into test_base_table values ('2015-03-09 00:00:00', 'i2-start', 4)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: query: insert into test_base_table values ('2015-03-09 00:00:00', 'i2-start', 4)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
-POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
-POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
-PREHOOK: query: insert into test_base_table values ('2015-03-09 23:59:59', 'i2-end', 1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: query: insert into test_base_table values ('2015-03-09 23:59:59', 'i2-end', 1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
-POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
-POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
-PREHOOK: query: insert into test_base_table values ('2015-03-10 00:00:00', 'i3-start', 2)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: query: insert into test_base_table values ('2015-03-10 00:00:00', 'i3-start', 2)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
-POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
-POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
-PREHOOK: query: insert into test_base_table values ('2015-03-10 23:59:59', 'i3-end', 2)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@test_base_table
-POSTHOOK: query: insert into test_base_table values ('2015-03-10 23:59:59', 'i3-end', 2)
+POSTHOOK: query: insert into test_base_table values
+('2015-03-08 00:00:00', 'i1-start', 4),
+('2015-03-08 23:59:59', 'i1-end', 1),
+('2015-03-09 00:00:00', 'i2-start', 4),
+('2015-03-09 23:59:59', 'i2-end', 1),
+('2015-03-10 00:00:00', 'i3-start', 2),
+('2015-03-10 23:59:59', 'i3-end', 2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: druid_test_dst@test_base_table
@@ -133,51 +90,23 @@ TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:druid_test_dst
 POSTHOOK: Output: druid_test_dst@druid_test_table_2
-PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4)
+PREHOOK: query: insert into druid_test_table_2 values
+(cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4),
+(cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1),
+(cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4),
+(cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1),
+(cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2),
+(cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: druid_test_dst@druid_test_table_2
-POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_2
-PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_2
-POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_2
-PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_2
-POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_2
-PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_2
-POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_2
-PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_2
-POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_2
-PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_2
-POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
+POSTHOOK: query: insert into druid_test_table_2 values
+(cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4),
+(cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1),
+(cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4),
+(cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1),
+(cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2),
+(cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: druid_test_dst@druid_test_table_2
@@ -244,51 +173,23 @@ TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:druid_test_dst
 POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
-PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4)
+PREHOOK: query: insert into druid_test_table_utc2 values
+(cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4),
+(cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1),
+(cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4),
+(cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1),
+(cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2),
+(cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: druid_test_dst@druid_test_table_utc2
-POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
-PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_utc2
-POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
-PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_utc2
-POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
-PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_utc2
-POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
-PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_utc2
-POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
-PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: druid_test_dst@druid_test_table_utc2
-POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
+POSTHOOK: query: insert into druid_test_table_utc2 values
+(cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4),
+(cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1),
+(cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4),
+(cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1),
+(cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2),
+(cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
