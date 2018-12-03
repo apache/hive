@@ -149,6 +149,91 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
+  public void testBootstrapReplLoadRetryAfterFailureForFunctions() throws Throwable {
+    String funcName1 = "f1";
+    String funcName2 = "f2";
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("CREATE FUNCTION " + primaryDbName + "." + funcName1 +
+                    " as 'hivemall.tools.string.StopwordUDF' " +
+                    "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
+            .run("CREATE FUNCTION " + primaryDbName + "." + funcName2 +
+                    " as 'hivemall.tools.string.SplitWordsUDF' "+
+                    "using jar  'ivy://io.github.myui:hivemall:0.4.0-1'")
+            .dump(primaryDbName, null);
+
+    // Allow create function only on f1. Create should fail for the second function.
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+              @Override
+              public Boolean apply(CallerArguments args) {
+                injectionPathCalled = true;
+                if (!args.dbName.equalsIgnoreCase(replicatedDbName)) {
+                  LOG.warn("Verifier - DB: " + String.valueOf(args.dbName));
+                  return false;
+                }
+                if (args.funcName != null) {
+                  LOG.debug("Verifier - Function: " + String.valueOf(args.funcName));
+                  return args.funcName.equals(funcName1);
+                }
+                return true;
+              }
+            };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    // Trigger bootstrap dump which just creates function f1 but not f2
+    List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'",
+            "'hive.in.repl.test.files.sorted'='true'");
+    try {
+      replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    // Verify that only f1 got loaded
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult("null")
+            .run("show functions like '" + replicatedDbName + "*'")
+            .verifyResult(replicatedDbName + "." + funcName1);
+
+    // Verify no calls to load f1 only f2.
+    callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Override
+      public Boolean apply(CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName));
+          return false;
+        }
+        if (args.funcName != null) {
+          LOG.debug("Verifier - Function: " + String.valueOf(args.funcName));
+          return args.funcName.equals(funcName2);
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    try {
+      // Retry with same dump with which it was already loaded should resume the bootstrap load.
+      // This time, it completes by adding just the function f2
+      replica.load(replicatedDbName, tuple.dumpLocation);
+      callerVerifier.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    // Verify that both the functions are available.
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show functions like '" + replicatedDbName +"*'")
+            .verifyResults(new String[] {replicatedDbName + "." + funcName1,
+                                         replicatedDbName +"." +funcName2});
+  }
+
+  @Test
   public void testDropFunctionIncrementalReplication() throws Throwable {
     primary.run("CREATE FUNCTION " + primaryDbName
         + ".testFunctionAnother as 'hivemall.tools.string.StopwordUDF' "
@@ -1306,7 +1391,9 @@ public class TestReplicationScenariosAcrossInstances {
     };
     InjectableBehaviourObjectStore.setGetPartitionBehaviour(getPartitionStub);
 
-    List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'");
+    // Make sure that there's some order in which the objects are loaded.
+    List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'",
+            "'hive.in.repl.test.files.sorted'='true'");
     replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
     InjectableBehaviourObjectStore.resetGetPartitionBehaviour(); // reset the behaviour
     getPartitionStub.assertInjectionsPerformed(true, false);
@@ -1317,24 +1404,21 @@ public class TestReplicationScenariosAcrossInstances {
             .run("show tables")
             .verifyResults(new String[] {"t2" })
             .run("select country from t2 order by country")
-            .verifyResults(Arrays.asList("india"))
-            .run("show functions like '" + replicatedDbName + "*'")
-            .verifyResult(replicatedDbName + ".testFunctionOne");
+            .verifyResults(Arrays.asList("india"));
 
     // Retry with different dump should fail.
     replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
 
-    // Verify if no create table/function calls. Only add partitions.
+    // Verify if no create table calls. Add partitions and create function calls expected.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
             = new BehaviourInjection<CallerArguments, Boolean>() {
       @Nullable
       @Override
       public Boolean apply(@Nullable CallerArguments args) {
-        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.tblName != null) || (args.funcName != null)) {
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.tblName != null)) {
           injectionPathCalled = true;
           LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
-                  + " Table: " + String.valueOf(args.tblName)
-                  + " Func: " + String.valueOf(args.funcName));
+                  + " Table: " + String.valueOf(args.tblName));
           return false;
         }
         return true;
@@ -1344,7 +1428,7 @@ public class TestReplicationScenariosAcrossInstances {
 
     try {
       // Retry with same dump with which it was already loaded should resume the bootstrap load.
-      // This time, it completes by adding remaining partitions.
+      // This time, it completes by adding remaining partitions and function.
       replica.load(replicatedDbName, tuple.dumpLocation);
       callerVerifier.assertInjectionsPerformed(false, false);
     } finally {
