@@ -153,4 +153,4 @@ select * from druid_test_table_n9 where `__time` = cast('2015-03-12 00:00:00' as
 DROP TABLE test_base_table;
 DROP TABLE druid_test_table_n9;
 
-drop   database druid_test_dst;
+drop database druid_test_dst;
