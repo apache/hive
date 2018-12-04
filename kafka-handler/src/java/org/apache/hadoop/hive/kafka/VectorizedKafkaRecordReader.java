@@ -138,11 +138,10 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
   }
 
   @Override public float getProgress() {
-    if (consumedRecords == 0) {
-      return 0f;
-    }
     if (consumedRecords >= totalNumberRecords) {
       return 1f;
+    } else if (consumedRecords == 0) {
+      return 0f;
     }
     return consumedRecords * 1.0f / totalNumberRecords;
   }
@@ -163,7 +162,7 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
       kafkaWritable.set(kRecord);
       readBytes += kRecord.serializedKeySize() + kRecord.serializedValueSize();
       if (projectedColumns.length > 0) {
-          serDe.deserializeKWritable(kafkaWritable, row);
+        serDe.deserializeKWritable(kafkaWritable, row);
         for (int i : projectedColumns) {
           vectorAssignRow.assignRowColumn(vectorizedRowBatch, rowsCount, i, row[i]);
         }
@@ -176,7 +175,7 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
     return rowsCount;
   }
 
-  @SuppressWarnings("Duplicates") private static  KafkaSerDe createAndInitializeSerde(Configuration jobConf) {
+  @SuppressWarnings("Duplicates") private static KafkaSerDe createAndInitializeSerde(Configuration jobConf) {
     KafkaSerDe serDe = new KafkaSerDe();
     MapWork mapWork = Preconditions.checkNotNull(Utilities.getMapWork(jobConf), "Map work is null");
     Properties
