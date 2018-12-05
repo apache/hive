@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -66,6 +65,7 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
   private final VectorAssignRow vectorAssignRow = new VectorAssignRow();
 
   private final KafkaWritable kafkaWritable = new KafkaWritable();
+  final Object[] row;
 
   VectorizedKafkaRecordReader(KafkaInputSplit inputSplit, Configuration jobConf) {
     // VectorBatch Context initializing
@@ -105,6 +105,9 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
         startOffset == endOffset ?
             new KafkaRecordReader.EmptyIterator() :
             new KafkaRecordIterator(consumer, topicPartition, startOffset, endOffset, pollTimeout);
+
+    // row has to be as wide as the entire kafka row plus metadata
+    row = new Object[((StructObjectInspector) serDe.getObjectInspector()).getAllStructFieldRefs().size()];
   }
 
   @Override public boolean next(NullWritable nullWritable, VectorizedRowBatch vectorizedRowBatch) throws IOException {
@@ -113,6 +116,12 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
       return readNextBatch(vectorizedRowBatch, recordsCursor) > 0;
     } catch (SerDeException e) {
       throw new IOException("Serde exception", e);
+    }
+  }
+
+  private void cleanRowBoat() {
+    for (int i = 0; i < row.length; i++) {
+      row[i] = null;
     }
   }
 
@@ -129,11 +138,10 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
   }
 
   @Override public float getProgress() {
-    if (consumedRecords == 0) {
-      return 0f;
-    }
     if (consumedRecords >= totalNumberRecords) {
       return 1f;
+    } else if (consumedRecords == 0) {
+      return 0f;
     }
     return consumedRecords * 1.0f / totalNumberRecords;
   }
@@ -154,19 +162,20 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
       kafkaWritable.set(kRecord);
       readBytes += kRecord.serializedKeySize() + kRecord.serializedValueSize();
       if (projectedColumns.length > 0) {
-        ArrayList<Object> row = serDe.deserializeKWritable(kafkaWritable);
+        serDe.deserializeKWritable(kafkaWritable, row);
         for (int i : projectedColumns) {
-          vectorAssignRow.assignRowColumn(vectorizedRowBatch, rowsCount, i, row.get(i));
+          vectorAssignRow.assignRowColumn(vectorizedRowBatch, rowsCount, i, row[i]);
         }
       }
       rowsCount++;
     }
     vectorizedRowBatch.size = rowsCount;
     consumedRecords += rowsCount;
+    cleanRowBoat();
     return rowsCount;
   }
 
-  private static KafkaSerDe createAndInitializeSerde(Configuration jobConf) {
+  @SuppressWarnings("Duplicates") private static KafkaSerDe createAndInitializeSerde(Configuration jobConf) {
     KafkaSerDe serDe = new KafkaSerDe();
     MapWork mapWork = Preconditions.checkNotNull(Utilities.getMapWork(jobConf), "Map work is null");
     Properties
