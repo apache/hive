@@ -950,7 +950,29 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     case LIST:
       {
         // Allow for empty string, etc.
-        final boolean isNext = (fieldPosition <= complexFieldEnd);
+        final ListComplexTypeHelper listHelper = (ListComplexTypeHelper) complexTypeHelper;
+        final boolean isElementStringFamily;
+        final Field elementField = listHelper.elementField;
+        if (elementField.isPrimitive) {
+          switch (elementField.primitiveCategory) {
+            case STRING:
+            case VARCHAR:
+            case CHAR:
+              isElementStringFamily = true;
+              break;
+            default:
+              isElementStringFamily = false;
+              break;
+          }
+        } else {
+          isElementStringFamily = false;
+        }
+        final boolean isNext;
+        if (isElementStringFamily) {
+          isNext = (fieldPosition <= complexFieldEnd);
+        } else {
+          isNext = (fieldPosition < complexFieldEnd);
+        }
         if (!isNext) {
           popComplexType();
         }
