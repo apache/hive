@@ -61,55 +61,7 @@ public class HashCodeUtil {
     }
   }
 
-  // Lifted from org.apache.hadoop.util.hash.MurmurHash... but supports offset.
-  // Must produce the same result as MurmurHash.hash with seed = 0.
   public static int murmurHash(byte[] data, int offset, int length) {
-    int m = 0x5bd1e995;
-    int r = 24;
-
-    int h = length;
-
-    int len_4 = length >> 2;
-
-    for (int i = 0; i < len_4; i++) {
-      int i_4 = offset + (i << 2);
-      int k = data[i_4 + 3];
-      k = k << 8;
-      k = k | (data[i_4 + 2] & 0xff);
-      k = k << 8;
-      k = k | (data[i_4 + 1] & 0xff);
-      k = k << 8;
-      k = k | (data[i_4 + 0] & 0xff);
-      k *= m;
-      k ^= k >>> r;
-      k *= m;
-      h *= m;
-      h ^= k;
-    }
-
-    // avoid calculating modulo
-    int len_m = len_4 << 2;
-    int left = length - len_m;
-
-    if (left != 0) {
-      length += offset;
-      if (left >= 3) {
-        h ^= (int) data[length - 3] << 16;
-      }
-      if (left >= 2) {
-        h ^= (int) data[length - 2] << 8;
-      }
-      if (left >= 1) {
-        h ^= (int) data[length - 1];
-      }
-
-      h *= m;
-    }
-
-    h ^= h >>> 13;
-    h *= m;
-    h ^= h >>> 15;
-
-    return h;
+    return Murmur3.hash32(data, offset, length, 0);
   }
 }
