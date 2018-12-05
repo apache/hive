@@ -499,7 +499,7 @@ public class GenTezUtils {
    * Remove an operator branch. When we see a fork, we know it's time to do the removal.
    * @param event the leaf node of which branch to be removed
    */
-  public static void removeBranch(Operator<?> event) {
+  public static Operator<?> removeBranch(Operator<?> event) {
     Operator<?> child = event;
     Operator<?> curr = event;
 
@@ -509,6 +509,8 @@ public class GenTezUtils {
     }
 
     curr.removeChild(child);
+
+    return child;
   }
 
   public static EdgeType determineEdgeType(BaseWork preceedingWork, BaseWork followingWork, ReduceSinkOperator reduceSinkOperator) {
