@@ -91,7 +91,7 @@ public class FSTableEvent implements TableEvent {
                 getHiveUpdater(hiveConf), hiveDb.getMSC(), (Configuration)hiveConf);
         // If the conversion is from non transactional to transactional table
         if (AcidUtils.isTransactionalTable(table)) {
-          replicationSpec().setDoingMigration();
+          replicationSpec().setMigratingToTxnTable();
         }
       }
       ImportTableDesc tableDesc

@@ -196,7 +196,7 @@ public class LoadTable {
       Task<?> replTxnTask = TaskFactory.get(replTxnWork, context.hiveConf);
       parentTask.addDependentTask(replTxnTask);
       parentTask = replTxnTask;
-    } else if (replicationSpec.isDoingMigration()) {
+    } else if (replicationSpec.isMigratingToTxnTable()) {
       // Non-transactional table is converted to transactional table.
       // The write-id 1 is used to copy data for the given table and also no writes are aborted.
       ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(
@@ -237,12 +237,12 @@ public class LoadTable {
 
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
-    if (replicationSpec.isInReplicationScope() && !replicationSpec.isDoingMigration() &&
+    if (replicationSpec.isInReplicationScope() && !replicationSpec.isMigratingToTxnTable() &&
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
       loadFileType = LoadFileType.IGNORE;
     } else {
       loadFileType = replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL :
-              replicationSpec.isDoingMigration() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
+              replicationSpec.isMigratingToTxnTable() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
       tmpPath = PathUtils.getExternalTmpPath(tgtPath, context.pathInfo);
     }
 
@@ -255,7 +255,7 @@ public class LoadTable {
 
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {
-      if (replicationSpec.isDoingMigration()) {
+      if (replicationSpec.isMigratingToTxnTable()) {
         // Write-id is hardcoded to 1 so that for migration, we just move all original files under delta_1_1 dir.
         // However, it unused if it is non-ACID table.
         // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.

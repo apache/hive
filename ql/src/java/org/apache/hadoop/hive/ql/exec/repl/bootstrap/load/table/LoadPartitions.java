@@ -229,12 +229,12 @@ public class LoadPartitions {
 
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
-    if (event.replicationSpec().isInReplicationScope() && !event.replicationSpec().isDoingMigration() &&
+    if (event.replicationSpec().isInReplicationScope() && !event.replicationSpec().isMigratingToTxnTable() &&
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
       loadFileType = LoadFileType.IGNORE;
     } else {
       loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL :
-              event.replicationSpec().isDoingMigration() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
+        event.replicationSpec().isMigratingToTxnTable() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
       tmpPath = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
 
@@ -283,7 +283,7 @@ public class LoadPartitions {
                                     LoadFileType loadFileType) {
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {
-      if (event.replicationSpec().isDoingMigration()) {
+      if (event.replicationSpec().isMigratingToTxnTable()) {
         // Write-id is hardcoded to 1 so that for migration, we just move all original files under delta_1_1 dir.
         // It is used only for transactional tables created after migrating from non-ACID table.
         // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.

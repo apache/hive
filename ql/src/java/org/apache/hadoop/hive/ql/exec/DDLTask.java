@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -4703,10 +4704,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       ReplicationSpec replicationSpec = crtTbl.getReplicationSpec();
       long writeId = 0;
       if (replicationSpec != null && replicationSpec.isInReplicationScope()) {
-        if (replicationSpec.isDoingMigration()) {
+        if (replicationSpec.isMigratingToTxnTable()) {
           // for migration we start the transaction and allocate write id in repl txn task for migration.
-          writeId =
-            driverContext.getCtx().getHiveTxnManager().getTableWriteId(crtTbl.getDatabaseName(), crtTbl.getTableName());
+          writeId = Long.parseLong(conf.get(ValidWriteIdList.CURRENT_WRITE_ID));
         } else {
           writeId = crtTbl.getReplWriteId();
         }

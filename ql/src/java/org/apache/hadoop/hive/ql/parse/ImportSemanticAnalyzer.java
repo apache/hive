@@ -200,7 +200,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           throws IOException, TException, HiveException {
     x.getLOG().debug("converting table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
             " with para " + tableObj.getParameters());
-    //TODO : isPathOwnedByHive should be read from dump metadata
+    //TODO : isPathOwnedByHive is hard coded to true, need to get it from repl dump metadata.
     TableType tableType = TableType.valueOf(tableObj.getTableType());
     HiveStrictManagedMigration.TableMigrationOption migrationOption =
             HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, tableType,
@@ -271,7 +271,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     ImportTableDesc tblDesc;
     try {
       org.apache.hadoop.hive.metastore.api.Table tblObj = rv.getTable();
-      // The table can be non acid in case of replication from 2.6 cluster.
+      // The table can be non acid in case of replication from a cluster with STRICT_MANAGED set to false.
       if (!TxnUtils.isTransactionalTable(tblObj) && replicationSpec.isInReplicationScope() &&
               x.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
               (TableType.valueOf(tblObj.getTableType()) == TableType.MANAGED_TABLE)) {
@@ -279,7 +279,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         upgradeTableDesc(tblObj, rv, x);
         //if the conversion is from non transactional to transactional table
         if (TxnUtils.isTransactionalTable(tblObj)) {
-          replicationSpec.setDoingMigration();
+          replicationSpec.setMigratingToTxnTable();
         }
         tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
         if (TableType.valueOf(tblObj.getTableType()) == TableType.EXTERNAL_TABLE) {
@@ -439,7 +439,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isAutoPurge;
     boolean needRecycle;
 
-    if (replicationSpec.isInReplicationScope() && !replicationSpec.isDoingMigration() &&
+    if (replicationSpec.isInReplicationScope() && !replicationSpec.isMigratingToTxnTable() &&
             x.getCtx().getConf().getBoolean(REPL_ENABLE_MOVE_OPTIMIZATION.varname, false)) {
       lft = LoadFileType.IGNORE;
       destPath = loadPath = tgtPath;
@@ -469,7 +469,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         destPath = loadPath = x.getCtx().getExternalTmpPath(tgtPath);
         lft = replace ? LoadFileType.REPLACE_ALL :
-                replicationSpec.isDoingMigration() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
+                replicationSpec.isMigratingToTxnTable() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
       }
       needRecycle = false;
       isAutoPurge = false;
@@ -497,7 +497,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
 
     if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(table) &&
-            !replicationSpec.isDoingMigration()) {
+            !replicationSpec.isMigratingToTxnTable()) {
       LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
               Collections.singletonList(destPath),
               Collections.singletonList(tgtPath),
@@ -507,7 +507,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       LoadTableDesc loadTableWork = new LoadTableDesc(
               loadPath, Utilities.getTableDesc(table), new TreeMap<>(), lft, writeId);
-      if (replicationSpec.isDoingMigration()) {
+      if (replicationSpec.isMigratingToTxnTable()) {
         loadTableWork.setInsertOverwrite(replace);
       }
       loadTableWork.setStmtId(stmtId);
@@ -586,7 +586,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       LoadFileType loadFileType;
       Path destPath;
-      if (replicationSpec.isInReplicationScope() && !replicationSpec.isDoingMigration() &&
+      if (replicationSpec.isInReplicationScope() && !replicationSpec.isMigratingToTxnTable() &&
               x.getCtx().getConf().getBoolean(REPL_ENABLE_MOVE_OPTIMIZATION.varname, false)) {
         loadFileType = LoadFileType.IGNORE;
         destPath =  tgtLocation;
@@ -600,7 +600,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         loadFileType = replicationSpec.isReplace() ?
                 LoadFileType.REPLACE_ALL :
-                replicationSpec.isDoingMigration() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
+                replicationSpec.isMigratingToTxnTable() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
         //Replication scope the write id will be invalid
         Boolean useStagingDirectory = !AcidUtils.isTransactionalTable(table.getParameters()) ||
                 replicationSpec.isInReplicationScope();
@@ -639,7 +639,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       // Note: this sets LoadFileType incorrectly for ACID; is that relevant for import?
       //       See setLoadFileType and setIsAcidIow calls elsewhere for an example.
       if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(tblDesc.getTblProps()) &&
-              !replicationSpec.isDoingMigration()) {
+              !replicationSpec.isMigratingToTxnTable()) {
         LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
                 Collections.singletonList(destPath),
                 Collections.singletonList(tgtLocation),
@@ -651,7 +651,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                 partSpec.getPartSpec(),
                 loadFileType,
                 writeId);
-        if (replicationSpec.isDoingMigration()) {
+        if (replicationSpec.isMigratingToTxnTable()) {
           loadTableWork.setInsertOverwrite(replicationSpec.isReplace());
         }
         loadTableWork.setStmtId(stmtId);
@@ -1107,9 +1107,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                           tblDesc.getDatabaseName(),
                           tblDesc.getTableName(),
                           null);
-      if (replicationSpec.isDoingMigration()) {
+      if (replicationSpec.isMigratingToTxnTable()) {
         x.setOpenTxnTask(TaskFactory.get(new ReplTxnWork(tblDesc.getDatabaseName(),
-                tblDesc.getTableName()), x.getConf()));
+                tblDesc.getTableName(), ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), x.getConf()));
         updatedMetadata.setNeedCommitTxn(true);
       }
     }

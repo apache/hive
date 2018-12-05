@@ -17616,6 +17616,10 @@ class ReplLastIdInfo {
    * @var string[]
    */
   public $partitionList = null;
+  /**
+   * @var bool
+   */
+  public $needUpdateDBReplId = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -17644,6 +17648,10 @@ class ReplLastIdInfo {
             'type' => TType::STRING,
             ),
           ),
+        6 => array(
+          'var' => 'needUpdateDBReplId',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -17661,6 +17669,9 @@ class ReplLastIdInfo {
       }
       if (isset($vals['partitionList'])) {
         $this->partitionList = $vals['partitionList'];
+      }
+      if (isset($vals['needUpdateDBReplId'])) {
+        $this->needUpdateDBReplId = $vals['needUpdateDBReplId'];
       }
     }
   }
@@ -17729,6 +17740,13 @@ class ReplLastIdInfo {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->needUpdateDBReplId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -17777,6 +17795,11 @@ class ReplLastIdInfo {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->needUpdateDBReplId !== null) {
+      $xfer += $output->writeFieldBegin('needUpdateDBReplId', TType::BOOL, 6);
+      $xfer += $output->writeBool($this->needUpdateDBReplId);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

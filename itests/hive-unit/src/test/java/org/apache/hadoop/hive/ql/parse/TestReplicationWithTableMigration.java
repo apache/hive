@@ -17,30 +17,42 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
-import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendAlterTable;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendCreateAsSelect;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendImport;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsert;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertIntoFromSelect;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertOverwrite;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertUnion;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendLoadLocal;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendTruncate;
+import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.verifyIncrementalLoad;
 
-import org.junit.*;
-import org.junit.rules.TestName;
-import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import java.io.IOException;
-import java.util.*;
-
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import org.junit.rules.TestName;
+import com.google.common.collect.Lists;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.isFullAcidTable;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.isTransactionalTable;
 import static org.junit.Assert.assertEquals;
@@ -54,18 +66,10 @@ public class TestReplicationWithTableMigration {
   @Rule
   public final TestName testName = new TestName();
 
-  @Rule
-  public TestRule replV1BackwardCompat;
-
-  protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationWithTableMigration.class);
   private static WarehouseInstance primary, replica;
   private String primaryDbName, replicatedDbName;
   private static HiveConf conf;
-  private enum OperationType {
-    REPL_TEST_ACID_INSERT, REPL_TEST_ACID_INSERT_SELECT, REPL_TEST_ACID_CTAS,
-    REPL_TEST_ACID_INSERT_OVERWRITE, REPL_TEST_ACID_INSERT_IMPORT, REPL_TEST_ACID_INSERT_LOADLOCAL,
-    REPL_TEST_ACID_INSERT_UNION
-  }
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -113,7 +117,6 @@ public class TestReplicationWithTableMigration {
 
   @Before
   public void setup() throws Throwable {
-    replV1BackwardCompat = primary.getReplivationV1CompatRule(new ArrayList<>());
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
@@ -128,13 +131,12 @@ public class TestReplicationWithTableMigration {
 
   private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId) throws Throwable {
     return primary.run("use " + primaryDbName)
-            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc " +
-                    "tblproperties (\"transactional\"=\"false\")")
+            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
             .run("insert into tacid values(1)")
             .run("insert into tacid values(2)")
             .run("insert into tacid values(3)")
             .run("create table tacidpart (place string) partitioned by (country string) clustered by(place) " +
-                    "into 3 buckets stored as orc tblproperties (\"transactional\"=\"false\")")
+                    "into 3 buckets stored as orc ")
             .run("alter table tacidpart add partition(country='france')")
             .run("insert into tacidpart partition(country='india') values('mumbai')")
             .run("insert into tacidpart partition(country='us') values('sf')")
@@ -142,19 +144,17 @@ public class TestReplicationWithTableMigration {
             .run("create table tflat (rank int) stored as orc tblproperties(\"transactional\"=\"false\")")
             .run("insert into tflat values(11)")
             .run("insert into tflat values(22)")
-            .run("create table tflattext (id int) tblproperties(\"transactional\"=\"false\")")
+            .run("create table tflattext (id int) ")
             .run("insert into tflattext values(111), (222)")
-            .run("create table tflattextpart (id int) partitioned by (country string) " +
-                    "tblproperties(\"transactional\"=\"false\")")
+            .run("create table tflattextpart (id int) partitioned by (country string) ")
             .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
             .run("insert into tflattextpart partition(country='us') values(3333)")
-            .run("create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' " +
-                    "tblproperties (\"transactional\"=\"false\")")
+            .run("create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' ")
             .run("insert into tacidloc values(1)")
             .run("insert into tacidloc values(2)")
             .run("insert into tacidloc values(3)")
             .run("create table tacidpartloc (place string) partitioned by (country string) clustered by(place) " +
-                    "into 3 buckets stored as orc tblproperties (\"transactional\"=\"false\")")
+                    "into 3 buckets stored as orc ")
             .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/part'")
             .run("insert into tacidpartloc partition(country='india') values('mumbai')")
             .run("insert into tacidpartloc partition(country='us') values('sf')")
@@ -209,7 +209,7 @@ public class TestReplicationWithTableMigration {
             = new BehaviourInjection<CallerArguments, Boolean>() {
       @Nullable
       @Override
-      public Boolean apply(@Nullable CallerArguments args) {
+      public Boolean apply(@Nullable InjectableBehaviourObjectStore.CallerArguments args) {
         injectionPathCalled = true;
         if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.constraintTblName != null)) {
           LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
@@ -236,7 +236,6 @@ public class TestReplicationWithTableMigration {
   public void testBootstrapLoadMigrationManagedToAcid() throws Throwable {
     WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -244,10 +243,8 @@ public class TestReplicationWithTableMigration {
   public void testIncrementalLoadMigrationManagedToAcid() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -255,13 +252,12 @@ public class TestReplicationWithTableMigration {
   public void testIncrementalLoadMigrationManagedToAcidFailure() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-
     loadWithFailureInAddNotification("tacid", tuple.dumpLocation);
-
+    replica.run("use " + replicatedDbName)
+            .run("show tables like tacid")
+            .verifyResult(null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -269,13 +265,12 @@ public class TestReplicationWithTableMigration {
   public void testIncrementalLoadMigrationManagedToAcidFailurePart() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-
     loadWithFailureInAddNotification("tacidpart", tuple.dumpLocation);
-
+    replica.run("use " + replicatedDbName)
+            .run("show tables like tacidpart")
+            .verifyResult(null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -290,26 +285,26 @@ public class TestReplicationWithTableMigration {
     String tableName = testName.getMethodName() + "testInsert";
     String tableNameMM = tableName + "_MM";
 
-    TestReplicationScenariosIncrementalLoadAcidTables.appendInsert(primary, primaryDbName, null,
+    appendInsert(primary, primaryDbName, null,
             tableName, tableNameMM, selectStmtList, expectedValues);
-    TestReplicationScenariosIncrementalLoadAcidTables.appendTruncate(primary, primaryDbName,
+    appendTruncate(primary, primaryDbName,
             null, selectStmtList, expectedValues);
-    TestReplicationScenariosIncrementalLoadAcidTables.appendInsertIntoFromSelect(primary, primaryDbName,
+    appendInsertIntoFromSelect(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    TestReplicationScenariosIncrementalLoadAcidTables.appendCreateAsSelect(primary, primaryDbName,
+    appendCreateAsSelect(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    TestReplicationScenariosIncrementalLoadAcidTables.appendImport(primary, primaryDbName,
+    appendImport(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    TestReplicationScenariosIncrementalLoadAcidTables.appendInsertOverwrite(primary, primaryDbName,
+    appendInsertOverwrite(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    TestReplicationScenariosIncrementalLoadAcidTables.appendLoadLocal(primary, primaryDbName,
+    appendLoadLocal(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    TestReplicationScenariosIncrementalLoadAcidTables.appendInsertUnion(primary, primaryDbName,
+    appendInsertUnion(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    TestReplicationScenariosIncrementalLoadAcidTables.appendAlterTable(primary, primaryDbName,
+    appendAlterTable(primary, primaryDbName,
             null, selectStmtList, expectedValues);
 
-    TestReplicationScenariosIncrementalLoadAcidTables.verifyIncrementalLoad(primary, replica, primaryDbName,
+    verifyIncrementalLoad(primary, replica, primaryDbName,
             replicatedDbName, selectStmtList, expectedValues, bootStrapDump.lastReplicationId);
   }
 }

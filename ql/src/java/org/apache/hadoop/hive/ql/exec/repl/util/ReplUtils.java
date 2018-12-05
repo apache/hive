@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.exec.repl.util;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -132,28 +132,30 @@ public class ReplUtils {
     return false;
   }
 
-  public static Task<? extends Serializable> appendOpenTxnTaskForMigration(String actualDbName,
-                                                                   String actualTblName, HiveConf conf,
-                                                                   UpdatedMetaDataTracker updatedMetaDataTracker,
-                                                                   Task<? extends Serializable> childTask,
-                                                                   org.apache.hadoop.hive.metastore.api.Table tableObj)
+  public static List<Task<? extends Serializable>> addOpenTxnTaskForMigration(String actualDbName,
+                                                                  String actualTblName, HiveConf conf,
+                                                                  UpdatedMetaDataTracker updatedMetaDataTracker,
+                                                                  Task<? extends Serializable> childTask,
+                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj)
           throws IOException, TException {
+    List<Task<? extends Serializable>> taskList = new ArrayList<>();
+    taskList.add(childTask);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) && updatedMetaDataTracker != null &&
-            !TxnUtils.isTransactionalTable(tableObj) &&
+            !AcidUtils.isTransactionalTable(tableObj) &&
             TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
-
+      //TODO : isPathOwnByHive is hard coded to true, need to get it from repl dump metadata.
       HiveStrictManagedMigration.TableMigrationOption migrationOption =
               HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
                       null, conf, null, true);
       if (migrationOption == MANAGED) {
         //if conversion to managed table.
-        Task<? extends Serializable> replTxnTaskTask =
-                TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName), conf);
-        replTxnTaskTask.addDependentTask(childTask);
+        Task<? extends Serializable> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
+                        ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), conf);
+        replTxnTask.addDependentTask(childTask);
         updatedMetaDataTracker.setNeedCommitTxn(true);
-        return replTxnTaskTask;
+        taskList.add(replTxnTask);
       }
     }
-    return childTask;
+    return taskList;
   }
 }

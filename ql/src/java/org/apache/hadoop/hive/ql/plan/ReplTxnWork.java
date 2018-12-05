@@ -93,13 +93,14 @@ public class ReplTxnWork implements Serializable {
     this.operation = type;
   }
 
-  public ReplTxnWork(String dbName, String tableName) {
-    this(null, dbName, tableName, null, OperationType.REPL_MIGRATION_OPEN_TXN,
-            null, null);
+  public ReplTxnWork(String dbName, String tableName, OperationType type) {
+    this(null, dbName, tableName, null, type, null, null);
+    assert type == OperationType.REPL_MIGRATION_OPEN_TXN;
   }
-  public ReplTxnWork(ReplLastIdInfo replLastIdInfo) {
-    this(null, null, null, null, OperationType.REPL_MIGRATION_COMMIT_TXN,
-            null, null);
+
+  public ReplTxnWork(ReplLastIdInfo replLastIdInfo, OperationType type) {
+    this(null, null, null, null, type, null, null);
+    assert type == OperationType.REPL_MIGRATION_COMMIT_TXN;
     this.replLastIdInfo = replLastIdInfo;
   }
 

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
@@ -47,12 +46,6 @@ public class DropTableHandler extends AbstractMessageHandler {
         "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName()
     );
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);
-
-    try {
-      return Collections.singletonList(ReplUtils.appendOpenTxnTaskForMigration(actualDbName, actualTblName,
-              context.hiveConf, updatedMetadata, dropTableTask, msg.getTableObj()));
-    } catch (Exception e) {
-      throw new SemanticException(e.getMessage());
-    }
+    return Collections.singletonList(dropTableTask);
   }
 }

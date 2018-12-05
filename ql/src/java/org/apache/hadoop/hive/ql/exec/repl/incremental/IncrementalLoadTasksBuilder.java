@@ -239,9 +239,11 @@ public class IncrementalLoadTasksBuilder {
 
   private Task<? extends Serializable> getMigrationCommitTxnTask(String dbName, String tableName,
                                                     List<Map <String, String>> partSpec, String replState,
+                                                    boolean needUpdateDBReplId,
                                                     Task<? extends Serializable> preCursor) throws SemanticException {
     ReplLastIdInfo replLastIdInfo = new ReplLastIdInfo(dbName, Long.parseLong(replState));
     replLastIdInfo.setTable(tableName);
+    replLastIdInfo.setNeedUpdateDBReplId(needUpdateDBReplId);
     if (partSpec != null && !partSpec.isEmpty()) {
       List<String> partitionList = new ArrayList<>();
       for (Map <String, String> part : partSpec) {
@@ -254,7 +256,8 @@ public class IncrementalLoadTasksBuilder {
       replLastIdInfo.setPartitionList(partitionList);
     }
 
-    Task<? extends Serializable> updateReplIdTxnTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo), conf);
+    Task<? extends Serializable> updateReplIdTxnTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo, ReplTxnWork
+            .OperationType.REPL_MIGRATION_COMMIT_TXN), conf);
 
     if (preCursor != null) {
       preCursor.addDependentTask(updateReplIdTxnTask);
@@ -314,12 +317,20 @@ public class IncrementalLoadTasksBuilder {
       return importTasks;
     }
 
+    boolean needCommitTx = updatedMetaDataTracker.isNeedCommitTxn();
+    // In migration flow, we should have only one table update per event.
+    if (needCommitTx && updatedMetaDataTracker.getUpdateMetaDataList().size() > 1) {
+      // currently, only commit txn event can have updates in multiple table. Commit txn does not starts
+      // a txn and thus needCommitTx must have set to false.
+      log.error(" more than one table is updated in an event during migration. : ");
+      throw new SemanticException(" more than one table is updated in an event during migration.");
+    }
+
     // Create a barrier task for dependency collection of import tasks
     Task<? extends Serializable> barrierTask = TaskFactory.get(new DependencyCollectionWork(), conf);
+
     List<Task<? extends Serializable>> tasks = new ArrayList<>();
     Task<? extends Serializable> updateReplIdTask;
-
-    boolean needCommitTx = updatedMetaDataTracker.isNeedCommitTxn();
 
     for (UpdatedMetaDataTracker.UpdateMetaData updateMetaData : updatedMetaDataTracker.getUpdateMetaDataList()) {
       String replState = updateMetaData.getReplState();
@@ -330,11 +341,10 @@ public class IncrementalLoadTasksBuilder {
       if (needCommitTx) {
         if (updateMetaData.getPartitionsList().size() > 0) {
           updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName,
-                  updateMetaData.getPartitionsList(), replState, barrierTask);
+                  updateMetaData.getPartitionsList(), replState, isDatabaseLoad, barrierTask);
           tasks.add(updateReplIdTask);
-
-          // if partition last repl id is updated within a transaction, then table repl id update can be done outside.
-          needCommitTx = false;
+          // commit txn task will update repl id for table and database also.
+          break;
         }
       } else {
         for (final Map<String, String> partSpec : updateMetaData.getPartitionsList()) {
@@ -346,18 +356,20 @@ public class IncrementalLoadTasksBuilder {
       // If any table/partition is updated, then update repl state in table object
       if (tableName != null) {
         if (needCommitTx) {
-          updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName, null, replState, barrierTask);
-          needCommitTx = false;
-        } else {
-          updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, null, replState, barrierTask);
+          updateReplIdTask = getMigrationCommitTxnTask(dbName, tableName, null,
+                  replState, isDatabaseLoad, barrierTask);
+          tasks.add(updateReplIdTask);
+          // commit txn task will update repl id for database also.
+          break;
         }
+        updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, null, replState, barrierTask);
         tasks.add(updateReplIdTask);
       }
 
       // If any table/partition is updated, then update repl state in db object
       if (needCommitTx) {
-        updateReplIdTask = getMigrationCommitTxnTask(dbName, null, null, replState, barrierTask);
-        needCommitTx = false;
+        updateReplIdTask = getMigrationCommitTxnTask(dbName, null, null,
+                replState, isDatabaseLoad, barrierTask);
         tasks.add(updateReplIdTask);
       } else if (isDatabaseLoad) {
         // For table level load, need not update replication state for the database

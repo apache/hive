@@ -17,23 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import java.util.HashMap;
 import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-public class TestReplWithJsonMessageFormat extends TestReplicationScenarios {
-  @Rule
-  public TestRule replV1BackwardCompatibleRule =
-      new ReplicationV1CompatRule(metaStoreClient, hconf,
-          new ArrayList<>(Collections.singletonList("testEventFilters")));
-
+public class TestReplicationScenariosMigration extends org.apache.hadoop.hive.ql.parse.TestReplicationScenarios {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    internalBeforeClassSetup(Collections.emptyMap(), false);
+    HashMap<String, String> overrideProperties = new HashMap<>();
+    overrideProperties.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
+        GzipJSONMessageEncoder.class.getCanonicalName());
+    internalBeforeClassSetup(overrideProperties, true);
   }
-
 }
