@@ -70,8 +70,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 17, 21]
-                    selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 14:stringcol 16:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, ConstantVectorExpression(val a) -> 14:string, IfExprStringScalarStringScalar(col 15:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 15:boolean) -> 16:string) -> 17:string, IfExprColumnCondExpr(col 15:boolean, col 18:stringcol 20:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 15:boolean, ConstantVectorExpression(val a) -> 18:string, IfExprStringScalarStringScalar(col 19:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 19:boolean) -> 20:string) -> 21:string
+                    projectedOutputColumnNums: [1, 17, 22]
+                    selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 14:stringcol 16:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, ConstantVectorExpression(val a) -> 14:string, IfExprStringScalarStringScalar(col 15:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 15:boolean) -> 16:string) -> 17:string, IfExprColumnCondExpr(col 18:boolean, col 19:stringcol 21:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 18:boolean, ConstantVectorExpression(val a) -> 19:string, IfExprStringScalarStringScalar(col 20:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 20:boolean) -> 21:string) -> 22:string
                 Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -98,7 +98,7 @@ STAGE PLANS:
               includeColumns: [1]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: [bigint, string, bigint, string, string, string, bigint, string, string]
+              scratchColumnTypeNames: [bigint, string, bigint, string, string, bigint, string, bigint, string, string]
 
   Stage: Stage-0
     Fetch Operator
@@ -296,13 +296,13 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [13, 14]
-                  selectExpressions: IfExprLongScalarLongScalar(col 14:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 13:int, IfExprLongScalarLongScalar(col 15:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 14:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 14:int) -> 15:boolean) -> 14:int
+                  projectedOutputColumnNums: [15, 18]
+                  selectExpressions: IfExprLongScalarLongScalar(col 14:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 15:int, IfExprLongScalarLongScalar(col 17:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 16:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 16:int) -> 17:boolean) -> 18:int
               Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_col0), sum(_col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 13:int) -> bigint, VectorUDAFSumLong(col 14:int) -> bigint
+                    aggregators: VectorUDAFSumLong(col 15:int) -> bigint, VectorUDAFSumLong(col 18:int) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     native: false
@@ -335,7 +335,7 @@ STAGE PLANS:
               includeColumns: [2]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: [bigint, bigint, bigint]
+              scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -415,13 +415,13 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [13, 14]
-                  selectExpressions: IfExprLongColumnLongScalar(col 14:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 13:int, IfExprLongColumnLongScalar(col 15:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 14:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 14:int) -> 15:boolean) -> 14:int
+                  projectedOutputColumnNums: [15, 18]
+                  selectExpressions: IfExprLongColumnLongScalar(col 14:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 15:int, IfExprLongColumnLongScalar(col 17:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 16:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 16:int) -> 17:boolean) -> 18:int
               Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_col0), sum(_col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 13:int) -> bigint, VectorUDAFSumLong(col 14:int) -> bigint
+                    aggregators: VectorUDAFSumLong(col 15:int) -> bigint, VectorUDAFSumLong(col 18:int) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     native: false
@@ -454,7 +454,7 @@ STAGE PLANS:
               includeColumns: [2]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: [bigint, bigint, bigint]
+              scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

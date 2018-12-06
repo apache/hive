@@ -124,8 +124,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [5, 2, 18]
-                    selectExpressions: IfExprCondExprCondExpr(col 16:boolean, col 17:doublecol 14:double)(children: ColAndCol(col 13:boolean, col 15:boolean)(children: IsNotNull(col 5:double) -> 13:boolean, IsNotNull(col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:boolean) -> 16:boolean, DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 17:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 18:double
+                    projectedOutputColumnNums: [5, 2, 20]
+                    selectExpressions: IfExprCondExprCondExpr(col 16:boolean, col 18:doublecol 19:double)(children: ColAndCol(col 13:boolean, col 15:boolean)(children: IsNotNull(col 5:double) -> 13:boolean, IsNotNull(col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:boolean) -> 16:boolean, DoubleColAddDoubleColumn(col 5:double, col 17:double)(children: FuncLog2LongToDouble(col 2:int) -> 17:double) -> 18:double, ConstantVectorExpression(val 0.0) -> 19:double) -> 20:double
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false

@@ -63,8 +63,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [6, 10, 5, 8, 13, 14, 15, 17, 16]
-                    selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 1:int)(children: col 1:smallint) -> 13:int, DoubleColSubtractDoubleScalar(col 5:double, val 9763215.5639) -> 14:double, DoubleColUnaryMinus(col 5:double) -> 15:double, DoubleColAddDoubleScalar(col 16:double, val 6981.0)(children: DoubleColUnaryMinus(col 5:double) -> 16:double) -> 17:double, DoubleColMultiplyDoubleScalar(col 5:double, val -5638.15) -> 16:double
+                    projectedOutputColumnNums: [6, 10, 5, 8, 13, 14, 15, 17, 18]
+                    selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 1:int)(children: col 1:smallint) -> 13:int, DoubleColSubtractDoubleScalar(col 5:double, val 9763215.5639) -> 14:double, DoubleColUnaryMinus(col 5:double) -> 15:double, DoubleColAddDoubleScalar(col 16:double, val 6981.0)(children: DoubleColUnaryMinus(col 5:double) -> 16:double) -> 17:double, DoubleColMultiplyDoubleScalar(col 5:double, val -5638.15) -> 18:double
                 Statistics: Num rows: 9216 Data size: 110592 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false

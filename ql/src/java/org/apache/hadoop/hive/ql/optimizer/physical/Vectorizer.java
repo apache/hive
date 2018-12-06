@@ -232,7 +232,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -714,7 +713,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     public DummyVectorOperator(VectorizationContext vContext) {
       super();
-      this.conf = (DummyRootVectorDesc) new DummyRootVectorDesc();
+      this.conf = new DummyRootVectorDesc();
       this.vContext = vContext;
     }
 
@@ -2133,7 +2132,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     private void vectorizeTableScanOperatorInPlace(TableScanOperator tableScanOperator,
         VectorTaskColumnInfo vectorTaskColumnInfo) {
 
-      TableScanDesc tableScanDesc = (TableScanDesc) tableScanOperator.getConf();
+      TableScanDesc tableScanDesc = tableScanOperator.getConf();
       VectorTableScanDesc vectorTableScanDesc = new VectorTableScanDesc();
       tableScanDesc.setVectorDesc(vectorTableScanDesc);
 
@@ -2815,7 +2814,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           HiveConf.ConfVars.HIVE_VECTORIZATION_PTF_ENABLED.varname + " IS false)");
       return false;
     }
-    PTFDesc ptfDesc = (PTFDesc) op.getConf();
+    PTFDesc ptfDesc = op.getConf();
     boolean isMapSide = ptfDesc.isMapSide();
     if (isMapSide) {
       setOperatorIssue("PTF Mapper not supported");
@@ -4674,12 +4673,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     int index = 0;
     final int size = colList.size();
 
-    // Since the call to fixDecimalDataTypePhysicalVariations will be done post-vector-expression
-    // creation, it cannot freely use deallocated scratch columns.  Scratch column reuse assumes
-    // sequential execution so it can reuse freed scratch columns from earlier
-    // evaluations.
-    //
-    vContext.clearScratchColumnWasUsedTracking();
+    // this will mark all actual computed columns
+    vContext.markActualScratchColumns();
 
     VectorExpression[] vectorSelectExprs = new VectorExpression[size];
     int[] projectedOutputColumns = new int[size];
@@ -4701,12 +4696,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     // at least one of its children is DECIMAL_64. Some expressions like x % y for example only accepts DECIMAL
     // for x and y (at this time there is only DecimalColModuloDecimalColumn so both x and y has to be DECIMAL).
     // The following method introduces a cast if x or y is DECIMAL_64 and parent expression (x % y) is DECIMAL.
-    vContext.setDontReuseTrackedScratchColumns(true);
     try {
       fixDecimalDataTypePhysicalVariations(vContext, vectorSelectExprs);
     } finally {
-      vContext.setDontReuseTrackedScratchColumns(false);
+      vContext.freeMarkedScratchColumns();
     }
+
 
     vectorSelectDesc.setSelectExpressions(vectorSelectExprs);
     vectorSelectDesc.setProjectedOutputColumns(projectedOutputColumns);

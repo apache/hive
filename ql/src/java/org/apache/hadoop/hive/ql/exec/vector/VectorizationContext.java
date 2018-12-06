@@ -659,7 +659,6 @@ import com.google.common.annotations.VisibleForTesting;
     private final int initialOutputCol;
     private int outputColCount = 0;
     private boolean reuseScratchColumns = true;
-    private boolean dontReuseTrackedScratchColumns = false;
 
     protected OutputColumnManager(int initialOutputCol) {
       this.initialOutputCol = initialOutputCol;
@@ -675,6 +674,7 @@ import com.google.common.annotations.VisibleForTesting;
     private boolean[] scratchColumnTrackWasUsed = new boolean[100];
 
     private final Set<Integer> usedOutputColumns = new HashSet<>();
+    private boolean[] markedScratchColumns;
 
     int allocateOutputColumn(TypeInfo typeInfo) throws HiveException {
       return allocateOutputColumn(typeInfo, DataTypePhysicalVariation.NONE);
@@ -704,7 +704,7 @@ import com.google.common.annotations.VisibleForTesting;
               scratchDataTypePhysicalVariations[i] == dataTypePhysicalVariation)) {
           continue;
         }
-        if (dontReuseTrackedScratchColumns && scratchColumnTrackWasUsed[i]) {
+        if (scratchColumnTrackWasUsed[i]) {
           continue;
         }
         //Use i
@@ -769,13 +769,25 @@ import com.google.common.annotations.VisibleForTesting;
       this.reuseScratchColumns = reuseColumns;
     }
 
-    public void clearScratchColumnWasUsedTracking() {
-      Arrays.fill(scratchColumnTrackWasUsed, false);
+    public void freeMarkedScratchColumns() {
+      if (markedScratchColumns == null) {
+        throw new RuntimeException("Illegal call");
+      }
+      for (int i = 0; i < markedScratchColumns.length; i++) {
+        if (markedScratchColumns[i]) {
+          scratchColumnTrackWasUsed[i] = false;
+        }
+      }
+      markedScratchColumns = null;
     }
 
-    public void setDontReuseTrackedScratchColumns(boolean dontReuseTrackedScratchColumns) {
-      this.dontReuseTrackedScratchColumns = dontReuseTrackedScratchColumns;
+    public void markScratchColumns() {
+      if (markedScratchColumns != null) {
+        throw new RuntimeException("Illegal call");
+      }
+      markedScratchColumns = Arrays.copyOf(scratchColumnTrackWasUsed, scratchColumnTrackWasUsed.length);
     }
+
   }
 
   public int allocateScratchColumn(TypeInfo typeInfo) throws HiveException {
@@ -786,12 +798,20 @@ import com.google.common.annotations.VisibleForTesting;
     return ocm.currentScratchColumns();
   }
 
-  public void clearScratchColumnWasUsedTracking() {
-    ocm.clearScratchColumnWasUsedTracking();
+  /**
+   * Marks all actual scratch columns.
+   *
+   * They can be decomissioned with {@link #freeMarkedScratchColumns()}.
+   */
+  public void markActualScratchColumns() {
+    ocm.markScratchColumns();
   }
 
-  public void setDontReuseTrackedScratchColumns(boolean dontReuseTrackedScratchColumns) {
-    ocm.setDontReuseTrackedScratchColumns(dontReuseTrackedScratchColumns);
+  /**
+   * Frees up actually marked scract columns.
+   */
+  public void freeMarkedScratchColumns() {
+    ocm.freeMarkedScratchColumns();
   }
 
   private VectorExpression getFilterOnBooleanColumnExpression(ExprNodeColumnDesc exprDesc,
@@ -1392,8 +1412,9 @@ import com.google.common.annotations.VisibleForTesting;
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
       return true;
-    } else
-        return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
+    } else {
+      return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
+    }
   }
 
   public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {

@@ -221,13 +221,13 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [3, 1, 2, 5, 8, 6, 10]
-                  selectExpressions: CastDecimalToDouble(col 1:decimal(20,10)) -> 5:double, DoubleColMultiplyDoubleColumn(col 6:double, col 7:double)(children: CastDecimalToDouble(col 1:decimal(20,10)) -> 6:double, CastDecimalToDouble(col 1:decimal(20,10)) -> 7:double) -> 8:double, CastDecimalToDouble(col 2:decimal(23,14)) -> 6:double, DoubleColMultiplyDoubleColumn(col 7:double, col 9:double)(children: CastDecimalToDouble(col 2:decimal(23,14)) -> 7:double, CastDecimalToDouble(col 2:decimal(23,14)) -> 9:double) -> 10:double
+                  projectedOutputColumnNums: [3, 1, 2, 5, 8, 9, 12]
+                  selectExpressions: CastDecimalToDouble(col 1:decimal(20,10)) -> 5:double, DoubleColMultiplyDoubleColumn(col 6:double, col 7:double)(children: CastDecimalToDouble(col 1:decimal(20,10)) -> 6:double, CastDecimalToDouble(col 1:decimal(20,10)) -> 7:double) -> 8:double, CastDecimalToDouble(col 2:decimal(23,14)) -> 9:double, DoubleColMultiplyDoubleColumn(col 10:double, col 11:double)(children: CastDecimalToDouble(col 2:decimal(23,14)) -> 10:double, CastDecimalToDouble(col 2:decimal(23,14)) -> 11:double) -> 12:double
               Statistics: Num rows: 12289 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(_col1), max(_col1), min(_col1), sum(_col1), sum(_col4), sum(_col3), count(_col2), max(_col2), min(_col2), sum(_col2), sum(_col6), sum(_col5), count()
                 Group By Vectorization:
-                    aggregators: VectorUDAFCount(col 1:decimal(20,10)) -> bigint, VectorUDAFMaxDecimal(col 1:decimal(20,10)) -> decimal(20,10), VectorUDAFMinDecimal(col 1:decimal(20,10)) -> decimal(20,10), VectorUDAFSumDecimal(col 1:decimal(20,10)) -> decimal(30,10), VectorUDAFSumDouble(col 8:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 2:decimal(23,14)) -> bigint, VectorUDAFMaxDecimal(col 2:decimal(23,14)) -> decimal(23,14), VectorUDAFMinDecimal(col 2:decimal(23,14)) -> decimal(23,14), VectorUDAFSumDecimal(col 2:decimal(23,14)) -> decimal(33,14), VectorUDAFSumDouble(col 10:double) -> double, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFCountStar(*) -> bigint
+                    aggregators: VectorUDAFCount(col 1:decimal(20,10)) -> bigint, VectorUDAFMaxDecimal(col 1:decimal(20,10)) -> decimal(20,10), VectorUDAFMinDecimal(col 1:decimal(20,10)) -> decimal(20,10), VectorUDAFSumDecimal(col 1:decimal(20,10)) -> decimal(30,10), VectorUDAFSumDouble(col 8:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 2:decimal(23,14)) -> bigint, VectorUDAFMaxDecimal(col 2:decimal(23,14)) -> decimal(23,14), VectorUDAFMinDecimal(col 2:decimal(23,14)) -> decimal(23,14), VectorUDAFSumDecimal(col 2:decimal(23,14)) -> decimal(33,14), VectorUDAFSumDouble(col 12:double) -> double, VectorUDAFSumDouble(col 9:double) -> double, VectorUDAFCountStar(*) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     keyExpressions: col 3:int
@@ -264,7 +264,7 @@ STAGE PLANS:
               includeColumns: [1, 2, 3]
               dataColumns: cdouble:double, cdecimal1:decimal(20,10), cdecimal2:decimal(23,14), cint:int
               partitionColumnCount: 0
-              scratchColumnTypeNames: [double, double, double, double, double, double]
+              scratchColumnTypeNames: [double, double, double, double, double, double, double, double]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -565,13 +565,13 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [3, 1, 2, 6, 9, 7, 12]
-                  selectExpressions: CastDecimalToDouble(col 5:decimal(11,5))(children: ConvertDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> 5:decimal(11,5)) -> 6:double, DoubleColMultiplyDoubleColumn(col 7:double, col 8:double)(children: CastDecimalToDouble(col 5:decimal(11,5))(children: ConvertDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> 5:decimal(11,5)) -> 7:double, CastDecimalToDouble(col 5:decimal(11,5))(children: ConvertDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> 5:decimal(11,5)) -> 8:double) -> 9:double, CastDecimalToDouble(col 10:decimal(16,0))(children: ConvertDecimal64ToDecimal(col 2:decimal(16,0)/DECIMAL_64) -> 10:decimal(16,0)) -> 7:double, DoubleColMultiplyDoubleColumn(col 8:double, col 11:double)(children: CastDecimalToDouble(col 10:decimal(16,0))(children: ConvertDecimal64ToDecimal(col 2:decimal(16,0)/DECIMAL_64) -> 10:decimal(16,0)) -> 8:double, CastDecimalToDouble(col 10:decimal(16,0))(children: ConvertDecimal64ToDecimal(col 2:decimal(16,0)/DECIMAL_64) -> 10:decimal(16,0)) -> 11:double) -> 12:double
+                  projectedOutputColumnNums: [3, 1, 2, 6, 11, 13, 18]
+                  selectExpressions: CastDecimalToDouble(col 5:decimal(11,5))(children: ConvertDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> 5:decimal(11,5)) -> 6:double, DoubleColMultiplyDoubleColumn(col 8:double, col 10:double)(children: CastDecimalToDouble(col 7:decimal(11,5))(children: ConvertDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> 7:decimal(11,5)) -> 8:double, CastDecimalToDouble(col 9:decimal(11,5))(children: ConvertDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> 9:decimal(11,5)) -> 10:double) -> 11:double, CastDecimalToDouble(col 12:decimal(16,0))(children: ConvertDecimal64ToDecimal(col 2:decimal(16,0)/DECIMAL_64) -> 12:decimal(16,0)) -> 13:double, DoubleColMultiplyDoubleColumn(col 15:double, col 17:double)(children: CastDecimalToDouble(col 14:decimal(16,0))(children: ConvertDecimal64ToDecimal(col 2:decimal(16,0)/DECIMAL_64) -> 14:decimal(16,0)) -> 15:double, CastDecimalToDouble(col 16:decimal(16,0))(children: ConvertDecimal64ToDecimal(col 2:decimal(16,0)/DECIMAL_64) -> 16:decimal(16,0)) -> 17:double) -> 18:double
               Statistics: Num rows: 12289 Data size: 346462 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(_col1), max(_col1), min(_col1), sum(_col1), sum(_col4), sum(_col3), count(_col2), max(_col2), min(_col2), sum(_col2), sum(_col6), sum(_col5), count()
                 Group By Vectorization:
-                    aggregators: VectorUDAFCount(col 1:decimal(11,5)/DECIMAL_64) -> bigint, VectorUDAFMaxDecimal64(col 1:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFMinDecimal64(col 1:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFSumDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> decimal(21,5), VectorUDAFSumDouble(col 9:double) -> double, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFCount(col 2:decimal(16,0)/DECIMAL_64) -> bigint, VectorUDAFMaxDecimal64(col 2:decimal(16,0)/DECIMAL_64) -> decimal(16,0)/DECIMAL_64, VectorUDAFMinDecimal64(col 2:decimal(16,0)/DECIMAL_64) -> decimal(16,0)/DECIMAL_64, VectorUDAFSumDecimal64ToDecimal(col 2:decimal(16,0)/DECIMAL_64) -> decimal(26,0), VectorUDAFSumDouble(col 12:double) -> double, VectorUDAFSumDouble(col 7:double) -> double, VectorUDAFCountStar(*) -> bigint
+                    aggregators: VectorUDAFCount(col 1:decimal(11,5)/DECIMAL_64) -> bigint, VectorUDAFMaxDecimal64(col 1:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFMinDecimal64(col 1:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFSumDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> decimal(21,5), VectorUDAFSumDouble(col 11:double) -> double, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFCount(col 2:decimal(16,0)/DECIMAL_64) -> bigint, VectorUDAFMaxDecimal64(col 2:decimal(16,0)/DECIMAL_64) -> decimal(16,0)/DECIMAL_64, VectorUDAFMinDecimal64(col 2:decimal(16,0)/DECIMAL_64) -> decimal(16,0)/DECIMAL_64, VectorUDAFSumDecimal64ToDecimal(col 2:decimal(16,0)/DECIMAL_64) -> decimal(26,0), VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFCountStar(*) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     keyExpressions: col 3:int
@@ -608,7 +608,7 @@ STAGE PLANS:
               includeColumns: [1, 2, 3]
               dataColumns: cdouble:double, cdecimal1:decimal(11,5)/DECIMAL_64, cdecimal2:decimal(16,0)/DECIMAL_64, cint:int
               partitionColumnCount: 0
-              scratchColumnTypeNames: [decimal(11,5), double, double, double, double, decimal(16,0), double, double]
+              scratchColumnTypeNames: [decimal(11,5), double, decimal(11,5), double, decimal(11,5), double, double, decimal(16,0), double, decimal(16,0), double, decimal(16,0), double, double]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

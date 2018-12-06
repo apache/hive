@@ -208,8 +208,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 8, 7, 11]
-                      selectExpressions: DoubleColDivideLongColumn(col 7:double, col 2:bigint)(children: CastLongToDouble(col 1:bigint) -> 7:double) -> 8:double, DoubleColDivideLongColumn(col 3:double, col 4:bigint) -> 7:double, CastDecimalToDecimal(col 10:decimal(32,20))(children: DecimalColDivideDecimalColumn(col 5:decimal(12,0), col 9:decimal(19,0))(children: CastLongToDecimal(col 6:bigint) -> 9:decimal(19,0)) -> 10:decimal(32,20)) -> 11:decimal(6,4)
+                      projectedOutputColumnNums: [0, 8, 9, 12]
+                      selectExpressions: DoubleColDivideLongColumn(col 7:double, col 2:bigint)(children: CastLongToDouble(col 1:bigint) -> 7:double) -> 8:double, DoubleColDivideLongColumn(col 3:double, col 4:bigint) -> 9:double, CastDecimalToDecimal(col 11:decimal(32,20))(children: DecimalColDivideDecimalColumn(col 5:decimal(12,0), col 10:decimal(19,0))(children: CastLongToDecimal(col 6:bigint) -> 10:decimal(19,0)) -> 11:decimal(32,20)) -> 12:decimal(6,4)
                   Statistics: Num rows: 524 Data size: 155436 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)

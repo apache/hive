@@ -65,13 +65,13 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [1, 3]
-                  selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 3:int
+                  projectedOutputColumnNums: [1, 5]
+                  selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
               Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 3:int) -> bigint
+                    aggregators: VectorUDAFSumLong(col 5:int) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     keyExpressions: col 1:string
@@ -268,13 +268,13 @@ STAGE PLANS:
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [1, 3]
-                  selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 3:int
+                  projectedOutputColumnNums: [1, 5]
+                  selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
               Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 3:int) -> bigint
+                    aggregators: VectorUDAFSumLong(col 5:int) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     keyExpressions: col 1:string
