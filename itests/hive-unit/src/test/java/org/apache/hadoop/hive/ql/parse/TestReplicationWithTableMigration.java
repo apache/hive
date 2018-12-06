@@ -29,16 +29,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendAlterTable;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendCreateAsSelect;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendImport;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsert;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertIntoFromSelect;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertOverwrite;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertUnion;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendLoadLocal;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendTruncate;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.verifyIncrementalLoad;
+import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -312,26 +303,26 @@ public class TestReplicationWithTableMigration {
     String tableName = testName.getMethodName() + "testInsert";
     String tableNameMM = tableName + "_MM";
 
-    appendInsert(primary, primaryDbName, null,
+    ReplicationTestUtils.appendInsert(primary, primaryDbName, null,
             tableName, tableNameMM, selectStmtList, expectedValues);
-    appendTruncate(primary, primaryDbName,
+    ReplicationTestUtils.appendTruncate(primary, primaryDbName,
             null, selectStmtList, expectedValues);
-    appendInsertIntoFromSelect(primary, primaryDbName,
+    ReplicationTestUtils.appendInsertIntoFromSelect(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendCreateAsSelect(primary, primaryDbName,
+    ReplicationTestUtils.appendCreateAsSelect(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendImport(primary, primaryDbName,
+    ReplicationTestUtils.appendImport(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendInsertOverwrite(primary, primaryDbName,
+    ReplicationTestUtils.appendInsertOverwrite(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendLoadLocal(primary, primaryDbName,
+    ReplicationTestUtils.appendLoadLocal(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendInsertUnion(primary, primaryDbName,
+    ReplicationTestUtils.appendInsertUnion(primary, primaryDbName,
             null, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendAlterTable(primary, primaryDbName,
+    ReplicationTestUtils.appendAlterTable(primary, primaryDbName,
             null, selectStmtList, expectedValues);
 
-    verifyIncrementalLoad(primary, replica, primaryDbName,
+    ReplicationTestUtils.verifyIncrementalLoad(primary, replica, primaryDbName,
             replicatedDbName, selectStmtList, expectedValues, bootStrapDump.lastReplicationId);
   }
 }

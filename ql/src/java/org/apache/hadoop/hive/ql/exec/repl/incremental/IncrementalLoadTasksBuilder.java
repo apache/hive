@@ -319,11 +319,10 @@ public class IncrementalLoadTasksBuilder {
 
     boolean needCommitTx = updatedMetaDataTracker.isNeedCommitTxn();
     // In migration flow, we should have only one table update per event.
-    if (needCommitTx && updatedMetaDataTracker.getUpdateMetaDataList().size() > 1) {
+    if (needCommitTx) {
       // currently, only commit txn event can have updates in multiple table. Commit txn does not starts
       // a txn and thus needCommitTx must have set to false.
-      log.error("More than one table is updated in an event during migration.");
-      throw new SemanticException("More than one table is updated in an event during migration.");
+      assert updatedMetaDataTracker.getUpdateMetaDataList().size() <= 1;
     }
 
     // Create a barrier task for dependency collection of import tasks

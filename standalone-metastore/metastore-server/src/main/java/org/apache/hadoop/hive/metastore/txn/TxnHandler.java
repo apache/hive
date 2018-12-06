@@ -869,6 +869,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private void updateReplId(Connection dbConn, ReplLastIdInfo replLastIdInfo) throws SQLException, MetaException {
     PreparedStatement pst = null;
+    PreparedStatement pstInt = null;
     ResultSet rs = null;
     ResultSet prs = null;
     Statement stmt = null;
@@ -897,8 +898,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("DB with name " + db + " does not exist in catalog " + catalog);
       }
       long dbId = rs.getLong(1);
+      rs.close();
+      pst.close();
 
       if (needUpdateDBReplId) {
+        // not used select for update as it will be updated by single thread only from repl load
         rs = stmt.executeQuery("select PARAM_VALUE from DATABASE_PARAMS where PARAM_KEY = " +
                 "'repl.last.id' and DB_ID = " + dbId);
         if (rs == null || !rs.next()) {
@@ -907,6 +911,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           query = "update DATABASE_PARAMS set PARAM_VALUE = ? where DB_ID = " + dbId +
                   " and PARAM_KEY = 'repl.last.id'";
         }
+        close(rs);
         params = Arrays.asList(lastReplId);
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
         LOG.debug("Updating repl id for db <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
@@ -914,6 +919,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //only one row insert or update should happen
           throw new RuntimeException("DATABASE_PARAMS is corrupted for db " + db);
         }
+        pst.close();
       }
 
       if (table == null) {
@@ -931,6 +937,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Table with name " + table + " does not exist in db " + catalog + "." + db);
       }
       long tblId = rs.getLong(1);
+      rs.close();
+      pst.close();
 
       // select for update is not required as only one task will update this during repl load.
       rs = stmt.executeQuery("select PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = " +
@@ -941,6 +949,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         query = "update TABLE_PARAMS set PARAM_VALUE = ? where TBL_ID = " + tblId +
                 " and PARAM_KEY = 'repl.last.id'";
       }
+      rs.close();
 
       params = Arrays.asList(lastReplId);
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
@@ -949,6 +958,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //only one row insert or update should happen
         throw new RuntimeException("TABLE_PARAMS is corrupted for table " + table);
       }
+      pst.close();
 
       if (partList == null || partList.isEmpty()) {
         return;
@@ -968,6 +978,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       List<Integer> counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
               questions, "\"PART_NAME\"", true, false);
       int totalCount = 0;
+      assert queries.size() == counts.size();
       for (int i = 0; i < queries.size(); i++) {
         query = queries.get(i);
         int partCount = counts.get(i);
@@ -984,6 +995,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new MetaException("Partition with name " + partList + " does not exist in table " +
                   catalog + "." + db + "." + table);
         }
+        params = Arrays.asList(lastReplId);
 
         while (prs.next()) {
           long partId = prs.getLong(1);
@@ -995,25 +1007,30 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             query = "update PARTITION_PARAMS set PARAM_VALUE = ? " +
                     " where PART_ID = " + partId + " and PARAM_KEY = 'repl.last.id'";
           }
-          params = Arrays.asList(lastReplId);
-          pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+          rs.close();
+
+          pstInt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
           LOG.debug("Updating repl id for part <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
-          if (pst.executeUpdate() != 1) {
+          if (pstInt.executeUpdate() != 1) {
             //only one row insert or update should happen
             throw new RuntimeException("PARTITION_PARAMS is corrupted for partition " + partId);
           }
           partCount--;
+          pstInt.close();
         }
         if (partCount != 0) {
           throw new MetaException(partCount + " Number of partition among " + partList + " does not exist in table " +
                   catalog + "." + db + "." + table);
         }
+        prs.close();
+        pst.close();
       }
     } finally {
       closeStmt(stmt);
       close(rs);
       close(prs);
       closeStmt(pst);
+      closeStmt(pstInt);
     }
   }
 

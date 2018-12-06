@@ -24,22 +24,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendAlterTable;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendCreateAsSelect;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendImport;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsert;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertIntoFromSelect;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertOverwrite;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertUnion;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendLoadLocal;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendTruncate;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendMerge;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendMultiStatementTxn;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.verifyIncrementalLoad;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.insertRecords;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.insertIntoDB;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.verifyResultsInReplica;
-import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.OperationType;
+import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
 
 import org.junit.rules.TestName;
 
@@ -149,20 +134,29 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     String tableName = testName.getMethodName() + "testInsert";
     String tableNameMM = tableName + "_MM";
 
-    appendInsert(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendInsert(primary, primaryDbName, primaryDbNameExtra, tableName,
+            tableNameMM, selectStmtList, expectedValues);
     appendDelete(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
     appendUpdate(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
-    appendTruncate(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
-    appendInsertIntoFromSelect(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendMerge(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
-    appendCreateAsSelect(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendImport(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendInsertOverwrite(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendLoadLocal(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendInsertUnion(primary, primaryDbName, primaryDbNameExtra, tableName, tableNameMM, selectStmtList, expectedValues);
-    appendMultiStatementTxn(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendTruncate(primary, primaryDbName, primaryDbNameExtra,
+            selectStmtList, expectedValues);
+    ReplicationTestUtils.appendInsertIntoFromSelect(primary, primaryDbName, primaryDbNameExtra,
+            tableName, tableNameMM, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendMerge(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendCreateAsSelect(primary, primaryDbName, primaryDbNameExtra, tableName,
+            tableNameMM, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendImport(primary, primaryDbName, primaryDbNameExtra, tableName,
+            tableNameMM, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendInsertOverwrite(primary, primaryDbName, primaryDbNameExtra, tableName,
+            tableNameMM, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendLoadLocal(primary, primaryDbName, primaryDbNameExtra, tableName,
+            tableNameMM, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendInsertUnion(primary, primaryDbName, primaryDbNameExtra, tableName,
+            tableNameMM, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendMultiStatementTxn(primary, primaryDbName, primaryDbNameExtra,
+            selectStmtList, expectedValues);
     appendMultiStatementTxnUpdateDelete(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
-    appendAlterTable(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
+    ReplicationTestUtils.appendAlterTable(primary, primaryDbName, primaryDbNameExtra, selectStmtList, expectedValues);
 
     verifyIncrementalLoadInt(selectStmtList, expectedValues, bootStrapDump.lastReplicationId);
   }
@@ -170,8 +164,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   private void appendDelete(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
                             List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
     String tableName = "testDelete";
-    insertRecords(primary, primaryDbName, primaryDbNameExtra,
-            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    ReplicationTestUtils.insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
     deleteRecords(tableName);
     selectStmtList.add("select count(*) from " + tableName);
     expectedValues.add(new String[] {"0"});
@@ -180,8 +174,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   private void appendUpdate(WarehouseInstance primary, String primaryDbName, String primaryDbNameExtra,
                             List<String> selectStmtList, List<String[]> expectedValues) throws Throwable {
     String tableName = "testUpdate";
-    insertRecords(primary, primaryDbName, primaryDbNameExtra,
-            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    ReplicationTestUtils.insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
     updateRecords(tableName);
     selectStmtList.add("select value from " + tableName + " order by value");
     expectedValues.add(new String[] {"1", "100", "100", "100", "100"});
@@ -196,12 +190,14 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     String tableProperty = "'transactional'='true'";
     String tableStorage = "STORED AS ORC";
 
-    insertIntoDB(primary, primaryDbName, tableName, tableProperty, tableStorage, resultArray, true);
+    ReplicationTestUtils.insertIntoDB(primary, primaryDbName, tableName, tableProperty,
+            tableStorage, resultArray, true);
     updateRecords(tableName);
     selectStmtList.add("select value from " + tableName + " order by value");
     expectedValues.add(new String[] {"1", "100", "100", "100", "100"});
 
-    insertIntoDB(primary, primaryDbName, tableNameDelete, tableProperty, tableStorage, resultArray, true);
+    ReplicationTestUtils.insertIntoDB(primary, primaryDbName, tableNameDelete, tableProperty,
+            tableStorage, resultArray, true);
     deleteRecords(tableNameDelete);
     selectStmtList.add("select count(*) from " + tableNameDelete);
     expectedValues.add(new String[] {"0"});
@@ -219,8 +215,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    insertRecords(primary, primaryDbName, primaryDbNameExtra,
-            tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    ReplicationTestUtils.insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableName, null, false, ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
     incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     primary.run("drop table " + primaryDbName + "." + tableName);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
@@ -229,8 +225,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
                                               "select count(*) from " + tableName + "_nopart"),
                             Lists.newArrayList(result, result));
 
-    insertRecords(primary, primaryDbName, primaryDbNameExtra,
-            tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    ReplicationTestUtils.insertRecords(primary, primaryDbName, primaryDbNameExtra,
+            tableNameMM, null, true, ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
     incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     primary.run("drop table " + primaryDbName + "." + tableNameMM);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
@@ -241,13 +237,13 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   }
 
   private void verifyResultsInReplicaInt(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable  {
-    verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
+    ReplicationTestUtils.verifyResultsInReplica(replica, replicatedDbName, selectStmtList, expectedValues);
   }
 
 
   private WarehouseInstance.Tuple verifyIncrementalLoadInt(List<String> selectStmtList,
                                                 List<String[]> expectedValues, String lastReplId) throws Throwable {
-    return verifyIncrementalLoad(primary, replica, primaryDbName,
+    return ReplicationTestUtils.verifyIncrementalLoad(primary, replica, primaryDbName,
             replicatedDbName, selectStmtList, expectedValues, lastReplId);
 
   }
