@@ -21,9 +21,9 @@ import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import java.util.List;
 
 /**
- * TestReplicationScenariosBaseClass - static helper functions for replication test
+ * ReplicationTestUtils - static helper functions for replication test
  */
-public class TestReplicationScenariosBaseClass {
+public class ReplicationTestUtils {
 
   public enum OperationType {
     REPL_TEST_ACID_INSERT, REPL_TEST_ACID_INSERT_SELECT, REPL_TEST_ACID_CTAS,

@@ -461,7 +461,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         if (!isTxnOpen()) {
           throw new RuntimeException("Attempt to commit before opening a transaction");
         }
-        // For transaction started internally by repl load command, heartbit needs to be stopped.
+        // For transaction started internally by repl load command, heartbeat needs to be stopped.
         clearLocksAndHB();
       }
       getMS().replCommitTxn(rqst);

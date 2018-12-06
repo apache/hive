@@ -322,8 +322,8 @@ public class IncrementalLoadTasksBuilder {
     if (needCommitTx && updatedMetaDataTracker.getUpdateMetaDataList().size() > 1) {
       // currently, only commit txn event can have updates in multiple table. Commit txn does not starts
       // a txn and thus needCommitTx must have set to false.
-      log.error(" more than one table is updated in an event during migration. : ");
-      throw new SemanticException(" more than one table is updated in an event during migration.");
+      log.error("More than one table is updated in an event during migration.");
+      throw new SemanticException("More than one table is updated in an event during migration.");
     }
 
     // Create a barrier task for dependency collection of import tasks

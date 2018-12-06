@@ -198,7 +198,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static void upgradeTableDesc(org.apache.hadoop.hive.metastore.api.Table tableObj, MetaData rv,
                                        EximUtil.SemanticAnalyzerWrapperContext x)
           throws IOException, TException, HiveException {
-    x.getLOG().debug("converting table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
+    x.getLOG().debug("Converting table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
             " with para " + tableObj.getParameters());
     //TODO : isPathOwnedByHive is hard coded to true, need to get it from repl dump metadata.
     TableType tableType = TableType.valueOf(tableObj.getTableType());
@@ -207,7 +207,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                     null, x.getConf(), x.getHive().getMSC(), true);
     HiveStrictManagedMigration.migrateTable(tableObj, tableType, migrationOption, false,
             getHiveUpdater(x.getConf()), x.getHive().getMSC(), x.getConf());
-    x.getLOG().debug("converted table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
+    x.getLOG().debug("Converted table " + tableObj.getTableName() + " of type " + tableObj.getTableType() +
             " with para " + tableObj.getParameters());
   }
 

@@ -870,15 +870,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private void updateReplId(Connection dbConn, ReplLastIdInfo replLastIdInfo) throws SQLException, MetaException {
     PreparedStatement pst = null;
     ResultSet rs = null;
+    ResultSet prs = null;
     Statement stmt = null;
-    String lastReplId = quoteString(Long.toString(replLastIdInfo.getLastReplId()));
+    String lastReplId = Long.toString(replLastIdInfo.getLastReplId());
     String catalog = replLastIdInfo.isSetCatalog() ? normalizeIdentifier(replLastIdInfo.getCatalog()) :
             MetaStoreUtils.getDefaultCatalog(conf);
     String db = normalizeIdentifier(replLastIdInfo.getDatabase());
     String table = replLastIdInfo.isSetTable() ? normalizeIdentifier(replLastIdInfo.getTable()) : null;
     List<String> partList = replLastIdInfo.isSetPartitionList() ? replLastIdInfo.getPartitionList() : null;
-    boolean needUpdateDBReplId = replLastIdInfo.isSetNeedUpdateDBReplId() ?
-            replLastIdInfo.isNeedUpdateDBReplId() : false;
+    boolean needUpdateDBReplId = replLastIdInfo.isSetNeedUpdateDBReplId() && replLastIdInfo.isNeedUpdateDBReplId();
 
     try {
       stmt = dbConn.createStatement();
@@ -894,7 +894,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               quoteString(db), quoteString(catalog));
       rs = pst.executeQuery();
       if (rs == null || !rs.next()) {
-        throw new MetaException(" db with name " + db + " does not exist in catalog " + catalog);
+        throw new MetaException("DB with name " + db + " does not exist in catalog " + catalog);
       }
       long dbId = rs.getLong(1);
 
@@ -902,11 +902,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         rs = stmt.executeQuery("select PARAM_VALUE from DATABASE_PARAMS where PARAM_KEY = " +
                 "'repl.last.id' and DB_ID = " + dbId);
         if (rs == null || !rs.next()) {
-          stmt.executeUpdate("insert into DATABASE_PARAMS values ( " + dbId +
-                  " , 'repl.last.id' , " + lastReplId + ")");
+          query = "insert into DATABASE_PARAMS values ( " + dbId + " , 'repl.last.id' , ? )";
         } else {
-          stmt.executeUpdate("update DATABASE_PARAMS set PARAM_VALUE = " + lastReplId + " where DB_ID = " + dbId +
-                  " and PARAM_KEY = 'repl.last.id'");
+          query = "update DATABASE_PARAMS set PARAM_VALUE = ? where DB_ID = " + dbId +
+                  " and PARAM_KEY = 'repl.last.id'";
+        }
+        params = Arrays.asList(lastReplId);
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+        LOG.debug("Updating repl id for db <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+        if (pst.executeUpdate() != 1) {
+          //only one row insert or update should happen
+          throw new RuntimeException("DATABASE_PARAMS is corrupted for db " + db);
         }
       }
 
@@ -922,7 +928,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       rs = pst.executeQuery();
       if (rs == null || !rs.next()) {
-        throw new MetaException(" table with name " + table + " does not exist in db " + catalog + "." + db);
+        throw new MetaException("Table with name " + table + " does not exist in db " + catalog + "." + db);
       }
       long tblId = rs.getLong(1);
 
@@ -930,43 +936,83 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       rs = stmt.executeQuery("select PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = " +
               "'repl.last.id' and TBL_ID = " + tblId);
       if (rs == null || !rs.next()) {
-        stmt.executeUpdate("insert into TABLE_PARAMS values ( " + tblId +
-                " , 'repl.last.id' , " + lastReplId + ")");
+        query = "insert into TABLE_PARAMS values ( " + tblId + " , 'repl.last.id' , ? )";
       } else {
-        stmt.executeUpdate("update TABLE_PARAMS set PARAM_VALUE = " + lastReplId + " where TBL_ID = " + tblId +
-                " and PARAM_KEY = 'repl.last.id'");
+        query = "update TABLE_PARAMS set PARAM_VALUE = ? where TBL_ID = " + tblId +
+                " and PARAM_KEY = 'repl.last.id'";
+      }
+
+      params = Arrays.asList(lastReplId);
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+      LOG.debug("Updating repl id for table <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+      if (pst.executeUpdate() != 1) {
+        //only one row insert or update should happen
+        throw new RuntimeException("TABLE_PARAMS is corrupted for table " + table);
       }
 
       if (partList == null || partList.isEmpty()) {
         return;
       }
 
-      for (String part : partList) {
-        query = "select \"PART_ID\" from \"PARTITIONS\" where \"TBL_ID\" = " + tblId + " and " + "\"PART_NAME\" = ? ";
-        params = Arrays.asList(part);
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-        LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">", quoteString(part));
+      List<String> questions = new ArrayList<>();
+      for(int i = 0; i < partList.size(); ++i) {
+        questions.add("?");
+      }
 
-        rs = pst.executeQuery();
-        if (rs == null || !rs.next()) {
-          throw new MetaException(" partition with name " + part + " does not exist in table " +
+      List<String> queries = new ArrayList<>();
+      StringBuilder prefix = new StringBuilder();
+      StringBuilder suffix = new StringBuilder();
+      prefix.append("select \"PART_ID\" from \"PARTITIONS\" where \"TBL_ID\" = " + tblId + " and ");
+
+      // Populate the complete query with provided prefix and suffix
+      List<Integer> counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
+              questions, "\"PART_NAME\"", true, false);
+      int totalCount = 0;
+      for (int i = 0; i < queries.size(); i++) {
+        query = queries.get(i);
+        int partCount = counts.get(i);
+
+        LOG.debug("Going to execute query " + query + " with partitions " +
+                partList.subList(totalCount, (totalCount + partCount)));
+        pst = dbConn.prepareStatement(query);
+        for (int j = 0; j < partCount; j++) {
+          pst.setString(j + 1, partList.get(totalCount + j));
+        }
+        totalCount += partCount;
+        prs = pst.executeQuery();
+        if (prs == null) {
+          throw new MetaException("Partition with name " + partList + " does not exist in table " +
                   catalog + "." + db + "." + table);
         }
-        long partId = rs.getLong(1);
 
-        rs = stmt.executeQuery("select PARAM_VALUE from PARTITION_PARAMS where PARAM_KEY " +
-                " = 'repl.last.id' and PART_ID = " + partId);
-        if (rs == null || !rs.next()) {
-          stmt.executeUpdate("insert into PARTITION_PARAMS values ( " + partId +
-                  " , 'repl.last.id' , " + lastReplId + ")");
-        } else {
-          stmt.executeUpdate("update PARTITION_PARAMS set PARAM_VALUE = " + lastReplId +
-                  " where PART_ID = " + partId + " and PARAM_KEY = 'repl.last.id'");
+        while (prs.next()) {
+          long partId = prs.getLong(1);
+          rs = stmt.executeQuery("select PARAM_VALUE from PARTITION_PARAMS where PARAM_KEY " +
+                  " = 'repl.last.id' and PART_ID = " + partId);
+          if (rs == null || !rs.next()) {
+            query = "insert into PARTITION_PARAMS values ( " + partId + " , 'repl.last.id' , ? )";
+          } else {
+            query = "update PARTITION_PARAMS set PARAM_VALUE = ? " +
+                    " where PART_ID = " + partId + " and PARAM_KEY = 'repl.last.id'";
+          }
+          params = Arrays.asList(lastReplId);
+          pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+          LOG.debug("Updating repl id for part <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+          if (pst.executeUpdate() != 1) {
+            //only one row insert or update should happen
+            throw new RuntimeException("PARTITION_PARAMS is corrupted for partition " + partId);
+          }
+          partCount--;
+        }
+        if (partCount != 0) {
+          throw new MetaException(partCount + " Number of partition among " + partList + " does not exist in table " +
+                  catalog + "." + db + "." + table);
         }
       }
     } finally {
       closeStmt(stmt);
       close(rs);
+      close(prs);
       closeStmt(pst);
     }
   }

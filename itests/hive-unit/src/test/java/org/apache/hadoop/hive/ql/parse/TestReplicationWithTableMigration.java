@@ -23,23 +23,22 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendAlterTable;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendCreateAsSelect;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendImport;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsert;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertIntoFromSelect;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertOverwrite;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertUnion;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendLoadLocal;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendTruncate;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.verifyIncrementalLoad;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendAlterTable;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendCreateAsSelect;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendImport;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsert;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertIntoFromSelect;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertOverwrite;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertUnion;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendLoadLocal;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendTruncate;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.verifyIncrementalLoad;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,7 +173,9 @@ public class TestReplicationWithTableMigration {
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflattextpart")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidloc")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpartloc")));
-    assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "avro_table")));
+    Table avroTable = replica.getTable(replicatedDbName, "avro_table");
+    assertFalse(isTransactionalTable(avroTable));
+    assertFalse(MetaStoreUtils.isExternalTable(avroTable));
     return tuple;
   }
 

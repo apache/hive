@@ -31,10 +31,6 @@ public interface ValidWriteIdList {
    */
   String VALID_WRITEIDS_KEY = "hive.txn.valid.writeids";
 
-  // write id allocated in the current execution context which will be passed through config to be used by different
-  // tasks.
-  String CURRENT_WRITE_ID = "hive.txn.current.id";
-
   /**
    * The response to a range query.  NONE means no values in this range match,
    * SOME mean that some do, and ALL means that every value does.

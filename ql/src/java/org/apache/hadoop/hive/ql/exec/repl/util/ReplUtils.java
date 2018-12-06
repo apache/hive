@@ -58,6 +58,11 @@ public class ReplUtils {
 
   public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
 
+  // write id allocated in the current execution context which will be passed through config to be used by different
+  // tasks.
+  public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
+
+
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */

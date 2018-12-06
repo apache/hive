@@ -24,22 +24,22 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendAlterTable;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendCreateAsSelect;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendImport;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsert;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertIntoFromSelect;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertOverwrite;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendInsertUnion;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendLoadLocal;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendTruncate;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendMerge;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.appendMultiStatementTxn;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.verifyIncrementalLoad;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.insertRecords;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.insertIntoDB;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.verifyResultsInReplica;
-import static org.apache.hadoop.hive.ql.parse.TestReplicationScenariosBaseClass.OperationType;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendAlterTable;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendCreateAsSelect;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendImport;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsert;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertIntoFromSelect;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertOverwrite;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendInsertUnion;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendLoadLocal;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendTruncate;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendMerge;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.appendMultiStatementTxn;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.verifyIncrementalLoad;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.insertRecords;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.insertIntoDB;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.verifyResultsInReplica;
+import static org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.OperationType;
 
 import org.junit.rules.TestName;
 
