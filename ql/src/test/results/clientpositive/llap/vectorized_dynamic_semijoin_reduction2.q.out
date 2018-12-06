@@ -274,7 +274,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:decimal(10,1)/DECIMAL_64), FilterExprAndExpr(children: FilterDecimalColumnBetweenDynamicValue(col 9:decimal(10,1), left 0, right 0)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1)), VectorInBloomFilterColDynamicValue(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1))))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:decimal(10,1)/DECIMAL_64), FilterExprAndExpr(children: FilterDecimalColumnBetweenDynamicValue(col 9:decimal(10,1), left 0, right 0)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1)), VectorInBloomFilterColDynamicValue(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 10:decimal(10,1))))
                     predicate: ((partkey_decimal BETWEEN DynamicValue(RS_7_b_partkey_decimal_min) AND DynamicValue(RS_7_b_partkey_decimal_max) and in_bloom_filter(partkey_decimal, DynamicValue(RS_7_b_partkey_decimal_bloom_filter))) and partkey_decimal is not null) (type: boolean)
                     Statistics: Num rows: 100 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -311,7 +311,7 @@ STAGE PLANS:
                     includeColumns: [1]
                     dataColumns: partkey_bigint:bigint, partkey_decimal:decimal(10,1)/DECIMAL_64, partkey_double:double, shipdate_date:date, shipdate_ts:timestamp, shipdate_string:string, shipdate_char:char(10), shipdate_varchar:varchar(10)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(10,1)]
+                    scratchColumnTypeNames: [decimal(10,1), decimal(10,1)]
         Map 4 
             Map Operator Tree:
                 TableScan

@@ -1504,13 +1504,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [3, 4, 0, 14, 17]
-                    selectExpressions: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 16:double)(children: CastLongToDouble(col 3:bigint) -> 15:double, CastLongToDouble(col 3:bigint) -> 16:double) -> 17:double
+                    projectedOutputColumnNums: [3, 4, 0, 15, 18]
+                    selectExpressions: CastLongToDouble(col 3:bigint) -> 15:double, DoubleColMultiplyDoubleColumn(col 16:double, col 17:double)(children: CastLongToDouble(col 3:bigint) -> 16:double, CastLongToDouble(col 3:bigint) -> 17:double) -> 18:double
                 Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col0), count(_col0), sum(_col4), sum(_col3), count(), sum(_col1), min(_col2)
                   Group By Vectorization:
-                      aggregators: VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 17:double) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                      aggregators: VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMinLong(col 0:tinyint) -> tinyint
                       className: VectorGroupByOperator
                       groupByMode: HASH
                       native: false

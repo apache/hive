@@ -652,7 +652,7 @@ STAGE PLANS:
                   Filter Vectorization:
                       className: VectorFilterOperator
                       native: true
-                      predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 3:bigint, val 1)(children: GroupingColumn(col 2, mask 2) -> 3:bigint), FilterLongColEqualLongScalar(col 3:bigint, val 1)(children: GroupingColumn(col 2, mask 1) -> 3:bigint))
+                      predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 3:bigint, val 1)(children: GroupingColumn(col 2, mask 2) -> 3:bigint), FilterLongColEqualLongScalar(col 4:bigint, val 1)(children: GroupingColumn(col 2, mask 1) -> 4:bigint))
                   predicate: ((grouping(_col2, 0) = 1) or (grouping(_col2, 1) = 1)) (type: boolean)
                   Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -661,15 +661,15 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 5, 4]
-                        selectExpressions: LongColAddLongColumn(col 3:bigint, col 4:bigint)(children: GroupingColumn(col 2, mask 2) -> 3:bigint, GroupingColumn(col 2, mask 1) -> 4:bigint) -> 5:bigint, IfExprColumnNull(col 3:boolean, col 0:int, null)(children: LongColEqualLongScalar(col 6:bigint, val 1)(children: LongColAddLongColumn(col 3:bigint, col 4:bigint)(children: GroupingColumn(col 2, mask 2) -> 3:bigint, GroupingColumn(col 2, mask 1) -> 4:bigint) -> 6:bigint) -> 3:boolean, col 0:int) -> 4:int
+                        projectedOutputColumnNums: [0, 1, 7, 12]
+                        selectExpressions: LongColAddLongColumn(col 5:bigint, col 6:bigint)(children: GroupingColumn(col 2, mask 2) -> 5:bigint, GroupingColumn(col 2, mask 1) -> 6:bigint) -> 7:bigint, IfExprColumnNull(col 11:boolean, col 0:int, null)(children: LongColEqualLongScalar(col 10:bigint, val 1)(children: LongColAddLongColumn(col 8:bigint, col 9:bigint)(children: GroupingColumn(col 2, mask 2) -> 8:bigint, GroupingColumn(col 2, mask 1) -> 9:bigint) -> 10:bigint) -> 11:boolean, col 0:int) -> 12:int
                     Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: bigint), _col3 (type: int)
                       sort order: -+
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumns: 5:bigint, 4:int
+                          keyColumns: 7:bigint, 12:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 1:int
@@ -1306,7 +1306,7 @@ STAGE PLANS:
                         Filter Vectorization:
                             className: VectorFilterOperator
                             native: true
-                            predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 3:bigint, val 1)(children: GroupingColumn(col 2, mask 2) -> 3:bigint), FilterLongColEqualLongScalar(col 3:bigint, val 1)(children: GroupingColumn(col 2, mask 1) -> 3:bigint))
+                            predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 3:bigint, val 1)(children: GroupingColumn(col 2, mask 2) -> 3:bigint), FilterLongColEqualLongScalar(col 4:bigint, val 1)(children: GroupingColumn(col 2, mask 1) -> 4:bigint))
                         predicate: ((grouping(_col2, 0L) = 1) or (grouping(_col2, 1L) = 1)) (type: boolean)
                         Statistics: Num rows: 24 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
@@ -1378,8 +1378,8 @@ STAGE PLANS:
                     sort order: -+
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumns: 5:bigint, 4:int
-                        keyExpressions: IfExprColumnNull(col 3:boolean, col 0:int, null)(children: LongColEqualLongScalar(col 5:bigint, val 1) -> 3:boolean, col 0:int) -> 4:int
+                        keyColumns: 5:bigint, 7:int
+                        keyExpressions: IfExprColumnNull(col 6:boolean, col 0:int, null)(children: LongColEqualLongScalar(col 5:bigint, val 1) -> 6:boolean, col 0:int) -> 7:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumns: 0:int, 1:int

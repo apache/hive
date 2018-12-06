@@ -87,8 +87,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 6, 2, 8, 5, 3, 15, 16, 14, 17, 19, 20, 22, 18]
-                          selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 14:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 14:double) -> 15:double, LongColModuloLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int) -> 16:bigint, DoubleColUnaryMinus(col 5:double) -> 14:double, DoubleColAddDoubleColumn(col 5:double, col 18:double)(children: DoubleColDivideDoubleColumn(col 4:double, col 17:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 17:double) -> 18:double) -> 17:double, DoubleColDivideDoubleColumn(col 5:double, col 18:double)(children: CastLongToDouble(col 2:int) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 18:double)(children: DoubleColUnaryMinus(col 5:double) -> 18:double) -> 20:double, DecimalScalarModuloDecimalColumn(val 9763215.5639, col 21:decimal(19,0))(children: CastLongToDecimal(col 3:bigint) -> 21:decimal(19,0)) -> 22:decimal(11,4), DoubleScalarAddDoubleColumn(val 2563.58, col 23:double)(children: DoubleColUnaryMinus(col 18:double)(children: DoubleColUnaryMinus(col 5:double) -> 18:double) -> 23:double) -> 18:double
+                          projectedOutputColumnNums: [4, 6, 2, 8, 5, 3, 15, 16, 17, 20, 22, 24, 26, 29]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 14:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 14:double) -> 15:double, LongColModuloLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int) -> 16:bigint, DoubleColUnaryMinus(col 5:double) -> 17:double, DoubleColAddDoubleColumn(col 5:double, col 19:double)(children: DoubleColDivideDoubleColumn(col 4:double, col 18:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 18:double) -> 19:double) -> 20:double, DoubleColDivideDoubleColumn(col 5:double, col 21:double)(children: CastLongToDouble(col 2:int) -> 21:double) -> 22:double, DoubleColUnaryMinus(col 23:double)(children: DoubleColUnaryMinus(col 5:double) -> 23:double) -> 24:double, DecimalScalarModuloDecimalColumn(val 9763215.5639, col 25:decimal(19,0))(children: CastLongToDecimal(col 3:bigint) -> 25:decimal(19,0)) -> 26:decimal(11,4), DoubleScalarAddDoubleColumn(val 2563.58, col 28:double)(children: DoubleColUnaryMinus(col 27:double)(children: DoubleColUnaryMinus(col 5:double) -> 27:double) -> 28:double) -> 29:double
                       Statistics: Num rows: 4096 Data size: 969331 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col5 (type: bigint), _col0 (type: float)
@@ -98,7 +98,7 @@ STAGE PLANS:
                             keyColumns: 3:bigint, 4:float
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 6:string, 2:int, 8:timestamp, 5:double, 15:double, 16:bigint, 14:double, 17:double, 19:double, 20:double, 22:decimal(11,4), 18:double
+                            valueColumns: 6:string, 2:int, 8:timestamp, 5:double, 15:double, 16:bigint, 17:double, 20:double, 22:double, 24:double, 26:decimal(11,4), 29:double
                         Statistics: Num rows: 4096 Data size: 969331 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: timestamp), _col4 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: decimal(11,4)), _col13 (type: double)
             Execution mode: vectorized
@@ -116,7 +116,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3, 4, 5, 6, 8]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(13,3), double, double, bigint, double, double, double, double, decimal(19,0), decimal(11,4), double]
+                    scratchColumnTypeNames: [decimal(13,3), double, double, bigint, double, double, double, double, double, double, double, double, decimal(19,0), decimal(11,4), double, double, double]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:

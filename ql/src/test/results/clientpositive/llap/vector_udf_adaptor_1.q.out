@@ -143,8 +143,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 5, 6, 8, 9, 10, 12]
-                        selectExpressions: VectorUDFAdaptor(if((age < 40), age, null))(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean) -> 5:int, VectorUDFAdaptor(if((age > 40), TIMESTAMP'2011-01-01 01:01:01', null))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 4:boolean) -> 6:timestamp, VectorUDFAdaptor(if((length(name) > 8), name, null))(children: LongColGreaterLongScalar(col 4:int, val 8)(children: StringLength(col 0:string) -> 4:int) -> 7:boolean) -> 8:string, VectorUDFAdaptor(if((length(name) < 8), CAST( name AS BINARY), null))(children: LongColLessLongScalar(col 4:int, val 8)(children: StringLength(col 0:string) -> 4:int) -> 7:boolean, col 0:string) -> 9:binary, VectorUDFAdaptor(if((age > 40), length(name), null))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 4:boolean, StringLength(col 0:string) -> 7:int) -> 10:int, VectorUDFAdaptor(if((length(name) > 10), (2.0D * gpa), null))(children: LongColGreaterLongScalar(col 4:int, val 10)(children: StringLength(col 0:string) -> 4:int) -> 7:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 11:double) -> 12:double
+                        projectedOutputColumnNums: [0, 1, 2, 5, 7, 10, 13, 16, 20]
+                        selectExpressions: VectorUDFAdaptor(if((age < 40), age, null))(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean) -> 5:int, VectorUDFAdaptor(if((age > 40), TIMESTAMP'2011-01-01 01:01:01', null))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean) -> 7:timestamp, VectorUDFAdaptor(if((length(name) > 8), name, null))(children: LongColGreaterLongScalar(col 8:int, val 8)(children: StringLength(col 0:string) -> 8:int) -> 9:boolean) -> 10:string, VectorUDFAdaptor(if((length(name) < 8), CAST( name AS BINARY), null))(children: LongColLessLongScalar(col 11:int, val 8)(children: StringLength(col 0:string) -> 11:int) -> 12:boolean, col 0:string) -> 13:binary, VectorUDFAdaptor(if((age > 40), length(name), null))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 14:boolean, StringLength(col 0:string) -> 15:int) -> 16:int, VectorUDFAdaptor(if((length(name) > 10), (2.0D * gpa), null))(children: LongColGreaterLongScalar(col 17:int, val 10)(children: StringLength(col 0:string) -> 17:int) -> 18:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 19:double) -> 20:double
                     Statistics: Num rows: 12 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -173,7 +173,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: name:string, age:int, gpa:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, timestamp, bigint, string, string, bigint, double, double]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, bigint, bigint, string, bigint, bigint, string, bigint, bigint, bigint, bigint, bigint, double, double]
 
   Stage: Stage-2
     Dependency Collection
@@ -323,8 +323,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 5, 8, 11, 13, 15, 19]
-                        selectExpressions: IfExprColumnNull(col 4:boolean, col 1:int, null)(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean, col 1:int) -> 5:int, IfExprColumnNull(col 6:boolean, col 7:timestamp, null)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean, ConstantVectorExpression(val 2011-01-01 01:01:01) -> 7:timestamp) -> 8:timestamp, IfExprColumnNull(col 10:boolean, col 0:string, null)(children: LongColGreaterLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 10:boolean, col 0:string) -> 11:string, IfExprColumnNull(col 12:boolean, col 0:string, null)(children: LongColLessLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 12:boolean, col 0:string) -> 13:binary, IfExprColumnNull(col 9:boolean, col 14:int, null)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 9:boolean, StringLength(col 0:string) -> 14:int) -> 15:int, IfExprColumnNull(col 17:boolean, col 18:double, null)(children: LongColGreaterLongScalar(col 16:int, val 10)(children: StringLength(col 0:string) -> 16:int) -> 17:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 18:double) -> 19:double
+                        projectedOutputColumnNums: [0, 1, 2, 5, 8, 11, 14, 17, 21]
+                        selectExpressions: IfExprColumnNull(col 4:boolean, col 1:int, null)(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean, col 1:int) -> 5:int, IfExprColumnNull(col 6:boolean, col 7:timestamp, null)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean, ConstantVectorExpression(val 2011-01-01 01:01:01) -> 7:timestamp) -> 8:timestamp, IfExprColumnNull(col 10:boolean, col 0:string, null)(children: LongColGreaterLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 10:boolean, col 0:string) -> 11:string, IfExprColumnNull(col 13:boolean, col 0:string, null)(children: LongColLessLongScalar(col 12:int, val 8)(children: StringLength(col 0:string) -> 12:int) -> 13:boolean, col 0:string) -> 14:binary, IfExprColumnNull(col 15:boolean, col 16:int, null)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 15:boolean, StringLength(col 0:string) -> 16:int) -> 17:int, IfExprColumnNull(col 19:boolean, col 20:double, null)(children: LongColGreaterLongScalar(col 18:int, val 10)(children: StringLength(col 0:string) -> 18:int) -> 19:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 20:double) -> 21:double
                     Statistics: Num rows: 12 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -353,7 +353,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: name:string, age:int, gpa:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, timestamp, bigint, bigint, string, bigint, string, bigint, bigint, bigint, bigint, double, double]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, timestamp, bigint, bigint, string, bigint, bigint, string, bigint, bigint, bigint, bigint, bigint, double, double]
 
   Stage: Stage-2
     Dependency Collection
@@ -503,8 +503,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 5, 8, 11, 13, 15, 19]
-                        selectExpressions: IfExprColumnNull(col 4:boolean, col 1:int, null)(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean, col 1:int) -> 5:int, IfExprColumnNull(col 6:boolean, col 7:timestamp, null)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean, ConstantVectorExpression(val 2011-01-01 01:01:01) -> 7:timestamp) -> 8:timestamp, IfExprColumnNull(col 10:boolean, col 0:string, null)(children: LongColGreaterLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 10:boolean, col 0:string) -> 11:string, IfExprCondExprNull(col 12:boolean, col 0:string, null)(children: LongColLessLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 12:boolean, col 0:string) -> 13:binary, IfExprCondExprNull(col 9:boolean, col 14:int, null)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 9:boolean, StringLength(col 0:string) -> 14:int) -> 15:int, IfExprCondExprNull(col 17:boolean, col 18:double, null)(children: LongColGreaterLongScalar(col 16:int, val 10)(children: StringLength(col 0:string) -> 16:int) -> 17:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 18:double) -> 19:double
+                        projectedOutputColumnNums: [0, 1, 2, 5, 8, 11, 14, 17, 21]
+                        selectExpressions: IfExprColumnNull(col 4:boolean, col 1:int, null)(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean, col 1:int) -> 5:int, IfExprColumnNull(col 6:boolean, col 7:timestamp, null)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean, ConstantVectorExpression(val 2011-01-01 01:01:01) -> 7:timestamp) -> 8:timestamp, IfExprColumnNull(col 10:boolean, col 0:string, null)(children: LongColGreaterLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 10:boolean, col 0:string) -> 11:string, IfExprCondExprNull(col 13:boolean, col 0:string, null)(children: LongColLessLongScalar(col 12:int, val 8)(children: StringLength(col 0:string) -> 12:int) -> 13:boolean, col 0:string) -> 14:binary, IfExprCondExprNull(col 15:boolean, col 16:int, null)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 15:boolean, StringLength(col 0:string) -> 16:int) -> 17:int, IfExprCondExprNull(col 19:boolean, col 20:double, null)(children: LongColGreaterLongScalar(col 18:int, val 10)(children: StringLength(col 0:string) -> 18:int) -> 19:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 20:double) -> 21:double
                     Statistics: Num rows: 12 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -533,7 +533,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: name:string, age:int, gpa:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, timestamp, bigint, bigint, string, bigint, string, bigint, bigint, bigint, bigint, double, double]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, timestamp, bigint, bigint, string, bigint, bigint, string, bigint, bigint, bigint, bigint, bigint, double, double]
 
   Stage: Stage-2
     Dependency Collection
@@ -683,8 +683,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 5, 6, 8, 9, 10, 12]
-                        selectExpressions: VectorUDFAdaptor(if((age < 40), null, age))(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean) -> 5:int, VectorUDFAdaptor(if((age > 40), null, TIMESTAMP'2011-01-01 01:01:01'))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 4:boolean) -> 6:timestamp, VectorUDFAdaptor(if((length(name) > 8), null, name))(children: LongColGreaterLongScalar(col 4:int, val 8)(children: StringLength(col 0:string) -> 4:int) -> 7:boolean) -> 8:string, VectorUDFAdaptor(if((length(name) < 8), null, CAST( name AS BINARY)))(children: LongColLessLongScalar(col 4:int, val 8)(children: StringLength(col 0:string) -> 4:int) -> 7:boolean, col 0:string) -> 9:binary, VectorUDFAdaptor(if((age > 40), null, length(name)))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 4:boolean, StringLength(col 0:string) -> 7:int) -> 10:int, VectorUDFAdaptor(if((length(name) > 10), null, (2.0D * gpa)))(children: LongColGreaterLongScalar(col 4:int, val 10)(children: StringLength(col 0:string) -> 4:int) -> 7:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 11:double) -> 12:double
+                        projectedOutputColumnNums: [0, 1, 2, 5, 7, 10, 13, 16, 20]
+                        selectExpressions: VectorUDFAdaptor(if((age < 40), null, age))(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean) -> 5:int, VectorUDFAdaptor(if((age > 40), null, TIMESTAMP'2011-01-01 01:01:01'))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean) -> 7:timestamp, VectorUDFAdaptor(if((length(name) > 8), null, name))(children: LongColGreaterLongScalar(col 8:int, val 8)(children: StringLength(col 0:string) -> 8:int) -> 9:boolean) -> 10:string, VectorUDFAdaptor(if((length(name) < 8), null, CAST( name AS BINARY)))(children: LongColLessLongScalar(col 11:int, val 8)(children: StringLength(col 0:string) -> 11:int) -> 12:boolean, col 0:string) -> 13:binary, VectorUDFAdaptor(if((age > 40), null, length(name)))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 14:boolean, StringLength(col 0:string) -> 15:int) -> 16:int, VectorUDFAdaptor(if((length(name) > 10), null, (2.0D * gpa)))(children: LongColGreaterLongScalar(col 17:int, val 10)(children: StringLength(col 0:string) -> 17:int) -> 18:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 19:double) -> 20:double
                     Statistics: Num rows: 12 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -713,7 +713,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: name:string, age:int, gpa:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, timestamp, bigint, string, string, bigint, double, double]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, bigint, bigint, string, bigint, bigint, string, bigint, bigint, bigint, bigint, bigint, double, double]
 
   Stage: Stage-2
     Dependency Collection
@@ -863,8 +863,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 5, 8, 11, 13, 15, 19]
-                        selectExpressions: IfExprNullColumn(col 4:boolean, null, col 1)(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean, col 1:int) -> 5:int, IfExprNullColumn(col 6:boolean, null, col 7)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean, ConstantVectorExpression(val 2011-01-01 01:01:01) -> 7:timestamp) -> 8:timestamp, IfExprNullColumn(col 10:boolean, null, col 0)(children: LongColGreaterLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 10:boolean, col 0:string) -> 11:string, IfExprNullColumn(col 12:boolean, null, col 0)(children: LongColLessLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 12:boolean, col 0:string) -> 13:binary, IfExprNullColumn(col 9:boolean, null, col 14)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 9:boolean, StringLength(col 0:string) -> 14:int) -> 15:int, IfExprNullColumn(col 17:boolean, null, col 18)(children: LongColGreaterLongScalar(col 16:int, val 10)(children: StringLength(col 0:string) -> 16:int) -> 17:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 18:double) -> 19:double
+                        projectedOutputColumnNums: [0, 1, 2, 5, 8, 11, 14, 17, 21]
+                        selectExpressions: IfExprNullColumn(col 4:boolean, null, col 1)(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean, col 1:int) -> 5:int, IfExprNullColumn(col 6:boolean, null, col 7)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean, ConstantVectorExpression(val 2011-01-01 01:01:01) -> 7:timestamp) -> 8:timestamp, IfExprNullColumn(col 10:boolean, null, col 0)(children: LongColGreaterLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 10:boolean, col 0:string) -> 11:string, IfExprNullColumn(col 13:boolean, null, col 0)(children: LongColLessLongScalar(col 12:int, val 8)(children: StringLength(col 0:string) -> 12:int) -> 13:boolean, col 0:string) -> 14:binary, IfExprNullColumn(col 15:boolean, null, col 16)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 15:boolean, StringLength(col 0:string) -> 16:int) -> 17:int, IfExprNullColumn(col 19:boolean, null, col 20)(children: LongColGreaterLongScalar(col 18:int, val 10)(children: StringLength(col 0:string) -> 18:int) -> 19:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 20:double) -> 21:double
                     Statistics: Num rows: 12 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -893,7 +893,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: name:string, age:int, gpa:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, timestamp, bigint, bigint, string, bigint, string, bigint, bigint, bigint, bigint, double, double]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, timestamp, bigint, bigint, string, bigint, bigint, string, bigint, bigint, bigint, bigint, bigint, double, double]
 
   Stage: Stage-2
     Dependency Collection
@@ -1043,8 +1043,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 5, 8, 11, 13, 15, 19]
-                        selectExpressions: IfExprNullColumn(col 4:boolean, null, col 1)(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean, col 1:int) -> 5:int, IfExprNullColumn(col 6:boolean, null, col 7)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean, ConstantVectorExpression(val 2011-01-01 01:01:01) -> 7:timestamp) -> 8:timestamp, IfExprNullColumn(col 10:boolean, null, col 0)(children: LongColGreaterLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 10:boolean, col 0:string) -> 11:string, IfExprNullCondExpr(col 12:boolean, null, col 0:string)(children: LongColLessLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 12:boolean, col 0:string) -> 13:binary, IfExprNullCondExpr(col 9:boolean, null, col 14:int)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 9:boolean, StringLength(col 0:string) -> 14:int) -> 15:int, IfExprNullCondExpr(col 17:boolean, null, col 18:double)(children: LongColGreaterLongScalar(col 16:int, val 10)(children: StringLength(col 0:string) -> 16:int) -> 17:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 18:double) -> 19:double
+                        projectedOutputColumnNums: [0, 1, 2, 5, 8, 11, 14, 17, 21]
+                        selectExpressions: IfExprNullColumn(col 4:boolean, null, col 1)(children: LongColLessLongScalar(col 1:int, val 40) -> 4:boolean, col 1:int) -> 5:int, IfExprNullColumn(col 6:boolean, null, col 7)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 6:boolean, ConstantVectorExpression(val 2011-01-01 01:01:01) -> 7:timestamp) -> 8:timestamp, IfExprNullColumn(col 10:boolean, null, col 0)(children: LongColGreaterLongScalar(col 9:int, val 8)(children: StringLength(col 0:string) -> 9:int) -> 10:boolean, col 0:string) -> 11:string, IfExprNullCondExpr(col 13:boolean, null, col 0:string)(children: LongColLessLongScalar(col 12:int, val 8)(children: StringLength(col 0:string) -> 12:int) -> 13:boolean, col 0:string) -> 14:binary, IfExprNullCondExpr(col 15:boolean, null, col 16:int)(children: LongColGreaterLongScalar(col 1:int, val 40) -> 15:boolean, StringLength(col 0:string) -> 16:int) -> 17:int, IfExprNullCondExpr(col 19:boolean, null, col 20:double)(children: LongColGreaterLongScalar(col 18:int, val 10)(children: StringLength(col 0:string) -> 18:int) -> 19:boolean, DoubleScalarMultiplyDoubleColumn(val 2.0, col 2:double) -> 20:double) -> 21:double
                     Statistics: Num rows: 12 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -1073,7 +1073,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: name:string, age:int, gpa:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, timestamp, bigint, bigint, string, bigint, string, bigint, bigint, bigint, bigint, double, double]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, timestamp, timestamp, bigint, bigint, string, bigint, bigint, string, bigint, bigint, bigint, bigint, bigint, double, double]
 
   Stage: Stage-2
     Dependency Collection

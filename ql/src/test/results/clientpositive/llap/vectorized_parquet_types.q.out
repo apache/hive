@@ -366,8 +366,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 1, 2, 3, 10, 11, 9]
-                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 10:double, FuncPowerDoubleToDouble(col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 8:bigint)(children: DoubleColSubtractDoubleColumn(col 6:double, col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 8:bigint)(children: DoubleColMultiplyDoubleColumn(col 7:double, col 7:double) -> 11:double) -> 12:double) -> 11:double) -> 12:double) -> 11:double
+                      projectedOutputColumnNums: [0, 1, 2, 3, 10, 15, 9]
+                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 10:double, FuncPowerDoubleToDouble(col 14:double)(children: DoubleColDivideLongColumn(col 13:double, col 8:bigint)(children: DoubleColSubtractDoubleColumn(col 6:double, col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 8:bigint)(children: DoubleColMultiplyDoubleColumn(col 7:double, col 7:double) -> 11:double) -> 12:double) -> 13:double) -> 14:double) -> 15:double
                   Statistics: Num rows: 3 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)

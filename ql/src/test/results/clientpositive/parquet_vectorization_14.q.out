@@ -91,7 +91,7 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: FilterLongColLessEqualLongColumn(col 0:bigint, col 3:bigint)(children: col 0:tinyint), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 2:int) -> 13:double), FilterTimestampColLessTimestampColumn(col 9:timestamp, col 8:timestamp)), FilterDoubleColLessDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterExprOrExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -257), FilterDoubleColLessDoubleColumn(col 4:float, col 13:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 13:float)))
+                  predicateExpression: FilterExprAndExpr(children: FilterLongColLessEqualLongColumn(col 0:bigint, col 3:bigint)(children: col 0:tinyint), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 2:int) -> 13:double), FilterTimestampColLessTimestampColumn(col 9:timestamp, col 8:timestamp)), FilterDoubleColLessDoubleColumn(col 5:double, col 14:double)(children: CastLongToDouble(col 0:tinyint) -> 14:double), FilterExprOrExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -257), FilterDoubleColLessDoubleColumn(col 4:float, col 15:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 15:float)))
               predicate: (((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1)) and ((cbigint > -257L) or (cfloat < UDFToFloat(cint))) and (UDFToLong(ctinyint) <= cbigint) and (cdouble < UDFToDouble(ctinyint))) (type: boolean)
               Statistics: Num rows: 606 Data size: 7272 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -100,13 +100,13 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [8, 4, 6, 10, 5, 14, 13, 4, 15]
-                    selectExpressions: DoubleColUnaryMinus(col 13:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 5:double) -> 13:double) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 16:double)(children: DoubleColUnaryMinus(col 13:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 5:double) -> 13:double) -> 15:double, DoubleColUnaryMinus(col 13:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 5:double) -> 13:double) -> 16:double) -> 13:double, DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 15:double
+                    projectedOutputColumnNums: [8, 4, 6, 10, 5, 17, 22, 4, 23]
+                    selectExpressions: DoubleColUnaryMinus(col 16:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 5:double) -> 16:double) -> 17:double, DoubleColMultiplyDoubleColumn(col 19:double, col 21:double)(children: DoubleColUnaryMinus(col 18:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 5:double) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 20:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 5:double) -> 20:double) -> 21:double) -> 22:double, DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 23:double
                 Statistics: Num rows: 606 Data size: 7272 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col6), sum(_col5), count(_col5), max(_col1), sum(_col8), sum(_col7), count(_col1)
                   Group By Vectorization:
-                      aggregators: VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFCount(col 14:double) -> bigint, VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:float) -> bigint
+                      aggregators: VectorUDAFSumDouble(col 22:double) -> double, VectorUDAFSumDouble(col 17:double) -> double, VectorUDAFCount(col 17:double) -> bigint, VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFSumDouble(col 23:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:float) -> bigint
                       className: VectorGroupByOperator
                       groupByMode: HASH
                       keyExpressions: col 6:string, col 4:float, col 5:double, col 8:timestamp, col 10:boolean

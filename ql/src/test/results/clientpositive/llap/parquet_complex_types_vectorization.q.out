@@ -219,8 +219,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [6, 7]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                          projectedOutputColumnNums: [7, 8]
+                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
                       Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
                       Top N Key Operator
                         sort order: +
@@ -229,15 +229,15 @@ STAGE PLANS:
                         top n: 10
                         Top N Key Vectorization:
                             className: VectorTopNKeyOperator
-                            keyExpressions: col 6:int
+                            keyExpressions: col 7:int
                             native: true
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -525,8 +525,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [6, 7]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                          projectedOutputColumnNums: [7, 8]
+                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
                       Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
                       Top N Key Operator
                         sort order: +
@@ -535,15 +535,15 @@ STAGE PLANS:
                         top n: 10
                         Top N Key Vectorization:
                             className: VectorTopNKeyOperator
-                            keyExpressions: col 6:int
+                            keyExpressions: col 7:int
                             native: true
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -831,8 +831,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [6, 7]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int
+                          projectedOutputColumnNums: [7, 8]
+                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
                       Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
                       Top N Key Operator
                         sort order: +
@@ -841,15 +841,15 @@ STAGE PLANS:
                         top n: 10
                         Top N Key Vectorization:
                             className: VectorTopNKeyOperator
-                            keyExpressions: col 6:int
+                            keyExpressions: col 7:int
                             native: true
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 7:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
