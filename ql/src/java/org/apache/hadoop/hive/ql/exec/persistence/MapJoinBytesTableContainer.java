@@ -100,6 +100,7 @@ public class MapJoinBytesTableContainer
   private DirectKeyValueWriter directWriteHelper;
 
   private final List<Object> EMPTY_LIST = new ArrayList<Object>(0);
+  private String key;
 
   public MapJoinBytesTableContainer(Configuration hconf,
       MapJoinObjectSerDeContext valCtx, long keyCount, long memUsage) throws SerDeException {
@@ -441,6 +442,16 @@ public class MapJoinBytesTableContainer
         notNullMarkers = null;
       }
     }
+  }
+
+  @Override
+  public void setKey(String key) {
+    this.key = key;
+  }
+
+  @Override
+  public String getKey() {
+    return key;
   }
 
   @SuppressWarnings("deprecation")
