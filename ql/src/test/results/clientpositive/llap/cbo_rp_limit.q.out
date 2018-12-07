@@ -19,7 +19,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-5.0	2	1
+5.0	2	2
 PREHOOK: query: select key from(select key from (select key from cbo_t1 limit 5)cbo_t2  limit 5)cbo_t3  limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
