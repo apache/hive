@@ -222,7 +222,7 @@ public class RelOptHiveTable implements RelOptTable {
   // Given a key this method returns true if all of the columns in the key are not nullable
   public boolean isNonNullableKey(ImmutableBitSet columns) {
     for (ImmutableBitSet key : nonNullablekeys) {
-      if (key.contains(columns)) {
+      if (columns.contains(key)) {
         return true;
       }
     }
