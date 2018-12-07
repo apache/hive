@@ -253,7 +253,7 @@ public class TestReplicationWithTableMigration {
   @Test
   public void testBootstrapLoadMigrationManagedToAcid() throws Throwable {
     WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -262,7 +262,7 @@ public class TestReplicationWithTableMigration {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -275,7 +275,7 @@ public class TestReplicationWithTableMigration {
     replica.run("use " + replicatedDbName)
             .run("show tables like tacid")
             .verifyResult(null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -288,41 +288,7 @@ public class TestReplicationWithTableMigration {
     replica.run("use " + replicatedDbName)
             .run("show tables like tacidpart")
             .verifyResult(null);
-    replica.load(replicatedDbName, tuple.dumpLocation);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
-  }
-
-  @Test
-  public void testIncrementalLoadMigrationManagedToAcidAllOp() throws Throwable {
-    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
-    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
-            .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(bootStrapDump.lastReplicationId);
-    List<String> selectStmtList = new ArrayList<>();
-    List<String[]> expectedValues = new ArrayList<>();
-    String tableName = testName.getMethodName() + "testInsert";
-    String tableNameMM = tableName + "_MM";
-
-    ReplicationTestUtils.appendInsert(primary, primaryDbName, null,
-            tableName, tableNameMM, selectStmtList, expectedValues);
-    ReplicationTestUtils.appendTruncate(primary, primaryDbName,
-            null, selectStmtList, expectedValues);
-    ReplicationTestUtils.appendInsertIntoFromSelect(primary, primaryDbName,
-            null, tableName, tableNameMM, selectStmtList, expectedValues);
-    ReplicationTestUtils.appendCreateAsSelect(primary, primaryDbName,
-            null, tableName, tableNameMM, selectStmtList, expectedValues);
-    ReplicationTestUtils.appendImport(primary, primaryDbName,
-            null, tableName, tableNameMM, selectStmtList, expectedValues);
-    ReplicationTestUtils.appendInsertOverwrite(primary, primaryDbName,
-            null, tableName, tableNameMM, selectStmtList, expectedValues);
-    ReplicationTestUtils.appendLoadLocal(primary, primaryDbName,
-            null, tableName, tableNameMM, selectStmtList, expectedValues);
-    ReplicationTestUtils.appendInsertUnion(primary, primaryDbName,
-            null, tableName, tableNameMM, selectStmtList, expectedValues);
-    ReplicationTestUtils.appendAlterTable(primary, primaryDbName,
-            null, selectStmtList, expectedValues);
-
-    ReplicationTestUtils.verifyIncrementalLoad(primary, replica, primaryDbName,
-            replicatedDbName, selectStmtList, expectedValues, bootStrapDump.lastReplicationId);
   }
 }
