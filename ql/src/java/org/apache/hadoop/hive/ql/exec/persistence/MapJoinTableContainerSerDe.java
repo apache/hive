@@ -164,6 +164,7 @@ public class MapJoinTableContainerSerDe {
         }
       }
       if (tableContainer != null) {
+        tableContainer.setKey(folder.toString());
         tableContainer.seal();
       }
       return tableContainer;
@@ -261,8 +262,8 @@ public class MapJoinTableContainerSerDe {
             }
           }
         }
+        tableContainer.setKey(folder.toString());
       }
-
       tableContainer.seal();
       return tableContainer;
     } catch (IOException e) {

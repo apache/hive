@@ -121,6 +121,7 @@ public class HybridHashTableContainer
   private final List<Object> EMPTY_LIST = new ArrayList<Object>(0);
 
   private final String spillLocalDirs;
+  private String key;
 
   @Override
   public long getEstimatedMemorySize() {
@@ -1295,5 +1296,15 @@ public class HybridHashTableContainer
         notNullMarkers = ((BinarySortableSerDe) keySerde).getNotNullMarkers();
       }
     }
+  }
+
+  @Override
+  public void setKey(String key) {
+    this.key = key;
+  }
+
+  @Override
+  public String getKey() {
+    return key;
   }
 }
