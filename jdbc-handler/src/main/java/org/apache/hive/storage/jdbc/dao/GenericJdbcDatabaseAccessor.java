@@ -237,7 +237,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       Matcher m = fromPattern.matcher(sql);
       Preconditions.checkArgument(m.matches());
       String queryBeforeFrom = m.group(1);
-      String queryAfterFrom = m.group(2);
+      String queryAfterFrom = " " + m.group(2) + " ";
 
       Character[] possibleDelimits = new Character[] {'`', '\"', ' '};
       for (Character possibleDelimit : possibleDelimits) {
