@@ -894,7 +894,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
               quoteString(db), quoteString(catalog));
       rs = pst.executeQuery();
-      if (rs == null || !rs.next()) {
+      if (!rs.next()) {
         throw new MetaException("DB with name " + db + " does not exist in catalog " + catalog);
       }
       long dbId = rs.getLong(1);
@@ -905,7 +905,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // not used select for update as it will be updated by single thread only from repl load
         rs = stmt.executeQuery("select PARAM_VALUE from DATABASE_PARAMS where PARAM_KEY = " +
                 "'repl.last.id' and DB_ID = " + dbId);
-        if (rs == null || !rs.next()) {
+        if (!rs.next()) {
           query = "insert into DATABASE_PARAMS values ( " + dbId + " , 'repl.last.id' , ? )";
         } else {
           query = "update DATABASE_PARAMS set PARAM_VALUE = ? where DB_ID = " + dbId +
@@ -933,7 +933,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">", quoteString(table));
 
       rs = pst.executeQuery();
-      if (rs == null || !rs.next()) {
+      if (!rs.next()) {
         throw new MetaException("Table with name " + table + " does not exist in db " + catalog + "." + db);
       }
       long tblId = rs.getLong(1);
@@ -943,7 +943,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // select for update is not required as only one task will update this during repl load.
       rs = stmt.executeQuery("select PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = " +
               "'repl.last.id' and TBL_ID = " + tblId);
-      if (rs == null || !rs.next()) {
+      if (!rs.next()) {
         query = "insert into TABLE_PARAMS values ( " + tblId + " , 'repl.last.id' , ? )";
       } else {
         query = "update TABLE_PARAMS set PARAM_VALUE = ? where TBL_ID = " + tblId +
@@ -979,6 +979,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               questions, "\"PART_NAME\"", true, false);
       int totalCount = 0;
       assert queries.size() == counts.size();
+      params = Arrays.asList(lastReplId);
       for (int i = 0; i < queries.size(); i++) {
         query = queries.get(i);
         int partCount = counts.get(i);
@@ -991,17 +992,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         totalCount += partCount;
         prs = pst.executeQuery();
-        if (prs == null) {
-          throw new MetaException("Partition with name " + partList + " does not exist in table " +
-                  catalog + "." + db + "." + table);
-        }
-        params = Arrays.asList(lastReplId);
-
         while (prs.next()) {
           long partId = prs.getLong(1);
           rs = stmt.executeQuery("select PARAM_VALUE from PARTITION_PARAMS where PARAM_KEY " +
                   " = 'repl.last.id' and PART_ID = " + partId);
-          if (rs == null || !rs.next()) {
+          if (!rs.next()) {
             query = "insert into PARTITION_PARAMS values ( " + partId + " , 'repl.last.id' , ? )";
           } else {
             query = "update PARTITION_PARAMS set PARAM_VALUE = ? " +
