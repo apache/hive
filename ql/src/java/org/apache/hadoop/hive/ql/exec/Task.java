@@ -433,6 +433,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     this.conf = conf;
   }
 
+  public HiveConf getConf() {
+    return this.conf;
+  }
+
   public void setWork(T work) {
     this.work = work;
   }

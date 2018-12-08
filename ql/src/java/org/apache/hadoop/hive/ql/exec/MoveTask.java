@@ -85,6 +85,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     super();
   }
 
+  public boolean canExecuteInParallel(){
+    return false;
+  }
+
   private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir)
       throws HiveException {
     try {
