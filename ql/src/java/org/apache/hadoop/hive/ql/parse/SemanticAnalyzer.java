@@ -41,7 +41,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -4124,9 +4123,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBParseInfo parseInfo, String dest) throws SemanticException {
     List<Long> groupingSets = new ArrayList<Long>();
     List<ASTNode> groupByExprs = getGroupByForClause(parseInfo, dest);
-    if (groupByExprs.size() > Long.SIZE) {
-      throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_SIZE_LIMIT.getMsg());
-    }
 
     if (parseInfo.getDestRollups().contains(dest)) {
       groupingSets = getGroupingSetsForRollup(groupByExprs.size());
@@ -4134,6 +4130,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       groupingSets = getGroupingSetsForCube(groupByExprs.size());
     } else if (parseInfo.getDestGroupingSets().contains(dest)) {
       groupingSets = getGroupingSets(groupByExprs, parseInfo, dest);
+    }
+
+    if (!groupingSets.isEmpty() && groupByExprs.size() > Long.SIZE) {
+      throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_SIZE_LIMIT.getMsg());
     }
 
     return new ObjectPair<List<ASTNode>, List<Long>>(groupByExprs, groupingSets);
