@@ -147,6 +147,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   private int countTransactions = 0;
   private Set<String> partitions;
   private Long tableId;
+  private Runnable onShutdownRunner;
 
   private HiveStreamingConnection(Builder builder) throws StreamingException {
     this.database = builder.database.toLowerCase();
@@ -389,9 +390,10 @@ public class HiveStreamingConnection implements StreamingConnection {
       }
 
       HiveStreamingConnection streamingConnection = new HiveStreamingConnection(this);
+      streamingConnection.onShutdownRunner = streamingConnection::close;
       // assigning higher priority than FileSystem shutdown hook so that streaming connection gets closed first before
       // filesystem close (to avoid ClosedChannelException)
-      ShutdownHookManager.addShutdownHook(streamingConnection::close,  FileSystem.SHUTDOWN_HOOK_PRIORITY + 1);
+      ShutdownHookManager.addShutdownHook(streamingConnection.onShutdownRunner,  FileSystem.SHUTDOWN_HOOK_PRIORITY + 1);
       Thread.setDefaultUncaughtExceptionHandler((t, e) -> streamingConnection.close());
       return streamingConnection;
     }
@@ -650,6 +652,10 @@ public class HiveStreamingConnection implements StreamingConnection {
       if (manageTransactions) {
         getMSC().close();
         getHeatbeatMSC().close();
+      }
+      //remove shutdown hook entry added while creating this connection via HiveStreamingConnection.Builder#connect()
+      if (!ShutdownHookManager.isShutdownInProgress()) {
+        ShutdownHookManager.removeShutdownHook(this.onShutdownRunner);
       }
     }
     if (LOG.isInfoEnabled()) {
