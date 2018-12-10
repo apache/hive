@@ -210,3 +210,7 @@ explain select count(cstring1) from (select `cfloat`, `cstring1`, `cint` from dr
 select max(cint * cdouble) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src;
 
 explain select max(cint * cfloat) from (select `cfloat`, `cstring1`, `cint`, `cdouble` from druid_table_alltypesorc limit 90000) as src;
+
+explain select count(distinct `__time`, cint) from (select * from druid_table_alltypesorc) as src;
+
+select count(distinct `__time`, cint) from (select * from druid_table_alltypesorc) as src;

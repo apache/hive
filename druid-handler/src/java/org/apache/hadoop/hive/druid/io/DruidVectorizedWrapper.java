@@ -77,7 +77,7 @@ public class DruidVectorizedWrapper<T extends Comparable<T>> implements RecordRe
     }
 
     druidWritable = baseReader.createValue();
-    rowBoat = new Object[projectedColumns.length];
+    rowBoat = new Object[rbCtx.getDataColumnCount()];
   }
 
   @Override public boolean next(NullWritable nullWritable, VectorizedRowBatch vectorizedRowBatch) throws IOException {
