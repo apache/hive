@@ -165,7 +165,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     final RelMetadataQuery mq = call.getMetadataQuery();
     if ((nonDistinctCount == 0) && (argListSets.size() == 1)) {
       for (Integer arg : argListSets.iterator().next()) {
-        Set<RelColumnOrigin> colOrigs = mq.getColumnOrigins(aggregate, arg);
+        Set<RelColumnOrigin> colOrigs = mq.getColumnOrigins(aggregate.getInput(), arg);
         if (null != colOrigs) {
           for (RelColumnOrigin colOrig : colOrigs) {
             RelOptHiveTable hiveTbl = (RelOptHiveTable)colOrig.getOriginTable();
