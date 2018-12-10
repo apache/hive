@@ -17,13 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.isFullAcidTable;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.isTransactionalTable;
+
 import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
 
 import org.junit.rules.TestName;
@@ -41,7 +48,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Lists;
 
 /**
@@ -53,7 +62,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenariosIncrementalLoadAcidTables.class);
   static WarehouseInstance primary;
-  private static WarehouseInstance replica, replicaNonAcid;
+  private static WarehouseInstance replica, replicaNonAcid, replicaMigration, primaryMigration;
   private static HiveConf conf;
   private String primaryDbName, replicatedDbName, primaryDbNameExtra;
 
@@ -96,6 +105,36 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
         put("hive.metastore.client.capability.check", "false");
     }};
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
+
+    HashMap<String, String> overridesForHiveConfReplicaMigration = new HashMap<String, String>() {{
+      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put("hive.support.concurrency", "true");
+      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+      put("hive.metastore.client.capability.check", "false");
+      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+      put("hive.exec.dynamic.partition.mode", "nonstrict");
+      put("hive.strict.checks.bucketing", "false");
+      put("hive.mapred.mode", "nonstrict");
+      put("mapred.input.dir.recursive", "true");
+      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+      put("hive.strict.managed.tables", "true");
+    }};
+    replicaMigration = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConfReplicaMigration);
+
+    HashMap<String, String> overridesForHiveConfPrimaryMigration = new HashMap<String, String>() {{
+      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put("hive.metastore.client.capability.check", "false");
+      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+      put("hive.exec.dynamic.partition.mode", "nonstrict");
+      put("hive.strict.checks.bucketing", "false");
+      put("hive.mapred.mode", "nonstrict");
+      put("mapred.input.dir.recursive", "true");
+      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+      put("hive.support.concurrency", "false");
+      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+      put("hive.strict.managed.tables", "false");
+    }};
+    primaryMigration = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConfPrimaryMigration);
   }
 
   @AfterClass
@@ -260,5 +299,90 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
             .run("update " + tableName + " set value = 100 where key >= 2")
             .run("select value from " + tableName + " order by value")
             .verifyResults(new String[] {"1", "100", "100", "100", "100"});
+  }
+
+  private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId) throws Throwable {
+    WarehouseInstance.Tuple tuple =  primaryMigration.run("use " + primaryDbName)
+            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("insert into tacid values(1)")
+            .run("insert into tacid values(2)")
+            .run("insert into tacid values(3)")
+            .run("create table tacidpart (place string) partitioned by (country string) clustered by(place) " +
+                    "into 3 buckets stored as orc ")
+            .run("alter table tacidpart add partition(country='france')")
+            .run("insert into tacidpart partition(country='india') values('mumbai')")
+            .run("insert into tacidpart partition(country='us') values('sf')")
+            .run("insert into tacidpart partition(country='france') values('paris')")
+            .run("create table tflat (rank int) stored as orc tblproperties(\"transactional\"=\"false\")")
+            .run("insert into tflat values(11)")
+            .run("insert into tflat values(22)")
+            .run("create table tflattext (id int) ")
+            .run("insert into tflattext values(111), (222)")
+            .run("create table tflattextpart (id int) partitioned by (country string) ")
+            .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
+            .run("insert into tflattextpart partition(country='us') values(3333)")
+            .run("create table avro_table ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' " +
+                    "stored as avro tblproperties ('avro.schema.url'='" + primaryMigration.avroSchemaFile.toUri().toString() + "')")
+            .run("insert into avro_table values('str1', 10)")
+            .dump(primaryDbName, fromReplId);
+    assertFalse(isTransactionalTable(primaryMigration.getTable(primaryDbName, "tacid")));
+    assertFalse(isTransactionalTable(primaryMigration.getTable(primaryDbName, "tacidpart")));
+    assertFalse(isTransactionalTable(primaryMigration.getTable(primaryDbName, "tflat")));
+    assertFalse(isTransactionalTable(primaryMigration.getTable(primaryDbName, "tflattext")));
+    assertFalse(isTransactionalTable(primaryMigration.getTable(primaryDbName, "tflattextpart")));
+    Table avroTable = primaryMigration.getTable(replicatedDbName, "avro_table");
+    assertFalse(isTransactionalTable(avroTable));
+    assertFalse(MetaStoreUtils.isExternalTable(avroTable));
+    return tuple;
+  }
+
+  private void verifyLoadExecution(String replicatedDbName, String lastReplId) throws Throwable {
+    replicaMigration.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"tacid", "tacidpart", "tflat", "tflattext", "tflattextpart",
+                    "avro_table"})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(lastReplId)
+            .run("select id from tacid order by id")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("select country from tacidpart order by country")
+            .verifyResults(new String[] {"france", "india", "us"})
+            .run("select rank from tflat order by rank")
+            .verifyResults(new String[] {"11", "22"})
+            .run("select id from tflattext order by id")
+            .verifyResults(new String[] {"111", "222"})
+            .run("select id from tflattextpart order by id")
+            .verifyResults(new String[] {"1111", "2222", "3333"})
+            .run("select col1 from avro_table")
+            .verifyResults(new String[] {"str1"});
+
+    assertTrue(isFullAcidTable(replicaMigration.getTable(replicatedDbName, "tacid")));
+    assertTrue(isFullAcidTable(replicaMigration.getTable(replicatedDbName, "tacidpart")));
+    assertTrue(isFullAcidTable(replicaMigration.getTable(replicatedDbName, "tflat")));
+    assertTrue(!isFullAcidTable(replicaMigration.getTable(replicatedDbName, "tflattext")));
+    assertTrue(!isFullAcidTable(replicaMigration.getTable(replicatedDbName, "tflattextpart")));
+    assertTrue(isTransactionalTable(replicaMigration.getTable(replicatedDbName, "tflattext")));
+    assertTrue(isTransactionalTable(replicaMigration.getTable(replicatedDbName, "tflattextpart")));
+
+    Table avroTable = replicaMigration.getTable(replicatedDbName, "avro_table");
+    assertTrue(MetaStoreUtils.isExternalTable(avroTable));
+    Path tablePath = new PathBuilder(replicaMigration.externalTableWarehouseRoot.toString()).addDescendant(replicatedDbName + ".db")
+            .addDescendant("avro_table")
+            .build();
+    assertEquals(avroTable.getSd().getLocation().toLowerCase(), tablePath.toUri().toString().toLowerCase());
+  }
+
+  @Test
+  public void testMigrationManagedToAcid() throws Throwable {
+    WarehouseInstance.Tuple tupleForBootStrap = primaryMigration.dump(primaryDbName, null);
+    WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
+    WarehouseInstance.Tuple tupleForIncremental = primaryMigration.dump(primaryDbName, tupleForBootStrap.lastReplicationId);
+    replicaMigration.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
+
+    replicaMigration.run("drop database if exists " + replicatedDbName + " cascade");
+    replicaMigration.loadWithoutExplain(replicatedDbName, tupleForBootStrap.dumpLocation);
+    replicaMigration.loadWithoutExplain(replicatedDbName, tupleForIncremental.dumpLocation);
+    verifyLoadExecution(replicatedDbName, tupleForIncremental.lastReplicationId);
   }
 }
