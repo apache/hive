@@ -77,6 +77,13 @@ import org.apache.hadoop.util.StringUtils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import org.apache.hadoop.security.UserGroupInformation;
+import javax.security.auth.Subject;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedExceptionAction;
 /**
  * A MapReduce/Hive input format for ORC files.
  * <p>
@@ -493,11 +500,19 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final Context context;
     private final FileSystem fs;
     private final Path dir;
+    private UserGroupInformation ugi;
 
     FileGenerator(Context context, FileSystem fs, Path dir) {
       this.context = context;
       this.fs = fs;
       this.dir = dir;
+    }
+
+    FileGenerator(Context context, FileSystem fs, Path dir, UserGroupInformation ugi) {
+      this.context = context;
+      this.fs = fs;
+      this.dir = dir;
+      this.ugi = ugi;
     }
 
     private void scheduleSplits(FileStatus file,
@@ -517,6 +532,32 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      */
     @Override
     public void run() {
+      if(ugi == null)
+        runInternal();
+      else{
+        AccessControlContext accessControlContext = AccessController.getContext();
+        Subject subject = Subject.getSubject(accessControlContext);
+        Set<Principal> principals =  subject.getPrincipals();
+
+        try {
+          SplitStrategy strategy = this.ugi.doAs(new PrivilegedExceptionAction<Boolean>() {
+            @Override
+            public Boolean run() throws Exception {
+
+              AccessControlContext accessControlContext = AccessController.getContext();
+              Subject subject = Subject.getSubject(accessControlContext);
+              Set<Principal> principals =  subject.getPrincipals();
+              runInternal();
+              return true;
+            }
+          });
+        }catch(Exception e){
+          throw e;
+        }
+      }
+    }
+
+    private void runInternal(){
       try {
         AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir,
             context.conf, context.transactionList);
@@ -559,7 +600,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           for (int b = 0; b < context.numBuckets; ++b) {
             if (!covered[b]) {
               context.splits.add(new OrcSplit(dir, b, 0, new String[0], null,
-                  false, false, deltas));
+                 false, false, deltas));
             }
           }
         }
@@ -933,9 +974,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       throws IOException {
     // use threads to resolve directories into splits
     Context context = new Context(conf);
+    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
     for(Path dir: getInputPaths(conf)) {
       FileSystem fs = dir.getFileSystem(conf);
-      context.schedule(new FileGenerator(context, fs, dir));
+      context.schedule(new FileGenerator(context, fs, dir, ugi));
     }
     context.waitForTasks();
     // deal with exceptions
