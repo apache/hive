@@ -2027,8 +2027,11 @@ public class Driver implements IDriver {
         }
         else if(plan.getOperation() == HiveOperation.ROLLBACK) {
           releaseLocksAndCommitOrRollback(false);
-        }
-        else {
+        } else if (!queryTxnMgr.isTxnOpen() && queryState.getHiveOperation() == HiveOperation.REPLLOAD) {
+          // repl load during migration, commits the explicit txn and start some internal txns. Call
+          // releaseLocksAndCommitOrRollback to do the clean up.
+          releaseLocksAndCommitOrRollback(false);
+        } else {
           //txn (if there is one started) is not finished
         }
       } catch (LockException e) {

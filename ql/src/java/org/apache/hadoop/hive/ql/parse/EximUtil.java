@@ -96,6 +96,7 @@ public class EximUtil {
     private Logger LOG;
     private Context ctx;
     private DumpType eventType = DumpType.EVENT_UNKNOWN;
+    private Task<? extends Serializable> openTxnTask = null;
 
     public HiveConf getConf() {
       return conf;
@@ -145,6 +146,13 @@ public class EximUtil {
       this.tasks = tasks;
       this.LOG = LOG;
       this.ctx = ctx;
+    }
+
+    public Task<? extends Serializable> getOpenTxnTask() {
+      return openTxnTask;
+    }
+    public void setOpenTxnTask(Task<? extends Serializable> openTxnTask) {
+      this.openTxnTask = openTxnTask;
     }
   }
 

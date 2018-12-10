@@ -83,10 +83,13 @@ import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -864,6 +867,168 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  private void updateReplId(Connection dbConn, ReplLastIdInfo replLastIdInfo) throws SQLException, MetaException {
+    PreparedStatement pst = null;
+    PreparedStatement pstInt = null;
+    ResultSet rs = null;
+    ResultSet prs = null;
+    Statement stmt = null;
+    String lastReplId = Long.toString(replLastIdInfo.getLastReplId());
+    String catalog = replLastIdInfo.isSetCatalog() ? normalizeIdentifier(replLastIdInfo.getCatalog()) :
+            MetaStoreUtils.getDefaultCatalog(conf);
+    String db = normalizeIdentifier(replLastIdInfo.getDatabase());
+    String table = replLastIdInfo.isSetTable() ? normalizeIdentifier(replLastIdInfo.getTable()) : null;
+    List<String> partList = replLastIdInfo.isSetPartitionList() ? replLastIdInfo.getPartitionList() : null;
+    boolean needUpdateDBReplId = replLastIdInfo.isSetNeedUpdateDBReplId() && replLastIdInfo.isNeedUpdateDBReplId();
+
+    try {
+      stmt = dbConn.createStatement();
+
+      if (sqlGenerator.getDbProduct() == MYSQL) {
+        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      }
+
+      String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = ?  and \"CTLG_NAME\" = ?";
+      List<String> params = Arrays.asList(db, catalog);
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+      LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
+              quoteString(db), quoteString(catalog));
+      rs = pst.executeQuery();
+      if (!rs.next()) {
+        throw new MetaException("DB with name " + db + " does not exist in catalog " + catalog);
+      }
+      long dbId = rs.getLong(1);
+      rs.close();
+      pst.close();
+
+      if (needUpdateDBReplId) {
+        // not used select for update as it will be updated by single thread only from repl load
+        rs = stmt.executeQuery("select PARAM_VALUE from DATABASE_PARAMS where PARAM_KEY = " +
+                "'repl.last.id' and DB_ID = " + dbId);
+        if (!rs.next()) {
+          query = "insert into DATABASE_PARAMS values ( " + dbId + " , 'repl.last.id' , ? )";
+        } else {
+          query = "update DATABASE_PARAMS set PARAM_VALUE = ? where DB_ID = " + dbId +
+                  " and PARAM_KEY = 'repl.last.id'";
+        }
+        close(rs);
+        params = Arrays.asList(lastReplId);
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+        LOG.debug("Updating repl id for db <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+        if (pst.executeUpdate() != 1) {
+          //only one row insert or update should happen
+          throw new RuntimeException("DATABASE_PARAMS is corrupted for db " + db);
+        }
+        pst.close();
+      }
+
+      if (table == null) {
+        // if only database last repl id to be updated.
+        return;
+      }
+
+      query = "select \"TBL_ID\" from \"TBLS\" where \"TBL_NAME\" = ? and \"DB_ID\" = " + dbId;
+      params = Arrays.asList(table);
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+      LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">", quoteString(table));
+
+      rs = pst.executeQuery();
+      if (!rs.next()) {
+        throw new MetaException("Table with name " + table + " does not exist in db " + catalog + "." + db);
+      }
+      long tblId = rs.getLong(1);
+      rs.close();
+      pst.close();
+
+      // select for update is not required as only one task will update this during repl load.
+      rs = stmt.executeQuery("select PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = " +
+              "'repl.last.id' and TBL_ID = " + tblId);
+      if (!rs.next()) {
+        query = "insert into TABLE_PARAMS values ( " + tblId + " , 'repl.last.id' , ? )";
+      } else {
+        query = "update TABLE_PARAMS set PARAM_VALUE = ? where TBL_ID = " + tblId +
+                " and PARAM_KEY = 'repl.last.id'";
+      }
+      rs.close();
+
+      params = Arrays.asList(lastReplId);
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+      LOG.debug("Updating repl id for table <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+      if (pst.executeUpdate() != 1) {
+        //only one row insert or update should happen
+        throw new RuntimeException("TABLE_PARAMS is corrupted for table " + table);
+      }
+      pst.close();
+
+      if (partList == null || partList.isEmpty()) {
+        return;
+      }
+
+      List<String> questions = new ArrayList<>();
+      for(int i = 0; i < partList.size(); ++i) {
+        questions.add("?");
+      }
+
+      List<String> queries = new ArrayList<>();
+      StringBuilder prefix = new StringBuilder();
+      StringBuilder suffix = new StringBuilder();
+      prefix.append("select \"PART_ID\" from \"PARTITIONS\" where \"TBL_ID\" = " + tblId + " and ");
+
+      // Populate the complete query with provided prefix and suffix
+      List<Integer> counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
+              questions, "\"PART_NAME\"", true, false);
+      int totalCount = 0;
+      assert queries.size() == counts.size();
+      params = Arrays.asList(lastReplId);
+      for (int i = 0; i < queries.size(); i++) {
+        query = queries.get(i);
+        int partCount = counts.get(i);
+
+        LOG.debug("Going to execute query " + query + " with partitions " +
+                partList.subList(totalCount, (totalCount + partCount)));
+        pst = dbConn.prepareStatement(query);
+        for (int j = 0; j < partCount; j++) {
+          pst.setString(j + 1, partList.get(totalCount + j));
+        }
+        totalCount += partCount;
+        prs = pst.executeQuery();
+        while (prs.next()) {
+          long partId = prs.getLong(1);
+          rs = stmt.executeQuery("select PARAM_VALUE from PARTITION_PARAMS where PARAM_KEY " +
+                  " = 'repl.last.id' and PART_ID = " + partId);
+          if (!rs.next()) {
+            query = "insert into PARTITION_PARAMS values ( " + partId + " , 'repl.last.id' , ? )";
+          } else {
+            query = "update PARTITION_PARAMS set PARAM_VALUE = ? " +
+                    " where PART_ID = " + partId + " and PARAM_KEY = 'repl.last.id'";
+          }
+          rs.close();
+
+          pstInt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+          LOG.debug("Updating repl id for part <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+          if (pstInt.executeUpdate() != 1) {
+            //only one row insert or update should happen
+            throw new RuntimeException("PARTITION_PARAMS is corrupted for partition " + partId);
+          }
+          partCount--;
+          pstInt.close();
+        }
+        if (partCount != 0) {
+          throw new MetaException(partCount + " Number of partition among " + partList + " does not exist in table " +
+                  catalog + "." + db + "." + table);
+        }
+        prs.close();
+        pst.close();
+      }
+    } finally {
+      closeStmt(stmt);
+      close(rs);
+      close(prs);
+      closeStmt(pst);
+      closeStmt(pstInt);
+    }
+  }
+
   /**
    * Concurrency/isolation notes:
    * This is mutexed with {@link #openTxns(OpenTxnRequest)} and other {@link #commitTxn(CommitTxnRequest)}
@@ -907,6 +1072,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplLastIdInfo()) {
+          updateReplId(dbConn, rqst.getReplLastIdInfo());
+        }
 
         if (rqst.isSetReplPolicy()) {
           sourceTxnId = rqst.getTxnid();

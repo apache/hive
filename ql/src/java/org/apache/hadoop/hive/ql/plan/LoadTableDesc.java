@@ -253,6 +253,10 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     return currentWriteId == null ? 0 : currentWriteId;
   }
 
+  public void setWriteId(long writeId) {
+    currentWriteId = writeId;
+  }
+
   public int getStmtId() {
     return stmtId;
   }

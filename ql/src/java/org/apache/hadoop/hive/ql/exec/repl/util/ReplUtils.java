@@ -18,35 +18,50 @@
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
+import org.apache.thrift.TException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.io.Serializable;
+
+import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMigrationOption.MANAGED;
 
 
 public class ReplUtils {
 
   public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
+
+  // write id allocated in the current execution context which will be passed through config to be used by different
+  // tasks.
+  public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
+
 
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
@@ -120,5 +135,32 @@ public class ReplUtils {
               props.get(REPL_CHECKPOINT_KEY)));
     }
     return false;
+  }
+
+  public static List<Task<? extends Serializable>> addOpenTxnTaskForMigration(String actualDbName,
+                                                                  String actualTblName, HiveConf conf,
+                                                                  UpdatedMetaDataTracker updatedMetaDataTracker,
+                                                                  Task<? extends Serializable> childTask,
+                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj)
+          throws IOException, TException {
+    List<Task<? extends Serializable>> taskList = new ArrayList<>();
+    taskList.add(childTask);
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) && updatedMetaDataTracker != null &&
+            !AcidUtils.isTransactionalTable(tableObj) &&
+            TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
+      //TODO : isPathOwnByHive is hard coded to true, need to get it from repl dump metadata.
+      HiveStrictManagedMigration.TableMigrationOption migrationOption =
+              HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
+                      null, conf, null, true);
+      if (migrationOption == MANAGED) {
+        //if conversion to managed table.
+        Task<? extends Serializable> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
+                        ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), conf);
+        replTxnTask.addDependentTask(childTask);
+        updatedMetaDataTracker.setNeedCommitTxn(true);
+        taskList.add(replTxnTask);
+      }
+    }
+    return taskList;
   }
 }
