@@ -18,13 +18,17 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -33,14 +37,18 @@ import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.getHiveUpdater;
+
 public class FSTableEvent implements TableEvent {
   private final Path fromPath;
   private final MetaData metadata;
+  private final HiveConf hiveConf;
 
   FSTableEvent(HiveConf hiveConf, String metadataDir) {
     try {
@@ -48,6 +56,7 @@ public class FSTableEvent implements TableEvent {
       fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
       FileSystem fs = FileSystem.get(fromURI, hiveConf);
       metadata = EximUtil.readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
+      this.hiveConf = hiveConf;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -67,9 +76,30 @@ public class FSTableEvent implements TableEvent {
   public ImportTableDesc tableDesc(String dbName) throws SemanticException {
     try {
       Table table = new Table(metadata.getTable());
-      ImportTableDesc tableDesc =
-          new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
+      // The table can be non acid in case of replication from 2.6 cluster.
+      if (!AcidUtils.isTransactionalTable(table)
+              && hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES)
+              && (table.getTableType() == TableType.MANAGED_TABLE)) {
+        Hive hiveDb = Hive.get(hiveConf);
+        //TODO : dump metadata should be read to make sure that migration is required.
+        HiveStrictManagedMigration.TableMigrationOption migrationOption
+                = HiveStrictManagedMigration.determineMigrationTypeAutomatically(table.getTTable(),
+                table.getTableType(),null, (Configuration)hiveConf,
+                hiveDb.getMSC(),true);
+        HiveStrictManagedMigration.migrateTable(table.getTTable(), table.getTableType(),
+                migrationOption, false,
+                getHiveUpdater(hiveConf), hiveDb.getMSC(), (Configuration)hiveConf);
+        // If the conversion is from non transactional to transactional table
+        if (AcidUtils.isTransactionalTable(table)) {
+          replicationSpec().setMigratingToTxnTable();
+        }
+      }
+      ImportTableDesc tableDesc
+              = new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
       tableDesc.setReplicationSpec(replicationSpec());
+      if (table.getTableType() == TableType.EXTERNAL_TABLE) {
+        tableDesc.setExternal(true);
+      }
       return tableDesc;
     } catch (Exception e) {
       throw new SemanticException(e);

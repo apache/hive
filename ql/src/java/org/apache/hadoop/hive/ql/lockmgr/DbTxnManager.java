@@ -442,9 +442,28 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
+  private void clearLocksAndHB() throws LockException {
+    lockMgr.clearLocalLockRecords();
+    stopHeartbeat();
+  }
+
+  private void resetTxnInfo() {
+    txnId = 0;
+    stmtId = -1;
+    numStatements = 0;
+    tableWriteIds.clear();
+  }
+
   @Override
   public void replCommitTxn(CommitTxnRequest rqst) throws LockException {
     try {
+      if (rqst.isSetReplLastIdInfo()) {
+        if (!isTxnOpen()) {
+          throw new RuntimeException("Attempt to commit before opening a transaction");
+        }
+        // For transaction started internally by repl load command, heartbeat needs to be stopped.
+        clearLocksAndHB();
+      }
       getMS().replCommitTxn(rqst);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(rqst.getTxnid()));
@@ -456,6 +475,11 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw le;
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    } finally {
+      if (rqst.isSetReplLastIdInfo()) {
+        // For transaction started internally by repl load command, needs to clear the txn info.
+        resetTxnInfo();
+      }
     }
   }
 
@@ -465,8 +489,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new RuntimeException("Attempt to commit before opening a transaction");
     }
     try {
-      lockMgr.clearLocalLockRecords();
-      stopHeartbeat();
+      // do all new clear in clearLocksAndHB method to make sure that same code is there for replCommitTxn flow.
+      clearLocksAndHB();
       LOG.debug("Committing txn " + JavaUtils.txnIdToString(txnId));
       getMS().commitTxn(txnId);
     } catch (NoSuchTxnException e) {
@@ -480,10 +504,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
     } finally {
-      txnId = 0;
-      stmtId = -1;
-      numStatements = 0;
-      tableWriteIds.clear();
+      // do all new reset in resetTxnInfo method to make sure that same code is there for replCommitTxn flow.
+      resetTxnInfo();
     }
   }
   @Override

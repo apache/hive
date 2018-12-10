@@ -2802,7 +2802,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException {
     // As this is called from replication task, the user is the user who has fired the repl command.
     // This is required for standalone metastore authentication.
-    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds.size(), replPolicy, srcTxnIds);
+    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds != null ? srcTxnIds.size() : 1, replPolicy, srcTxnIds);
     return txns.getTxn_ids();
   }
 

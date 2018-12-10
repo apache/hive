@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -95,6 +96,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     LOG.debug("ReplicationSemanticAanalyzer: analyzeInternal");
     LOG.debug(ast.getName() + ":" + ast.getToken().getText() + "=" + ast.getText());
+    // Some of the txn related configs were not set when ReplicationSemanticAnalyzer.conf was initialized.
+    // It should be set first.
+    setTxnConfigs();
     switch (ast.getToken().getType()) {
       case TOK_REPL_DUMP: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
@@ -121,6 +125,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       default: {
         throw new SemanticException("Unexpected root token");
       }
+    }
+  }
+
+  private void setTxnConfigs() {
+    String validTxnList = queryState.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+    if (validTxnList != null) {
+      conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList);
     }
   }
 

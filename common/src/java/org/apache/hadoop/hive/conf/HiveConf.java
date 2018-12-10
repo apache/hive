@@ -1582,7 +1582,7 @@ public class HiveConf extends Configuration {
     HIVESCRIPTTRUNCATEENV("hive.script.operator.truncate.env", false,
         "Truncate each environment variable for external script in scripts operator to 20KB (to fit system limits)"),
     HIVESCRIPT_ENV_BLACKLIST("hive.script.operator.env.blacklist",
-        "hive.txn.valid.txns,hive.txn.tables.valid.writeids,hive.txn.valid.writeids,hive.script.operator.env.blacklist",
+        "hive.txn.valid.txns,hive.txn.tables.valid.writeids,hive.txn.valid.writeids,hive.script.operator.env.blacklist,hive.repl.current.table.write.id",
         "Comma separated list of keys from the configuration file not to convert to environment " +
         "variables when invoking the script operator"),
     HIVE_STRICT_CHECKS_ORDERBY_NO_LIMIT("hive.strict.checks.orderby.no.limit", false,
@@ -2954,6 +2954,10 @@ public class HiveConf extends Configuration {
         "Whether to disable certain optimizations and operations on external tables," +
         " on the assumption that data changes by external applications may have negative effects" +
         " on these operations."),
+
+    HIVE_STRICT_MANAGED_TABLES("hive.strict.managed.tables", false,
+            "Whether strict managed tables mode is enabled. With this mode enabled, " +
+            "only transactional tables (both full and insert-only) are allowed to be created as managed tables"),
 
     HIVE_EXTERNALTABLE_PURGE_DEFAULT("hive.external.table.purge.default", false,
         "Set to true to set external.table.purge=true on newly created external tables," +

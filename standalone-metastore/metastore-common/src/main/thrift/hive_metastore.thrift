@@ -912,6 +912,18 @@ struct CommitTxnRequest {
 
     // An optional key/value to store atomically with the transaction
     4: optional CommitTxnKeyValue keyValue,
+
+    // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
+    5: optional ReplLastIdInfo replLastIdInfo,
+}
+
+struct ReplLastIdInfo {
+    1: required string database,
+    2: required i64    lastReplId,
+    3: optional string table,
+    4: optional string catalog,
+    5: optional list<string> partitionList,
+    6: optional bool needUpdateDBReplId,
 }
 
 struct WriteEventInfo {

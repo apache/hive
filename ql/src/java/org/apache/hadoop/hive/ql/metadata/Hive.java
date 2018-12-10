@@ -695,7 +695,7 @@ public class Hive {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
         if (replWriteId > 0) {
-          ValidWriteIdList writeIds = getMSC().getValidWriteIds(getFullTableName(dbName, tblName), replWriteId);
+          ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tblName);
           tableSnapshot = new TableSnapshot(replWriteId, writeIds.writeToString());
         } else {
           // Make sure we pass in the names, so we can get the correct snapshot for rename table.
@@ -1903,8 +1903,17 @@ public class Hive {
             inheritLocation, isSkewedStoreAsSubdir, isSrcLocal, isAcidIUDoperation,
             hasFollowingStatsTask, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles);
 
-    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf,
-            newTPart.getTable(), true);
+    AcidUtils.TableSnapshot tableSnapshot = null;
+    if (isTxnTable) {
+      if ((writeId != null) && (writeId > 0)) {
+        ValidWriteIdList writeIds = AcidUtils.getTableValidWriteIdListWithTxnList(
+                conf, tbl.getDbName(), tbl.getTableName());
+        tableSnapshot = new TableSnapshot(writeId, writeIds.writeToString());
+      } else {
+        // Make sure we pass in the names, so we can get the correct snapshot for rename table.
+        tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(), true);
+      }
+    }
     if (tableSnapshot != null) {
       newTPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
     }
@@ -2854,7 +2863,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
 
-    alterTable(tbl, false, environmentContext, true);
+    alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false, environmentContext,
+            true, ((writeId == null) ? 0 : writeId));
 
     if (AcidUtils.isTransactionalTable(tbl)) {
       addWriteNotificationLog(tbl, null, newFiles, writeId);
@@ -2896,8 +2906,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
     int size = addPartitionDesc.getPartitionCount();
     List<org.apache.hadoop.hive.metastore.api.Partition> in =
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>(size);
-    AcidUtils.TableSnapshot tableSnapshot =
-        AcidUtils.getTableSnapshot(conf, tbl);
+    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
+    long writeId;
+    String validWriteIdList;
+    if (tableSnapshot != null && tableSnapshot.getWriteId() > 0) {
+      writeId = tableSnapshot.getWriteId();
+      validWriteIdList = tableSnapshot.getValidWriteIdList();
+    } else {
+      writeId = -1;
+      validWriteIdList = null;
+    }
     for (int i = 0; i < size; ++i) {
       org.apache.hadoop.hive.metastore.api.Partition tmpPart =
           convertAddSpecToMetaPartition(tbl, addPartitionDesc.getPartition(i), conf);
@@ -2941,7 +2959,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           out.add(new Partition(tbl, outPart));
         }
         getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),
-            partsToAlter, new EnvironmentContext(), null, -1);
+            partsToAlter, new EnvironmentContext(), validWriteIdList, writeId);
 
         for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
         getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
@@ -4133,7 +4151,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void recycleDirToCmPath(Path dataPath, boolean isPurge) throws HiveException {
     try {
       CmRecycleRequest request = new CmRecycleRequest(dataPath.toString(), isPurge);
-      getMSC().recycleDirToCmPath(request);
+      getSynchronizedMSC().recycleDirToCmPath(request);
     } catch (Exception e) {
       throw new HiveException(e);
     }

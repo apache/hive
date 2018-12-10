@@ -33,7 +33,7 @@ public class TestReplWithJsonMessageFormat extends TestReplicationScenarios {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    internalBeforeClassSetup(Collections.emptyMap());
+    internalBeforeClassSetup(Collections.emptyMap(), false);
   }
 
 }

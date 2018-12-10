@@ -22,9 +22,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
+import org.junit.Ignore;
 
 import java.util.Collections;
 
+@Ignore
 public class TestReplIncrementalLoadAcidTablesWithJsonMessage
     extends TestReplicationScenariosIncrementalLoadAcidTables {
 
