@@ -86,6 +86,7 @@ if [ "$SERVICE" = "" ] ; then
 fi
 
 if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
+  CLIUSER=`whoami`
   SERVICE="beeline"
 fi
 
