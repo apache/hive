@@ -434,6 +434,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   private void ensureDataReader() throws IOException {
     ensureOrcReader();
+    if (stripeReader != null) {
+      try {
+        stripeReader.close();
+      } catch (IOException ex) {
+        // Ignore.
+      }
+    }
     // Reader creation updates HDFS counters, don't do it here.
     DataWrapperForOrc dw = new DataWrapperForOrc();
     stripeReader = orcReader.encodedReader(
