@@ -1,4 +1,4 @@
-#Kafka Storage Handler Module
+# Kafka Storage Handler Module
 
 Storage Handler that allows user to Connect/Analyse/Transform Kafka topics.
 The workflow is as follow,  first the user will create an external table that is a view over one Kafka topic,
@@ -114,7 +114,7 @@ left join wiki_kafka_hive as future_activity on
 
 ```
 
-#Configuration
+# Configuration
 
 ## Table Properties
 
@@ -139,7 +139,7 @@ and will inject `max.poll.records=5000` to the Kafka Consumer.
 ALTER TABLE kafka_table SET TBLPROPERTIES ("kafka.consumer.max.poll.records"="5000");
 ```
 
-#Kafka to Hive ETL PIPE LINE
+# Kafka to Hive ETL PIPE LINE
 
 load form Kafka every Record exactly once
 Goal is to read data and commit both data and its offsets in a single Transaction 
@@ -193,9 +193,9 @@ Insert overwrite table kafka_table_offsets select
 `__partition`, max(`__offset`), CURRENT_TIMESTAMP group by `__partition`, CURRENT_TIMESTAMP;
 ```
 
-#ETL from Hive to Kafka
+# ETL from Hive to Kafka
 
-##INSERT INTO
+## INSERT INTO
 First create the table in have that will be the target table. Now all the inserts will go to the topic mapped by this Table.
 
 ```sql
