@@ -113,7 +113,8 @@ public class TestE2EScenarios {
 
   private void createTable(String tablename, String schema, String partitionedBy, String storageFormat)
       throws Exception {
-   AbstractHCatLoaderTest.createTable(tablename, schema, partitionedBy, driver, storageFormat);
+    AbstractHCatLoaderTest.createTableDefaultDB(tablename, schema, partitionedBy, driver,
+            storageFormat);
   }
 
   private void driverRun(String cmd) throws Exception {

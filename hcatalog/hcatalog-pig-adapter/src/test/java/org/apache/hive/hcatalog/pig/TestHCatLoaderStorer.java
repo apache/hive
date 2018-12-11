@@ -65,8 +65,8 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
       " row format delimited fields terminated by '\t' stored as textfile location '" +
       dataDir.toURI().getPath() + "'", driver);
     AbstractHCatLoaderTest.dropTable(tblName2, driver);
-    AbstractHCatLoaderTest.createTable(tblName2, "my_small_int smallint, my_tiny_int tinyint", null, driver,
-      "textfile");
+    AbstractHCatLoaderTest.createTableDefaultDB(tblName2, "my_small_int smallint, " +
+            "my_tiny_int " + "tinyint", null, driver, "textfile");
 
     LOG.debug("File=" + INPUT_FILE_NAME);
     TestHCatStorer.dumpFile(INPUT_FILE_NAME);
