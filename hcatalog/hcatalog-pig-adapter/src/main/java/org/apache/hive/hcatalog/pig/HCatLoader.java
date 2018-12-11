@@ -260,6 +260,10 @@ public class HCatLoader extends HCatBaseLoader {
   @Override
   public ResourceStatistics getStatistics(String location, Job job) throws IOException {
     try {
+      if (dbName == null || tableName == null) {
+        throw new IOException("DB or table name unset. setLocation() must be invoked on this " +
+                "loader to set them");
+      }
       ResourceStatistics stats = new ResourceStatistics();
       long inputSize = -1;
 
@@ -267,14 +271,15 @@ public class HCatLoader extends HCatBaseLoader {
               job.getConfiguration());
 
       for (InputJobInfo inputJobInfo : inputJobInfos) {
-        if (location.equals(inputJobInfo.getTableName())) {
+        if (dbName.equals(inputJobInfo.getDatabaseName()) && tableName.equals(inputJobInfo.getTableName())){
           inputSize = getSizeInBytes(inputJobInfo);
           break;
         }
       }
 
       if (inputSize == -1) {
-        throw new IOException("Could not calculate input size for location (table) " + location);
+        throw new IOException("Could not calculate input size for database: " + dbName + ", " +
+                "table: " + tableName + ". Requested location:" + location);
       }
       stats.setSizeInBytes(inputSize);
       return stats;
