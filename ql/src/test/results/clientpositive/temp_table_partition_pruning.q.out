@@ -125,12 +125,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: daysales_temp
-            filterExpr: NVL(((dt = '2001-01-01') and (customer = 1)),false) (type: boolean)
+            filterExpr: COALESCE(((dt = '2001-01-01') and (customer = 1)),false) (type: boolean)
             Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: NVL(((dt = '2001-01-01') and (customer = 1)),false) (type: boolean)
+              predicate: COALESCE(((dt = '2001-01-01') and (customer = 1)),false) (type: boolean)
               Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: customer (type: int), dt (type: string)
@@ -298,12 +298,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: daysales_temp
-            filterExpr: NVL(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+            filterExpr: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
             Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: NVL(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+              predicate: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
               Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: customer (type: int), dt (type: string)
@@ -471,12 +471,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: daysales_temp
-            filterExpr: NVL(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+            filterExpr: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
             Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: NVL(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
+              predicate: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
               Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: customer (type: int), dt (type: string)

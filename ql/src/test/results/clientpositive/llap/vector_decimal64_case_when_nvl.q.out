@@ -208,7 +208,7 @@ STAGE PLANS:
                         projectedOutputColumnNums: [0]
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum(NVL(ss_ext_list_price,1.1))
+                      aggregations: sum(COALESCE(ss_ext_list_price,1.1))
                       Group By Vectorization:
                           aggregators: VectorUDAFSumDecimal64(VectorCoalesce(columns [0, 5])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 5:decimal(7,2)/DECIMAL_64) -> 6:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
@@ -341,7 +341,7 @@ STAGE PLANS:
                         projectedOutputColumnNums: [0]
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum(NVL(ss_ext_list_price,1.1))
+                      aggregations: sum(COALESCE(ss_ext_list_price,1.1))
                       Group By Vectorization:
                           aggregators: VectorUDAFSumDecimal64(VectorCoalesce(columns [0, 5])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 5:decimal(7,2)/DECIMAL_64) -> 6:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator

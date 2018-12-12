@@ -2,16 +2,17 @@ PREHOOK: query: DESCRIBE FUNCTION nvl
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION nvl
 POSTHOOK: type: DESCFUNCTION
-nvl(value,default_value) - Returns default value if value is null else returns value
+nvl(a1, a2, ...) - Returns the first non-null argument
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED nvl
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED nvl
 POSTHOOK: type: DESCFUNCTION
-nvl(value,default_value) - Returns default value if value is null else returns value
+nvl(a1, a2, ...) - Returns the first non-null argument
+Synonyms: coalesce
 Example:
-  > SELECT nvl(null,'bla') FROM src LIMIT 1;
-  bla
-Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl
+  > SELECT nvl(NULL, 1, NULL) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce
 Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT NVL( 1 , 2 ) AS COL1,

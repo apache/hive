@@ -40,4 +40,4 @@ POSTHOOK: query: load data local inpath '../../data/files/over1k' into table ove
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@over1k
-FAILED: SemanticException [Error 10016]: Line 4:14 Argument type mismatch 'true': The first and seconds arguments of function NLV should have the same type, but they are different: "tinyint" and "boolean"
+FAILED: SemanticException [Error 10016]: Line 4:14 Argument type mismatch 'true': The expressions after COALESCE should all have the same type: "tinyint" is expected but "boolean" is found
