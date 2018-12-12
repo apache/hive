@@ -22,9 +22,11 @@ import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.junit.Ignore;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
+@Ignore("HIVE-21022: disabled until fixed")
 @Category(MetastoreCheckinTest.class)
 public class TestRemoteHiveMetaStoreZK extends TestRemoteHiveMetaStore {
   private static TestingServer zkServer = null;
