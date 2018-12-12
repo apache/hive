@@ -57,7 +57,32 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.masking_test_view_n_mv
-      Execution mode: vectorized
+              Select Operator
+                expressions: _col0 (type: int)
+                outputColumnNames: col1
+                Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(col1, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-7
     Conditional Operator
@@ -86,6 +111,10 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.masking_test_view_n_mv
 
   Stage: Stage-9
     Materialized View Work
@@ -138,7 +167,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
@@ -695,7 +724,32 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.masking_test_view_n_mv_2
-      Execution mode: vectorized
+              Select Operator
+                expressions: _col0 (type: int)
+                outputColumnNames: col1
+                Statistics: Num rows: 500 Data size: 30200 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(col1, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-7
     Conditional Operator
@@ -724,6 +778,10 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.masking_test_view_n_mv_2
 
   Stage: Stage-9
     Materialized View Work
@@ -776,7 +834,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 

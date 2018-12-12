@@ -15,8 +15,6 @@ insert into cmv_basetable_n10 values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1);
 
-analyze table cmv_basetable_n10 compute statistics for columns;
-
 create materialized view cmv_mat_view_n10
 as select a, b, c from cmv_basetable_n10 where a = 2;
 

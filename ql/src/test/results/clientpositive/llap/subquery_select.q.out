@@ -3001,6 +3001,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: +
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
@@ -3614,12 +3615,11 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 8 (XPROD_EDGE)
+        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 9 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Map 8 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
         Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 5 (SIMPLE_EDGE)
-        Reducer 8 <- Reducer 7 (CUSTOM_SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3652,7 +3652,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 9 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: part
@@ -3733,10 +3733,6 @@ STAGE PLANS:
                     sort order: +
                     Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.1
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -3757,16 +3753,6 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: boolean)
-        Reducer 7 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 1
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(), count(_col0)
                     mode: hash
@@ -3776,7 +3762,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint), _col1 (type: bigint)
-        Reducer 8 
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator

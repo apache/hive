@@ -90,13 +90,13 @@ Stage-0
               Filter Operator [FIL_40] (rows=1 width=4)
                 predicate:id is not null
                 TableScan [TS_6] (rows=1 width=4)
-                  default@test_3_n0,t3,Tbl:COMPLETE,Col:NONE,Output:["id"]
+                  default@test_3_n0,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["id"]
         <-Select Operator [SEL_44] (rows=1 width=4)
             Output:["_col0"]
             Filter Operator [FIL_43] (rows=1 width=4)
               predicate:id is not null
               TableScan [TS_0] (rows=1 width=4)
-                default@test_1_n2,t1,Tbl:COMPLETE,Col:NONE,Output:["id"]
+                default@test_1_n2,t1,Tbl:COMPLETE,Col:COMPLETE,Output:["id"]
 
 PREHOOK: query: SELECT t1.id, t2.id, t3.id
 FROM test_1_n2 t1

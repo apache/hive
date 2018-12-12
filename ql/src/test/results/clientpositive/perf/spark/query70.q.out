@@ -261,6 +261,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: decimal(17,2))
         Reducer 11 
             Execution mode: vectorized

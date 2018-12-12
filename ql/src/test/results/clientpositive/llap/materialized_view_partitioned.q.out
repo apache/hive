@@ -39,30 +39,69 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src_txn
                   filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 19268 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 55 Data size: 19268 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 55 Data size: 19268 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                             name: default.partition_mv_1
-            Execution mode: vectorized, llap
+                      Select Operator
+                        expressions: _col0 (type: string), _col1 (type: string)
+                        outputColumnNames: col1, col2
+                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: compute_stats(col1, 'hll')
+                          keys: col2 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+            Execution mode: llap
             LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -92,6 +131,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: value
+          Column Types: string
+          Table: default.partition_mv_1
 
   Stage: Stage-5
     Materialized View Work
@@ -578,17 +621,17 @@ STAGE PLANS:
                 TableScan
                   alias: src_txn
                   filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
-                  Statistics: Num rows: 501 Data size: 175536 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 501 Data size: 90180 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 19270 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 9900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 55 Data size: 19270 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 9900 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 55 Data size: 19270 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 55 Data size: 9900 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -597,18 +640,18 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: value, key
-                        Statistics: Num rows: 55 Data size: 19270 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 55 Data size: 9900 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: compute_stats(value, 'hll')
                           keys: key (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 55 Data size: 19270 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 55 Data size: 19270 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -620,14 +663,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 27 Data size: 9459 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 27 Data size: 9459 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 27 Data size: 9459 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -956,19 +999,19 @@ STAGE PLANS:
                 TableScan
                   alias: src_txn
                   filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
-                  Statistics: Num rows: 502 Data size: 175904 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 502 Data size: 90862 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 19272 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 55 Data size: 19272 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 55 Data size: 19272 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -977,19 +1020,19 @@ STAGE PLANS:
                 TableScan
                   alias: src_txn_2
                   filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 9634 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 55 Data size: 9634 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 55 Data size: 9634 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -1002,14 +1045,14 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 60 Data size: 21199 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: string), _col0 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 60 Data size: 21199 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 60 Data size: 21199 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1018,18 +1061,18 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: value, key
-                    Statistics: Num rows: 60 Data size: 21199 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(value, 'hll')
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 60 Data size: 21199 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 60 Data size: 21199 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
         Reducer 3 
             Execution mode: llap
@@ -1039,14 +1082,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 30 Data size: 10599 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 30 Data size: 10599 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 30 Data size: 10599 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 27 Data size: 14229 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

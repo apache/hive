@@ -88,17 +88,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap_nonvector
-                  Statistics: Num rows: 12288 Data size: 5790800 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 3191474 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean), rdm (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-                    Statistics: Num rows: 12288 Data size: 5790800 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 3191474 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 100
-                      Statistics: Num rows: 100 Data size: 47100 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 100 Data size: 26280 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 100 Data size: 47100 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 100 Data size: 26280 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -243,17 +243,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap_nonvector
-                  Statistics: Num rows: 12288 Data size: 2194900 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cint (type: int), cstring1 (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 12288 Data size: 2194900 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 1025
-                      Statistics: Num rows: 1025 Data size: 182450 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1025 Data size: 75068 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1025 Data size: 182450 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1025 Data size: 75068 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

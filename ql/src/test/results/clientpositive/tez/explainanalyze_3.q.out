@@ -298,14 +298,14 @@ Stage-2
     Stage-0
       Reducer 2
       File Output Operator [FS_5]
-        Group By Operator [GBY_3] (rows=1/1 width=1248)
+        Group By Operator [GBY_3] (rows=1/1 width=880)
           Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 'hll')","compute_stats(VALUE._col2, 'hll')"]
         <-Map 1 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=500/500 width=350)
+            Select Operator [SEL_1] (rows=500/500 width=178)
               Output:["key","value"]
-              TableScan [TS_0] (rows=500/500 width=350)
-                default@src_stats,src_stats,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              TableScan [TS_0] (rows=500/500 width=178)
+                default@src_stats,src_stats,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
 PREHOOK: type: CREATEMACRO
@@ -398,23 +398,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test_n4
 Plan optimized by CBO.
 
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
 Stage-3
   Stats Work{}
     Stage-4
       Create Table Operator:
         name:default.src_autho_test_n4
-        Stage-2
-          Dependency Collection{}
-            Stage-1
-              Map 1 vectorized
-              File Output Operator [FS_4]
-                table:{"name:":"default.src_autho_test_n4"}
-                Select Operator [SEL_3] (rows=500/1 width=178)
-                  Output:["_col0","_col1"]
-                  TableScan [TS_0] (rows=500/1 width=178)
-                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
         Stage-0
           Move Operator
+            Stage-1
+              Reducer 2
+              File Output Operator [FS_11]
+                Group By Operator [GBY_9] (rows=1/1 width=880)
+                  Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 'hll')","compute_stats(VALUE._col2, 'hll')"]
+                <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                  File Output Operator [FS_13]
+                    table:{"name:":"default.src_autho_test_n4"}
+                    Select Operator [SEL_12] (rows=500/1 width=178)
+                      Output:["_col0","_col1"]
+                      TableScan [TS_0] (rows=500/1 width=178)
+                        default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                  PARTITION_ONLY_SHUFFLE [RS_15]
+                    Select Operator [SEL_14] (rows=500/1 width=178)
+                      Output:["col1","col2"]
+                       Please refer to the previous Select Operator [SEL_12]
+        Stage-2
+          Dependency Collection{}
              Please refer to the previous Stage-1
 
 PREHOOK: query: create table src_autho_test_n4 as select * from src

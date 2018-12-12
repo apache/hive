@@ -274,6 +274,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -719,6 +720,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           sort order: 
                           Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: tinyint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1662,6 +1664,7 @@ STAGE PLANS:
                       key expressions: _col2 (type: int)
                       sort order: +
                       Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2992,6 +2995,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 10 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs

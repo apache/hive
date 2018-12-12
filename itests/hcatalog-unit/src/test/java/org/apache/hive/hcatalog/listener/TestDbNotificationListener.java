@@ -1280,12 +1280,12 @@ public class TestDbNotificationListener {
     driver.run("create table " + sourceTblName + " (c int)");
     // Event 2 (alter: marker stats event), 3 (insert), 4 (alter: stats update event)
     driver.run("insert into table " + sourceTblName + " values (1)");
-    // Event 5, 6 (alter: stats update event)
+    // Event 5, 6 (alter), 7 (alter: stats update event)
     driver.run("create table " + targetTblName + " as select c from " + sourceTblName);
 
     // Get notifications from metastore
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(7, rsp.getEventsSize());
+    assertEquals(8, rsp.getEventsSize());
     NotificationEvent event = rsp.getEvents().get(0);
     assertEquals(firstEventId + 1, event.getEventId());
     assertEquals(EventType.CREATE_TABLE.toString(), event.getEventType());
@@ -1299,7 +1299,7 @@ public class TestDbNotificationListener {
     event = rsp.getEvents().get(5);
     assertEquals(firstEventId + 6, event.getEventId());
     assertEquals(EventType.CREATE_TABLE.toString(), event.getEventType());
-    testEventCounts(defaultDbName, firstEventId, null, null, 7);
+    testEventCounts(defaultDbName, firstEventId, null, null, 8);
   }
 
   @Test

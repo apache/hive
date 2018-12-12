@@ -13,8 +13,6 @@ insert into cmv_basetable_n9 values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1);
 
-analyze table cmv_basetable_n9 compute statistics for columns;
-
 create materialized view cmv_mat_view_n9
 as select b from cmv_basetable_n9 where c > 10.0 group by a, b, c;
 
@@ -56,8 +54,6 @@ create table cmv_basetable_2_n4 (a int, b varchar(256), c decimal(10,2), d int) 
 insert into cmv_basetable_2_n4 values
  (1, 'alfred', 10.30, 2),
  (3, 'calvin', 978.76, 3);
-
-analyze table cmv_basetable_2_n4 compute statistics for columns;
 
 create materialized view cmv_mat_view_5
 as select cmv_basetable_n9.a, cmv_basetable_2_n4.c

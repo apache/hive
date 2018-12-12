@@ -504,6 +504,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
@@ -1071,6 +1072,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: +
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
                 PTF Operator
                   Function definitions:
                       Input definition

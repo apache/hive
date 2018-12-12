@@ -33,16 +33,6 @@ POSTHOOK: Lineage: emps_n00.deptno SCRIPT []
 POSTHOOK: Lineage: emps_n00.empid SCRIPT []
 POSTHOOK: Lineage: emps_n00.name SCRIPT []
 POSTHOOK: Lineage: emps_n00.salary SCRIPT []
-PREHOOK: query: analyze table emps_n00 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@emps_n00
-PREHOOK: Output: default@emps_n00
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table emps_n00 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@emps_n00
-POSTHOOK: Output: default@emps_n00
-#### A masked pattern was here ####
 PREHOOK: query: create table depts_n00 (
   deptno int,
   name varchar(256),
@@ -70,16 +60,6 @@ POSTHOOK: Output: default@depts_n00
 POSTHOOK: Lineage: depts_n00.deptno SCRIPT []
 POSTHOOK: Lineage: depts_n00.locationid SCRIPT []
 POSTHOOK: Lineage: depts_n00.name SCRIPT []
-PREHOOK: query: analyze table depts_n00 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@depts_n00
-PREHOOK: Output: default@depts_n00
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table depts_n00 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@depts_n00
-POSTHOOK: Output: default@depts_n00
-#### A masked pattern was here ####
 PREHOOK: query: create table dependents_n00 (
   empid int,
   name varchar(256))
@@ -104,16 +84,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependents_n00
 POSTHOOK: Lineage: dependents_n00.empid SCRIPT []
 POSTHOOK: Lineage: dependents_n00.name SCRIPT []
-PREHOOK: query: analyze table dependents_n00 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@dependents_n00
-PREHOOK: Output: default@dependents_n00
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table dependents_n00 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@dependents_n00
-POSTHOOK: Output: default@dependents_n00
-#### A masked pattern was here ####
 PREHOOK: query: create table locations_n00 (
   locationid int,
   name varchar(256))
@@ -138,16 +108,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@locations_n00
 POSTHOOK: Lineage: locations_n00.locationid SCRIPT []
 POSTHOOK: Lineage: locations_n00.name SCRIPT []
-PREHOOK: query: analyze table locations_n00 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@locations_n00
-PREHOOK: Output: default@locations_n00
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table locations_n00 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@locations_n00
-POSTHOOK: Output: default@locations_n00
-#### A masked pattern was here ####
 PREHOOK: query: alter table emps_n00 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table emps_n00 add constraint pk1 primary key (empid) disable novalidate rely
@@ -193,20 +153,6 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n0
-PREHOOK: Input: default@mv1_part_n0@deptno=20
-PREHOOK: Output: default@mv1_part_n0
-PREHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n0
-POSTHOOK: Input: default@mv1_part_n0@deptno=20
-POSTHOOK: Output: default@mv1_part_n0
-POSTHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
@@ -291,20 +237,6 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n0
-PREHOOK: Input: default@mv1_part_n0@deptno=20
-PREHOOK: Output: default@mv1_part_n0
-PREHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n0
-POSTHOOK: Input: default@mv1_part_n0@deptno=20
-POSTHOOK: Output: default@mv1_part_n0
-POSTHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
@@ -389,20 +321,6 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n0
-PREHOOK: Input: default@mv1_part_n0@deptno=20
-PREHOOK: Output: default@mv1_part_n0
-PREHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n0
-POSTHOOK: Input: default@mv1_part_n0@deptno=20
-POSTHOOK: Output: default@mv1_part_n0
-POSTHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
@@ -489,24 +407,6 @@ POSTHOOK: Output: default@mv1_part_n0@deptno=10
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=10).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n0
-PREHOOK: Input: default@mv1_part_n0@deptno=10
-PREHOOK: Input: default@mv1_part_n0@deptno=20
-PREHOOK: Output: default@mv1_part_n0
-PREHOOK: Output: default@mv1_part_n0@deptno=10
-PREHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n0
-POSTHOOK: Input: default@mv1_part_n0@deptno=10
-POSTHOOK: Input: default@mv1_part_n0@deptno=20
-POSTHOOK: Output: default@mv1_part_n0
-POSTHOOK: Output: default@mv1_part_n0@deptno=10
-POSTHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
@@ -603,24 +503,6 @@ POSTHOOK: Output: default@mv1_part_n0@deptno=10
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=10).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n0
-PREHOOK: Input: default@mv1_part_n0@deptno=10
-PREHOOK: Input: default@mv1_part_n0@deptno=20
-PREHOOK: Output: default@mv1_part_n0
-PREHOOK: Output: default@mv1_part_n0@deptno=10
-PREHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n0
-POSTHOOK: Input: default@mv1_part_n0@deptno=10
-POSTHOOK: Input: default@mv1_part_n0@deptno=20
-POSTHOOK: Output: default@mv1_part_n0
-POSTHOOK: Output: default@mv1_part_n0@deptno=10
-POSTHOOK: Output: default@mv1_part_n0@deptno=20
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select depts_n00.deptno from depts_n00
 join emps_n00 using (deptno) where emps_n00.empid > 15
@@ -780,7 +662,7 @@ POSTHOOK: query: drop materialized view mv1_part_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
-Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: create materialized view mv1_part_n0 partitioned on (deptno2) as
 select depts_n00.name, dependents_n00.name as name2, emps_n00.deptno, depts_n00.deptno as deptno2, dependents_n00.empid
 from depts_n00, dependents_n00, emps_n00
@@ -814,24 +696,6 @@ POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=30).deptno SIMPLE [(emps_n00)em
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=30).empid SIMPLE [(dependents_n00)dependents_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=30).name SIMPLE [(depts_n00)depts_n00.FieldSchema(name:name, type:varchar(256), comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=30).name2 SIMPLE [(dependents_n00)dependents_n00.FieldSchema(name:name, type:varchar(256), comment:null), ]
-PREHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n0
-PREHOOK: Input: default@mv1_part_n0@deptno2=20
-PREHOOK: Input: default@mv1_part_n0@deptno2=30
-PREHOOK: Output: default@mv1_part_n0
-PREHOOK: Output: default@mv1_part_n0@deptno2=20
-PREHOOK: Output: default@mv1_part_n0@deptno2=30
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n0
-POSTHOOK: Input: default@mv1_part_n0@deptno2=20
-POSTHOOK: Input: default@mv1_part_n0@deptno2=30
-POSTHOOK: Output: default@mv1_part_n0
-POSTHOOK: Output: default@mv1_part_n0@deptno2=20
-POSTHOOK: Output: default@mv1_part_n0@deptno2=30
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select dependents_n00.empid
 from depts_n00

@@ -65,14 +65,14 @@ Stage-2
     Stage-0
       Reducer 2
       File Output Operator [FS_5]
-        Group By Operator [GBY_3] (rows=1/1 width=1248)
+        Group By Operator [GBY_3] (rows=1/1 width=880)
           Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 'hll')","compute_stats(VALUE._col2, 'hll')"]
         <-Map 1 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=500/500 width=350)
+            Select Operator [SEL_1] (rows=500/500 width=178)
               Output:["key","value"]
-              TableScan [TS_0] (rows=500/500 width=350)
-                default@src_stats_n0,src_stats_n0,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              TableScan [TS_0] (rows=500/500 width=178)
+                default@src_stats_n0,src_stats_n0,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: drop table src_multi2_n7
 PREHOOK: type: DROPTABLE

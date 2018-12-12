@@ -46,7 +46,7 @@ PLAN VECTORIZATION:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
+  Stage-4 depends on stages: Stage-0, Stage-2
   Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
 
@@ -54,52 +54,68 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: varchar_table
                   Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:vs:varchar(10), 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: length(vs) (type: int), reverse(vs) (type: string)
                     outputColumnNames: _col0, _col1
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2, 3]
-                        selectExpressions: StringLength(col 0:varchar(10)) -> 2:int, VectorUDFAdaptor(reverse(vs)) -> 3:string
                     Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      File Sink Vectorization:
-                          className: VectorFileSinkOperator
-                          native: false
                       Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.varchar_ctas_1
-            Execution mode: vectorized, llap
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string)
+                      outputColumnNames: col1, col2
+                      Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 958 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 958 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+            Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: true
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 1
-                    includeColumns: [0]
-                    dataColumns: vs:varchar(10)
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, string]
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+        Reducer 2 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 974 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 974 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -116,6 +132,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: _c0, _c1
+          Column Types: int, string
+          Table: default.varchar_ctas_1
 
   Stage: Stage-0
     Move Operator
@@ -199,7 +219,7 @@ PLAN VECTORIZATION:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
+  Stage-4 depends on stages: Stage-0, Stage-2
   Stage-3 depends on stages: Stage-4
   Stage-0 depends on stages: Stage-1
 
@@ -207,52 +227,68 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: char_table
                   Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:vs:char(10), 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: length(vs) (type: int), reverse(vs) (type: string)
                     outputColumnNames: _col0, _col1
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2, 3]
-                        selectExpressions: StringLength(col 0:char(10)) -> 2:int, VectorUDFAdaptor(reverse(vs)) -> 3:string
                     Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      File Sink Vectorization:
-                          className: VectorFileSinkOperator
-                          native: false
                       Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.char_ctas_1
-            Execution mode: vectorized, llap
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string)
+                      outputColumnNames: col1, col2
+                      Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 958 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 958 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+            Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: true
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 1
-                    includeColumns: [0]
-                    dataColumns: vs:char(10)
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, string]
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+        Reducer 2 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 974 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 974 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -269,6 +305,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: _c0, _c1
+          Column Types: int, string
+          Table: default.char_ctas_1
 
   Stage: Stage-0
     Move Operator

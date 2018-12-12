@@ -13,8 +13,9 @@ POSTHOOK: Output: default@summary
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0, Stage-3
+  Stage-2 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -52,6 +53,21 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.summary
+            Select Operator
+              expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), _col3 (type: string)
+              outputColumnNames: col1, col2, col3, col4
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll'), compute_stats(col4, 'hll')
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -59,7 +75,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-3
+  Stage: Stage-4
       Create Table Operator:
         Create Table
           columns: key string, value string, _c1 double, _c2 string
@@ -71,6 +87,33 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value, _c1, _c2
+          Column Types: string, string, double, string
+          Table: default.summary
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: create table summary as select *, key + 1, concat(value, value) from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -105,7 +148,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c1\":\"true\",\"_c2\":\"true\",\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	20                  
@@ -166,8 +209,9 @@ POSTHOOK: Output: default@x4
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0, Stage-3
+  Stage-2 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -220,6 +264,21 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.x4
+              Select Operator
+                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+                outputColumnNames: col1, col2, col3
+                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -227,7 +286,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-3
+  Stage: Stage-4
       Create Table Operator:
         Create Table
           columns: key string, value string, rr int
@@ -239,6 +298,33 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value, rr
+          Column Types: string, string, int
+          Table: default.x4
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -271,7 +357,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"rr\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	25                  
@@ -338,8 +424,9 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0, Stage-4
+  Stage-3 depends on stages: Stage-5
+  Stage-4 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -420,6 +507,21 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.x5
+            Select Operator
+              expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              outputColumnNames: col1, col2, col3
+              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -427,7 +529,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-4
+  Stage: Stage-5
       Create Table Operator:
         Create Table
           columns: key string, value string, lead1 string
@@ -439,6 +541,33 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value, lead1
+          Column Types: string, string, string
+          Table: default.x5
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -471,7 +600,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"lead1\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	20                  
@@ -559,7 +688,32 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.x6
-      Execution mode: vectorized
+              Select Operator
+                expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double)
+                outputColumnNames: col1, col2, col3
+                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-7
     Conditional Operator
@@ -588,6 +742,10 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value, _c1
+          Column Types: string, string, double
+          Table: default.x6
 
   Stage: Stage-3
     Map Reduce
@@ -650,7 +808,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c1\":\"true\",\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	25                  
@@ -716,8 +874,9 @@ POSTHOOK: Output: default@x7
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0, Stage-3
+  Stage-2 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -758,6 +917,21 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.x7
+          Select Operator
+            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+            outputColumnNames: col1, col2, col3
+            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+              mode: hash
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -765,7 +939,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-3
+  Stage: Stage-4
       Create Table Operator:
         Create Table
           columns: _col0 string, _col1 string, _c1 bigint
@@ -777,6 +951,33 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: _col0, _col1, _c1
+          Column Types: string, string, bigint
+          Table: default.x7
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: create table x7 as select * from (select *, count(value) from src group by key, value) a
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -809,7 +1010,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c1\":\"true\",\"_col0\":\"true\",\"_col1\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	309                 
@@ -1159,8 +1360,9 @@ POSTHOOK: Output: default@x8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0, Stage-3
+  Stage-2 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1201,6 +1403,21 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.x8
+          Select Operator
+            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+            outputColumnNames: col1, col2, col3
+            Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+              mode: hash
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -1208,7 +1425,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-3
+  Stage: Stage-4
       Create Table Operator:
         Create Table
           columns: _col0 string, _col1 string, _c1 bigint
@@ -1220,6 +1437,33 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: _col0, _col1, _c1
+          Column Types: string, string, bigint
+          Table: default.x8
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: create table x8 as select * from (select *, count(value) from src group by key, value having key < 9) a
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1252,7 +1496,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c1\":\"true\",\"_col0\":\"true\",\"_col1\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	5                   
@@ -1298,8 +1542,9 @@ POSTHOOK: Output: default@x9
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
-  Stage-2 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0, Stage-3
+  Stage-2 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1347,6 +1592,21 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.x9
+              Select Operator
+                expressions: _col0 (type: string), _col1 (type: string)
+                outputColumnNames: col1, col2
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 964 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
@@ -1354,7 +1614,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-3
+  Stage: Stage-4
       Create Table Operator:
         Create Table
           columns: _c0 string, key string
@@ -1366,6 +1626,33 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: _c0, key
+          Column Types: string, string
+          Table: default.x9
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 964 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 964 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 964 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: create table x9 as select * from (select max(value),key from src group by key having key < 9 AND max(value) IS NOT NULL) a
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1396,7 +1683,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c0\":\"true\",\"key\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	5                   

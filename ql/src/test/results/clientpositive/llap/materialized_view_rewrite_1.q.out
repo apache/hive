@@ -33,16 +33,6 @@ POSTHOOK: Lineage: emps_n3.deptno SCRIPT []
 POSTHOOK: Lineage: emps_n3.empid SCRIPT []
 POSTHOOK: Lineage: emps_n3.name SCRIPT []
 POSTHOOK: Lineage: emps_n3.salary SCRIPT []
-PREHOOK: query: analyze table emps_n3 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@emps_n3
-PREHOOK: Output: default@emps_n3
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table emps_n3 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@emps_n3
-POSTHOOK: Output: default@emps_n3
-#### A masked pattern was here ####
 PREHOOK: query: create table depts_n2 (
   deptno int,
   name varchar(256),
@@ -70,16 +60,6 @@ POSTHOOK: Output: default@depts_n2
 POSTHOOK: Lineage: depts_n2.deptno SCRIPT []
 POSTHOOK: Lineage: depts_n2.locationid SCRIPT []
 POSTHOOK: Lineage: depts_n2.name SCRIPT []
-PREHOOK: query: analyze table depts_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@depts_n2
-PREHOOK: Output: default@depts_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table depts_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@depts_n2
-POSTHOOK: Output: default@depts_n2
-#### A masked pattern was here ####
 PREHOOK: query: create table dependents_n2 (
   empid int,
   name varchar(256))
@@ -104,16 +84,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependents_n2
 POSTHOOK: Lineage: dependents_n2.empid SCRIPT []
 POSTHOOK: Lineage: dependents_n2.name SCRIPT []
-PREHOOK: query: analyze table dependents_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@dependents_n2
-PREHOOK: Output: default@dependents_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table dependents_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@dependents_n2
-POSTHOOK: Output: default@dependents_n2
-#### A masked pattern was here ####
 PREHOOK: query: create table locations_n2 (
   locationid int,
   name varchar(256))
@@ -138,16 +108,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@locations_n2
 POSTHOOK: Lineage: locations_n2.locationid SCRIPT []
 POSTHOOK: Lineage: locations_n2.name SCRIPT []
-PREHOOK: query: analyze table locations_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@locations_n2
-PREHOOK: Output: default@locations_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table locations_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@locations_n2
-POSTHOOK: Output: default@locations_n2
-#### A masked pattern was here ####
 PREHOOK: query: alter table emps_n3 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table emps_n3 add constraint pk1 primary key (empid) disable novalidate rely
@@ -184,16 +144,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select *
 from (select * from emps_n3 where empid < 120) t
@@ -331,16 +281,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select emps_n3.name, emps_n3.salary, emps_n3.commission
 from emps_n3
@@ -422,16 +362,6 @@ POSTHOOK: Input: default@depts_n2
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select empid deptno from emps_n3
 join depts_n2 using (deptno) where empid = 1
@@ -500,16 +430,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select * from emps_n3 where empid > 120
 union all select * from emps_n3 where empid < 150
@@ -627,16 +547,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select empid, deptno from emps_n3 group by empid, deptno
 PREHOOK: type: QUERY
@@ -695,16 +605,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select empid, name from emps_n3 group by empid, name
 PREHOOK: type: QUERY
@@ -763,16 +663,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select name, salary from emps_n3 group by name, salary
 PREHOOK: type: QUERY
@@ -834,16 +724,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select name from emps_n3 group by name
 PREHOOK: type: QUERY
@@ -945,16 +825,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select name from emps_n3 where deptno = 10 group by name
 PREHOOK: type: QUERY
@@ -1057,16 +927,6 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: analyze table mv1_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_n2
-PREHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_n2
-POSTHOOK: Output: default@mv1_n2
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select name from emps_n3 group by name
 PREHOOK: type: QUERY

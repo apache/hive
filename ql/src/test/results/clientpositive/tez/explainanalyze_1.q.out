@@ -90,23 +90,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_n28
 Plan optimized by CBO.
 
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
 Stage-3
   Stats Work{}
     Stage-4
       Create Table Operator:
         name:default.t_n28
-        Stage-2
-          Dependency Collection{}
-            Stage-1
-              Map 1
-              File Output Operator [FS_2]
-                table:{"name:":"default.t_n28"}
-                Select Operator [SEL_1] (rows=500/500 width=87)
-                  Output:["_col0"]
-                  TableScan [TS_0] (rows=500/500 width=87)
-                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
         Stage-0
           Move Operator
+            Stage-1
+              Reducer 2
+              File Output Operator [FS_11]
+                Group By Operator [GBY_9] (rows=1/1 width=440)
+                  Output:["_col0"],aggregations:["compute_stats(VALUE._col0, 'hll')"]
+                <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                  File Output Operator [FS_2]
+                    table:{"name:":"default.t_n28"}
+                    Select Operator [SEL_1] (rows=500/500 width=87)
+                      Output:["_col0"]
+                      TableScan [TS_0] (rows=500/500 width=87)
+                        default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                  PARTITION_ONLY_SHUFFLE [RS_8]
+                    Select Operator [SEL_7] (rows=500/500 width=87)
+                      Output:["col1"]
+                       Please refer to the previous Select Operator [SEL_1]
+        Stage-2
+          Dependency Collection{}
              Please refer to the previous Stage-1
 
 PREHOOK: query: create table t_n28 as select key from src
