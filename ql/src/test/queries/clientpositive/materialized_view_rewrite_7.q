@@ -15,7 +15,6 @@ create table emps_n8 (
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into emps_n8 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
   (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250);
-analyze table emps_n8 compute statistics for columns;
 
 create table depts_n6 (
   deptno int,
@@ -23,21 +22,18 @@ create table depts_n6 (
   locationid int)
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into depts_n6 values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20);
-analyze table depts_n6 compute statistics for columns;
 
 create table dependents_n4 (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into dependents_n4 values (10, 'Michael'), (20, 'Jane');
-analyze table dependents_n4 compute statistics for columns;
 
 create table locations_n4 (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into locations_n4 values (10, 'San Francisco'), (20, 'San Diego');
-analyze table locations_n4 compute statistics for columns;
 
 alter table emps_n8 add constraint pk1 primary key (empid) disable novalidate rely;
 alter table depts_n6 add constraint pk2 primary key (deptno) disable novalidate rely;
@@ -60,7 +56,6 @@ join locations_n4 on (locations_n4.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno > 11
 group by depts_n6.deptno, dependents_n4.empid;
-analyze table mv1_n4 compute statistics for columns;
 
 explain
 select dependents_n4.empid, depts_n6.deptno
@@ -90,7 +85,6 @@ join locations_n4 on (locations_n4.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno > 11 and depts_n6.deptno < 19
 group by depts_n6.deptno, dependents_n4.empid;
-analyze table mv1_n4 compute statistics for columns;
 
 explain
 select dependents_n4.empid, count(emps_n8.salary) + 1
@@ -119,7 +113,6 @@ from depts_n6
 join dependents_n4 on (depts_n6.name = dependents_n4.name)
 join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
 where depts_n6.deptno >= 10;
-analyze table mv1_n4 compute statistics for columns;
 
 explain
 select dependents_n4.empid

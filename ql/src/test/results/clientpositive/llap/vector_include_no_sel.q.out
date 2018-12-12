@@ -200,7 +200,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_demographics
-                  Statistics: Num rows: 200 Data size: 35908 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 200 Data size: 17800 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -210,7 +210,7 @@ STAGE PLANS:
                         native: false
                         nativeConditionsMet: hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false
-                    Statistics: Num rows: 200 Data size: 35908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 200 Data size: 17800 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: cd_demo_sk (type: int), cd_marital_status (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -227,7 +227,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales_n1
-                  Statistics: Num rows: 1000 Data size: 3804 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 3796 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -237,7 +237,7 @@ STAGE PLANS:
                         native: false
                         nativeConditionsMet: hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false
-                    Statistics: Num rows: 1000 Data size: 3804 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 3796 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: ss_cdemo_sk (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -260,20 +260,20 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col2, _col16
-                Statistics: Num rows: 200000 Data size: 36868800 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 200000 Data size: 18599796 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: (((_col0 = _col16) and (_col2 = 'M')) or ((_col0 = _col16) and (_col2 = 'U'))) (type: boolean)
-                  Statistics: Num rows: 100000 Data size: 18434400 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 100000 Data size: 18434400 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(1)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             MergeJoin Vectorization:
                 enabled: false
@@ -298,13 +298,13 @@ STAGE PLANS:
                     projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

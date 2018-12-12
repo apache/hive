@@ -28,16 +28,6 @@ POSTHOOK: Lineage: cmv_basetable_n5.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n5.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n5.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n5.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_n5 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_n5
-PREHOOK: Output: default@cmv_basetable_n5
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_n5 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_n5
-POSTHOOK: Output: default@cmv_basetable_n5
-#### A masked pattern was here ####
 PREHOOK: query: create table cmv_basetable_2_n2 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,16 +52,6 @@ POSTHOOK: Lineage: cmv_basetable_2_n2.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n2.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n2.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n2.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n2
-PREHOOK: Output: default@cmv_basetable_2_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n2
-POSTHOOK: Output: default@cmv_basetable_2_n2
-#### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 CREATE MATERIALIZED VIEW cmv_mat_view_n5 DISABLE REWRITE TBLPROPERTIES ('transactional'='true') AS
   SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)
@@ -97,7 +77,7 @@ POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
+  Stage-4 depends on stages: Stage-0, Stage-2
   Stage-3 depends on stages: Stage-4
   Stage-5 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
@@ -192,6 +172,27 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.cmv_mat_view_n5
+                  Write Type: INSERT
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: decimal(10,2)), _col2 (type: bigint)
+                  outputColumnNames: col1, col2, col3
+                  Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll'), compute_stats(col3, 'hll')
+                    mode: complete
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(10,2),max:decimal(10,2),countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -215,6 +216,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: a, c, _c2
+          Column Types: int, decimal(10,2), bigint
+          Table: default.cmv_mat_view_n5
 
   Stage: Stage-5
     Materialized View Work
@@ -224,6 +229,7 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
+          Write Type: INSERT
 
 PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n5 DISABLE REWRITE TBLPROPERTIES ('transactional'='true') AS
   SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)
@@ -245,16 +251,6 @@ POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n5
-PREHOOK: query: analyze table cmv_mat_view_n5 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_mat_view_n5
-PREHOOK: Output: default@cmv_mat_view_n5
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_mat_view_n5 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_mat_view_n5
-POSTHOOK: Output: default@cmv_mat_view_n5
-#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view_n5
@@ -275,10 +271,10 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
-	numFiles            	2                   
+	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	736                 
+	totalSize           	809                 
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -457,16 +453,6 @@ POSTHOOK: Lineage: cmv_basetable_2_n2.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n2.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n2.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n2.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n2
-PREHOOK: Output: default@cmv_basetable_2_n2
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n2
-POSTHOOK: Output: default@cmv_basetable_2_n2
-#### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 ENABLE REWRITE
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
@@ -515,10 +501,10 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
-	numFiles            	2                   
+	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	736                 
+	totalSize           	809                 
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -766,10 +752,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-                  filterExpr: ((c > 10) and (ROW__ID.writeid > 2) and a is not null) (type: boolean)
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 1) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 2) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 1) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2)), d (type: int)
@@ -983,10 +969,10 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
-	numFiles            	3                   
+	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	0                   
-	totalSize           	1500                
+	totalSize           	1573                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1247,6 +1233,54 @@ POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
+PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cmv_mat_view_n5
+POSTHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cmv_mat_view_n5
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+c                   	decimal(10,2)       	                    
+_c2                 	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	0                   
+	totalSize           	814                 
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  WHERE cmv_basetable_2_n2.c > 10.0
+	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
+	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
+	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1483,6 +1517,54 @@ POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
+PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cmv_mat_view_n5
+POSTHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cmv_mat_view_n5
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+c                   	decimal(10,2)       	                    
+_c2                 	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	812                 
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  WHERE cmv_basetable_2_n2.c > 10.0
+	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
+	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
+	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1637,10 +1719,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-                  filterExpr: ((c > 10) and (ROW__ID.writeid > 6) and a is not null) (type: boolean)
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 4) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 6) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 4) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2)), d (type: int)
@@ -1834,6 +1916,54 @@ POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_mat_view_n5)default.cmv_mat_view_n5.FieldSchema(name:a, type:int, comment:null), (cmv_mat_view_n5)default.cmv_mat_view_n5.FieldSchema(name:c, type:decimal(10,2), comment:null), (cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), (cmv_mat_view_n5)default.cmv_mat_view_n5.FieldSchema(name:_c2, type:bigint, comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
+PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cmv_mat_view_n5
+POSTHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cmv_mat_view_n5
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+c                   	decimal(10,2)       	                    
+_c2                 	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2                   
+	numRows             	3                   
+	rawDataSize         	0                   
+	totalSize           	1573                
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)	 
+	                    	  FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  WHERE cmv_basetable_2_n2.c > 10.0
+	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
+Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
+	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
+	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)

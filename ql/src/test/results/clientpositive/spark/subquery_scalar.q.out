@@ -506,6 +506,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
         Map 6 
             Map Operator Tree:
@@ -1067,6 +1068,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: +
                       Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:

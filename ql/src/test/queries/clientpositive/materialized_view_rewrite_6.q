@@ -15,7 +15,6 @@ create table emps (
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
   (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250);
-analyze table emps compute statistics for columns;
 
 create table depts (
   deptno int,
@@ -23,21 +22,18 @@ create table depts (
   locationid int)
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20);
-analyze table depts compute statistics for columns;
 
 create table dependents (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into dependents values (10, 'Michael'), (20, 'Jane');
-analyze table dependents compute statistics for columns;
 
 create table locations (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
 insert into locations values (10, 'San Francisco'), (20, 'San Diego');
-analyze table locations compute statistics for columns;
 
 alter table emps add constraint pk1 primary key (empid) disable novalidate rely;
 alter table depts add constraint pk2 primary key (deptno) disable novalidate rely;
@@ -55,7 +51,6 @@ alter table depts change column locationid locationid int constraint nn2 not nul
 create materialized view mv1 as
 select name, deptno, salary, count(*) + 1 as c, sum(empid) as s
 from emps where deptno >= 10 group by name, deptno, salary;
-analyze table mv1 compute statistics for columns;
 
 explain
 select salary, sum(empid) + 1 as s
@@ -70,7 +65,6 @@ drop materialized view mv1;
 create materialized view mv1 as
 select name, deptno, salary, count(*) + 1 as c, sum(empid) as s
 from emps where deptno >= 15 group by name, deptno, salary;
-analyze table mv1 compute statistics for columns;
 
 explain
 select salary + 1, sum(empid) + 1 as s
@@ -86,7 +80,6 @@ create materialized view mv1 as
 select depts.name
 from emps
 join depts on (emps.deptno = depts.deptno);
-analyze table mv1 compute statistics for columns;
 
 explain
 select dependents.empid
@@ -106,7 +99,6 @@ create materialized view mv1 as
 select depts.name
 from emps
 join depts on (emps.deptno = depts.deptno);
-analyze table mv1 compute statistics for columns;
 
 explain
 select dependents.empid
@@ -127,7 +119,6 @@ drop materialized view mv1;
 create materialized view mv1 as
 select emps.empid, emps.deptno, emps.name as name1, emps.salary, emps.commission, dependents.name as name2
 from emps join dependents on (emps.empid = dependents.empid);
-analyze table mv1 compute statistics for columns;
 
 explain
 select emps.empid, dependents.empid, emps.deptno

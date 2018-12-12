@@ -59,6 +59,7 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: ++
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                TopN Hash Memory Usage: 0.1
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
@@ -163,6 +164,7 @@ STAGE PLANS:
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
@@ -314,6 +316,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -421,6 +424,7 @@ STAGE PLANS:
             Reduce Output Operator
               sort order: 
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: string)
       Execution mode: vectorized
       Reduce Operator Tree:

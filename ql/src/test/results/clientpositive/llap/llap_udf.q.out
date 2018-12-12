@@ -41,14 +41,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n0
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: evaluate_npe(key) (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -108,14 +108,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n0
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: GenericUDFTestGetJavaString(key) (type: string), GenericUDFTestGetJavaString(key) (type: string), evaluate_npe(key) (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 276000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 276000 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -152,19 +152,20 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n0
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: evaluate_npe(key) (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -203,14 +204,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n0
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: GenericUDFTestGetJavaString(key) (type: string), evaluate_npe(key) (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -255,14 +256,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n0
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: evaluate_npe(key) (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -298,14 +299,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_orc_n0
-                  Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: GenericUDFTestGetJavaString(key) (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

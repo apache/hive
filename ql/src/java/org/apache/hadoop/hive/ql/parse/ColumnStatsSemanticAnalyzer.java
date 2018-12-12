@@ -148,7 +148,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
-  private StringBuilder genPartitionClause(Map<String, String> partSpec) throws SemanticException {
+  private static StringBuilder genPartitionClause(Table tbl, Map<String, String> partSpec)
+      throws SemanticException {
     StringBuilder whereClause = new StringBuilder(" where ");
     boolean predPresent = false;
     StringBuilder groupByClause = new StringBuilder(" group by ");
@@ -162,7 +163,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         } else {
           whereClause.append(" and ");
         }
-        whereClause.append("`").append(partKey).append("` = ").append(genPartValueString(getColTypeOf(partKey), value));
+        whereClause.append("`").append(partKey).append("` = ")
+            .append(genPartValueString(getColTypeOf(tbl, partKey), value));
       }
     }
 
@@ -181,8 +183,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
 
 
-  private String getColTypeOf(String partKey) throws SemanticException{
-
+  private static String getColTypeOf(Table tbl, String partKey) throws SemanticException{
     for (FieldSchema fs : tbl.getPartitionKeys()) {
       if (partKey.equalsIgnoreCase(fs.getName())) {
         return fs.getType().toLowerCase();
@@ -191,8 +192,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     throw new SemanticException("Unknown partition key : " + partKey);
   }
 
-  private List<String> getColumnTypes(List<String> colNames)
-      throws SemanticException{
+  private static List<String> getColumnTypes(Table tbl, List<String> colNames) {
     List<String> colTypes = new ArrayList<String>();
     List<FieldSchema> cols = tbl.getCols();
     List<String> copyColNames = new ArrayList<>(colNames);
@@ -215,21 +215,33 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return colTypes;
   }
 
-  private String escapeBackTicks(String colName) {
+  private static String escapeBackTicks(String colName) {
     return colName.replaceAll("`", "``");
   }
 
   private String genRewrittenQuery(List<String> colNames, HiveConf conf, Map<String, String> partSpec,
-      boolean isPartitionStats) throws SemanticException{
+      boolean isPartitionStats, boolean useTableValues) throws SemanticException {
+    String rewrittenQuery = genRewrittenQuery(tbl, colNames, conf, partSpec, isPartitionStats, useTableValues);
+    isRewritten = true;
+    return rewrittenQuery;
+  }
+
+  public static String genRewrittenQuery(Table tbl, List<String> colNames, HiveConf conf, Map<String, String> partSpec,
+      boolean isPartitionStats, boolean useTableValues) throws SemanticException{
     StringBuilder rewrittenQueryBuilder = new StringBuilder("select ");
 
+    StringBuilder columnNamesBuilder = new StringBuilder();
+    StringBuilder columnDummyValuesBuilder = new StringBuilder();
     for (int i = 0; i < colNames.size(); i++) {
       if (i > 0) {
         rewrittenQueryBuilder.append(" , ");
+        columnNamesBuilder.append(" , ");
+        columnDummyValuesBuilder.append(" , ");
       }
       String func = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ALGO).toLowerCase();
       rewrittenQueryBuilder.append("compute_stats(`");
-      rewrittenQueryBuilder.append(escapeBackTicks(colNames.get(i)));
+      final String columnName = escapeBackTicks(colNames.get(i));
+      rewrittenQueryBuilder.append(columnName);
       rewrittenQueryBuilder.append("`, '" + func + "'");
       if ("fm".equals(func)) {
         int numBitVectors = 0;
@@ -241,23 +253,45 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         rewrittenQueryBuilder.append(", " + numBitVectors);
       }
       rewrittenQueryBuilder.append(')');
+
+      columnNamesBuilder.append("`" + columnName + "`");
+
+      columnDummyValuesBuilder.append(
+          "cast(null as " + TypeInfoUtils.getTypeInfoFromTypeString(tbl.getCols().get(i).getType()).toString() + ")");
     }
 
     if (isPartitionStats) {
       for (FieldSchema fs : tbl.getPartCols()) {
-        rewrittenQueryBuilder.append(" , `" + fs.getName() + "`");
+        final String partColumnName = " , `" + fs.getName() + "`";
+        rewrittenQueryBuilder.append(partColumnName);
+
+        columnNamesBuilder.append(partColumnName);
+
+        columnDummyValuesBuilder.append(
+            " , cast(null as " + TypeInfoUtils.getTypeInfoFromTypeString(fs.getType()).toString() + ")");
       }
     }
-    rewrittenQueryBuilder.append(" from `");
-    rewrittenQueryBuilder.append(tbl.getDbName());
-    rewrittenQueryBuilder.append("`.");
-    rewrittenQueryBuilder.append("`" + tbl.getTableName() + "`");
-    isRewritten = true;
+
+    rewrittenQueryBuilder.append(" from ");
+    if (useTableValues) {
+      //TABLE(VALUES(cast(null as int),cast(null as string))) AS tablename(col1,col2)
+      rewrittenQueryBuilder.append("table(values(");
+      // Values
+      rewrittenQueryBuilder.append(columnDummyValuesBuilder.toString());
+      rewrittenQueryBuilder.append(")) as ");
+      rewrittenQueryBuilder.append("`" + tbl.getTableName() + "`");
+      rewrittenQueryBuilder.append("(");
+      // Columns
+      rewrittenQueryBuilder.append(columnNamesBuilder.toString());
+      rewrittenQueryBuilder.append(")");
+    } else {
+      rewrittenQueryBuilder.append("`" + tbl.getDbName() + "`.`" + tbl.getTableName() + "`");
+    }
 
     // If partition level statistics is requested, add predicate and group by as needed to rewritten
     // query
     if (isPartitionStats) {
-      rewrittenQueryBuilder.append(genPartitionClause(partSpec));
+      rewrittenQueryBuilder.append(genPartitionClause(tbl, partSpec));
     }
 
     String rewrittenQuery = rewrittenQueryBuilder.toString();
@@ -311,7 +345,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
-  private void logTypeWarning(String colName, String colType) {
+  private static void logTypeWarning(String colName, String colType) {
     String warning = "Only primitive type arguments are accepted but " + colType
         + " is passed for " + colName + ".";
     warning = "WARNING: " + warning;
@@ -353,8 +387,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       } else {
         isTableLevel = true;
       }
-      colType = getColumnTypes(colNames);
-      rewrittenQuery = genRewrittenQuery(colNames, conf, partSpec, isPartitionStats);
+      colType = getColumnTypes(tbl, colNames);
+      rewrittenQuery = genRewrittenQuery(colNames, conf, partSpec, isPartitionStats, false);
       rewrittenTree = genRewrittenTree(rewrittenQuery);
     } else {
       // Not an analyze table column compute statistics statement - don't do any rewrites
@@ -391,19 +425,19 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * @param ast
    *          is the original analyze ast
-   * @param qb
-   *          is the qb that calls this function
-   * @param sem
-   *          is the semantic analyzer that calls this function
+   * @param context
+   *          the column stats auto gather context
    * @return
    * @throws SemanticException
    */
   public ASTNode rewriteAST(ASTNode ast, ColumnStatsAutoGatherContext context)
       throws SemanticException {
-    tbl = AnalyzeCommandUtils.getTable(ast, this);
-    colNames = getColumnName(ast);
     // Save away the original AST
     originalTree = ast;
+
+    tbl = AnalyzeCommandUtils.getTable(ast, this);
+
+    colNames = getColumnName(ast);
     boolean isPartitionStats = AnalyzeCommandUtils.isPartitionLevelStats(ast);
     Map<String, String> partSpec = null;
     checkForPartitionColumns(colNames,
@@ -414,21 +448,38 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     if (isPartitionStats) {
-      isTableLevel = false;
       partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf);
       handlePartialPartitionSpec(partSpec, context);
-    } else {
-      isTableLevel = true;
     }
-    colType = getColumnTypes(colNames);
-    rewrittenQuery = genRewrittenQuery(colNames, conf, partSpec, isPartitionStats);
+
+    colType = getColumnTypes(tbl, colNames);
+
+    isTableLevel = !isPartitionStats;
+
+    rewrittenQuery = genRewrittenQuery(colNames, conf, partSpec, isPartitionStats, false);
     rewrittenTree = genRewrittenTree(rewrittenQuery);
 
-    context.analyzeRewrite = new AnalyzeRewriteContext();
-    context.analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
-    context.analyzeRewrite.setTblLvl(isTableLevel);
-    context.analyzeRewrite.setColName(colNames);
-    context.analyzeRewrite.setColType(colType);
     return rewrittenTree;
   }
+
+  AnalyzeRewriteContext getAnalyzeRewriteContext() {
+    AnalyzeRewriteContext analyzeRewrite = new AnalyzeRewriteContext();
+    analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
+    analyzeRewrite.setTblLvl(isTableLevel);
+    analyzeRewrite.setColName(colNames);
+    analyzeRewrite.setColType(colType);
+    return analyzeRewrite;
+  }
+
+  static AnalyzeRewriteContext genAnalyzeRewriteContext(HiveConf conf, Table tbl) {
+    AnalyzeRewriteContext analyzeRewrite = new AnalyzeRewriteContext();
+    analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
+    analyzeRewrite.setTblLvl(!(conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()));
+    List<String> colNames = Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
+    List<String> colTypes = getColumnTypes(tbl, colNames);
+    analyzeRewrite.setColName(colNames);
+    analyzeRewrite.setColType(colTypes);
+    return analyzeRewrite;
+  }
+
 }

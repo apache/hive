@@ -33,16 +33,6 @@ POSTHOOK: Lineage: emps_n30.deptno SCRIPT []
 POSTHOOK: Lineage: emps_n30.empid SCRIPT []
 POSTHOOK: Lineage: emps_n30.name SCRIPT []
 POSTHOOK: Lineage: emps_n30.salary SCRIPT []
-PREHOOK: query: analyze table emps_n30 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@emps_n30
-PREHOOK: Output: default@emps_n30
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table emps_n30 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@emps_n30
-POSTHOOK: Output: default@emps_n30
-#### A masked pattern was here ####
 PREHOOK: query: create table depts_n20 (
   deptno int,
   name varchar(256),
@@ -70,16 +60,6 @@ POSTHOOK: Output: default@depts_n20
 POSTHOOK: Lineage: depts_n20.deptno SCRIPT []
 POSTHOOK: Lineage: depts_n20.locationid SCRIPT []
 POSTHOOK: Lineage: depts_n20.name SCRIPT []
-PREHOOK: query: analyze table depts_n20 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@depts_n20
-PREHOOK: Output: default@depts_n20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table depts_n20 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@depts_n20
-POSTHOOK: Output: default@depts_n20
-#### A masked pattern was here ####
 PREHOOK: query: create table dependents_n20 (
   empid int,
   name varchar(256))
@@ -104,16 +84,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependents_n20
 POSTHOOK: Lineage: dependents_n20.empid SCRIPT []
 POSTHOOK: Lineage: dependents_n20.name SCRIPT []
-PREHOOK: query: analyze table dependents_n20 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@dependents_n20
-PREHOOK: Output: default@dependents_n20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table dependents_n20 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@dependents_n20
-POSTHOOK: Output: default@dependents_n20
-#### A masked pattern was here ####
 PREHOOK: query: create table locations_n20 (
   locationid int,
   name varchar(256))
@@ -138,16 +108,6 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@locations_n20
 POSTHOOK: Lineage: locations_n20.locationid SCRIPT []
 POSTHOOK: Lineage: locations_n20.name SCRIPT []
-PREHOOK: query: analyze table locations_n20 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@locations_n20
-PREHOOK: Output: default@locations_n20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table locations_n20 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@locations_n20
-POSTHOOK: Output: default@locations_n20
-#### A masked pattern was here ####
 PREHOOK: query: alter table emps_n30 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table emps_n30 add constraint pk1 primary key (empid) disable novalidate rely
@@ -190,20 +150,6 @@ POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n2
-PREHOOK: Input: default@mv1_part_n2@deptno=10
-PREHOOK: Output: default@mv1_part_n2
-PREHOOK: Output: default@mv1_part_n2@deptno=10
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n2
-POSTHOOK: Input: default@mv1_part_n2@deptno=10
-POSTHOOK: Output: default@mv1_part_n2
-POSTHOOK: Output: default@mv1_part_n2@deptno=10
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select *
 from (select * from emps_n30 where empid < 120) t
@@ -369,24 +315,6 @@ POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).salary SIMPLE [(emps_n30)emp
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=20).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=20).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=20).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n2
-PREHOOK: Input: default@mv1_part_n2@deptno=10
-PREHOOK: Input: default@mv1_part_n2@deptno=20
-PREHOOK: Output: default@mv1_part_n2
-PREHOOK: Output: default@mv1_part_n2@deptno=10
-PREHOOK: Output: default@mv1_part_n2@deptno=20
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n2
-POSTHOOK: Input: default@mv1_part_n2@deptno=10
-POSTHOOK: Input: default@mv1_part_n2@deptno=20
-POSTHOOK: Output: default@mv1_part_n2
-POSTHOOK: Output: default@mv1_part_n2@deptno=10
-POSTHOOK: Output: default@mv1_part_n2@deptno=20
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select emps_n30.name, emps_n30.salary, emps_n30.commission
 from emps_n30
@@ -476,20 +404,6 @@ POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n2
-PREHOOK: Input: default@mv1_part_n2@deptno=10
-PREHOOK: Output: default@mv1_part_n2
-PREHOOK: Output: default@mv1_part_n2@deptno=10
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n2
-POSTHOOK: Input: default@mv1_part_n2@deptno=10
-POSTHOOK: Output: default@mv1_part_n2
-POSTHOOK: Output: default@mv1_part_n2@deptno=10
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select * from emps_n30 where empid > 120
 union all select * from emps_n30 where empid < 150
@@ -620,32 +534,6 @@ POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emp
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Eric).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Theodore).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n2
-PREHOOK: Input: default@mv1_part_n2@name=Bill
-PREHOOK: Input: default@mv1_part_n2@name=Eric
-PREHOOK: Input: default@mv1_part_n2@name=Sebastian
-PREHOOK: Input: default@mv1_part_n2@name=Theodore
-PREHOOK: Output: default@mv1_part_n2
-PREHOOK: Output: default@mv1_part_n2@name=Bill
-PREHOOK: Output: default@mv1_part_n2@name=Eric
-PREHOOK: Output: default@mv1_part_n2@name=Sebastian
-PREHOOK: Output: default@mv1_part_n2@name=Theodore
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n2
-POSTHOOK: Input: default@mv1_part_n2@name=Bill
-POSTHOOK: Input: default@mv1_part_n2@name=Eric
-POSTHOOK: Input: default@mv1_part_n2@name=Sebastian
-POSTHOOK: Input: default@mv1_part_n2@name=Theodore
-POSTHOOK: Output: default@mv1_part_n2
-POSTHOOK: Output: default@mv1_part_n2@name=Bill
-POSTHOOK: Output: default@mv1_part_n2@name=Eric
-POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
-POSTHOOK: Output: default@mv1_part_n2@name=Theodore
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select name, salary from emps_n30 group by name, salary
 PREHOOK: type: QUERY
@@ -732,32 +620,6 @@ POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emp
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Eric).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Theodore).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n2
-PREHOOK: Input: default@mv1_part_n2@name=Bill
-PREHOOK: Input: default@mv1_part_n2@name=Eric
-PREHOOK: Input: default@mv1_part_n2@name=Sebastian
-PREHOOK: Input: default@mv1_part_n2@name=Theodore
-PREHOOK: Output: default@mv1_part_n2
-PREHOOK: Output: default@mv1_part_n2@name=Bill
-PREHOOK: Output: default@mv1_part_n2@name=Eric
-PREHOOK: Output: default@mv1_part_n2@name=Sebastian
-PREHOOK: Output: default@mv1_part_n2@name=Theodore
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n2
-POSTHOOK: Input: default@mv1_part_n2@name=Bill
-POSTHOOK: Input: default@mv1_part_n2@name=Eric
-POSTHOOK: Input: default@mv1_part_n2@name=Sebastian
-POSTHOOK: Input: default@mv1_part_n2@name=Theodore
-POSTHOOK: Output: default@mv1_part_n2
-POSTHOOK: Output: default@mv1_part_n2@name=Bill
-POSTHOOK: Output: default@mv1_part_n2@name=Eric
-POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
-POSTHOOK: Output: default@mv1_part_n2@name=Theodore
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select name from emps_n30 group by name
 PREHOOK: type: QUERY
@@ -882,28 +744,6 @@ POSTHOOK: Output: default@mv1_part_n2@name=Theodore
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Theodore).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n2
-PREHOOK: Input: default@mv1_part_n2@name=Bill
-PREHOOK: Input: default@mv1_part_n2@name=Sebastian
-PREHOOK: Input: default@mv1_part_n2@name=Theodore
-PREHOOK: Output: default@mv1_part_n2
-PREHOOK: Output: default@mv1_part_n2@name=Bill
-PREHOOK: Output: default@mv1_part_n2@name=Sebastian
-PREHOOK: Output: default@mv1_part_n2@name=Theodore
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n2
-POSTHOOK: Input: default@mv1_part_n2@name=Bill
-POSTHOOK: Input: default@mv1_part_n2@name=Sebastian
-POSTHOOK: Input: default@mv1_part_n2@name=Theodore
-POSTHOOK: Output: default@mv1_part_n2
-POSTHOOK: Output: default@mv1_part_n2@name=Bill
-POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
-POSTHOOK: Output: default@mv1_part_n2@name=Theodore
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select name from emps_n30 where deptno = 10 group by name
 PREHOOK: type: QUERY
@@ -1035,32 +875,6 @@ POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n3
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Theodore).c EXPRESSION [(emps_n30)emps_n30.null, ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Theodore).s EXPRESSION [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Theodore).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
-PREHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1_part_n2
-PREHOOK: Input: default@mv1_part_n2@name=Bill
-PREHOOK: Input: default@mv1_part_n2@name=Eric
-PREHOOK: Input: default@mv1_part_n2@name=Sebastian
-PREHOOK: Input: default@mv1_part_n2@name=Theodore
-PREHOOK: Output: default@mv1_part_n2
-PREHOOK: Output: default@mv1_part_n2@name=Bill
-PREHOOK: Output: default@mv1_part_n2@name=Eric
-PREHOOK: Output: default@mv1_part_n2@name=Sebastian
-PREHOOK: Output: default@mv1_part_n2@name=Theodore
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1_part_n2 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1_part_n2
-POSTHOOK: Input: default@mv1_part_n2@name=Bill
-POSTHOOK: Input: default@mv1_part_n2@name=Eric
-POSTHOOK: Input: default@mv1_part_n2@name=Sebastian
-POSTHOOK: Input: default@mv1_part_n2@name=Theodore
-POSTHOOK: Output: default@mv1_part_n2
-POSTHOOK: Output: default@mv1_part_n2@name=Bill
-POSTHOOK: Output: default@mv1_part_n2@name=Eric
-POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
-POSTHOOK: Output: default@mv1_part_n2@name=Theodore
-#### A masked pattern was here ####
 PREHOOK: query: explain
 select name from emps_n30 group by name
 PREHOOK: type: QUERY

@@ -28,16 +28,6 @@ POSTHOOK: Lineage: cmv_basetable_n0.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n0.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n0.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n0.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_n0
-PREHOOK: Output: default@cmv_basetable_n0
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_n0
-POSTHOOK: Output: default@cmv_basetable_n0
-#### A masked pattern was here ####
 PREHOOK: query: create materialized view cmv_mat_view_n0
 as select a, b, c from cmv_basetable_n0 where a = 2
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -64,7 +54,7 @@ PREHOOK: query: show tblproperties cmv_mat_view_n0
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view_n0
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true"}}
 bucketing_version	2
 numFiles	1
 numFilesErasureCoded	0
@@ -98,7 +88,7 @@ PREHOOK: query: show tblproperties cmv_mat_view2
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view2
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","c":"true"}}
 bucketing_version	2
 numFiles	1
 numFilesErasureCoded	0
@@ -354,10 +344,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view2
-                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: a (type: int), c (type: decimal(10,2))
             Execution mode: llap
             LLAP IO: all inputs
@@ -371,14 +361,14 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col5
-                Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 456 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: decimal(10,2)), _col0 (type: int), _col5 (type: decimal(10,2))
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

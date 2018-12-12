@@ -77,6 +77,7 @@ STAGE PLANS:
                   key expressions: _col0 (type: int)
                   sort order: +
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: varchar(128))
       Execution mode: vectorized
       Reduce Operator Tree:

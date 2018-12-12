@@ -28,16 +28,6 @@ POSTHOOK: Lineage: cmv_basetable_n9.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n9.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n9.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n9.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_n9 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_n9
-PREHOOK: Output: default@cmv_basetable_n9
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_n9 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_n9
-POSTHOOK: Output: default@cmv_basetable_n9
-#### A masked pattern was here ####
 PREHOOK: query: create materialized view cmv_mat_view_n9
 as select b from cmv_basetable_n9 where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -269,24 +259,24 @@ STAGE PLANS:
                 TableScan
                   alias: default.cmv_mat_view_3
                   filterExpr: (c > 20) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 1368 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 618 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c > 20) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), b (type: varchar(256))
                       outputColumnNames: a, b
-                      Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: a (type: int), b (type: varchar(256))
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: varchar(256))
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(256))
-                          Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -296,14 +286,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: varchar(256))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: varchar(256))
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 456 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -367,21 +357,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_4
-                  Statistics: Num rows: 5 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 450 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: b (type: varchar(256))
                     outputColumnNames: b
-                    Statistics: Num rows: 5 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 450 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: b (type: varchar(256))
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: varchar(256))
                         sort order: +
                         Map-reduce partition columns: _col0 (type: varchar(256))
-                        Statistics: Num rows: 5 Data size: 1700 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -391,10 +381,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: varchar(256))
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 680 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 680 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -445,16 +435,6 @@ POSTHOOK: Lineage: cmv_basetable_2_n4.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n4.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n4.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n4.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n4 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n4
-PREHOOK: Output: default@cmv_basetable_2_n4
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n4 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n4
-POSTHOOK: Output: default@cmv_basetable_2_n4
-#### A masked pattern was here ####
 PREHOOK: query: create materialized view cmv_mat_view_5
 as select cmv_basetable_n9.a, cmv_basetable_2_n4.c
    from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
@@ -570,24 +550,24 @@ STAGE PLANS:
                 TableScan
                   alias: default.cmv_mat_view_5
                   filterExpr: (c > 10.1) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c > 10.1) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int)
                       outputColumnNames: a
-                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: a (type: int)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -597,10 +577,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

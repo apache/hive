@@ -17,8 +17,6 @@ insert into cmv_basetable_n7 values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1);
 
-analyze table cmv_basetable_n7 compute statistics for columns;
-
 create database db2;
 use db2;
 

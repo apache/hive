@@ -28,16 +28,6 @@ POSTHOOK: Lineage: cmv_basetable_n6.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n6.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n6.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n6.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_n6 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_n6
-PREHOOK: Output: default@cmv_basetable_n6
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_n6 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_n6
-POSTHOOK: Output: default@cmv_basetable_n6
-#### A masked pattern was here ####
 PREHOOK: query: create table cmv_basetable_2_n3 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,16 +52,6 @@ POSTHOOK: Lineage: cmv_basetable_2_n3.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n3 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n3
-PREHOOK: Output: default@cmv_basetable_2_n3
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n3 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n3
-POSTHOOK: Output: default@cmv_basetable_2_n3
-#### A masked pattern was here ####
 PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n6
   TBLPROPERTIES ('transactional'='true') AS
   SELECT cmv_basetable_n6.a, cmv_basetable_2_n3.c
@@ -92,16 +72,6 @@ POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n6
-PREHOOK: query: analyze table cmv_mat_view_n6 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_mat_view_n6
-PREHOOK: Output: default@cmv_mat_view_n6
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_mat_view_n6 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_mat_view_n6
-POSTHOOK: Output: default@cmv_mat_view_n6
-#### A masked pattern was here ####
 PREHOOK: query: insert into cmv_basetable_2_n3 values
  (3, 'charlie', 15.8, 1)
 PREHOOK: type: QUERY
@@ -116,16 +86,6 @@ POSTHOOK: Lineage: cmv_basetable_2_n3.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n3 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n3
-PREHOOK: Output: default@cmv_basetable_2_n3
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n3 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n3
-POSTHOOK: Output: default@cmv_basetable_2_n3
-#### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
@@ -290,10 +250,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n3
-                  filterExpr: ((c > 10) and (ROW__ID.writeid > 2) and a is not null) (type: boolean)
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 1) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 2) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 1) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2))
@@ -419,7 +379,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	5                   
 	rawDataSize         	0                   
-	totalSize           	1071                
+	totalSize           	1498                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1013,10 +973,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n3
-                  filterExpr: ((c > 10) and (ROW__ID.writeid > 6) and a is not null) (type: boolean)
+                  filterExpr: ((c > 10) and (ROW__ID.writeid > 4) and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 6) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 4) and (c > 10) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2))

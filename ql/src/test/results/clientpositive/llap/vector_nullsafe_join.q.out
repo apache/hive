@@ -54,7 +54,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Map Join Operator
@@ -74,7 +74,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col5, _col6
                     input vertices:
                       1 Map 2
-                    Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -82,13 +82,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2, 3]
-                      Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -108,7 +108,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -119,7 +119,7 @@ STAGE PLANS:
                         className: VectorReduceSinkLongOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: key (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -187,7 +187,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -196,7 +196,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -216,7 +216,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 2
                         2 Map 3
-                      Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -224,13 +224,13 @@ STAGE PLANS:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
-                        Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -251,7 +251,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: value is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -260,7 +260,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: int)
                       sort order: +
@@ -269,7 +269,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -287,7 +287,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -296,7 +296,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
@@ -305,7 +305,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -363,7 +363,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Map Join Operator
@@ -386,7 +386,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 2
                       2 Map 3
-                    Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -394,13 +394,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
-                      Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -420,7 +420,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -431,7 +431,7 @@ STAGE PLANS:
                         className: VectorReduceSinkLongOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: key (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -448,7 +448,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -459,7 +459,7 @@ STAGE PLANS:
                         className: VectorReduceSinkLongOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: value (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -545,7 +545,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: value is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -554,7 +554,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -575,7 +575,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 2
                         2 Map 3
-                      Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -583,13 +583,13 @@ STAGE PLANS:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
-                        Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -610,7 +610,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -619,7 +619,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: int), key (type: int)
                       sort order: ++
@@ -628,7 +628,7 @@ STAGE PLANS:
                           className: VectorReduceSinkMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -645,7 +645,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: value is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -654,7 +654,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: int), value (type: int)
                       sort order: ++
@@ -663,7 +663,7 @@ STAGE PLANS:
                           className: VectorReduceSinkMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -720,7 +720,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Map Join Operator
@@ -743,7 +743,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 2
                       2 Map 3
-                    Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -751,13 +751,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
-                      Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -777,7 +777,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -788,7 +788,7 @@ STAGE PLANS:
                         className: VectorReduceSinkMultiKeyOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -804,7 +804,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -815,7 +815,7 @@ STAGE PLANS:
                         className: VectorReduceSinkMultiKeyOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -896,7 +896,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:int, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -912,7 +912,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumns: 1:int
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: value (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -935,7 +935,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:int, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -962,7 +962,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col5, _col6
                     input vertices:
                       0 Map 1
-                    Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -970,13 +970,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2, 3]
-                      Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1092,7 +1092,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Map Join Operator
@@ -1112,7 +1112,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col5, _col6
                     input vertices:
                       1 Map 2
-                    Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -1120,13 +1120,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2, 3]
-                      Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1146,7 +1146,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -1157,7 +1157,7 @@ STAGE PLANS:
                         className: VectorReduceSinkLongOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: key (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1225,7 +1225,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -1234,7 +1234,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -1254,7 +1254,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 2
                         2 Map 3
-                      Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -1262,13 +1262,13 @@ STAGE PLANS:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
-                        Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1289,7 +1289,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: value is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -1298,7 +1298,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: int)
                       sort order: +
@@ -1307,7 +1307,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: key (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1325,7 +1325,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -1334,7 +1334,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: int)
                       sort order: +
@@ -1343,7 +1343,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1401,7 +1401,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Map Join Operator
@@ -1424,7 +1424,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 2
                       2 Map 3
-                    Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -1432,13 +1432,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
-                      Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1458,7 +1458,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -1469,7 +1469,7 @@ STAGE PLANS:
                         className: VectorReduceSinkLongOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: key (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1486,7 +1486,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -1497,7 +1497,7 @@ STAGE PLANS:
                         className: VectorReduceSinkLongOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: value (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1583,7 +1583,7 @@ STAGE PLANS:
                 TableScan
                   alias: a
                   filterExpr: value is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -1592,7 +1592,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -1613,7 +1613,7 @@ STAGE PLANS:
                       input vertices:
                         1 Map 2
                         2 Map 3
-                      Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -1621,13 +1621,13 @@ STAGE PLANS:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
-                        Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1648,7 +1648,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -1657,7 +1657,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: int), key (type: int)
                       sort order: ++
@@ -1666,7 +1666,7 @@ STAGE PLANS:
                           className: VectorReduceSinkMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1683,7 +1683,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: value is not null (type: boolean)
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -1692,7 +1692,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: key (type: int), value (type: int)
                       sort order: ++
@@ -1701,7 +1701,7 @@ STAGE PLANS:
                           className: VectorReduceSinkMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1758,7 +1758,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Map Join Operator
@@ -1781,7 +1781,7 @@ STAGE PLANS:
                     input vertices:
                       1 Map 2
                       2 Map 3
-                    Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int), _col10 (type: int), _col11 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -1789,13 +1789,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
-                      Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 13 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1815,7 +1815,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -1826,7 +1826,7 @@ STAGE PLANS:
                         className: VectorReduceSinkMultiKeyOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1842,7 +1842,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Reduce Output Operator
@@ -1853,7 +1853,7 @@ STAGE PLANS:
                         className: VectorReduceSinkMultiKeyOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1934,7 +1934,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:int, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1950,7 +1950,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumns: 1:int
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: value (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1973,7 +1973,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:int, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -2000,7 +2000,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col5, _col6
                     input vertices:
                       0 Map 1
-                    Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col5 (type: int), _col6 (type: int)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -2008,13 +2008,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2, 3]
-                      Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 6 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -528,56 +528,6 @@ POSTHOOK: Lineage: lineorder.lo_shippriority SIMPLE [(lineorder_ext)lineorder_ex
 POSTHOOK: Lineage: lineorder.lo_suppkey SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_suppkey, type:bigint, comment:null), ]
 POSTHOOK: Lineage: lineorder.lo_supplycost SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
 POSTHOOK: Lineage: lineorder.lo_tax SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_tax, type:double, comment:null), ]
-PREHOOK: query: analyze table customer_n0 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@customer_n0
-PREHOOK: Output: default@customer_n0
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table customer_n0 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@customer_n0
-POSTHOOK: Output: default@customer_n0
-#### A masked pattern was here ####
-PREHOOK: query: analyze table dates compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@dates
-PREHOOK: Output: default@dates
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table dates compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@dates
-POSTHOOK: Output: default@dates
-#### A masked pattern was here ####
-PREHOOK: query: analyze table ssb_part compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@ssb_part
-PREHOOK: Output: default@ssb_part
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table ssb_part compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@ssb_part
-POSTHOOK: Output: default@ssb_part
-#### A masked pattern was here ####
-PREHOOK: query: analyze table supplier compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@supplier
-PREHOOK: Output: default@supplier
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table supplier compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@supplier
-POSTHOOK: Output: default@supplier
-#### A masked pattern was here ####
-PREHOOK: query: analyze table lineorder compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@lineorder
-PREHOOK: Output: default@lineorder
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table lineorder compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@lineorder
-POSTHOOK: Output: default@lineorder
-#### A masked pattern was here ####
 PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv`
 AS
 SELECT
@@ -699,22 +649,22 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((UDFToInteger(d_year) = 1993) and (UDFToDouble(lo_quantity) < 25.0D) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(lo_quantity) < 25.0D) and (UDFToInteger(d_year) = 1993) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
                       outputColumnNames: discounted_price
-                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -725,10 +675,10 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -787,22 +737,22 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
                       outputColumnNames: discounted_price
-                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -813,10 +763,10 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 568 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -877,22 +827,22 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((UDFToInteger(d_year) = 1994) and (UDFToInteger(d_weeknuminyear) = 6) and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToInteger(d_weeknuminyear) = 6) and (UDFToInteger(d_year) = 1994) and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
                       outputColumnNames: discounted_price
-                      Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(discounted_price)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -903,10 +853,10 @@ STAGE PLANS:
                 aggregations: sum(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -980,25 +930,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((p_category = 'MFGR#12') and (s_region = 'AMERICA')) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((p_category = 'MFGR#12') and (s_region = 'AMERICA')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), p_brand1 (type: string), lo_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col2)
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string)
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                          Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1010,15 +960,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col2 (type: double), _col0 (type: int), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: int), _col2 (type: string)
                     sort order: ++
-                    Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1026,10 +976,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1103,25 +1053,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((s_region = 'ASIA') and p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((s_region = 'ASIA') and p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), p_brand1 (type: string), lo_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col2)
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string)
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                          Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1133,15 +1083,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col2 (type: double), _col0 (type: int), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: int), _col2 (type: string)
                     sort order: ++
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1149,10 +1099,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1226,25 +1176,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((p_brand1 = 'MFGR#2239') and (s_region = 'EUROPE')) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((p_brand1 = 'MFGR#2239') and (s_region = 'EUROPE')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), lo_revenue (type: double)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col1)
                         keys: _col0 (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1256,15 +1206,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: double), _col0 (type: int)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: int)
                     sort order: +
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1272,10 +1222,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: int), 'MFGR#2239' (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1353,25 +1303,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((UDFToInteger(d_year) >= 1992) and (c_region = 'ASIA') and (s_region = 'ASIA') and (UDFToInteger(d_year) <= 1997)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992) and (c_region = 'ASIA') and (s_region = 'ASIA')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_nation (type: string), s_nation (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col3)
                         keys: _col2 (type: int), _col0 (type: string), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                          Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1383,15 +1333,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: string), _col2 (type: string), _col0 (type: int), _col3 (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: double)
                     sort order: +-
-                    Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1399,10 +1349,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1478,25 +1428,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((UDFToInteger(d_year) >= 1992) and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES') and (UDFToInteger(d_year) <= 1997)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992) and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col3)
                         keys: _col2 (type: int), _col0 (type: string), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                          Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1508,15 +1458,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: string), _col2 (type: string), _col0 (type: int), _col3 (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: double)
                     sort order: +-
-                    Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1524,10 +1474,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1603,25 +1553,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and (UDFToInteger(d_year) >= 1992) and (UDFToInteger(d_year) <= 1997)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992) and (c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col3)
                         keys: _col2 (type: int), _col0 (type: string), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                          Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1633,15 +1583,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: string), _col2 (type: string), _col0 (type: int), _col3 (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: double)
                     sort order: +-
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1649,10 +1599,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1728,25 +1678,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and (d_yearmonth = 'Dec1997')) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (d_yearmonth = 'Dec1997') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col3)
                         keys: _col2 (type: int), _col0 (type: string), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                          Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1758,15 +1708,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: string), _col2 (type: string), _col0 (type: int), _col3 (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: double)
                     sort order: +-
-                    Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1774,10 +1724,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1859,25 +1809,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((p_mfgr) IN ('MFGR#1', 'MFGR#2') and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c_region = 'AMERICA') and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (s_region = 'AMERICA')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), c_nation (type: string), net_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col2)
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string)
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                          Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1889,11 +1839,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1901,10 +1851,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1988,25 +1938,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((UDFToInteger(d_year)) IN (1997, 1998) and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToInteger(d_year)) IN (1997, 1998) and (c_region = 'AMERICA') and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (s_region = 'AMERICA')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), s_nation (type: string), p_category (type: string), net_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col3)
                         keys: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                          Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2018,11 +1968,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                   sort order: +++
-                  Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2030,10 +1980,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col0 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2117,25 +2067,25 @@ STAGE PLANS:
                 TableScan
                   alias: default.ssb_mv
                   filterExpr: ((UDFToInteger(d_year)) IN (1997, 1998) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToInteger(d_year)) IN (1997, 1998) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), s_city (type: string), p_brand1 (type: string), net_revenue (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col3)
                         keys: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                           sort order: +++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                          Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col3 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2147,11 +2097,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                   sort order: +++
-                  Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2159,10 +2109,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col0 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -9,13 +9,11 @@ insert into cmv_basetable_n100 values
  (2, 'bonnie', 172342.2, 3),
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1);
-analyze table cmv_basetable_n100 compute statistics for columns;
 
 create table cmv_basetable_2_n100 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
 insert into cmv_basetable_2_n100 values
  (1, 'alfred', 10.30, 2),
  (3, 'calvin', 978.76, 3);
-analyze table cmv_basetable_2_n100 compute statistics for columns;
 
 -- CREATE MATERIALIZED VIEW
 CREATE MATERIALIZED VIEW cmv_mat_view_n300 AS
@@ -29,7 +27,6 @@ DESCRIBE FORMATTED cmv_mat_view_n300;
 
 insert into cmv_basetable_2_n100 values
  (3, 'charlie', 15.8, 1);
-analyze table cmv_basetable_2_n100 compute statistics for columns;
 
 -- OUTDATED: YES
 DESCRIBE FORMATTED cmv_mat_view_n300;

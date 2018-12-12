@@ -2988,7 +2988,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 2200 Data size: 605000 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 260 Data size: 47840 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -2997,7 +2997,7 @@ STAGE PLANS:
                             1 _col0 (type: string)
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 2420 Data size: 665500 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 286 Data size: 52624 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: count()
                             mode: hash
@@ -3014,19 +3014,19 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc_int40
                   filterExpr: cstring is not null (type: boolean)
-                  Statistics: Num rows: 40 Data size: 7176 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cstring is not null (type: boolean)
-                    Statistics: Num rows: 38 Data size: 6817 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 40 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 38 Data size: 6817 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 40 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 38 Data size: 6817 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 40 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
@@ -3159,7 +3159,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 2200 Data size: 605000 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 260 Data size: 47840 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -3168,7 +3168,7 @@ STAGE PLANS:
                             1 _col0 (type: string)
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 2420 Data size: 665500 Basic stats: PARTIAL Column stats: NONE
+                          Statistics: Num rows: 286 Data size: 52624 Basic stats: PARTIAL Column stats: NONE
                           Group By Operator
                             aggregations: count()
                             mode: hash
@@ -3185,19 +3185,19 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc_int40
                   filterExpr: cstring is not null (type: boolean)
-                  Statistics: Num rows: 40 Data size: 7176 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cstring is not null (type: boolean)
-                    Statistics: Num rows: 38 Data size: 6817 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 40 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 38 Data size: 6817 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 40 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 38 Data size: 6817 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 40 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 

@@ -326,23 +326,36 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test_n3
 Plan optimized by CBO.
 
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
 Stage-3
   Stats Work{}
     Stage-4
       Create Table Operator:
         name:default.src_autho_test_n3
-        Stage-2
-          Dependency Collection{}
-            Stage-1
-              Map 1 vectorized
-              File Output Operator [FS_4]
-                table:{"name:":"default.src_autho_test_n3"}
-                Select Operator [SEL_3] (rows=500 width=178)
-                  Output:["_col0","_col1"]
-                  TableScan [TS_0] (rows=500 width=178)
-                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
         Stage-0
           Move Operator
+            Stage-1
+              Reducer 2
+              File Output Operator [FS_12]
+                Group By Operator [GBY_10] (rows=1 width=880)
+                  Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+                <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                  File Output Operator [FS_2]
+                    table:{"name:":"default.src_autho_test_n3"}
+                    Select Operator [SEL_1] (rows=500 width=178)
+                      Output:["_col0","_col1"]
+                      TableScan [TS_0] (rows=500 width=178)
+                        default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                  PARTITION_ONLY_SHUFFLE [RS_9]
+                    Group By Operator [GBY_8] (rows=1 width=880)
+                      Output:["_col0","_col1"],aggregations:["compute_stats(col1, 'hll')","compute_stats(col2, 'hll')"]
+                      Select Operator [SEL_7] (rows=500 width=178)
+                        Output:["col1","col2"]
+                         Please refer to the previous Select Operator [SEL_1]
+        Stage-2
+          Dependency Collection{}
              Please refer to the previous Stage-1
 
 PREHOOK: query: create table src_autho_test_n3 as select * from src
