@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Format of the file used to dump information about external tables is
+ * Format of the file used to dump information about external tables:
  * <p>
  * table_name1,[base64Encoded(table_dir_location)]\n
  *
@@ -59,6 +59,8 @@ public class ReplExternalTables {
   private static final String FIELD_SEPARATOR = ",";
   public static final String FILE_NAME = "_external_tables_info";
   private static final int MAX_RETRIES = 5;
+
+  private ReplExternalTables(){}
 
   public static String externalTableLocation(HiveConf hiveConf, String location) {
     String currentPath = new Path(location).toUri().getPath();
@@ -211,7 +213,7 @@ public class ReplExternalTables {
     }
 
     private BufferedReader reader(FileSystem fs, Path externalTableInfo) throws IOException {
-      InputStreamReader in = new InputStreamReader(fs.open(externalTableInfo));
+      InputStreamReader in = new InputStreamReader(fs.open(externalTableInfo), StandardCharsets.UTF_8);
       return new BufferedReader(in);
     }
 

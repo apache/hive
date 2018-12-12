@@ -246,8 +246,13 @@ public class LoadPartitions {
         stagingDir = new Path(stagingDir, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
       }
     } else {
+
       loadFileType = (event.replicationSpec().isReplace() || event.replicationSpec().isMigratingToTxnTable())
               ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+      loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL :
+          (event.replicationSpec().isMigratingToTxnTable()
+              ? LoadFileType.KEEP_EXISTING
+              : LoadFileType.OVERWRITE_EXISTING);
       stagingDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
 

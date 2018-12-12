@@ -133,7 +133,7 @@ public class TableHandler extends AbstractMessageHandler {
     }
   }
 
-  private static class Tuple {
+  private static final class Tuple {
     private final boolean isExternalTable;
     private final long writeId;
 

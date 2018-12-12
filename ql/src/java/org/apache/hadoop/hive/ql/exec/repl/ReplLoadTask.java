@@ -376,7 +376,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       TaskTracker trackerForReplIncremental = new TaskTracker(calculatedMaxNumOfTasks);
       Task<? extends Serializable> incrementalLoadTaskRoot =
           builder.build(driverContext, getHive(), LOG, work, trackerForReplIncremental);
-      // we are adding the incremental task first so that its always processed first, followed by dir copy tasks if capacity allows.
+      // we are adding the incremental task first so that its always processed first,
+      // followed by dir copy tasks if capacity allows.
       childTasks.add(incrementalLoadTaskRoot);
 
       TaskTracker trackerForCopy = new TaskTracker(maxNumOfHDFSTasks);

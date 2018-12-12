@@ -86,10 +86,10 @@ public class FSTableEvent implements TableEvent {
               && (table.getTableType() == TableType.MANAGED_TABLE)) {
         Hive hiveDb = Hive.get(hiveConf);
         //TODO : dump metadata should be read to make sure that migration is required.
-        HiveStrictManagedMigration.TableMigrationOption migrationOption
-                = HiveStrictManagedMigration.determineMigrationTypeAutomatically(table.getTTable(),
-                table.getTableType(),null, hiveConf,
-                hiveDb.getMSC(),true);
+        HiveStrictManagedMigration.TableMigrationOption migrationOption =
+            HiveStrictManagedMigration.determineMigrationTypeAutomatically(table.getTTable(),
+                table.getTableType(), null, hiveConf,
+                hiveDb.getMSC(), true);
         HiveStrictManagedMigration.migrateTable(table.getTTable(), table.getTableType(),
                 migrationOption, false,
                 getHiveUpdater(hiveConf), hiveDb.getMSC(), hiveConf);

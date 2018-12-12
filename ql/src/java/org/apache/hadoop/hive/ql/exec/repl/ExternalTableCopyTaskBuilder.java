@@ -55,11 +55,11 @@ public class ExternalTableCopyTaskBuilder {
     List<Task<? extends Serializable>> tasks = new ArrayList<>();
     Iterator<DirCopyWork> itr = work.getPathsToCopyIterator();
     while (tracker.canAddMoreTasks() && itr.hasNext()) {
-      DirCopyWork work = itr.next();
-      Task<DirCopyWork> task = TaskFactory.get(work, conf);
+      DirCopyWork dirCopyWork = itr.next();
+      Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
       tasks.add(task);
       tracker.addTask(task);
-      LOG.debug("added task for {}", work);
+      LOG.debug("added task for {}", dirCopyWork);
     }
     return tasks;
   }

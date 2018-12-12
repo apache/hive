@@ -56,7 +56,8 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.*;
+import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.DirCopyWork;
+import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.DirCopyTask;
 
 
 /**
