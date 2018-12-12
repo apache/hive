@@ -1389,11 +1389,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: a_n12
-          Statistics: Num rows: 2000 Data size: 371032 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2000 Data size: 371032 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select value from b_n9
@@ -1416,11 +1416,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: b_n9
-          Statistics: Num rows: 1000 Data size: 185608 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1000 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: value (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1000 Data size: 185608 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select key from b_n9
@@ -1443,11 +1443,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: b_n9
-          Statistics: Num rows: 1000 Data size: 185608 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1000 Data size: 185608 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select value from c_n2
@@ -1472,11 +1472,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: c_n2
-          Statistics: Num rows: 2000 Data size: 371032 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: value (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2000 Data size: 371032 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select key from c_n2
@@ -1501,10 +1501,10 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: c_n2
-          Statistics: Num rows: 2000 Data size: 371032 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2000 Data size: 371032 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 

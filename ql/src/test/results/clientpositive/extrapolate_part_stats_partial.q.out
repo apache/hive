@@ -340,12 +340,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d_n1
-          Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
@@ -561,12 +561,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d_n1
-          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2000') compute statistics for columns state
@@ -1031,12 +1031,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_1d_n1
-          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: create table if not exists loc_orc_2d_n1 (
@@ -1681,12 +1681,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_2d_n1
-          Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain extended select state,locid from loc_orc_2d_n1
@@ -2249,11 +2249,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_2d_n1
-          Statistics: Num rows: 20 Data size: 1840 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: state (type: string), locid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 20 Data size: 1840 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
