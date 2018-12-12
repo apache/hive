@@ -91,6 +91,8 @@ public class TableHandler extends AbstractMessageHandler {
       }
 
       return importTasks;
+    } catch (RuntimeException e){
+      throw e;
     } catch (Exception e) {
       throw new SemanticException(e);
     }
