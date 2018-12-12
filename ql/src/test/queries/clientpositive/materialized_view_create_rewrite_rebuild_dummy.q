@@ -13,15 +13,11 @@ insert into cmv_basetable_n1 values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1);
 
-analyze table cmv_basetable_n1 compute statistics for columns;
-
 create table cmv_basetable_2_n0 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
 
 insert into cmv_basetable_2_n0 values
  (1, 'alfred', 10.30, 2),
  (3, 'calvin', 978.76, 3);
-
-analyze table cmv_basetable_2_n0 compute statistics for columns;
 
 EXPLAIN
 CREATE MATERIALIZED VIEW cmv_mat_view_n1 AS
@@ -50,8 +46,6 @@ GROUP BY cmv_basetable_n1.a, cmv_basetable_2_n0.c;
 
 insert into cmv_basetable_2_n0 values
  (3, 'charlie', 15.8, 1);
-
-analyze table cmv_basetable_2_n0 compute statistics for columns;
 
 -- CANNOT USE THE VIEW, IT IS OUTDATED
 EXPLAIN
@@ -118,8 +112,6 @@ create table cmv_irrelevant_table_n0 (a int, b varchar(256), c decimal(10,2), d 
 insert into cmv_irrelevant_table_n0 values
  (1, 'alfred', 10.30, 2),
  (3, 'charlie', 9.8, 1);
-
-analyze table cmv_irrelevant_table_n0 compute statistics for columns;
 
 -- IT CAN STILL BE USED
 EXPLAIN

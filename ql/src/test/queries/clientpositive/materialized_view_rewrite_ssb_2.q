@@ -202,12 +202,6 @@ TBLPROPERTIES ('transactional'='true');
 INSERT INTO `lineorder`
 SELECT * FROM `lineorder_ext`;
 
-analyze table customer_n0 compute statistics for columns;
-analyze table dates compute statistics for columns;
-analyze table ssb_part compute statistics for columns;
-analyze table supplier compute statistics for columns;
-analyze table lineorder compute statistics for columns;
-
 CREATE MATERIALIZED VIEW `ssb_mv`
 AS
 SELECT

@@ -256,19 +256,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t4
-                  Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: dt is not null (type: boolean)
-                    Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: dt (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 8 
@@ -284,7 +284,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 624 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 3 

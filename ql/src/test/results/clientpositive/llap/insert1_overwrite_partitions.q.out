@@ -72,6 +72,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: --
                       Statistics: Num rows: 99 Data size: 93448 Basic stats: PARTIAL Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -267,6 +268,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: --
                       Statistics: Num rows: 99 Data size: 93448 Basic stats: PARTIAL Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -431,6 +433,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: --
                       Statistics: Num rows: 99 Data size: 93448 Basic stats: PARTIAL Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 

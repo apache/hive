@@ -13,7 +13,6 @@ create table emps_mv_rewrite_empty (
   salary float,
   commission int)
 stored as orc TBLPROPERTIES ('transactional'='true');
-analyze table emps_mv_rewrite_empty compute statistics for columns;
 
 create materialized view emps_mv_rewrite_empty_mv1 as
 select * from emps_mv_rewrite_empty where empid < 150;

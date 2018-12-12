@@ -18,16 +18,6 @@ stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps_mv_rewrite_empty
-PREHOOK: query: analyze table emps_mv_rewrite_empty compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@emps_mv_rewrite_empty
-PREHOOK: Output: default@emps_mv_rewrite_empty
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table emps_mv_rewrite_empty compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@emps_mv_rewrite_empty
-POSTHOOK: Output: default@emps_mv_rewrite_empty
-#### A masked pattern was here ####
 PREHOOK: query: create materialized view emps_mv_rewrite_empty_mv1 as
 select * from emps_mv_rewrite_empty where empid < 150
 PREHOOK: type: CREATE_MATERIALIZED_VIEW

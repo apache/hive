@@ -36,7 +36,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_n20
-{"version":"1.0","engine":"tez","database":"default","hash":"5a2daa3d8508025880412b524351c849","queryText":"create table t_n20 as\nselect * from\n  (select * from\n     (select key from src1 limit 1) v1) v2","edges":[{"sources":[1],"targets":[0],"edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.t_n20.key"},{"id":1,"vertexType":"COLUMN","vertexId":"default.src1.key"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"5a2daa3d8508025880412b524351c849","queryText":"create table t_n20 as\nselect * from\n  (select * from\n     (select key from src1 limit 1) v1) v2","edges":[{"sources":[1],"targets":[0],"edgeType":"PROJECTION"},{"sources":[1],"targets":[0],"expression":"compute_stats(default.src1.key, 'hll')","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.t_n20.key"},{"id":1,"vertexType":"COLUMN","vertexId":"default.src1.key"}]}
 PREHOOK: query: drop table if exists dest_l1_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: query: create table dest_l1_n2(a int, b varchar(128))

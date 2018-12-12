@@ -76,6 +76,7 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: --
                 Statistics: Num rows: 124 Data size: 60280 Basic stats: PARTIAL Column stats: NONE
+                TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
@@ -223,6 +224,7 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: --
                 Statistics: Num rows: 124 Data size: 60280 Basic stats: PARTIAL Column stats: NONE
+                TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator

@@ -1,31 +1,43 @@
-PREHOOK: query: create table A_n18 as
-select * from src
-PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src
+PREHOOK: query: create table A_n18 (key string, value string)
+PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@A_n18
-POSTHOOK: query: create table A_n18 as
-select * from src
-POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src
+POSTHOOK: query: create table A_n18 (key string, value string)
+POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@A_n18
+PREHOOK: query: insert into A_n18
+select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@a_n18
+POSTHOOK: query: insert into A_n18
+select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@a_n18
 POSTHOOK: Lineage: a_n18.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: a_n18.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table B_n14 as
-select * from src order by key
-limit 10
-PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src
+PREHOOK: query: create table B_n14 (key string, value string)
+PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@B_n14
-POSTHOOK: query: create table B_n14 as
-select * from src order by key
-limit 10
-POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src
+POSTHOOK: query: create table B_n14 (key string, value string)
+POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@B_n14
+PREHOOK: query: insert into B_n14
+select * from src order by key
+limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@b_n14
+POSTHOOK: query: insert into B_n14
+select * from src order by key
+limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@b_n14
 POSTHOOK: Lineage: b_n14.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: b_n14.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Warning: Map Join MAPJOIN[8][bigTable=?] in task 'Stage-3:MAPRED' is a cross product

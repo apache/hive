@@ -12,15 +12,11 @@ insert into cmv_basetable_n3 values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1);
 
-analyze table cmv_basetable_n3 compute statistics for columns;
-
 create table cmv_basetable_2_n1 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
 
 insert into cmv_basetable_2_n1 values
  (1, 'alfred', 10.30, 2),
  (3, 'calvin', 978.76, 3);
-
-analyze table cmv_basetable_2_n1 compute statistics for columns;
 
 -- CREATE VIEW WITH REWRITE DISABLED
 EXPLAIN
@@ -52,8 +48,6 @@ GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c;
 
 insert into cmv_basetable_2_n1 values
  (3, 'charlie', 15.8, 1);
-
-analyze table cmv_basetable_2_n1 compute statistics for columns;
 
 -- ENABLE FOR REWRITE
 EXPLAIN

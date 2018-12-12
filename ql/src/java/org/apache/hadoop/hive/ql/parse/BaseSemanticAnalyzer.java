@@ -1640,7 +1640,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public class AnalyzeRewriteContext {
+  public static class AnalyzeRewriteContext {
 
     private String tableName;
     private List<String> colName;
