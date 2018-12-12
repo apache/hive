@@ -404,11 +404,6 @@ public class HiveStrictManagedMigration {
         // Set appropriate owner/perms of the DB dir only, no need to recurse
         checkAndSetFileOwnerPermissions(fs, newDefaultDbLocation,
             ownerName, groupName, dirPerms, null, runOptions.dryRun, false);
-
-        // The table processing needs the db location at the old location, so clone the DB object
-        // when updating the location.
-        Database modifiedDb = dbObj.deepCopy();
-        getHiveUpdater().updateDbLocation(modifiedDb, newDefaultDbLocation);
       }
     }
 
@@ -416,6 +411,7 @@ public class HiveStrictManagedMigration {
       createExternalDbDir(dbObj);
     }
 
+    boolean errorsInThisDb = false;
     List<String> tableNames = hms.getTables(dbName, runOptions.tableRegex);
     for (String tableName : tableNames) {
       // If we did not change the DB location, there is no need to move the table directories.
@@ -424,6 +420,20 @@ public class HiveStrictManagedMigration {
       } catch (Exception err) {
         LOG.error("Error processing table " + getQualifiedName(dbObj.getName(), tableName), err);
         failuresEncountered = true;
+        errorsInThisDb = true;
+      }
+    }
+
+    // Finally update the DB location. This would prevent subsequent runs of the migration from processing this DB.
+    if (modifyDefaultManagedLocation) {
+      if (errorsInThisDb) {
+        LOG.error("Not updating database location for {} since an error was encountered. The migration must be run again for this database.",
+                dbObj.getName());
+      } else {
+        Path newDefaultDbLocation = wh.getDefaultDatabasePath(dbName);
+        // dbObj after this call would have the new DB location.
+        // Keep that in mind if anything below this requires the old DB path.
+        getHiveUpdater().updateDbLocation(dbObj, newDefaultDbLocation);
       }
     }
   }
@@ -590,6 +600,8 @@ public class HiveStrictManagedMigration {
     Path oldTablePath = new Path(tableObj.getSd().getLocation());
 
     LOG.info("Moving location of {} from {} to {}", getQualifiedName(tableObj), oldTablePath, newTablePath);
+
+    // Move table directory.
     if (!runOptions.dryRun) {
       FileSystem fs = newTablePath.getFileSystem(conf);
       if (fs.exists(oldTablePath)) {
@@ -601,9 +613,13 @@ public class HiveStrictManagedMigration {
         }
       }
     }
-    if (!runOptions.dryRun) {
-      getHiveUpdater().updateTableLocation(tableObj, newTablePath);
-    }
+
+    // An error occurring between here and before updating the table's location in the metastore
+    // may potentially cause the data to reside in the new location, while the
+    // table/partitions point to the old paths.
+    // The migration would be _REQUIRED_ to run again (and pass) for the data and table/partition
+    // locations to be in sync.
+
     if (isPartitionedTable(tableObj)) {
       List<String> partNames = hms.listPartitionNames(dbName, tableName, Short.MAX_VALUE);
       // TODO: Fetch partitions in batches?
@@ -621,6 +637,12 @@ public class HiveStrictManagedMigration {
           }
         }
       }
+    }
+
+    // Finally update the table location. This would prevent this tool from processing this table again
+    // on subsequent runs of the migration.
+    if (!runOptions.dryRun) {
+      getHiveUpdater().updateTableLocation(tableObj, newTablePath);
     }
   }
 
