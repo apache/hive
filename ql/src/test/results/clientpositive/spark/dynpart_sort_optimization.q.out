@@ -3494,6 +3494,374 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
+PREHOOK: query: create table over1k_part4_0(i int) partitioned by (s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part4_0
+POSTHOOK: query: create table over1k_part4_0(i int) partitioned by (s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k_part4_0
+PREHOOK: query: create table over1k_part4_1(i int) partitioned by (s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_part4_1
+POSTHOOK: query: create table over1k_part4_1(i int) partitioned by (s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k_part4_1
+PREHOOK: query: EXPLAIN
+WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part4_0
+PREHOOK: Output: default@over1k_part4_1
+POSTHOOK: query: EXPLAIN
+WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n3
+                  filterExpr: ((s like 'bob%') and (i > 1)) (type: boolean)
+                  Statistics: Num rows: 1049 Data size: 105949 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((i > 1) and (s like 'bob%')) (type: boolean)
+                    Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: i (type: int), s (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: (_col0 + 1) (type: int), _col1 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col1 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col1 (type: string)
+                          value expressions: _col0 (type: int)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n3
+                  filterExpr: ((s like 'bob%') and (i > 1)) (type: boolean)
+                  Statistics: Num rows: 1049 Data size: 105949 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((i > 1) and (s like 'bob%')) (type: boolean)
+                    Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: i (type: int), s (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: (_col0 + 0) (type: int), _col1 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col1 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col1 (type: string)
+                          value expressions: _col0 (type: int)
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.over1k_part4_0
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.over1k_part4_1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            s 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part4_0
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            s 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.over1k_part4_1
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n3
+PREHOOK: Output: default@over1k_part4_0
+PREHOOK: Output: default@over1k_part4_1
+POSTHOOK: query: WITH CTE AS (
+select i, s from over1k_n3 where s like 'bob%'
+)
+FROM (
+select * from CTE where i > 1 ORDER BY s
+) src1k
+insert overwrite table over1k_part4_0 partition(s)
+select i+1, s
+insert overwrite table over1k_part4_1 partition(s)
+select i+0, s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n3
+POSTHOOK: Output: default@over1k_part4_0@s=bob brown
+POSTHOOK: Output: default@over1k_part4_0@s=bob carson
+POSTHOOK: Output: default@over1k_part4_0@s=bob davidson
+POSTHOOK: Output: default@over1k_part4_0@s=bob ellison
+POSTHOOK: Output: default@over1k_part4_0@s=bob falkner
+POSTHOOK: Output: default@over1k_part4_0@s=bob garcia
+POSTHOOK: Output: default@over1k_part4_0@s=bob hernandez
+POSTHOOK: Output: default@over1k_part4_0@s=bob ichabod
+POSTHOOK: Output: default@over1k_part4_0@s=bob king
+POSTHOOK: Output: default@over1k_part4_0@s=bob laertes
+POSTHOOK: Output: default@over1k_part4_0@s=bob miller
+POSTHOOK: Output: default@over1k_part4_0@s=bob ovid
+POSTHOOK: Output: default@over1k_part4_0@s=bob polk
+POSTHOOK: Output: default@over1k_part4_0@s=bob quirinius
+POSTHOOK: Output: default@over1k_part4_0@s=bob steinbeck
+POSTHOOK: Output: default@over1k_part4_0@s=bob van buren
+POSTHOOK: Output: default@over1k_part4_0@s=bob white
+POSTHOOK: Output: default@over1k_part4_0@s=bob xylophone
+POSTHOOK: Output: default@over1k_part4_0@s=bob young
+POSTHOOK: Output: default@over1k_part4_0@s=bob zipper
+POSTHOOK: Output: default@over1k_part4_1@s=bob brown
+POSTHOOK: Output: default@over1k_part4_1@s=bob carson
+POSTHOOK: Output: default@over1k_part4_1@s=bob davidson
+POSTHOOK: Output: default@over1k_part4_1@s=bob ellison
+POSTHOOK: Output: default@over1k_part4_1@s=bob falkner
+POSTHOOK: Output: default@over1k_part4_1@s=bob garcia
+POSTHOOK: Output: default@over1k_part4_1@s=bob hernandez
+POSTHOOK: Output: default@over1k_part4_1@s=bob ichabod
+POSTHOOK: Output: default@over1k_part4_1@s=bob king
+POSTHOOK: Output: default@over1k_part4_1@s=bob laertes
+POSTHOOK: Output: default@over1k_part4_1@s=bob miller
+POSTHOOK: Output: default@over1k_part4_1@s=bob ovid
+POSTHOOK: Output: default@over1k_part4_1@s=bob polk
+POSTHOOK: Output: default@over1k_part4_1@s=bob quirinius
+POSTHOOK: Output: default@over1k_part4_1@s=bob steinbeck
+POSTHOOK: Output: default@over1k_part4_1@s=bob van buren
+POSTHOOK: Output: default@over1k_part4_1@s=bob white
+POSTHOOK: Output: default@over1k_part4_1@s=bob xylophone
+POSTHOOK: Output: default@over1k_part4_1@s=bob young
+POSTHOOK: Output: default@over1k_part4_1@s=bob zipper
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob brown).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob carson).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob davidson).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob ellison).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob falkner).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob garcia).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob hernandez).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob ichabod).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob king).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob laertes).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob miller).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob ovid).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob polk).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob quirinius).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob steinbeck).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob van buren).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob white).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob xylophone).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob young).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_0 PARTITION(s=bob zipper).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob brown).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob carson).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob davidson).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob ellison).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob falkner).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob garcia).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob hernandez).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob ichabod).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob king).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob laertes).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob miller).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob ovid).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob polk).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob quirinius).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob steinbeck).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob van buren).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob white).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob xylophone).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob young).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part4_1 PARTITION(s=bob zipper).i EXPRESSION [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: select count(1) from over1k_part4_0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_part4_0
+PREHOOK: Input: default@over1k_part4_0@s=bob brown
+PREHOOK: Input: default@over1k_part4_0@s=bob carson
+PREHOOK: Input: default@over1k_part4_0@s=bob davidson
+PREHOOK: Input: default@over1k_part4_0@s=bob ellison
+PREHOOK: Input: default@over1k_part4_0@s=bob falkner
+PREHOOK: Input: default@over1k_part4_0@s=bob garcia
+PREHOOK: Input: default@over1k_part4_0@s=bob hernandez
+PREHOOK: Input: default@over1k_part4_0@s=bob ichabod
+PREHOOK: Input: default@over1k_part4_0@s=bob king
+PREHOOK: Input: default@over1k_part4_0@s=bob laertes
+PREHOOK: Input: default@over1k_part4_0@s=bob miller
+PREHOOK: Input: default@over1k_part4_0@s=bob ovid
+PREHOOK: Input: default@over1k_part4_0@s=bob polk
+PREHOOK: Input: default@over1k_part4_0@s=bob quirinius
+PREHOOK: Input: default@over1k_part4_0@s=bob steinbeck
+PREHOOK: Input: default@over1k_part4_0@s=bob van buren
+PREHOOK: Input: default@over1k_part4_0@s=bob white
+PREHOOK: Input: default@over1k_part4_0@s=bob xylophone
+PREHOOK: Input: default@over1k_part4_0@s=bob young
+PREHOOK: Input: default@over1k_part4_0@s=bob zipper
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from over1k_part4_0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_part4_0
+POSTHOOK: Input: default@over1k_part4_0@s=bob brown
+POSTHOOK: Input: default@over1k_part4_0@s=bob carson
+POSTHOOK: Input: default@over1k_part4_0@s=bob davidson
+POSTHOOK: Input: default@over1k_part4_0@s=bob ellison
+POSTHOOK: Input: default@over1k_part4_0@s=bob falkner
+POSTHOOK: Input: default@over1k_part4_0@s=bob garcia
+POSTHOOK: Input: default@over1k_part4_0@s=bob hernandez
+POSTHOOK: Input: default@over1k_part4_0@s=bob ichabod
+POSTHOOK: Input: default@over1k_part4_0@s=bob king
+POSTHOOK: Input: default@over1k_part4_0@s=bob laertes
+POSTHOOK: Input: default@over1k_part4_0@s=bob miller
+POSTHOOK: Input: default@over1k_part4_0@s=bob ovid
+POSTHOOK: Input: default@over1k_part4_0@s=bob polk
+POSTHOOK: Input: default@over1k_part4_0@s=bob quirinius
+POSTHOOK: Input: default@over1k_part4_0@s=bob steinbeck
+POSTHOOK: Input: default@over1k_part4_0@s=bob van buren
+POSTHOOK: Input: default@over1k_part4_0@s=bob white
+POSTHOOK: Input: default@over1k_part4_0@s=bob xylophone
+POSTHOOK: Input: default@over1k_part4_0@s=bob young
+POSTHOOK: Input: default@over1k_part4_0@s=bob zipper
+#### A masked pattern was here ####
+41
+PREHOOK: query: select count(1) from over1k_part4_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_part4_1
+PREHOOK: Input: default@over1k_part4_1@s=bob brown
+PREHOOK: Input: default@over1k_part4_1@s=bob carson
+PREHOOK: Input: default@over1k_part4_1@s=bob davidson
+PREHOOK: Input: default@over1k_part4_1@s=bob ellison
+PREHOOK: Input: default@over1k_part4_1@s=bob falkner
+PREHOOK: Input: default@over1k_part4_1@s=bob garcia
+PREHOOK: Input: default@over1k_part4_1@s=bob hernandez
+PREHOOK: Input: default@over1k_part4_1@s=bob ichabod
+PREHOOK: Input: default@over1k_part4_1@s=bob king
+PREHOOK: Input: default@over1k_part4_1@s=bob laertes
+PREHOOK: Input: default@over1k_part4_1@s=bob miller
+PREHOOK: Input: default@over1k_part4_1@s=bob ovid
+PREHOOK: Input: default@over1k_part4_1@s=bob polk
+PREHOOK: Input: default@over1k_part4_1@s=bob quirinius
+PREHOOK: Input: default@over1k_part4_1@s=bob steinbeck
+PREHOOK: Input: default@over1k_part4_1@s=bob van buren
+PREHOOK: Input: default@over1k_part4_1@s=bob white
+PREHOOK: Input: default@over1k_part4_1@s=bob xylophone
+PREHOOK: Input: default@over1k_part4_1@s=bob young
+PREHOOK: Input: default@over1k_part4_1@s=bob zipper
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from over1k_part4_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_part4_1
+POSTHOOK: Input: default@over1k_part4_1@s=bob brown
+POSTHOOK: Input: default@over1k_part4_1@s=bob carson
+POSTHOOK: Input: default@over1k_part4_1@s=bob davidson
+POSTHOOK: Input: default@over1k_part4_1@s=bob ellison
+POSTHOOK: Input: default@over1k_part4_1@s=bob falkner
+POSTHOOK: Input: default@over1k_part4_1@s=bob garcia
+POSTHOOK: Input: default@over1k_part4_1@s=bob hernandez
+POSTHOOK: Input: default@over1k_part4_1@s=bob ichabod
+POSTHOOK: Input: default@over1k_part4_1@s=bob king
+POSTHOOK: Input: default@over1k_part4_1@s=bob laertes
+POSTHOOK: Input: default@over1k_part4_1@s=bob miller
+POSTHOOK: Input: default@over1k_part4_1@s=bob ovid
+POSTHOOK: Input: default@over1k_part4_1@s=bob polk
+POSTHOOK: Input: default@over1k_part4_1@s=bob quirinius
+POSTHOOK: Input: default@over1k_part4_1@s=bob steinbeck
+POSTHOOK: Input: default@over1k_part4_1@s=bob van buren
+POSTHOOK: Input: default@over1k_part4_1@s=bob white
+POSTHOOK: Input: default@over1k_part4_1@s=bob xylophone
+POSTHOOK: Input: default@over1k_part4_1@s=bob young
+POSTHOOK: Input: default@over1k_part4_1@s=bob zipper
+#### A masked pattern was here ####
+41
 PREHOOK: query: drop table over1k_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@over1k_n3
