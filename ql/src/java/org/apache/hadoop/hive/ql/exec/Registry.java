@@ -525,8 +525,9 @@ public class Registry {
       FunctionInfo prev = mFunctions.get(functionName);
       if (prev != null) {
         if (isBuiltInFunc(prev.getFunctionClass())) {
-          throw new RuntimeException("Function " + functionName + " is hive builtin function, " +
-              "which cannot be overridden.");
+          String message = String.format("Function (%s / %s) is hive builtin function, which cannot be overridden.", functionName, prev.getFunctionClass());
+          LOG.debug(message);
+          throw new RuntimeException(message);
         }
         prev.discarded();
       }

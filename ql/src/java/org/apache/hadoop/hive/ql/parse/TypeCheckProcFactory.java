@@ -71,8 +71,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
@@ -1250,9 +1250,9 @@ public class TypeCheckProcFactory {
           }
           desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
               childrenList);
-        } else if (ctx.isFoldExpr() && canConvertIntoNvl(genericUDF, children)) {
-          // Rewrite CASE into NVL
-          desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFNvl(),
+        } else if (ctx.isFoldExpr() && canConvertIntoCoalesce(genericUDF, children)) {
+          // Rewrite CASE into COALESCE
+          desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFCoalesce(),
                   Lists.newArrayList(children.get(0), new ExprNodeConstantDesc(false)));
           if (Boolean.FALSE.equals(((ExprNodeConstantDesc) children.get(1)).getValue())) {
             desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(),
@@ -1427,7 +1427,7 @@ public class TypeCheckProcFactory {
       return constVal;
     }
 
-    private boolean canConvertIntoNvl(GenericUDF genericUDF, ArrayList<ExprNodeDesc> children) {
+    private boolean canConvertIntoCoalesce(GenericUDF genericUDF, ArrayList<ExprNodeDesc> children) {
       if (genericUDF instanceof GenericUDFWhen && children.size() == 3 &&
               children.get(1) instanceof ExprNodeConstantDesc &&
               children.get(2) instanceof ExprNodeConstantDesc) {

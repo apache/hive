@@ -8,6 +8,7 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED coalesce
 POSTHOOK: type: DESCFUNCTION
 coalesce(a1, a2, ...) - Returns the first non-null argument
+Synonyms: nvl
 Example:
   > SELECT coalesce(NULL, 1, NULL) FROM src LIMIT 1;
   1
