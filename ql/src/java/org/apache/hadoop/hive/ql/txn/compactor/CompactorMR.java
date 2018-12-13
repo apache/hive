@@ -962,23 +962,17 @@ public class CompactorMR {
       V value = reader.createValue();
       getWriter(reporter, reader.getObjectInspector(), split.getBucket());
 
-      AcidUtils.AcidOperationalProperties acidOperationalProperties
-          = AcidUtils.getAcidOperationalProperties(jobConf);
-
-      if (!isMajor && acidOperationalProperties.isSplitUpdate()) {
-        // When split-update is enabled for ACID, we initialize a separate deleteEventWriter
-        // that is used to write all the delete events (in case of minor compaction only). For major
-        // compaction, history is not required to be maintained hence the delete events are processed
-        // but not re-written separately.
-        getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket());
-      }
+      AcidUtils.AcidOperationalProperties acidOperationalProperties = AcidUtils.getAcidOperationalProperties(jobConf);
 
       while (reader.next(identifier, value)) {
         boolean sawDeleteRecord = reader.isDelete(value);
-        if (isMajor && sawDeleteRecord) continue;
-        if (sawDeleteRecord && deleteEventWriter != null) {
-          // When minor compacting, write delete events to a separate file when split-update is
-          // turned on.
+        if (isMajor && sawDeleteRecord) {
+          continue;
+        }
+        if (sawDeleteRecord && acidOperationalProperties.isSplitUpdate()) {
+          if (deleteEventWriter == null) {
+            getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket());
+          }
           deleteEventWriter.write(value);
           reporter.progress();
         } else {
@@ -1027,7 +1021,7 @@ public class CompactorMR {
             .bucket(bucket)
             .statementId(-1)//setting statementId == -1 makes compacted delta files use
             .visibilityTxnId(getCompactorTxnId());
-        //delta_xxxx_yyyy format
+      //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
         @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
@@ -1040,28 +1034,25 @@ public class CompactorMR {
 
     private void getDeleteEventWriter(Reporter reporter, ObjectInspector inspector,
         int bucket) throws IOException {
-      if (deleteEventWriter == null) {
-        AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
-        options.inspector(inspector)
-          .writingBase(false)
+
+      AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
+      options.inspector(inspector).writingBase(false)
           .writingDeleteDelta(true)   // this is the option which will make it a delete writer
           .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
-          .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties())
-          .reporter(reporter)
+          .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties()).reporter(reporter)
           .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
-          .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
-          .bucket(bucket)
+          .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
           .statementId(-1)//setting statementId == -1 makes compacted delta files use
-            // delta_xxxx_yyyy format
+          // delta_xxxx_yyyy format
           .visibilityTxnId(getCompactorTxnId());
 
-        // Instantiate the underlying output format
-        @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
-        AcidOutputFormat<WritableComparable, V> aof =
+      // Instantiate the underlying output format
+      @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
+          AcidOutputFormat<WritableComparable, V> aof =
           instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-        deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
-      }
+      deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+
     }
   }
 

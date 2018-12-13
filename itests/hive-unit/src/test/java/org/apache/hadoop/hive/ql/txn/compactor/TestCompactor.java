@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,7 +80,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.Retry;
-import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
 import org.apache.hive.hcatalog.streaming.HiveEndPoint;
@@ -1459,25 +1458,10 @@ public class TestCompactor {
     checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty,
       0, 1L, 2L, 1);
 
-    // Verify that we have got correct set of delete_deltas.
+    //Assert that we have no delete deltas if there are no input delete events.
     FileStatus[] deleteDeltaStat =
       fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.deleteEventDeltaDirFilter);
-    String[] deleteDeltas = new String[deleteDeltaStat.length];
-    Path minorCompactedDeleteDelta = null;
-    for (int i = 0; i < deleteDeltas.length; i++) {
-      deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000001_0000002_v0000005")) {
-        minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
-      }
-    }
-    Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000002_v0000005"};
-    if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
-      Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
-    }
-    // There should be no rows in the delete_delta because there have been no delete events.
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDeleteDelta}, columnNamesProperty, columnTypesProperty, 0,
-      0L, 0L, 1);
+    assertEquals(0, deleteDeltaStat.length);
   }
 
   @Test
@@ -1550,25 +1534,10 @@ public class TestCompactor {
     checkExpectedTxnsPresent(null, new Path[]{resultFile}, columnNamesProperty, columnTypesProperty,
       0, 1L, 4L, 1);
 
-    // Verify that we have got correct set of delete_deltas also
+    //Assert that we have no delete deltas if there are no input delete events.
     FileStatus[] deleteDeltaStat =
       fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.deleteEventDeltaDirFilter);
-    String[] deleteDeltas = new String[deleteDeltaStat.length];
-    Path minorCompactedDeleteDelta = null;
-    for (int i = 0; i < deleteDeltas.length; i++) {
-      deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000001_0000004_v0000009")) {
-        minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
-      }
-    }
-    Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000004_v0000009"};
-    if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
-      Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
-    }
-    // There should be no rows in the delete_delta because there have been no delete events.
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDeleteDelta}, columnNamesProperty, columnTypesProperty, 0,
-      0L, 0L, 1);
+    assertEquals(0, deleteDeltaStat.length);
 
     if (connection1 != null) {
       connection1.close();
