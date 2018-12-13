@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
@@ -198,7 +199,7 @@ public class Worker extends CompactorThread {
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());
 
-        LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName());
+        LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " + JavaUtils.txnIdToString(compactorTxnId));
         final StatsUpdater su = StatsUpdater.init(ci, txnHandler.findColumnsWithStats(ci), conf,
           runJobAsSelf(runAs) ? runAs : t.getOwner());
         final CompactorMR mr = new CompactorMR();
