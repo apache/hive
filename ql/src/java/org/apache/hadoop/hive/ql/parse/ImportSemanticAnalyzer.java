@@ -288,6 +288,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
         if (TableType.valueOf(tblObj.getTableType()) == TableType.EXTERNAL_TABLE) {
           tblDesc.setExternal(true);
+          // we should set this to null so default location for external tables is chosen on target
+          tblDesc.setLocation(null);
         }
       } else {
         tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
@@ -1150,7 +1152,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         tblDesc.setLocation(
             wh.getDnsPath(wh.getDefaultTablePath(tblDesc.getDatabaseName(), tblDesc.getTableName(), tblDesc.isExternal())
         ).toString());
-
       }
     }
 

@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
@@ -101,32 +100,15 @@ public class LoadPartitions {
     this.table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
   }
 
-  private String tableLocation() throws MetaException, HiveException {
-    if (tableDesc.isExternal()) {
-      // we are adding the base path on the target to be prefixed.
-      String currentPath = new Path(tableDesc.getLocation()).toUri().getPath();
-      String newLocation = ReplExternalTables.externalTableLocation(context.hiveConf, currentPath);
-      LOG.debug("external table {} data location is: {}", tableDesc.getTableName(), newLocation);
-      return newLocation;
-    }
-
-    Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
-    if (tableContext.waitOnPrecursor()) {
-      Path tablePath = context.warehouse.getDefaultTablePath(
-          tableDesc.getDatabaseName(), tableDesc.getTableName(), tableDesc.isExternal());
-      return context.warehouse.getDnsPath(tablePath).toString();
-    } else {
-      return context.warehouse.getDefaultTablePath(
-          parentDb, tableDesc.getTableName(), tableDesc.isExternal()).toString();
-    }
-  }
-
   public TaskTracker tasks() throws SemanticException {
     try {
       /*
       We are doing this both in load table and load partitions
        */
-      tableDesc.setLocation(tableLocation());
+      Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
+      LoadTable.TableLocationTuple tableLocationTuple =
+          LoadTable.tableLocation(tableDesc, parentDb, tableContext, context);
+      tableDesc.setLocation(tableLocationTuple.location);
 
       if (table == null) {
         //new table

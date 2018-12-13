@@ -328,6 +328,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     tuple.replicationSpec.setIsReplace(true);  // by default for all other objects this is false
     if (AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
+      tuple.replicationSpec.setValidTxnList(validTxnList);
       tuple.replicationSpec.setValidWriteIdList(getValidWriteIdList(dbName, tblName, validTxnList));
 
       // For transactional table, data would be valid snapshot for current txn and doesn't include data

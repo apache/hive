@@ -97,11 +97,18 @@ public class FSTableEvent implements TableEvent {
         if (AcidUtils.isTransactionalTable(table)) {
           replicationSpec().setMigratingToTxnTable();
         }
+        if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+          //since we have converted to an external table now after applying the migration rules the
+          // table location has to be set to null so that the location on the target is picked up
+          // based on default configuration
+          table.setDataLocation(null);
+        }
       }
       ImportTableDesc tableDesc
               = new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
       if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-        tableDesc.setLocation(table.getDataLocation().toString());
+        tableDesc.setLocation(
+            table.getDataLocation() == null ? null : table.getDataLocation().toString());
         tableDesc.setExternal(true);
       }
       tableDesc.setReplicationSpec(replicationSpec());
