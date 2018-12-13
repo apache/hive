@@ -61,7 +61,7 @@ STAGE PLANS:
           alias: alltypesorc
           GatherStats: false
           Select Operator
-            expressions: TIMESTAMP'2012-01-01 09:02:03' (type: timestamp)
+            expressions: TIMESTAMP'2012-01-01 01:02:03' (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
@@ -234,11 +234,11 @@ POSTHOOK: query: select unix_timestamp(current_timestamp()),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1325408523	9	2	3
-1325408523	9	2	3
-1325408523	9	2	3
-1325408523	9	2	3
-1325408523	9	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
+1325379723	1	2	3
 PREHOOK: query: select to_date(current_timestamp()),
                            year(current_timestamp()),
                            month(current_timestamp()),
@@ -321,7 +321,7 @@ POSTHOOK: query: select current_timestamp() - current_timestamp(),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-0 00:00:00.000000000	0 09:02:03.000000000	-0 09:02:03.000000000	0 00:00:00.000000000
+0 00:00:00.000000000	0 01:02:03.000000000	-0 01:02:03.000000000	0 00:00:00.000000000
 PREHOOK: query: select ctimestamp1 - current_date(),
         ctimestamp1- ctimestamp2,
         current_date() - current_date(),
@@ -357,11 +357,11 @@ POSTHOOK: query: select current_date, current_timestamp from src limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-2012-01-01	2012-01-01 09:02:03
-2012-01-01	2012-01-01 09:02:03
-2012-01-01	2012-01-01 09:02:03
-2012-01-01	2012-01-01 09:02:03
-2012-01-01	2012-01-01 09:02:03
+2012-01-01	2012-01-01 01:02:03
+2012-01-01	2012-01-01 01:02:03
+2012-01-01	2012-01-01 01:02:03
+2012-01-01	2012-01-01 01:02:03
+2012-01-01	2012-01-01 01:02:03
 PREHOOK: query: select `[kv]+.+` from srcpart order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
