@@ -36,6 +36,7 @@
 
   <properties>
     <hive.version.shortname>4.0.0</hive.version.shortname>
+    <standalone.metastore.path.to.root>.</standalone.metastore.path.to.root>
 
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,6 +46,7 @@
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
     <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
+    <checkstyle.conf.dir>${basedir}/${standalone.metastore.path.to.root}/checkstyle</checkstyle.conf.dir>
 
     <!-- Test Properties -->
     <log4j.conf.dir>${project.basedir}/src/test/resources</log4j.conf.dir>
@@ -60,7 +62,6 @@
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
-    <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.surefire.version>2.20.1</maven.surefire.version>
 
@@ -359,6 +360,11 @@
             <failIfNoTests>false</failIfNoTests>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${maven.checkstyle.plugin.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -384,6 +390,15 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
+          <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+        </configuration>
       </plugin>
     </plugins>
   </build>
