@@ -92,6 +92,10 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
     return zonedDateTime.toInstant().getEpochSecond();
   }
 
+  public long toEpochMilli() {
+    return zonedDateTime.toInstant().toEpochMilli();
+  }
+
   public int getNanos() {
     return zonedDateTime.toInstant().getNano();
   }

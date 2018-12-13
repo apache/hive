@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.time.ZonedDateTime;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -49,9 +50,11 @@ public class GenericUDFCurrentTimestamp extends GenericUDF {
     }
 
     if (currentTimestamp == null) {
-      java.sql.Timestamp ts = SessionState.get().getQueryCurrentTimestamp();
+      SessionState ss = SessionState.get();
+      ZonedDateTime dateTime = ss.getQueryCurrentTimestamp().atZone(
+          ss.getConf().getLocalTimeZone());
       currentTimestamp = new TimestampWritableV2(
-          Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
+          Timestamp.valueOf(dateTime.toLocalDateTime().toString()));
     }
 
     return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
