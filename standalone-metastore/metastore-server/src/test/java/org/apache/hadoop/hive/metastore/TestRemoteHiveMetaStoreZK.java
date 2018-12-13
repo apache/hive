@@ -22,15 +22,12 @@ import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.Ignore;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
-@Ignore("HIVE-21022: disabled until fixed")
 @Category(MetastoreCheckinTest.class)
 public class TestRemoteHiveMetaStoreZK extends TestRemoteHiveMetaStore {
   private static TestingServer zkServer = null;
-  private final static String zkRootNamespace = "hs2mszktest";
 
     @Before
     public void setUp() throws Exception {
@@ -40,7 +37,7 @@ public class TestRemoteHiveMetaStoreZK extends TestRemoteHiveMetaStore {
             // Add ZK specific configurations, so that the metastore can register itself to ZK when
             // started.
             MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, zkServer.getConnectString());
-            MetastoreConf.setVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE, zkRootNamespace);
+            MetastoreConf.setVar(conf, ConfVars.THRIFT_ZOOKEEPER_NAMESPACE, this.getClass().getSimpleName());
             MetastoreConf.setVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE, "zookeeper");
         }
         super.setUp();
