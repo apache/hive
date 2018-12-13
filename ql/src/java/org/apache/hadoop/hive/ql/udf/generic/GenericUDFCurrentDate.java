@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.time.ZonedDateTime;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -49,8 +50,11 @@ public class GenericUDFCurrentDate extends GenericUDF {
     }
 
     if (currentDate == null) {
-      Date dateVal =
-          Date.valueOf(SessionState.get().getQueryCurrentTimestamp().toString().substring(0, 10));
+      SessionState ss = SessionState.get();
+      ZonedDateTime dateTime = ss.getQueryCurrentTimestamp().atZone(
+          ss.getConf().getLocalTimeZone());
+      Date dateVal = Date.valueOf(
+          dateTime.toString().substring(0, 10));
       currentDate = new DateWritableV2(dateVal);
     }
 
