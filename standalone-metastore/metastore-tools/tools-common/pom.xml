@@ -27,6 +27,10 @@
   <artifactId>metastore-tools-common</artifactId>
   <name>Hive Metastore Tools common libraries</name>
 
+  <properties>
+    <standalone.metastore.path.to.root>../..</standalone.metastore.path.to.root>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.hive</groupId>
