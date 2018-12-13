@@ -329,12 +329,9 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     txnMgr2 = swapTxnManager(txnMgr1);
     driver2 = swapDrivers(driver1);
     runStatementOnDriver("alter table T compact 'minor'");//T4
-    TestTxnCommands2.runWorker(hiveConf);//makes delta_1_2 & delete_delta_1_2
+    TestTxnCommands2.runWorker(hiveConf);//makes delta_1_2
          /* Now we should have
      target/warehouse/t/
-     ├── delete_delta_0000001_0000002_v0000019
-     │   ├── _orc_acid_version
-     │   └── bucket_00000
      ├── delta_0000001_0000001_0000
      │   ├── _orc_acid_version
      │   └── bucket_00000
@@ -350,7 +347,6 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         FileUtils.HIDDEN_FILES_PATH_FILTER);
 
     String[] expectedList = new String[] {
-        "/t/delete_delta_0000001_0000002_v0000019",
         "/t/delta_0000001_0000002_v0000019",
         "/t/delta_0000001_0000001_0000",
         "/t/delta_0000002_0000002_0000",
@@ -370,8 +366,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     txnMgr1 = swapTxnManager(txnMgr2);
     driver1 = swapDrivers(driver2);
     runStatementOnDriver("commit");//commits T3
-    //so now cleaner should be able to delete delta_0000001_0000001_0000
-    // & delta_0000002_0000002_0000
+    //so now cleaner should be able to delete delta_0000002_0000002_0000
 
     //insert a row so that compactor makes a new delta (due to HIVE-20901)
     runStatementOnDriver("insert into T values(2,5)");//makes delta_3_3 in T5
@@ -379,13 +374,12 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
     /*
-    at this point delete|delta_0000001_0000003_v0000022 are visible to everyone
-    so cleaner removes all files shadowed by them (which is everything in this case)
+    at this point delta_0000001_0000003_v0000022 is visible to everyone
+    so cleaner removes all files shadowed by it (which is everything in this case)
     */
     TestTxnCommands2.runCleaner(hiveConf);
 
     expectedList = new String[] {
-        "/t/delete_delta_0000001_0000003_v0000022",
         "/t/delta_0000001_0000003_v0000022"
     };
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
