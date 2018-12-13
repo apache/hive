@@ -167,10 +167,10 @@ public class ZooKeeperHiveHelper {
                 .creatingParentsIfNeeded()
                 .withMode(CreateMode.PERSISTENT)
                 .forPath(ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace);
-        LOG.info("Created the root name space: " + rootNamespace + " on ZooKeeper for HiveServer2");
+        LOG.info("Created the root name space: " + rootNamespace + " on ZooKeeper");
       } catch (KeeperException e) {
         if (e.code() != KeeperException.Code.NODEEXISTS) {
-          LOG.error("Unable to create HiveServer2 namespace: " + rootNamespace + " on ZooKeeper", e);
+          LOG.error("Unable to create namespace: " + rootNamespace + " on ZooKeeper", e);
           throw e;
         }
       }
