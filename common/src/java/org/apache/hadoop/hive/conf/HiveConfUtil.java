@@ -24,12 +24,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
 
 /**
  * Hive Configuration utils
@@ -182,23 +185,37 @@ public class HiveConfUtil {
 
     String jobKeyStoreLocation = jobConf.get(HiveConf.ConfVars.HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH.varname);
     String oldKeyStoreLocation = jobConf.get(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG);
+
     if (StringUtils.isNotBlank(jobKeyStoreLocation)) {
       jobConf.set(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG, jobKeyStoreLocation);
       LOG.debug("Setting job conf credstore location to " + jobKeyStoreLocation
           + " previous location was " + oldKeyStoreLocation);
     }
 
-    String credStorepassword = getJobCredentialProviderPassword(jobConf);
-    if (credStorepassword != null) {
-      // if the execution engine is MR set the map/reduce env with the credential store password
+    String credstorePassword = getJobCredentialProviderPassword(jobConf);
+    if (credstorePassword != null) {
       String execEngine = jobConf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname);
+
       if ("mr".equalsIgnoreCase(execEngine)) {
-        addKeyValuePair(jobConf, JobConf.MAPRED_MAP_TASK_ENV,
-            Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, credStorepassword);
-        addKeyValuePair(jobConf, JobConf.MAPRED_REDUCE_TASK_ENV,
-            Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, credStorepassword);
-        addKeyValuePair(jobConf, "yarn.app.mapreduce.am.admin.user.env",
-            Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, credStorepassword);
+        // if the execution engine is MR set the map/reduce env with the credential store password
+
+        Collection<String> redactedProperties =
+            jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES);
+
+        Stream.of(
+            JobConf.MAPRED_MAP_TASK_ENV,
+            JobConf.MAPRED_REDUCE_TASK_ENV,
+            "yarn.app.mapreduce.am.admin.user.env")
+
+            .forEach(property -> {
+              addKeyValuePair(jobConf, property,
+                  Constants.HADOOP_CREDENTIAL_PASSWORD_ENVVAR, credstorePassword);
+              redactedProperties.add(property);
+            });
+
+        // Hide sensitive configuration values from MR HistoryUI by telling MR to redact the following list.
+        jobConf.set(MRJobConfig.MR_JOB_REDACTED_PROPERTIES,
+            StringUtils.join(redactedProperties, ","));
       }
     }
   }
