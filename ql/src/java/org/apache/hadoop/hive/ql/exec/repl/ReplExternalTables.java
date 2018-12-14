@@ -113,8 +113,9 @@ public class ReplExternalTables {
       if (table.isPartitioned()) {
         List<Partition> partitions = Hive.get(hiveConf).getPartitions(table);
         for (Partition partition : partitions) {
-          boolean partitionLocOutsideTableLoc = !FileUtils
-              .isPathWithinSubtree(partition.getDataLocation(), table.getDataLocation());
+          boolean partitionLocOutsideTableLoc = !FileUtils.isPathWithinSubtree(
+              partition.getDataLocation(), table.getDataLocation()
+          );
           if (partitionLocOutsideTableLoc) {
             fullyQualifiedDataLocation = PathBuilder
                 .fullyQualifiedHDFSUri(partition.getDataLocation(), FileSystem.get(hiveConf));

@@ -361,7 +361,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
       // If the total number of tasks that can be created are less than the parallelism we can achieve
       // do nothing since someone is working on 1950's machine. else try to achieve max parallelism
-
       int calculatedMaxNumOfTasks = 0, maxNumOfHDFSTasks = 0;
       if (maxTasks <= parallelism) {
         if (builder.hasMoreWork()) {

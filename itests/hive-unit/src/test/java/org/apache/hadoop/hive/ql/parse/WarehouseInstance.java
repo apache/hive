@@ -114,9 +114,9 @@ public class WarehouseInstance implements Closeable {
 
     this.repldDir = mkDir(fs, tmpDir + "/hrepl" + uniqueIdentifier + "/").toString();
     Path testPath = new Path(tmpDir);
-    fs.mkdirs(testPath);
     avroSchemaFile = createAvroSchemaFile(fs, testPath);
-    initialize(cmRootPath.toString(),externalTableWarehouseRoot.toString(),  warehouseRoot.toString(), overridesForHiveConf);
+    initialize(cmRootPath.toString(), externalTableWarehouseRoot.toString(),
+        warehouseRoot.toString(), overridesForHiveConf);
   }
 
   WarehouseInstance(Logger logger, MiniDFSCluster cluster,

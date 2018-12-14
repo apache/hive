@@ -383,8 +383,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
           tblNameOrPattern, queryState.getLineageState(), evDump, dmd.getEventTo(),
-          //this toLowerCase is the weird case of db's being loaded from rdbms all being in lowercase.
-          //however the dbNameOrPattern is a user input in the repl load command hence can be NOT all be in lower case.
           dirLocationsToCopy(loadPath, evDump));
       rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {

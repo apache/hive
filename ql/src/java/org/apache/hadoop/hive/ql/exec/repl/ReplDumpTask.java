@@ -88,7 +88,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
     private final String prefix;
-    ConstraintFileType(String name, String prefix) {
+    private ConstraintFileType(String name, String prefix) {
       this.name = name;
       this.prefix = prefix;
     }

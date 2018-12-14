@@ -503,7 +503,7 @@ public class HiveConf extends Configuration {
         + " speed up the repl load operation. In file system like HDFS where move operation is atomic, this \n"
         + " optimization should not be enabled as it may lead to inconsistent data read for non acid tables."),
     REPL_EXTERNAL_TABLE_BASE_DIR("hive.repl.replica.external.table.base.dir", "/",
-        "This is the base directory on the target/replica warehouse where data under which data for "
+        "This is the base directory on the target/replica warehouse under which data for "
             + "external tables is stored. This is relative base path and hence prefixed to the source "
             + "external table path on target cluster."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",

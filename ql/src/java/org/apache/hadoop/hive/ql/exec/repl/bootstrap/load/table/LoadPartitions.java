@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
@@ -192,6 +193,14 @@ public class LoadPartitions {
    */
   private Task<?> tasksForAddPartition(Table table, AddPartitionDesc addPartitionDesc, Task<?> ptnRootTask)
           throws MetaException, HiveException {
+    AddPartitionDesc.OnePartitionDesc partSpec = addPartitionDesc.getPartition(0);
+    Path sourceWarehousePartitionLocation = new Path(partSpec.getLocation());
+    Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
+    partSpec.setLocation(replicaWarehousePartitionLocation.toString());
+    LOG.debug("adding dependent CopyWork/AddPart/MoveWork for partition "
+        + partSpecToString(partSpec.getPartSpec()) + " with source location: "
+        + partSpec.getLocation());
+
     Task<?> addPartTask = TaskFactory.get(
             new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc),
             context.hiveConf
@@ -205,17 +214,7 @@ public class LoadPartitions {
       return ptnRootTask;
     }
 
-
-    AddPartitionDesc.OnePartitionDesc partSpec = addPartitionDesc.getPartition(0);
-    Path sourceWarehousePartitionLocation = new Path(partSpec.getLocation());
-    Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
-    partSpec.setLocation(replicaWarehousePartitionLocation.toString());
-    LOG.debug("adding dependent CopyWork/AddPart/MoveWork for partition "
-            + partSpecToString(partSpec.getPartSpec()) + " with source location: "
-            + partSpec.getLocation());
-
     Path stagingDir = replicaWarehousePartitionLocation;
-
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
     if (event.replicationSpec().isInReplicationScope() &&
@@ -326,7 +325,9 @@ public class LoadPartitions {
   private Path locationOnReplicaWarehouse(Table table, AddPartitionDesc.OnePartitionDesc partSpec)
       throws MetaException, HiveException {
     if (tableDesc.isExternal()) {
-      return new Path(partSpec.getLocation());
+      String externalLocation =
+          ReplExternalTables.externalTableLocation(context.hiveConf, partSpec.getLocation());
+      return new Path(externalLocation);
     }
 
     String child = Warehouse.makePartPath(partSpec.getPartSpec());
