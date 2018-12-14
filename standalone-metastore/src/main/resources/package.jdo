@@ -210,6 +210,11 @@
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
+      <!-- Make sure that the fetch group names match up with constants in -->
+      <!-- org.apache.hadoop.hive.metastore.model.FetchGroups -->
+      <fetch-group name="fetch_db_mtable">
+          <field name="database"/>
+      </fetch-group>
     </class>
 
     <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">
