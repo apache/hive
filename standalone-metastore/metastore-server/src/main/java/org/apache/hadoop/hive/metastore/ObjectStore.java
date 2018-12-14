@@ -1461,6 +1461,13 @@ public class ObjectStore implements RawStore, Configurable {
         LOG.debug("getTableMeta with filter " + filterBuilder.toString() + " params: " +
             StringUtils.join(parameterVals, ", "));
       }
+      // Add the fetch group here which retrieves the database object along with the MTable
+      // objects. If we don't prefetch the database object, we could end up in a situation where
+      // the database gets dropped while we are looping through the tables throwing a
+      // JDOObjectNotFoundException. This causes HMS to go into a retry loop which greatly degrades
+      // performance of this function when called with dbNames="*" and tableNames="*" (fetch all
+      // tables in all databases, essentially a full dump)
+      pm.getFetchPlan().addGroup(FetchGroups.FETCH_DATABASE_ON_MTABLE);
       query = pm.newQuery(MTable.class, filterBuilder.toString());
       Collection<MTable> tables = (Collection<MTable>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
       for (MTable table : tables) {
@@ -1472,6 +1479,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
+      pm.getFetchPlan().removeGroup(FetchGroups.FETCH_DATABASE_ON_MTABLE);
       rollbackAndCleanup(commited, query);
     }
     return metas;
