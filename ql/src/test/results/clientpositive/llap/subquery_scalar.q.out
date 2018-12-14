@@ -7155,3 +7155,141 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: CREATE TABLE `store_sales`(
+  `ss_sold_date_sk` int,
+  `ss_quantity` int,
+  `ss_list_price` decimal(7,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: CREATE TABLE `store_sales`(
+  `ss_sold_date_sk` int,
+  `ss_quantity` int,
+  `ss_list_price` decimal(7,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: CREATE TABLE `date_dim`(
+  `d_date_sk` int,
+  `d_year` int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim
+POSTHOOK: query: CREATE TABLE `date_dim`(
+  `d_date_sk` int,
+  `d_year` int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim
+Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo with avg_sales as
+ (select avg(quantity*list_price) average_sales
+  from (select ss_quantity quantity
+             ,ss_list_price list_price
+       from store_sales
+           ,date_dim
+       where ss_sold_date_sk = d_date_sk
+         and d_year between 1999 and 2001 ) x)
+select * from store_sales where ss_list_price > (select average_sales from avg_sales)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo with avg_sales as
+ (select avg(quantity*list_price) average_sales
+  from (select ss_quantity quantity
+             ,ss_list_price list_price
+       from store_sales
+           ,date_dim
+       where ss_sold_date_sk = d_date_sk
+         and d_year between 1999 and 2001 ) x)
+select * from store_sales where ss_list_price > (select average_sales from avg_sales)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
+  HiveJoin(condition=[>($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
+      HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+    HiveProject($f0=[/($0, $1)])
+      HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[count($0)])
+        HiveProject($f0=[*(CAST($1):DECIMAL(10, 0), $2)])
+          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+            HiveProject(d_date_sk=[$0])
+              HiveFilter(condition=[AND(BETWEEN(false, $1, 1999, 2001), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+Warning: Shuffle Join MERGEJOIN[68][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo with avg_sales as
+ (select avg(quantity*list_price) over( partition by list_price) average_sales
+  from (select ss_quantity quantity
+             ,ss_list_price list_price
+       from store_sales
+           ,date_dim
+       where ss_sold_date_sk = d_date_sk
+         and d_year between 1999 and 2001 ) x)
+select * from store_sales where ss_list_price > (select average_sales from avg_sales)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo with avg_sales as
+ (select avg(quantity*list_price) over( partition by list_price) average_sales
+  from (select ss_quantity quantity
+             ,ss_list_price list_price
+       from store_sales
+           ,date_dim
+       where ss_sold_date_sk = d_date_sk
+         and d_year between 1999 and 2001 ) x)
+select * from store_sales where ss_list_price > (select average_sales from avg_sales)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[>($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
+        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+      HiveProject(avg_window_0=[avg(*(CAST($1):DECIMAL(10, 0), $2)) OVER (PARTITION BY $2 ORDER BY $2 NULLS FIRST ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING)])
+        HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+          HiveProject(d_date_sk=[$0])
+            HiveFilter(condition=[AND(BETWEEN(false, $1, 1999, 2001), IS NOT NULL($0))])
+              HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+    HiveProject(cnt=[$0])
+      HiveFilter(condition=[<=(sq_count_check($0), 1)])
+        HiveProject(cnt=[$0])
+          HiveAggregate(group=[{}], cnt=[COUNT()])
+            HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(ss_sold_date_sk=[$0])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+              HiveProject(d_date_sk=[$0])
+                HiveFilter(condition=[AND(BETWEEN(false, $1, 1999, 2001), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
+PREHOOK: query: DROP TABLE store_sales
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: DROP TABLE store_sales
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: DROP TABLE date_dim
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_dim
+PREHOOK: Output: default@date_dim
+POSTHOOK: query: DROP TABLE date_dim
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Output: default@date_dim
