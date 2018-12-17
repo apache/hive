@@ -39,6 +39,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
@@ -46,9 +47,11 @@ import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ Utils.class })
+@PrepareForTest({ Utils.class, ReplDumpTask.class})
 @PowerMockIgnore({ "javax.management.*" })
 public class TestReplDumpTask {
 
@@ -113,6 +116,10 @@ public class TestReplDumpTask {
     when(hive.getAllFunctions()).thenReturn(Collections.emptyList());
     when(queryState.getConf()).thenReturn(conf);
     when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
+    when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
+
+    whenNew(Writer.class).withAnyArguments().thenReturn(mock(Writer.class));
+    whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
 
     ReplDumpTask task = new StubReplDumpTask() {
       private int tableDumpCount = 0;
