@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -139,6 +140,14 @@ public class TestObjectStore {
     objectStore.setConf(conf);
     dropAllStoreObjects(objectStore);
     HiveMetaStore.HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    // Clear the SSL system properties before each test.
+    System.clearProperty("javax.net.ssl.trustStore");
+    System.clearProperty("javax.net.ssl.trustStorePassword");
+    System.clearProperty("javax.net.ssl.trustStoreType");
   }
 
   @Test
@@ -1030,6 +1039,71 @@ public class TestObjectStore {
     }
     Assert.assertEquals("Unexpected number of setConf calls", numIteration * numThreads,
         counter.get());
+  }
+
+  /**
+   * Test the SSL configuration parameters to ensure that they modify the Java system properties correctly.
+   */
+  @Test
+  public void testSSLPropertiesAreSet() {
+    setAndCheckSSLProperties(true, "/tmp/truststore.p12", "password", "pkcs12");
+  }
+
+  /**
+   * Test the property metastore.dbaccess.use.SSL (hive.metastore.dbaccess.use.SSL) to ensure that it correctly
+   * toggles whether or not the SSL configuration parameters will be set. Effectively, this is testing whether
+   * SSL can be turned on/off correctly.
+   */
+  @Test
+  public void testUseSSLProperty() {
+    setAndCheckSSLProperties(false, "/tmp/truststore.jks", "password", "jks");
+  }
+
+  /**
+   * Test that the deprecated property metastore.dbaccess.ssl.properties is overwritten by the javax.net.ssl.* properties
+   * if both are set.
+   *
+   * This is not an ideal scenario. It is highly recommend to only set the javax.net.ssl.* properties.
+   */
+  @Test
+  public void testDeprecatedConfigIsOverwritten() {
+    // Different from the values in the safe config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_PROPS,
+          "javax.net.ssl.trustStore=/tmp/truststore.p12,javax.net.ssl.trustStorePassword=pwd,javax.net.ssl.trustStoreType=pkcs12");
+
+    // Safe config
+    setAndCheckSSLProperties(true, "/tmp/truststore.jks", "password", "jks");
+  }
+
+  /**
+   * Ensure that an empty trustStore path in metastore.dbaccess.ssl.truststore.path (hive.metastore.dbaccess.ssl.truststore.path)
+   * throws an IllegalArgumentException.
+   */
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmptyTrustStorePath() {
+    setAndCheckSSLProperties(true, "", "password", "jks");
+  }
+
+  /**
+   * Helper method for setting and checking the SSL configuration parameters.
+   */
+  private void setAndCheckSSLProperties(boolean useSSL, String trustStorePath, String trustStorePassword, String trustStoreType) {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.DBACCESS_USE_SSL, useSSL);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_TRUSTSTORE_PATH, trustStorePath);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD, trustStorePassword);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_TRUSTSTORE_TYPE, trustStoreType);
+    objectStore.setConf(conf); // Calls configureSSL()
+
+    // Check that the Java system values correspond to the values that we set
+    if (useSSL) {
+      Assert.assertEquals(trustStorePath, System.getProperty("javax.net.ssl.trustStore"));
+      Assert.assertEquals(trustStorePassword, System.getProperty("javax.net.ssl.trustStorePassword"));
+      Assert.assertEquals(trustStoreType, System.getProperty("javax.net.ssl.trustStoreType"));
+    } else {
+      Assert.assertNull(System.getProperty("javax.net.ssl.trustStore"));
+      Assert.assertNull(System.getProperty("javax.net.ssl.trustStorePassword"));
+      Assert.assertNull(System.getProperty("javax.net.ssl.trustStoreType"));
+    }
   }
 
   private void createTestCatalog(String catName) throws MetaException {

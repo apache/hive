@@ -127,6 +127,13 @@ public class ObjectStore implements RawStore, Configurable {
     NO_STATE, OPEN, COMMITED, ROLLBACK
   }
 
+  /**
+   * Java system properties for configuring SSL to the database store
+   */
+  private static final String TRUSTSTORE_PATH_KEY = "javax.net.ssl.trustStore";
+  private static final String TRUSTSTORE_PASSWORD_KEY = "javax.net.ssl.trustStorePassword";
+  private static final String TRUSTSTORE_TYPE_KEY = "javax.net.ssl.trustStoreType";
+
   private static final Map<String, Class<?>> PINCLASSMAP;
   private static final String HOSTNAME;
   private static final String USER;
@@ -322,14 +329,81 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
-   * Configure the SSL properties of the connection from provided config
+   * Configure SSL encryption to the database store.
+   *
+   * The following properties must be set correctly to enable encryption:
+   *
+   * 1. metastore.dbaccess.ssl.use.SSL
+   * 2. javax.jdo.option.ConnectionURL
+   * 3. metastore.dbaccess.ssl.truststore.path
+   * 4. metastore.dbaccess.ssl.truststore.password
+   * 5. metastore.dbaccess.ssl.truststore.type
+   *
+   * The last three properties directly map to JSSE (Java) system properties. The Java layer will handle enabling
+   * encryption once these properties are set.
+   *
+   * Additionally, javax.jdo.option.ConnectionURL must have the database-specific SSL flag in the connection URL.
+   *
    * @param conf
    */
   private static void configureSSL(Configuration conf) {
+    configureSSLDeprecated(conf); // TODO: Deprecate this method
+
+    boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.DBACCESS_USE_SSL);
+
+    if (useSSL) {
+      try {
+        LOG.info("Setting SSL properties to connect to the database store");
+        String trustStorePath = MetastoreConf.getVar(conf, ConfVars.DBACCESS_SSL_TRUSTSTORE_PATH).trim();
+        if (trustStorePath.isEmpty()) {
+          throw new IllegalArgumentException("SSL to the database store has been enabled but " + ConfVars.DBACCESS_SSL_TRUSTSTORE_PATH.toString() + " is empty. "
+              + "Set this property to enable SSL.");
+        }
+        // If the truststore password has been configured and redacted properly using the Hadoop CredentialProvider API, then
+        // MetastoreConf.getPassword() will securely decrypt it. Otherwise, it will default to being read in from the
+        // configuration file in plain text.
+        String trustStorePassword = MetastoreConf.getPassword(conf, ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD);
+        if (trustStorePassword.isEmpty()) {
+          LOG.warn("SSL has been enabled but " + ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.toString() + " is empty. "
+              + "It is highly recommended to set this property. An empty truststore password could compromise the integrity of the truststore file. "
+              + "Arbitrary certificates could be placed into the truststore, thereby potentially exposing an attack vector to this application."
+              + "Continuing with SSL enabled.");
+        }
+        // Already validated in MetaStoreConf
+        String trustStoreType = MetastoreConf.getVar(conf, ConfVars.DBACCESS_SSL_TRUSTSTORE_TYPE);
+
+        System.setProperty(TRUSTSTORE_PATH_KEY, trustStorePath);
+        System.setProperty(TRUSTSTORE_PASSWORD_KEY, trustStorePassword);
+        System.setProperty(TRUSTSTORE_TYPE_KEY, trustStoreType);
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to set the SSL properties to connect to the database store.", e);
+      }
+    }
+  }
+
+  /**
+   * Configure the SSL properties of the connection from provided config
+   *
+   * This method was kept for backwards compatibility purposes.
+   *
+   * The property metastore.dbaccess.ssl.properties (hive.metastore.dbaccess.ssl.properties) was deprecated in
+   * HIVE-20992 in favor of more transparent and user-friendly properties.
+   *
+   * Please use the javax.net.ssl.* properties instead. Setting those properties will overwrite the values
+   * of the deprecated property.
+   *
+   * The process of completely removing this property and its functionality is being tracked in HIVE-21024.
+   *
+   * @param conf Configuration
+   */
+  @Deprecated
+  private static void configureSSLDeprecated(Configuration conf) {
     // SSL support
     String sslPropString = MetastoreConf.getVar(conf, ConfVars.DBACCESS_SSL_PROPS);
     if (org.apache.commons.lang.StringUtils.isNotEmpty(sslPropString)) {
-      LOG.info("Metastore setting SSL properties of the connection to backed DB");
+      LOG.warn("Configuring SSL using a deprecated key " + ConfVars.DBACCESS_SSL_PROPS.toString() +
+              ". This may be removed in the future. See HIVE-20992 for more details.");
+      LOG.info("Metastore setting SSL properties of the connection to backend DB");
       for (String sslProp : sslPropString.split(",")) {
         String[] pair = sslProp.trim().split("=");
         if (pair != null && pair.length == 2) {
