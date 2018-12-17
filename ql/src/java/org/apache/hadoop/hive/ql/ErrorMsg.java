@@ -461,7 +461,7 @@ public enum ErrorMsg {
     "Grouping sets size cannot be greater than 64"),
   REBUILD_NO_MATERIALIZED_VIEW(10412, "Rebuild command only valid for materialized views"),
   LOAD_DATA_ACID_FILE(10413,
-      "\"{0}\" was created created by Acid write - it cannot be loaded into anther Acid table",
+      "\"{0}\" was created by Acid write - it cannot be loaded into anther Acid table",
       true),
   ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
     "insert-only transactional", true),
