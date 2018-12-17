@@ -247,7 +247,9 @@ public class MetastoreConf {
       ConfVars.SSL_KEYSTORE_PASSWORD.varname,
       ConfVars.SSL_KEYSTORE_PASSWORD.hiveName,
       ConfVars.SSL_TRUSTSTORE_PASSWORD.varname,
-      ConfVars.SSL_TRUSTSTORE_PASSWORD.hiveName
+      ConfVars.SSL_TRUSTSTORE_PASSWORD.hiveName,
+      ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.varname,
+      ConfVars.DBACCESS_SSL_TRUSTSTORE_PASSWORD.hiveName
   );
 
   public static ConfVars getMetaConf(String name) {
@@ -452,9 +454,26 @@ public class MetastoreConf {
         "Default transaction isolation level for identity generation."),
     DATANUCLEUS_USE_LEGACY_VALUE_STRATEGY("datanucleus.rdbms.useLegacyNativeValueStrategy",
         "datanucleus.rdbms.useLegacyNativeValueStrategy", true, ""),
-    DBACCESS_SSL_PROPS("metastore.dbaccess.ssl.properties", "hive.metastore.dbaccess.ssl.properties", "",
-        "Comma-separated SSL properties for metastore to access database when JDO connection URL\n" +
-            "enables SSL access. e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd."),
+
+    // Parameters for configuring SSL encryption to the database store
+    // If DBACCESS_USE_SSL is false, then all other DBACCESS_SSL_* properties will be ignored
+    DBACCESS_SSL_TRUSTSTORE_PASSWORD("metastore.dbaccess.ssl.truststore.password", "hive.metastore.dbaccess.ssl.truststore.password", "",
+        "Password for the Java truststore file that is used when encrypting the connection to the database store. \n"
+            + "This directly maps to the javax.net.ssl.trustStorePassword Java system property. \n"
+            + "While Java does allow an empty truststore password, we highly recommend against this. \n"
+            + "An empty password can compromise the integrity of the truststore file."),
+    DBACCESS_SSL_TRUSTSTORE_PATH("metastore.dbaccess.ssl.truststore.path", "hive.metastore.dbaccess.ssl.truststore.path", "",
+        "Location on disk of the Java truststore file to use when encrypting the connection to the database store. \n"
+            + "This directly maps to the javax.net.ssl.trustStore Java system property. \n"
+            + "This file consists of a collection of certificates trusted by the metastore server.\n"),
+    DBACCESS_SSL_TRUSTSTORE_TYPE("metastore.dbaccess.ssl.truststore.type", "hive.metastore.dbaccess.ssl.truststore.type", "jks",
+        new StringSetValidator("jceks", "jks", "dks", "pkcs11", "pkcs12"),
+        "File type for the Java truststore file that is used when encrypting the connection to the database store. \n"
+            + "This directly maps to the javax.net.ssl.trustStoreType Java system property. \n"
+            + "Types jceks, jks, dks, pkcs11, and pkcs12 can be read from Java 8 and beyond. We default to jks. \n"),
+    DBACCESS_USE_SSL("metastore.dbaccess.ssl.use.SSL", "hive.metastore.dbaccess.ssl.use.SSL", false,
+        "Set this to true to use SSL encryption to the database store."),
+
     DEFAULTPARTITIONNAME("metastore.default.partition.name",
         "hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__",
         "The default partition name in case the dynamic partition column value is null/empty string or any other values that cannot be escaped. \n" +
@@ -1070,6 +1089,14 @@ public class MetastoreConf {
             "Deprecated, use METRICS_REPORTERS instead. This configuraiton will be"
             + " overridden by HIVE_CODAHALE_METRICS_REPORTER_CLASSES and METRICS_REPORTERS if " +
             "present. Comma separated list of JMX, CONSOLE, JSON_FILE, HADOOP2"),
+    // Planned to be removed in HIVE-21024
+    @Deprecated
+    DBACCESS_SSL_PROPS("metastore.dbaccess.ssl.properties", "hive.metastore.dbaccess.ssl.properties", "",
+        "Deprecated. Use the metastore.dbaccess.ssl.* properties instead. Comma-separated SSL properties for " +
+            "metastore to access database when JDO connection URL enables SSL access. \n"
+            + "e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd.\n " +
+            "If both this and the metastore.dbaccess.ssl.* properties are set, then the latter properties \n" +
+            "will overwrite what was set in the deprecated property."),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
