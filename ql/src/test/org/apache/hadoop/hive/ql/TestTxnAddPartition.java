@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,10 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
       ).getPath().replaceAll("\\\\", "/");
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
+
+
 
   @Override
   protected String getTestDataDir() {
@@ -275,5 +280,24 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
   @Ignore
   @Test
   public void testLocks() throws Exception {
+  }
+
+
+  @Test
+  public void addPartitionTransactional() throws Exception {
+    exception.expect(RuntimeException.class);
+    exception.expectMessage("was created by Acid write");
+
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("drop table if exists Tstage");
+    runStatementOnDriver("create table T (a int, b int) partitioned by (p int) " +
+        "clustered by (a) into 2 buckets stored as orc tblproperties('transactional'='true')");
+    runStatementOnDriver("create table Tstage (a int, b int)  partitioned by (p int) clustered by (a) into 2 " +
+        "buckets stored as orc tblproperties('transactional'='true')");
+
+    runStatementOnDriver("insert into Tstage partition(p=1) values(0,2),(1,4)");
+
+    runStatementOnDriver("ALTER TABLE T ADD PARTITION (p=0) location '"
+        + getWarehouseDir() + "/tstage/p=1/delta_0000001_0000001_0000/bucket_00001'");
   }
 }
