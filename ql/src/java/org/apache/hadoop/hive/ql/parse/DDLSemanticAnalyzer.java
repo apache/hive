@@ -3653,6 +3653,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
       OnePartitionDesc desc = addPartitionDesc.getPartition(index);
       if (desc.getLocation() != null) {
+        AcidUtils.validateAcidPartitionLocation(desc.getLocation(), conf);
         if(addPartitionDesc.isIfNotExists()) {
           //Don't add partition data if it already exists
           Partition oldPart = getPartition(tab, desc.getPartSpec(), false);
