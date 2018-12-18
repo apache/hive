@@ -41,6 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,7 +165,7 @@ public class TestReplicationWithTableMigration {
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflattextpart")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidloc")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpartloc")));
-    Table avroTable = replica.getTable(replicatedDbName, "avro_table");
+    Table avroTable = primary.getTable(primaryDbName, "avro_table");
     assertFalse(isTransactionalTable(avroTable));
     assertFalse(MetaStoreUtils.isExternalTable(avroTable));
     return tuple;
@@ -324,5 +325,25 @@ public class TestReplicationWithTableMigration {
 
     ReplicationTestUtils.verifyIncrementalLoad(primary, replica, primaryDbName,
             replicatedDbName, selectStmtList, expectedValues, bootStrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testBootstrapLoadMigrationToAcidWithMoveOptimization() throws Throwable {
+    List<String> withConfigs =
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
+    WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+    verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
+  }
+
+  @Test
+  public void testIncrementalLoadMigrationToAcidWithMoveOptimization() throws Throwable {
+    List<String> withConfigs =
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, tuple.dumpLocation);
+    tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
+    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+    verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 }

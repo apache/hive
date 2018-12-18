@@ -62,6 +62,9 @@ public class ReplUtils {
   // tasks.
   public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
 
+  // Migrating to transactional tables in bootstrap load phase.
+  // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
+  public static final Long REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID = 1L;
 
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
