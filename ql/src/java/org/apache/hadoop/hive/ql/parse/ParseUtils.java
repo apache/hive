@@ -416,7 +416,7 @@ public final class ParseUtils {
         return;
       }
 
-      // Then, find the leftmost logical sibling select, because that's what Hive uses for aliases. 
+      // Then, find the leftmost logical sibling select, because that's what Hive uses for aliases.
       while (true) {
         CommonTree queryOfSelect = select.parent;
         while (queryOfSelect != null && queryOfSelect.getType() != HiveParser.TOK_QUERY) {
@@ -558,7 +558,7 @@ public final class ParseUtils {
     ctx.setIsLoadingMaterializedView(true);
     final ASTNode ast = parse(viewQuery, ctx);
     final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
-    analyzer.analyze(ast, ctx);
+    analyzer.genLogicalPlan(ast);
     return analyzer.getResultSchema();
   }
 
