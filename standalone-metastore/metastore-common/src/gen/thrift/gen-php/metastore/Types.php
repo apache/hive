@@ -22347,6 +22347,10 @@ class NotificationEventRequest {
    * @var int
    */
   public $maxEvents = null;
+  /**
+   * @var string[]
+   */
+  public $eventTypeSkipList = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -22359,6 +22363,14 @@ class NotificationEventRequest {
           'var' => 'maxEvents',
           'type' => TType::I32,
           ),
+        3 => array(
+          'var' => 'eventTypeSkipList',
+          'type' => TType::LST,
+          'etype' => TType::STRING,
+          'elem' => array(
+            'type' => TType::STRING,
+            ),
+          ),
         );
     }
     if (is_array($vals)) {
@@ -22367,6 +22379,9 @@ class NotificationEventRequest {
       }
       if (isset($vals['maxEvents'])) {
         $this->maxEvents = $vals['maxEvents'];
+      }
+      if (isset($vals['eventTypeSkipList'])) {
+        $this->eventTypeSkipList = $vals['eventTypeSkipList'];
       }
     }
   }
@@ -22404,6 +22419,23 @@ class NotificationEventRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->eventTypeSkipList = array();
+            $_size647 = 0;
+            $_etype650 = 0;
+            $xfer += $input->readListBegin($_etype650, $_size647);
+            for ($_i651 = 0; $_i651 < $_size647; ++$_i651)
+            {
+              $elem652 = null;
+              $xfer += $input->readString($elem652);
+              $this->eventTypeSkipList []= $elem652;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -22425,6 +22457,23 @@ class NotificationEventRequest {
     if ($this->maxEvents !== null) {
       $xfer += $output->writeFieldBegin('maxEvents', TType::I32, 2);
       $xfer += $output->writeI32($this->maxEvents);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->eventTypeSkipList !== null) {
+      if (!is_array($this->eventTypeSkipList)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('eventTypeSkipList', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->eventTypeSkipList));
+        {
+          foreach ($this->eventTypeSkipList as $iter653)
+          {
+            $xfer += $output->writeString($iter653);
+          }
+        }
+        $output->writeListEnd();
+      }
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

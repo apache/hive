@@ -15582,17 +15582,20 @@ class NotificationEventRequest:
   Attributes:
    - lastEvent
    - maxEvents
+   - eventTypeSkipList
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I64, 'lastEvent', None, None, ), # 1
     (2, TType.I32, 'maxEvents', None, None, ), # 2
+    (3, TType.LIST, 'eventTypeSkipList', (TType.STRING,None), None, ), # 3
   )
 
-  def __init__(self, lastEvent=None, maxEvents=None,):
+  def __init__(self, lastEvent=None, maxEvents=None, eventTypeSkipList=None,):
     self.lastEvent = lastEvent
     self.maxEvents = maxEvents
+    self.eventTypeSkipList = eventTypeSkipList
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15613,6 +15616,16 @@ class NotificationEventRequest:
           self.maxEvents = iprot.readI32()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.eventTypeSkipList = []
+          (_etype647, _size644) = iprot.readListBegin()
+          for _i648 in xrange(_size644):
+            _elem649 = iprot.readString()
+            self.eventTypeSkipList.append(_elem649)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15631,6 +15644,13 @@ class NotificationEventRequest:
       oprot.writeFieldBegin('maxEvents', TType.I32, 2)
       oprot.writeI32(self.maxEvents)
       oprot.writeFieldEnd()
+    if self.eventTypeSkipList is not None:
+      oprot.writeFieldBegin('eventTypeSkipList', TType.LIST, 3)
+      oprot.writeListBegin(TType.STRING, len(self.eventTypeSkipList))
+      for iter650 in self.eventTypeSkipList:
+        oprot.writeString(iter650)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15644,6 +15664,7 @@ class NotificationEventRequest:
     value = 17
     value = (value * 31) ^ hash(self.lastEvent)
     value = (value * 31) ^ hash(self.maxEvents)
+    value = (value * 31) ^ hash(self.eventTypeSkipList)
     return value
 
   def __repr__(self):

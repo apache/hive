@@ -42,6 +42,10 @@ import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
+import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.DeleteTableColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessage;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -268,6 +272,42 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONAcidWriteMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct AcidWriteMessage", e);
+    }
+  }
+
+  @Override
+  public UpdateTableColumnStatMessage getUpdateTableColumnStatMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONUpdateTableColumnStatMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct UpdateTableColumnStatMessage", e);
+    }
+  }
+
+  @Override
+  public DeleteTableColumnStatMessage getDeleteTableColumnStatMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONDeleteTableColumnStatMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct UpdateTableColumnStatMessage", e);
+    }
+  }
+
+  @Override
+  public UpdatePartitionColumnStatMessage getUpdatePartitionColumnStatMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONUpdatePartitionColumnStatMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct UpdatePartitionColumnStatMessage", e);
+    }
+  }
+
+  @Override
+  public DeletePartitionColumnStatMessage getDeletePartitionColumnStatMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONDeletePartitionColumnStatMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct UpdatePartitionColumnStatMessage", e);
     }
   }
 }
