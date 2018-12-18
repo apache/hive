@@ -35,7 +35,7 @@ SELECT header_name, header_int FROM header_footer_table_4 FULL JOIN numbrs ON nu
 SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice;
 
 
-SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice;
+SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice;
 
 
 SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8;
@@ -83,7 +83,7 @@ SELECT header_name, header_int FROM header_footer_table_4 FULL JOIN numbrs ON nu
 SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice;
 
 
-SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice;
+SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice;
 
 
 SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8;

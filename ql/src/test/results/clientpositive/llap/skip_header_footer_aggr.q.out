@@ -84,7 +84,7 @@ POSTHOOK: query: SELECT COUNT(*) FROM header_footer_table_4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-8
+14
 PREHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice is NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -101,8 +101,11 @@ POSTHOOK: query: SELECT AVG(header_int) FROM header_footer_table_4 GROUP BY head
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL
+NULL
 8.0
 16.5
+NULL
 4.333333333333333
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM header_footer_table_4 A, header_footer_table_4 B ORDER BY A.header_int, B.header_int
@@ -121,6 +124,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	faith	yearly	11	ethan	monthly
 1	faith	yearly	12	alex	daily
 1	faith	yearly	21	yves	daily
+1	faith	yearly	NULL	footer2_name	footer2_ch
+1	faith	yearly	NULL	footer2_name	footer2_ch
+1	faith	yearly	NULL	header_name	header_cho
+1	faith	yearly	NULL	header_name	header_cho
+1	faith	yearly	NULL	footer_name	footer_cho
+1	faith	yearly	NULL	footer_name	footer_cho
 3	barry	yearly	1	faith	yearly
 3	barry	yearly	3	barry	yearly
 3	barry	yearly	5	chelsea	monthly
@@ -129,6 +138,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	barry	yearly	11	ethan	monthly
 3	barry	yearly	12	alex	daily
 3	barry	yearly	21	yves	daily
+3	barry	yearly	NULL	footer_name	footer_cho
+3	barry	yearly	NULL	footer2_name	footer2_ch
+3	barry	yearly	NULL	footer2_name	footer2_ch
+3	barry	yearly	NULL	header_name	header_cho
+3	barry	yearly	NULL	header_name	header_cho
+3	barry	yearly	NULL	footer_name	footer_cho
 5	chelsea	monthly	1	faith	yearly
 5	chelsea	monthly	3	barry	yearly
 5	chelsea	monthly	5	chelsea	monthly
@@ -137,6 +152,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	chelsea	monthly	11	ethan	monthly
 5	chelsea	monthly	12	alex	daily
 5	chelsea	monthly	21	yves	daily
+5	chelsea	monthly	NULL	footer_name	footer_cho
+5	chelsea	monthly	NULL	footer_name	footer_cho
+5	chelsea	monthly	NULL	footer2_name	footer2_ch
+5	chelsea	monthly	NULL	footer2_name	footer2_ch
+5	chelsea	monthly	NULL	header_name	header_cho
+5	chelsea	monthly	NULL	header_name	header_cho
 8	xavier	monthly	1	faith	yearly
 8	xavier	monthly	3	barry	yearly
 8	xavier	monthly	5	chelsea	monthly
@@ -145,6 +166,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 8	xavier	monthly	11	ethan	monthly
 8	xavier	monthly	12	alex	daily
 8	xavier	monthly	21	yves	daily
+8	xavier	monthly	NULL	footer_name	footer_cho
+8	xavier	monthly	NULL	footer_name	footer_cho
+8	xavier	monthly	NULL	header_name	header_cho
+8	xavier	monthly	NULL	header_name	header_cho
+8	xavier	monthly	NULL	footer2_name	footer2_ch
+8	xavier	monthly	NULL	footer2_name	footer2_ch
 9	derek	yearly	1	faith	yearly
 9	derek	yearly	3	barry	yearly
 9	derek	yearly	5	chelsea	monthly
@@ -153,6 +180,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 9	derek	yearly	11	ethan	monthly
 9	derek	yearly	12	alex	daily
 9	derek	yearly	21	yves	daily
+9	derek	yearly	NULL	footer_name	footer_cho
+9	derek	yearly	NULL	footer2_name	footer2_ch
+9	derek	yearly	NULL	footer2_name	footer2_ch
+9	derek	yearly	NULL	header_name	header_cho
+9	derek	yearly	NULL	header_name	header_cho
+9	derek	yearly	NULL	footer_name	footer_cho
 11	ethan	monthly	1	faith	yearly
 11	ethan	monthly	3	barry	yearly
 11	ethan	monthly	5	chelsea	monthly
@@ -161,6 +194,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 11	ethan	monthly	11	ethan	monthly
 11	ethan	monthly	12	alex	daily
 11	ethan	monthly	21	yves	daily
+11	ethan	monthly	NULL	header_name	header_cho
+11	ethan	monthly	NULL	header_name	header_cho
+11	ethan	monthly	NULL	footer2_name	footer2_ch
+11	ethan	monthly	NULL	footer2_name	footer2_ch
+11	ethan	monthly	NULL	footer_name	footer_cho
+11	ethan	monthly	NULL	footer_name	footer_cho
 12	alex	daily	1	faith	yearly
 12	alex	daily	3	barry	yearly
 12	alex	daily	5	chelsea	monthly
@@ -169,6 +208,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 12	alex	daily	11	ethan	monthly
 12	alex	daily	12	alex	daily
 12	alex	daily	21	yves	daily
+12	alex	daily	NULL	header_name	header_cho
+12	alex	daily	NULL	header_name	header_cho
+12	alex	daily	NULL	footer2_name	footer2_ch
+12	alex	daily	NULL	footer2_name	footer2_ch
+12	alex	daily	NULL	footer_name	footer_cho
+12	alex	daily	NULL	footer_name	footer_cho
 21	yves	daily	1	faith	yearly
 21	yves	daily	3	barry	yearly
 21	yves	daily	5	chelsea	monthly
@@ -177,6 +222,96 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 21	yves	daily	11	ethan	monthly
 21	yves	daily	12	alex	daily
 21	yves	daily	21	yves	daily
+21	yves	daily	NULL	footer_name	footer_cho
+21	yves	daily	NULL	footer_name	footer_cho
+21	yves	daily	NULL	footer2_name	footer2_ch
+21	yves	daily	NULL	footer2_name	footer2_ch
+21	yves	daily	NULL	header_name	header_cho
+21	yves	daily	NULL	header_name	header_cho
+NULL	header_name	header_cho	1	faith	yearly
+NULL	header_name	header_cho	1	faith	yearly
+NULL	footer2_name	footer2_ch	1	faith	yearly
+NULL	footer_name	footer_cho	1	faith	yearly
+NULL	footer2_name	footer2_ch	1	faith	yearly
+NULL	footer_name	footer_cho	1	faith	yearly
+NULL	footer2_name	footer2_ch	3	barry	yearly
+NULL	header_name	header_cho	3	barry	yearly
+NULL	header_name	header_cho	3	barry	yearly
+NULL	footer2_name	footer2_ch	3	barry	yearly
+NULL	footer_name	footer_cho	3	barry	yearly
+NULL	footer_name	footer_cho	3	barry	yearly
+NULL	footer2_name	footer2_ch	5	chelsea	monthly
+NULL	footer_name	footer_cho	5	chelsea	monthly
+NULL	footer_name	footer_cho	5	chelsea	monthly
+NULL	header_name	header_cho	5	chelsea	monthly
+NULL	footer2_name	footer2_ch	5	chelsea	monthly
+NULL	header_name	header_cho	5	chelsea	monthly
+NULL	footer2_name	footer2_ch	8	xavier	monthly
+NULL	header_name	header_cho	8	xavier	monthly
+NULL	header_name	header_cho	8	xavier	monthly
+NULL	footer2_name	footer2_ch	8	xavier	monthly
+NULL	footer_name	footer_cho	8	xavier	monthly
+NULL	footer_name	footer_cho	8	xavier	monthly
+NULL	footer_name	footer_cho	9	derek	yearly
+NULL	footer_name	footer_cho	9	derek	yearly
+NULL	header_name	header_cho	9	derek	yearly
+NULL	footer2_name	footer2_ch	9	derek	yearly
+NULL	footer2_name	footer2_ch	9	derek	yearly
+NULL	header_name	header_cho	9	derek	yearly
+NULL	footer_name	footer_cho	11	ethan	monthly
+NULL	footer2_name	footer2_ch	11	ethan	monthly
+NULL	header_name	header_cho	11	ethan	monthly
+NULL	footer2_name	footer2_ch	11	ethan	monthly
+NULL	footer_name	footer_cho	11	ethan	monthly
+NULL	header_name	header_cho	11	ethan	monthly
+NULL	footer2_name	footer2_ch	12	alex	daily
+NULL	header_name	header_cho	12	alex	daily
+NULL	footer_name	footer_cho	12	alex	daily
+NULL	header_name	header_cho	12	alex	daily
+NULL	footer_name	footer_cho	12	alex	daily
+NULL	footer2_name	footer2_ch	12	alex	daily
+NULL	header_name	header_cho	21	yves	daily
+NULL	footer2_name	footer2_ch	21	yves	daily
+NULL	footer_name	footer_cho	21	yves	daily
+NULL	footer_name	footer_cho	21	yves	daily
+NULL	footer2_name	footer2_ch	21	yves	daily
+NULL	header_name	header_cho	21	yves	daily
+NULL	footer2_name	footer2_ch	NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho	NULL	footer2_name	footer2_ch
+NULL	footer2_name	footer2_ch	NULL	header_name	header_cho
+NULL	footer2_name	footer2_ch	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	header_name	header_cho
+NULL	footer_name	footer_cho	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	footer_name	footer_cho
+NULL	header_name	header_cho	NULL	footer2_name	footer2_ch
+NULL	footer_name	footer_cho	NULL	footer2_name	footer2_ch
+NULL	footer_name	footer_cho	NULL	footer2_name	footer2_ch
+NULL	footer2_name	footer2_ch	NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch	NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch	NULL	footer2_name	footer2_ch
+NULL	footer_name	footer_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	header_name	header_cho
+NULL	footer_name	footer_cho	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	header_name	header_cho
+NULL	footer_name	footer_cho	NULL	footer2_name	footer2_ch
+NULL	footer_name	footer_cho	NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho	NULL	header_name	header_cho
+NULL	footer2_name	footer2_ch	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	footer_name	footer_cho
+NULL	header_name	header_cho	NULL	footer_name	footer_cho
+NULL	header_name	header_cho	NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho	NULL	footer2_name	footer2_ch
+NULL	footer2_name	footer2_ch	NULL	footer2_name	footer2_ch
+NULL	footer2_name	footer2_ch	NULL	footer_name	footer_cho
+NULL	header_name	header_cho	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	header_name	header_cho
+NULL	footer2_name	footer2_ch	NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch	NULL	header_name	header_cho
+NULL	footer2_name	footer2_ch	NULL	footer2_name	footer2_ch
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 LEFT JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -187,6 +322,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+header_name	NULL
+footer_name	NULL
+footer2_name	NULL
+header_name	NULL
+footer_name	NULL
+footer2_name	NULL
 faith	1
 barry	3
 chelsea	5
@@ -246,6 +387,12 @@ POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	NULL
+header_name	NULL
+footer_name	NULL
+footer2_name	NULL
+header_name	NULL
+footer_name	NULL
+footer2_name	NULL
 faith	1
 NULL	NULL
 barry	3
@@ -267,19 +414,25 @@ POSTHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+header_cho	NULL
+footer_cho	NULL
 monthly	24
 daily	33
+footer2_ch	NULL
 yearly	13
-PREHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+header_cho	NULL
+footer_cho	NULL
 monthly	24
 daily	33
+footer2_ch	NULL
 yearly	13
 PREHOOK: query: SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8
 PREHOOK: type: QUERY
@@ -422,12 +575,39 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 yearly	13	yearly	13
 yearly	13	monthly	24
 yearly	13	daily	33
+yearly	13	footer2_ch	NULL
+yearly	13	footer_cho	NULL
+yearly	13	header_cho	NULL
 monthly	24	yearly	13
 monthly	24	monthly	24
 monthly	24	daily	33
+monthly	24	footer2_ch	NULL
+monthly	24	footer_cho	NULL
+monthly	24	header_cho	NULL
 daily	33	yearly	13
 daily	33	monthly	24
 daily	33	daily	33
+daily	33	footer2_ch	NULL
+daily	33	footer_cho	NULL
+daily	33	header_cho	NULL
+footer2_ch	NULL	yearly	13
+footer2_ch	NULL	monthly	24
+footer2_ch	NULL	daily	33
+footer2_ch	NULL	footer2_ch	NULL
+footer2_ch	NULL	footer_cho	NULL
+footer2_ch	NULL	header_cho	NULL
+footer_cho	NULL	yearly	13
+footer_cho	NULL	monthly	24
+footer_cho	NULL	daily	33
+footer_cho	NULL	footer2_ch	NULL
+footer_cho	NULL	footer_cho	NULL
+footer_cho	NULL	header_cho	NULL
+header_cho	NULL	yearly	13
+header_cho	NULL	monthly	24
+header_cho	NULL	daily	33
+header_cho	NULL	footer2_ch	NULL
+header_cho	NULL	footer_cho	NULL
+header_cho	NULL	header_cho	NULL
 PREHOOK: query: DROP TABLE transition
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@transition
@@ -452,14 +632,20 @@ POSTHOOK: query: SELECT * FROM header_footer_table_4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	header_name	header_cho
 12	alex	daily
 3	barry	yearly
 5	chelsea	monthly
 8	xavier	monthly
+NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho
 9	derek	yearly
 11	ethan	monthly
 1	faith	yearly
 21	yves	daily
+NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch
 PREHOOK: query: SELECT * FROM header_footer_table_4 ORDER BY header_int LIMIT 8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -503,7 +689,7 @@ POSTHOOK: query: SELECT COUNT(*) FROM header_footer_table_4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-8
+14
 PREHOOK: query: SELECT * FROM header_footer_table_4 WHERE header_choice is NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -520,8 +706,11 @@ POSTHOOK: query: SELECT AVG(header_int) FROM header_footer_table_4 GROUP BY head
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL
+NULL
 8.0
 16.5
+NULL
 4.333333333333333
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM header_footer_table_4 A, header_footer_table_4 B ORDER BY A.header_int, B.header_int
@@ -540,6 +729,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	faith	yearly	11	ethan	monthly
 1	faith	yearly	12	alex	daily
 1	faith	yearly	21	yves	daily
+1	faith	yearly	NULL	footer_name	footer_cho
+1	faith	yearly	NULL	footer_name	footer_cho
+1	faith	yearly	NULL	footer2_name	footer2_ch
+1	faith	yearly	NULL	footer2_name	footer2_ch
+1	faith	yearly	NULL	header_name	header_cho
+1	faith	yearly	NULL	header_name	header_cho
 3	barry	yearly	1	faith	yearly
 3	barry	yearly	3	barry	yearly
 3	barry	yearly	5	chelsea	monthly
@@ -548,6 +743,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	barry	yearly	11	ethan	monthly
 3	barry	yearly	12	alex	daily
 3	barry	yearly	21	yves	daily
+3	barry	yearly	NULL	footer2_name	footer2_ch
+3	barry	yearly	NULL	footer_name	footer_cho
+3	barry	yearly	NULL	footer_name	footer_cho
+3	barry	yearly	NULL	footer2_name	footer2_ch
+3	barry	yearly	NULL	header_name	header_cho
+3	barry	yearly	NULL	header_name	header_cho
 5	chelsea	monthly	1	faith	yearly
 5	chelsea	monthly	3	barry	yearly
 5	chelsea	monthly	5	chelsea	monthly
@@ -556,6 +757,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	chelsea	monthly	11	ethan	monthly
 5	chelsea	monthly	12	alex	daily
 5	chelsea	monthly	21	yves	daily
+5	chelsea	monthly	NULL	header_name	header_cho
+5	chelsea	monthly	NULL	footer2_name	footer2_ch
+5	chelsea	monthly	NULL	footer2_name	footer2_ch
+5	chelsea	monthly	NULL	header_name	header_cho
+5	chelsea	monthly	NULL	footer_name	footer_cho
+5	chelsea	monthly	NULL	footer_name	footer_cho
 8	xavier	monthly	1	faith	yearly
 8	xavier	monthly	3	barry	yearly
 8	xavier	monthly	5	chelsea	monthly
@@ -564,6 +771,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 8	xavier	monthly	11	ethan	monthly
 8	xavier	monthly	12	alex	daily
 8	xavier	monthly	21	yves	daily
+8	xavier	monthly	NULL	footer_name	footer_cho
+8	xavier	monthly	NULL	footer_name	footer_cho
+8	xavier	monthly	NULL	header_name	header_cho
+8	xavier	monthly	NULL	footer2_name	footer2_ch
+8	xavier	monthly	NULL	header_name	header_cho
+8	xavier	monthly	NULL	footer2_name	footer2_ch
 9	derek	yearly	1	faith	yearly
 9	derek	yearly	3	barry	yearly
 9	derek	yearly	5	chelsea	monthly
@@ -572,6 +785,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 9	derek	yearly	11	ethan	monthly
 9	derek	yearly	12	alex	daily
 9	derek	yearly	21	yves	daily
+9	derek	yearly	NULL	footer_name	footer_cho
+9	derek	yearly	NULL	footer2_name	footer2_ch
+9	derek	yearly	NULL	footer2_name	footer2_ch
+9	derek	yearly	NULL	header_name	header_cho
+9	derek	yearly	NULL	header_name	header_cho
+9	derek	yearly	NULL	footer_name	footer_cho
 11	ethan	monthly	1	faith	yearly
 11	ethan	monthly	3	barry	yearly
 11	ethan	monthly	5	chelsea	monthly
@@ -580,6 +799,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 11	ethan	monthly	11	ethan	monthly
 11	ethan	monthly	12	alex	daily
 11	ethan	monthly	21	yves	daily
+11	ethan	monthly	NULL	footer2_name	footer2_ch
+11	ethan	monthly	NULL	header_name	header_cho
+11	ethan	monthly	NULL	footer_name	footer_cho
+11	ethan	monthly	NULL	footer_name	footer_cho
+11	ethan	monthly	NULL	header_name	header_cho
+11	ethan	monthly	NULL	footer2_name	footer2_ch
 12	alex	daily	1	faith	yearly
 12	alex	daily	3	barry	yearly
 12	alex	daily	5	chelsea	monthly
@@ -588,6 +813,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 12	alex	daily	11	ethan	monthly
 12	alex	daily	12	alex	daily
 12	alex	daily	21	yves	daily
+12	alex	daily	NULL	header_name	header_cho
+12	alex	daily	NULL	footer2_name	footer2_ch
+12	alex	daily	NULL	footer2_name	footer2_ch
+12	alex	daily	NULL	footer_name	footer_cho
+12	alex	daily	NULL	footer_name	footer_cho
+12	alex	daily	NULL	header_name	header_cho
 21	yves	daily	1	faith	yearly
 21	yves	daily	3	barry	yearly
 21	yves	daily	5	chelsea	monthly
@@ -596,6 +827,96 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 21	yves	daily	11	ethan	monthly
 21	yves	daily	12	alex	daily
 21	yves	daily	21	yves	daily
+21	yves	daily	NULL	header_name	header_cho
+21	yves	daily	NULL	header_name	header_cho
+21	yves	daily	NULL	footer_name	footer_cho
+21	yves	daily	NULL	footer_name	footer_cho
+21	yves	daily	NULL	footer2_name	footer2_ch
+21	yves	daily	NULL	footer2_name	footer2_ch
+NULL	footer_name	footer_cho	1	faith	yearly
+NULL	footer2_name	footer2_ch	1	faith	yearly
+NULL	footer2_name	footer2_ch	1	faith	yearly
+NULL	footer_name	footer_cho	1	faith	yearly
+NULL	header_name	header_cho	1	faith	yearly
+NULL	header_name	header_cho	1	faith	yearly
+NULL	header_name	header_cho	3	barry	yearly
+NULL	footer2_name	footer2_ch	3	barry	yearly
+NULL	footer_name	footer_cho	3	barry	yearly
+NULL	footer2_name	footer2_ch	3	barry	yearly
+NULL	footer_name	footer_cho	3	barry	yearly
+NULL	header_name	header_cho	3	barry	yearly
+NULL	footer_name	footer_cho	5	chelsea	monthly
+NULL	footer_name	footer_cho	5	chelsea	monthly
+NULL	footer2_name	footer2_ch	5	chelsea	monthly
+NULL	header_name	header_cho	5	chelsea	monthly
+NULL	header_name	header_cho	5	chelsea	monthly
+NULL	footer2_name	footer2_ch	5	chelsea	monthly
+NULL	header_name	header_cho	8	xavier	monthly
+NULL	footer2_name	footer2_ch	8	xavier	monthly
+NULL	footer_name	footer_cho	8	xavier	monthly
+NULL	footer2_name	footer2_ch	8	xavier	monthly
+NULL	footer_name	footer_cho	8	xavier	monthly
+NULL	header_name	header_cho	8	xavier	monthly
+NULL	header_name	header_cho	9	derek	yearly
+NULL	header_name	header_cho	9	derek	yearly
+NULL	footer_name	footer_cho	9	derek	yearly
+NULL	footer2_name	footer2_ch	9	derek	yearly
+NULL	footer_name	footer_cho	9	derek	yearly
+NULL	footer2_name	footer2_ch	9	derek	yearly
+NULL	footer2_name	footer2_ch	11	ethan	monthly
+NULL	header_name	header_cho	11	ethan	monthly
+NULL	footer_name	footer_cho	11	ethan	monthly
+NULL	footer_name	footer_cho	11	ethan	monthly
+NULL	header_name	header_cho	11	ethan	monthly
+NULL	footer2_name	footer2_ch	11	ethan	monthly
+NULL	header_name	header_cho	12	alex	daily
+NULL	footer2_name	footer2_ch	12	alex	daily
+NULL	footer_name	footer_cho	12	alex	daily
+NULL	footer2_name	footer2_ch	12	alex	daily
+NULL	header_name	header_cho	12	alex	daily
+NULL	footer_name	footer_cho	12	alex	daily
+NULL	footer2_name	footer2_ch	21	yves	daily
+NULL	header_name	header_cho	21	yves	daily
+NULL	header_name	header_cho	21	yves	daily
+NULL	footer_name	footer_cho	21	yves	daily
+NULL	footer2_name	footer2_ch	21	yves	daily
+NULL	footer_name	footer_cho	21	yves	daily
+NULL	footer_name	footer_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	header_name	header_cho
+NULL	footer_name	footer_cho	NULL	header_name	header_cho
+NULL	footer_name	footer_cho	NULL	footer2_name	footer2_ch
+NULL	footer_name	footer_cho	NULL	footer2_name	footer2_ch
+NULL	footer_name	footer_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	footer_name	footer_cho
+NULL	footer_name	footer_cho	NULL	header_name	header_cho
+NULL	footer_name	footer_cho	NULL	header_name	header_cho
+NULL	footer_name	footer_cho	NULL	footer2_name	footer2_ch
+NULL	footer_name	footer_cho	NULL	footer2_name	footer2_ch
+NULL	footer2_name	footer2_ch	NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch	NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch	NULL	header_name	header_cho
+NULL	footer2_name	footer2_ch	NULL	header_name	header_cho
+NULL	footer2_name	footer2_ch	NULL	footer2_name	footer2_ch
+NULL	footer2_name	footer2_ch	NULL	footer2_name	footer2_ch
+NULL	footer2_name	footer2_ch	NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch	NULL	footer_name	footer_cho
+NULL	footer2_name	footer2_ch	NULL	header_name	header_cho
+NULL	footer2_name	footer2_ch	NULL	header_name	header_cho
+NULL	footer2_name	footer2_ch	NULL	footer2_name	footer2_ch
+NULL	footer2_name	footer2_ch	NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho	NULL	footer_name	footer_cho
+NULL	header_name	header_cho	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho	NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho	NULL	footer_name	footer_cho
+NULL	header_name	header_cho	NULL	footer_name	footer_cho
+NULL	header_name	header_cho	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	header_name	header_cho
+NULL	header_name	header_cho	NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho	NULL	footer2_name	footer2_ch
+NULL	header_name	header_cho	NULL	footer_name	footer_cho
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 LEFT JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -606,6 +927,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+header_name	NULL
+footer_name	NULL
+footer2_name	NULL
+header_name	NULL
+footer_name	NULL
+footer2_name	NULL
 faith	1
 barry	3
 chelsea	5
@@ -665,6 +992,12 @@ POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	NULL
+header_name	NULL
+footer_name	NULL
+footer2_name	NULL
+header_name	NULL
+footer_name	NULL
+footer2_name	NULL
 faith	1
 NULL	NULL
 barry	3
@@ -686,19 +1019,25 @@ POSTHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+header_cho	NULL
+footer_cho	NULL
 monthly	24
 daily	33
+footer2_ch	NULL
 yearly	13
-PREHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+PREHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT DISTINCT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
+POSTHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+header_cho	NULL
+footer_cho	NULL
 monthly	24
 daily	33
+footer2_ch	NULL
 yearly	13
 PREHOOK: query: SELECT header_name, header_choice FROM header_footer_table_4 ORDER BY header_int LIMIT 8
 PREHOOK: type: QUERY
@@ -841,9 +1180,36 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 yearly	13	yearly	13
 yearly	13	monthly	24
 yearly	13	daily	33
+yearly	13	footer2_ch	NULL
+yearly	13	footer_cho	NULL
+yearly	13	header_cho	NULL
 monthly	24	yearly	13
 monthly	24	monthly	24
 monthly	24	daily	33
+monthly	24	footer2_ch	NULL
+monthly	24	footer_cho	NULL
+monthly	24	header_cho	NULL
 daily	33	yearly	13
 daily	33	monthly	24
 daily	33	daily	33
+daily	33	footer2_ch	NULL
+daily	33	footer_cho	NULL
+daily	33	header_cho	NULL
+footer2_ch	NULL	yearly	13
+footer2_ch	NULL	monthly	24
+footer2_ch	NULL	daily	33
+footer2_ch	NULL	footer2_ch	NULL
+footer2_ch	NULL	footer_cho	NULL
+footer2_ch	NULL	header_cho	NULL
+footer_cho	NULL	yearly	13
+footer_cho	NULL	monthly	24
+footer_cho	NULL	daily	33
+footer_cho	NULL	footer2_ch	NULL
+footer_cho	NULL	footer_cho	NULL
+footer_cho	NULL	header_cho	NULL
+header_cho	NULL	yearly	13
+header_cho	NULL	monthly	24
+header_cho	NULL	daily	33
+header_cho	NULL	footer2_ch	NULL
+header_cho	NULL	footer_cho	NULL
+header_cho	NULL	header_cho	NULL
