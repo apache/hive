@@ -18,16 +18,29 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -39,10 +52,12 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.thrift.TException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import org.mockito.Mockito;
 
 /**
  * TestHiveMetaStoreChecker.
@@ -575,6 +590,94 @@ public class TestHiveMetaStoreChecker {
     }
     assertTrue("Expected HiveException", exception!=null && exception instanceof HiveException);
   }
+
+  /**
+   * Test counts the number of listStatus calls in the msck core method of
+   * listing sub-directories. This is important to check since it unnecessary
+   * listStatus calls could cause performance degradation in remote filesystems
+   * like S3. The test creates a mock FileSystem object and a mock directory structure
+   * to simulate a table which has 2 partition keys and 2 partition values at each level.
+   * In the end it counts how many times the listStatus is called on the mock filesystem
+   * and confirm its equal to the current theoretical value.
+   *
+   * @throws IOException
+   * @throws HiveException
+   */
+  @Test
+  public void testNumberOfListStatusCalls() throws IOException, HiveException {
+    LocalFileSystem mockFs = Mockito.mock(LocalFileSystem.class);
+    Path tableLocation = new Path("mock:///tmp/testTable");
+
+    Path countryUS = new Path(tableLocation, "country=US");
+    Path countryIND = new Path(tableLocation, "country=IND");
+
+    Path cityPA = new Path(countryUS, "city=PA");
+    Path citySF = new Path(countryUS, "city=SF");
+    Path cityBOM = new Path(countryIND, "city=BOM");
+    Path cityDEL = new Path(countryIND, "city=DEL");
+
+    Path paData = new Path(cityPA, "datafile");
+    Path sfData = new Path(citySF, "datafile");
+    Path bomData = new Path(cityBOM, "datafile");
+    Path delData = new Path(cityDEL, "datafile");
+
+    //level 1 listing
+    FileStatus[] allCountries = getMockFileStatus(countryUS, countryIND);
+    when(mockFs.listStatus(tableLocation, FileUtils.HIDDEN_FILES_PATH_FILTER))
+        .thenReturn(allCountries);
+
+    //level 2 listing
+    FileStatus[] filesInUS = getMockFileStatus(cityPA, citySF);
+    when(mockFs.listStatus(countryUS, FileUtils.HIDDEN_FILES_PATH_FILTER)).thenReturn(filesInUS);
+
+    FileStatus[] filesInInd = getMockFileStatus(cityBOM, cityDEL);
+    when(mockFs.listStatus(countryIND, FileUtils.HIDDEN_FILES_PATH_FILTER)).thenReturn(filesInInd);
+
+    //level 3 listing
+    FileStatus[] paFiles = getMockFileStatus(paData);
+    when(mockFs.listStatus(cityPA, FileUtils.HIDDEN_FILES_PATH_FILTER)).thenReturn(paFiles);
+
+    FileStatus[] sfFiles = getMockFileStatus(sfData);
+    when(mockFs.listStatus(citySF, FileUtils.HIDDEN_FILES_PATH_FILTER)).thenReturn(sfFiles);
+
+    FileStatus[] bomFiles = getMockFileStatus(bomData);
+    when(mockFs.listStatus(cityBOM, FileUtils.HIDDEN_FILES_PATH_FILTER)).thenReturn(bomFiles);
+
+    FileStatus[] delFiles = getMockFileStatus(delData);
+    when(mockFs.listStatus(cityDEL, FileUtils.HIDDEN_FILES_PATH_FILTER)).thenReturn(delFiles);
+
+    HiveMetaStoreChecker checker = new HiveMetaStoreChecker(hive);
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
+    Set<Path> result = new HashSet<>();
+    checker.checkPartitionDirs(executorService, tableLocation, result, mockFs,
+        Arrays.asList("country", "city"));
+    // if there are n partition columns, then number of times listStatus should be called
+    // must be equal
+    // to (numDirsAtLevel1) + (numDirsAtLevel2) + ... + (numDirAtLeveln-1)
+    // in this case it should 1 (table level) + 2 (US, IND)
+    verify(mockFs, times(3)).listStatus(any(Path.class), any(PathFilter.class));
+    Assert.assertEquals("msck should have found 4 unknown partitions", 4, result.size());
+  }
+
+  private FileStatus[] getMockFileStatus(Path... paths) throws IOException {
+    FileStatus[] result = new FileStatus[paths.length];
+    int i = 0;
+    for (Path p : paths) {
+      result[i++] = createMockFileStatus(p);
+    }
+    return result;
+  }
+
+  private FileStatus createMockFileStatus(Path p) {
+    FileStatus mock = Mockito.mock(FileStatus.class);
+    when(mock.getPath()).thenReturn(p);
+    if (p.toString().contains("datafile")) {
+      when(mock.isDirectory()).thenReturn(false);
+    } else {
+      when(mock.isDirectory()).thenReturn(true);
+    }
+    return mock;
+  }
   /**
    * Creates a test partitioned table with the required level of nested partitions and number of
    * partitions
@@ -702,6 +805,9 @@ public class TestHiveMetaStoreChecker {
   private void createDirectory(String partPath) throws IOException {
     Path part = new Path(partPath);
     fs.mkdirs(part);
+    // create files under partitions to simulate real partitions
+    fs.createNewFile(new Path(partPath + Path.SEPARATOR + "dummydata1"));
+    fs.createNewFile(new Path(partPath + Path.SEPARATOR + "dummydata2"));
     fs.deleteOnExit(part);
   }
 }
