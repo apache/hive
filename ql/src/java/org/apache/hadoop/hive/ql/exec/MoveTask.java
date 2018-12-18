@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -373,11 +373,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
-        // for transactional table if write id is not set (mostly during replication from 2.6), then set it now.
-        if (tbd.getWriteId() == 0 && MetaStoreUtils.isTransactionalTable(table.getParameters())) {
-          HiveTxnManager txnMgr = driverContext.getCtx().getHiveTxnManager();
-          tbd.setWriteId(txnMgr.getTableWriteId(table.getDbName(), table.getTableName()));
-          tbd.setStmtId(txnMgr.getStmtIdAndIncrement());
+        // for transactional table if write id is not set during replication from a cluster with STRICT_MANAGED set
+        // to false then set it now.
+        if (tbd.getWriteId() <= 0 && AcidUtils.isTransactionalTable(table.getParameters())) {
+          String writeId = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
+          if (writeId == null) {
+            throw new HiveException("MoveTask : Write id is not set in the config by open txn task for migration");
+          }
+          tbd.setWriteId(Long.parseLong(writeId));
+          tbd.setStmtId(driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement());
         }
 
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID

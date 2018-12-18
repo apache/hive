@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -103,6 +104,7 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         long writeId = txnManager.getTableWriteId(work.getDbName(), work.getTableName());
         String validTxnList = txnManager.getValidTxns().toString();
         conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList);
+        conf.set(ReplUtils.REPL_CURRENT_TBL_WRITE_ID, Long.toString(writeId));
         LOG.info("Started open txn for migration : " + txnIdMigration + " with  valid txn list : " +
                 validTxnList + " and write id " + writeId);
         return 0;
@@ -131,6 +133,7 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         commitTxnRequestMigr.setReplLastIdInfo(work.getReplLastIdInfo());
         txnManager.replCommitTxn(commitTxnRequestMigr);
         conf.unset(ValidTxnList.VALID_TXNS_KEY);
+        conf.unset(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
         LOG.info("Replayed CommitTxn Event with replLastIdInfo: " + work.getReplLastIdInfo() + " for txn : " +
                 txnIdMigrationCommit);
         return 0;

@@ -131,14 +131,13 @@ public class TestReplicationWithTableMigration {
   }
 
   private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId) throws Throwable {
-    return primary.run("use " + primaryDbName)
-            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc " +
-                    "tblproperties (\"transactional\"=\"false\")")
+    WarehouseInstance.Tuple tuple =  primary.run("use " + primaryDbName)
+            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
             .run("insert into tacid values(1)")
             .run("insert into tacid values(2)")
             .run("insert into tacid values(3)")
             .run("create table tacidpart (place string) partitioned by (country string) clustered by(place) " +
-                    "into 3 buckets stored as orc tblproperties (\"transactional\"=\"false\")")
+                    "into 3 buckets stored as orc ")
             .run("alter table tacidpart add partition(country='france')")
             .run("insert into tacidpart partition(country='india') values('mumbai')")
             .run("insert into tacidpart partition(country='us') values('sf')")
@@ -146,19 +145,17 @@ public class TestReplicationWithTableMigration {
             .run("create table tflat (rank int) stored as orc tblproperties(\"transactional\"=\"false\")")
             .run("insert into tflat values(11)")
             .run("insert into tflat values(22)")
-            .run("create table tflattext (id int) tblproperties(\"transactional\"=\"false\")")
+            .run("create table tflattext (id int) ")
             .run("insert into tflattext values(111), (222)")
-            .run("create table tflattextpart (id int) partitioned by (country string) " +
-                    "tblproperties(\"transactional\"=\"false\")")
+            .run("create table tflattextpart (id int) partitioned by (country string) ")
             .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
             .run("insert into tflattextpart partition(country='us') values(3333)")
-            .run("create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' " +
-                    "tblproperties (\"transactional\"=\"false\")")
+            .run("create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' ")
             .run("insert into tacidloc values(1)")
             .run("insert into tacidloc values(2)")
             .run("insert into tacidloc values(3)")
             .run("create table tacidpartloc (place string) partitioned by (country string) clustered by(place) " +
-                    "into 3 buckets stored as orc tblproperties (\"transactional\"=\"false\")")
+                    "into 3 buckets stored as orc ")
             .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/part'")
             .run("insert into tacidpartloc partition(country='india') values('mumbai')")
             .run("insert into tacidpartloc partition(country='us') values('sf')")
@@ -167,12 +164,24 @@ public class TestReplicationWithTableMigration {
                     "stored as avro tblproperties ('avro.schema.url'='" + primary.avroSchemaFile.toUri().toString() + "')")
             .run("insert into avro_table values('str1', 10)")
             .dump(primaryDbName, fromReplId);
+    assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacid")));
+    assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpart")));
+    assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflat")));
+    assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflattext")));
+    assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflattextpart")));
+    assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidloc")));
+    assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpartloc")));
+    Table avroTable = primary.getTable(primaryDbName, "avro_table");
+    assertFalse(isTransactionalTable(avroTable));
+    assertFalse(MetaStoreUtils.isExternalTable(avroTable));
+    return tuple;
   }
 
   private void verifyLoadExecution(String replicatedDbName, String lastReplId) throws Throwable {
     replica.run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"tacid", "tacidpart", "tflat", "tflattext", "tflattextpart", "tacidloc", "tacidpartloc", "avro_table"})
+            .verifyResults(new String[] {"tacid", "tacidpart", "tflat", "tflattext", "tflattextpart",
+                    "tacidloc", "tacidpartloc", "avro_table"})
             .run("repl status " + replicatedDbName)
             .verifyResult(lastReplId)
             .run("select id from tacid order by id")
@@ -252,7 +261,6 @@ public class TestReplicationWithTableMigration {
   public void testBootstrapLoadMigrationManagedToAcid() throws Throwable {
     WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -260,10 +268,8 @@ public class TestReplicationWithTableMigration {
   public void testIncrementalLoadMigrationManagedToAcid() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -271,13 +277,12 @@ public class TestReplicationWithTableMigration {
   public void testIncrementalLoadMigrationManagedToAcidFailure() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-
     loadWithFailureInAddNotification("tacid", tuple.dumpLocation);
-
+    replica.run("use " + replicatedDbName)
+            .run("show tables like tacid")
+            .verifyResult(null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -285,13 +290,12 @@ public class TestReplicationWithTableMigration {
   public void testIncrementalLoadMigrationManagedToAcidFailurePart() throws Throwable {
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
-
     loadWithFailureInAddNotification("tacidpart", tuple.dumpLocation);
-
+    replica.run("use " + replicatedDbName)
+            .run("show tables like tacidpart")
+            .verifyResult(null);
     replica.load(replicatedDbName, tuple.dumpLocation);
-
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 
@@ -327,5 +331,25 @@ public class TestReplicationWithTableMigration {
 
     TestReplicationScenariosIncrementalLoadAcidTables.verifyIncrementalLoad(primary, replica, primaryDbName,
             replicatedDbName, selectStmtList, expectedValues, bootStrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testBootstrapLoadMigrationToAcidWithMoveOptimization() throws Throwable {
+    List<String> withConfigs =
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
+    WarehouseInstance.Tuple tuple = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+    verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
+  }
+
+  @Test
+  public void testIncrementalLoadMigrationToAcidWithMoveOptimization() throws Throwable {
+    List<String> withConfigs =
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, tuple.dumpLocation);
+    tuple = prepareDataAndDump(primaryDbName, tuple.lastReplicationId);
+    replica.load(replicatedDbName, tuple.dumpLocation, withConfigs);
+    verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
   }
 }

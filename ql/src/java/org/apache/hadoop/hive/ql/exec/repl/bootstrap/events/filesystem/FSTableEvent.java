@@ -95,7 +95,7 @@ public class FSTableEvent implements TableEvent {
 
         // If the conversion is from non transactional to transactional table
         if (AcidUtils.isTransactionalTable(table)) {
-          replicationSpec().setDoingMigration();
+          replicationSpec().setMigratingToTxnTable();
         }
       }
 

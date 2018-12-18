@@ -54,7 +54,6 @@ import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
@@ -64,10 +63,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState.PartitionState;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.partSpecToString;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 
 public class LoadPartitions {
   private static Logger LOG = LoggerFactory.getLogger(LoadPartitions.class);
@@ -230,12 +229,18 @@ public class LoadPartitions {
 
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
-    if (event.replicationSpec().isInReplicationScope() && !event.replicationSpec().isDoingMigration() &&
+    if (event.replicationSpec().isInReplicationScope() &&
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
       loadFileType = LoadFileType.IGNORE;
+      if (event.replicationSpec().isMigratingToTxnTable()) {
+        // Migrating to transactional tables in bootstrap load phase.
+        // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
+        // ReplTxnTask added earlier in the DAG ensure that the write-id=1 is made valid in HMS metadata.
+        tmpPath = new Path(tmpPath, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
+      }
     } else {
-      loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL :
-              event.replicationSpec().isDoingMigration() ? LoadFileType.KEEP_EXISTING : LoadFileType.OVERWRITE_EXISTING;
+      loadFileType = (event.replicationSpec().isReplace() || event.replicationSpec().isMigratingToTxnTable())
+              ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
       tmpPath = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
 
@@ -243,7 +248,7 @@ public class LoadPartitions {
         event.replicationSpec(),
         sourceWarehousePartitionLocation,
         tmpPath,
-        context.hiveConf, false, false
+        context.hiveConf
     );
 
     Task<?> movePartitionTask = null;
@@ -274,7 +279,6 @@ public class LoadPartitions {
     } else {
       addPartTask.addDependentTask(ckptTask);
     }
-
     return ptnRootTask;
   }
 
@@ -285,15 +289,18 @@ public class LoadPartitions {
                                     LoadFileType loadFileType) {
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {
-      if (event.replicationSpec().isDoingMigration()) {
-        // Write-id is hardcoded to 1 so that for migration, we just move all original files under delta_1_1 dir.
-        // It is used only for transactional tables created after migrating from non-ACID table.
+      if (event.replicationSpec().isMigratingToTxnTable()) {
+        // Write-id is hardcoded to 1 so that for migration, we just move all original files under base_1 dir.
         // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
         LoadTableDesc loadTableWork = new LoadTableDesc(
                 tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
-                loadFileType, 1L
+                loadFileType, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID
         );
         loadTableWork.setInheritTableSpecs(false);
+        loadTableWork.setStmtId(0);
+
+        // Need to set insertOverwrite so base_1 is created instead of delta_1_1_0.
+        loadTableWork.setInsertOverwrite(true);
         moveWork.setLoadTableWork(loadTableWork);
       } else {
         LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
@@ -303,7 +310,6 @@ public class LoadPartitions {
         moveWork.setMultiFilesDesc(loadFilesWork);
       }
     } else {
-      // Non-transactional table case.
       LoadTableDesc loadTableWork = new LoadTableDesc(
               tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
               loadFileType, 0L

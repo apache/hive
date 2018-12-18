@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.exec.repl.util;
-import org.apache.hadoop.hive.ql.ErrorMsg;
+
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
@@ -52,9 +53,18 @@ import java.io.Serializable;
 
 import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMigrationOption.MANAGED;
 
+
 public class ReplUtils {
 
   public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
+
+  // write id allocated in the current execution context which will be passed through config to be used by different
+  // tasks.
+  public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
+
+  // Migrating to transactional tables in bootstrap load phase.
+  // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
+  public static final Long REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID = 1L;
 
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.

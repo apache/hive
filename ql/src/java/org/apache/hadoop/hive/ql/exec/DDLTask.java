@@ -256,6 +256,7 @@ import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
@@ -4706,14 +4707,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       ReplicationSpec replicationSpec = crtTbl.getReplicationSpec();
       long writeId = 0;
       if (replicationSpec != null && replicationSpec.isInReplicationScope()) {
-        if (replicationSpec.isDoingMigration()) {
+        if (replicationSpec.isMigratingToTxnTable()) {
           // for migration we start the transaction and allocate write id in repl txn task for migration.
-          writeId =
-            driverContext.getCtx().getHiveTxnManager().getTableWriteId(crtTbl.getDatabaseName(), crtTbl.getTableName());
+          String writeIdPara = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
+          if (writeIdPara == null) {
+            throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
+          }
+          writeId = Long.parseLong(writeIdPara);
         } else {
           writeId = crtTbl.getReplWriteId();
         }
       }
+
       // replace-mode creates are really alters using CreateTableDesc.
       db.alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false, null,
               true, writeId);

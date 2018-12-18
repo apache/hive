@@ -49,13 +49,15 @@ public class ReplCopyWork extends CopyWork {
   // If set to false, it'll behave as a traditional CopyTask.
   protected boolean readSrcAsFilesList = false;
 
-  private String distCpDoAsUser = null;
-
   private boolean deleteDestIfExist = false;
 
   private boolean isAutoPurge = false;
 
   private boolean needRecycle = false;
+
+  private String distCpDoAsUser = null;
+
+  private boolean copyToMigratedTxnTable;
 
   public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty) {
     super(srcPath, destPath, errorOnSrcEmpty);
@@ -93,11 +95,19 @@ public class ReplCopyWork extends CopyWork {
     this.needRecycle = needRecycle;
   }
 
-  public boolean getIsAutoPerge() {
+  public boolean getIsAutoPurge() {
     return isAutoPurge;
   }
 
   public void setAutoPurge(boolean isAutoPurge) {
     this.isAutoPurge = isAutoPurge;
+  }
+
+  public boolean isCopyToMigratedTxnTable() {
+    return copyToMigratedTxnTable;
+  }
+
+  public void setCopyToMigratedTxnTable(boolean copyToMigratedTxnTable) {
+    this.copyToMigratedTxnTable = copyToMigratedTxnTable;
   }
 }
