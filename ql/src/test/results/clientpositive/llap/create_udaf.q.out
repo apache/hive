@@ -38,56 +38,56 @@ POSTHOOK: Lineage: dest1_n34.col EXPRESSION [(src)src.FieldSchema(name:value, ty
 PREHOOK: query: SELECT dest1_n34.* FROM dest1_n34
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_n34
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT dest1_n34.* FROM dest1_n34
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n34
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 7
 PREHOOK: query: SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 7
 PREHOOK: query: SELECT test_max(CAST(length(src.value) AS BIGINT)) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT test_max(CAST(length(src.value) AS BIGINT)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 7
 PREHOOK: query: SELECT test_max(CAST(length(src.value) AS DOUBLE)) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT test_max(CAST(length(src.value) AS DOUBLE)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 7.0
 PREHOOK: query: SELECT test_max(CAST(length(src.value) AS FLOAT)) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT test_max(CAST(length(src.value) AS FLOAT)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 7.0
 PREHOOK: query: SELECT test_max(substr(src.value,5)) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT test_max(substr(src.value,5)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 98
 PREHOOK: query: DROP TEMPORARY FUNCTION test_max
 PREHOOK: type: DROPFUNCTION
