@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -471,10 +472,13 @@ public class HiveMetaStoreChecker {
         throws IOException, HiveException, InterruptedException {
       final Path currentPath = pd.p;
       final int currentDepth = pd.depth;
+      if (currentDepth == maxDepth) {
+        return currentPath;
+      }
       FileStatus[] fileStatuses = fs.listStatus(currentPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       // found no files under a sub-directory under table base path; it is possible that the table
       // is empty and hence there are no partition sub-directories created under base path
-      if (fileStatuses.length == 0 && currentDepth > 0 && currentDepth < maxDepth) {
+      if (fileStatuses.length == 0 && currentDepth > 0) {
         // since maxDepth is not yet reached, we are missing partition
         // columns in currentPath
         if (throwException) {
@@ -486,7 +490,7 @@ public class HiveMetaStoreChecker {
       } else {
         // found files under currentPath add them to the queue if it is a directory
         for (FileStatus fileStatus : fileStatuses) {
-          if (!fileStatus.isDirectory() && currentDepth < maxDepth) {
+          if (!fileStatus.isDirectory()) {
             // found a file at depth which is less than number of partition keys
             if (throwException) {
               throw new HiveException(
@@ -500,9 +504,6 @@ public class HiveMetaStoreChecker {
             // add sub-directory to the work queue if maxDepth is not yet reached
             pendingPaths.add(new PathDepthInfo(fileStatus.getPath(), currentDepth + 1));
           }
-        }
-        if (currentDepth == maxDepth) {
-          return currentPath;
         }
       }
       return null;
@@ -518,7 +519,8 @@ public class HiveMetaStoreChecker {
     }
   }
 
-  private void checkPartitionDirs(final ExecutorService executor,
+  @VisibleForTesting
+  void checkPartitionDirs(final ExecutorService executor,
       final Path basePath, final Set<Path> result,
       final FileSystem fs, final int maxDepth) throws HiveException {
     try {
@@ -549,7 +551,7 @@ public class HiveMetaStoreChecker {
         nextLevel = tempQueue;
       }
     } catch (InterruptedException | ExecutionException e) {
-      LOG.error(e.getMessage());
+      LOG.error("Exception received while listing partition directories", e);
       executor.shutdownNow();
       throw new HiveException(e.getCause());
     }
