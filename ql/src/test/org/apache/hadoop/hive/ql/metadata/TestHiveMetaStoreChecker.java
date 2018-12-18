@@ -714,6 +714,9 @@ public class TestHiveMetaStoreChecker {
   private void createDirectory(String partPath) throws IOException {
     Path part = new Path(partPath);
     fs.mkdirs(part);
+    // create files under partitions to simulate real partitions
+    fs.createNewFile(new Path(partPath + Path.SEPARATOR + "dummydata1"));
+    fs.createNewFile(new Path(partPath + Path.SEPARATOR + "dummydata2"));
     fs.deleteOnExit(part);
   }
 }
