@@ -62,7 +62,7 @@ PK_NAME String => primary key name (may be null)
       "Table name")
   .addPrimitiveColumn("COLUMN_NAME", Type.STRING_TYPE,
       "Column name")
-  .addPrimitiveColumn("KEQ_SEQ", Type.INT_TYPE,
+  .addPrimitiveColumn("KEY_SEQ", Type.INT_TYPE,
       "Sequence number within primary key")
   .addPrimitiveColumn("PK_NAME", Type.STRING_TYPE,
       "Primary key name (may be null)");
