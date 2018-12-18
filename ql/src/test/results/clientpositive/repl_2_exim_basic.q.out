@@ -425,7 +425,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-  'bucketing_version'='2',
+  'bucketing_version'='2', 
   'discover.partitions'='true', 
   'repl.last.id'='0', 
 #### A masked pattern was here ####
