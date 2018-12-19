@@ -17,7 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
@@ -54,23 +58,26 @@ import static org.junit.Assert.assertTrue;
  * TestReplicationWithTableMigration - test replication for Hive2 to Hive3 (Strict managed tables)
  */
 public class TestReplicationWithTableMigration {
+  private final static String AVRO_SCHEMA_FILE_NAME = "avro_table.avsc";
+
   @Rule
   public final TestName testName = new TestName();
+  private static Path avroSchemaFile;
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationWithTableMigration.class);
   private static WarehouseInstance primary, replica;
   private String primaryDbName, replicatedDbName;
-  private static HiveConf conf;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    conf = new HiveConf(TestReplicationWithTableMigration.class);
+    HiveConf conf = new HiveConf(TestReplicationWithTableMigration.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
            new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+    final DistributedFileSystem fs = miniDFSCluster.getFileSystem();
     HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
-        put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put("fs.defaultFS", fs.getUri().toString());
         put("hive.support.concurrency", "true");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
         put("hive.metastore.client.capability.check", "false");
@@ -85,7 +92,7 @@ public class TestReplicationWithTableMigration {
     replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
 
     HashMap<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
-      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put("fs.defaultFS", fs.getUri().toString());
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
       put("hive.exec.dynamic.partition.mode", "nonstrict");
@@ -98,6 +105,41 @@ public class TestReplicationWithTableMigration {
       put("hive.strict.managed.tables", "false");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
+    Path testPath = new Path("/tmp/avro_schema/definition/");
+    fs.mkdirs(testPath, new FsPermission("777"));
+    avroSchemaFile = PathBuilder.fullyQualifiedHDFSUri(createAvroSchemaFile(fs, testPath), fs);
+  }
+
+  private static Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
+    Path schemaFile = new Path(testPath, AVRO_SCHEMA_FILE_NAME);
+    String[] schemaVals = new String[] { "{",
+        "  \"type\" : \"record\",",
+        "  \"name\" : \"table1\",",
+        "  \"doc\" : \"Sqoop import of table1\",",
+        "  \"fields\" : [ {",
+        "    \"name\" : \"col1\",",
+        "    \"type\" : [ \"null\", \"string\" ],",
+        "    \"default\" : null,",
+        "    \"columnName\" : \"col1\",",
+        "    \"sqlType\" : \"12\"",
+        "  }, {",
+        "    \"name\" : \"col2\",",
+        "    \"type\" : [ \"null\", \"long\" ],",
+        "    \"default\" : null,",
+        "    \"columnName\" : \"col2\",",
+        "    \"sqlType\" : \"13\"",
+        "  } ],",
+        "  \"tableName\" : \"table1\"",
+        "}"
+    };
+
+    try (FSDataOutputStream stream = fs.create(schemaFile)) {
+      for (String line : schemaVals) {
+        stream.write((line + "\n").getBytes());
+      }
+    }
+    fs.deleteOnExit(schemaFile);
+    return schemaFile;
   }
 
   @AfterClass
@@ -140,18 +182,22 @@ public class TestReplicationWithTableMigration {
             .run("create table tflattextpart (id int) partitioned by (country string) ")
             .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
             .run("insert into tflattextpart partition(country='us') values(3333)")
-            .run("create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' ")
+        .run(
+            "create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp/"
+                + testName.getMethodName() + "/tacidloc' ")
             .run("insert into tacidloc values(1)")
             .run("insert into tacidloc values(2)")
             .run("insert into tacidloc values(3)")
             .run("create table tacidpartloc (place string) partitioned by (country string) clustered by(place) " +
                     "into 3 buckets stored as orc ")
-            .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/part'")
+        .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/"
+            + testName.getMethodName() + "/tacidpartloc'")
             .run("insert into tacidpartloc partition(country='india') values('mumbai')")
             .run("insert into tacidpartloc partition(country='us') values('sf')")
             .run("insert into tacidpartloc partition(country='france') values('paris')")
             .run("create table avro_table ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' " +
-                    "stored as avro tblproperties ('avro.schema.url'='" + primary.avroSchemaFile.toUri().toString() + "')")
+                "stored as avro tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri()
+                .toString() + "')")
             .run("insert into avro_table values('str1', 10)")
             .dump(primaryDbName, fromReplId);
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacid")));

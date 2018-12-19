@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -55,12 +54,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.codehaus.plexus.util.ExceptionUtils;
-import org.nustaq.serialization.util.FSTOutputStream;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -84,12 +80,10 @@ public class WarehouseInstance implements Closeable {
   private HiveMetaStoreClient client;
   final Path warehouseRoot;
   final Path externalTableWarehouseRoot;
-  Path avroSchemaFile;
 
   private static int uniqueIdentifier = 0;
 
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
-  private final static String AVRO_SCHEMA_FILE_NAME = "avro_table.avsc";
 
   WarehouseInstance(Logger logger, MiniDFSCluster cluster, Map<String, String> overridesForHiveConf,
       String keyNameForEncryptedZone) throws Exception {
@@ -113,8 +107,6 @@ public class WarehouseInstance implements Closeable {
         + System.nanoTime();
 
     this.repldDir = mkDir(fs, tmpDir + "/hrepl" + uniqueIdentifier + "/").toString();
-    Path testPath = new Path(tmpDir);
-    avroSchemaFile = PathBuilder.fullyQualifiedHDFSUri(createAvroSchemaFile(fs, testPath), fs);
     initialize(cmRootPath.toString(), externalTableWarehouseRoot.toString(),
         warehouseRoot.toString(), overridesForHiveConf);
   }
@@ -177,38 +169,6 @@ public class WarehouseInstance implements Closeable {
     Path path = new Path(pathString);
     fs.mkdirs(path, new FsPermission("777"));
     return PathBuilder.fullyQualifiedHDFSUri(path, fs);
-  }
-
-  private Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
-    Path schemaFile = new Path(testPath, AVRO_SCHEMA_FILE_NAME);
-    String[] schemaVals = new String[] { "{",
-            "  \"type\" : \"record\",",
-            "  \"name\" : \"table1\",",
-            "  \"doc\" : \"Sqoop import of table1\",",
-            "  \"fields\" : [ {",
-            "    \"name\" : \"col1\",",
-            "    \"type\" : [ \"null\", \"string\" ],",
-            "    \"default\" : null,",
-            "    \"columnName\" : \"col1\",",
-            "    \"sqlType\" : \"12\"",
-            "  }, {",
-            "    \"name\" : \"col2\",",
-            "    \"type\" : [ \"null\", \"long\" ],",
-            "    \"default\" : null,",
-            "    \"columnName\" : \"col2\",",
-            "    \"sqlType\" : \"13\"",
-            "  } ],",
-            "  \"tableName\" : \"table1\"",
-            "}"
-    };
-
-    try (FSDataOutputStream stream = fs.create(schemaFile)) {
-      for (String line : schemaVals) {
-        stream.write((line + "\n").getBytes());
-      }
-    }
-    fs.deleteOnExit(schemaFile);
-    return schemaFile;
   }
 
   public HiveConf getConf() {
