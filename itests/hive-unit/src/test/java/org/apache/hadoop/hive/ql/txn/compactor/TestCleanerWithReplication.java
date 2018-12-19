@@ -113,8 +113,9 @@ public class TestCleanerWithReplication extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest(dbName, "camtc", CompactionType.MAJOR);
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     assertCleanerActions(6);
   }
@@ -135,8 +136,9 @@ public class TestCleanerWithReplication extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     assertCleanerActions(6);
   }
@@ -155,8 +157,9 @@ public class TestCleanerWithReplication extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest(dbName, "camitc", CompactionType.MINOR);
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     assertCleanerActions(4);
   }
@@ -177,8 +180,9 @@ public class TestCleanerWithReplication extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     assertCleanerActions(4);
   }

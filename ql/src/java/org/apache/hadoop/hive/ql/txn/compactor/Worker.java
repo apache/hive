@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,36 +148,13 @@ public class Worker extends CompactorThread {
           txnHandler.markCleaned(ci);
           continue;
         }
-
-        final boolean isMajor = ci.isMajorCompaction();
-
-        // Compaction doesn't work under a transaction and hence pass 0 for current txn Id
-        // The response will have one entry per table and hence we get only one OpenWriteIds
         String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
-
-        // Determine who to run as
-        String runAs;
         if (ci.runAs == null) {
-          runAs = findUserToRunAs(sd.getLocation(), t);
-          txnHandler.setRunAs(ci.id, runAs);
-        } else {
-          runAs = ci.runAs;
+          ci.runAs = findUserToRunAs(sd.getLocation(), t);
         }
-
-        /**
-         * HIVE-20942: We need a transaction.  could call txnHandler directly but then we'd have to set up a hearbeat
-         * but using {@link HiveTxnManager} creates a Thrift connection to the HMS
-         * will this cause security checks that could fail?
-         * on the other hand we run SQL via Driver which certainly uses {@link HiveTxnManager}
-         final HiveTxnManager txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-         * openTxn requires Context() which is set up based on query parse/plan....
-         long txnid = txnMgr.openTxn(null, null);
-         */
-        OpenTxnRequest otReq = new OpenTxnRequest(1, runAs, hostname());
+        OpenTxnRequest otReq = new OpenTxnRequest(1, ci.runAs, hostname());
         otReq.setAgentInfo(getName());//ThreadName
         long compactorTxnId = txnHandler.openTxns(otReq).getTxn_ids().get(0);
-        //todo: now we can update compaction_queue entry with this id
-        //also make sure to write to TXN_COMPONENTS so that if txn aborts, we don't delete the metadata about it from TXNS!!!!
 
         heartbeater = new CompactionHeartbeater(txnHandler, compactorTxnId, fullTableName, conf);
         heartbeater.start();
@@ -192,19 +168,21 @@ public class Worker extends CompactorThread {
         LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
         conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
-        //todo: this is a RDBMS call - so is setRunAs() above - could combine into 1
-        txnHandler.setCompactionHighestWriteId(ci, tblValidWriteIds.getHighWatermark());
+        ci.highestWriteId = tblValidWriteIds.getHighWatermark();
+        //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about
+        //it until after any data written by it are physically removed
+        txnHandler.updateCompactorState(ci, compactorTxnId);
         final StringBuilder jobName = new StringBuilder(workerName);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());
 
         LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " + JavaUtils.txnIdToString(compactorTxnId));
         final StatsUpdater su = StatsUpdater.init(ci, txnHandler.findColumnsWithStats(ci), conf,
-          runJobAsSelf(runAs) ? runAs : t.getOwner());
+          runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner());
         final CompactorMR mr = new CompactorMR();
         launchedJob = true;
         try {
-          if (runJobAsSelf(runAs)) {
+          if (runJobAsSelf(ci.runAs)) {
             mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, txnHandler);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),

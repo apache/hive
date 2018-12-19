@@ -29,6 +29,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
+import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
+import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
@@ -152,13 +157,38 @@ public abstract class TxnCommandsBaseForTests {
   protected String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
   }
-
-  void runWorker(HiveConf hiveConf) throws MetaException {
-    TestTxnCommands2.runWorker(hiveConf);
+  public static void runWorker(HiveConf hiveConf) throws MetaException {
+    runCompactorThread(hiveConf, CompactorThreadType.WORKER);
   }
-
-  void runCleaner(HiveConf hiveConf) throws MetaException {
-    TestTxnCommands2.runCleaner(hiveConf);
+  public static void runCleaner(HiveConf hiveConf) throws MetaException {
+    runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
+  }
+  public static void runInitiator(HiveConf hiveConf) throws MetaException {
+    runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
+  }
+  private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
+  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
+      throws MetaException {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    CompactorThread t = null;
+    switch (type) {
+      case INITIATOR:
+        t = new Initiator();
+        break;
+      case WORKER:
+        t = new Worker();
+        break;
+      case CLEANER:
+        t = new Cleaner();
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown type: " + type);
+    }
+    t.setThreadId((int) t.getId());
+    t.setConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
   }
 
   protected List<String> runStatementOnDriver(String stmt) throws Exception {

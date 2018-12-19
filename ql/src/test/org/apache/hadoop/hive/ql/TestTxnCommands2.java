@@ -1190,39 +1190,14 @@ public class TestTxnCommands2 {
     return compactionsByState;
   }
   public static void runWorker(HiveConf hiveConf) throws MetaException {
-    runCompactorThread(hiveConf, CompactorThreadType.WORKER);
+    TxnCommandsBaseForTests.runWorker(hiveConf);
   }
   public static void runCleaner(HiveConf hiveConf) throws MetaException {
-    runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
+    TxnCommandsBaseForTests.runCleaner(hiveConf);
   }
   public static void runInitiator(HiveConf hiveConf) throws MetaException {
-    runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
+    TxnCommandsBaseForTests.runInitiator(hiveConf);
   }
-  private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
-  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
-      throws MetaException {
-    AtomicBoolean stop = new AtomicBoolean(true);
-    CompactorThread t = null;
-    switch (type) {
-      case INITIATOR:
-        t = new Initiator();
-        break;
-      case WORKER:
-        t = new Worker();
-        break;
-      case CLEANER:
-        t = new Cleaner();
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown type: " + type);
-    }
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
   /**
    * HIVE-12352 has details
    * @throws Exception

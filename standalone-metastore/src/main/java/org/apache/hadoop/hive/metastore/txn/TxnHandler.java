@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
 import java.sql.Statement;
-import java.sql.PreparedStatement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,7 +165,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Transaction states
   static final protected char TXN_ABORTED = 'a';
   static final protected char TXN_OPEN = 'o';
-  //todo: make these like OperationType and remove above char constatns
+  //todo: make these like OperationType and remove above char constants
   enum TxnStatus {OPEN, ABORTED, COMMITTED, UNKNOWN}
 
   public enum TxnType {
@@ -199,17 +198,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static private boolean doRetryOnConnPool = false;
 
   private List<TransactionalMetaStoreEventListener> transactionalListeners;
-  
-  private enum OpertaionType {
-    SELECT('s'), INSERT('i'), UPDATE('u'), DELETE('d');
+
+  /**
+   * These are the valid values for TXN_COMPONENTS.TC_OPERATION_TYPE
+   */
+  enum OperationType {
+    SELECT('s'), INSERT('i'), UPDATE('u'), DELETE('d'), COMPACT('c');
     private final char sqlConst;
-    OpertaionType(char sqlConst) {
+    OperationType(char sqlConst) {
       this.sqlConst = sqlConst;
     }
     public String toString() {
       return Character.toString(sqlConst);
     }
-    public static OpertaionType fromString(char sqlConst) {
+    public static OperationType fromString(char sqlConst) {
       switch (sqlConst) {
         case 's':
           return SELECT;
@@ -219,23 +221,28 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           return UPDATE;
         case 'd':
           return DELETE;
+        case 'c':
+          return COMPACT;
         default:
           throw new IllegalArgumentException(quoteChar(sqlConst));
       }
     }
-    public static OpertaionType fromDataOperationType(DataOperationType dop) {
+    public static OperationType fromDataOperationType(DataOperationType dop) {
       switch (dop) {
         case SELECT:
-          return OpertaionType.SELECT;
+          return OperationType.SELECT;
         case INSERT:
-          return OpertaionType.INSERT;
+          return OperationType.INSERT;
         case UPDATE:
-          return OpertaionType.UPDATE;
+          return OperationType.UPDATE;
         case DELETE:
-          return OpertaionType.DELETE;
+          return OperationType.DELETE;
         default:
           throw new IllegalArgumentException("Unexpected value: " + dop);
       }
+    }
+    char getSqlConst() {
+      return sqlConst;
     }
   }
 
@@ -960,7 +967,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           rs = null;
         } else {
           conflictSQLSuffix = "from TXN_COMPONENTS where tc_txnid=" + txnid + " and tc_operation_type IN(" +
-                  quoteChar(OpertaionType.UPDATE.sqlConst) + "," + quoteChar(OpertaionType.DELETE.sqlConst) + ")";
+                  quoteChar(OperationType.UPDATE.sqlConst) + "," + quoteChar(OperationType.DELETE.sqlConst) + ")";
           rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
                   "tc_operation_type " + conflictSQLSuffix));
         }
@@ -1017,8 +1024,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               // part of this commitTxn() op
               " and committed.ws_txnid <> " + txnid + //and LHS only has committed txns
               //U+U and U+D is a conflict but D+D is not and we don't currently track I in WRITE_SET at all
-              " and (committed.ws_operation_type=" + quoteChar(OpertaionType.UPDATE.sqlConst) +
-              " OR cur.ws_operation_type=" + quoteChar(OpertaionType.UPDATE.sqlConst) + ")"));
+              " and (committed.ws_operation_type=" + quoteChar(OperationType.UPDATE.sqlConst) +
+              " OR cur.ws_operation_type=" + quoteChar(OperationType.UPDATE.sqlConst) + ")"));
           if (rs.next()) {
             //found a conflict
             String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
@@ -1062,8 +1069,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           // Move the record from txn_components into completed_txn_components so that the compactor
           // knows where to look to compact.
           s = "insert into COMPLETED_TXN_COMPONENTS (ctc_txnid, ctc_database, " +
-                  "ctc_table, ctc_partition, ctc_writeid, ctc_update_delete) select tc_txnid, tc_database, tc_table, " +
-                  "tc_partition, tc_writeid, '" + isUpdateDelete + "' from TXN_COMPONENTS where tc_txnid = " + txnid;
+                  "ctc_table, ctc_partition, ctc_writeid, ctc_update_delete) select tc_txnid," +
+              " tc_database, tc_table, tc_partition, tc_writeid, '" + isUpdateDelete +
+              "' from TXN_COMPONENTS where tc_txnid = " + txnid +
+              //we only track compactor activity in TXN_COMPONENTS to handle the case where the
+              //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
+              " AND tc_operation_type <> " + quoteChar(OperationType.COMPACT.sqlConst);
           LOG.debug("Going to execute insert <" + s + ">");
           int modCount = 0;
           if ((modCount = stmt.executeUpdate(s)) < 1) {
@@ -2222,7 +2233,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             rows.add(txnid + ", ?, " +
                     (tblName == null ? "null" : "?") + ", " +
                     (partName == null ? "null" : "?")+ "," +
-                    quoteString(OpertaionType.fromDataOperationType(lc.getOperationType()).toString())+ "," +
+                    quoteString(OperationType.fromDataOperationType(lc.getOperationType()).toString())+ "," +
                     (writeId == null ? "null" : writeId));
             List<String> params = new ArrayList<>();
             params.add(dbName);
@@ -2931,7 +2942,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //-1 because 'null' literal doesn't work for all DBs...
           "cq_start, -1 cc_end, cq_run_as, cq_hadoop_job_id, cq_id from COMPACTION_QUEUE union all " +
           "select cc_database, cc_table, cc_partition, cc_state, cc_type, cc_worker_id, " +
-          "cc_start, cc_end, cc_run_as, cc_hadoop_job_id, cc_id from COMPLETED_COMPACTIONS";
+          "cc_start, cc_end, cc_run_as, cc_hadoop_job_id, cc_id from COMPLETED_COMPACTIONS"; //todo: sort by cq_id?
         //what I want is order by cc_end desc, cc_start asc (but derby has a bug https://issues.apache.org/jira/browse/DERBY-6013)
         //to sort so that currently running jobs are at the end of the list (bottom of screen)
         //and currently running ones are in sorted by start time
@@ -3015,9 +3026,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           shouldNeverHappen(rqst.getTxnid());
         }
         //for RU this may be null so we should default it to 'u' which is most restrictive
-        OpertaionType ot = OpertaionType.UPDATE;
+        OperationType ot = OperationType.UPDATE;
         if(rqst.isSetOperationType()) {
-          ot = OpertaionType.fromDataOperationType(rqst.getOperationType());
+          ot = OperationType.fromDataOperationType(rqst.getOperationType());
         }
 
         Long writeId = rqst.getWriteid();
