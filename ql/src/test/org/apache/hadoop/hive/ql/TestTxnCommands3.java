@@ -22,9 +22,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -37,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -372,12 +376,12 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into T values(2,5)");//makes delta_3_3 in T5
 
     runStatementOnDriver("alter table T compact 'minor'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
     /*
     at this point delta_0000001_0000003_v0000022 is visible to everyone
     so cleaner removes all files shadowed by it (which is everything in this case)
     */
-    TestTxnCommands2.runCleaner(hiveConf);
+    runCleaner(hiveConf);
 
     expectedList = new String[] {
         "/t/delta_0000001_0000003_v0000022"
@@ -399,5 +403,70 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
       }
     }
     Assert.assertTrue("not found set: " + expectedSet + " unexpected set: " + unexpectedSet, expectedSet.isEmpty() && unexpectedSet.isEmpty());
+  }
+  @Test
+  public void testCompactionAbort() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+    dropTable(new String[] {"T"});
+    //note: transaction names T1, T2, etc below, are logical, the actual txnid will be different
+    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(0,2)");//makes delta_1_1 in T1
+    runStatementOnDriver("insert into T values(1,4)");//makes delta_2_2 in T2
+
+    //create failed compaction attempt so that compactor txn is aborted
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, true);
+    runStatementOnDriver("alter table T compact 'minor'");
+    runWorker(hiveConf);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history",
+        1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0th compaction state",
+        TxnStore.FAILED_RESPONSE, resp.getCompacts().get(0).getState());
+    GetOpenTxnsResponse openResp =  txnHandler.getOpenTxns();
+    Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
+    //check that the compactor txn is aborted
+    Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
+
+    runCleaner(hiveConf);
+    runInitiator(hiveConf);//to make sure any (which is not in this case)
+    // 'empty aborted' TXNS metadata is removed
+    openResp =  txnHandler.getOpenTxns();
+    Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
+    //we still have 1 aborted (compactor) txn
+    Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
+    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+        "select count(*) from TXN_COMPONENTS"));
+    //this returns 1 row since we only have 1 compaction executed
+    int highestCompactWriteId = TxnDbUtil.countQueryAgent(hiveConf,
+        "select CC_HIGHEST_WRITE_ID from COMPLETED_COMPACTIONS");
+    /**
+     * See {@link org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler#updateCompactorState(CompactionInfo, long)}
+     * for notes on why CC_HIGHEST_WRITE_ID=TC_WRITEID
+     */
+    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+        "select count(*) from TXN_COMPONENTS where TC_WRITEID=" + highestCompactWriteId));
+    //now make a successful compactor run so that next Cleaner run actually cleans
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
+    runStatementOnDriver("alter table T compact 'minor'");
+    runWorker(hiveConf);
+
+    resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history",
+        2, resp.getCompactsSize());
+    //check both combinations - don't know what order the db returns them in
+    Assert.assertTrue("Unexpected compaction state",
+        (TxnStore.FAILED_RESPONSE.equalsIgnoreCase(resp.getCompacts().get(0).getState())
+            && TxnStore.CLEANING_RESPONSE.equalsIgnoreCase(resp.getCompacts().get(1).getState())) ||
+            (TxnStore.CLEANING_RESPONSE.equalsIgnoreCase(resp.getCompacts().get(0).getState()) &&
+                TxnStore.FAILED_RESPONSE.equalsIgnoreCase(resp.getCompacts().get(1).getState())));
+
+    //delete metadata about aborted txn from txn_components and files (if any)
+    runCleaner(hiveConf);
+    runInitiator(hiveConf);//to clean 'empty aborted'
+    openResp =  txnHandler.getOpenTxns();
+    //now the aborted compactor txn is gone
+    Assert.assertEquals(openResp.toString(), 0, openResp.getOpen_txnsSize());
   }
 }

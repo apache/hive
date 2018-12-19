@@ -59,8 +59,9 @@ public class TestCleaner extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     startCleaner();
 
@@ -91,8 +92,9 @@ public class TestCleaner extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     startCleaner();
 
@@ -121,8 +123,9 @@ public class TestCleaner extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "camitc", CompactionType.MINOR);
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     startCleaner();
 
@@ -160,8 +163,9 @@ public class TestCleaner extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     startCleaner();
 
@@ -199,7 +203,8 @@ public class TestCleaner extends CompactorTest {
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
 
     startCleaner();
 
@@ -227,8 +232,9 @@ public class TestCleaner extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "dt", CompactionType.MINOR);
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     // Drop table will clean the table entry from the compaction queue and hence cleaner have no effect
     ms.dropTable("default", "dt");
@@ -255,8 +261,9 @@ public class TestCleaner extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    txnHandler.updateCompactorState(ci, openTxn());
     txnHandler.markCompacted(ci);
-    txnHandler.setRunAs(ci.id, System.getProperty("user.name"));
 
     // Drop partition will clean the partition entry from the compaction queue and hence cleaner have no effect
     ms.dropPartition("default", "dp", Collections.singletonList("today"), true);
