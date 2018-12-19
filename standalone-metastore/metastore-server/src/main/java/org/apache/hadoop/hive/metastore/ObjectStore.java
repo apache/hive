@@ -1062,6 +1062,23 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+
+    // Update column statistics if available.
+    if (tbl.isSetColStats()) {
+      try {
+        ColumnStatistics colStats = tbl.getColStats();
+        // Set the normalized names directly instead of normalising those again
+        colStats.getStatsDesc().setCatName(mtbl.getDatabase().getCatalogName());
+        colStats.getStatsDesc().setDbName(mtbl.getDatabase().getName());
+        colStats.getStatsDesc().setTableName(mtbl.getTableName());
+        updateTableColumnStatistics(colStats, null, tbl.getWriteId());
+      } catch (Exception e) {
+        // This should not happen since we have just created the table. But nonetheless just
+        // rethrow as a meta exception
+        LOG.error("failed to update statistics for table " + tbl.getDbName() + "." + tbl.getTableName(), e);
+        throw new MetaException(e.getMessage());
+      }
+    }
   }
 
   /**
@@ -1245,6 +1262,13 @@ public class ObjectStore implements RawStore, Configurable {
   public Table getTable(String catName, String dbName, String tableName,
                         String writeIdList)
       throws MetaException {
+    return getTable(catName, dbName, tableName, writeIdList, false);
+  }
+
+  @Override
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList,
+                        boolean getColumnStats)
+      throws MetaException {
     boolean commited = false;
     Table tbl = null;
     try {
@@ -1283,6 +1307,23 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+
+    // Get the statistics if requested and if the table can have actual data.
+    try {
+      if (tbl != null &&
+          !TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType()) &&
+          getColumnStats) {
+        tbl.setColStats(getTableColumnStatisticsInternal(catName, dbName, tableName,
+                 StatsSetupConst.getColumnStatsState(tbl.getParameters()), true, true));
+      }
+    }
+    catch (NoSuchObjectException nsoe) {
+      // By the time we fetch statistics we know that the table exists. So, we shouldn't get
+      // this exception here. Anyway, rethrow it as a metaexception to avoid changing many
+      // callers of getTable and getTable itself.
+      throw new MetaException(nsoe.getMessage());
+    }
+
     return tbl;
   }
 

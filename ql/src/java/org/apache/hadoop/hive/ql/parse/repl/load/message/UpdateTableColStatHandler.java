@@ -17,9 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 
 import java.io.Serializable;
@@ -34,10 +38,20 @@ public class UpdateTableColStatHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-    context.log.info("Replication of table stat update event is not supported yet");
+    UpdateTableColumnStatMessage utcsm =
+            deserializer.getUpdateTableColumnStatMessage(context.dmd.getPayload());
+
+    // Update tablename and database name in the statistics object
+    ColumnStatistics colStats = utcsm.getColumnStatistics();
+    ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
+    colStatsDesc.setDbName(context.dbName);
+    if (!context.isTableNameEmpty()) {
+      colStatsDesc.setTableName(context.tableName);
+    }
     if (!context.isDbNameEmpty()) {
       updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
     }
-    return Collections.singletonList(TaskFactory.get(new DependencyCollectionWork(), context.hiveConf));
+    return Collections.singletonList(TaskFactory.get(new ColumnStatsUpdateWork(colStats),
+            context.hiveConf));
   }
 }

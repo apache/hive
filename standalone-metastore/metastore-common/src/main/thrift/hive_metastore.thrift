@@ -445,7 +445,8 @@ struct Table {
   18: optional string catName,          // Name of the catalog the table is in
   19: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
   20: optional i64 writeId=-1,
-  21: optional bool isStatsCompliant
+  21: optional bool isStatsCompliant,
+  22: optional ColumnStatistics colStats // column statistics for table
 }
 
 struct Partition {
@@ -1325,6 +1326,7 @@ struct GetTableRequest {
   3: optional ClientCapabilities capabilities,
   4: optional string catName,
   6: optional string validWriteIdList
+  7: optional bool getColumnStats;
 }
 
 struct GetTableResult {

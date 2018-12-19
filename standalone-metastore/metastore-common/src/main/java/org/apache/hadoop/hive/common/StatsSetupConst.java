@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -260,11 +261,43 @@ public class StatsSetupConst {
         stats.columnStats.put(colName, true);
       }
     }
+    // When we set basic stats to false, we also remove the column stats. So, when we are setting
+    // column stats, basic stats should be true. If an implication is true, its contrapositive is
+    // true.
+    stats.basicStats = true;
+
     try {
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
     } catch (JsonProcessingException e) {
       LOG.trace(e.getMessage());
     }
+  }
+
+  /**
+   * @param table/partition parameters
+   * @return the list of column names for which the stats are available.
+   */
+  public static List<String> getColumnStatsState(Map<String, String> params) {
+    if (params == null) {
+      // No table/partition params, no statistics available
+      return null;
+    }
+
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+
+    // No stats available.
+    if (stats == null) {
+      return null;
+    }
+
+    List<String> colNames = new ArrayList<String>();
+    for (Map.Entry<String, Boolean> entry : stats.columnStats.entrySet()) {
+      if (entry.getValue()) {
+        colNames.add(entry.getKey());
+      }
+    }
+
+    return colNames;
   }
 
   public static boolean canColumnStatsMerge(Map<String, String> params, String colName) {

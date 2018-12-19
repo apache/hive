@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -378,6 +379,37 @@ public class WarehouseInstance implements Closeable {
     } catch (NoSuchObjectException e) {
       return null;
     }
+  }
+
+  /**
+   * Get statistics for given set of columns of a given table in the given database
+   * @param dbName - the database where the table resides
+   * @param tableName - tablename whose statistics are to be retrieved
+   * @param colNames - columns whose statistics is to be retrieved.
+   * @return - list of ColumnStatisticsObj objects in the order of the specified columns
+   */
+  public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName) throws Exception {
+    List<String> colNames = new ArrayList();
+    client.getSchema(dbName, tableName).forEach(fs -> colNames.add(fs.getName()));
+    return client.getTableColumnStatistics(dbName, tableName, colNames);
+  }
+
+  /**
+   * Get statistics for given set of columns for all the partitions of a given table in the given
+   * database.
+   * @param dbName - the database where the table resides
+   * @param tableName - name of the partitioned table in the database
+   * @param colNames - columns whose statistics is to be retrieved
+   * @return Map of partition name and list of ColumnStatisticsObj. The objects in the list are
+   * ordered according to the given list of columns.
+   * @throws Exception
+   */
+  Map<String, List<ColumnStatisticsObj>> getAllPartitionColumnStatistics(String dbName,
+                                                                         String tableName,
+                                                                         List<String> colNames)
+          throws Exception {
+    return client.getPartitionColumnStatistics(dbName, tableName,
+            client.listPartitionNames(dbName, tableName, (short) -1), colNames);
   }
 
   public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {

@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("capabilities", org.apache.thrift.protocol.TType.STRUCT, (short)3);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField GET_COLUMN_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("getColumnStats", org.apache.thrift.protocol.TType.BOOL, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
   private ClientCapabilities capabilities; // optional
   private String catName; // optional
   private String validWriteIdList; // optional
+  private boolean getColumnStats; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ import org.slf4j.LoggerFactory;
     TBL_NAME((short)2, "tblName"),
     CAPABILITIES((short)3, "capabilities"),
     CAT_NAME((short)4, "catName"),
-    VALID_WRITE_ID_LIST((short)6, "validWriteIdList");
+    VALID_WRITE_ID_LIST((short)6, "validWriteIdList"),
+    GET_COLUMN_STATS((short)7, "getColumnStats");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ import org.slf4j.LoggerFactory;
           return CAT_NAME;
         case 6: // VALID_WRITE_ID_LIST
           return VALID_WRITE_ID_LIST;
+        case 7: // GET_COLUMN_STATS
+          return GET_COLUMN_STATS;
         default:
           return null;
       }
@@ -127,7 +132,9 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.CAPABILITIES,_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST};
+  private static final int __GETCOLUMNSTATS_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.CAPABILITIES,_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.GET_COLUMN_STATS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -141,6 +148,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.GET_COLUMN_STATS, new org.apache.thrift.meta_data.FieldMetaData("getColumnStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetTableRequest.class, metaDataMap);
   }
@@ -161,6 +170,7 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public GetTableRequest(GetTableRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
@@ -176,6 +186,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetValidWriteIdList()) {
       this.validWriteIdList = other.validWriteIdList;
     }
+    this.getColumnStats = other.getColumnStats;
   }
 
   public GetTableRequest deepCopy() {
@@ -189,6 +200,8 @@ import org.slf4j.LoggerFactory;
     this.capabilities = null;
     this.catName = null;
     this.validWriteIdList = null;
+    setGetColumnStatsIsSet(false);
+    this.getColumnStats = false;
   }
 
   public String getDbName() {
@@ -306,6 +319,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public boolean isGetColumnStats() {
+    return this.getColumnStats;
+  }
+
+  public void setGetColumnStats(boolean getColumnStats) {
+    this.getColumnStats = getColumnStats;
+    setGetColumnStatsIsSet(true);
+  }
+
+  public void unsetGetColumnStats() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __GETCOLUMNSTATS_ISSET_ID);
+  }
+
+  /** Returns true if field getColumnStats is set (has been assigned a value) and false otherwise */
+  public boolean isSetGetColumnStats() {
+    return EncodingUtils.testBit(__isset_bitfield, __GETCOLUMNSTATS_ISSET_ID);
+  }
+
+  public void setGetColumnStatsIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __GETCOLUMNSTATS_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -348,6 +383,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case GET_COLUMN_STATS:
+      if (value == null) {
+        unsetGetColumnStats();
+      } else {
+        setGetColumnStats((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -367,6 +410,9 @@ import org.slf4j.LoggerFactory;
 
     case VALID_WRITE_ID_LIST:
       return getValidWriteIdList();
+
+    case GET_COLUMN_STATS:
+      return isGetColumnStats();
 
     }
     throw new IllegalStateException();
@@ -389,6 +435,8 @@ import org.slf4j.LoggerFactory;
       return isSetCatName();
     case VALID_WRITE_ID_LIST:
       return isSetValidWriteIdList();
+    case GET_COLUMN_STATS:
+      return isSetGetColumnStats();
     }
     throw new IllegalStateException();
   }
@@ -451,6 +499,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_getColumnStats = true && this.isSetGetColumnStats();
+    boolean that_present_getColumnStats = true && that.isSetGetColumnStats();
+    if (this_present_getColumnStats || that_present_getColumnStats) {
+      if (!(this_present_getColumnStats && that_present_getColumnStats))
+        return false;
+      if (this.getColumnStats != that.getColumnStats)
+        return false;
+    }
+
     return true;
   }
 
@@ -482,6 +539,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_validWriteIdList);
     if (present_validWriteIdList)
       list.add(validWriteIdList);
+
+    boolean present_getColumnStats = true && (isSetGetColumnStats());
+    list.add(present_getColumnStats);
+    if (present_getColumnStats)
+      list.add(getColumnStats);
 
     return list.hashCode();
   }
@@ -540,6 +602,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetValidWriteIdList()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.validWriteIdList, other.validWriteIdList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetGetColumnStats()).compareTo(other.isSetGetColumnStats());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGetColumnStats()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.getColumnStats, other.getColumnStats);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -609,6 +681,12 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
+    if (isSetGetColumnStats()) {
+      if (!first) sb.append(", ");
+      sb.append("getColumnStats:");
+      sb.append(this.getColumnStats);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -639,6 +717,8 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -704,6 +784,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // GET_COLUMN_STATS
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.getColumnStats = iprot.readBool();
+              struct.setGetColumnStatsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -748,6 +836,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetGetColumnStats()) {
+        oprot.writeFieldBegin(GET_COLUMN_STATS_FIELD_DESC);
+        oprot.writeBool(struct.getColumnStats);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -777,7 +870,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetValidWriteIdList()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetGetColumnStats()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetCapabilities()) {
         struct.capabilities.write(oprot);
       }
@@ -786,6 +882,9 @@ import org.slf4j.LoggerFactory;
       }
       if (struct.isSetValidWriteIdList()) {
         oprot.writeString(struct.validWriteIdList);
+      }
+      if (struct.isSetGetColumnStats()) {
+        oprot.writeBool(struct.getColumnStats);
       }
     }
 
@@ -796,7 +895,7 @@ import org.slf4j.LoggerFactory;
       struct.setDbNameIsSet(true);
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.capabilities = new ClientCapabilities();
         struct.capabilities.read(iprot);
@@ -809,6 +908,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(2)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.getColumnStats = iprot.readBool();
+        struct.setGetColumnStatsIsSet(true);
       }
     }
   }

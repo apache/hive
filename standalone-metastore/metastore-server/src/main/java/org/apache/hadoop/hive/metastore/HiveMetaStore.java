@@ -2901,7 +2901,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String[] parsedDbName = parseDbName(dbname, conf);
       return getTableInternal(
-          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null);
+          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null,
+              false);
     }
 
     @Override
@@ -2909,11 +2910,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
       return new GetTableResult(getTableInternal(catName, req.getDbName(), req.getTblName(),
-          req.getCapabilities(), req.getValidWriteIdList()));
+          req.getCapabilities(), req.getValidWriteIdList(), req.isGetColumnStats()));
     }
 
     private Table getTableInternal(String catName, String dbname, String name,
-        ClientCapabilities capabilities, String writeIdList)
+        ClientCapabilities capabilities, String writeIdList, boolean getColumnStats)
         throws MetaException, NoSuchObjectException {
       if (isInTest) {
         assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
@@ -2924,7 +2925,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startTableFunction("get_table", catName, dbname, name);
       Exception ex = null;
       try {
-        t = get_table_core(catName, dbname, name, writeIdList);
+        t = get_table_core(catName, dbname, name, writeIdList, getColumnStats);
         if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
           assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
               "insert-only tables", "get_table_req");
@@ -2974,9 +2975,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String name,
         final String writeIdList)
         throws MetaException, NoSuchObjectException {
+      return get_table_core(catName, dbname, name, writeIdList, false);
+    }
+
+    public Table get_table_core(final String catName,
+        final String dbname,
+        final String name,
+        final String writeIdList,
+        boolean getColumnStats)
+        throws MetaException, NoSuchObjectException {
       Table t = null;
       try {
-        t = getMS().getTable(catName, dbname, name, writeIdList);
+        t = getMS().getTable(catName, dbname, name, writeIdList, getColumnStats);
         if (t == null) {
           throw new NoSuchObjectException(TableName.getQualified(catName, dbname, name) +
             " table not found");

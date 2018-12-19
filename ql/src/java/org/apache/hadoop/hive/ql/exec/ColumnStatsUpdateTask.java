@@ -77,6 +77,11 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private ColumnStatistics constructColumnStatsFromInput()
       throws SemanticException, MetaException {
 
+    // If we are replicating the stats, we don't need to construct those again.
+    if (work.getColStats() != null) {
+      LOG.debug("Got stats through replication for " + work.getColStats().getStatsDesc().getDbName() + "." + work.getColStats().getStatsDesc().getTableName());
+      return work.getColStats();
+    }
     String dbName = work.dbName();
     String tableName = work.getTableName();
     String partName = work.getPartName();

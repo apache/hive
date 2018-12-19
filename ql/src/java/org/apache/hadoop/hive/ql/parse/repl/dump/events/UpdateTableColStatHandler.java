@@ -35,10 +35,13 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
-    DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(eventMessageAsJSON);
-    dmd.write();
+    // Statistics without data doesn't make sense.
+    if (!withinContext.replicationSpec.isMetadataOnly()) {
+      LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
+      DumpMetaData dmd = withinContext.createDmd(this);
+      dmd.setPayload(eventMessageAsJSON);
+      dmd.write();
+    }
   }
 
   @Override

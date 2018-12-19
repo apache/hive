@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCo
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -269,6 +270,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     return false;
   }
 
+  // Is MoveTask within replication?
+  private boolean isInReplicationScope() {
+    ReplicationSpec replicationSpec = work.getReplicationSpec();
+    if (replicationSpec == null)
+      return false;
+    return replicationSpec.isInReplicationScope();
+  }
+
   private final static class TaskInformation {
     public List<BucketCol> bucketCols = null;
     public List<SortCol> sortCols = null;
@@ -399,7 +408,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               + " into " + tbd.getTable().getTableName());
           }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
-              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, hasFollowingStatsTask(),
+              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp,
+                  !(hasFollowingStatsTask() || isInReplicationScope()),
               tbd.getWriteId(), tbd.getStmtId(), tbd.isInsertOverwrite());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
