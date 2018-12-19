@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Preconditions;
+
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
@@ -31,10 +33,13 @@ import java.util.Set;
 import java.util.Stack;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -537,4 +542,31 @@ public final class ParseUtils {
       }
       return sb.toString();
     }
+
+  public static RelNode parseQuery(HiveConf conf, String viewQuery)
+      throws SemanticException, IOException, ParseException {
+    final Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    final ASTNode ast = parse(viewQuery, ctx);
+    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    return analyzer.genLogicalPlan(ast);
+  }
+
+  public static List<FieldSchema> parseQueryAndGetSchema(HiveConf conf, String viewQuery)
+      throws SemanticException, IOException, ParseException {
+    final Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    final ASTNode ast = parse(viewQuery, ctx);
+    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    analyzer.genLogicalPlan(ast);
+    return analyzer.getResultSchema();
+  }
+
+  private static CalcitePlanner getAnalyzer(HiveConf conf, Context ctx) throws SemanticException {
+    final QueryState qs = new QueryState.Builder().withHiveConf(conf).build();
+    final CalcitePlanner analyzer = new CalcitePlanner(qs);
+    analyzer.initCtx(ctx);
+    analyzer.init(false);
+    return analyzer;
+  }
 }
