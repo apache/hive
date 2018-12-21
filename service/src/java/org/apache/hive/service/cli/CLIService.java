@@ -498,14 +498,15 @@ public class CLIService extends CompositeService implements ICLIService {
     SessionState sessionState = operation.getParentSession().getSessionState();
     long startTime = System.nanoTime();
     int timeOutMs = 8;
+    boolean terminated = operation.isDone();
     try {
-      while (sessionState.getProgressMonitor() == null && !operation.isDone()) {
+      while ((sessionState.getProgressMonitor() == null) && !terminated) {
         long remainingMs = (PROGRESS_MAX_WAIT_NS - (System.nanoTime() - startTime)) / 1000000l;
         if (remainingMs <= 0) {
           LOG.debug("timed out and hence returning progress log as NULL");
           return new JobProgressUpdate(ProgressMonitor.NULL);
         }
-        Thread.sleep(Math.min(remainingMs, timeOutMs));
+        terminated = operation.waitToTerminate(Math.min(remainingMs, timeOutMs));
         timeOutMs <<= 1;
       }
     } catch (InterruptedException e) {
