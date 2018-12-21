@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
+import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -78,7 +81,6 @@ import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.Retry;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
@@ -230,27 +232,15 @@ public class TestCompactor {
     Assert.assertEquals("3\tmark\t1900\tsoon", valuesReadFromHiveDriver.get(2));
     Assert.assertEquals("4\tdouglas\t1901\tlast_century", valuesReadFromHiveDriver.get(3));
     Assert.assertEquals("5\tdoc\t1902\tyesterday", valuesReadFromHiveDriver.get(4));
-
-    Initiator initiator = new Initiator();
-    initiator.setThreadId((int) initiator.getId());
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
-    initiator.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean();
-    stop.set(true);
-    initiator.init(stop, new AtomicBoolean());
-    initiator.run();
+    runInitiator(conf);
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(4, compacts.size());
     SortedSet<String> partNames = new TreeSet<String>();
-    for (int i = 0; i < compacts.size(); i++) {
-      Assert.assertEquals("default", compacts.get(i).getDbname());
-      Assert.assertEquals(tblName, compacts.get(i).getTablename());
-      Assert.assertEquals("initiated", compacts.get(i).getState());
-      partNames.add(compacts.get(i).getPartitionname());
-    }
+    verifyCompactions(compacts, partNames, tblName);
     List<String> names = new ArrayList<String>(partNames);
     Assert.assertEquals("ds=last_century", names.get(0));
     Assert.assertEquals("ds=soon", names.get(1));
@@ -332,27 +322,16 @@ public class TestCompactor {
     Assert.assertEquals("4\tdouglas\t2000\tlast_century", valuesReadFromHiveDriver.get(3));
     Assert.assertEquals("5\tdoc\t2000\tyesterday", valuesReadFromHiveDriver.get(4));
 
-    Initiator initiator = new Initiator();
-    initiator.setThreadId((int) initiator.getId());
     // Set to 1 so insert doesn't set it off but update does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
-    initiator.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean();
-    stop.set(true);
-    initiator.init(stop, new AtomicBoolean());
-    initiator.run();
+    runInitiator(conf);
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(4, compacts.size());
     SortedSet<String> partNames = new TreeSet<String>();
-    for (int i = 0; i < compacts.size(); i++) {
-      Assert.assertEquals("default", compacts.get(i).getDbname());
-      Assert.assertEquals(tblName, compacts.get(i).getTablename());
-      Assert.assertEquals("initiated", compacts.get(i).getState());
-      partNames.add(compacts.get(i).getPartitionname());
-    }
+    verifyCompactions(compacts, partNames, tblName);
     List<String> names = new ArrayList<String>(partNames);
     Assert.assertEquals("ds=last_century", names.get(0));
     Assert.assertEquals("ds=soon", names.get(1));
@@ -512,14 +491,7 @@ public class TestCompactor {
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, CompactionType.MAJOR);
     rqst.setPartitionname(ci.partName);
     txnHandler.compact(rqst);
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean();
-    AtomicBoolean looped = new AtomicBoolean();
-    stop.set(true);
-    t.init(stop, looped);
-    t.run();
+    runWorker(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     if (1 != compacts.size()) {
@@ -566,26 +538,15 @@ public class TestCompactor {
     executeStatementOnDriver("insert into " + tblName + " partition (ds) values (1, 'fred', " +
       "'today'), (2, 'wilma', 'yesterday')", driver);
 
-    Initiator initiator = new Initiator();
-    initiator.setThreadId((int) initiator.getId());
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
-    initiator.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean();
-    stop.set(true);
-    initiator.init(stop, new AtomicBoolean());
-    initiator.run();
+    runInitiator(conf);
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(2, compacts.size());
     SortedSet<String> partNames = new TreeSet<String>();
-    for (int i = 0; i < compacts.size(); i++) {
-      Assert.assertEquals("default", compacts.get(i).getDbname());
-      Assert.assertEquals(tblName, compacts.get(i).getTablename());
-      Assert.assertEquals("initiated", compacts.get(i).getState());
-      partNames.add(compacts.get(i).getPartitionname());
-    }
+    verifyCompactions(compacts, partNames, tblName);
     List<String> names = new ArrayList<String>(partNames);
     Assert.assertEquals("ds=today", names.get(0));
     Assert.assertEquals("ds=yesterday", names.get(1));
@@ -604,27 +565,16 @@ public class TestCompactor {
 
     executeStatementOnDriver("update " + tblName + " set b = 'barney'", driver);
 
-    Initiator initiator = new Initiator();
-    initiator.setThreadId((int) initiator.getId());
     // Set to 1 so insert doesn't set it off but update does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
-    initiator.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean();
-    stop.set(true);
-    initiator.init(stop, new AtomicBoolean());
-    initiator.run();
+    runInitiator(conf);
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(2, compacts.size());
     SortedSet<String> partNames = new TreeSet<String>();
-    for (int i = 0; i < compacts.size(); i++) {
-      Assert.assertEquals("default", compacts.get(i).getDbname());
-      Assert.assertEquals(tblName, compacts.get(i).getTablename());
-      Assert.assertEquals("initiated", compacts.get(i).getState());
-      partNames.add(compacts.get(i).getPartitionname());
-    }
+    verifyCompactions(compacts, partNames, tblName);
     List<String> names = new ArrayList<String>(partNames);
     Assert.assertEquals("ds=today", names.get(0));
     Assert.assertEquals("ds=yesterday", names.get(1));
@@ -645,27 +595,16 @@ public class TestCompactor {
 
     executeStatementOnDriver("delete from " + tblName + " where b = 'fred'", driver);
 
-    Initiator initiator = new Initiator();
-    initiator.setThreadId((int) initiator.getId());
     // Set to 2 so insert and update don't set it off but delete does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
-    initiator.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean();
-    stop.set(true);
-    initiator.init(stop, new AtomicBoolean());
-    initiator.run();
+    runInitiator(conf);
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
     SortedSet<String> partNames = new TreeSet<String>();
-    for (int i = 0; i < compacts.size(); i++) {
-      Assert.assertEquals("default", compacts.get(i).getDbname());
-      Assert.assertEquals(tblName, compacts.get(i).getTablename());
-      Assert.assertEquals("initiated", compacts.get(i).getState());
-      partNames.add(compacts.get(i).getPartitionname());
-    }
+    verifyCompactions(compacts, partNames, tblName);
     List<String> names = new ArrayList<String>(partNames);
     Assert.assertEquals("ds=today", names.get(0));
   }
@@ -694,13 +633,7 @@ public class TestCompactor {
       // Now, compact
       TxnStore txnHandler = TxnUtils.getTxnStore(conf);
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
-      Worker t = new Worker();
-      t.setThreadId((int) t.getId());
-      t.setConf(conf);
-      AtomicBoolean stop = new AtomicBoolean(true);
-      AtomicBoolean looped = new AtomicBoolean();
-      t.init(stop, looped);
-      t.run();
+      runWorker(conf);
 
       // Find the location of the table
       IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -786,66 +719,11 @@ public class TestCompactor {
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
 
-    if (newStreamingAPI) {
-      StreamingConnection connection = null;
-      try {
-        // Write a couple of batches
-        for (int i = 0; i < 2; i++) {
-          connection = writeBatch(dbName, tblName, false);
-          assertNull(connection);
-        }
-
-        StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
-          .withFieldDelimiter(',')
-          .build();
-        StreamingConnection connection2 = HiveStreamingConnection.newBuilder()
-          .withDatabase(dbName)
-          .withTable(tblName)
-          .withAgentInfo("UT_" + Thread.currentThread().getName())
-          .withHiveConf(conf)
-          .withRecordWriter(writer)
-          .withTransactionBatchSize(2)
-          .connect();
-        // Start a third batch, abortTransaction everything, don't properly close it
-        connection2.beginTransaction();
-        connection2.abortTransaction();
-        connection2.close();
-      } finally {
-        if (connection != null) {
-          connection.close();
-        }
-      }
-    } else {
-      HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
-      DelimitedInputWriter writer = new DelimitedInputWriter(new String[]{"a", "b"}, ",", endPt);
-      org.apache.hive.hcatalog.streaming.StreamingConnection connection = endPt
-        .newConnection(false, "UT_" + Thread.currentThread().getName());
-      try {
-        // Write a couple of batches
-        for (int i = 0; i < 2; i++) {
-          writeBatch(connection, writer, false);
-        }
-
-        // Start a third batch, abort everything, don't properly close it
-        TransactionBatch txnBatch = connection.fetchTransactionBatch(2, writer);
-        txnBatch.beginNextTransaction();
-        txnBatch.abort();
-        txnBatch.beginNextTransaction();
-        txnBatch.abort();
-      } finally {
-        connection.close();
-      }
-    }
+    processStreamingAPI(dbName, tblName);
     // Now, compact
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
+    runWorker(conf);
 
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -881,56 +759,7 @@ public class TestCompactor {
       " CLUSTERED BY(a) INTO 1 BUCKETS" + //currently ACID requires table to be bucketed
       " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
 
-    if (newStreamingAPI) {
-      StreamingConnection connection = null;
-      try {
-        // Write a couple of batches
-        for (int i = 0; i < 2; i++) {
-          connection = writeBatch(dbName, tblName, false);
-          assertNull(connection);
-        }
-
-        StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
-          .withFieldDelimiter(',')
-          .build();
-        StreamingConnection connection2 = HiveStreamingConnection.newBuilder()
-          .withDatabase(dbName)
-          .withTable(tblName)
-          .withAgentInfo("UT_" + Thread.currentThread().getName())
-          .withHiveConf(conf)
-          .withRecordWriter(writer)
-          .withTransactionBatchSize(2)
-          .connect();
-        // Start a third batch, but don't close it.
-        connection2.beginTransaction();
-        connection2.abortTransaction();
-        connection2.close();
-      } finally {
-        if (connection != null) {
-          connection.close();
-        }
-      }
-    } else {
-      HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
-      DelimitedInputWriter writer = new DelimitedInputWriter(new String[]{"a", "b"}, ",", endPt);
-      org.apache.hive.hcatalog.streaming.StreamingConnection connection = endPt
-        .newConnection(false, "UT_" + Thread.currentThread().getName());
-      try {
-        // Write a couple of batches
-        for (int i = 0; i < 2; i++) {
-          writeBatch(connection, writer, false);
-        }
-
-        // Start a third batch, abort everything, don't properly close it
-        TransactionBatch txnBatch = connection.fetchTransactionBatch(2, writer);
-        txnBatch.beginNextTransaction();
-        txnBatch.abort();
-        txnBatch.beginNextTransaction();
-        txnBatch.abort();
-      } finally {
-        connection.close();
-      }
-    }
+    processStreamingAPI(dbName, tblName);
     runMajorCompaction(dbName, tblName);
 
     // Find the location of the table
@@ -1347,13 +1176,7 @@ public class TestCompactor {
     // even though there are only two delta_3_3, delta_4_4 and one delete_delta_5_5.
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
+    runWorker(conf);
 
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -1425,13 +1248,7 @@ public class TestCompactor {
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
+    runWorker(conf);
 
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -1503,13 +1320,7 @@ public class TestCompactor {
     // Now, compact
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(conf);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
+    runWorker(conf);
 
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -1603,27 +1414,9 @@ public class TestCompactor {
     Assert.assertEquals("ttp1", rsp.getCompacts().get(1).getTablename());
     Assert.assertEquals(TxnStore.INITIATED_RESPONSE, rsp.getCompacts().get(1).getState());
     // compact ttp2, by running the Worker explicitly, in order to get the reference to the compactor MR job
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(conf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-    JobConf job = t.getMrJob();
-    Assert.assertEquals(2048, job.getMemoryForMapTask());  // 2048 comes from tblproperties
-    Assert.assertEquals("root.user2", job.getQueueName()); // Queue name comes from table properties
+    runWorker(conf);
     // Compact ttp1
-    stop = new AtomicBoolean(true);
-    t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(conf);
-    looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-    job = t.getMrJob();
-    Assert.assertEquals(1024, job.getMemoryForMapTask());  // 1024 is the default value
-    Assert.assertEquals("root.user1", job.getQueueName()); // The system wide compaction queue name
+    runWorker(conf);
     // Clean up
     runCleaner(conf);
     rsp = txnHandler.showCompact(new ShowCompactRequest());
@@ -1685,17 +1478,7 @@ public class TestCompactor {
     Assert.assertEquals(4, rsp.getCompacts().get(0).getId());
 
     // Run the Worker explicitly, in order to get the reference to the compactor MR job
-    stop = new AtomicBoolean(true);
-    t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(conf);
-    looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-    job = t.getMrJob();
-    Assert.assertEquals(3072, job.getMemoryForMapTask());
-    Assert.assertTrue(job.get("hive.compactor.table.props").contains("orc.compress.size4:3141"));
-    Assert.assertEquals("root.user2", job.getQueueName());
+    runWorker(conf);
     /*createReader(FileSystem fs, Path path) throws IOException {
      */
     //we just ran Major compaction so we should have a base_x in tblName2 that has the new files
@@ -1908,35 +1691,6 @@ public class TestCompactor {
 
   }
 
-  static void runInitiator(HiveConf hiveConf) throws MetaException {
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Initiator t = new Initiator();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
-  static void runWorker(HiveConf hiveConf) throws MetaException {
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Worker t = new Worker();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
-
-  static void runCleaner(HiveConf hiveConf) throws MetaException {
-    AtomicBoolean stop = new AtomicBoolean(true);
-    Cleaner t = new Cleaner();
-    t.setThreadId((int) t.getId());
-    t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
-    t.run();
-  }
   private static String toString(FileStatus[] stat) {
     StringBuilder sb = new StringBuilder("stat{");
     if(stat == null) {
@@ -1947,5 +1701,70 @@ public class TestCompactor {
     }
     sb.setCharAt(sb.length() - 1, '}');
     return sb.toString();
+  }
+
+  private void verifyCompactions(List<ShowCompactResponseElement> compacts, SortedSet<String> partNames, String tblName) {
+    for (ShowCompactResponseElement compact : compacts) {
+      Assert.assertEquals("default", compact.getDbname());
+      Assert.assertEquals(tblName, compact.getTablename());
+      Assert.assertEquals("initiated", compact.getState());
+      partNames.add(compact.getPartitionname());
+    }
+  }
+
+
+  private void processStreamingAPI(String dbName, String tblName)
+      throws StreamingException, ClassNotFoundException, org.apache.hive.hcatalog.streaming.StreamingException,
+      InterruptedException {
+    if (newStreamingAPI) {
+      StreamingConnection connection = null;
+      try {
+        // Write a couple of batches
+        for (int i = 0; i < 2; i++) {
+          connection = writeBatch(dbName, tblName, false);
+          assertNull(connection);
+        }
+
+        StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+            .withFieldDelimiter(',')
+            .build();
+        StreamingConnection connection2 = HiveStreamingConnection.newBuilder()
+            .withDatabase(dbName)
+            .withTable(tblName)
+            .withAgentInfo("UT_" + Thread.currentThread().getName())
+            .withHiveConf(conf)
+            .withRecordWriter(writer)
+            .withTransactionBatchSize(2)
+            .connect();
+        // Start a third batch, but don't close it.
+        connection2.beginTransaction();
+        connection2.abortTransaction();
+        connection2.close();
+      } finally {
+        if (connection != null) {
+          connection.close();
+        }
+      }
+    } else {
+      HiveEndPoint endPt = new HiveEndPoint(null, dbName, tblName, null);
+      DelimitedInputWriter writer = new DelimitedInputWriter(new String[]{"a", "b"}, ",", endPt);
+      org.apache.hive.hcatalog.streaming.StreamingConnection connection = endPt
+          .newConnection(false, "UT_" + Thread.currentThread().getName());
+      try {
+        // Write a couple of batches
+        for (int i = 0; i < 2; i++) {
+          writeBatch(connection, writer, false);
+        }
+
+        // Start a third batch, abort everything, don't properly close it
+        TransactionBatch txnBatch = connection.fetchTransactionBatch(2, writer);
+        txnBatch.beginNextTransaction();
+        txnBatch.abort();
+        txnBatch.beginNextTransaction();
+        txnBatch.abort();
+      } finally {
+        connection.close();
+      }
+    }
   }
 }
