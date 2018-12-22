@@ -14543,6 +14543,288 @@ class CompactionRequest:
   def __ne__(self, other):
     return not (self == other)
 
+class OptionalCompactionInfoStruct:
+  """
+  Attributes:
+   - ci
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'ci', (CompactionInfoStruct, CompactionInfoStruct.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, ci=None,):
+    self.ci = ci
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.ci = CompactionInfoStruct()
+          self.ci.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('OptionalCompactionInfoStruct')
+    if self.ci is not None:
+      oprot.writeFieldBegin('ci', TType.STRUCT, 1)
+      self.ci.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.ci)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class CompactionInfoStruct:
+  """
+  Attributes:
+   - id
+   - dbname
+   - tablename
+   - partitionname
+   - type
+   - runas
+   - properties
+   - toomanyaborts
+   - state
+   - workerId
+   - start
+   - highestWriteId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'id', None, None, ), # 1
+    (2, TType.STRING, 'dbname', None, None, ), # 2
+    (3, TType.STRING, 'tablename', None, None, ), # 3
+    (4, TType.STRING, 'partitionname', None, None, ), # 4
+    (5, TType.I32, 'type', None, None, ), # 5
+    (6, TType.STRING, 'runas', None, None, ), # 6
+    (7, TType.STRING, 'properties', None, None, ), # 7
+    (8, TType.BOOL, 'toomanyaborts', None, None, ), # 8
+    (9, TType.STRING, 'state', None, None, ), # 9
+    (10, TType.STRING, 'workerId', None, None, ), # 10
+    (11, TType.I64, 'start', None, None, ), # 11
+    (12, TType.I64, 'highestWriteId', None, None, ), # 12
+  )
+
+  def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None,):
+    self.id = id
+    self.dbname = dbname
+    self.tablename = tablename
+    self.partitionname = partitionname
+    self.type = type
+    self.runas = runas
+    self.properties = properties
+    self.toomanyaborts = toomanyaborts
+    self.state = state
+    self.workerId = workerId
+    self.start = start
+    self.highestWriteId = highestWriteId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.id = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.dbname = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.tablename = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.partitionname = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I32:
+          self.type = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.runas = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.properties = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.BOOL:
+          self.toomanyaborts = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.STRING:
+          self.state = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRING:
+          self.workerId = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.I64:
+          self.start = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.I64:
+          self.highestWriteId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('CompactionInfoStruct')
+    if self.id is not None:
+      oprot.writeFieldBegin('id', TType.I64, 1)
+      oprot.writeI64(self.id)
+      oprot.writeFieldEnd()
+    if self.dbname is not None:
+      oprot.writeFieldBegin('dbname', TType.STRING, 2)
+      oprot.writeString(self.dbname)
+      oprot.writeFieldEnd()
+    if self.tablename is not None:
+      oprot.writeFieldBegin('tablename', TType.STRING, 3)
+      oprot.writeString(self.tablename)
+      oprot.writeFieldEnd()
+    if self.partitionname is not None:
+      oprot.writeFieldBegin('partitionname', TType.STRING, 4)
+      oprot.writeString(self.partitionname)
+      oprot.writeFieldEnd()
+    if self.type is not None:
+      oprot.writeFieldBegin('type', TType.I32, 5)
+      oprot.writeI32(self.type)
+      oprot.writeFieldEnd()
+    if self.runas is not None:
+      oprot.writeFieldBegin('runas', TType.STRING, 6)
+      oprot.writeString(self.runas)
+      oprot.writeFieldEnd()
+    if self.properties is not None:
+      oprot.writeFieldBegin('properties', TType.STRING, 7)
+      oprot.writeString(self.properties)
+      oprot.writeFieldEnd()
+    if self.toomanyaborts is not None:
+      oprot.writeFieldBegin('toomanyaborts', TType.BOOL, 8)
+      oprot.writeBool(self.toomanyaborts)
+      oprot.writeFieldEnd()
+    if self.state is not None:
+      oprot.writeFieldBegin('state', TType.STRING, 9)
+      oprot.writeString(self.state)
+      oprot.writeFieldEnd()
+    if self.workerId is not None:
+      oprot.writeFieldBegin('workerId', TType.STRING, 10)
+      oprot.writeString(self.workerId)
+      oprot.writeFieldEnd()
+    if self.start is not None:
+      oprot.writeFieldBegin('start', TType.I64, 11)
+      oprot.writeI64(self.start)
+      oprot.writeFieldEnd()
+    if self.highestWriteId is not None:
+      oprot.writeFieldBegin('highestWriteId', TType.I64, 12)
+      oprot.writeI64(self.highestWriteId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.id is None:
+      raise TProtocol.TProtocolException(message='Required field id is unset!')
+    if self.dbname is None:
+      raise TProtocol.TProtocolException(message='Required field dbname is unset!')
+    if self.tablename is None:
+      raise TProtocol.TProtocolException(message='Required field tablename is unset!')
+    if self.type is None:
+      raise TProtocol.TProtocolException(message='Required field type is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.id)
+    value = (value * 31) ^ hash(self.dbname)
+    value = (value * 31) ^ hash(self.tablename)
+    value = (value * 31) ^ hash(self.partitionname)
+    value = (value * 31) ^ hash(self.type)
+    value = (value * 31) ^ hash(self.runas)
+    value = (value * 31) ^ hash(self.properties)
+    value = (value * 31) ^ hash(self.toomanyaborts)
+    value = (value * 31) ^ hash(self.state)
+    value = (value * 31) ^ hash(self.workerId)
+    value = (value * 31) ^ hash(self.start)
+    value = (value * 31) ^ hash(self.highestWriteId)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class CompactionResponse:
   """
   Attributes:

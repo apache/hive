@@ -127,6 +127,8 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
+import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
@@ -3758,4 +3760,62 @@ public interface IMetaStoreClient {
 
   /** Reads runtime statistics. */
   List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException;
+
+  /**
+   * Get the next compaction job to do.
+   * @param workerId id of the worker requesting.
+   * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
+   * @throws MetaException
+   * @throws TException
+   */
+  OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException;
+
+  /**
+   * Set the compaction highest write id.
+   * @param cr compaction job being done.
+   * @param txnId transaction id.
+   * @throws TException
+   */
+  void updateCompactorState(CompactionInfoStruct cr, long txnId) throws TException;
+
+  /**
+   * Get columns.
+   * @param cr compaction job.
+   * @return
+   * @throws TException
+   */
+  List<String> findColumnsWithStats(CompactionInfoStruct cr) throws TException;
+
+  /**
+   * Mark a finished compaction as cleaned.
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markCleaned(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Mark a finished compaction as compacted.
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markCompacted(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Mark a finished compaction as failed.
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Set the hadoop id for a compaction.
+   * @param jobId mapreduce job id that will do the compaction.
+   * @param cqId compaction id.
+   * @throws MetaException
+   * @throws TException
+   */
+  void setHadoopJobid(String jobId, long cqId) throws MetaException, TException;
 }

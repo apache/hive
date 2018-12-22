@@ -188,6 +188,13 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void compact2(CompactionResponse& _return, const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
   virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
+  virtual void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) = 0;
+  virtual void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) = 0;
+  virtual void find_columns_with_stats(std::vector<std::string> & _return, const CompactionInfoStruct& cr) = 0;
+  virtual void mark_cleaned(const CompactionInfoStruct& cr) = 0;
+  virtual void mark_compacted(const CompactionInfoStruct& cr) = 0;
+  virtual void mark_failed(const CompactionInfoStruct& cr) = 0;
+  virtual void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
   virtual void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) = 0;
@@ -788,6 +795,27 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void add_dynamic_partitions(const AddDynamicPartitions& /* rqst */) {
+    return;
+  }
+  void find_next_compact(OptionalCompactionInfoStruct& /* _return */, const std::string& /* workerId */) {
+    return;
+  }
+  void update_compactor_state(const CompactionInfoStruct& /* cr */, const int64_t /* txn_id */) {
+    return;
+  }
+  void find_columns_with_stats(std::vector<std::string> & /* _return */, const CompactionInfoStruct& /* cr */) {
+    return;
+  }
+  void mark_cleaned(const CompactionInfoStruct& /* cr */) {
+    return;
+  }
+  void mark_compacted(const CompactionInfoStruct& /* cr */) {
+    return;
+  }
+  void mark_failed(const CompactionInfoStruct& /* cr */) {
+    return;
+  }
+  void set_hadoop_jobid(const std::string& /* jobId */, const int64_t /* cq_id */) {
     return;
   }
   void get_next_notification(NotificationEventResponse& /* _return */, const NotificationEventRequest& /* rqst */) {
@@ -21522,6 +21550,720 @@ class ThriftHiveMetastore_add_dynamic_partitions_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_find_next_compact_args__isset {
+  _ThriftHiveMetastore_find_next_compact_args__isset() : workerId(false) {}
+  bool workerId :1;
+} _ThriftHiveMetastore_find_next_compact_args__isset;
+
+class ThriftHiveMetastore_find_next_compact_args {
+ public:
+
+  ThriftHiveMetastore_find_next_compact_args(const ThriftHiveMetastore_find_next_compact_args&);
+  ThriftHiveMetastore_find_next_compact_args& operator=(const ThriftHiveMetastore_find_next_compact_args&);
+  ThriftHiveMetastore_find_next_compact_args() : workerId() {
+  }
+
+  virtual ~ThriftHiveMetastore_find_next_compact_args() throw();
+  std::string workerId;
+
+  _ThriftHiveMetastore_find_next_compact_args__isset __isset;
+
+  void __set_workerId(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_find_next_compact_args & rhs) const
+  {
+    if (!(workerId == rhs.workerId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_find_next_compact_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_find_next_compact_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_find_next_compact_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_find_next_compact_pargs() throw();
+  const std::string* workerId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_find_next_compact_result__isset {
+  _ThriftHiveMetastore_find_next_compact_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_find_next_compact_result__isset;
+
+class ThriftHiveMetastore_find_next_compact_result {
+ public:
+
+  ThriftHiveMetastore_find_next_compact_result(const ThriftHiveMetastore_find_next_compact_result&);
+  ThriftHiveMetastore_find_next_compact_result& operator=(const ThriftHiveMetastore_find_next_compact_result&);
+  ThriftHiveMetastore_find_next_compact_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_find_next_compact_result() throw();
+  OptionalCompactionInfoStruct success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_find_next_compact_result__isset __isset;
+
+  void __set_success(const OptionalCompactionInfoStruct& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_find_next_compact_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_find_next_compact_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_find_next_compact_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_find_next_compact_presult__isset {
+  _ThriftHiveMetastore_find_next_compact_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_find_next_compact_presult__isset;
+
+class ThriftHiveMetastore_find_next_compact_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_find_next_compact_presult() throw();
+  OptionalCompactionInfoStruct* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_find_next_compact_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_update_compactor_state_args__isset {
+  _ThriftHiveMetastore_update_compactor_state_args__isset() : cr(false), txn_id(false) {}
+  bool cr :1;
+  bool txn_id :1;
+} _ThriftHiveMetastore_update_compactor_state_args__isset;
+
+class ThriftHiveMetastore_update_compactor_state_args {
+ public:
+
+  ThriftHiveMetastore_update_compactor_state_args(const ThriftHiveMetastore_update_compactor_state_args&);
+  ThriftHiveMetastore_update_compactor_state_args& operator=(const ThriftHiveMetastore_update_compactor_state_args&);
+  ThriftHiveMetastore_update_compactor_state_args() : txn_id(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_update_compactor_state_args() throw();
+  CompactionInfoStruct cr;
+  int64_t txn_id;
+
+  _ThriftHiveMetastore_update_compactor_state_args__isset __isset;
+
+  void __set_cr(const CompactionInfoStruct& val);
+
+  void __set_txn_id(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_update_compactor_state_args & rhs) const
+  {
+    if (!(cr == rhs.cr))
+      return false;
+    if (!(txn_id == rhs.txn_id))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_compactor_state_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_compactor_state_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_compactor_state_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_compactor_state_pargs() throw();
+  const CompactionInfoStruct* cr;
+  const int64_t* txn_id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_compactor_state_result {
+ public:
+
+  ThriftHiveMetastore_update_compactor_state_result(const ThriftHiveMetastore_update_compactor_state_result&);
+  ThriftHiveMetastore_update_compactor_state_result& operator=(const ThriftHiveMetastore_update_compactor_state_result&);
+  ThriftHiveMetastore_update_compactor_state_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_compactor_state_result() throw();
+
+  bool operator == (const ThriftHiveMetastore_update_compactor_state_result & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_compactor_state_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_compactor_state_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_compactor_state_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_compactor_state_presult() throw();
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_find_columns_with_stats_args__isset {
+  _ThriftHiveMetastore_find_columns_with_stats_args__isset() : cr(false) {}
+  bool cr :1;
+} _ThriftHiveMetastore_find_columns_with_stats_args__isset;
+
+class ThriftHiveMetastore_find_columns_with_stats_args {
+ public:
+
+  ThriftHiveMetastore_find_columns_with_stats_args(const ThriftHiveMetastore_find_columns_with_stats_args&);
+  ThriftHiveMetastore_find_columns_with_stats_args& operator=(const ThriftHiveMetastore_find_columns_with_stats_args&);
+  ThriftHiveMetastore_find_columns_with_stats_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_find_columns_with_stats_args() throw();
+  CompactionInfoStruct cr;
+
+  _ThriftHiveMetastore_find_columns_with_stats_args__isset __isset;
+
+  void __set_cr(const CompactionInfoStruct& val);
+
+  bool operator == (const ThriftHiveMetastore_find_columns_with_stats_args & rhs) const
+  {
+    if (!(cr == rhs.cr))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_find_columns_with_stats_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_find_columns_with_stats_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_find_columns_with_stats_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_find_columns_with_stats_pargs() throw();
+  const CompactionInfoStruct* cr;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_find_columns_with_stats_result__isset {
+  _ThriftHiveMetastore_find_columns_with_stats_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_find_columns_with_stats_result__isset;
+
+class ThriftHiveMetastore_find_columns_with_stats_result {
+ public:
+
+  ThriftHiveMetastore_find_columns_with_stats_result(const ThriftHiveMetastore_find_columns_with_stats_result&);
+  ThriftHiveMetastore_find_columns_with_stats_result& operator=(const ThriftHiveMetastore_find_columns_with_stats_result&);
+  ThriftHiveMetastore_find_columns_with_stats_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_find_columns_with_stats_result() throw();
+  std::vector<std::string>  success;
+
+  _ThriftHiveMetastore_find_columns_with_stats_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val);
+
+  bool operator == (const ThriftHiveMetastore_find_columns_with_stats_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_find_columns_with_stats_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_find_columns_with_stats_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_find_columns_with_stats_presult__isset {
+  _ThriftHiveMetastore_find_columns_with_stats_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_find_columns_with_stats_presult__isset;
+
+class ThriftHiveMetastore_find_columns_with_stats_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_find_columns_with_stats_presult() throw();
+  std::vector<std::string> * success;
+
+  _ThriftHiveMetastore_find_columns_with_stats_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_cleaned_args__isset {
+  _ThriftHiveMetastore_mark_cleaned_args__isset() : cr(false) {}
+  bool cr :1;
+} _ThriftHiveMetastore_mark_cleaned_args__isset;
+
+class ThriftHiveMetastore_mark_cleaned_args {
+ public:
+
+  ThriftHiveMetastore_mark_cleaned_args(const ThriftHiveMetastore_mark_cleaned_args&);
+  ThriftHiveMetastore_mark_cleaned_args& operator=(const ThriftHiveMetastore_mark_cleaned_args&);
+  ThriftHiveMetastore_mark_cleaned_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_mark_cleaned_args() throw();
+  CompactionInfoStruct cr;
+
+  _ThriftHiveMetastore_mark_cleaned_args__isset __isset;
+
+  void __set_cr(const CompactionInfoStruct& val);
+
+  bool operator == (const ThriftHiveMetastore_mark_cleaned_args & rhs) const
+  {
+    if (!(cr == rhs.cr))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_mark_cleaned_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_mark_cleaned_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_mark_cleaned_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_mark_cleaned_pargs() throw();
+  const CompactionInfoStruct* cr;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_cleaned_result__isset {
+  _ThriftHiveMetastore_mark_cleaned_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_mark_cleaned_result__isset;
+
+class ThriftHiveMetastore_mark_cleaned_result {
+ public:
+
+  ThriftHiveMetastore_mark_cleaned_result(const ThriftHiveMetastore_mark_cleaned_result&);
+  ThriftHiveMetastore_mark_cleaned_result& operator=(const ThriftHiveMetastore_mark_cleaned_result&);
+  ThriftHiveMetastore_mark_cleaned_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_mark_cleaned_result() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_mark_cleaned_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_mark_cleaned_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_mark_cleaned_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_mark_cleaned_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_cleaned_presult__isset {
+  _ThriftHiveMetastore_mark_cleaned_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_mark_cleaned_presult__isset;
+
+class ThriftHiveMetastore_mark_cleaned_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_mark_cleaned_presult() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_mark_cleaned_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_compacted_args__isset {
+  _ThriftHiveMetastore_mark_compacted_args__isset() : cr(false) {}
+  bool cr :1;
+} _ThriftHiveMetastore_mark_compacted_args__isset;
+
+class ThriftHiveMetastore_mark_compacted_args {
+ public:
+
+  ThriftHiveMetastore_mark_compacted_args(const ThriftHiveMetastore_mark_compacted_args&);
+  ThriftHiveMetastore_mark_compacted_args& operator=(const ThriftHiveMetastore_mark_compacted_args&);
+  ThriftHiveMetastore_mark_compacted_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_mark_compacted_args() throw();
+  CompactionInfoStruct cr;
+
+  _ThriftHiveMetastore_mark_compacted_args__isset __isset;
+
+  void __set_cr(const CompactionInfoStruct& val);
+
+  bool operator == (const ThriftHiveMetastore_mark_compacted_args & rhs) const
+  {
+    if (!(cr == rhs.cr))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_mark_compacted_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_mark_compacted_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_mark_compacted_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_mark_compacted_pargs() throw();
+  const CompactionInfoStruct* cr;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_compacted_result__isset {
+  _ThriftHiveMetastore_mark_compacted_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_mark_compacted_result__isset;
+
+class ThriftHiveMetastore_mark_compacted_result {
+ public:
+
+  ThriftHiveMetastore_mark_compacted_result(const ThriftHiveMetastore_mark_compacted_result&);
+  ThriftHiveMetastore_mark_compacted_result& operator=(const ThriftHiveMetastore_mark_compacted_result&);
+  ThriftHiveMetastore_mark_compacted_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_mark_compacted_result() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_mark_compacted_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_mark_compacted_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_mark_compacted_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_mark_compacted_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_compacted_presult__isset {
+  _ThriftHiveMetastore_mark_compacted_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_mark_compacted_presult__isset;
+
+class ThriftHiveMetastore_mark_compacted_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_mark_compacted_presult() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_mark_compacted_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_failed_args__isset {
+  _ThriftHiveMetastore_mark_failed_args__isset() : cr(false) {}
+  bool cr :1;
+} _ThriftHiveMetastore_mark_failed_args__isset;
+
+class ThriftHiveMetastore_mark_failed_args {
+ public:
+
+  ThriftHiveMetastore_mark_failed_args(const ThriftHiveMetastore_mark_failed_args&);
+  ThriftHiveMetastore_mark_failed_args& operator=(const ThriftHiveMetastore_mark_failed_args&);
+  ThriftHiveMetastore_mark_failed_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_mark_failed_args() throw();
+  CompactionInfoStruct cr;
+
+  _ThriftHiveMetastore_mark_failed_args__isset __isset;
+
+  void __set_cr(const CompactionInfoStruct& val);
+
+  bool operator == (const ThriftHiveMetastore_mark_failed_args & rhs) const
+  {
+    if (!(cr == rhs.cr))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_mark_failed_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_mark_failed_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_mark_failed_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_mark_failed_pargs() throw();
+  const CompactionInfoStruct* cr;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_failed_result__isset {
+  _ThriftHiveMetastore_mark_failed_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_mark_failed_result__isset;
+
+class ThriftHiveMetastore_mark_failed_result {
+ public:
+
+  ThriftHiveMetastore_mark_failed_result(const ThriftHiveMetastore_mark_failed_result&);
+  ThriftHiveMetastore_mark_failed_result& operator=(const ThriftHiveMetastore_mark_failed_result&);
+  ThriftHiveMetastore_mark_failed_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_mark_failed_result() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_mark_failed_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_mark_failed_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_mark_failed_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_mark_failed_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_mark_failed_presult__isset {
+  _ThriftHiveMetastore_mark_failed_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_mark_failed_presult__isset;
+
+class ThriftHiveMetastore_mark_failed_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_mark_failed_presult() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_mark_failed_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_set_hadoop_jobid_args__isset {
+  _ThriftHiveMetastore_set_hadoop_jobid_args__isset() : jobId(false), cq_id(false) {}
+  bool jobId :1;
+  bool cq_id :1;
+} _ThriftHiveMetastore_set_hadoop_jobid_args__isset;
+
+class ThriftHiveMetastore_set_hadoop_jobid_args {
+ public:
+
+  ThriftHiveMetastore_set_hadoop_jobid_args(const ThriftHiveMetastore_set_hadoop_jobid_args&);
+  ThriftHiveMetastore_set_hadoop_jobid_args& operator=(const ThriftHiveMetastore_set_hadoop_jobid_args&);
+  ThriftHiveMetastore_set_hadoop_jobid_args() : jobId(), cq_id(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_set_hadoop_jobid_args() throw();
+  std::string jobId;
+  int64_t cq_id;
+
+  _ThriftHiveMetastore_set_hadoop_jobid_args__isset __isset;
+
+  void __set_jobId(const std::string& val);
+
+  void __set_cq_id(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_set_hadoop_jobid_args & rhs) const
+  {
+    if (!(jobId == rhs.jobId))
+      return false;
+    if (!(cq_id == rhs.cq_id))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_set_hadoop_jobid_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_set_hadoop_jobid_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_set_hadoop_jobid_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_set_hadoop_jobid_pargs() throw();
+  const std::string* jobId;
+  const int64_t* cq_id;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_set_hadoop_jobid_result {
+ public:
+
+  ThriftHiveMetastore_set_hadoop_jobid_result(const ThriftHiveMetastore_set_hadoop_jobid_result&);
+  ThriftHiveMetastore_set_hadoop_jobid_result& operator=(const ThriftHiveMetastore_set_hadoop_jobid_result&);
+  ThriftHiveMetastore_set_hadoop_jobid_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_set_hadoop_jobid_result() throw();
+
+  bool operator == (const ThriftHiveMetastore_set_hadoop_jobid_result & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_set_hadoop_jobid_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_set_hadoop_jobid_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_set_hadoop_jobid_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_set_hadoop_jobid_presult() throw();
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_next_notification_args__isset {
   _ThriftHiveMetastore_get_next_notification_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -27597,6 +28339,27 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions();
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId);
+  void send_find_next_compact(const std::string& workerId);
+  void recv_find_next_compact(OptionalCompactionInfoStruct& _return);
+  void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
+  void send_update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
+  void recv_update_compactor_state();
+  void find_columns_with_stats(std::vector<std::string> & _return, const CompactionInfoStruct& cr);
+  void send_find_columns_with_stats(const CompactionInfoStruct& cr);
+  void recv_find_columns_with_stats(std::vector<std::string> & _return);
+  void mark_cleaned(const CompactionInfoStruct& cr);
+  void send_mark_cleaned(const CompactionInfoStruct& cr);
+  void recv_mark_cleaned();
+  void mark_compacted(const CompactionInfoStruct& cr);
+  void send_mark_compacted(const CompactionInfoStruct& cr);
+  void recv_mark_compacted();
+  void mark_failed(const CompactionInfoStruct& cr);
+  void send_mark_failed(const CompactionInfoStruct& cr);
+  void recv_mark_failed();
+  void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
+  void send_set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
+  void recv_set_hadoop_jobid();
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   void send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return);
@@ -27917,6 +28680,13 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_compact2(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_show_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_dynamic_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_find_next_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_compactor_state(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_find_columns_with_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_mark_cleaned(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_mark_compacted(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_mark_failed(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_set_hadoop_jobid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_notification_events_count(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -28135,6 +28905,13 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["compact2"] = &ThriftHiveMetastoreProcessor::process_compact2;
     processMap_["show_compact"] = &ThriftHiveMetastoreProcessor::process_show_compact;
     processMap_["add_dynamic_partitions"] = &ThriftHiveMetastoreProcessor::process_add_dynamic_partitions;
+    processMap_["find_next_compact"] = &ThriftHiveMetastoreProcessor::process_find_next_compact;
+    processMap_["update_compactor_state"] = &ThriftHiveMetastoreProcessor::process_update_compactor_state;
+    processMap_["find_columns_with_stats"] = &ThriftHiveMetastoreProcessor::process_find_columns_with_stats;
+    processMap_["mark_cleaned"] = &ThriftHiveMetastoreProcessor::process_mark_cleaned;
+    processMap_["mark_compacted"] = &ThriftHiveMetastoreProcessor::process_mark_compacted;
+    processMap_["mark_failed"] = &ThriftHiveMetastoreProcessor::process_mark_failed;
+    processMap_["set_hadoop_jobid"] = &ThriftHiveMetastoreProcessor::process_set_hadoop_jobid;
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
     processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
     processMap_["get_notification_events_count"] = &ThriftHiveMetastoreProcessor::process_get_notification_events_count;
@@ -29806,6 +30583,71 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->add_dynamic_partitions(rqst);
   }
 
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->find_next_compact(_return, workerId);
+    }
+    ifaces_[i]->find_next_compact(_return, workerId);
+    return;
+  }
+
+  void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_compactor_state(cr, txn_id);
+    }
+    ifaces_[i]->update_compactor_state(cr, txn_id);
+  }
+
+  void find_columns_with_stats(std::vector<std::string> & _return, const CompactionInfoStruct& cr) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->find_columns_with_stats(_return, cr);
+    }
+    ifaces_[i]->find_columns_with_stats(_return, cr);
+    return;
+  }
+
+  void mark_cleaned(const CompactionInfoStruct& cr) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->mark_cleaned(cr);
+    }
+    ifaces_[i]->mark_cleaned(cr);
+  }
+
+  void mark_compacted(const CompactionInfoStruct& cr) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->mark_compacted(cr);
+    }
+    ifaces_[i]->mark_compacted(cr);
+  }
+
+  void mark_failed(const CompactionInfoStruct& cr) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->mark_failed(cr);
+    }
+    ifaces_[i]->mark_failed(cr);
+  }
+
+  void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->set_hadoop_jobid(jobId, cq_id);
+    }
+    ifaces_[i]->set_hadoop_jobid(jobId, cq_id);
+  }
+
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -30789,6 +31631,27 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_dynamic_partitions(const AddDynamicPartitions& rqst);
   int32_t send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions(const int32_t seqid);
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId);
+  int32_t send_find_next_compact(const std::string& workerId);
+  void recv_find_next_compact(OptionalCompactionInfoStruct& _return, const int32_t seqid);
+  void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
+  int32_t send_update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
+  void recv_update_compactor_state(const int32_t seqid);
+  void find_columns_with_stats(std::vector<std::string> & _return, const CompactionInfoStruct& cr);
+  int32_t send_find_columns_with_stats(const CompactionInfoStruct& cr);
+  void recv_find_columns_with_stats(std::vector<std::string> & _return, const int32_t seqid);
+  void mark_cleaned(const CompactionInfoStruct& cr);
+  int32_t send_mark_cleaned(const CompactionInfoStruct& cr);
+  void recv_mark_cleaned(const int32_t seqid);
+  void mark_compacted(const CompactionInfoStruct& cr);
+  int32_t send_mark_compacted(const CompactionInfoStruct& cr);
+  void recv_mark_compacted(const int32_t seqid);
+  void mark_failed(const CompactionInfoStruct& cr);
+  int32_t send_mark_failed(const CompactionInfoStruct& cr);
+  void recv_mark_failed(const int32_t seqid);
+  void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
+  int32_t send_set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
+  void recv_set_hadoop_jobid(const int32_t seqid);
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   int32_t send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return, const int32_t seqid);

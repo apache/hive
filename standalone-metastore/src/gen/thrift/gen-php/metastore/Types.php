@@ -20849,6 +20849,414 @@ class CompactionRequest {
 
 }
 
+class OptionalCompactionInfoStruct {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\CompactionInfoStruct
+   */
+  public $ci = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'ci',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\CompactionInfoStruct',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['ci'])) {
+        $this->ci = $vals['ci'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'OptionalCompactionInfoStruct';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->ci = new \metastore\CompactionInfoStruct();
+            $xfer += $this->ci->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('OptionalCompactionInfoStruct');
+    if ($this->ci !== null) {
+      if (!is_object($this->ci)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('ci', TType::STRUCT, 1);
+      $xfer += $this->ci->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class CompactionInfoStruct {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $id = null;
+  /**
+   * @var string
+   */
+  public $dbname = null;
+  /**
+   * @var string
+   */
+  public $tablename = null;
+  /**
+   * @var string
+   */
+  public $partitionname = null;
+  /**
+   * @var int
+   */
+  public $type = null;
+  /**
+   * @var string
+   */
+  public $runas = null;
+  /**
+   * @var string
+   */
+  public $properties = null;
+  /**
+   * @var bool
+   */
+  public $toomanyaborts = null;
+  /**
+   * @var string
+   */
+  public $state = null;
+  /**
+   * @var string
+   */
+  public $workerId = null;
+  /**
+   * @var int
+   */
+  public $start = null;
+  /**
+   * @var int
+   */
+  public $highestWriteId = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'dbname',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'tablename',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'partitionname',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'type',
+          'type' => TType::I32,
+          ),
+        6 => array(
+          'var' => 'runas',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'properties',
+          'type' => TType::STRING,
+          ),
+        8 => array(
+          'var' => 'toomanyaborts',
+          'type' => TType::BOOL,
+          ),
+        9 => array(
+          'var' => 'state',
+          'type' => TType::STRING,
+          ),
+        10 => array(
+          'var' => 'workerId',
+          'type' => TType::STRING,
+          ),
+        11 => array(
+          'var' => 'start',
+          'type' => TType::I64,
+          ),
+        12 => array(
+          'var' => 'highestWriteId',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+      if (isset($vals['dbname'])) {
+        $this->dbname = $vals['dbname'];
+      }
+      if (isset($vals['tablename'])) {
+        $this->tablename = $vals['tablename'];
+      }
+      if (isset($vals['partitionname'])) {
+        $this->partitionname = $vals['partitionname'];
+      }
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
+      }
+      if (isset($vals['runas'])) {
+        $this->runas = $vals['runas'];
+      }
+      if (isset($vals['properties'])) {
+        $this->properties = $vals['properties'];
+      }
+      if (isset($vals['toomanyaborts'])) {
+        $this->toomanyaborts = $vals['toomanyaborts'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+      if (isset($vals['workerId'])) {
+        $this->workerId = $vals['workerId'];
+      }
+      if (isset($vals['start'])) {
+        $this->start = $vals['start'];
+      }
+      if (isset($vals['highestWriteId'])) {
+        $this->highestWriteId = $vals['highestWriteId'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CompactionInfoStruct';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->id);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tablename);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->partitionname);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->runas);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->properties);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->toomanyaborts);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 9:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 10:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->workerId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 11:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->start);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 12:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->highestWriteId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CompactionInfoStruct');
+    if ($this->id !== null) {
+      $xfer += $output->writeFieldBegin('id', TType::I64, 1);
+      $xfer += $output->writeI64($this->id);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dbname !== null) {
+      $xfer += $output->writeFieldBegin('dbname', TType::STRING, 2);
+      $xfer += $output->writeString($this->dbname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tablename !== null) {
+      $xfer += $output->writeFieldBegin('tablename', TType::STRING, 3);
+      $xfer += $output->writeString($this->tablename);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->partitionname !== null) {
+      $xfer += $output->writeFieldBegin('partitionname', TType::STRING, 4);
+      $xfer += $output->writeString($this->partitionname);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::I32, 5);
+      $xfer += $output->writeI32($this->type);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->runas !== null) {
+      $xfer += $output->writeFieldBegin('runas', TType::STRING, 6);
+      $xfer += $output->writeString($this->runas);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->properties !== null) {
+      $xfer += $output->writeFieldBegin('properties', TType::STRING, 7);
+      $xfer += $output->writeString($this->properties);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->toomanyaborts !== null) {
+      $xfer += $output->writeFieldBegin('toomanyaborts', TType::BOOL, 8);
+      $xfer += $output->writeBool($this->toomanyaborts);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::STRING, 9);
+      $xfer += $output->writeString($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->workerId !== null) {
+      $xfer += $output->writeFieldBegin('workerId', TType::STRING, 10);
+      $xfer += $output->writeString($this->workerId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->start !== null) {
+      $xfer += $output->writeFieldBegin('start', TType::I64, 11);
+      $xfer += $output->writeI64($this->start);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->highestWriteId !== null) {
+      $xfer += $output->writeFieldBegin('highestWriteId', TType::I64, 12);
+      $xfer += $output->writeI64($this->highestWriteId);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class CompactionResponse {
   static $_TSPEC;
 

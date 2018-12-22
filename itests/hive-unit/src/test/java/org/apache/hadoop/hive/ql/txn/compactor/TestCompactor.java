@@ -1246,7 +1246,7 @@ public class TestCompactor {
   }
 
   private void runMajorCompaction(
-      String dbName, String tblName, String... partNames) throws MetaException {
+      String dbName, String tblName, String... partNames) throws Exception {
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());

@@ -154,6 +154,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.security.SecurityUtil;
@@ -7549,6 +7550,43 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public void set_hadoop_jobid(String jobId, long cqId) {
+      getTxnHandler().setHadoopJobId(jobId, cqId);
+    }
+
+    @Override
+    public OptionalCompactionInfoStruct find_next_compact(String workerId) throws MetaException{
+      return CompactionInfo.compactionInfoToOptionalStruct(
+          getTxnHandler().findNextToCompact(workerId));
+    }
+
+    @Override
+    public void mark_cleaned(CompactionInfoStruct cr) throws MetaException {
+      getTxnHandler().markCleaned(CompactionInfo.compactionStructToInfo(cr));
+    }
+
+    @Override
+    public void mark_compacted(CompactionInfoStruct cr) throws MetaException {
+      getTxnHandler().markCompacted(CompactionInfo.compactionStructToInfo(cr));
+    }
+
+    @Override
+    public void mark_failed(CompactionInfoStruct cr) throws MetaException {
+      getTxnHandler().markFailed(CompactionInfo.compactionStructToInfo(cr));
+    }
+
+    @Override
+    public List<String> find_columns_with_stats(CompactionInfoStruct cr) throws MetaException {
+      return getTxnHandler().findColumnsWithStats(CompactionInfo.compactionStructToInfo(cr));
+    }
+
+    @Override
+    public void update_compactor_state(CompactionInfoStruct cr, long highWaterMark) throws MetaException {
+      getTxnHandler().updateCompactorState(
+          CompactionInfo.compactionStructToInfo(cr), highWaterMark);
+    }
+
+    @Override
     public AllocateTableWriteIdsResponse allocate_table_write_ids(
             AllocateTableWriteIdsRequest rqst) throws TException {
       AllocateTableWriteIdsResponse response = getTxnHandler().allocateTableWriteIds(rqst);
@@ -9656,7 +9694,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             startCondition.await();
           }
           startCompactorInitiator(conf);
-          startCompactorWorkers(conf);
+          if (MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore")) {
+            startCompactorWorkers(conf);
+          }
           startCompactorCleaner(conf);
           startRemoteOnlyTasks(conf);
           startStatsUpdater(conf);
@@ -9723,7 +9763,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static int nextThreadId = 1000000;
 
   private static void initializeAndStartThread(MetaStoreThread thread, Configuration conf) throws
-      MetaException {
+      Exception {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.setThreadId(nextThreadId++);

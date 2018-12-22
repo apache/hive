@@ -852,6 +852,41 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_dynamic_partitions\n");
   }
 
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) {
+    // Your implementation goes here
+    printf("find_next_compact\n");
+  }
+
+  void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) {
+    // Your implementation goes here
+    printf("update_compactor_state\n");
+  }
+
+  void find_columns_with_stats(std::vector<std::string> & _return, const CompactionInfoStruct& cr) {
+    // Your implementation goes here
+    printf("find_columns_with_stats\n");
+  }
+
+  void mark_cleaned(const CompactionInfoStruct& cr) {
+    // Your implementation goes here
+    printf("mark_cleaned\n");
+  }
+
+  void mark_compacted(const CompactionInfoStruct& cr) {
+    // Your implementation goes here
+    printf("mark_compacted\n");
+  }
+
+  void mark_failed(const CompactionInfoStruct& cr) {
+    // Your implementation goes here
+    printf("mark_failed\n");
+  }
+
+  void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) {
+    // Your implementation goes here
+    printf("set_hadoop_jobid\n");
+  }
+
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
     // Your implementation goes here
     printf("get_next_notification\n");

@@ -1189,13 +1189,13 @@ public class TestTxnCommands2 {
     }
     return compactionsByState;
   }
-  public static void runWorker(HiveConf hiveConf) throws MetaException {
+  public static void runWorker(HiveConf hiveConf) throws Exception {
     TxnCommandsBaseForTests.runWorker(hiveConf);
   }
-  public static void runCleaner(HiveConf hiveConf) throws MetaException {
+  public static void runCleaner(HiveConf hiveConf) throws Exception {
     TxnCommandsBaseForTests.runCleaner(hiveConf);
   }
-  public static void runInitiator(HiveConf hiveConf) throws MetaException {
+  public static void runInitiator(HiveConf hiveConf) throws Exception {
     TxnCommandsBaseForTests.runInitiator(hiveConf);
   }
   /**
