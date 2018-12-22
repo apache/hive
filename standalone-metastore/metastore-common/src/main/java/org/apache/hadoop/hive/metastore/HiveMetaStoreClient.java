@@ -3701,4 +3701,39 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       throws TException {
     return client.get_partitions_with_specs(request);
   }
+
+  @Override
+  public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
+    return client.find_next_compact(workerId);
+  }
+
+  @Override
+  public void updateCompactorState(CompactionInfoStruct cr, long txnId) throws TException {
+    client.update_compactor_state(cr, txnId);
+  }
+
+  @Override
+  public List<String> findColumnsWithStats(CompactionInfoStruct cr) throws TException {
+    return client.find_columns_with_stats(cr);
+  }
+
+  @Override
+  public void markCleaned(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_cleaned(cr);
+  }
+
+  @Override
+  public void markCompacted(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_compacted(cr);
+  }
+
+  @Override
+  public void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_failed(cr);
+  }
+
+  @Override
+  public void setHadoopJobid(String jobId, long cqId) throws MetaException, TException {
+    client.set_hadoop_jobid(jobId, cqId);
+  }
 }

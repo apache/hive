@@ -1076,6 +1076,25 @@ struct CompactionRequest {
     6: optional map<string, string> properties
 }
 
+struct OptionalCompactionInfoStruct {
+    1: optional CompactionInfoStruct ci,
+}
+
+struct CompactionInfoStruct {
+    1: required i64 id,
+    2: required string dbname,
+    3: required string tablename,
+    4: optional string partitionname,
+    5: required CompactionType type,
+    6: optional string runas,
+    7: optional string properties
+    8: optional bool toomanyaborts
+    9: optional string state
+    10: optional string workerId
+    11: optional i64 start
+    12: optional i64 highestWriteId
+}
+
 struct CompactionResponse {
     1: required i64 id,
     2: required string state,
@@ -2319,6 +2338,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  OptionalCompactionInfoStruct find_next_compact(1: string workerId) throws(1:MetaException o1)
+  void update_compactor_state(1: CompactionInfoStruct cr, 2: i64 txn_id)
+  list<string> find_columns_with_stats(1: CompactionInfoStruct cr)
+  void mark_cleaned(1:CompactionInfoStruct cr) throws(1:MetaException o1)
+  void mark_compacted(1: CompactionInfoStruct cr) throws(1:MetaException o1)
+  void mark_failed(1: CompactionInfoStruct cr) throws(1:MetaException o1)
+  void set_hadoop_jobid(1: string jobId, 2: i64 cq_id)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
