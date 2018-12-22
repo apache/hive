@@ -17,23 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.RawStore;
-import org.apache.hadoop.hive.metastore.RawStoreProxy;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
@@ -42,25 +38,28 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * Superclass for all threads in the compactor.
  */
-public abstract class CompactorThread extends Thread implements MetaStoreThread {
+public abstract class CompactorThread extends Thread implements Configurable {
   static final private String CLASS_NAME = CompactorThread.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  protected static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   protected HiveConf conf;
-  protected TxnStore txnHandler;
   protected RawStore rs;
-  protected int threadId;
   protected AtomicBoolean stop;
   protected AtomicBoolean looped;
+
+  protected int threadId;
+
+  public void setThreadId(int threadId) {
+    this.threadId = threadId;
+  }
 
   @Override
   public void setConf(Configuration configuration) {
@@ -77,24 +76,11 @@ public abstract class CompactorThread extends Thread implements MetaStoreThread 
     return conf;
   }
 
-  @Override
-  public void setThreadId(int threadId) {
-    this.threadId = threadId;
-  }
-
-  @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
-    this.stop = stop;
-    this.looped = looped;
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
-
-    // Get our own instance of the transaction handler
-    txnHandler = TxnUtils.getTxnStore(conf);
-
-    // Get our own connection to the database so we can get table and partition information.
-    rs = RawStoreProxy.getProxy(conf, conf,
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
+    this.stop = stop;
+    this.looped = looped;
   }
 
   /**
@@ -103,14 +89,15 @@ public abstract class CompactorThread extends Thread implements MetaStoreThread 
    * @return metastore table
    * @throws org.apache.hadoop.hive.metastore.api.MetaException if the table cannot be found.
    */
-  protected Table resolveTable(CompactionInfo ci) throws MetaException {
-    try {
-      return rs.getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-    } catch (MetaException e) {
-      LOG.error("Unable to find table " + ci.getFullTableName() + ", " + e.getMessage());
-      throw e;
-    }
-  }
+  abstract Table resolveTable(CompactionInfo ci) throws MetaException;
+
+  /**
+   * Get list of partitions by name.
+   * @param ci compaction info.
+   * @return list of partitions
+   * @throws MetaException if an error occurs.
+   */
+  abstract List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException;
 
   /**
    * Get the partition being compacted.
@@ -123,8 +110,7 @@ public abstract class CompactorThread extends Thread implements MetaStoreThread 
     if (ci.partName != null) {
       List<Partition> parts;
       try {
-        parts = rs.getPartitionsByNames(getDefaultCatalog(conf), ci.dbname, ci.tableName,
-            Collections.singletonList(ci.partName));
+        parts = getPartitionsByNames(ci);
         if (parts == null || parts.size() == 0) {
           // The partition got dropped before we went looking for it.
           return null;
@@ -219,5 +205,16 @@ public abstract class CompactorThread extends Thread implements MetaStoreThread 
 
   protected String tableName(Table t) {
     return Warehouse.getQualifiedName(t);
+  }
+
+  private static AtomicInteger nextThreadId = new AtomicInteger(1000000);
+
+  public static void initializeAndStartThread(CompactorThread thread,
+      Configuration conf) throws Exception {
+    LOG.info("Starting compactor thread of type " + thread.getClass().getName());
+    thread.setConf(conf);
+    thread.setThreadId(nextThreadId.incrementAndGet());
+    thread.init(new AtomicBoolean(), new AtomicBoolean());
+    thread.start();
   }
 }

@@ -1037,6 +1037,10 @@ public class MetastoreConf {
         "Batch size for partition and other object retrieval from the underlying DB in JDO.\n" +
         "The JDO implementation such as DataNucleus may run into issues when the generated queries are\n" +
         "too large. Use this parameter to break the query into multiple batches. -1 means no batching."),
+    HIVE_METASTORE_RUNWORKER_IN("hive.metastore.runworker.in",
+        "hive.metastore.runworker.in", "metastore", new StringSetValidator("metastore", "hs2"),
+        "Chooses where the compactor worker threads should run, Only possible values"
+            + " are \"metastore\" and \"hs2\""),
 
     // Hive values we have copied and use as is
     // These two are used to indicate that we are running tests
