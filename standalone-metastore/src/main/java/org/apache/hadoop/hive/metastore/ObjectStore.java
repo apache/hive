@@ -4211,7 +4211,7 @@ public class ObjectStore implements RawStore, Configurable {
    * Verifies that the stats JSON string is unchanged for alter table (txn stats).
    * @return Error message with the details of the change, or null if the value has not changed.
    */
-  private static String verifyStatsChangeCtx(Map<String, String> oldP, Map<String, String> newP,
+  public static String verifyStatsChangeCtx(Map<String, String> oldP, Map<String, String> newP,
       long writeId, String validWriteIds, boolean isColStatsChange) {
     if (validWriteIds != null && writeId > 0) return null; // We have txn context.
     String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
@@ -9832,11 +9832,23 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       long lastEvent = rqst.getLastEvent();
       int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
-      query = pm.newQuery(MNotificationLog.class, "eventId > lastEvent");
-      query.declareParameters("java.lang.Long lastEvent");
+      List<Object> parameterVals = new ArrayList<>();
+      parameterVals.add(lastEvent);
+      StringBuilder filterBuilder = new StringBuilder("eventId > para" + parameterVals.size());
+      StringBuilder parameterBuilder = new StringBuilder("java.lang.Long para" + parameterVals.size());
+      if (rqst.isSetEventTypeSkipList()) {
+        for (String eventType : rqst.getEventTypeSkipList()) {
+          parameterVals.add(eventType);
+          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+          filterBuilder.append(" && eventType != para" + parameterVals.size());
+        }
+      }
+      query = pm.newQuery(MNotificationLog.class, filterBuilder.toString());
+      query.declareParameters(parameterBuilder.toString());
       query.setOrdering("eventId ascending");
       query.setRange(0, maxEvents);
-      Collection<MNotificationLog> events = (Collection) query.execute(lastEvent);
+      Collection<MNotificationLog> events =
+              (Collection) query.executeWithArray(parameterVals.toArray(new Object[parameterVals.size()]));
       commited = commitTransaction();
       if (events == null) {
         return result;

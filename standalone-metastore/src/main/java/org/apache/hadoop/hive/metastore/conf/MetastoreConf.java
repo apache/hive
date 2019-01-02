@@ -904,6 +904,8 @@ public class MetastoreConf {
         "Time interval describing how often the reaper runs"),
     TOKEN_SIGNATURE("metastore.token.signature", "hive.metastore.token.signature", "",
         "The delegation token service name to match when selecting a token from the current user's tokens."),
+    METASTORE_CACHE_CAN_USE_EVENT("metastore.cache.can.use.event", "hive.metastore.cache.can.use.event", false,
+            "Can notification events from notification log table be used for updating the metastore cache."),
     TRANSACTIONAL_EVENT_LISTENERS("metastore.transactional.event.listeners",
         "hive.metastore.transactional.event.listeners", "",
         "A comma separated list of Java classes that implement the org.apache.riven.MetaStoreEventListener" +

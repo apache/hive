@@ -210,7 +210,7 @@ public class SharedCache {
       }
     }
 
-    boolean cachePartitions(List<Partition> parts, SharedCache sharedCache, boolean fromPrewarm) {
+    boolean cachePartitions(Iterable<Partition> parts, SharedCache sharedCache, boolean fromPrewarm) {
       try {
         tableLock.writeLock().lock();
         for (Partition part : parts) {
@@ -294,6 +294,9 @@ public class SharedCache {
         tableLock.writeLock().lock();
         PartitionWrapper wrapper =
             partitionCache.remove(CacheUtils.buildPartitionCacheKey(partVal));
+        if (wrapper == null) {
+          return null;
+        }
         isPartitionCacheDirty.set(true);
         part = CacheUtils.assemble(wrapper, sharedCache);
         if (wrapper.getSdHash() != null) {
@@ -1423,7 +1426,7 @@ public class SharedCache {
     }
   }
 
-  public void addPartitionsToCache(String catName, String dbName, String tblName, List<Partition> parts) {
+  public void addPartitionsToCache(String catName, String dbName, String tblName, Iterable<Partition> parts) {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));

@@ -9417,8 +9417,9 @@ inline std::ostream& operator<<(std::ostream& out, const CreationMetadata& obj)
 }
 
 typedef struct _NotificationEventRequest__isset {
-  _NotificationEventRequest__isset() : maxEvents(false) {}
+  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false) {}
   bool maxEvents :1;
+  bool eventTypeSkipList :1;
 } _NotificationEventRequest__isset;
 
 class NotificationEventRequest {
@@ -9432,12 +9433,15 @@ class NotificationEventRequest {
   virtual ~NotificationEventRequest() throw();
   int64_t lastEvent;
   int32_t maxEvents;
+  std::vector<std::string>  eventTypeSkipList;
 
   _NotificationEventRequest__isset __isset;
 
   void __set_lastEvent(const int64_t val);
 
   void __set_maxEvents(const int32_t val);
+
+  void __set_eventTypeSkipList(const std::vector<std::string> & val);
 
   bool operator == (const NotificationEventRequest & rhs) const
   {
@@ -9446,6 +9450,10 @@ class NotificationEventRequest {
     if (__isset.maxEvents != rhs.__isset.maxEvents)
       return false;
     else if (__isset.maxEvents && !(maxEvents == rhs.maxEvents))
+      return false;
+    if (__isset.eventTypeSkipList != rhs.__isset.eventTypeSkipList)
+      return false;
+    else if (__isset.eventTypeSkipList && !(eventTypeSkipList == rhs.eventTypeSkipList))
       return false;
     return true;
   }

@@ -54,6 +54,10 @@ public class EventHandlerFactory {
     register(MessageFactory.COMMIT_TXN_EVENT, CommitTxnHandler.class);
     register(MessageFactory.ABORT_TXN_EVENT, AbortTxnHandler.class);
     register(MessageFactory.ALLOC_WRITE_ID_EVENT, AllocWriteIdHandler.class);
+    register(MessageFactory.UPDATE_TBL_COL_STAT_EVENT, UpdateTableColStatHandler.class);
+    register(MessageFactory.DELETE_TBL_COL_STAT_EVENT, DeleteTableColStatHandler.class);
+    register(MessageFactory.UPDATE_PART_COL_STAT_EVENT, UpdatePartColStatHandler.class);
+    register(MessageFactory.DELETE_PART_COL_STAT_EVENT, DeletePartColStatHandler.class);
   }
 
   static void register(String event, Class<? extends EventHandler> handlerClazz) {

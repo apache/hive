@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -241,6 +242,30 @@ public class JSONMessageFactory extends MessageFactory {
     return new JSONAcidWriteMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), acidWriteEvent, files);
   }
 
+  public JSONUpdateTableColumnStatMessage buildUpdateTableColumnStatMessage(ColumnStatistics colStats,
+                                                                            Map<String, String> parameters,
+                                                                            String validWriteIds, long writeId) {
+    return new JSONUpdateTableColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), colStats, parameters,
+            validWriteIds, writeId);
+  }
+
+  public JSONDeleteTableColumnStatMessage buildDeleteTableColumnStatMessage(String dbName, String colName) {
+    return new JSONDeleteTableColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), dbName, colName);
+  }
+
+  public JSONUpdatePartitionColumnStatMessage buildUpdatePartitionColumnStatMessage(ColumnStatistics colStats,
+                                                                  List<String> partVals, Map<String, String> parameters,
+                                                                  String validWriteIds, long writeId) {
+    return new JSONUpdatePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), colStats, partVals,
+            parameters, validWriteIds, writeId);
+  }
+
+  public JSONDeletePartitionColumnStatMessage buildDeletePartitionColumnStatMessage(String dbName, String colName,
+                                                                          String partName, List<String> partValues) {
+    return new JSONDeletePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), dbName,
+            colName, partName, partValues);
+  }
+
   private long now() {
     return System.currentTimeMillis() / 1000;
   }
@@ -397,5 +422,10 @@ public class JSONMessageFactory extends MessageFactory {
       }
     };
     return getTObjs(Iterables.transform(jsonArrayIterator, textExtractor), objClass);
+  }
+
+  public static String createTableColumnStatJson(ColumnStatistics tableColumnStat) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(tableColumnStat, "UTF-8");
   }
 }

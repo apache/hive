@@ -41,6 +41,8 @@ COLLECTION_TYPES = set([
     11,
 ])
 TYPE_NAMES = {
+    21 : "INTERVAL_DAY_TIME",
+    22 : "TIMESTAMP WITH LOCAL TIME ZONE",
     0 : "BOOLEAN",
     1 : "TINYINT",
     2 : "SMALLINT",
@@ -61,8 +63,6 @@ TYPE_NAMES = {
     18 : "VARCHAR",
     19 : "CHAR",
     20 : "INTERVAL_YEAR_MONTH",
-    21 : "INTERVAL_DAY_TIME",
-    22 : "TIMESTAMP WITH LOCAL TIME ZONE",
 }
 CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength"
 PRECISION = "precision"

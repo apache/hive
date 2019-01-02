@@ -39,6 +39,8 @@ TCLIServiceConstants::TCLIServiceConstants() {
   COLLECTION_TYPES.insert((TTypeId::type)10);
   COLLECTION_TYPES.insert((TTypeId::type)11);
 
+  TYPE_NAMES.insert(std::make_pair((TTypeId::type)21, "INTERVAL_DAY_TIME"));
+  TYPE_NAMES.insert(std::make_pair((TTypeId::type)22, "TIMESTAMP WITH LOCAL TIME ZONE"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)0, "BOOLEAN"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)1, "TINYINT"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)2, "SMALLINT"));
@@ -59,8 +61,6 @@ TCLIServiceConstants::TCLIServiceConstants() {
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)18, "VARCHAR"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)19, "CHAR"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)20, "INTERVAL_YEAR_MONTH"));
-  TYPE_NAMES.insert(std::make_pair((TTypeId::type)21, "INTERVAL_DAY_TIME"));
-  TYPE_NAMES.insert(std::make_pair((TTypeId::type)22, "TIMESTAMP WITH LOCAL TIME ZONE"));
 
   CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";
 

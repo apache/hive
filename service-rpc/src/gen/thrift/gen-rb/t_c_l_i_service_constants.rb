@@ -42,6 +42,8 @@ COLLECTION_TYPES = Set.new([
 ])
 
 TYPE_NAMES = {
+    21 => %q"INTERVAL_DAY_TIME",
+    22 => %q"TIMESTAMP WITH LOCAL TIME ZONE",
     0 => %q"BOOLEAN",
     1 => %q"TINYINT",
     2 => %q"SMALLINT",
@@ -62,8 +64,6 @@ TYPE_NAMES = {
     18 => %q"VARCHAR",
     19 => %q"CHAR",
     20 => %q"INTERVAL_YEAR_MONTH",
-    21 => %q"INTERVAL_DAY_TIME",
-    22 => %q"TIMESTAMP WITH LOCAL TIME ZONE",
 }
 
 CHARACTER_MAXIMUM_LENGTH = %q"characterMaximumLength"

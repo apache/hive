@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract Factory for the construction of HCatalog message instances.
@@ -76,6 +78,10 @@ public abstract class MessageFactory {
   public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
   public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
   public static final String ACID_WRITE_EVENT = "ACID_WRITE_EVENT";
+  public static final String UPDATE_TBL_COL_STAT_EVENT = "UPDATE_TBL_COL_STAT_EVENT";
+  public static final String DELETE_TBL_COL_STAT_EVENT = "DELETE_TBL_COL_STAT_EVENT";
+  public static final String UPDATE_PART_COL_STAT_EVENT = "UPDATE_PART_COL_STAT_EVENT";
+  public static final String DELETE_PART_COL_STAT_EVENT = "DELETE_PART_COL_STAT_EVENT";
 
   private static MessageFactory instance = null;
 
@@ -341,4 +347,32 @@ public abstract class MessageFactory {
    * @return instance of AcidWriteMessage
    */
   public abstract AcidWriteMessage buildAcidWriteMessage(AcidWriteEvent acidWriteEvent, Iterator<String> files);
+
+  /**
+   * Factory method for building UpdateTableColumnStat message
+   *
+   */
+  public abstract UpdateTableColumnStatMessage buildUpdateTableColumnStatMessage(ColumnStatistics colStats,
+                                                                                   Map<String, String> parameters,
+                                                                                   String validWriteIds, long writeId);
+  /**
+   * Factory method for building DeleteTableColumnStat message
+   *
+   */
+  public abstract DeleteTableColumnStatMessage buildDeleteTableColumnStatMessage(String dbName, String colName);
+
+  /**
+   * Factory method for building UpdatePartitionColumnStat message
+   *
+   */
+  public abstract UpdatePartitionColumnStatMessage buildUpdatePartitionColumnStatMessage(ColumnStatistics colStats,
+                                                                 List<String> partVals, Map<String, String> parameters,
+                                                                 String validWriteIds, long writeId);
+
+  /**
+   * Factory method for building DeletePartitionColumnStat message
+   *
+   */
+  public abstract DeletePartitionColumnStatMessage buildDeletePartitionColumnStatMessage(String dbName,
+                                                             String colName, String partName, List<String> partValues);
 }
