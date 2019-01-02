@@ -80,6 +80,7 @@ public class FSTableEvent implements TableEvent {
   public ImportTableDesc tableDesc(String dbName) throws SemanticException {
     try {
       Table table = new Table(metadata.getTable());
+      boolean externalTableOnSource = TableType.EXTERNAL_TABLE.equals(table.getTableType());
       // The table can be non acid in case of replication from 2.6 cluster.
       if (!AcidUtils.isTransactionalTable(table)
               && hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES)
@@ -98,10 +99,13 @@ public class FSTableEvent implements TableEvent {
           replicationSpec().setMigratingToTxnTable();
         }
         if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-          //since we have converted to an external table now after applying the migration rules the
+          // since we have converted to an external table now after applying the migration rules the
           // table location has to be set to null so that the location on the target is picked up
           // based on default configuration
           table.setDataLocation(null);
+          if(!externalTableOnSource) {
+            replicationSpec().setMigratingToExternalTable();
+          }
         }
       }
       ImportTableDesc tableDesc

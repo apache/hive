@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -68,7 +69,6 @@ import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.thrift.TException;
-import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -287,6 +287,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
         if (TableType.valueOf(tblObj.getTableType()) == TableType.EXTERNAL_TABLE) {
+          replicationSpec.setMigratingToExternalTable();
           tblDesc.setExternal(true);
           // we should set this to null so default location for external tables is chosen on target
           tblDesc.setLocation(null);
@@ -323,7 +324,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       tblDesc.setTableName(parsedTableName);
     }
 
-    List<AddPartitionDesc> partitionDescs = new ArrayList<AddPartitionDesc>();
+    List<AddPartitionDesc> partitionDescs = new ArrayList<>();
     Iterable<Partition> partitions = rv.getPartitions();
     for (Partition partition : partitions) {
       // TODO: this should ideally not create AddPartitionDesc per partition
@@ -427,25 +428,21 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     partDesc.setBucketCols(partition.getSd().getBucketCols());
     partDesc.setSortCols(partition.getSd().getSortCols());
     if (replicationSpec.isInReplicationScope() && tblDesc.isExternal()) {
-      if (replicationSpec.isInReplicationScope()) {
-        String newLocation = ReplExternalTables
-            .externalTableLocation(conf, partition.getSd().getLocation());
-        LOG.debug("partition {} has data location: {}", partition, newLocation);
-        partDesc.setLocation(newLocation);
-      }
-      return partsDesc;
+      String newLocation = ReplExternalTables
+          .externalTableLocation(conf, partition.getSd().getLocation());
+      LOG.debug("partition {} has data location: {}", partition, newLocation);
+      partDesc.setLocation(newLocation);
     } else {
       partDesc.setLocation(new Path(fromPath,
           Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
-      return partsDesc;
     }
+    return partsDesc;
   }
 
   private static ImportTableDesc getBaseCreateTableDescFromTable(String dbName,
       org.apache.hadoop.hive.metastore.api.Table tblObj) throws Exception {
     Table table = new Table(tblObj);
-    ImportTableDesc tblDesc = new ImportTableDesc(dbName, table);
-    return tblDesc;
+    return new ImportTableDesc(dbName, table);
   }
 
   private static Task<?> loadTable(URI fromURI, Table table, boolean replace, Path tgtPath,
@@ -711,6 +708,17 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         we don't do anything since for external table partitions the path is already set correctly
         in {@link org.apache.hadoop.hive.ql.parse.repl.load.message.TableHandler}
        */
+      if (replicationSpec.isMigratingToExternalTable()) {
+        // at this point the table.getDataLocation() should be set already for external tables
+        // using the correct values of default warehouse external table location on target.
+        partSpec.setLocation(new Path(tblDesc.getLocation(),
+            Warehouse.makePartPath(partSpec.getPartSpec())).toString());
+        LOG.debug("partition spec {} has location set to {} for a table migrating to external table"
+                + " from managed table",
+            StringUtils.join(partSpec.getPartSpec().entrySet(), ","),
+            partSpec.getLocation()
+        );
+      }
       return;
     }
     Path tgtPath;

@@ -99,7 +99,6 @@ public class IncrementalLoadTasksBuilder {
     this.log = log;
     numIteration++;
     this.log.debug("Iteration num " + numIteration);
-    //    TaskTracker tracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
 
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();
@@ -174,9 +173,6 @@ public class IncrementalLoadTasksBuilder {
       this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
               taskChainTail.getClass(), taskChainTail.getId(),
               barrierTask.getClass(), barrierTask.getId());
-      // This is making it dependent on the fact that incremental load as to happen before hdfs sync
-      // for external tables and only when everything w.r.t to incremental is done should
-      // hdfs replication start
       if (loadWork.getPathsToCopyIterator().hasNext()) {
         taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
       }

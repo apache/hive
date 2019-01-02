@@ -321,13 +321,16 @@ public class LoadPartitions {
 
   private Path locationOnReplicaWarehouse(Table table, AddPartitionDesc.OnePartitionDesc partSpec)
       throws MetaException, HiveException {
+    String child = Warehouse.makePartPath(partSpec.getPartSpec());
     if (tableDesc.isExternal()) {
+      if (event.replicationSpec().isMigratingToExternalTable()) {
+        return new Path(tableDesc.getLocation(), child);
+      }
       String externalLocation =
           ReplExternalTables.externalTableLocation(context.hiveConf, partSpec.getLocation());
       return new Path(externalLocation);
     }
 
-    String child = Warehouse.makePartPath(partSpec.getPartSpec());
     if (tableDesc.getLocation() == null) {
       if (table.getDataLocation() == null) {
         Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());

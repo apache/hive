@@ -150,6 +150,7 @@ public class ReplExternalTables {
             LOG.warn("failed to write data with maxRetries {} due to", currentRetry, e);
           } else {
             LOG.error("failed to write data with maxRetries {} due to", currentRetry, e);
+            throw new RuntimeException("failed to write data", e);
           }
           Thread.sleep(100 * currentRetry * currentRetry);
           writer = openWriterAppendMode();
@@ -243,10 +244,10 @@ public class ReplExternalTables {
           }
           return locationsToCopy;
         } catch (IOException e) {
-          if ((currentRetry + 1) < MAX_RETRIES) {
+          currentRetry++;
+          if (currentRetry < MAX_RETRIES) {
             closeQuietly(reader);
             LOG.warn("failed to read {}", externalTableInfo.toString(), e);
-            currentRetry++;
           } else {
             LOG.error("failed to read {}", externalTableInfo.toString(), e);
             throw e;
