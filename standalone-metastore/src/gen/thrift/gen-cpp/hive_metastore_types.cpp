@@ -4456,6 +4456,11 @@ void Catalog::__set_locationUri(const std::string& val) {
   this->locationUri = val;
 }
 
+void Catalog::__set_createTime(const int32_t val) {
+  this->createTime = val;
+__isset.createTime = true;
+}
+
 uint32_t Catalog::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -4501,6 +4506,14 @@ uint32_t Catalog::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->createTime);
+          this->__isset.createTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -4531,6 +4544,11 @@ uint32_t Catalog::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeString(this->locationUri);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.createTime) {
+    xfer += oprot->writeFieldBegin("createTime", ::apache::thrift::protocol::T_I32, 4);
+    xfer += oprot->writeI32(this->createTime);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -4541,6 +4559,7 @@ void swap(Catalog &a, Catalog &b) {
   swap(a.name, b.name);
   swap(a.description, b.description);
   swap(a.locationUri, b.locationUri);
+  swap(a.createTime, b.createTime);
   swap(a.__isset, b.__isset);
 }
 
@@ -4548,12 +4567,14 @@ Catalog::Catalog(const Catalog& other130) {
   name = other130.name;
   description = other130.description;
   locationUri = other130.locationUri;
+  createTime = other130.createTime;
   __isset = other130.__isset;
 }
 Catalog& Catalog::operator=(const Catalog& other131) {
   name = other131.name;
   description = other131.description;
   locationUri = other131.locationUri;
+  createTime = other131.createTime;
   __isset = other131.__isset;
   return *this;
 }
@@ -4563,6 +4584,7 @@ void Catalog::printTo(std::ostream& out) const {
   out << "name=" << to_string(name);
   out << ", " << "description="; (__isset.description ? (out << to_string(description)) : (out << "<null>"));
   out << ", " << "locationUri=" << to_string(locationUri);
+  out << ", " << "createTime="; (__isset.createTime ? (out << to_string(createTime)) : (out << "<null>"));
   out << ")";
 }
 
@@ -5163,6 +5185,11 @@ void Database::__set_catalogName(const std::string& val) {
 __isset.catalogName = true;
 }
 
+void Database::__set_createTime(const int32_t val) {
+  this->createTime = val;
+__isset.createTime = true;
+}
+
 uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -5265,6 +5292,14 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->createTime);
+          this->__isset.createTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -5327,6 +5362,11 @@ uint32_t Database::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeString(this->catalogName);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.createTime) {
+    xfer += oprot->writeFieldBegin("createTime", ::apache::thrift::protocol::T_I32, 9);
+    xfer += oprot->writeI32(this->createTime);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5342,6 +5382,7 @@ void swap(Database &a, Database &b) {
   swap(a.ownerName, b.ownerName);
   swap(a.ownerType, b.ownerType);
   swap(a.catalogName, b.catalogName);
+  swap(a.createTime, b.createTime);
   swap(a.__isset, b.__isset);
 }
 
@@ -5354,6 +5395,7 @@ Database::Database(const Database& other159) {
   ownerName = other159.ownerName;
   ownerType = other159.ownerType;
   catalogName = other159.catalogName;
+  createTime = other159.createTime;
   __isset = other159.__isset;
 }
 Database& Database::operator=(const Database& other160) {
@@ -5365,6 +5407,7 @@ Database& Database::operator=(const Database& other160) {
   ownerName = other160.ownerName;
   ownerType = other160.ownerType;
   catalogName = other160.catalogName;
+  createTime = other160.createTime;
   __isset = other160.__isset;
   return *this;
 }
@@ -5379,6 +5422,7 @@ void Database::printTo(std::ostream& out) const {
   out << ", " << "ownerName="; (__isset.ownerName ? (out << to_string(ownerName)) : (out << "<null>"));
   out << ", " << "ownerType="; (__isset.ownerType ? (out << to_string(ownerType)) : (out << "<null>"));
   out << ", " << "catalogName="; (__isset.catalogName ? (out << to_string(catalogName)) : (out << "<null>"));
+  out << ", " << "createTime="; (__isset.createTime ? (out << to_string(createTime)) : (out << "<null>"));
   out << ")";
 }
 

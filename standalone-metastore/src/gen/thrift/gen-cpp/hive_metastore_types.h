@@ -2353,10 +2353,11 @@ inline std::ostream& operator<<(std::ostream& out, const GrantRevokeRoleResponse
 }
 
 typedef struct _Catalog__isset {
-  _Catalog__isset() : name(false), description(false), locationUri(false) {}
+  _Catalog__isset() : name(false), description(false), locationUri(false), createTime(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
+  bool createTime :1;
 } _Catalog__isset;
 
 class Catalog {
@@ -2364,13 +2365,14 @@ class Catalog {
 
   Catalog(const Catalog&);
   Catalog& operator=(const Catalog&);
-  Catalog() : name(), description(), locationUri() {
+  Catalog() : name(), description(), locationUri(), createTime(0) {
   }
 
   virtual ~Catalog() throw();
   std::string name;
   std::string description;
   std::string locationUri;
+  int32_t createTime;
 
   _Catalog__isset __isset;
 
@@ -2379,6 +2381,8 @@ class Catalog {
   void __set_description(const std::string& val);
 
   void __set_locationUri(const std::string& val);
+
+  void __set_createTime(const int32_t val);
 
   bool operator == (const Catalog & rhs) const
   {
@@ -2389,6 +2393,10 @@ class Catalog {
     else if (__isset.description && !(description == rhs.description))
       return false;
     if (!(locationUri == rhs.locationUri))
+      return false;
+    if (__isset.createTime != rhs.__isset.createTime)
+      return false;
+    else if (__isset.createTime && !(createTime == rhs.createTime))
       return false;
     return true;
   }
@@ -2695,7 +2703,7 @@ inline std::ostream& operator<<(std::ostream& out, const DropCatalogRequest& obj
 }
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
@@ -2704,6 +2712,7 @@ typedef struct _Database__isset {
   bool ownerName :1;
   bool ownerType :1;
   bool catalogName :1;
+  bool createTime :1;
 } _Database__isset;
 
 class Database {
@@ -2711,7 +2720,7 @@ class Database {
 
   Database(const Database&);
   Database& operator=(const Database&);
-  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName() {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0) {
   }
 
   virtual ~Database() throw();
@@ -2723,6 +2732,7 @@ class Database {
   std::string ownerName;
   PrincipalType::type ownerType;
   std::string catalogName;
+  int32_t createTime;
 
   _Database__isset __isset;
 
@@ -2741,6 +2751,8 @@ class Database {
   void __set_ownerType(const PrincipalType::type val);
 
   void __set_catalogName(const std::string& val);
+
+  void __set_createTime(const int32_t val);
 
   bool operator == (const Database & rhs) const
   {
@@ -2767,6 +2779,10 @@ class Database {
     if (__isset.catalogName != rhs.__isset.catalogName)
       return false;
     else if (__isset.catalogName && !(catalogName == rhs.catalogName))
+      return false;
+    if (__isset.createTime != rhs.__isset.createTime)
+      return false;
+    else if (__isset.createTime && !(createTime == rhs.createTime))
       return false;
     return true;
   }

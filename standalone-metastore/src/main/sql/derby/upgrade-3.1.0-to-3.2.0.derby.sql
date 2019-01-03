@@ -15,5 +15,9 @@ CREATE TABLE TXN_WRITE_NOTIFICATION_LOG (
 );
 INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog', 1);
 
+-- HIVE-21077
+ALTER TABLE "APP"."DBS" ADD COLUMN CREATE_TIME INTEGER;
+ALTER TABLE "APP"."CTLGS" ADD COLUMN CREATE_TIME INTEGER;
+
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='3.2.0', VERSION_COMMENT='Hive release version 3.2.0' where VER_ID=1;
