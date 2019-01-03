@@ -175,31 +175,52 @@ public class TestReplicationWithTableMigration {
   }
 
   private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId) throws Throwable {
-    WarehouseInstance.Tuple tuple =  primary.run("use " + primaryDbName)
-            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
-            .run("insert into tacid values(1)")
-            .run("insert into tacid values(2)")
-            .run("insert into tacid values(3)")
-            .run("create table tacidpart (place string) partitioned by (country string) clustered by(place) " +
-                    "into 3 buckets stored as orc ")
-            .run("alter table tacidpart add partition(country='france')")
-            .run("insert into tacidpart partition(country='india') values('mumbai')")
-            .run("insert into tacidpart partition(country='us') values('sf')")
-            .run("insert into tacidpart partition(country='france') values('paris')")
-            .run("create table tflat (rank int) stored as orc tblproperties(\"transactional\"=\"false\")")
-            .run("insert into tflat values(11)")
-            .run("insert into tflat values(22)")
-            .run("create table tflattext (id int) ")
-            .run("insert into tflattext values(111), (222)")
-            .run("create table tflattextpart (id int) partitioned by (country string) ")
-            .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
-            .run("insert into tflattextpart partition(country='us') values(3333)")
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+        .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+        .run("insert into tacid values(1)")
+        .run("insert into tacid values(2)")
+        .run("insert into tacid values(3)")
         .run(
-            "create table avro_table partitioned by (country string) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' "
+            "create table tacidpart (place string) partitioned by (country string) clustered by(place) "
+                +
+                "into 3 buckets stored as orc ")
+        .run("alter table tacidpart add partition(country='france')")
+        .run("insert into tacidpart partition(country='india') values('mumbai')")
+        .run("insert into tacidpart partition(country='us') values('sf')")
+        .run("insert into tacidpart partition(country='france') values('paris')")
+        .run(
+            "create table tflat (rank int) stored as orc tblproperties(\"transactional\"=\"false\")")
+        .run("insert into tflat values(11)")
+        .run("insert into tflat values(22)")
+        .run("create table tflattext (id int) ")
+        .run("insert into tflattext values(111), (222)")
+        .run("create table tflattextpart (id int) partitioned by (country string) ")
+        .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
+        .run("insert into tflattextpart partition(country='us') values(3333)")
+        .run(
+            "create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' ")
+        .run("insert into tacidloc values(1)")
+        .run("insert into tacidloc values(2)")
+        .run("insert into tacidloc values(3)")
+        .run(
+            "create table tacidpartloc (place string) partitioned by (country string) clustered by(place) "
+                +
+                "into 3 buckets stored as orc ")
+        .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/part'")
+        .run("insert into tacidpartloc partition(country='india') values('mumbai')")
+        .run("insert into tacidpartloc partition(country='us') values('sf')")
+        .run("insert into tacidpartloc partition(country='france') values('paris')")
+        .run(
+            "create table avro_table ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' "
                 + "stored as avro tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri()
                 .toString() + "')")
-        .run("insert into avro_table partition (country='india') values ('str1', 10)")
-            .dump(primaryDbName, fromReplId);
+        .run("insert into avro_table values ('str1', 10)")
+        .run(
+            "create table avro_table_part partitioned by (country string) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' "
+                + "stored as avro tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri()
+                .toString() + "')")
+        .run("insert into avro_table_part partition (country='india') values ('another', 13)")
+        .dump(primaryDbName, fromReplId);
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacid")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpart")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflat")));
@@ -207,17 +228,24 @@ public class TestReplicationWithTableMigration {
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflattextpart")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidloc")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpartloc")));
-    Table avroTable = primary.getTable(primaryDbName, "avro_table");
-    assertFalse(isTransactionalTable(avroTable));
-    assertFalse(MetaStoreUtils.isExternalTable(avroTable));
+    assertAvroTableState(primaryDbName, "avro_table", "avro_table_part");
+    assertAvroTableState(primaryDbName,  "avro_table_part");
     return tuple;
+  }
+
+  private void assertAvroTableState(String primaryDbName, String... tableNames) throws Exception {
+    for (String tableName : tableNames) {
+      Table avroTable = primary.getTable(primaryDbName, tableName);
+      assertFalse(isTransactionalTable(avroTable));
+      assertFalse(MetaStoreUtils.isExternalTable(avroTable));
+    }
   }
 
   private void verifyLoadExecution(String replicatedDbName, String lastReplId) throws Throwable {
     replica.run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] {"tacid", "tacidpart", "tflat", "tflattext", "tflattextpart",
-                    "tacidloc", "tacidpartloc", "avro_table"})
+                "tacidloc", "tacidpartloc", "avro_table", "avro_table_part" })
             .run("repl status " + replicatedDbName)
             .verifyResult(lastReplId)
             .run("select id from tacid order by id")
@@ -235,7 +263,9 @@ public class TestReplicationWithTableMigration {
             .run("select country from tacidpartloc order by country")
             .verifyResults(new String[] {"france", "india", "us"})
             .run("select col1 from avro_table")
-            .verifyResults(new String[] {"str1"});
+            .verifyResults(new String[] { "str1" })
+            .run("select col1 from avro_table_part")
+            .verifyResults(new String[] { "another" });
 
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacid")));
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacidpart")));
@@ -246,31 +276,29 @@ public class TestReplicationWithTableMigration {
     assertTrue(isTransactionalTable(replica.getTable(replicatedDbName, "tflattextpart")));
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacidloc")));
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacidpartloc")));
+    assertTablePath(replicatedDbName, "avro_table");
+    assertPartitionPath(replicatedDbName, "avro_table_part");
+  }
 
-    /*Path databasePath = new Path(replica.warehouseRoot, replica.getDatabase(replicatedDbName).getLocationUri());
-    assertEquals(replica.getTable(replicatedDbName, "tacidloc").getSd().getLocation(),
-            new Path(databasePath,"tacidloc").toUri().toString());
-
-    Path tablePath = new Path(databasePath, "tacidpartloc");
-    List<Partition> partitions = replica.getAllPartitions(replicatedDbName, "tacidpartloc");
-    for (Partition part : partitions) {
-      tablePath.equals(new Path(part.getSd().getLocation()).getParent());
-    }*/
-
-    Table avroTable = replica.getTable(replicatedDbName, "avro_table");
-    assertTrue(MetaStoreUtils.isExternalTable(avroTable));
-    Path tablePath = new PathBuilder(replica.externalTableWarehouseRoot.toString())
-        .addDescendant(replicatedDbName + ".db").addDescendant("avro_table").build();
-    String expectedTablePath = tablePath.toUri().toString().toLowerCase();
-    String actualTablePath = avroTable.getSd().getLocation().toLowerCase();
-    assertEquals(expectedTablePath,actualTablePath);
-    List<Partition> partitions =
-        replica.getAllPartitions(replicatedDbName, avroTable.getTableName());
+  private void assertPartitionPath(String replicatedDbName, String tableName) throws Exception {
+    Path tablePath = assertTablePath(replicatedDbName, tableName);
+    List<Partition> partitions = replica.getAllPartitions(replicatedDbName, tableName);
     assertEquals(1, partitions.size());
     String actualPartitionPath = partitions.iterator().next().getSd().getLocation().toLowerCase();
     String expectedPartitionPath = new PathBuilder(tablePath.toString())
         .addDescendant("country=india").build().toUri().toString().toLowerCase();
     assertEquals(expectedPartitionPath, actualPartitionPath);
+  }
+
+  private Path assertTablePath(String replicatedDbName, String tableName) throws Exception {
+    Table avroTable = replica.getTable(replicatedDbName, tableName);
+    assertTrue(MetaStoreUtils.isExternalTable(avroTable));
+    Path tablePath = new PathBuilder(replica.externalTableWarehouseRoot.toString())
+        .addDescendant(replicatedDbName + ".db").addDescendant(tableName).build();
+    String expectedTablePath = tablePath.toUri().toString().toLowerCase();
+    String actualTablePath = avroTable.getSd().getLocation().toLowerCase();
+    assertEquals(expectedTablePath, actualTablePath);
+    return tablePath;
   }
 
   private void loadWithFailureInAddNotification(String tbl, String dumpLocation) throws Throwable {

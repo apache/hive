@@ -205,7 +205,13 @@ public class LoadPartitions {
             new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc),
             context.hiveConf
     );
-    if (event.replicationSpec().isMetadataOnly() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+
+    boolean isOnlyDDLOperation = event.replicationSpec().isMetadataOnly()
+        || (TableType.EXTERNAL_TABLE.equals(table.getTableType())
+        && !event.replicationSpec().isMigratingToExternalTable()
+    );
+
+    if (isOnlyDDLOperation) {
       if (ptnRootTask == null) {
         ptnRootTask = addPartTask;
       } else {

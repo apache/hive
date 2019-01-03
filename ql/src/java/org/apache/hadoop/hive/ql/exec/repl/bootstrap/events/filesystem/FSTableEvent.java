@@ -169,7 +169,7 @@ public class FSTableEvent implements TableEvent {
       partDesc.setSerdeParams(partition.getSd().getSerdeInfo().getParameters());
       partDesc.setBucketCols(partition.getSd().getBucketCols());
       partDesc.setSortCols(partition.getSd().getSortCols());
-      if (tblDesc.isExternal()) {
+      if (tblDesc.isExternal() && !replicationSpec().isMigratingToExternalTable()) {
         // we have to provide the source location so target location can be derived.
         partDesc.setLocation(partition.getSd().getLocation());
       } else {

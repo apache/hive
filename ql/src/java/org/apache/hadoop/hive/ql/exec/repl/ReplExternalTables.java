@@ -176,7 +176,6 @@ public class ReplExternalTables {
         writer.close();
       }
     }
-
   }
 
   public static class Reader {

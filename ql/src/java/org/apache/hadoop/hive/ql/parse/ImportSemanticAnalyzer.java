@@ -427,7 +427,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     partDesc.setSerdeParams(partition.getSd().getSerdeInfo().getParameters());
     partDesc.setBucketCols(partition.getSd().getBucketCols());
     partDesc.setSortCols(partition.getSd().getSortCols());
-    if (replicationSpec.isInReplicationScope() && tblDesc.isExternal()) {
+    if (replicationSpec.isInReplicationScope() && tblDesc.isExternal()
+        && !replicationSpec.isMigratingToExternalTable()) {
       String newLocation = ReplExternalTables
           .externalTableLocation(conf, partition.getSd().getLocation());
       LOG.debug("partition {} has data location: {}", partition, newLocation);
