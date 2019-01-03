@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -52,6 +53,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -220,7 +223,7 @@ public class Cleaner extends CompactorThread {
     return " id=" + ci.id;
   }
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
-          throws IOException, HiveException {
+          throws IOException, NoSuchObjectException {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath, conf, writeIdList);
     List<FileStatus> obsoleteDirs = dir.getObsolete();
@@ -253,11 +256,12 @@ public class Cleaner extends CompactorThread {
     }
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
-    Database db = Hive.get().getDatabase(ci.dbname);
+    Database db = rs.getDatabase(getDefaultCatalog(conf), ci.dbname);
+    Boolean isSourceOfRepl = ReplChangeManager.isSourceOfReplication(db);
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
-      if (ReplChangeManager.isSourceOfReplication(db)) {
+      if (isSourceOfRepl) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       }
       fs.delete(dead, true);

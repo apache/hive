@@ -1,18 +1,18 @@
-Warning: Map Join MAPJOIN[185][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[184][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[183][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[182][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[181][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[180][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[179][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[178][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[177][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[176][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[175][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[174][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[173][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[172][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[171][bigTable=?] in task 'Map 1' is a cross product
+Warning: Shuffle Join MERGEJOIN[171][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[172][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[173][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[174][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[175][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[176][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 7' is a cross product
+Warning: Shuffle Join MERGEJOIN[177][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[178][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8]] in Stage 'Reducer 9' is a cross product
+Warning: Shuffle Join MERGEJOIN[179][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9]] in Stage 'Reducer 10' is a cross product
+Warning: Shuffle Join MERGEJOIN[180][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10]] in Stage 'Reducer 11' is a cross product
+Warning: Shuffle Join MERGEJOIN[181][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[182][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12]] in Stage 'Reducer 13' is a cross product
+Warning: Shuffle Join MERGEJOIN[183][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13]] in Stage 'Reducer 14' is a cross product
+Warning: Shuffle Join MERGEJOIN[184][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13, $hdt$_14]] in Stage 'Reducer 15' is a cross product
+Warning: Shuffle Join MERGEJOIN[185][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13, $hdt$_14, $hdt$_15]] in Stage 'Reducer 16' is a cross product
 PREHOOK: query: explain cbo
 select case when (select count(*) 
                   from store_sales 

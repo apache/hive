@@ -16,37 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.cli;
+package org.apache.hadoop.hive.llap.cli.status;
 
 
-import com.google.common.annotations.VisibleForTesting;
-import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.cli.LlapStatusOptionsProcessor.LlapStatusOptions;
-import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers;
-import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.AppStatusBuilder;
-import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.LlapInstance;
-import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.State;
+import org.apache.hadoop.hive.llap.cli.LlapSliderUtils;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -57,12 +52,17 @@ import org.apache.hadoop.yarn.service.api.records.ServiceState;
 import org.apache.hadoop.yarn.service.client.ServiceClient;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
+import org.codehaus.jackson.annotate.JsonAutoDetect.Visibility;
+import org.codehaus.jackson.annotate.JsonMethod;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Checks the status of the Llap.
+ */
 public class LlapStatusServiceDriver {
   private static final Logger LOG = LoggerFactory.getLogger(LlapStatusServiceDriver.class);
   private static final Logger CONSOLE_LOGGER = LoggerFactory.getLogger("LlapStatusServiceDriverConsole");
@@ -79,33 +79,28 @@ public class LlapStatusServiceDriver {
 
   // The following two keys should ideally be used to control RM connect timeouts. However,
   // they don't seem to work. The IPC timeout needs to be set instead.
-  @InterfaceAudience.Private
   private static final String CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS = CONF_PREFIX + "yarn.rm.connect.max-wait-ms";
-  private static final long CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS_DEFAULT = 10000l;
-  @InterfaceAudience.Private
+  private static final long CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS_DEFAULT = 10000L;
   private static final String CONFIG_YARN_RM_RETRY_INTERVAL_MS = CONF_PREFIX + "yarn.rm.connect.retry-interval.ms";
-  private static final long CONFIG_YARN_RM_RETRY_INTERVAL_MS_DEFAULT = 5000l;
+  private static final long CONFIG_YARN_RM_RETRY_INTERVAL_MS_DEFAULT = 5000L;
 
   // As of Hadoop 2.7 - this is what controls the RM timeout.
-  @InterfaceAudience.Private
   private static final String CONFIG_IPC_CLIENT_CONNECT_MAX_RETRIES = CONF_PREFIX + "ipc.client.max-retries";
   private static final int CONFIG_IPC_CLIENT_CONNECT_MAX_RETRIES_DEFAULT = 2;
-  @InterfaceAudience.Private
   private static final String CONFIG_IPC_CLIENT_CONNECT_RETRY_INTERVAL_MS =
       CONF_PREFIX + "ipc.client.connect.retry-interval-ms";
-  private static final long CONFIG_IPC_CLIENT_CONNECT_RETRY_INTERVAL_MS_DEFAULT = 1500l;
+  private static final long CONFIG_IPC_CLIENT_CONNECT_RETRY_INTERVAL_MS_DEFAULT = 1500L;
 
   // As of Hadoop 2.8 - this timeout spec behaves in a strnage manner. "2000,1" means 2000s with 1 retry.
   // However it does this - but does it thrice. Essentially - #retries+2 is the number of times the entire config
   // is retried. "2000,1" means 3 retries - each with 1 retry with a random 2000ms sleep.
-  @InterfaceAudience.Private
   private static final String CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC =
       CONF_PREFIX + "timeline.service.fs-store.retry.policy.spec";
   private static final String
       CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC_DEFAULT = "2000, 1";
 
   private static final String CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS = CONF_PREFIX + "zk-registry.timeout-ms";
-  private static final long CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS_DEFAULT = 20000l;
+  private static final long CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS_DEFAULT = 20000L;
 
   private static final long LOG_SUMMARY_INTERVAL = 15000L; // Log summary every ~15 seconds.
   private static final String LLAP_KEY = "llap";
@@ -118,6 +113,17 @@ public class LlapStatusServiceDriver {
   private LlapRegistryService llapRegistry = null;
 
   private AppStatusBuilder appStatusBuilder;
+
+  private static LlapStatusServiceDriver createServiceDriver() {
+    LlapStatusServiceDriver statusServiceDriver = null;
+    try {
+      statusServiceDriver = new LlapStatusServiceDriver();
+    } catch (Throwable t) {
+      logError(t);
+      System.exit(ExitCode.INTERNAL_ERROR.getCode());
+    }
+    return statusServiceDriver;
+  }
 
   public LlapStatusServiceDriver() {
     SessionState ss = SessionState.get();
@@ -136,8 +142,8 @@ public class LlapStatusServiceDriver {
     // Once we move to a Hadoop-2.8 dependency, the following paramteer can be used.
     // conf.set(YarnConfiguration.TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC);
     conf.set("yarn.timeline-service.entity-group-fs-store.retry-policy-spec",
-      conf.get(CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC,
-        CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC_DEFAULT));
+        conf.get(CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC,
+            CONFIG_TIMELINE_SERVICE_ENTITYGROUP_FS_STORE_RETRY_POLICY_SPEC_DEFAULT));
 
     conf.setLong(YarnConfiguration.RESOURCEMANAGER_CONNECT_MAX_WAIT_MS,
         conf.getLong(CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS, CONFIG_YARN_RM_TIMEOUT_MAX_WAIT_MS_DEFAULT));
@@ -155,35 +161,16 @@ public class LlapStatusServiceDriver {
     llapRegistryConf = new Configuration(conf);
   }
 
-  /**
-   * Parse command line options.
-   *
-   * @return command line options.
-   */
-  @VisibleForTesting
-  public LlapStatusOptions parseOptions(String[] args) throws LlapStatusCliException {
-
-    LlapStatusOptionsProcessor optionsProcessor = new LlapStatusOptionsProcessor();
-    LlapStatusOptions options;
-    try {
-      options = optionsProcessor.processOptions(args);
-      return options;
-    } catch (Exception e) {
-      LOG.info("Failed to parse arguments", e);
-      throw new LlapStatusCliException(ExitCode.INCORRECT_USAGE, "Incorrect usage");
-    }
-  }
-
-  public int run(LlapStatusOptions options, long watchTimeoutMs) {
+  public ExitCode run(LlapStatusServiceCommandLine cl, long watchTimeoutMs) {
     appStatusBuilder = new AppStatusBuilder();
     try {
       if (appName == null) {
         // user provided configs
-        for (Map.Entry<Object, Object> props : options.getConf().entrySet()) {
+        for (Map.Entry<Object, Object> props : cl.getHiveConf().entrySet()) {
           conf.set((String) props.getKey(), (String) props.getValue());
         }
 
-        appName = options.getName();
+        appName = cl.getName();
         if (StringUtils.isEmpty(appName)) {
           appName = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
           if (appName.startsWith("@") && appName.length() > 1) {
@@ -195,11 +182,9 @@ public class LlapStatusServiceDriver {
           }
         }
         if (StringUtils.isEmpty(appName)) {
-          String message =
-            "Invalid app name. This must be setup via config or passed in as a parameter." +
-              " This tool works with clusters deployed by YARN Service";
-          LOG.info(message);
-          return ExitCode.INCORRECT_USAGE.getInt();
+          LOG.error("Invalid app name. This must be setup via config or passed in as a parameter." +
+              " This tool works with clusters deployed by YARN Service");
+          return ExitCode.INCORRECT_USAGE;
         }
         LOG.debug("Using appName: {}", appName);
 
@@ -212,18 +197,18 @@ public class LlapStatusServiceDriver {
         }
       } catch (Exception e) {
         LlapStatusCliException le = new LlapStatusCliException(
-            LlapStatusServiceDriver.ExitCode.SERVICE_CLIENT_ERROR_CREATE_FAILED, "Failed to create service client", e);
+            ExitCode.SERVICE_CLIENT_ERROR_CREATE_FAILED, "Failed to create service client", e);
         logError(le);
-        return le.getExitCode().getInt();
+        return le.getExitCode();
       }
 
       // Get the App report from YARN
       ApplicationReport appReport;
       try {
-        appReport = LlapSliderUtils.getAppReport(appName, serviceClient, options.getFindAppTimeoutMs());
+        appReport = getAppReport(appName, serviceClient, cl.getFindAppTimeoutMs());
       } catch (LlapStatusCliException e) {
         logError(e);
-        return e.getExitCode().getInt();
+        return e.getExitCode();
       }
 
       // Process the report
@@ -232,13 +217,13 @@ public class LlapStatusServiceDriver {
         ret = processAppReport(appReport, appStatusBuilder);
       } catch (LlapStatusCliException e) {
         logError(e);
-        return e.getExitCode().getInt();
+        return e.getExitCode();
       }
 
       if (ret != ExitCode.SUCCESS) {
-        return ret.getInt();
+        return ret;
       } else if (NO_YARN_SERVICE_INFO_STATES.contains(appStatusBuilder.getState())) {
-        return ExitCode.SUCCESS.getInt();
+        return ExitCode.SUCCESS;
       } else {
         // Get information from YARN Service
         try {
@@ -246,25 +231,61 @@ public class LlapStatusServiceDriver {
         } catch (LlapStatusCliException e) {
           // In case of failure, send back whatever is constructed so far - which would be from the AppReport
           logError(e);
-          return e.getExitCode().getInt();
+          return e.getExitCode();
         }
       }
 
       if (ret != ExitCode.SUCCESS) {
-        return ret.getInt();
+        return ret;
       } else {
         try {
           ret = populateAppStatusFromLlapRegistry(appStatusBuilder, watchTimeoutMs);
         } catch (LlapStatusCliException e) {
           logError(e);
-          return e.getExitCode().getInt();
+          return e.getExitCode();
         }
       }
 
-      return ret.getInt();
+      return ret;
     } finally {
       LOG.debug("Final AppState: " + appStatusBuilder.toString());
     }
+  }
+
+  private ApplicationReport getAppReport(String appName, ServiceClient serviceClient, long timeoutMs)
+      throws LlapStatusCliException {
+    Clock clock = SystemClock.getInstance();
+    long startTime = clock.getTime();
+    long timeoutTime = timeoutMs < 0 ? Long.MAX_VALUE : (startTime + timeoutMs);
+    ApplicationReport appReport = null;
+    ApplicationId appId;
+    try {
+      appId = serviceClient.getAppId(appName);
+    } catch (YarnException | IOException e) {
+      return null;
+    }
+
+    while (appReport == null) {
+      try {
+        appReport = serviceClient.getYarnClient().getApplicationReport(appId);
+        if (timeoutMs == 0) {
+          // break immediately if timeout is 0
+          break;
+        }
+        // Otherwise sleep, and try again.
+        if (appReport == null) {
+          long remainingTime = Math.min(timeoutTime - clock.getTime(), 500L);
+          if (remainingTime > 0) {
+            Thread.sleep(remainingTime);
+          } else {
+            break;
+          }
+        }
+      } catch (Exception e) { // No point separating IOException vs YarnException vs others
+        throw new LlapStatusCliException(ExitCode.YARN_ERROR, "Failed to get Yarn AppReport", e);
+      }
+    }
+    return appReport;
   }
 
   public void outputJson(PrintWriter writer) throws LlapStatusCliException {
@@ -272,6 +293,7 @@ public class LlapStatusServiceDriver {
     mapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
     mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
     mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_EMPTY);
+    mapper.setVisibility(JsonMethod.ALL, Visibility.NON_PRIVATE);
     try {
       writer.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(appStatusBuilder));
     } catch (IOException e) {
@@ -281,7 +303,7 @@ public class LlapStatusServiceDriver {
   }
 
   /**
-   * Populates parts of the AppStatus
+   * Populates parts of the AppStatus.
    *
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
@@ -298,33 +320,33 @@ public class LlapStatusServiceDriver {
 
     // TODO Maybe add the YARN URL for the app.
     appStatusBuilder.setAmInfo(
-        new LlapStatusHelpers.AmInfo().setAppName(appReport.getName()).setAppType(appReport.getApplicationType()));
+        new AmInfo().setAppName(appReport.getName()).setAppType(appReport.getApplicationType()));
     appStatusBuilder.setAppStartTime(appReport.getStartTime());
     switch (appReport.getYarnApplicationState()) {
-      case NEW:
-      case NEW_SAVING:
-      case SUBMITTED:
-        appStatusBuilder.setState(State.LAUNCHING);
-        return ExitCode.SUCCESS;
-      case ACCEPTED:
-        appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(applicationId);
-        appStatusBuilder.setState(State.LAUNCHING);
-        return ExitCode.SUCCESS;
-      case RUNNING:
-        appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(applicationId);
-        // If the app state is running, get additional information from YARN Service
-        return ExitCode.SUCCESS;
-      case FINISHED:
-      case FAILED:
-      case KILLED:
-        appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(applicationId);
-        appStatusBuilder.setAppFinishTime(appReport.getFinishTime());
-        appStatusBuilder.setState(State.COMPLETE);
-        // add log links and other diagnostics from YARN Service
-        return ExitCode.SUCCESS;
-      default:
-        throw new LlapStatusCliException(ExitCode.INTERNAL_ERROR,
-            "Unknown Yarn Application State: " + appReport.getYarnApplicationState());
+    case NEW:
+    case NEW_SAVING:
+    case SUBMITTED:
+      appStatusBuilder.setState(State.LAUNCHING);
+      return ExitCode.SUCCESS;
+    case ACCEPTED:
+      appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(applicationId);
+      appStatusBuilder.setState(State.LAUNCHING);
+      return ExitCode.SUCCESS;
+    case RUNNING:
+      appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(applicationId);
+      // If the app state is running, get additional information from YARN Service
+      return ExitCode.SUCCESS;
+    case FINISHED:
+    case FAILED:
+    case KILLED:
+      appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(applicationId);
+      appStatusBuilder.setAppFinishTime(appReport.getFinishTime());
+      appStatusBuilder.setState(State.COMPLETE);
+      // add log links and other diagnostics from YARN Service
+      return ExitCode.SUCCESS;
+    default:
+      throw new LlapStatusCliException(ExitCode.INTERNAL_ERROR,
+          "Unknown Yarn Application State: " + appReport.getYarnApplicationState());
     }
   }
 
@@ -358,7 +380,7 @@ public class LlapStatusServiceDriver {
       }
     } catch (IOException | YarnException e) {
       LlapStatusCliException le = new LlapStatusCliException(
-          LlapStatusServiceDriver.ExitCode.SERVICE_CLIENT_ERROR_OTHER, "Failed to get service status", e);
+          ExitCode.SERVICE_CLIENT_ERROR_OTHER, "Failed to get service status", e);
       logError(le);
       exitCode = le.getExitCode();
     }
@@ -403,10 +425,9 @@ public class LlapStatusServiceDriver {
 
       for (LlapServiceInstance serviceInstance : serviceInstances) {
         String containerIdString = serviceInstance.getProperties().get(
-          HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+            HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
 
-        LlapInstance llapInstance = appStatusBuilder.removeAndGetRunningLlapInstanceForContainer(
-          containerIdString);
+        LlapInstance llapInstance = appStatusBuilder.removeAndGetRunningLlapInstanceForContainer(containerIdString);
         if (llapInstance != null) {
           llapInstance.setMgmtPort(serviceInstance.getManagementPort());
           llapInstance.setRpcPort(serviceInstance.getRpcPort());
@@ -466,92 +487,30 @@ public class LlapStatusServiceDriver {
     }
   }
 
-  public enum ExitCode {
-    SUCCESS(0),
-    INCORRECT_USAGE(10),
-    YARN_ERROR(20),
-    SERVICE_CLIENT_ERROR_CREATE_FAILED(30),
-    SERVICE_CLIENT_ERROR_OTHER(31),
-    LLAP_REGISTRY_ERROR(40),
-    LLAP_JSON_GENERATION_ERROR(50),
-    // Error in the script itself - likely caused by an incompatible change, or new functionality / states added.
-    INTERNAL_ERROR(100);
-
-    private final int exitCode;
-
-    ExitCode(int exitCode) {
-      this.exitCode = exitCode;
-    }
-
-    public int getInt() {
-      return exitCode;
-    }
-  }
-
-  public static class LlapStatusCliException extends Exception {
-    final LlapStatusServiceDriver.ExitCode exitCode;
-
-    public LlapStatusCliException(LlapStatusServiceDriver.ExitCode exitCode, String message) {
-      super(exitCode.getInt() +": " + message);
-      this.exitCode = exitCode;
-    }
-
-    public LlapStatusCliException(LlapStatusServiceDriver.ExitCode exitCode, String message, Throwable cause) {
-      super(exitCode.getInt() +": " + message, cause);
-      this.exitCode = exitCode;
-    }
-
-    public LlapStatusServiceDriver.ExitCode getExitCode() {
-      return exitCode;
-    }
-  }
-
   public static void main(String[] args) {
-    LOG.info("LLAP status invoked with arguments = {}", Arrays.toString(args));
-    int ret = ExitCode.SUCCESS.getInt();
+    LlapStatusServiceCommandLine cl = LlapStatusServiceCommandLine.parseArguments(args);
+    LlapStatusServiceDriver statusServiceDriver = createServiceDriver();
+
+    ExitCode ret = ExitCode.SUCCESS;
     Clock clock = SystemClock.getInstance();
     long lastSummaryLogTime = -1;
 
-    LlapStatusServiceDriver statusServiceDriver = null;
-    LlapStatusOptions options = null;
-    try {
-      statusServiceDriver = new LlapStatusServiceDriver();
-      options = statusServiceDriver.parseOptions(args);
-    } catch (Throwable t) {
-      statusServiceDriver.close();
-      logError(t);
-      if (t instanceof LlapStatusCliException) {
-        LlapStatusCliException ce = (LlapStatusCliException) t;
-        ret = ce.getExitCode().getInt();
-      } else {
-        ret = ExitCode.INTERNAL_ERROR.getInt();
-      }
-    }
-    if (ret != 0 || options == null) { // Failure / help
-      if (statusServiceDriver != null) {
-        statusServiceDriver.close();
-      }
-      System.exit(ret);
-    }
-
     boolean firstAttempt = true;
-    final long refreshInterval = options.getRefreshIntervalMs();
-    final boolean watchMode = options.isWatchMode();
-    final long watchTimeout = options.getWatchTimeoutMs();
+    final long refreshInterval = cl.getRefreshIntervalMs();
+    final boolean watchMode = cl.isWatchMode();
+    final long watchTimeout = cl.getWatchTimeoutMs();
     long numAttempts = watchTimeout / refreshInterval;
     numAttempts = watchMode ? numAttempts : 1; // Break out of the loop fast if watchMode is disabled.
-    LlapStatusHelpers.State launchingState = null;
-    LlapStatusHelpers.State currentState = null;
+    State launchingState = null;
+    State currentState = null;
     boolean desiredStateAttained = false;
-    final float runningNodesThreshold = options.getRunningNodesThreshold();
-    try (OutputStream os = options.getOutputFile() == null ? System.out :
-      new BufferedOutputStream(new FileOutputStream(options.getOutputFile()));
-         PrintWriter pw = new PrintWriter(os)) {
+    final float runningNodesThreshold = cl.getRunningNodesThreshold();
+    try (OutputStream os = cl.getOutputFile() == null ? System.out : new FileOutputStream(cl.getOutputFile());
+         Writer w = new OutputStreamWriter(os, Charset.defaultCharset());
+         PrintWriter pw = new PrintWriter(w)) {
 
       LOG.info("Configured refresh interval: {}s. Watch timeout: {}s. Attempts remaining: {}." +
-          " Watch mode: {}. Running nodes threshold: {}.",
-          TimeUnit.SECONDS.convert(refreshInterval, TimeUnit.MILLISECONDS),
-          TimeUnit.SECONDS.convert(watchTimeout, TimeUnit.MILLISECONDS),
+          " Watch mode: {}. Running nodes threshold: {}.", refreshInterval/1000, watchTimeout/1000,
           numAttempts, watchMode, new DecimalFormat("#.###").format(runningNodesThreshold));
       while (numAttempts > 0) {
         if (!firstAttempt) {
@@ -568,7 +527,7 @@ public class LlapStatusServiceDriver {
         } else {
           firstAttempt = false;
         }
-        ret = statusServiceDriver.run(options, watchMode ? watchTimeout : 0);
+        ret = statusServiceDriver.run(cl, watchMode ? watchTimeout : 0);
         currentState = statusServiceDriver.appStatusBuilder.getState();
         try {
           lastSummaryLogTime = LlapStatusServiceDriver.maybeLogSummary(clock, lastSummaryLogTime,
@@ -577,7 +536,7 @@ public class LlapStatusServiceDriver {
           LOG.warn("Failed to log summary", e);
         }
 
-        if (ret == ExitCode.SUCCESS.getInt()) {
+        if (ret == ExitCode.SUCCESS) {
           if (watchMode) {
 
             // YARN Service has started llap application, now if for some reason
@@ -587,7 +546,7 @@ public class LlapStatusServiceDriver {
             }
 
             if (currentState.equals(State.COMPLETE)) {
-              if (launchingState != null || options.isLaunched()) {
+              if (launchingState != null || cl.isLaunched()) {
                 LOG.warn("COMPLETE state reached while waiting for RUNNING state. Failing.");
                 System.err.println("Final diagnostics: " + statusServiceDriver.appStatusBuilder.getDiagnostics());
                 break;
@@ -634,19 +593,19 @@ public class LlapStatusServiceDriver {
               continue;
             }
           }
-        } else if (ret == ExitCode.YARN_ERROR.getInt() && watchMode) {
+        } else if (ret == ExitCode.YARN_ERROR && watchMode) {
           LOG.warn("Watch mode enabled and got YARN error. Retrying..");
           numAttempts--;
           continue;
-        } else if (ret == ExitCode.SERVICE_CLIENT_ERROR_CREATE_FAILED.getInt() && watchMode) {
+        } else if (ret == ExitCode.SERVICE_CLIENT_ERROR_CREATE_FAILED && watchMode) {
           LOG.warn("Watch mode enabled and YARN Service client creation failed. Retrying..");
           numAttempts--;
           continue;
-        } else if (ret == ExitCode.SERVICE_CLIENT_ERROR_OTHER.getInt() && watchMode) {
+        } else if (ret == ExitCode.SERVICE_CLIENT_ERROR_OTHER && watchMode) {
           LOG.warn("Watch mode enabled and got YARN Service client error. Retrying..");
           numAttempts--;
           continue;
-        } else if (ret == ExitCode.LLAP_REGISTRY_ERROR.getInt() && watchMode) {
+        } else if (ret == ExitCode.LLAP_REGISTRY_ERROR && watchMode) {
           LOG.warn("Watch mode enabled and got LLAP registry error. Retrying..");
           numAttempts--;
           continue;
@@ -654,27 +613,25 @@ public class LlapStatusServiceDriver {
         break;
       }
       // Log final state to CONSOLE_LOGGER
-      LlapStatusServiceDriver.maybeLogSummary(clock, 0L, statusServiceDriver, watchMode, watchTimeout, launchingState);
+      maybeLogSummary(clock, 0L, statusServiceDriver, watchMode, watchTimeout, launchingState);
       CONSOLE_LOGGER.info("\n\n\n");
-      // print current state before exiting
-      statusServiceDriver.outputJson(pw);
-      os.flush();
+
+      statusServiceDriver.outputJson(pw); // print current state before exiting
       pw.flush();
       if (numAttempts == 0 && watchMode && !desiredStateAttained) {
-        LOG.warn("Watch timeout {}s exhausted before desired state RUNNING is attained.",
-            TimeUnit.SECONDS.convert(watchTimeout, TimeUnit.MILLISECONDS));
+        LOG.warn("Watch timeout {}s exhausted before desired state RUNNING is attained.", watchTimeout/1000);
       }
     } catch (Throwable t) {
       logError(t);
       if (t instanceof LlapStatusCliException) {
         LlapStatusCliException ce = (LlapStatusCliException) t;
-        ret = ce.getExitCode().getInt();
+        ret = ce.getExitCode();
       } else {
-        ret = ExitCode.INTERNAL_ERROR.getInt();
+        ret = ExitCode.INTERNAL_ERROR;
       }
     } finally {
       LOG.info("LLAP status finished");
-      if (ret != ExitCode.SUCCESS.exitCode) {
+      if (ret != ExitCode.SUCCESS) {
         LOG.error("LLAP did not start. Check the application log for more info:\n" +
             "\tyarn logs --applicationId {} -out <path>", statusServiceDriver.applicationId);
       }
@@ -682,11 +639,17 @@ public class LlapStatusServiceDriver {
     }
     LOG.debug("Completed processing - exiting with " + ret);
 
-    System.exit(ret);
+    // HACK: due to the System.exit some log messages may not be present.
+    try {
+      Thread.sleep(1000);
+    } catch (Exception e) {
+      // ignore
+    }
+    System.exit(ret.getCode());
   }
 
   private static long maybeLogSummary(Clock clock, long lastSummaryLogTime, LlapStatusServiceDriver statusServiceDriver,
-                                      boolean watchMode, long watchTimeout, LlapStatusHelpers.State launchingState) {
+                                      boolean watchMode, long watchTimeout, State launchingState) {
     long currentTime = clock.getTime();
     if (lastSummaryLogTime < currentTime - LOG_SUMMARY_INTERVAL) {
       String diagString = null;
@@ -701,8 +664,7 @@ public class LlapStatusServiceDriver {
 
       if (lastSummaryLogTime == -1) {
         if (watchMode) {
-          CONSOLE_LOGGER.info("\nLLAPSTATUS WatchMode with timeout={} s",
-              TimeUnit.SECONDS.convert(watchTimeout, TimeUnit.MILLISECONDS));
+          CONSOLE_LOGGER.info("\nLLAPSTATUS WatchMode with timeout={} s", watchTimeout/1000);
         } else {
           CONSOLE_LOGGER.info("\nLLAPSTATUS");
         }
@@ -722,52 +684,54 @@ public class LlapStatusServiceDriver {
     StringBuilder sb = new StringBuilder();
 
     switch (appStatusBuilder.getState()) {
-      case APP_NOT_FOUND:
-        sb.append("LLAP status unknown. Awaiting app launch");
-        break;
-      case LAUNCHING:
-        // This is a catch all state - when containers have not started yet, or LLAP has not started yet.
-        if (StringUtils.isNotBlank(appStatusBuilder.getAmInfo().getAppId())) {
-          sb.append("LLAP Starting up with AppId=").append(appStatusBuilder.getAmInfo().getAppId()).append(".");
-          if (appStatusBuilder.getDesiredInstances() != null) {
-            sb.append(" Started 0/").append(appStatusBuilder.getDesiredInstances()).append(" instances");
-          }
-
-          String containerDiagnostics = constructCompletedContainerDiagnostics(
-              appStatusBuilder.getCompletedInstances());
-          if (StringUtils.isNotEmpty(containerDiagnostics)) {
-            sb.append("\n").append(containerDiagnostics);
-          }
-        } else {
-          sb.append("Awaiting LLAP startup");
+    case APP_NOT_FOUND:
+      sb.append("LLAP status unknown. Awaiting app launch");
+      break;
+    case LAUNCHING:
+      // This is a catch all state - when containers have not started yet, or LLAP has not started yet.
+      if (StringUtils.isNotBlank(appStatusBuilder.getAmInfo().getAppId())) {
+        sb.append("LLAP Starting up with AppId=").append(appStatusBuilder.getAmInfo().getAppId()).append(".");
+        if (appStatusBuilder.getDesiredInstances() != null) {
+          sb.append(" Started 0/").append(appStatusBuilder.getDesiredInstances()).append(" instances");
         }
-        break;
-      case RUNNING_PARTIAL:
-        sb.append("LLAP Starting up with ApplicationId=").append(appStatusBuilder.getAmInfo().getAppId());
-        sb.append(" Started").append(appStatusBuilder.getLiveInstances()).append("/")
-          .append(appStatusBuilder.getDesiredInstances()).append(" instances");
-        String containerDiagnostics = constructCompletedContainerDiagnostics(appStatusBuilder.getCompletedInstances());
+
+        String containerDiagnostics = constructCompletedContainerDiagnostics(
+            appStatusBuilder.getCompletedInstances());
         if (StringUtils.isNotEmpty(containerDiagnostics)) {
           sb.append("\n").append(containerDiagnostics);
         }
+      } else {
+        sb.append("Awaiting LLAP startup");
+      }
+      break;
+    case RUNNING_PARTIAL:
+      sb.append("LLAP Starting up with ApplicationId=").append(appStatusBuilder.getAmInfo().getAppId());
+      sb.append(" Started").append(appStatusBuilder.getLiveInstances()).append("/")
+        .append(appStatusBuilder.getDesiredInstances()).append(" instances");
+      String containerDiagnostics = constructCompletedContainerDiagnostics(appStatusBuilder.getCompletedInstances());
+      if (StringUtils.isNotEmpty(containerDiagnostics)) {
+        sb.append("\n").append(containerDiagnostics);
+      }
 
-        // TODO HIVE-15865: Include information about pending requests, and last
-        // allocation time once YARN Service provides this information.
-        break;
-      case RUNNING_ALL:
-        sb.append("LLAP Application running with ApplicationId=").append(appStatusBuilder.getAmInfo().getAppId());
-        break;
-      case COMPLETE:
-        sb.append("LLAP Application already complete. ApplicationId=").append(appStatusBuilder.getAmInfo().getAppId());
-        containerDiagnostics = constructCompletedContainerDiagnostics(appStatusBuilder.getCompletedInstances());
-        if (StringUtils.isNotEmpty(containerDiagnostics)) {
-          sb.append("\n").append(containerDiagnostics);
-        }
+      // TODO HIVE-15865: Include information about pending requests, and last
+      // allocation time once YARN Service provides this information.
+      break;
+    case RUNNING_ALL:
+      sb.append("LLAP Application running with ApplicationId=").append(appStatusBuilder.getAmInfo().getAppId());
+      break;
+    case COMPLETE:
+      sb.append("LLAP Application already complete. ApplicationId=").append(appStatusBuilder.getAmInfo().getAppId());
+      containerDiagnostics = constructCompletedContainerDiagnostics(appStatusBuilder.getCompletedInstances());
+      if (StringUtils.isNotEmpty(containerDiagnostics)) {
+        sb.append("\n").append(containerDiagnostics);
+      }
 
-        break;
-      case UNKNOWN:
-        sb.append("LLAP status unknown");
-        break;
+      break;
+    case UNKNOWN:
+      sb.append("LLAP status unknown");
+      break;
+    default:
+      throw new IllegalStateException("Unknown State: " + appStatusBuilder.getState());
     }
     if (StringUtils.isNotBlank(appStatusBuilder.getDiagnostics())) {
       sb.append("\n").append(appStatusBuilder.getDiagnostics());

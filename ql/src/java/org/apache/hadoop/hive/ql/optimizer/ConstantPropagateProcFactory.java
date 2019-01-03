@@ -63,7 +63,6 @@ import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
@@ -471,7 +470,7 @@ public final class ConstantPropagateProcFactory {
   private static boolean isConstantFoldableUdf(GenericUDF udf,  List<ExprNodeDesc> children) {
     // Runtime constants + deterministic functions can be folded.
     if (!FunctionRegistry.isConsistentWithinQuery(udf)) {
-      if (udf.getClass().equals(GenericUDFUnixTimeStamp.class) 
+      if (udf.getClass().equals(GenericUDFUnixTimeStamp.class)
           && children != null && children.size() > 0) {
         // unix_timestamp is polymorphic (ignore class annotations)
         return true;
@@ -640,8 +639,10 @@ public final class ConstantPropagateProcFactory {
             // if true, prune it
             positionsToRemove.set(i);
           } else {
-            // if false, return false
-            return childExpr;
+            if (Boolean.FALSE.equals(c.getValue())) {
+              // if false, return false
+              return childExpr;
+            }
           }
         } else if (childExpr instanceof ExprNodeGenericFuncDesc &&
                 ((ExprNodeGenericFuncDesc)childExpr).getGenericUDF() instanceof GenericUDFOPNotNull &&

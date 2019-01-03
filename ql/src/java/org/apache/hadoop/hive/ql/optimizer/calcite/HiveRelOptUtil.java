@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -31,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelReferentialConstraint;
@@ -44,6 +47,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.RelColumnOrigin;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -62,6 +66,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -536,22 +541,213 @@ public class HiveRelOptUtil extends RelOptUtil {
     return false;
   }
 
-  public static Pair<Boolean, List<RexNode>> isRewritablePKFKJoin(RelBuilder builder, Join join,
-        boolean leftInputPotentialFK, RelMetadataQuery mq) {
+  /**
+   * Returns a triple where first value represents whether we could extract a FK-PK join
+   * or not, the second value is a pair with the column from left and right input that
+   * are used for the FK-PK join, and the third value are the predicates that are not
+   * part of the FK-PK condition. Currently we can only extract one FK-PK join.
+   */
+  public static PKFKJoinInfo extractPKFKJoin(
+      Join join, List<RexNode> joinFilters, boolean leftInputPotentialFK, RelMetadataQuery mq) {
+    final List<RexNode> residualPreds = new ArrayList<>();
     final JoinRelType joinType = join.getJoinType();
-    final RexNode cond = join.getCondition();
     final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
-    final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
-    final Pair<Boolean, List<RexNode>> nonRewritable = Pair.of(false, null);
+    final PKFKJoinInfo cannotExtract =
+        PKFKJoinInfo.of(false, null, null);
 
     if (joinType != JoinRelType.INNER) {
       // If it is not an inner, we transform it as the metadata
       // providers for expressions do not pull information through
       // outer join (as it would not be correct)
-      join = (Join) builder
-          .push(join.getLeft()).push(join.getRight())
-          .join(JoinRelType.INNER, cond)
-          .build();
+      join = join.copy(join.getTraitSet(), join.getCluster().getRexBuilder().makeLiteral(true),
+          join.getLeft(), join.getRight(), JoinRelType.INNER, false);
+    }
+
+    // 1) Gather all tables from the FK side and the table from the
+    // non-FK side
+    final Set<RelTableRef> leftTables = mq.getTableReferences(join.getLeft());
+    final Set<RelTableRef> rightTables =
+        Sets.difference(mq.getTableReferences(join), mq.getTableReferences(join.getLeft()));
+    final Set<RelTableRef> fkTables = join.getLeft() == fkInput ? leftTables : rightTables;
+    final Set<RelTableRef> nonFkTables = join.getLeft() == fkInput ? rightTables : leftTables;
+
+    // 2) Check whether there is a FK relationship
+    Set<RexCall> candidatePredicates = new HashSet<>();
+    EquivalenceClasses ec = new EquivalenceClasses();
+    for (RexNode conj : joinFilters) {
+      if (!conj.isA(SqlKind.EQUALS)) {
+        // Not an equality, continue
+        residualPreds.add(conj);
+        continue;
+      }
+      RexCall equiCond = (RexCall) conj;
+      RexNode eqOp1 = equiCond.getOperands().get(0);
+      if (!RexUtil.isReferenceOrAccess(eqOp1, true)) {
+        // Ignore
+        residualPreds.add(conj);
+        continue;
+      }
+      Set<RexNode> eqOp1ExprsLineage = mq.getExpressionLineage(join, eqOp1);
+      if (eqOp1ExprsLineage == null) {
+        // Cannot be mapped, continue
+        residualPreds.add(conj);
+        continue;
+      }
+      RexNode eqOp2 = equiCond.getOperands().get(1);
+      if (!RexUtil.isReferenceOrAccess(eqOp2, true)) {
+        // Ignore
+        residualPreds.add(conj);
+        continue;
+      }
+      Set<RexNode> eqOp2ExprsLineage = mq.getExpressionLineage(join, eqOp2);
+      if (eqOp2ExprsLineage == null) {
+        // Cannot be mapped, continue
+        residualPreds.add(conj);
+        continue;
+      }
+      List<RexTableInputRef> eqOp2ExprsFiltered = null;
+      for (RexNode eqOpExprLineage1 : eqOp1ExprsLineage) {
+        RexTableInputRef inputRef1 = extractTableInputRef(eqOpExprLineage1);
+        if (inputRef1 == null) {
+          // This condition could not be map into an input reference
+          continue;
+        }
+        if (eqOp2ExprsFiltered == null) {
+          // First iteration
+          eqOp2ExprsFiltered = new ArrayList<>();
+          for (RexNode eqOpExprLineage2 : eqOp2ExprsLineage) {
+            RexTableInputRef inputRef2 = extractTableInputRef(eqOpExprLineage2);
+            if (inputRef2 == null) {
+              // Bail out as this condition could not be map into an input reference
+              continue;
+            }
+            // Add to list of expressions for follow-up iterations
+            eqOp2ExprsFiltered.add(inputRef2);
+            // Add to equivalence classes and backwards mapping
+            ec.addEquivalence(inputRef1, inputRef2, equiCond);
+            candidatePredicates.add(equiCond);
+          }
+        } else {
+          // Rest of iterations, only adding, no checking
+          for (RexTableInputRef inputRef2 : eqOp2ExprsFiltered) {
+            ec.addEquivalence(inputRef1, inputRef2, equiCond);
+          }
+        }
+      }
+      if (!candidatePredicates.contains(conj)) {
+        // We add it to residual already
+        residualPreds.add(conj);
+      }
+    }
+    if (ec.getEquivalenceClassesMap().isEmpty()) {
+      // This may be a cartesian product, we bail out
+      return cannotExtract;
+    }
+
+    // 4) For each table, check whether there is a matching on the non-FK side.
+    // If there is and it is the only condition, we are ready to transform
+    for (final RelTableRef nonFkTable : nonFkTables) {
+      final List<String> nonFkTableQName = nonFkTable.getQualifiedName();
+      for (RelTableRef tRef : fkTables) {
+        List<RelReferentialConstraint> constraints = tRef.getTable().getReferentialConstraints();
+        for (RelReferentialConstraint constraint : constraints) {
+          if (constraint.getTargetQualifiedName().equals(nonFkTableQName)) {
+            EquivalenceClasses ecT = EquivalenceClasses.copy(ec);
+            Set<RexNode> removedOriginalPredicates = new HashSet<>();
+            ImmutableBitSet.Builder lBitSet = ImmutableBitSet.builder();
+            ImmutableBitSet.Builder rBitSet = ImmutableBitSet.builder();
+            boolean allContained = true;
+            for (int pos = 0; pos < constraint.getNumColumns(); pos++) {
+              int foreignKeyPos = constraint.getColumnPairs().get(pos).source;
+              RelDataType foreignKeyColumnType =
+                  tRef.getTable().getRowType().getFieldList().get(foreignKeyPos).getType();
+              RexTableInputRef foreignKeyColumnRef =
+                  RexTableInputRef.of(tRef, foreignKeyPos, foreignKeyColumnType);
+              int uniqueKeyPos = constraint.getColumnPairs().get(pos).target;
+              RexTableInputRef uniqueKeyColumnRef = RexTableInputRef.of(nonFkTable, uniqueKeyPos,
+                  nonFkTable.getTable().getRowType().getFieldList().get(uniqueKeyPos).getType());
+              if (ecT.getEquivalenceClassesMap().containsKey(uniqueKeyColumnRef) &&
+                  ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).contains(foreignKeyColumnRef)) {
+                // Remove this condition from eq classes as we have checked that it is present
+                // in the join condition. In turn, populate the columns that are referenced
+                // from the join inputs
+                for (RexCall originalPred : ecT.removeEquivalence(uniqueKeyColumnRef, foreignKeyColumnRef)) {
+                  ImmutableBitSet leftCols = RelOptUtil.InputFinder.bits(originalPred.getOperands().get(0));
+                  ImmutableBitSet rightCols = RelOptUtil.InputFinder.bits(originalPred.getOperands().get(1));
+                  // Get length and flip column references if join condition specified in
+                  // reverse order to join sources
+                  int nFieldsLeft = join.getLeft().getRowType().getFieldList().size();
+                  int nFieldsRight = join.getRight().getRowType().getFieldList().size();
+                  int nSysFields = join.getSystemFieldList().size();
+                  ImmutableBitSet rightFieldsBitSet = ImmutableBitSet.range(nSysFields + nFieldsLeft,
+                      nSysFields + nFieldsLeft + nFieldsRight);
+                  if (rightFieldsBitSet.contains(leftCols)) {
+                    ImmutableBitSet t = leftCols;
+                    leftCols = rightCols;
+                    rightCols = t;
+                  }
+                  lBitSet.set(leftCols.nextSetBit(0) - nSysFields);
+                  rBitSet.set(rightCols.nextSetBit(0) - (nSysFields + nFieldsLeft));
+                  removedOriginalPredicates.add(originalPred);
+                }
+              } else {
+                // No relationship, we cannot do anything
+                allContained = false;
+                break;
+              }
+            }
+            if (allContained) {
+              // This is a PK-FK, reassign equivalence classes and remove conditions
+              // TODO: Support inference of multiple PK-FK relationships
+
+              // 4.1) Add to residual whatever is remaining
+              candidatePredicates.removeAll(removedOriginalPredicates);
+              residualPreds.addAll(candidatePredicates);
+              // 4.2) Return result
+              return PKFKJoinInfo.of(true, Pair.of(lBitSet.build(), rBitSet.build()), residualPreds);
+            }
+          }
+        }
+      }
+    }
+
+    return cannotExtract;
+  }
+
+  public static class PKFKJoinInfo {
+    public final boolean isPkFkJoin;
+    public final Pair<ImmutableBitSet, ImmutableBitSet> pkFkJoinColumns;
+    public final List<RexNode> additionalPredicates;
+
+    private PKFKJoinInfo(boolean isPkFkJoin, Pair<ImmutableBitSet, ImmutableBitSet> pkFkJoinColumns,
+          List<RexNode> additionalPredicates) {
+      this.isPkFkJoin = isPkFkJoin;
+      this.pkFkJoinColumns = pkFkJoinColumns;
+      this.additionalPredicates = additionalPredicates == null ? null :
+          ImmutableList.copyOf(additionalPredicates);
+    }
+
+    public static PKFKJoinInfo of(boolean isPkFkJoin, Pair<ImmutableBitSet, ImmutableBitSet> pkFkJoinColumns,
+         List<RexNode> additionalPredicates) {
+      return new PKFKJoinInfo(isPkFkJoin, pkFkJoinColumns, additionalPredicates);
+    }
+  }
+
+  public static RewritablePKFKJoinInfo isRewritablePKFKJoin(Join join,
+        boolean leftInputPotentialFK, RelMetadataQuery mq) {
+    final JoinRelType joinType = join.getJoinType();
+    final RexNode cond = join.getCondition();
+    final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
+    final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
+    final RewritablePKFKJoinInfo nonRewritable = RewritablePKFKJoinInfo.of(false, null);
+
+    if (joinType != JoinRelType.INNER) {
+      // If it is not an inner, we transform it as the metadata
+      // providers for expressions do not pull information through
+      // outer join (as it would not be correct)
+      join = join.copy(join.getTraitSet(), cond,
+          join.getLeft(), join.getRight(), JoinRelType.INNER,
+          false);
     }
 
     // 1) Check whether there is any filtering condition on the
@@ -602,13 +798,13 @@ public class HiveRelOptUtil extends RelOptUtil {
             // Add to list of expressions for follow-up iterations
             eqOp2ExprsFiltered.add(inputRef2);
             // Add to equivalence classes and backwards mapping
-            ec.addEquivalenceClass(inputRef1, inputRef2);
+            ec.addEquivalence(inputRef1, inputRef2);
             refToRex.put(inputRef2, eqOp2);
           }
         } else {
           // Rest of iterations, only adding, no checking
           for (RexTableInputRef inputRef2 : eqOp2ExprsFiltered) {
-            ec.addEquivalenceClass(inputRef1, inputRef2);
+            ec.addEquivalence(inputRef1, inputRef2);
           }
         }
       }
@@ -665,14 +861,7 @@ public class HiveRelOptUtil extends RelOptUtil {
               }
               // Remove this condition from eq classes as we have checked that it is present
               // in the join condition
-              ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).remove(foreignKeyColumnRef);
-              if (ecT.getEquivalenceClassesMap().get(uniqueKeyColumnRef).size() == 1) { // self
-                ecT.getEquivalenceClassesMap().remove(uniqueKeyColumnRef);
-              }
-              ecT.getEquivalenceClassesMap().get(foreignKeyColumnRef).remove(uniqueKeyColumnRef);
-              if (ecT.getEquivalenceClassesMap().get(foreignKeyColumnRef).size() == 1) { // self
-                ecT.getEquivalenceClassesMap().remove(foreignKeyColumnRef);
-              }
+              ecT.removeEquivalence(uniqueKeyColumnRef, foreignKeyColumnRef);
             } else {
               // No relationship, we cannot do anything
               allContained = false;
@@ -688,7 +877,22 @@ public class HiveRelOptUtil extends RelOptUtil {
       }
     }
 
-    return Pair.of(canBeRewritten, nullableNodes);
+    return RewritablePKFKJoinInfo.of(canBeRewritten, nullableNodes);
+  }
+
+  public static class RewritablePKFKJoinInfo {
+    public final boolean rewritable;
+    public final List<RexNode> nullableNodes;
+
+    private RewritablePKFKJoinInfo(boolean rewritable, List<RexNode> nullableNodes) {
+      this.rewritable = rewritable;
+      this.nullableNodes = nullableNodes == null ? null :
+          ImmutableList.copyOf(nullableNodes);
+    }
+
+    public static RewritablePKFKJoinInfo of(boolean rewritable, List<RexNode> nullableNodes) {
+      return new RewritablePKFKJoinInfo(rewritable, nullableNodes);
+    }
   }
 
   private static RexTableInputRef extractTableInputRef(RexNode node) {
@@ -711,13 +915,23 @@ public class HiveRelOptUtil extends RelOptUtil {
    */
   private static class EquivalenceClasses {
 
+    // Contains the node to equivalence class nodes
     private final Map<RexTableInputRef, Set<RexTableInputRef>> nodeToEquivalenceClass;
+    // Contains the pair of equivalences to original expression that they originate from
+    private final Multimap<Pair<RexTableInputRef, RexTableInputRef>, RexCall> equivalenceToOriginalNode;
 
     protected EquivalenceClasses() {
       nodeToEquivalenceClass = new HashMap<>();
+      equivalenceToOriginalNode = HashMultimap.create();
     }
 
-    protected void addEquivalenceClass(RexTableInputRef p1, RexTableInputRef p2) {
+    protected void addEquivalence(RexTableInputRef p1, RexTableInputRef p2, RexCall originalCond) {
+      addEquivalence(p1, p2);
+      equivalenceToOriginalNode.put(Pair.of(p1, p2), originalCond);
+      equivalenceToOriginalNode.put(Pair.of(p2, p1), originalCond);
+    }
+
+    protected void addEquivalence(RexTableInputRef p1, RexTableInputRef p2) {
       Set<RexTableInputRef> c1 = nodeToEquivalenceClass.get(p1);
       Set<RexTableInputRef> c2 = nodeToEquivalenceClass.get(p2);
       if (c1 != null && c2 != null) {
@@ -754,12 +968,70 @@ public class HiveRelOptUtil extends RelOptUtil {
       return nodeToEquivalenceClass;
     }
 
+    // Returns the original nodes that the equivalences were generated from
+    protected Set<RexCall> removeEquivalence(RexTableInputRef p1, RexTableInputRef p2) {
+      nodeToEquivalenceClass.get(p1).remove(p2);
+      if (nodeToEquivalenceClass.get(p1).size() == 1) { // self
+        nodeToEquivalenceClass.remove(p1);
+      }
+      nodeToEquivalenceClass.get(p2).remove(p1);
+      if (nodeToEquivalenceClass.get(p2).size() == 1) { // self
+        nodeToEquivalenceClass.remove(p2);
+      }
+      Set<RexCall> originalNodes = new HashSet<>();
+      originalNodes.addAll(equivalenceToOriginalNode.removeAll(Pair.of(p1, p2)));
+      originalNodes.addAll(equivalenceToOriginalNode.removeAll(Pair.of(p2, p1)));
+      return originalNodes;
+    }
+
     protected static EquivalenceClasses copy(EquivalenceClasses ec) {
       final EquivalenceClasses newEc = new EquivalenceClasses();
       for (Entry<RexTableInputRef, Set<RexTableInputRef>> e : ec.nodeToEquivalenceClass.entrySet()) {
         newEc.nodeToEquivalenceClass.put(e.getKey(), Sets.newLinkedHashSet(e.getValue()));
       }
+      for (Entry<Pair<RexTableInputRef, RexTableInputRef>, Collection<RexCall>> e : ec.equivalenceToOriginalNode.asMap().entrySet()) {
+        newEc.equivalenceToOriginalNode.putAll(e.getKey(), e.getValue());
+      }
       return newEc;
     }
+  }
+
+  public static Pair<RelOptTable, List<Integer>> getColumnOriginSet(RelNode rel, ImmutableBitSet colSet) {
+    RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
+    RexBuilder rexBuilder = rel.getCluster().getRexBuilder();
+    Map<RelTableRef, List<Integer>> tabToOriginColumns = new HashMap<>();
+    for(int col:colSet) {
+      final RexInputRef tempColRef =  rexBuilder.makeInputRef(rel, col);
+      Set<RexNode> columnOrigins = mq.getExpressionLineage(rel, tempColRef);
+      if (null == columnOrigins || columnOrigins.isEmpty()) {
+        // if even on
+        return null;
+      }
+      // we have either one or multiple origins of the column, we need to make sure that all of the column
+      for (RexNode orgCol : columnOrigins) {
+        RexTableInputRef inputRef = extractTableInputRef(orgCol);
+        if(inputRef == null) {
+          return null;
+        }
+        List<Integer> cols = tabToOriginColumns.get(inputRef.getTableRef());
+        if (cols == null) {
+          cols = new ArrayList<>();
+        }
+        cols.add(inputRef.getIndex());
+        tabToOriginColumns.put(inputRef.getTableRef(), cols);
+      }
+    }
+
+    // return the first table which has same number of backtracked columns as colSet
+    // ideally we should return all, in case one doesn't work we can fall back to another
+    for(Entry<RelTableRef, List<Integer>> mapEntries: tabToOriginColumns.entrySet()) {
+      RelTableRef tblRef = mapEntries.getKey();
+      List<Integer> mapColList = mapEntries.getValue();
+      if(mapColList.size() == colSet.cardinality()) {
+        RelOptTable tbl = tblRef.getTable();
+        return Pair.of(tbl, mapColList);
+      }
+    }
+    return null;
   }
 }

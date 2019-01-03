@@ -429,12 +429,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Reducer 6 (BROADCAST_EDGE)
-Map 7 <- Reducer 4 (BROADCAST_EDGE), Reducer 6 (BROADCAST_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+Map 1 <- Reducer 5 (BROADCAST_EDGE)
+Map 6 <- Reducer 5 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE)
+Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -450,8 +449,17 @@ Stage-0
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_46] (rows=20182 width=70)
                 Conds:RS_9._col0=RS_10._col0(Inner),RS_10._col0=RS_11._col0(Inner)
+              <-Map 4 [SIMPLE_EDGE] llap
+                PARTITION_ONLY_SHUFFLE [RS_10]
+                  PartitionCols:_col0
+                  Select Operator [SEL_5] (rows=20 width=87)
+                    Output:["_col0"]
+                    Filter Operator [FIL_26] (rows=20 width=87)
+                      predicate:key1 is not null
+                      TableScan [TS_3] (rows=20 width=87)
+                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
               <-Map 1 [SIMPLE_EDGE] llap
-                PARTITION_ONLY_SHUFFLE [RS_9]
+                SHUFFLE [RS_9]
                   PartitionCols:_col0
                   Select Operator [SEL_2] (rows=2000 width=87)
                     Output:["_col0"]
@@ -459,49 +467,29 @@ Stage-0
                       predicate:((key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and key is not null)
                       TableScan [TS_0] (rows=2000 width=87)
                         default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
-                      <-Reducer 6 [BROADCAST_EDGE] llap
+                      <-Reducer 5 [BROADCAST_EDGE] llap
                         BROADCAST [RS_32]
                           Group By Operator [GBY_31] (rows=1 width=639)
                             Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
-                          <-Map 5 [CUSTOM_SIMPLE_EDGE] llap
+                          <-Map 4 [CUSTOM_SIMPLE_EDGE] llap
                             PARTITION_ONLY_SHUFFLE [RS_30]
                               Group By Operator [GBY_29] (rows=1 width=639)
                                 Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=20)"]
                                 Select Operator [SEL_28] (rows=20 width=87)
                                   Output:["_col0"]
-                                  Select Operator [SEL_5] (rows=20 width=87)
-                                    Output:["_col0"]
-                                    Filter Operator [FIL_26] (rows=20 width=87)
-                                      predicate:key1 is not null
-                                      TableScan [TS_3] (rows=20 width=87)
-                                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
-              <-Map 5 [SIMPLE_EDGE] llap
-                PARTITION_ONLY_SHUFFLE [RS_10]
-                  PartitionCols:_col0
-                   Please refer to the previous Select Operator [SEL_5]
-              <-Map 7 [SIMPLE_EDGE] llap
+                                   Please refer to the previous Select Operator [SEL_5]
+              <-Map 6 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_11]
                   PartitionCols:_col0
                   Select Operator [SEL_8] (rows=9174 width=70)
                     Output:["_col0"]
                     Filter Operator [FIL_27] (rows=9174 width=70)
-                      predicate:((cstring BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and (cstring BETWEEN DynamicValue(RS_9_srcpart_date_n9_key_min) AND DynamicValue(RS_9_srcpart_date_n9_key_max) and in_bloom_filter(cstring, DynamicValue(RS_9_srcpart_date_n9_key_bloom_filter))) and cstring is not null)
+                      predicate:((cstring BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and cstring is not null)
                       TableScan [TS_6] (rows=12288 width=70)
                         default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
-                      <-Reducer 6 [BROADCAST_EDGE] llap
+                      <-Reducer 5 [BROADCAST_EDGE] llap
                         BROADCAST [RS_45]
                            Please refer to the previous Group By Operator [GBY_31]
-                      <-Reducer 4 [BROADCAST_EDGE] llap
-                        BROADCAST [RS_44]
-                          Group By Operator [GBY_41] (rows=1 width=552)
-                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=316)"]
-                          <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
-                            PARTITION_ONLY_SHUFFLE [RS_40]
-                              Group By Operator [GBY_39] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=316)"]
-                                Select Operator [SEL_38] (rows=2000 width=87)
-                                  Output:["_col0"]
-                                   Please refer to the previous Select Operator [SEL_2]
 
 PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
@@ -621,11 +609,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 1 <- Reducer 5 (BROADCAST_EDGE), Reducer 6 (BROADCAST_EDGE)
+Map 1 <- Reducer 5 (BROADCAST_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
-Reducer 6 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -656,21 +643,10 @@ Stage-0
                   Select Operator [SEL_2] (rows=2000 width=178)
                     Output:["_col0","_col1"]
                     Filter Operator [FIL_17] (rows=2000 width=178)
-                      predicate:((key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) and (value BETWEEN DynamicValue(RS_7_srcpart_small_n4_value1_min) AND DynamicValue(RS_7_srcpart_small_n4_value1_max) and in_bloom_filter(value, DynamicValue(RS_7_srcpart_small_n4_value1_bloom_filter))) and key is not null and value is not null)
+                      predicate:((value BETWEEN DynamicValue(RS_7_srcpart_small_n4_value1_min) AND DynamicValue(RS_7_srcpart_small_n4_value1_max) and in_bloom_filter(value, DynamicValue(RS_7_srcpart_small_n4_value1_bloom_filter))) and key is not null and value is not null)
                       TableScan [TS_0] (rows=2000 width=178)
                         default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
-                        BROADCAST [RS_23]
-                          Group By Operator [GBY_22] (rows=1 width=730)
-                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
-                          <-Map 4 [CUSTOM_SIMPLE_EDGE] llap
-                            PARTITION_ONLY_SHUFFLE [RS_21]
-                              Group By Operator [GBY_20] (rows=1 width=730)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=20)"]
-                                Select Operator [SEL_19] (rows=20 width=178)
-                                  Output:["_col0"]
-                                   Please refer to the previous Select Operator [SEL_5]
-                      <-Reducer 6 [BROADCAST_EDGE] llap
                         BROADCAST [RS_28]
                           Group By Operator [GBY_27] (rows=1 width=730)
                             Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
@@ -961,7 +937,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n9
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1085,7 +1061,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n4
-                  filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator

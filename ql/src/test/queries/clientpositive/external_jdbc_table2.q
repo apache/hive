@@ -126,3 +126,24 @@ EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
 
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
+
+set hive.jdbc.pushdown.enable=false;
+
+EXPLAIN
+SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
+
+SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2;
+
+DROP TABLE db1_ext_auth1;
+DROP TABLE db2_ext_auth2;
+DROP TABLE db1_ext_auth2;
+
+FROM src
+SELECT
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1','user1','passwd1',
+'DROP TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1' ),
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1','user1','passwd1',
+'DROP TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2' ),
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth2','user2','passwd2',
+'DROP TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2' )
+limit 1;

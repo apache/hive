@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.BasicStats.Factory;
@@ -1913,5 +1915,71 @@ public class StatsUtils {
       return false;
     }
     return StatsSetupConst.areColumnStatsUptoDate(params, colName);
+  }
+
+  /**
+   * Update the basic statistics of the statistics object based on the row number
+   * @param stats
+   *          - statistics to be updated
+   * @param newNumRows
+   *          - new number of rows
+   * @param useColStats
+   *          - use column statistics to compute data size
+   */
+  public static void updateStats(Statistics stats, long newNumRows,
+      boolean useColStats, Operator<? extends OperatorDesc> op) {
+    updateStats(stats, newNumRows, useColStats, op, Collections.EMPTY_SET);
+  }
+
+  public static void updateStats(Statistics stats, long newNumRows,
+      boolean useColStats, Operator<? extends OperatorDesc> op,
+      Set<String> affectedColumns) {
+
+    if (newNumRows < 0) {
+      LOG.debug("STATS-" + op.toString() + ": Overflow in number of rows. "
+          + newNumRows + " rows will be set to Long.MAX_VALUE");
+      newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
+    }
+    if (newNumRows == 0) {
+      LOG.debug("STATS-" + op.toString() + ": Equals 0 in number of rows. "
+          + newNumRows + " rows will be set to 1");
+      newNumRows = 1;
+    }
+
+    long oldRowCount = stats.getNumRows();
+    double ratio = (double) newNumRows / (double) oldRowCount;
+    stats.setNumRows(newNumRows);
+
+    if (useColStats) {
+      List<ColStatistics> colStats = stats.getColumnStats();
+      for (ColStatistics cs : colStats) {
+        long oldNumNulls = cs.getNumNulls();
+        long oldDV = cs.getCountDistint();
+        long newNumNulls = Math.round(ratio * oldNumNulls);
+        cs.setNumNulls(newNumNulls);
+        if (affectedColumns.contains(cs.getColumnName())) {
+          long newDV = oldDV;
+
+          // if ratio is greater than 1, then number of rows increases. This can happen
+          // when some operators like GROUPBY duplicates the input rows in which case
+          // number of distincts should not change. Update the distinct count only when
+          // the output number of rows is less than input number of rows.
+          if (ratio <= 1.0) {
+            newDV = (long) Math.ceil(ratio * oldDV);
+          }
+          cs.setCountDistint(newDV);
+          oldDV = newDV;
+        }
+        if (oldDV > newNumRows) {
+          cs.setCountDistint(newNumRows);
+        }
+      }
+      stats.setColumnStats(colStats);
+      long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
+    } else {
+      long newDataSize = (long) (ratio * stats.getDataSize());
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
+    }
   }
 }

@@ -387,6 +387,14 @@ public class SortedDynPartitionOptimizer extends Transform {
               rsChild.getSchema().getSignature().size()) {
             return false;
           }
+          // if child is select and contains expression which isn't column it shouldn't
+          // be removed because otherwise we will end up with different types/schema later
+          // while introducing select for RS
+          for(ExprNodeDesc expr: rsChild.getColumnExprMap().values()){
+            if(!(expr instanceof ExprNodeColumnDesc)){
+              return false;
+            }
+          }
           rsParent.getChildOperators().clear();
           rsParent.getChildOperators().add(rsGrandChild);
           rsGrandChild.getParentOperators().clear();

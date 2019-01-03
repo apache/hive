@@ -112,7 +112,7 @@ POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(ca_county=[$0], d_year=[CAST(2000):INTEGER], web_q1_q2_increase=[/($9, $7)], store_q1_q2_increase=[/($1, $3)], web_q2_q3_increase=[/($11, $9)], store_q2_q3_increase=[/($5, $1)])
-  HiveJoin(condition=[AND(AND(=($0, $6), CASE(>($3, 0), CASE(>($7, 0), >(/($9, $7), /($1, $3)), false), false)), CASE(>($1, 0), CASE(>($9, 0), >(/($11, $9), /($5, $1)), false), false))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(AND(=($0, $6), OR(AND(IS TRUE(>($3, 0)), OR(AND(IS TRUE(>($7, 0)), >(/($9, $7), /($1, $3))), AND(null, IS NOT TRUE(>($7, 0))))), AND(null, IS NOT TRUE(>($3, 0))))), OR(AND(IS TRUE(>($1, 0)), OR(AND(IS TRUE(>($9, 0)), >(/($11, $9), /($5, $1))), AND(null, IS NOT TRUE(>($9, 0))))), AND(null, IS NOT TRUE(>($1, 0)))))], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(ca_county=[$0], $f1=[$1])

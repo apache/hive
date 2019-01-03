@@ -85,7 +85,7 @@ Stage-0
                     Select Operator [SEL_51] (rows=10246864 width=418)
                       Output:["_col3","_col7","_col8"]
                       Filter Operator [FIL_50] (rows=10246864 width=418)
-                        predicate:((_col17 is not null and (_col14 <> 0L)) or (substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792') or null)
+                        predicate:(((_col13 is null or (_col15 < _col14)) and null and (_col14 <> 0L) and _col17 is null) or (_col17 is not null and (_col14 <> 0L)) or (substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792'))
                         Select Operator [SEL_49] (rows=10246864 width=418)
                           Output:["_col3","_col7","_col8","_col13","_col14","_col15","_col17"]
                           Merge Join Operator [MERGEJOIN_87] (rows=10246864 width=418)

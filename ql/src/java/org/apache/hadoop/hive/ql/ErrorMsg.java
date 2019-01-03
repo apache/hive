@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.FileNotFoundException;
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hdfs.protocol.DSQuotaExceededException;
 import org.apache.hadoop.hdfs.protocol.NSQuotaExceededException;
@@ -34,6 +27,13 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.security.AccessControlException;
+
+import java.io.FileNotFoundException;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * List of all error messages.
@@ -469,6 +469,7 @@ public enum ErrorMsg {
   LOAD_DATA_LAUNCH_JOB_PARSE_ERROR(10416, "Encountered parse error while parsing rewritten load data into insert query"),
   RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
   RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
+  INCOMPATIBLE_STRUCT(10419, "Incompatible structs.", true),
 
   //========================== 20000 range starts here ========================//
 

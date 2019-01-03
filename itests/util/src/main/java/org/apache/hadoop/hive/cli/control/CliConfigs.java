@@ -83,7 +83,7 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/compiler/errors");
         setLogDir("itests/qtest/target/qfile-results/negative");
 
-        setInitScript("q_test_init.sql");
+        setInitScript("q_test_init_parse.sql");
         setCleanupScript("q_test_cleanup.sql");
 
         setHiveConfDir("data/conf/perf-reg/");
@@ -201,7 +201,6 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "druid.kafka.query.files");
-        excludeQuery("druidkafkamini_basic.q"); // HIVE-19509
 
         setResultsDir("ql/src/test/results/clientpositive/druid");
         setLogDir("itests/qtest/target/tmp/log");

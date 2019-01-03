@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1341,8 +1344,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private static double getBloomFilterCost(
-      SelectOperator sel,
-      FilterOperator fil) {
+      SelectOperator sel) {
     double cost = -1;
     Statistics selStats = sel.getStatistics();
     if (selStats != null) {
@@ -1408,10 +1410,9 @@ public class TezCompiler extends TaskCompiler {
 
   private static double getBloomFilterBenefit(
       SelectOperator sel, ExprNodeDesc selExpr,
-      FilterOperator fil, ExprNodeDesc tsExpr) {
+      Statistics filStats, ExprNodeDesc tsExpr) {
     double benefit = -1;
     Statistics selStats = sel.getStatistics();
-    Statistics filStats = fil.getStatistics();
     if (selStats == null || filStats == null) {
       LOG.debug("No stats available to compute BloomFilter benefit");
       return benefit;
@@ -1474,12 +1475,11 @@ public class TezCompiler extends TaskCompiler {
 
   private static double computeBloomFilterNetBenefit(
       SelectOperator sel, ExprNodeDesc selExpr,
-      FilterOperator fil, ExprNodeDesc tsExpr) {
+      Statistics filStats, ExprNodeDesc tsExpr) {
     double netBenefit = -1;
-    double benefit = getBloomFilterBenefit(sel, selExpr, fil, tsExpr);
-    Statistics filStats = fil.getStatistics();
+    double benefit = getBloomFilterBenefit(sel, selExpr, filStats, tsExpr);
     if (benefit > 0 && filStats != null) {
-      double cost = getBloomFilterCost(sel, fil);
+      double cost = getBloomFilterCost(sel);
       if (cost > 0) {
         long filDataSize = filStats.getNumRows();
         netBenefit = (benefit - cost) / filDataSize;
@@ -1495,47 +1495,108 @@ public class TezCompiler extends TaskCompiler {
 
   private void removeSemijoinOptimizationByBenefit(OptimizeTezProcContext procCtx)
       throws SemanticException {
-    List<ReduceSinkOperator> semijoinRsToRemove = new ArrayList<>();
     Map<ReduceSinkOperator, SemiJoinBranchInfo> map = procCtx.parseContext.getRsToSemiJoinBranchInfo();
+    if (map.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    Map<FilterOperator, Statistics> adjustedStatsMap = new HashMap<>();
+    List<ReduceSinkOperator> semijoinRsToRemove = new ArrayList<>();
     double semijoinReductionThreshold = procCtx.conf.getFloatVar(
         HiveConf.ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD);
-    for (ReduceSinkOperator rs : map.keySet()) {
-      SemiJoinBranchInfo sjInfo = map.get(rs);
-      if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
-        // Semijoin created using hint or marked useful, skip it
-        continue;
-      }
-      // rs is semijoin optimization branch, which should look like <Parent>-SEL-GB1-RS1-GB2-RS2
-      // Get to the SelectOperator ancestor
-      SelectOperator sel = null;
-      for (Operator<?> currOp = rs; currOp.getParentOperators().size() > 0; currOp = currOp.getParentOperators().get(0)) {
-        if (currOp instanceof SelectOperator) {
-          sel = (SelectOperator) currOp;
-          break;
+    List<ReduceSinkOperator> semiJoinRsOps = Lists.newArrayList(map.keySet());
+    while (!semiJoinRsOps.isEmpty()) {
+      Map<FilterOperator, SemijoinOperatorInfo> reductionFactorMap = new HashMap<>();
+      List<ReduceSinkOperator> semiJoinRsOpsNewIter = new ArrayList<>();
+      for (ReduceSinkOperator rs : semiJoinRsOps) {
+        SemiJoinBranchInfo sjInfo = map.get(rs);
+        if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
+          // Semijoin created using hint or marked useful, skip it
+          continue;
+        }
+        // rs is semijoin optimization branch, which should look like <Parent>-SEL-GB1-RS1-GB2-RS2
+        // Get to the SelectOperator ancestor
+        SelectOperator sel = null;
+        for (Operator<?> currOp = rs; currOp.getParentOperators().size() > 0; currOp = currOp.getParentOperators().get(0)) {
+          if (currOp instanceof SelectOperator) {
+            sel = (SelectOperator) currOp;
+            break;
+          }
+        }
+        if (sel == null) {
+          throw new SemanticException("Unexpected error - could not find SEL ancestor from semijoin branch of " + rs);
+        }
+
+        // Check the ndv/rows from the SEL vs the destination tablescan the semijoin opt is going to.
+        TableScanOperator ts = sjInfo.getTsOp();
+        RuntimeValuesInfo rti = procCtx.parseContext.getRsToRuntimeValuesInfoMap().get(rs);
+        ExprNodeDesc tsExpr = rti.getTsColExpr();
+        // In the SEL operator of the semijoin branch, there should be only one column in the operator
+        ExprNodeDesc selExpr = sel.getConf().getColList().get(0);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Computing BloomFilter cost/benefit for " + OperatorUtils.getOpNamePretty(rs)
+              + " - " + OperatorUtils.getOpNamePretty(ts) + " (" + tsExpr + ")");
+        }
+
+        FilterOperator filterOperator = (FilterOperator) ts.getChildOperators().get(0);
+        Statistics filterStats = adjustedStatsMap.get(filterOperator);
+        if (filterStats == null && filterOperator.getStatistics() != null) {
+          filterStats = filterOperator.getStatistics().clone();
+          adjustedStatsMap.put(filterOperator, filterStats);
+        }
+        double reductionFactor = computeBloomFilterNetBenefit(
+            sel, selExpr, filterStats, tsExpr);
+        if (reductionFactor < semijoinReductionThreshold) {
+          // This semijoin optimization should be removed. Do it after we're done iterating
+          semijoinRsToRemove.add(rs);
+        } else {
+          // This semijoin qualifies, add it to the result set
+          if (filterStats != null) {
+            String colName = ExprNodeDescUtils.getColumnExpr(tsExpr).getColumn();
+            SemijoinOperatorInfo prevResult = reductionFactorMap.get(filterOperator);
+            if (prevResult != null) {
+              if (prevResult.reductionFactor < reductionFactor) {
+                reductionFactorMap.put(filterOperator, new SemijoinOperatorInfo(rs, filterOperator,
+                    filterStats, colName, reductionFactor));
+                semiJoinRsOpsNewIter.add(prevResult.rsOperator);
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Adding " + OperatorUtils.getOpNamePretty(prevResult.rsOperator)
+                      + " for re-iteration");
+                }
+              } else {
+                semiJoinRsOpsNewIter.add(rs);
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Adding " + OperatorUtils.getOpNamePretty(rs) + " for re-iteration");
+                }
+              }
+            } else {
+              reductionFactorMap.put(filterOperator, new SemijoinOperatorInfo(rs, filterOperator,
+                  filterStats, colName, reductionFactor));
+            }
+          }
         }
       }
-      if (sel == null) {
-        throw new SemanticException("Unexpected error - could not find SEL ancestor from semijoin branch of " + rs);
+
+      for (SemijoinOperatorInfo roi : reductionFactorMap.values()) {
+        // This semijoin will be kept
+        // We are going to adjust the filter statistics
+        long newNumRows = (long) (1.0 - roi.reductionFactor) * roi.filterStats.getNumRows();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Old stats for {}: {}", roi.filterOperator, roi.filterStats);
+          LOG.debug("Number of rows reduction: {}/{}", newNumRows, roi.filterStats.getNumRows());
+        }
+        StatsUtils.updateStats(roi.filterStats, newNumRows,
+            roi.filterStats.getColumnStats() != null, roi.filterOperator,
+            Sets.newHashSet(roi.colName));
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("New stats for {}: {}", roi.filterOperator, roi.filterStats);
+        }
+        adjustedStatsMap.put(roi.filterOperator, roi.filterStats);
       }
 
-      // Check the ndv/rows from the SEL vs the destination tablescan the semijoin opt is going to.
-      TableScanOperator ts = sjInfo.getTsOp();
-      RuntimeValuesInfo rti = procCtx.parseContext.getRsToRuntimeValuesInfoMap().get(rs);
-      ExprNodeDesc tsExpr = rti.getTsColExpr();
-      // In the SEL operator of the semijoin branch, there should be only one column in the operator
-      ExprNodeDesc selExpr = sel.getConf().getColList().get(0);
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Computing BloomFilter cost/benefit for " + OperatorUtils.getOpNamePretty(rs)
-            + " - " + OperatorUtils.getOpNamePretty(ts) + " (" + tsExpr + ")");
-      }
-
-      double reductionFactor = computeBloomFilterNetBenefit(sel, selExpr,
-              (FilterOperator)ts.getChildOperators().get(0), tsExpr);
-      if (reductionFactor < semijoinReductionThreshold) {
-        // This semijoin optimization should be removed. Do it after we're done iterating
-        semijoinRsToRemove.add(rs);
-      }
+      semiJoinRsOps = semiJoinRsOpsNewIter;
     }
 
     for (ReduceSinkOperator rs : semijoinRsToRemove) {
@@ -1546,6 +1607,27 @@ public class TezCompiler extends TaskCompiler {
       }
       GenTezUtils.removeBranch(rs);
       GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, rs, ts);
+    }
+  }
+
+  /**
+   * Internal class to encapsulate information needed to evaluate stats
+   * about a SJ that will be kept in the tree.
+   */
+  private class SemijoinOperatorInfo {
+    final ReduceSinkOperator rsOperator;
+    final FilterOperator filterOperator;
+    final String colName;
+    final Statistics filterStats;
+    final double reductionFactor;
+
+    private SemijoinOperatorInfo(ReduceSinkOperator rsOperator, FilterOperator filterOperator,
+          Statistics filterStats, String colName, double reductionFactor) {
+      this.rsOperator = rsOperator;
+      this.filterOperator = filterOperator;
+      this.colName = colName;
+      this.filterStats = filterStats;
+      this.reductionFactor = reductionFactor;
     }
   }
 

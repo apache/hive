@@ -70,6 +70,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
       // do a one time initialization
       setupUniqueTestPath();
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
     } catch (Exception e) {
@@ -84,7 +85,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
   @Before
   public void setUp() {
     try {
-      qt.clearTestSideEffects();
+      qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -97,6 +98,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
   @After
   public void tearDown() {
     try {
+      qt.clearTestSideEffects();
       qt.clearPostTestEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
@@ -138,7 +140,8 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
         System.err.println("Test " + fname + " skipped");
         return;
       }
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
+
       int ecode = qt.executeClient(fname);
       if ((ecode == 0) ^ expectSuccess) {
         qt.failed(ecode, fname, debugHint);

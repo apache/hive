@@ -72,8 +72,7 @@ Druid Storage Handler Runtime Status for default.druid_kafka_test
 kafkaPartitions=1	 	 
 activeTasks=[]	 	 
 publishingTasks=[]	 	 
-latestOffsets={0=10}	 	 
-minimumLag={0=0}	 	 
+#### A masked pattern was here ####
 aggregateLag=0	 	 
 #### A masked pattern was here ####
 PREHOOK: query: Select count(*) FROM druid_kafka_test
@@ -142,8 +141,7 @@ Druid Storage Handler Runtime Status for default.druid_kafka_test
 kafkaPartitions=1	 	 
 activeTasks=[]	 	 
 publishingTasks=[]	 	 
-latestOffsets={0=10}	 	 
-minimumLag={0=0}	 	 
+#### A masked pattern was here ####
 aggregateLag=0	 	 
 #### A masked pattern was here ####
 PREHOOK: query: Select count(*) FROM druid_kafka_test

@@ -628,7 +628,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterTimestampColEqualTimestampColumn(col 8:timestamp, col 9:timestamp), FilterDoubleColEqualDoubleScalar(col 4:float, val 762.0), FilterStringGroupColEqualStringScalar(col 6:string, val ss), FilterExprAndExpr(children: FilterLongColLessEqualLongColumn(col 1:bigint, col 3:bigint)(children: col 1:smallint), FilterLongColEqualLongScalar(col 11:boolean, val 1)), FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), SelectColumnIsNotNull(col 9:timestamp), FilterStringGroupColGreaterStringScalar(col 7:string, val a)))
-                    predicate: (((UDFToLong(csmallint) <= cbigint) and (cboolean2 = 1)) or (cboolean1 is not null and ctimestamp2 is not null and (cstring2 > 'a')) or (cfloat = 762) or (cstring1 = 'ss') or (ctimestamp1 = ctimestamp2)) (type: boolean)
+                    predicate: (((UDFToLong(csmallint) <= cbigint) and (cboolean2 = 1)) or (cboolean1 is not null and ctimestamp2 is not null and (cstring2 > 'a')) or (cfloat = 762.0) or (cstring1 = 'ss') or (ctimestamp1 = ctimestamp2)) (type: boolean)
                     Statistics: Num rows: 11346 Data size: 2856120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cbigint (type: bigint), ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cdouble (type: double), UDFToDouble(cbigint) (type: double), (UDFToDouble(cbigint) * UDFToDouble(cbigint)) (type: double), UDFToDouble(csmallint) (type: double), (UDFToDouble(csmallint) * UDFToDouble(csmallint)) (type: double), (cdouble * cdouble) (type: double)
@@ -865,7 +865,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterTimestampColLessEqualTimestampColumn(col 9:timestamp, col 8:timestamp), FilterDoubleColNotEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 13:double), FilterStringGroupColGreaterEqualStringScalar(col 6:string, val ss)), FilterExprAndExpr(children: FilterLongColLessLongColumn(col 1:smallint, col 0:smallint)(children: col 0:tinyint), FilterDoubleColGreaterEqualDoubleScalar(col 13:double, val 0.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double)), FilterDoubleColEqualDoubleScalar(col 4:float, val 17.0))
-                    predicate: (((csmallint < UDFToShort(ctinyint)) and (UDFToDouble(ctimestamp1) >= 0.0D)) or ((ctimestamp2 <= ctimestamp1) and (UDFToDouble(cbigint) <> cdouble) and (cstring1 >= 'ss')) or (cfloat = 17)) (type: boolean)
+                    predicate: (((csmallint < UDFToShort(ctinyint)) and (UDFToDouble(ctimestamp1) >= 0.0D)) or ((ctimestamp2 <= ctimestamp1) and (UDFToDouble(cbigint) <> cdouble) and (cstring1 >= 'ss')) or (cfloat = 17.0)) (type: boolean)
                     Statistics: Num rows: 2824 Data size: 491654 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctinyint (type: tinyint), cbigint (type: bigint), cint (type: int), cfloat (type: float), UDFToDouble(cint) (type: double), (UDFToDouble(cint) * UDFToDouble(cint)) (type: double), UDFToDouble(cbigint) (type: double), (UDFToDouble(cbigint) * UDFToDouble(cbigint)) (type: double)

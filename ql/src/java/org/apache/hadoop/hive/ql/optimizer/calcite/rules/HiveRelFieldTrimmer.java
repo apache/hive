@@ -53,12 +53,14 @@ import org.apache.calcite.sql2rel.CorrelationReferenceFinder;
 import org.apache.calcite.sql2rel.RelFieldTrimmer;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
@@ -312,6 +314,49 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     }
   }
 
+
+  // Given a groupset this tries to find out if the cardinality of the grouping columns could have changed
+  // because if not and it consist of keys (unique + not null OR pk), we can safely remove rest of the columns
+  // if those are columns are not being used further up
+  private ImmutableBitSet generateGroupSetIfCardinalitySame(final Aggregate aggregate,
+                                        final ImmutableBitSet originalGroupSet, final ImmutableBitSet fieldsUsed) {
+    Pair<RelOptTable, List<Integer>> tabToOrgCol = HiveRelOptUtil.getColumnOriginSet(aggregate.getInput(),
+                                                                                     originalGroupSet);
+    if(tabToOrgCol == null) {
+      return originalGroupSet;
+    }
+    RelOptHiveTable tbl = (RelOptHiveTable)tabToOrgCol.left;
+    List<Integer> backtrackedGBList = tabToOrgCol.right;
+    ImmutableBitSet backtrackedGBSet = ImmutableBitSet.builder().addAll(backtrackedGBList).build();
+
+    List<ImmutableBitSet> allKeys = tbl.getNonNullableKeys();
+    ImmutableBitSet currentKey = null;
+    for(ImmutableBitSet key:allKeys) {
+      if(backtrackedGBSet.contains(key)) {
+        // only if grouping sets consist of keys
+        currentKey = key;
+        break;
+      }
+    }
+    if(currentKey == null || currentKey.isEmpty()) {
+      return originalGroupSet;
+    }
+
+    // we want to delete all columns in original GB set except the key
+    ImmutableBitSet.Builder builder = ImmutableBitSet.builder();
+
+    // we have established that this gb set contains keys and it is safe to remove rest of the columns
+    for(int i=0; i<backtrackedGBList.size(); i++) {
+      Integer backtrackedCol = backtrackedGBList.get(i);
+      int orgCol = originalGroupSet.nth(i);
+      if(fieldsUsed.get((orgCol))
+          || currentKey.get(backtrackedCol)) {
+        // keep the columns which are being used or are part of keys
+        builder.set(orgCol);
+      }
+    }
+    return builder.build();
+  }
   // if gby keys consist of pk/uk non-pk/non-uk columns are removed if they are not being used
   private ImmutableBitSet generateNewGroupset(Aggregate aggregate, ImmutableBitSet fieldsUsed) {
 
@@ -328,7 +373,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     final Set<ImmutableBitSet> uniqueKeys = mq.getUniqueKeys(input, false);
     if (uniqueKeys == null || uniqueKeys.isEmpty()) {
-      return originalGroupSet;
+      return generateGroupSetIfCardinalitySame(aggregate, originalGroupSet, fieldsUsed);
     }
 
     // we have set of unique key, get to the key which is same as group by key

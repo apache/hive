@@ -1,0 +1,39 @@
+PREHOOK: query: create table cx2(bool1 boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cx2
+POSTHOOK: query: create table cx2(bool1 boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cx2
+PREHOOK: query: insert into cx2 values (true),(false),(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@cx2
+POSTHOOK: query: insert into cx2 values (true),(false),(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@cx2
+POSTHOOK: Lineage: cx2.bool1 SCRIPT []
+PREHOOK: query: select bool1 IS TRUE OR (cast(NULL as boolean) AND bool1 IS NOT TRUE AND bool1 IS NOT FALSE) from cx2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cx2
+#### A masked pattern was here ####
+POSTHOOK: query: select bool1 IS TRUE OR (cast(NULL as boolean) AND bool1 IS NOT TRUE AND bool1 IS NOT FALSE) from cx2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cx2
+#### A masked pattern was here ####
+true
+false
+NULL
+PREHOOK: query: select bool1 IS TRUE OR (cast(NULL as boolean) AND bool1 IS NOT TRUE AND bool1 IS NOT FALSE) from cx2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cx2
+#### A masked pattern was here ####
+POSTHOOK: query: select bool1 IS TRUE OR (cast(NULL as boolean) AND bool1 IS NOT TRUE AND bool1 IS NOT FALSE) from cx2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cx2
+#### A masked pattern was here ####
+true
+false
+NULL

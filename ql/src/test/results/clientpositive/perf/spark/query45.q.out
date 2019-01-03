@@ -305,7 +305,7 @@ STAGE PLANS:
                     outputColumnNames: _col3, _col7, _col8, _col13, _col14, _col15, _col17
                     Statistics: Num rows: 191667562 Data size: 29319594068 Basic stats: COMPLETE Column stats: NONE
                     Filter Operator
-                      predicate: ((_col17 is not null and (_col14 <> 0L)) or (substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792') or null) (type: boolean)
+                      predicate: (((_col13 is null or (_col15 < _col14)) and null and (_col14 <> 0L) and _col17 is null) or (_col17 is not null and (_col14 <> 0L)) or (substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')) (type: boolean)
                       Statistics: Num rows: 191667562 Data size: 29319594068 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col3 (type: decimal(7,2)), _col7 (type: string), _col8 (type: string)

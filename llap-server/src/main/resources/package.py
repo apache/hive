@@ -132,8 +132,6 @@ def main(args):
 			service_keytab_path += "/" + service_keytab
 	else:
 		service_keytab_path = service_keytab
-	if service_keytab_path:
-		service_keytab_path = "hdfs:///user/" + user + "/" + service_keytab_path
 
 	if not input:
 		print "Cannot find input files"

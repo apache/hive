@@ -509,15 +509,19 @@ public class RexNodeConverter {
     } else {
       // We need to add a cast to DATETIME Family
       if (isTimestampLevel) {
-        newChildRexNodeLst.add(
-            cluster.getRexBuilder().makeCast(cluster.getTypeFactory().createSqlType(SqlTypeName.TIMESTAMP), child));
+        newChildRexNodeLst.add(makeCast(SqlTypeName.TIMESTAMP, child));
       } else {
-        newChildRexNodeLst.add(
-            cluster.getRexBuilder().makeCast(cluster.getTypeFactory().createSqlType(SqlTypeName.DATE), child));
+        newChildRexNodeLst.add(makeCast(SqlTypeName.DATE, child));
       }
     }
 
     return newChildRexNodeLst;
+  }
+
+  private RexNode makeCast(SqlTypeName typeName, final RexNode child) {
+    RelDataType sqlType = cluster.getTypeFactory().createSqlType(typeName);
+    RelDataType nullableType = cluster.getTypeFactory().createTypeWithNullability(sqlType, true);
+    return cluster.getRexBuilder().makeCast(nullableType, child);
   }
 
   private List<RexNode> rewriteFloorDateChildren(SqlOperator op, List<RexNode> childRexNodeLst)
@@ -549,13 +553,10 @@ public class RexNodeConverter {
     List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
     assert childRexNodeLst.size() == 1;
     RexNode child = childRexNodeLst.get(0);
-    if (SqlTypeUtil.isDatetime(child.getType()) || SqlTypeUtil.isInterval(
-            child.getType())) {
+    if (SqlTypeUtil.isDatetime(child.getType()) || SqlTypeUtil.isInterval(child.getType())) {
       newChildRexNodeLst.add(child);
     } else {
-      newChildRexNodeLst.add(
-              cluster.getRexBuilder().makeCast(cluster.getTypeFactory().createSqlType(SqlTypeName.TIMESTAMP),
-                      child));
+      newChildRexNodeLst.add(makeCast(SqlTypeName.TIMESTAMP, child));
     }
     return newChildRexNodeLst;
   }

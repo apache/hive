@@ -117,7 +117,7 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
               );
           queryResultsIterator.init();
           initlialized = true;
-        } catch (IOException e) {
+        } catch (IOException | ExecutionException | InterruptedException e) {
           if (queryResultsIterator != null) {
             // We got exception while querying results from this host.
             queryResultsIterator.close();
@@ -294,35 +294,23 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
       throw new UnsupportedOperationException();
     }
 
-    private void init()
-    {
+    private void init() throws IOException, ExecutionException, InterruptedException {
       if (jp == null) {
-        try {
-          InputStream is = future.get();
-          if (is == null) {
-            throw  new IOException(String.format("query[%s] url[%s] timed out", query, url));
-          } else {
-            jp = mapper.getFactory().createParser(is).configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
-          }
-          final JsonToken nextToken = jp.nextToken();
-          if (nextToken == JsonToken.START_OBJECT) {
-            QueryInterruptedException cause = jp.getCodec().readValue(jp, QueryInterruptedException.class);
-            throw new QueryInterruptedException(cause);
-          } else if (nextToken != JsonToken.START_ARRAY) {
-            throw new IAE("Next token wasn't a START_ARRAY, was[%s] from url [%s]", jp.getCurrentToken(), url);
-          } else {
-            jp.nextToken();
-            objectCodec = jp.getCodec();
-          }
+        InputStream is = future.get();
+        if (is == null) {
+          throw  new IOException(String.format("query[%s] url[%s] timed out", query, url));
+        } else {
+          jp = mapper.getFactory().createParser(is).configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
         }
-        catch (IOException | InterruptedException | ExecutionException e) {
-          throw new RE(
-                  e,
-                  "Failure getting results for query[%s] url[%s] because of [%s]",
-                  query,
-                  url,
-                  e.getMessage()
-          );
+        final JsonToken nextToken = jp.nextToken();
+        if (nextToken == JsonToken.START_OBJECT) {
+          QueryInterruptedException cause = jp.getCodec().readValue(jp, QueryInterruptedException.class);
+          throw new QueryInterruptedException(cause);
+        } else if (nextToken != JsonToken.START_ARRAY) {
+          throw new IAE("Next token wasn't a START_ARRAY, was[%s] from url [%s]", jp.getCurrentToken(), url);
+        } else {
+          jp.nextToken();
+          objectCodec = jp.getCodec();
         }
       }
     }

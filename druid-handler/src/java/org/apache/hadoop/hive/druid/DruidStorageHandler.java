@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.druid;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -36,6 +37,8 @@ import com.metamx.http.client.HttpClientInit;
 import com.metamx.http.client.Request;
 import com.metamx.http.client.response.FullResponseHandler;
 import com.metamx.http.client.response.FullResponseHolder;
+import io.druid.data.input.impl.CSVParseSpec;
+import io.druid.data.input.impl.DelimitedParseSpec;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.DimensionsSpec;
 import io.druid.data.input.impl.InputRowParser;
@@ -68,9 +71,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
+import org.apache.hadoop.hive.druid.json.AvroParseSpec;
+import org.apache.hadoop.hive.druid.json.AvroStreamInputRowParser;
+import org.apache.hadoop.hive.druid.json.InlineSchemaAvroBytesDecoder;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorIOConfig;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorReport;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorSpec;
@@ -271,10 +278,13 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     final String overlordAddress = HiveConf
         .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS);
 
-    final String dataSourceName = Preconditions.checkNotNull(getTableProperty(table, Constants.DRUID_DATA_SOURCE), "Druid datasource name is null");
+    final String dataSourceName = Preconditions.checkNotNull(
+            DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE), "Druid datasource name is null");
 
-    final String kafkaTopic = Preconditions.checkNotNull(getTableProperty(table, Constants.KAFKA_TOPIC), "kafka topic is null");
-    final String kafka_servers = Preconditions.checkNotNull(getTableProperty(table, Constants.KAFKA_BOOTSTRAP_SERVERS), "kafka connect string is null");
+    final String kafkaTopic = Preconditions.checkNotNull(
+            DruidStorageHandlerUtils.getTableProperty(table, Constants.KAFKA_TOPIC), "kafka topic is null");
+    final String kafka_servers = Preconditions.checkNotNull(
+            DruidStorageHandlerUtils.getTableProperty(table, Constants.KAFKA_BOOTSTRAP_SERVERS), "kafka connect string is null");
 
     Properties tableProperties = new Properties();
     tableProperties.putAll(table.getParameters());
@@ -299,13 +309,16 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
               columnNames);
     }
 
-    final InputRowParser inputRowParser = new StringInputRowParser(
-        new JSONParseSpec(
-            new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
-            new DimensionsSpec(dimensionsAndAggregates.lhs, null, null),
-            null,
+    DimensionsSpec dimensionsSpec = new DimensionsSpec(dimensionsAndAggregates.lhs, null, null);
+    String timestampFormat = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_TIMESTAMP_FORMAT);
+    String timestampColumnName = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_TIMESTAMP_COLUMN);
+    if(timestampColumnName == null){
+      timestampColumnName = DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN;
+    }
+    TimestampSpec timestampSpec = new TimestampSpec(timestampColumnName, timestampFormat,
             null
-        ), "UTF-8");
+    );
+    final InputRowParser inputRowParser = getInputRowParser(table, timestampSpec, dimensionsSpec);
 
     Map<String, Object> inputParser = JSON_MAPPER
         .convertValue(inputRowParser, Map.class);
@@ -325,7 +338,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
     // Fetch existing Ingestion Spec from Druid, if any
     KafkaSupervisorSpec existingSpec = fetchKafkaIngestionSpec(table);
-    String targetState = getTableProperty(table, Constants.DRUID_KAFKA_INGESTION);
+    String targetState = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_KAFKA_INGESTION);
     if(targetState == null){
       // Case when user has not specified any ingestion state in the current command
       // if there is a kafka supervisor running then keep it last known state is START otherwise STOP.
@@ -347,44 +360,125 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       }
       resetKafkaIngestion(overlordAddress, dataSourceName);
     } else {
-      throw new IllegalArgumentException(String.format("Invalid value for property [%s], Valid values are [START, STOP, RESET]", Constants.DRUID_KAFKA_INGESTION));
+      throw new IllegalArgumentException(String.format("Invalid value for property [%s], Valid values are [START, STOP, RESET]", DruidConstants.DRUID_KAFKA_INGESTION));
     }
     // We do not want to keep state in two separate places so remove from hive table properties.
-    table.getParameters().remove(Constants.DRUID_KAFKA_INGESTION);
+    table.getParameters().remove(DruidConstants.DRUID_KAFKA_INGESTION);
+  }
+
+  private InputRowParser getInputRowParser(Table table,
+          TimestampSpec timestampSpec,
+          DimensionsSpec dimensionsSpec
+  ) {
+    String parseSpecFormat = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_FORMAT);
+
+    // Default case JSON
+    if(parseSpecFormat == null || parseSpecFormat.equalsIgnoreCase("json")) {
+      return new StringInputRowParser(
+              new JSONParseSpec(timestampSpec,
+                      dimensionsSpec,
+                      null,
+                      null
+              ), "UTF-8");
+    } else if(parseSpecFormat.equalsIgnoreCase("csv")){
+      return new StringInputRowParser(
+              new CSVParseSpec(
+                      timestampSpec,
+                      dimensionsSpec,
+                      DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_LIST_DELIMITER),
+                      DruidStorageHandlerUtils.getListProperty(table, DruidConstants.DRUID_PARSE_SPEC_COLUMNS),
+                      DruidStorageHandlerUtils.getBooleanProperty(table, DruidConstants.DRUID_PARSE_SPEC_HAS_HEADER_ROWS, false),
+                      DruidStorageHandlerUtils.getIntegerProperty(table, DruidConstants.DRUID_PARSE_SPEC_SKIP_HEADER_ROWS, 0)
+              ), "UTF-8");
+    } else if (parseSpecFormat.equalsIgnoreCase("delimited")){
+      return new StringInputRowParser(
+              new DelimitedParseSpec(
+                      timestampSpec,
+                      dimensionsSpec,
+                      DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_DELIMITER),
+                      DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.DRUID_PARSE_SPEC_LIST_DELIMITER),
+                      DruidStorageHandlerUtils.getListProperty(table, DruidConstants.DRUID_PARSE_SPEC_COLUMNS),
+                      DruidStorageHandlerUtils.getBooleanProperty(table, DruidConstants.DRUID_PARSE_SPEC_HAS_HEADER_ROWS, false),
+                      DruidStorageHandlerUtils.getIntegerProperty(table, DruidConstants.DRUID_PARSE_SPEC_SKIP_HEADER_ROWS, 0)
+              ), "UTF-8");
+    } else if(parseSpecFormat.equalsIgnoreCase("avro")) {
+      try {
+        String avroSchemaLiteral = DruidStorageHandlerUtils.getTableProperty(table, DruidConstants.AVRO_SCHEMA_LITERAL);
+        Preconditions.checkNotNull(avroSchemaLiteral,
+                "Please specify avro schema literal when using avro parser"
+        );
+        Map<String, Object> avroSchema = JSON_MAPPER
+                .readValue(avroSchemaLiteral, new TypeReference<Map<String, Object>>() {
+                });
+        return new AvroStreamInputRowParser(new AvroParseSpec(
+                timestampSpec,
+                dimensionsSpec,
+                null
+        ), new InlineSchemaAvroBytesDecoder(avroSchema));
+      } catch (Exception e) {
+        throw new IllegalStateException("Exception while creating avro schema", e);
+      }
+    }
+
+    throw new IllegalArgumentException("Invalid parse spec format [" + parseSpecFormat+"]. "
+            + "Supported types are : json, csv, tsv, avro");
   }
 
   private static KafkaSupervisorSpec createKafkaSupervisorSpec(Table table, String kafkaTopic,
       String kafka_servers, DataSchema dataSchema, IndexSpec indexSpec) {
     return new KafkaSupervisorSpec(dataSchema,
           new KafkaSupervisorTuningConfig(
-              getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsInMemory"),
-              getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsPerSegment"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "intermediatePersistPeriod"),
+              DruidStorageHandlerUtils
+                      .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsInMemory"),
+              DruidStorageHandlerUtils
+                      .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxRowsPerSegment"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "intermediatePersistPeriod"),
               null, // basePersistDirectory - use druid default, no need to be configured by user
-              getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxPendingPersists"),
+              DruidStorageHandlerUtils
+                      .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "maxPendingPersists"),
               indexSpec,
               null, // buildV9Directly - use druid default, no need to be configured by user
-              getBooleanProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "reportParseExceptions"),
-              getLongProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "handoffConditionTimeout"),
-              getBooleanProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "resetOffsetAutomatically"),
-              getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "workerThreads"),
-              getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatThreads"),
-              getLongProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatRetries"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "httpTimeout"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "shutdownTimeout"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "offsetFetchPeriod")),
+              DruidStorageHandlerUtils
+                      .getBooleanProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "reportParseExceptions"),
+              DruidStorageHandlerUtils
+                      .getLongProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "handoffConditionTimeout"),
+              DruidStorageHandlerUtils
+                      .getBooleanProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "resetOffsetAutomatically"),
+              DruidStorageHandlerUtils
+                      .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "workerThreads"),
+              DruidStorageHandlerUtils
+                      .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatThreads"),
+              DruidStorageHandlerUtils
+                      .getLongProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "chatRetries"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "httpTimeout"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "shutdownTimeout"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "offsetFetchPeriod")),
           new KafkaSupervisorIOConfig(kafkaTopic, // Mandatory Property
-              getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "replicas"),
-              getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskCount"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskDuration"),
+              DruidStorageHandlerUtils
+                      .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "replicas"),
+              DruidStorageHandlerUtils
+                      .getIntegerProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskCount"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskDuration"),
               getKafkaConsumerProperties(table, kafka_servers), // Mandatory Property
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "startDelay"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "period"),
-              getBooleanProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "useEarliestOffset"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "completionTimeout"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "lateMessageRejectionPeriod"),
-              getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "earlyMessageRejectionPeriod"),
-              getBooleanProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "skipOffsetGaps")),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "startDelay"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "period"),
+              DruidStorageHandlerUtils
+                      .getBooleanProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "useEarliestOffset"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "completionTimeout"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "lateMessageRejectionPeriod"),
+              DruidStorageHandlerUtils
+                      .getPeriodProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "earlyMessageRejectionPeriod"),
+              DruidStorageHandlerUtils
+                      .getBooleanProperty(table, DruidConstants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "skipOffsetGaps")),
           new HashMap<String, Object>()
       );
   }
@@ -393,9 +487,9 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
     builder.put(KafkaSupervisorIOConfig.BOOTSTRAP_SERVERS_KEY, kafka_servers);
     for (Map.Entry<String, String> entry : table.getParameters().entrySet()) {
-      if (entry.getKey().startsWith(Constants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX)) {
+      if (entry.getKey().startsWith(DruidConstants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX)) {
         String propertyName = entry.getKey()
-                .substring(Constants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX.length());
+                .substring(DruidConstants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX.length());
         builder.put(propertyName, entry.getValue());
       }
     }
@@ -496,7 +590,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
             .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS),
         "Druid Overlord Address is null");
     String dataSourceName = Preconditions
-        .checkNotNull(getTableProperty(table, Constants.DRUID_DATA_SOURCE),
+        .checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
             "Druid Datasource name is null");
     try {
       FullResponseHolder response = RetryUtils
@@ -542,7 +636,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
                     .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS),
             "Druid Overlord Address is null");
     String dataSourceName = Preconditions
-            .checkNotNull(getTableProperty(table, Constants.DRUID_DATA_SOURCE),
+            .checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
                     "Druid Datasource name is null");
     try {
       FullResponseHolder response = RetryUtils.retry(() -> DruidStorageHandlerUtils
@@ -587,8 +681,8 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       throws IOException, CallbackFailedException {
     final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
     final String segmentDirectory =
-        table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY) != null
-            ? table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY)
+        table.getParameters().get(DruidConstants.DRUID_SEGMENT_DIRECTORY) != null
+            ? table.getParameters().get(DruidConstants.DRUID_SEGMENT_DIRECTORY)
             : HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
 
       final HdfsDataSegmentPusherConfig hdfsSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
@@ -773,7 +867,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
               .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS),
           "Druid Overlord Address is null");
       String dataSourceName = Preconditions
-          .checkNotNull(getTableProperty(table, Constants.DRUID_DATA_SOURCE),
+          .checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
               "Druid Datasource name is null");
       stopKafkaIngestion(overlordAddress, dataSourceName);
     }
@@ -863,10 +957,10 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     jobProperties.put(Constants.DRUID_DATA_SOURCE, tableDesc.getTableName());
-    jobProperties.put(Constants.DRUID_SEGMENT_VERSION, new DateTime().toString());
-    jobProperties.put(Constants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
+    jobProperties.put(DruidConstants.DRUID_SEGMENT_VERSION, new DateTime().toString());
+    jobProperties.put(DruidConstants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
     // DruidOutputFormat will write segments in an intermediate directory
-    jobProperties.put(Constants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY,
+    jobProperties.put(DruidConstants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY,
             getIntermediateSegmentDir().toString());
   }
 
@@ -1059,63 +1153,9 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     }
   }
 
-  private static <T> Boolean getBooleanProperty(Table table, String propertyName) {
-    String val = getTableProperty(table, propertyName);
-    if (val == null) {
-      return null;
-    }
-    return Boolean.parseBoolean(val);
-  }
-
-  private static <T> Integer getIntegerProperty(Table table, String propertyName) {
-    String val = getTableProperty(table, propertyName);
-    if (val == null) {
-      return null;
-    }
-    try {
-      return Integer.parseInt(val);
-    } catch (NumberFormatException e) {
-      throw new NumberFormatException(String
-          .format("Exception while parsing property[%s] with Value [%s] as Integer", propertyName,
-              val));
-    }
-  }
-
-  private static <T> Long getLongProperty(Table table, String propertyName) {
-    String val = getTableProperty(table, propertyName);
-    if (val == null) {
-      return null;
-    }
-    try {
-      return Long.parseLong(val);
-    } catch (NumberFormatException e) {
-      throw new NumberFormatException(String
-          .format("Exception while parsing property[%s] with Value [%s] as Long", propertyName,
-              val));
-    }
-  }
-
-  private static <T> Period getPeriodProperty(Table table, String propertyName) {
-    String val = getTableProperty(table, propertyName);
-    if (val == null) {
-      return null;
-    }
-    try {
-      return Period.parse(val);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(String
-          .format("Exception while parsing property[%s] with Value [%s] as Period", propertyName,
-              val));
-    }
-  }
-
-  private static String getTableProperty(Table table, String propertyName) {
-    return table.getParameters().get(propertyName);
-  }
-
   private static boolean isKafkaStreamingTable(Table table){
     // For kafka Streaming tables it is mandatory to set a kafka topic.
-    return getTableProperty(table, Constants.KAFKA_TOPIC) != null;
+    return DruidStorageHandlerUtils.getTableProperty(table, Constants.KAFKA_TOPIC) != null;
   }
 
   private int getMaxRetryCount() {

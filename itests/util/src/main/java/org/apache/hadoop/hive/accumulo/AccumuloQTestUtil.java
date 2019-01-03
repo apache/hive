@@ -32,6 +32,7 @@ public class AccumuloQTestUtil extends QTestUtil {
     super(outDir, logDir, miniMr, null, "0.20", initScript, cleanupScript, false);
     setup.setupWithHiveConf(conf);
     this.setup = setup;
+    this.savedConf = new HiveConf(conf);
   }
 
   @Override

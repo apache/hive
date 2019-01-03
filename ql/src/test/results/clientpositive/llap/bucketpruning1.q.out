@@ -576,6 +576,9 @@ select * from srcbucket_pruned where key in (2,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (2, 3)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -642,6 +645,9 @@ select * from srcbucket_pruned where key in (2,3) and ds='2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (2, 3) AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -708,6 +714,9 @@ select * from srcbucket_pruned where key in (2,3) and ds='2008-04-08' and value=
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (2, 3) AND `ds` = '2008-04-08' AND `value` = 'One'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -774,6 +783,9 @@ select * from srcbucket_pruned where value='One' and key in (2,3) and ds='2008-0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (2, 3) AND `value` = 'One' AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -840,6 +852,9 @@ select * from srcbucket_pruned where (key=1 or key=2) and ds='2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (1, 2) AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -906,6 +921,9 @@ select * from srcbucket_pruned where (key=1 or key=2) and value = 'One' and ds='
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (1, 2) AND `value` = 'One' AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1041,6 +1059,9 @@ select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1107,6 +1128,9 @@ select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17) AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1173,6 +1197,9 @@ select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17) AND `ds` = '2008-04-08' AND `value` = 'One'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1239,6 +1266,9 @@ select * from srcbucket_pruned where value='One' and key in (1,2,3,4,5,6,7,8,9,1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17) AND `value` = 'One' AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1373,6 +1403,9 @@ select * from srcbucket_pruned where key = 1 and ds='2008-04-08' and (value='One
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `value` IN ('One', 'Two') AND `key` = 1 AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1509,7 +1542,7 @@ POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`srcbucket_pruned`
-WHERE FALSE
+WHERE NULL
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1642,6 +1675,9 @@ select * from srcbucket_pruned where key = 1 or value = "One" or key = 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`srcbucket_pruned`
+WHERE `key` IN (1, 2) OR `value` = 'One'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1707,6 +1743,9 @@ select * from srcbucket_unpruned where key in (3, 5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_unpruned
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`srcbucket_unpruned`
+WHERE `key` IN (3, 5)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

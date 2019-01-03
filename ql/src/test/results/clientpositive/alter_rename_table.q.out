@@ -286,12 +286,12 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: source@src2
 PREHOOK: query: ANALYZE TABlE source.src2 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: source@src2
 #### A masked pattern was here ####
 PREHOOK: Output: source@src2
 POSTHOOK: query: ANALYZE TABlE source.src2 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: source@src2
 #### A masked pattern was here ####
 POSTHOOK: Output: source@src2

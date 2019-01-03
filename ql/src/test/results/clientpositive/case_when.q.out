@@ -1,0 +1,110 @@
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `Calcs`(
+   `bool0` boolean,
+   `bool1` boolean,
+   `bool2` boolean)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@Calcs
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `Calcs`(
+   `bool0` boolean,
+   `bool1` boolean,
+   `bool2` boolean)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@Calcs
+PREHOOK: query: INSERT INTO Calcs VALUES
+( NULL   , true   , false ),
+( true   , true   , false ),
+( false  , true   , true  ),
+( NULL   , false  , true  ),
+( NULL   , false  , true  ),
+( true   , false  , true  ),
+( false  , NULL   , false ),
+( NULL   , NULL   , false ),
+( true   , true   , false ),
+( false  , true   , false ),
+( NULL   , true   , false ),
+( true   , false  , false ),
+( false  , false  , true  ),
+( NULL   , false  , true  ),
+( true   , NULL   , false ),
+( false  , NULL   , true  ),
+( NULL   , NULL   , false )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@calcs
+POSTHOOK: query: INSERT INTO Calcs VALUES
+( NULL   , true   , false ),
+( true   , true   , false ),
+( false  , true   , true  ),
+( NULL   , false  , true  ),
+( NULL   , false  , true  ),
+( true   , false  , true  ),
+( false  , NULL   , false ),
+( NULL   , NULL   , false ),
+( true   , true   , false ),
+( false  , true   , false ),
+( NULL   , true   , false ),
+( true   , false  , false ),
+( false  , false  , true  ),
+( NULL   , false  , true  ),
+( true   , NULL   , false ),
+( false  , NULL   , true  ),
+( NULL   , NULL   , false )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@calcs
+POSTHOOK: Lineage: calcs.bool0 SCRIPT []
+POSTHOOK: Lineage: calcs.bool1 SCRIPT []
+POSTHOOK: Lineage: calcs.bool2 SCRIPT []
+PREHOOK: query: SELECT
+   bool0,
+   bool1,
+   bool2,
+   ((CASE
+      WHEN bool0 THEN (CASE WHEN bool1 THEN 1 WHEN NOT bool1 THEN 0 ELSE NULL END)
+      ELSE (CASE WHEN bool2 THEN 1 WHEN NOT bool2 THEN 0 ELSE NULL END) END) = 1) AS res
+FROM Calcs
+ORDER BY bool0, bool1, bool2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calcs
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+   bool0,
+   bool1,
+   bool2,
+   ((CASE
+      WHEN bool0 THEN (CASE WHEN bool1 THEN 1 WHEN NOT bool1 THEN 0 ELSE NULL END)
+      ELSE (CASE WHEN bool2 THEN 1 WHEN NOT bool2 THEN 0 ELSE NULL END) END) = 1) AS res
+FROM Calcs
+ORDER BY bool0, bool1, bool2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calcs
+#### A masked pattern was here ####
+NULL	NULL	false	false
+NULL	NULL	false	false
+NULL	false	true	true
+NULL	false	true	true
+NULL	false	true	true
+NULL	true	false	false
+NULL	true	false	false
+false	NULL	false	false
+false	NULL	true	true
+false	false	true	true
+false	true	false	false
+false	true	true	true
+true	NULL	false	NULL
+true	false	false	false
+true	false	true	false
+true	true	false	true
+true	true	false	true
+PREHOOK: query: DROP TABLE IF EXISTS `Calcs`
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@calcs
+PREHOOK: Output: default@calcs
+POSTHOOK: query: DROP TABLE IF EXISTS `Calcs`
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@calcs
+POSTHOOK: Output: default@calcs

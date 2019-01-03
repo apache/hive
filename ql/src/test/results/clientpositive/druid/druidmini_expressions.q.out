@@ -1664,3 +1664,8 @@ POSTHOOK: query: SELECT TO_DATE(date1), TO_DATE(datetime1) FROM druid_table_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	NULL
+2004-04-04	2004-04-04
+2004-04-09	2004-04-09
+2004-04-11	2004-04-11
+2004-04-12	2004-04-12

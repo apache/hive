@@ -323,7 +323,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n1
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n0_key1_min) AND DynamicValue(RS_7_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n0_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key BETWEEN DynamicValue(RS_7_srcpart_small_n0_key1_min) AND DynamicValue(RS_7_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n0_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n0_key1_min) AND DynamicValue(RS_7_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n0_key1_bloom_filter))) and key is not null) (type: boolean)
@@ -343,7 +343,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n0
-                  filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -456,21 +455,20 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Map 1 <- Reducer 6 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
-        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n1
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_10_srcpart_medium_n0_key2_min) AND DynamicValue(RS_10_srcpart_medium_n0_key2_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_medium_n0_key2_bloom_filter))) and (key BETWEEN DynamicValue(RS_11_srcpart_small_n0_key1_min) AND DynamicValue(RS_11_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_11_srcpart_small_n0_key1_bloom_filter)))) (type: boolean)
+                  filterExpr: (key BETWEEN DynamicValue(RS_11_srcpart_small_n0_key1_min) AND DynamicValue(RS_11_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_11_srcpart_small_n0_key1_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_10_srcpart_medium_n0_key2_min) AND DynamicValue(RS_10_srcpart_medium_n0_key2_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_medium_n0_key2_bloom_filter))) and (key BETWEEN DynamicValue(RS_11_srcpart_small_n0_key1_min) AND DynamicValue(RS_11_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_11_srcpart_small_n0_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_11_srcpart_small_n0_key1_min) AND DynamicValue(RS_11_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_11_srcpart_small_n0_key1_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -487,7 +485,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_medium_n0
-                  filterExpr: key2 is not null (type: boolean)
                   Statistics: Num rows: 50 Data size: 4350 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key2 is not null (type: boolean)
@@ -501,26 +498,12 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 50 Data size: 4350 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 50 Data size: 4350 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=49)
-                          mode: hash
-                          outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 6 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n0
-                  filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -585,19 +568,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=49)
-                mode: final
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
-        Reducer 7 
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -884,7 +855,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n1
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_10_srcpart_medium_n0_key2_min) AND DynamicValue(RS_10_srcpart_medium_n0_key2_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_medium_n0_key2_bloom_filter)))) (type: boolean)
+                  filterExpr: (key BETWEEN DynamicValue(RS_10_srcpart_medium_n0_key2_min) AND DynamicValue(RS_10_srcpart_medium_n0_key2_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_medium_n0_key2_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key BETWEEN DynamicValue(RS_10_srcpart_medium_n0_key2_min) AND DynamicValue(RS_10_srcpart_medium_n0_key2_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_medium_n0_key2_bloom_filter))) and key is not null) (type: boolean)
@@ -904,7 +875,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_medium_n0
-                  filterExpr: key2 is not null (type: boolean)
                   Statistics: Num rows: 50 Data size: 4350 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key2 is not null (type: boolean)

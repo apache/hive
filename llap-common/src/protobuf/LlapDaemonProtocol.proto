@@ -134,6 +134,14 @@ message SubmitWorkRequestProto {
   optional bool is_guaranteed = 12 [default = false];
 }
 
+message RegisterDagRequestProto {
+  optional string user = 1;
+  required QueryIdentifierProto query_identifier = 2;
+  optional bytes credentials_binary = 3;
+}
+
+message RegisterDagResponseProto {
+}
 
 enum SubmissionStateProto {
   ACCEPTED = 1;
@@ -204,6 +212,7 @@ message PurgeCacheResponseProto {
 }
 
 service LlapDaemonProtocol {
+  rpc registerDag(RegisterDagRequestProto) returns (RegisterDagResponseProto);
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
   rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
   rpc queryComplete(QueryCompleteRequestProto) returns (QueryCompleteResponseProto);

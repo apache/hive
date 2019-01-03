@@ -69,6 +69,7 @@ import io.druid.query.expression.TimestampShiftExprMacro;
 import io.druid.query.expression.TrimExprMacro;
 import io.druid.query.filter.AndDimFilter;
 import io.druid.query.filter.BloomDimFilter;
+import io.druid.query.filter.BloomKFilterHolder;
 import io.druid.query.filter.BoundDimFilter;
 import io.druid.query.filter.DimFilter;
 import io.druid.query.filter.OrDimFilter;
@@ -114,6 +115,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
+import org.apache.hadoop.hive.druid.json.AvroParseSpec;
+import org.apache.hadoop.hive.druid.json.AvroStreamInputRowParser;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.ExprNodeDynamicValueEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -147,6 +152,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
+import org.joda.time.Period;
 import org.joda.time.chrono.ISOChronology;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
@@ -240,6 +246,11 @@ public final class DruidStorageHandlerUtils {
     // Register the shard sub type to be used by the mapper
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
     JSON_MAPPER.registerSubtypes(new NamedType(NumberedShardSpec.class, "numbered"));
+
+    JSON_MAPPER.registerSubtypes(new NamedType(AvroParseSpec.class, "avro"));
+    SMILE_MAPPER.registerSubtypes(new NamedType(AvroParseSpec.class, "avro"));
+    JSON_MAPPER.registerSubtypes(new NamedType(AvroStreamInputRowParser.class, "avro_stream"));
+    SMILE_MAPPER.registerSubtypes(new NamedType(AvroStreamInputRowParser.class, "avro_stream"));
 
     // Register Bloom Filter Serializers
     BloomFilterSerializersModule bloomFilterSerializersModule = new BloomFilterSerializersModule();
@@ -728,6 +739,83 @@ public final class DruidStorageHandlerUtils {
         .build();
     return JSON_MAPPER.writeValueAsString(scanQuery);
   }
+
+  static <T> Boolean getBooleanProperty(Table table, String propertyName) {
+    String val = getTableProperty(table, propertyName);
+    if (val == null) {
+      return null;
+    }
+    return Boolean.parseBoolean(val);
+  }
+
+  static boolean getBooleanProperty(Table table, String propertyName, boolean defaultVal) {
+    Boolean val = getBooleanProperty(table, propertyName);
+    return val == null ? defaultVal : val;
+  }
+
+  static <T> Integer getIntegerProperty(Table table, String propertyName) {
+    String val = getTableProperty(table, propertyName);
+    if (val == null) {
+      return null;
+    }
+    try {
+      return Integer.parseInt(val);
+    } catch (NumberFormatException e) {
+      throw new NumberFormatException(String
+          .format("Exception while parsing property[%s] with Value [%s] as Integer", propertyName,
+              val));
+    }
+  }
+
+  static int getIntegerProperty(Table table, String propertyName, int defaultVal) {
+    Integer val = getIntegerProperty(table, propertyName);
+    return val == null ? defaultVal : val;
+  }
+
+  static <T> Long getLongProperty(Table table, String propertyName) {
+    String val = getTableProperty(table, propertyName);
+    if (val == null) {
+      return null;
+    }
+    try {
+      return Long.parseLong(val);
+    } catch (NumberFormatException e) {
+      throw new NumberFormatException(String
+          .format("Exception while parsing property[%s] with Value [%s] as Long", propertyName,
+              val));
+    }
+  }
+
+  static <T> Period getPeriodProperty(Table table, String propertyName) {
+    String val = getTableProperty(table, propertyName);
+    if (val == null) {
+      return null;
+    }
+    try {
+      return Period.parse(val);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException(String
+          .format("Exception while parsing property[%s] with Value [%s] as Period", propertyName,
+              val));
+    }
+  }
+
+  static String getTableProperty(Table table, String propertyName) {
+    return table.getParameters().get(propertyName);
+  }
+
+  public static List<String> getListProperty(Table table, String propertyName) {
+    List<String> rv = new ArrayList<String>();
+    String values = getTableProperty(table, propertyName);
+    String[] vals = values.trim().split(",");
+    for (String val : vals) {
+      if (org.apache.commons.lang.StringUtils.isNotBlank(val)) {
+        rv.add(val);
+      }
+    }
+    return rv;
+  }
+
   /**
    * Simple interface for retry operations
    */
@@ -872,7 +960,7 @@ public final class DruidStorageHandlerUtils {
         tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) != null ?
             tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
             HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
-    final boolean rollup = tableProperties.getProperty(Constants.DRUID_ROLLUP) != null ?
+    final boolean rollup = tableProperties.getProperty(DruidConstants.DRUID_ROLLUP) != null ?
         Boolean.parseBoolean(tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY)):
         HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_DRUID_ROLLUP);
     return new UniformGranularitySpec(
@@ -1088,7 +1176,7 @@ public final class DruidStorageHandlerUtils {
           BloomKFilter bloomFilter = evaluateBloomFilter(child.get(1), configuration,
                   resolveDynamicValues
           );
-          return new BloomDimFilter(col, bloomFilter, null);
+          return new BloomDimFilter(col, BloomKFilterHolder.fromBloomKFilter(bloomFilter), null);
         } catch (HiveException e) {
           throw new RuntimeException(e);
         } catch (IOException e) {

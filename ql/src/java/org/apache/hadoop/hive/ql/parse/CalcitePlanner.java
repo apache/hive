@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.Tree;
@@ -279,7 +280,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -305,6 +305,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.sql.DataSource;
 
 
 public class CalcitePlanner extends SemanticAnalyzer {
@@ -1920,16 +1922,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
       );
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Druid transformation rules");
 
-      calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
-              HepMatchOrder.TOP_DOWN,
-              JDBCExtractJoinFilterRule.INSTANCE,
-              JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN,
-              JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
-              JDBCFilterJoinRule.INSTANCE,
-              JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
-              JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE,
-              JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
-      );
+      if (conf.getBoolVar(ConfVars.HIVE_ENABLE_JDBC_PUSHDOWN)) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
+            HepMatchOrder.TOP_DOWN,
+            JDBCExtractJoinFilterRule.INSTANCE,
+            JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN,
+            JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
+            JDBCFilterJoinRule.INSTANCE,
+            JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
+            JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE,
+            JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
+        );
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: JDBC transformation rules");
+      }
 
       // 11. Run rules to aid in translation from Calcite tree to Hive tree
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
@@ -2063,6 +2069,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
         rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));
+        rules.add(new HivePointLookupOptimizerRule.ProjectionExpressions(minNumORClauses));
       }
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_CONSTRAINTS_JOIN) &&
           profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {

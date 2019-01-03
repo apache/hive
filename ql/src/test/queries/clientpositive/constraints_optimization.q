@@ -147,3 +147,284 @@ explain select key1 from dest_g24 group by key1, value1;
 
 DROP TABLE dest_g21;
 DROP TABLE dest_g24;
+
+CREATE TABLE `customer`(
+  `c_customer_sk` int,
+  `c_customer_id` string,
+  `c_current_cdemo_sk` int,
+  `c_current_hdemo_sk` int,
+  `c_current_addr_sk` int,
+  `c_first_shipto_date_sk` int,
+  `c_first_sales_date_sk` int,
+  `c_salutation` string,
+  `c_first_name` string,
+  `c_last_name` string,
+  `c_preferred_cust_flag` string,
+  `c_birth_day` int,
+  `c_birth_month` int,
+  `c_birth_year` int,
+  `c_birth_country` string,
+  `c_login` string,
+  `c_email_address` string,
+  `c_last_review_date` string);
+
+  CREATE TABLE `store_sales`(
+    `ss_sold_date_sk` int,
+    `ss_sold_time_sk` int,
+    `ss_item_sk` int,
+    `ss_customer_sk` int,
+    `ss_cdemo_sk` int,
+    `ss_hdemo_sk` int,
+    `ss_addr_sk` int,
+    `ss_store_sk` int,
+    `ss_promo_sk` int,
+    `ss_ticket_number` int,
+    `ss_quantity` int,
+    `ss_wholesale_cost` decimal(7,2),
+    `ss_list_price` decimal(7,2),
+    `ss_sales_price` decimal(7,2),
+    `ss_ext_discount_amt` decimal(7,2),
+    `ss_ext_sales_price` decimal(7,2),
+    `ss_ext_wholesale_cost` decimal(7,2),
+    `ss_ext_list_price` decimal(7,2),
+    `ss_ext_tax` decimal(7,2),
+    `ss_coupon_amt` decimal(7,2),
+    `ss_net_paid` decimal(7,2),
+    `ss_net_paid_inc_tax` decimal(7,2),
+    `ss_net_profit` decimal(7,2));
+
+    alter table customer add constraint pk_c primary key (c_customer_sk) disable novalidate rely;
+    alter table customer change column c_customer_id c_customer_id string constraint cid_nn not null disable novalidate rely;
+    alter table customer add constraint uk1 UNIQUE(c_customer_id) disable novalidate rely;
+
+    alter table store_sales add constraint pk_ss primary key (ss_item_sk, ss_ticket_number) disable novalidate rely;
+    alter table store_sales add constraint ss_c foreign key  (ss_customer_sk) references customer (c_customer_sk) disable novalidate rely;
+
+    explain cbo
+     select c_customer_id
+     from customer
+         ,store_sales
+     where c_customer_sk = ss_customer_sk
+     group by c_customer_id
+             ,c_first_name
+             ,c_last_name
+             ,c_preferred_cust_flag
+             ,c_birth_country
+             ,c_login
+             ,c_email_address;
+
+     explain cbo
+          select c_customer_id
+          from store_sales
+              ,customer
+          where c_customer_sk = ss_customer_sk
+          group by c_customer_id
+                  ,c_first_name
+                  ,c_last_name
+                  ,c_preferred_cust_flag
+                  ,c_birth_country
+                  ,c_login
+                  ,c_email_address;
+
+    explain cbo
+    with year_total as (
+     select c_customer_id customer_id
+           ,c_first_name customer_first_name
+           ,c_last_name customer_last_name
+           ,c_preferred_cust_flag customer_preferred_cust_flag
+           ,c_birth_country customer_birth_country
+           ,c_login customer_login
+           ,c_email_address customer_email_address
+           ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+           ,'s' sale_type
+     from customer
+         ,store_sales
+     where c_customer_sk = ss_customer_sk
+     group by c_customer_id
+             ,c_first_name
+             ,c_last_name
+             ,c_preferred_cust_flag
+             ,c_birth_country
+             ,c_login
+             ,c_email_address
+             )
+      select  t_s_secyear.customer_preferred_cust_flag
+     from
+         year_total t_s_secyear
+       where t_s_secyear.sale_type = 's'
+     order by t_s_secyear.customer_preferred_cust_flag
+    limit 100;
+
+    explain cbo
+        with year_total as (
+         select c_customer_id customer_id
+               ,c_first_name customer_first_name
+               ,c_last_name customer_last_name
+               ,c_preferred_cust_flag customer_preferred_cust_flag
+               ,c_birth_country customer_birth_country
+               ,c_login customer_login
+               ,c_email_address customer_email_address
+               ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+               ,'s' sale_type
+         from store_sales
+             ,customer
+         where c_customer_sk = ss_customer_sk
+         group by c_customer_id
+                 ,c_first_name
+                 ,c_last_name
+                 ,c_preferred_cust_flag
+                 ,c_birth_country
+                 ,c_login
+                 ,c_email_address
+                 )
+          select  t_s_secyear.customer_preferred_cust_flag
+         from
+             year_total t_s_secyear
+           where t_s_secyear.sale_type = 's'
+         order by t_s_secyear.customer_preferred_cust_flag
+        limit 100;
+
+        CREATE TABLE `date_dim`(
+          `d_date_sk` int,
+          `d_date_id` string,
+          `d_date` string,
+          `d_month_seq` int,
+          `d_week_seq` int,
+          `d_quarter_seq` int,
+          `d_year` int,
+          `d_dow` int,
+          `d_moy` int,
+          `d_dom` int,
+          `d_qoy` int,
+          `d_fy_year` int,
+          `d_fy_quarter_seq` int,
+          `d_fy_week_seq` int,
+          `d_day_name` string,
+          `d_quarter_name` string,
+          `d_holiday` string,
+          `d_weekend` string,
+          `d_following_holiday` string,
+          `d_first_dom` int,
+          `d_last_dom` int,
+          `d_same_day_ly` int,
+          `d_same_day_lq` int,
+          `d_current_day` string,
+          `d_current_week` string,
+          `d_current_month` string,
+          `d_current_quarter` string,
+          `d_current_year` string);
+
+    explain cbo
+    with year_total as (
+     select c_customer_id customer_id
+           ,c_first_name customer_first_name
+           ,c_last_name customer_last_name
+           ,c_preferred_cust_flag customer_preferred_cust_flag
+           ,c_birth_country customer_birth_country
+           ,c_login customer_login
+           ,c_email_address customer_email_address
+           ,d_year dyear
+           ,sum(((ss_ext_list_price-ss_ext_wholesale_cost-ss_ext_discount_amt)+ss_ext_sales_price)/2) year_total
+           ,'s' sale_type
+     from customer
+         ,store_sales
+         ,date_dim
+     where c_customer_sk = ss_customer_sk
+       and ss_sold_date_sk = d_date_sk
+     group by c_customer_id
+             ,c_first_name
+             ,c_last_name
+             ,c_preferred_cust_flag
+             ,c_birth_country
+             ,c_login
+             ,c_email_address
+             ,d_year
+             )
+      select  t_s_secyear.customer_preferred_cust_flag
+     from year_total t_s_firstyear
+         ,year_total t_s_secyear
+     where t_s_secyear.customer_id = t_s_firstyear.customer_id
+       and t_s_firstyear.sale_type = 's'
+       and t_s_secyear.sale_type = 's'
+       and t_s_firstyear.dyear =  2001
+       and t_s_secyear.dyear = 2001+1
+       and t_s_firstyear.year_total > 0
+     order by t_s_secyear.customer_preferred_cust_flag
+    limit 100;
+
+-- group by is both on unique as well pk but pk is used
+EXPLAIN	CBO
+SELECT
+	C_CUSTOMER_SK
+FROM
+	CUSTOMER
+,	STORE_SALES
+WHERE
+	C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+	C_CUSTOMER_SK
+,	C_CUSTOMER_ID
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+;
+-- group by is both on unique as well pk but unique is used
+EXPLAIN	CBO
+SELECT
+	C_CUSTOMER_ID
+FROM
+	CUSTOMER
+,	STORE_SALES
+WHERE
+	C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+	C_CUSTOMER_SK
+,	C_CUSTOMER_ID
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+;
+-- should keep the unique + one column c_first_name in gby
+EXPLAIN	CBO
+SELECT
+	C_FIRST_NAME
+FROM
+	CUSTOMER
+,	STORE_SALES
+WHERE
+	C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+	C_CUSTOMER_SK
+,	C_FIRST_NAME
+,	C_LAST_NAME
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+,	C_EMAIL_ADDRESS
+;
+
+-- group by keys order is different than than the source
+EXPLAIN	CBO
+SELECT
+	C_CUSTOMER_ID
+FROM
+	CUSTOMER
+,	STORE_SALES
+WHERE
+	C_CUSTOMER_SK	=	SS_CUSTOMER_SK
+GROUP BY
+	C_EMAIL_ADDRESS
+,	C_LAST_NAME
+,	C_FIRST_NAME
+,	C_CUSTOMER_ID
+,	C_PREFERRED_CUST_FLAG
+,	C_BIRTH_COUNTRY
+,	C_LOGIN
+;
+

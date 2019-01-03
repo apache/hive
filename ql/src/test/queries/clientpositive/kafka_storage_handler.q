@@ -288,12 +288,14 @@ insert into table kafka_table_csv (c_name,c_int, c_float, `__key`, `__partition`
 values ('test5',-15, -14.9996666, 'key-3' ,null ,-1,1536449552284);
 
 select * from kafka_table_csv;
-select distinct `__key`, c_name from kafka_table_csv;
+select distinct `__key`, c_name from kafka_table_csv order by `__key`;
 
 SET hive.vectorized.execution.enabled=false ;
 explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table;
-select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table;
+select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+order by `__offset`, `__key`;
 
 SET hive.vectorized.execution.enabled=true ;
 explain extended select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table;
-select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table;
+select distinct `__offset`, cast(`__timestamp` as timestamp ) , `__key` from wiki_kafka_avro_table
+order by `__offset`, `__key`;

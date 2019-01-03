@@ -245,10 +245,20 @@ public class TestFileUtils {
     when(shims.runDistCp(Collections.singletonList(copySrc), copyDst, conf)).thenReturn(false);
 
     // doAs when asked
-    Assert.assertTrue(FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, true, doAsUser, conf, shims));
+    Assert.assertTrue(FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, false, doAsUser, conf, shims));
     verify(shims).runDistCpAs(Collections.singletonList(copySrc), copyDst, conf, doAsUser);
     // don't doAs when not asked
     Assert.assertFalse(FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, true, null, conf, shims));
     verify(shims).runDistCp(Collections.singletonList(copySrc), copyDst, conf);
+
+    // When distcp is done with doAs, the delete should also be done as doAs. But in current code its broken. This
+    // should be fixed. For now check is added to avoid wrong usage. So if doAs is set, delete source should be false.
+    try {
+      FileUtils.distCp(fs, Collections.singletonList(copySrc), copyDst, true, doAsUser, conf, shims);
+      Assert.assertTrue("Should throw IOException as doAs is called with delete source set to true".equals(""));
+    } catch (IOException e) {
+      Assert.assertTrue(e.getMessage().
+              equalsIgnoreCase("Distcp is called with doAsUser and delete source set as true"));
+    }
   }
 }

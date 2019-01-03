@@ -909,7 +909,7 @@ public abstract class BaseSemanticAnalyzer {
       } catch(Exception e) {
         throw new SemanticException(
             ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid CHECK constraint expression: ")
-                + cc.getCheck_expression() + ". " + e.getMessage());
+                + cc.getCheck_expression() + ". " + e.getMessage(), e);
       }
     }
   }

@@ -306,7 +306,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 5/5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((b = 2) and (b) IN (2, 3)) (type: boolean)
+              predicate: (((b = 2) or (b = 3)) and (b = 2)) (type: boolean)
               Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
@@ -378,12 +378,12 @@ STAGE PLANS:
             alias: t8
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((b = 2) and (b) IN (2, 3)) (type: boolean)
-              Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+              predicate: (((b = 2) or (b = 3)) and (b = 2)) (type: boolean)
+              Statistics: Num rows: 3/8 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: a
-                Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3/8 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(a)
                   keys: 2 (type: int)
@@ -546,7 +546,7 @@ STAGE PLANS:
             alias: t8
             Statistics: Num rows: 40/40 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((2 = b) and (b = 2) and (b) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50)) (type: boolean)
+              predicate: (((b = 1) or (b = 2) or (b = 3) or (b = 4) or (b = 5) or (b = 6) or (b = 7) or (b = 8) or (b = 9) or (b = 10) or (b = 11) or (b = 12) or (b = 13) or (b = 14) or (b = 15) or (b = 16) or (b = 17) or (b = 18) or (b = 19) or (b = 20) or (b = 21) or (b = 22) or (b = 23) or (b = 24) or (b = 25) or (b = 26) or (b = 27) or (b = 28) or (b = 29) or (b = 30) or (b = 31) or (b = 32) or (b = 33) or (b = 34) or (b = 35) or (b = 36) or (b = 37) or (b = 38) or (b = 39) or (b = 40) or (b = 41) or (b = 42) or (b = 43) or (b = 44) or (b = 45) or (b = 46) or (b = 47) or (b = 48) or (b = 49) or (b = 50)) and (2 = b) and (b = 2)) (type: boolean)
               Statistics: Num rows: 8/8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: a (type: int)

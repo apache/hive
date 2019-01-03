@@ -1060,7 +1060,7 @@ public class SharedCache {
       }
       LOG.debug("Current cache size: {} bytes", currentCacheSizeInBytes);
     }
-    if (!table.isSetPartitionKeys() && (tableColStats != null)) {
+    if (table.getPartitionKeys().isEmpty() && (tableColStats != null)) {
       if (!tblWrapper.updateTableColStats(tableColStats.getStatsObj())) {
         return false;
       }
@@ -1088,6 +1088,10 @@ public class SharedCache {
       tblWrapper.cacheAggrPartitionColStats(aggrStatsAllPartitions,
           aggrStatsAllButDefaultPartition);
     }
+    tblWrapper.isPartitionCacheDirty.set(false);
+    tblWrapper.isTableColStatsCacheDirty.set(false);
+    tblWrapper.isPartitionColStatsCacheDirty.set(false);
+    tblWrapper.isAggrPartitionColStatsCacheDirty.set(false);
     try {
       cacheLock.writeLock().lock();
       // 2. Skip overwriting exisiting table object
@@ -1298,7 +1302,9 @@ public class SharedCache {
       tableCache.putAll(newCacheForDB);
       return true;
     } finally {
-      cacheLock.writeLock().unlock();
+      if (cacheLock.writeLock().isHeldByCurrentThread()) {
+        cacheLock.writeLock().unlock();
+      }
     }
   }
 
@@ -1699,6 +1705,12 @@ public class SharedCache {
     catalogCache.clear();
     catalogsDeletedDuringPrewarm.clear();
     isCatalogCacheDirty.set(false);
+  }
+
+  void clearDirtyFlags() {
+    isCatalogCacheDirty.set(false);
+    isDatabaseCacheDirty.set(false);
+    isTableCacheDirty.set(false);
   }
 
   public long getUpdateCount() {
