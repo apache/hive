@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField LOCATION_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("locationUri", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +52,14 @@ import org.slf4j.LoggerFactory;
   private String name; // required
   private String description; // optional
   private String locationUri; // required
+  private int createTime; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     NAME((short)1, "name"),
     DESCRIPTION((short)2, "description"),
-    LOCATION_URI((short)3, "locationUri");
+    LOCATION_URI((short)3, "locationUri"),
+    CREATE_TIME((short)4, "createTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ import org.slf4j.LoggerFactory;
           return DESCRIPTION;
         case 3: // LOCATION_URI
           return LOCATION_URI;
+        case 4: // CREATE_TIME
+          return CREATE_TIME;
         default:
           return null;
       }
@@ -117,7 +122,9 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.DESCRIPTION};
+  private static final int __CREATETIME_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.DESCRIPTION,_Fields.CREATE_TIME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -127,6 +134,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.LOCATION_URI, new org.apache.thrift.meta_data.FieldMetaData("locationUri", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Catalog.class, metaDataMap);
   }
@@ -147,6 +156,7 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public Catalog(Catalog other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetName()) {
       this.name = other.name;
     }
@@ -156,6 +166,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetLocationUri()) {
       this.locationUri = other.locationUri;
     }
+    this.createTime = other.createTime;
   }
 
   public Catalog deepCopy() {
@@ -167,6 +178,8 @@ import org.slf4j.LoggerFactory;
     this.name = null;
     this.description = null;
     this.locationUri = null;
+    setCreateTimeIsSet(false);
+    this.createTime = 0;
   }
 
   public String getName() {
@@ -238,6 +251,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public int getCreateTime() {
+    return this.createTime;
+  }
+
+  public void setCreateTime(int createTime) {
+    this.createTime = createTime;
+    setCreateTimeIsSet(true);
+  }
+
+  public void unsetCreateTime() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __CREATETIME_ISSET_ID);
+  }
+
+  /** Returns true if field createTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetCreateTime() {
+    return EncodingUtils.testBit(__isset_bitfield, __CREATETIME_ISSET_ID);
+  }
+
+  public void setCreateTimeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __CREATETIME_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -264,6 +299,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CREATE_TIME:
+      if (value == null) {
+        unsetCreateTime();
+      } else {
+        setCreateTime((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -277,6 +320,9 @@ import org.slf4j.LoggerFactory;
 
     case LOCATION_URI:
       return getLocationUri();
+
+    case CREATE_TIME:
+      return getCreateTime();
 
     }
     throw new IllegalStateException();
@@ -295,6 +341,8 @@ import org.slf4j.LoggerFactory;
       return isSetDescription();
     case LOCATION_URI:
       return isSetLocationUri();
+    case CREATE_TIME:
+      return isSetCreateTime();
     }
     throw new IllegalStateException();
   }
@@ -339,6 +387,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_createTime = true && this.isSetCreateTime();
+    boolean that_present_createTime = true && that.isSetCreateTime();
+    if (this_present_createTime || that_present_createTime) {
+      if (!(this_present_createTime && that_present_createTime))
+        return false;
+      if (this.createTime != that.createTime)
+        return false;
+    }
+
     return true;
   }
 
@@ -360,6 +417,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_locationUri);
     if (present_locationUri)
       list.add(locationUri);
+
+    boolean present_createTime = true && (isSetCreateTime());
+    list.add(present_createTime);
+    if (present_createTime)
+      list.add(createTime);
 
     return list.hashCode();
   }
@@ -398,6 +460,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetLocationUri()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.locationUri, other.locationUri);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCreateTime()).compareTo(other.isSetCreateTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCreateTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.createTime, other.createTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -447,6 +519,12 @@ import org.slf4j.LoggerFactory;
       sb.append(this.locationUri);
     }
     first = false;
+    if (isSetCreateTime()) {
+      if (!first) sb.append(", ");
+      sb.append("createTime:");
+      sb.append(this.createTime);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -466,6 +544,8 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -514,6 +594,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // CREATE_TIME
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.createTime = iprot.readI32();
+              struct.setCreateTimeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -544,6 +632,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeString(struct.locationUri);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetCreateTime()) {
+        oprot.writeFieldBegin(CREATE_TIME_FIELD_DESC);
+        oprot.writeI32(struct.createTime);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -571,7 +664,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetLocationUri()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetCreateTime()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
@@ -581,12 +677,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetLocationUri()) {
         oprot.writeString(struct.locationUri);
       }
+      if (struct.isSetCreateTime()) {
+        oprot.writeI32(struct.createTime);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Catalog struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -598,6 +697,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(2)) {
         struct.locationUri = iprot.readString();
         struct.setLocationUriIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.createTime = iprot.readI32();
+        struct.setCreateTimeIsSet(true);
       }
     }
   }

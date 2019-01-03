@@ -127,6 +127,8 @@ public class TestCatalogs extends MetaStoreClientTest {
       Assert.assertTrue(catNames[i].equalsIgnoreCase(cat.getName()));
       Assert.assertEquals(description[i], cat.getDescription());
       Assert.assertEquals(location[i], cat.getLocationUri());
+      Assert.assertTrue("Create time of catalog should be set", cat.isSetCreateTime());
+      Assert.assertTrue("Create time of catalog should be non-zero", cat.getCreateTime() > 0);
       File dir = new File(cat.getLocationUri());
       Assert.assertTrue(dir.exists() && dir.isDirectory());
 
