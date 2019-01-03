@@ -54,7 +54,7 @@ import java.util.Set;
  * writing this file is different than regular event handling for replication based on the conditions
  * specified in {@link org.apache.hadoop.hive.ql.parse.repl.dump.Utils#shouldReplicate}
  */
-public class ReplExternalTables {
+public final class ReplExternalTables {
   private static final Logger LOG = LoggerFactory.getLogger(ReplExternalTables.class);
   private static final String FIELD_SEPARATOR = ",";
   public static final String FILE_NAME = "_external_tables_info";

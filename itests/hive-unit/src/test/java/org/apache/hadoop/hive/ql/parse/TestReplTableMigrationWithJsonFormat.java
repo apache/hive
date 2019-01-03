@@ -23,7 +23,7 @@ import java.util.Collections;
 
 public class TestReplTableMigrationWithJsonFormat extends TestReplicationWithTableMigration {
   @BeforeClass
-  public static void setUpBeforeClass() throws Exception {
+  public static void classLevelSetup() throws Exception {
     internalBeforeClassSetup(Collections.emptyMap());
   }
 }
