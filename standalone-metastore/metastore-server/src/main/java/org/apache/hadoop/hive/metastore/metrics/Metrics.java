@@ -17,6 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore.metrics;
 
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -24,6 +32,8 @@ import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Reporter;
 import com.codahale.metrics.ScheduledReporter;
+import com.codahale.metrics.Slf4jReporter;
+import com.codahale.metrics.Slf4jReporter.LoggingLevel;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.jvm.BufferPoolMetricSet;
 import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
@@ -37,14 +47,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Metrics {
   private static final Logger LOGGER = LoggerFactory.getLogger(Metrics.class);
@@ -230,6 +232,18 @@ public class Metrics {
           reporters.add(reporter);
           scheduledReporters.add(reporter);
           hadoopMetricsStarted = true;
+        } else if (reporterName.startsWith("slf4j")) {
+          final String level = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_SLF4J_LOG_LEVEL);
+          final Slf4jReporter reporter = Slf4jReporter.forRegistry(registry)
+              .outputTo(LOGGER)
+              .convertRatesTo(TimeUnit.SECONDS)
+              .convertDurationsTo(TimeUnit.MILLISECONDS)
+              .withLoggingLevel(LoggingLevel.valueOf(level))
+              .build();
+          reporter.start(MetastoreConf.getTimeVar(conf,
+              MetastoreConf.ConfVars.METRICS_SLF4J_LOG_FREQUENCY_MINS, TimeUnit.SECONDS), TimeUnit.SECONDS);
+          reporters.add(reporter);
+          scheduledReporters.add(reporter);
         } else {
           throw new RuntimeException("Unknown metric type " + reporterName);
         }
