@@ -1,4 +1,4 @@
-SELECT 'Upgrading MetaStore schema from 3.0.0 to 3.1.0';
+SELECT 'Upgrading MetaStore schema from 3.0.1000 to 3.1.0';
 
 -- HIVE-19440
 ALTER TABLE "GLOBAL_PRIVS" ADD COLUMN "AUTHORIZER" character varying(128) DEFAULT NULL::character varying;
@@ -76,4 +76,4 @@ CREATE UNIQUE INDEX "NOTIFICATION_LOG_EVENT_ID" ON "NOTIFICATION_LOG" USING btre
 
 -- These lines need to be last.  Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='3.1.0', "VERSION_COMMENT"='Hive release version 3.1.0' where "VER_ID"=1;
-SELECT 'Finished upgrading MetaStore schema from 3.0.0 to 3.1.0';
+SELECT 'Finished upgrading MetaStore schema from 3.0.1000 to 3.1.0';

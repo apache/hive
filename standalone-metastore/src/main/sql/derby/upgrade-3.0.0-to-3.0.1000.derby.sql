@@ -1,0 +1,6 @@
+-- HIVE-21077
+ALTER TABLE "APP"."DBS" ADD COLUMN CREATE_TIME INTEGER;
+ALTER TABLE "APP"."CTLGS" ADD COLUMN CREATE_TIME INTEGER;
+
+-- This needs to be the last thing done.  Insert any changes above this line.
+UPDATE "APP".VERSION SET SCHEMA_VERSION='3.0.1000', VERSION_COMMENT='Hive release version 3.0.1000' where VER_ID=1;

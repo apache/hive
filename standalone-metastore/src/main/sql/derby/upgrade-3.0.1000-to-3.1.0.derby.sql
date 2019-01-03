@@ -1,4 +1,4 @@
--- Upgrade MetaStore schema from 3.0.0 to 3.1.0
+-- Upgrade MetaStore schema from 3.0.1000 to 3.1.0
 -- HIVE-19440
 ALTER TABLE "APP"."GLOBAL_PRIVS" ADD "AUTHORIZER" VARCHAR(128);
 DROP INDEX "APP"."GLOBALPRIVILEGEINDEX";
