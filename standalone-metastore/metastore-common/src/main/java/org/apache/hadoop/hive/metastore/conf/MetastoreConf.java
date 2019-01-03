@@ -673,8 +673,15 @@ public class MetastoreConf {
         "hive.service.metrics.file.location", "/tmp/report.json",
         "For metric class json metric reporter, the location of local JSON metrics file.  " +
             "This file will get overwritten at every interval."),
+    METRICS_SLF4J_LOG_FREQUENCY_MINS("metastore.metrics.slf4j.frequency",
+        "hive.service.metrics.slf4j.frequency", 5, TimeUnit.MINUTES,
+        "For SLF4J metric reporter, the frequency of logging metrics events. The default value is 5 mins."),
+    METRICS_SLF4J_LOG_LEVEL("metastore.metrics.slf4j.logging.level",
+        "hive.service.metrics.slf4j.logging.level", "INFO",
+        new StringSetValidator("TRACE", "DEBUG", "INFO", "WARN", "ERROR"),
+        "For SLF4J metric reporter, the logging level to be used for metrics event logs. The default level is INFO."),
     METRICS_REPORTERS("metastore.metrics.reporters", "metastore.metrics.reporters", "json,jmx",
-        new StringSetValidator("json", "jmx", "console", "hadoop"),
+        new StringSetValidator("json", "jmx", "console", "hadoop", "slf4j"),
         "A comma separated list of metrics reporters to start"),
     MSCK_PATH_VALIDATION("msck.path.validation", "hive.msck.path.validation", "throw",
       new StringSetValidator("throw", "skip", "ignore"), "The approach msck should take with HDFS " +
