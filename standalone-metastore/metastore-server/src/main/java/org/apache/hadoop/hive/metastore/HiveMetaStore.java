@@ -768,6 +768,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       } catch (NoSuchObjectException e) {
         Catalog cat = new Catalog(DEFAULT_CATALOG_NAME, wh.getWhRoot().toString());
+        long time = System.currentTimeMillis() / 1000;
+        cat.setCreateTime((int) time);
         cat.setDescription(Warehouse.DEFAULT_CATALOG_COMMENT);
         ms.createCatalog(cat);
       }
@@ -778,10 +780,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
       } catch (NoSuchObjectException e) {
         Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
-          wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null);
+            wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null);
         db.setOwnerName(PUBLIC);
         db.setOwnerType(PrincipalType.ROLE);
         db.setCatalogName(DEFAULT_CATALOG_NAME);
+        long time = System.currentTimeMillis() / 1000;
+        db.setCreateTime((int) time);
         ms.createDatabase(db);
       }
     }
@@ -1057,13 +1061,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             }
             madeDir = true;
           }
-
+          // set the create time of catalog
+          long time = System.currentTimeMillis() / 1000;
+          catalog.setCreateTime((int) time);
           ms.openTransaction();
           ms.createCatalog(catalog);
 
           // Create a default database inside the catalog
-          Database db = new Database(DEFAULT_DATABASE_NAME, "Default database for catalog " +
-                           catalog.getName(), catalog.getLocationUri(), Collections.emptyMap());
+          Database db = new Database(DEFAULT_DATABASE_NAME,
+              "Default database for catalog " + catalog.getName(), catalog.getLocationUri(),
+              Collections.emptyMap());
           db.setCatalogName(catalog.getName());
           create_database_core(ms, db);
 
@@ -1286,7 +1293,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       Path dbPath = wh.determineDatabasePath(cat, db);
       db.setLocationUri(dbPath.toString());
-
+      long time = System.currentTimeMillis()/1000;
+      db.setCreateTime((int) time);
       boolean success = false;
       boolean madeDir = false;
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
