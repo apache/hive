@@ -847,11 +847,13 @@ class Catalog
   NAME = 1
   DESCRIPTION = 2
   LOCATIONURI = 3
+  CREATETIME = 4
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
-    LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'}
+    LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'},
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -970,6 +972,7 @@ class Database
   OWNERNAME = 6
   OWNERTYPE = 7
   CATALOGNAME = 8
+  CREATETIME = 9
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -979,7 +982,8 @@ class Database
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName', :optional => true},
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :optional => true, :enum_class => ::PrincipalType},
-    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true}
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true}
   }
 
   def struct_fields; FIELDS; end

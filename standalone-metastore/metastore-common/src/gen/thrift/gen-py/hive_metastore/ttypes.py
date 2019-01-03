@@ -3465,6 +3465,7 @@ class Catalog:
    - name
    - description
    - locationUri
+   - createTime
   """
 
   thrift_spec = (
@@ -3472,12 +3473,14 @@ class Catalog:
     (1, TType.STRING, 'name', None, None, ), # 1
     (2, TType.STRING, 'description', None, None, ), # 2
     (3, TType.STRING, 'locationUri', None, None, ), # 3
+    (4, TType.I32, 'createTime', None, None, ), # 4
   )
 
-  def __init__(self, name=None, description=None, locationUri=None,):
+  def __init__(self, name=None, description=None, locationUri=None, createTime=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
+    self.createTime = createTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3503,6 +3506,11 @@ class Catalog:
           self.locationUri = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I32:
+          self.createTime = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3525,6 +3533,10 @@ class Catalog:
       oprot.writeFieldBegin('locationUri', TType.STRING, 3)
       oprot.writeString(self.locationUri)
       oprot.writeFieldEnd()
+    if self.createTime is not None:
+      oprot.writeFieldBegin('createTime', TType.I32, 4)
+      oprot.writeI32(self.createTime)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3537,6 +3549,7 @@ class Catalog:
     value = (value * 31) ^ hash(self.name)
     value = (value * 31) ^ hash(self.description)
     value = (value * 31) ^ hash(self.locationUri)
+    value = (value * 31) ^ hash(self.createTime)
     return value
 
   def __repr__(self):
@@ -3975,6 +3988,7 @@ class Database:
    - ownerName
    - ownerType
    - catalogName
+   - createTime
   """
 
   thrift_spec = (
@@ -3987,9 +4001,10 @@ class Database:
     (6, TType.STRING, 'ownerName', None, None, ), # 6
     (7, TType.I32, 'ownerType', None, None, ), # 7
     (8, TType.STRING, 'catalogName', None, None, ), # 8
+    (9, TType.I32, 'createTime', None, None, ), # 9
   )
 
-  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None,):
+  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None, createTime=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
@@ -3998,6 +4013,7 @@ class Database:
     self.ownerName = ownerName
     self.ownerType = ownerType
     self.catalogName = catalogName
+    self.createTime = createTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4055,6 +4071,11 @@ class Database:
           self.catalogName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.I32:
+          self.createTime = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4101,6 +4122,10 @@ class Database:
       oprot.writeFieldBegin('catalogName', TType.STRING, 8)
       oprot.writeString(self.catalogName)
       oprot.writeFieldEnd()
+    if self.createTime is not None:
+      oprot.writeFieldBegin('createTime', TType.I32, 9)
+      oprot.writeI32(self.createTime)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4118,6 +4143,7 @@ class Database:
     value = (value * 31) ^ hash(self.ownerName)
     value = (value * 31) ^ hash(self.ownerType)
     value = (value * 31) ^ hash(self.catalogName)
+    value = (value * 31) ^ hash(self.createTime)
     return value
 
   def __repr__(self):
