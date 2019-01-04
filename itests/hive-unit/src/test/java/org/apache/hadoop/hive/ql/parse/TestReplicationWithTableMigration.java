@@ -117,7 +117,7 @@ public class TestReplicationWithTableMigration {
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
-    Path testPath = new Path("/tmp/avro_schema/definition/");
+    Path testPath = new Path("/tmp/avro_schema/definition/" + System.nanoTime());
     fs.mkdirs(testPath, new FsPermission("777"));
     avroSchemaFile = PathBuilder.fullyQualifiedHDFSUri(createAvroSchemaFile(fs, testPath), fs);
   }
