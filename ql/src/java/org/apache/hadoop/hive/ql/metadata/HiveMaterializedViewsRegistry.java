@@ -161,7 +161,9 @@ public final class HiveMaterializedViewsRegistry {
     @Override
     public void run() {
       try {
-        SessionState.start(db.getConf());
+        SessionState ss = new SessionState(db.getConf());
+        ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
+        SessionState.start(ss);
         for (String dbName : db.getAllDatabases()) {
           for (Table mv : db.getAllMaterializedViewObjects(dbName)) {
             addMaterializedView(db.getConf(), mv, OpType.LOAD);
