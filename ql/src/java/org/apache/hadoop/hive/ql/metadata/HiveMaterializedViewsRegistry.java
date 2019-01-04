@@ -156,7 +156,9 @@ public final class HiveMaterializedViewsRegistry {
     @Override
     public void run() {
       try {
-        SessionState.start(db.getConf());
+        SessionState ss = new SessionState(db.getConf());
+        ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
+        SessionState.start(ss);
         final boolean cache = !db.getConf()
             .get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname).equals("DUMMY");
         for (String dbName : db.getAllDatabases()) {
