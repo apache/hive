@@ -274,10 +274,10 @@ public class StatsSetupConst {
   }
 
   /**
-   * @param table/partition parameters
+   * @param params table/partition parameters
    * @return the list of column names for which the stats are available.
    */
-  public static List<String> getColumnStatsState(Map<String, String> params) {
+  public static List<String> getColumnsHavingStats(Map<String, String> params) {
     if (params == null) {
       // No table/partition params, no statistics available
       return null;

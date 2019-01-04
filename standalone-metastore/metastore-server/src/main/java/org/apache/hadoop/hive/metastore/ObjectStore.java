@@ -1063,7 +1063,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
 
-    // Update column statistics if available.
+    // Update column statistics if available. Right now we do this during bootstrap load.
     if (tbl.isSetColStats()) {
       try {
         ColumnStatistics colStats = tbl.getColStats();
@@ -1071,6 +1071,9 @@ public class ObjectStore implements RawStore, Configurable {
         colStats.getStatsDesc().setCatName(mtbl.getDatabase().getCatalogName());
         colStats.getStatsDesc().setDbName(mtbl.getDatabase().getName());
         colStats.getStatsDesc().setTableName(mtbl.getTableName());
+        // TODO: there's comment about using validWriteIds list something NOT NULL.
+        // TODO this doesn't push the notification events for cascaded replication. So may be we
+        //  have to update the statistics from HiveMetaStore.java instead of here.
         updateTableColumnStatistics(colStats, null, tbl.getWriteId());
       } catch (Exception e) {
         // This should not happen since we have just created the table. But nonetheless just
@@ -1314,7 +1317,7 @@ public class ObjectStore implements RawStore, Configurable {
           !TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType()) &&
           getColumnStats) {
         tbl.setColStats(getTableColumnStatisticsInternal(catName, dbName, tableName,
-                 StatsSetupConst.getColumnStatsState(tbl.getParameters()), true, true));
+                 StatsSetupConst.getColumnsHavingStats(tbl.getParameters()), true, true));
       }
     }
     catch (NoSuchObjectException nsoe) {

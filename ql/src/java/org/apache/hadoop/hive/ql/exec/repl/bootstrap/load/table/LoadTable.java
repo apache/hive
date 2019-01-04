@@ -319,7 +319,7 @@ public class LoadTable {
       );
       moveWork.setLoadTableWork(loadTableWork);
     }
-    moveWork.setReplicationSpec(replicationSpec);
+    moveWork.setIsInReplicationScope(replicationSpec.isInReplicationScope());
     Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf);
     copyTask.addDependentTask(loadTableTask);
     return copyTask;

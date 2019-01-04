@@ -1325,8 +1325,8 @@ struct GetTableRequest {
   2: required string tblName,
   3: optional ClientCapabilities capabilities,
   4: optional string catName,
-  6: optional string validWriteIdList
-  7: optional bool getColumnStats;
+  6: optional string validWriteIdList,
+  7: optional bool getColumnStats
 }
 
 struct GetTableResult {

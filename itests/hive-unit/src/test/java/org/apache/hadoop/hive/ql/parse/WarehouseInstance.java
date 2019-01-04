@@ -382,16 +382,20 @@ public class WarehouseInstance implements Closeable {
   }
 
   /**
-   * Get statistics for given set of columns of a given table in the given database
+   * Get statistics for given set of columns of a given table in the given database.
    * @param dbName - the database where the table resides
    * @param tableName - tablename whose statistics are to be retrieved
    * @param colNames - columns whose statistics is to be retrieved.
    * @return - list of ColumnStatisticsObj objects in the order of the specified columns
    */
   public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName) throws Exception {
+    return client.getTableColumnStatistics(dbName, tableName, getTableColNames(dbName, tableName));
+  }
+
+  public List<String> getTableColNames(String dbName, String tableName) throws Exception {
     List<String> colNames = new ArrayList();
     client.getSchema(dbName, tableName).forEach(fs -> colNames.add(fs.getName()));
-    return client.getTableColumnStatistics(dbName, tableName, colNames);
+    return colNames;
   }
 
   /**

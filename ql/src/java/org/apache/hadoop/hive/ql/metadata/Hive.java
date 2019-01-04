@@ -1247,7 +1247,7 @@ public class Hive {
   }
 
   /**
-   * Returns metadata of the table
+   * Returns metadata of the table.
    *
    * @param dbName
    *          the name of the database

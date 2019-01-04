@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -57,7 +56,7 @@ public class MoveWork implements Serializable {
    */
   protected List<Partition> movedParts;
   private boolean isNoop;
-  private ReplicationSpec replicationSpec;
+  private boolean isInReplicationScope = false;
 
   public MoveWork() {
   }
@@ -167,11 +166,11 @@ public class MoveWork implements Serializable {
     this.needCleanTarget = needCleanTarget;
   }
 
-  public void setReplicationSpec(ReplicationSpec replicationSpec) {
-    this.replicationSpec = replicationSpec;
+  public void setIsInReplicationScope(boolean isInReplicationScope) {
+    this.isInReplicationScope = isInReplicationScope;
   }
 
-  public ReplicationSpec getReplicationSpec() {
-    return this.replicationSpec;
+  public boolean getIsInReplicationScope() {
+    return this.isInReplicationScope;
   }
 }

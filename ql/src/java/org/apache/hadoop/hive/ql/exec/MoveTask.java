@@ -270,14 +270,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     return false;
   }
 
-  // Is MoveTask within replication?
-  private boolean isInReplicationScope() {
-    ReplicationSpec replicationSpec = work.getReplicationSpec();
-    if (replicationSpec == null)
-      return false;
-    return replicationSpec.isInReplicationScope();
-  }
-
   private final static class TaskInformation {
     public List<BucketCol> bucketCols = null;
     public List<SortCol> sortCols = null;
@@ -407,9 +399,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             Utilities.FILE_OP_LOGGER.trace("loadTable called from " + tbd.getSourcePath()
               + " into " + tbd.getTable().getTableName());
           }
+
+          // When creating the table as part of replication, the statistics would be updated
+          // already and it's consistent with the data being loaded. Hence no need to wipe out
+          // the statistics when loading data.
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp,
-                  !(hasFollowingStatsTask() || isInReplicationScope()),
+                  !(hasFollowingStatsTask() || work.getIsInReplicationScope()),
               tbd.getWriteId(), tbd.getStmtId(), tbd.isInsertOverwrite());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,

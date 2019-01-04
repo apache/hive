@@ -79,7 +79,9 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
 
     // If we are replicating the stats, we don't need to construct those again.
     if (work.getColStats() != null) {
-      LOG.debug("Got stats through replication for " + work.getColStats().getStatsDesc().getDbName() + "." + work.getColStats().getStatsDesc().getTableName());
+      LOG.debug("Got stats through replication for " +
+              work.getColStats().getStatsDesc().getDbName() + "." +
+              work.getColStats().getStatsDesc().getTableName());
       return work.getColStats();
     }
     String dbName = work.dbName();
