@@ -15,44 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.common.io;
 
-import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 
-// A printStream that stores messages logged to it in a list.
-public class CachingPrintStream extends SessionStream {
+/**
+ * The Session uses this stream instead of PrintStream to prevent closing of System out and System err.
+ * Ref: HIVE-21033
+ */
+public class SessionStream extends PrintStream {
 
-  List<String> output = new ArrayList<String>();
-
-  public CachingPrintStream(OutputStream out, boolean autoFlush, String encoding)
-      throws FileNotFoundException, UnsupportedEncodingException {
-
-    super(out, autoFlush, encoding);
-  }
-
-  public CachingPrintStream(OutputStream out) {
-
+  public SessionStream(OutputStream out) {
     super(out);
   }
 
-  @Override
-  public void println(String out) {
-    output.add(out);
-    super.println(out);
+  public SessionStream(OutputStream out, boolean autoFlush, String encoding) throws UnsupportedEncodingException {
+    super(out, autoFlush, encoding);
   }
 
   @Override
-  public void flush() {
-    output = new ArrayList<String>();
-    super.flush();
-  }
-
-  public List<String> getOutput() {
-    return output;
+  public void close() {
+    if (out != System.out && out != System.err) {
+      //Don't close if system out or system err
+      super.close();
+    }
   }
 }

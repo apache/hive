@@ -20,7 +20,6 @@ package org.apache.hive.service.cli.operation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
@@ -40,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -139,9 +138,9 @@ public class SQLOperation extends ExecuteStatementOperation {
   private void setupSessionIO(SessionState sessionState) {
     try {
       sessionState.in = null; // hive server's session input stream is not used
-      sessionState.out = new PrintStream(System.out, true, CharEncoding.UTF_8);
-      sessionState.info = new PrintStream(System.err, true, CharEncoding.UTF_8);
-      sessionState.err = new PrintStream(System.err, true, CharEncoding.UTF_8);
+      sessionState.out = new SessionStream(System.out, true, CharEncoding.UTF_8);
+      sessionState.info = new SessionStream(System.err, true, CharEncoding.UTF_8);
+      sessionState.err = new SessionStream(System.err, true, CharEncoding.UTF_8);
     } catch (UnsupportedEncodingException e) {
         LOG.error("Error creating PrintStream", e);
         e.printStackTrace();

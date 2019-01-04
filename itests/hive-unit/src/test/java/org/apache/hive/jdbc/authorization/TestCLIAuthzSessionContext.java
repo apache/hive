@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -67,8 +68,8 @@ public class TestCLIAuthzSessionContext {
 
     // once SessionState for thread is set, CliDriver picks conf from it
     CliSessionState ss = new CliSessionState(conf);
-    ss.err = System.err;
-    ss.out = System.out;
+    ss.err = new SessionStream(System.err);
+    ss.out = new SessionStream(System.out);
     SessionState.start(ss);
     TestCLIAuthzSessionContext.driver = new CliDriver();
  }
