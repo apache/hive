@@ -66,11 +66,11 @@ public class TestReplicationWithTableMigration {
 
   @Rule
   public final TestName testName = new TestName();
-  private static Path avroSchemaFile;
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationWithTableMigration.class);
   private static WarehouseInstance primary, replica;
   private String primaryDbName, replicatedDbName;
+  private Path avroSchemaFile = null;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -117,9 +117,6 @@ public class TestReplicationWithTableMigration {
     }};
     configsForPrimary.putAll(overrideConfigs);
     primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
-    Path testPath = new Path("/tmp/avro_schema/definition/" + System.nanoTime());
-    fs.mkdirs(testPath, new FsPermission("777"));
-    avroSchemaFile = PathBuilder.fullyQualifiedHDFSUri(createAvroSchemaFile(fs, testPath), fs);
   }
 
   private static Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
@@ -166,6 +163,12 @@ public class TestReplicationWithTableMigration {
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    if (avroSchemaFile == null) {
+      Path testPath = new Path("/tmp/avro_schema/definition/" + System.nanoTime());
+      DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+      fs.mkdirs(testPath, new FsPermission("777"));
+      avroSchemaFile = PathBuilder.fullyQualifiedHDFSUri(createAvroSchemaFile(fs, testPath), fs);
+    }
   }
 
   @After
