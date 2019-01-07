@@ -2817,8 +2817,7 @@ public final class Utilities {
   }
 
   public static String generateFileName(Byte tag, String bigBucketFileName) {
-    String fileName = new String("MapJoin-" + tag + "-" + bigBucketFileName + suffix);
-    return fileName;
+    return "MapJoin-" + tag + "-" + bigBucketFileName + suffix;
   }
 
   public static Path generateTmpPath(Path basePath, String id) {
@@ -2834,8 +2833,7 @@ public final class Utilities {
   }
 
   public static String generatePath(Path baseURI, String filename) {
-    String path = new String(baseURI + Path.SEPARATOR + filename);
-    return path;
+    return baseURI + Path.SEPARATOR + filename;
   }
 
   public static String now() {
