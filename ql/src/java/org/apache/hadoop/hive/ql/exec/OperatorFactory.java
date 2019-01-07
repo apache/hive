@@ -159,7 +159,6 @@ public final class OperatorFactory {
           CompilationOpContext.class, OperatorDesc.class,
           VectorizationContext.class, VectorDesc.class);
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException(
           "Constructor " + opClass.getSimpleName() +
           "(CompilationOpContext, OperatorDesc, VectorizationContext, VectorDesc) not found", e);
@@ -170,7 +169,6 @@ public final class OperatorFactory {
           cContext, conf, vContext, vectorDesc);
       return op;
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException(
           "Error encountered calling constructor " + opClass.getSimpleName() +
           "(CompilationOpContext, OperatorDesc, VectorizationContext, VectorDesc)", e);
@@ -197,7 +195,6 @@ public final class OperatorFactory {
         return (Operator<T>)opClass.getDeclaredConstructor(
           CompilationOpContext.class).newInstance(cContext);
       } catch (Exception e) {
-        e.printStackTrace();
         throw new RuntimeException(e);
       }
     }
