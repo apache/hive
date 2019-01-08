@@ -363,6 +363,7 @@ public class ObjectStore implements RawStore, Configurable {
           if (!forTwoMetastoreTesting) {
             // close the underlying connection pool to avoid leaks
             pmf.close();
+            LOG.info("Persistence manager is closed as datanucleus/jdo properties have changed!");
           }
         }
         pmf = null;

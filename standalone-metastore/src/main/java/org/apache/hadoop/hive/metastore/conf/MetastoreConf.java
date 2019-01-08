@@ -660,9 +660,10 @@ public class MetastoreConf {
       "metastore.partition.management.table.types", "MANAGED_TABLE,EXTERNAL_TABLE",
       "Comma separated list of table types to use for partition management"),
     PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE("metastore.partition.management.task.thread.pool.size",
-      "metastore.partition.management.task.thread.pool.size", 5,
+      "metastore.partition.management.task.thread.pool.size", 3,
       "Partition management uses thread pool on to which tasks are submitted for discovering and retaining the\n" +
-      "partitions. This determines the size of the thread pool."),
+      "partitions. This determines the size of the thread pool. Note: Increasing the thread pool size will cause\n" +
+      "threadPoolSize * maxConnectionPoolSize connections to backend db"),
     PARTITION_MANAGEMENT_CATALOG_NAME("metastore.partition.management.catalog.name",
       "metastore.partition.management.catalog.name", "hive",
       "Automatic partition management will look for tables under the specified catalog name"),
