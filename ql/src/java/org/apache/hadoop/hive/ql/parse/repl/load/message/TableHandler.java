@@ -17,36 +17,56 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static org.apache.hadoop.hive.ql.parse.repl.DumpType.EVENT_ALTER_PARTITION;
-import static org.apache.hadoop.hive.ql.parse.repl.DumpType.EVENT_ALTER_TABLE;
-
 public class TableHandler extends AbstractMessageHandler {
+  private static final long DEFAULT_WRITE_ID = 0L;
+  private static final Logger LOG = LoggerFactory.getLogger(TableHandler.class);
+
   @Override
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
     try {
       List<Task<? extends Serializable>> importTasks = new ArrayList<>();
-      long writeId = 0;
+      boolean isExternal = false, isLocationSet = false;
+      String parsedLocation = null;
 
-      if (context.dmd.getDumpType().equals(EVENT_ALTER_TABLE)) {
-        AlterTableMessage message = deserializer.getAlterTableMessage(context.dmd.getPayload());
-        writeId = message.getWriteId();
-      } else if (context.dmd.getDumpType().equals(EVENT_ALTER_PARTITION)) {
-        AlterPartitionMessage message = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
-        writeId = message.getWriteId();
+      DumpType eventType = context.dmd.getDumpType();
+      Tuple tuple = extract(context);
+      if (tuple.isExternalTable) {
+        URI fromURI = EximUtil.getValidatedURI(context.hiveConf, context.location);
+        Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
+        isLocationSet = true;
+        isExternal = true;
+        FileSystem fs = FileSystem.get(fromURI, context.hiveConf);
+        try {
+          MetaData rv = EximUtil.readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
+          Table table = new Table(rv.getTable());
+          parsedLocation = ReplExternalTables
+              .externalTableLocation(context.hiveConf, table.getSd().getLocation());
+        } catch (IOException e) {
+          throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
+        }
       }
 
       context.nestedContext.setConf(context.hiveConf);
@@ -54,13 +74,13 @@ public class TableHandler extends AbstractMessageHandler {
           new EximUtil.SemanticAnalyzerWrapperContext(
               context.hiveConf, context.db, readEntitySet, writeEntitySet, importTasks, context.log,
               context.nestedContext);
-      x.setEventType(context.dmd.getDumpType());
+      x.setEventType(eventType);
 
       // REPL LOAD is not partition level. It is always DB or table level. So, passing null for partition specs.
       // Also, REPL LOAD doesn't support external table and hence no location set as well.
-      ImportSemanticAnalyzer.prepareImport(false, false, false, false,
-          (context.precursor != null), null, context.tableName, context.dbName,
-          null, context.location, x, updatedMetadata, context.getTxnMgr(), writeId);
+      ImportSemanticAnalyzer.prepareImport(false, isLocationSet, isExternal, false,
+          (context.precursor != null), parsedLocation, context.tableName, context.dbName,
+          null, context.location, x, updatedMetadata, context.getTxnMgr(), tuple.writeId);
 
       Task<? extends Serializable> openTxnTask = x.getOpenTxnTask();
       if (openTxnTask != null && !importTasks.isEmpty()) {
@@ -71,8 +91,57 @@ public class TableHandler extends AbstractMessageHandler {
       }
 
       return importTasks;
+    } catch (RuntimeException e){
+      throw e;
     } catch (Exception e) {
       throw new SemanticException(e);
+    }
+  }
+
+  private Tuple extract(Context context) throws SemanticException {
+    try {
+      String tableType = null;
+      long writeId = DEFAULT_WRITE_ID;
+      switch (context.dmd.getDumpType()) {
+      case EVENT_CREATE_TABLE:
+      case EVENT_ADD_PARTITION:
+        Path metadataPath = new Path(context.location, EximUtil.METADATA_NAME);
+        MetaData rv = EximUtil.readMetaData(
+            metadataPath.getFileSystem(context.hiveConf),
+            metadataPath
+        );
+        tableType = rv.getTable().getTableType();
+        break;
+      case EVENT_ALTER_TABLE:
+        AlterTableMessage alterTableMessage =
+            deserializer.getAlterTableMessage(context.dmd.getPayload());
+        tableType = alterTableMessage.getTableObjAfter().getTableType();
+        writeId = alterTableMessage.getWriteId();
+        break;
+      case EVENT_ALTER_PARTITION:
+        AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
+        tableType = msg.getTableObj().getTableType();
+        writeId = msg.getWriteId();
+        break;
+      default:
+        break;
+      }
+      boolean isExternalTable = tableType != null
+          && TableType.EXTERNAL_TABLE.equals(Enum.valueOf(TableType.class, tableType));
+      return new Tuple(isExternalTable, writeId);
+    } catch (Exception e) {
+      LOG.error("failed to determine if the table associated with the event is external or not", e);
+      throw new SemanticException(e);
+    }
+  }
+
+  private static final class Tuple {
+    private final boolean isExternalTable;
+    private final long writeId;
+
+    private Tuple(boolean isExternalTable, long writeId) {
+      this.isExternalTable = isExternalTable;
+      this.writeId = writeId;
     }
   }
 }

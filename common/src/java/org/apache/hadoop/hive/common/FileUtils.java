@@ -638,6 +638,8 @@ public final class FileUtils {
   public static boolean distCp(FileSystem srcFS, List<Path> srcPaths, Path dst,
       boolean deleteSource, String doAsUser,
       HiveConf conf, HadoopShims shims) throws IOException {
+    LOG.debug("copying srcPaths : {}, to DestPath :{} ,with doAs: {}",
+        StringUtils.join(",", srcPaths), dst.toString(), doAsUser);
     boolean copied = false;
     if (doAsUser == null){
       copied = shims.runDistCp(srcPaths, dst, conf);

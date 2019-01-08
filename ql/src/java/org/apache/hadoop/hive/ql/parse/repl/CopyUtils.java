@@ -49,7 +49,7 @@ public class CopyUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(CopyUtils.class);
   // https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
-  private static final String RAW_RESERVED_VIRTUAL_PATH = "/.reserved/raw/";
+  public static final String RAW_RESERVED_VIRTUAL_PATH = "/.reserved/raw/";
   private static final int MAX_COPY_RETRY = 5;
 
   private final HiveConf hiveConf;

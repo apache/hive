@@ -91,6 +91,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -393,7 +394,8 @@ public class TestReplicationScenarios {
     HiveConf confTemp = new HiveConf();
     confTemp.set("hive.repl.enable.move.optimization", "true");
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, tuple.dumpLocation, replicadb,
-            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId));
+            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
+        Collections.emptyList());
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
     replLoadTask.initialize(null, null, new DriverContext(driver.getContext()), null);
     replLoadTask.executeTask(null);
