@@ -35,8 +35,18 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
 
   @Override
   public void handle(Context withinContext) throws Exception {
+    boolean dumpThisEvent = true;
+
     // Statistics without data doesn't make sense.
-    if (!withinContext.replicationSpec.isMetadataOnly()) {
+    if (withinContext.replicationSpec.isMetadataOnly()) {
+      dumpThisEvent = false;
+    }
+    // For now we do not replicate the statistics for transactional tables.
+    if (eventMessage.getWriteId() > 0 || eventMessage.getValidWriteIds() != null) {
+      dumpThisEvent = false;
+    }
+
+    if (dumpThisEvent) {
       LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
       DumpMetaData dmd = withinContext.createDmd(this);
       dmd.setPayload(eventMessageAsJSON);
