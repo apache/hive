@@ -32,6 +32,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ConditionalResolverSkewJoin.
@@ -39,6 +41,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
  */
 public class ConditionalResolverSkewJoin implements ConditionalResolver, Serializable {
   private static final long serialVersionUID = 1L;
+
+  static final protected Logger LOG = LoggerFactory.getLogger(ConditionalResolverSkewJoin.class);
 
   /**
    * ConditionalResolverSkewJoinCtx.
@@ -118,7 +122,7 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
         }
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.warn("Exception while getting tasks", e);
     }
     if (resTsks.isEmpty() && ctx.getNoSkewTask() != null) {
       resTsks.addAll(ctx.getNoSkewTask());
