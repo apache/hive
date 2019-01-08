@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -72,30 +71,50 @@ public class FSTableEvent implements TableEvent {
     return fromPath;
   }
 
+  /**
+   * To determine if the tableDesc is for an external table,
+   * use {@link ImportTableDesc#isExternal()}
+   * and not {@link ImportTableDesc#tableType()} method.
+   */
   @Override
   public ImportTableDesc tableDesc(String dbName) throws SemanticException {
     try {
       Table table = new Table(metadata.getTable());
+      boolean externalTableOnSource = TableType.EXTERNAL_TABLE.equals(table.getTableType());
       // The table can be non acid in case of replication from 2.6 cluster.
       if (!AcidUtils.isTransactionalTable(table)
               && hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES)
               && (table.getTableType() == TableType.MANAGED_TABLE)) {
         Hive hiveDb = Hive.get(hiveConf);
         //TODO : dump metadata should be read to make sure that migration is required.
-        HiveStrictManagedMigration.TableMigrationOption migrationOption
-                = HiveStrictManagedMigration.determineMigrationTypeAutomatically(table.getTTable(),
-                table.getTableType(),null, (Configuration)hiveConf,
-                hiveDb.getMSC(),true);
+        HiveStrictManagedMigration.TableMigrationOption migrationOption =
+            HiveStrictManagedMigration.determineMigrationTypeAutomatically(table.getTTable(),
+                table.getTableType(), null, hiveConf,
+                hiveDb.getMSC(), true);
         HiveStrictManagedMigration.migrateTable(table.getTTable(), table.getTableType(),
                 migrationOption, false,
-                getHiveUpdater(hiveConf), hiveDb.getMSC(), (Configuration)hiveConf);
+                getHiveUpdater(hiveConf), hiveDb.getMSC(), hiveConf);
         // If the conversion is from non transactional to transactional table
         if (AcidUtils.isTransactionalTable(table)) {
           replicationSpec().setMigratingToTxnTable();
         }
+        if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+          // since we have converted to an external table now after applying the migration rules the
+          // table location has to be set to null so that the location on the target is picked up
+          // based on default configuration
+          table.setDataLocation(null);
+          if(!externalTableOnSource) {
+            replicationSpec().setMigratingToExternalTable();
+          }
+        }
       }
       ImportTableDesc tableDesc
               = new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
+      if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+        tableDesc.setLocation(
+            table.getDataLocation() == null ? null : table.getDataLocation().toString());
+        tableDesc.setExternal(true);
+      }
       tableDesc.setReplicationSpec(replicationSpec());
       if (table.getTableType() == TableType.EXTERNAL_TABLE) {
         tableDesc.setExternal(true);
@@ -150,8 +169,17 @@ public class FSTableEvent implements TableEvent {
       partDesc.setSerdeParams(partition.getSd().getSerdeInfo().getParameters());
       partDesc.setBucketCols(partition.getSd().getBucketCols());
       partDesc.setSortCols(partition.getSd().getSortCols());
-      partDesc.setLocation(new Path(fromPath,
-          Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
+      if (tblDesc.isExternal() && !replicationSpec().isMigratingToExternalTable()) {
+        // we have to provide the source location so target location can be derived.
+        partDesc.setLocation(partition.getSd().getLocation());
+      } else {
+        /**
+         * this is required for file listing of all files in a partition for managed table as described in
+         * {@link org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator}
+         */
+        partDesc.setLocation(new Path(fromPath,
+            Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
+      }
       partsDesc.setReplicationSpec(replicationSpec());
       return partsDesc;
     } catch (Exception e) {

@@ -55,11 +55,8 @@ import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.codehaus.plexus.util.ExceptionUtils;
 import org.slf4j.Logger;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.io.Closeable;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -75,20 +72,18 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class WarehouseInstance implements Closeable {
-  final String functionsRoot;
+  final String functionsRoot, repldDir;
   private Logger logger;
   private IDriver driver;
   HiveConf hiveConf;
   MiniDFSCluster miniDFSCluster;
   private HiveMetaStoreClient client;
-  public final Path warehouseRoot;
-  public final Path externalTableWarehouseRoot;
-  public Path avroSchemaFile;
+  final Path warehouseRoot;
+  final Path externalTableWarehouseRoot;
 
   private static int uniqueIdentifier = 0;
 
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
-  private final static String AVRO_SCHEMA_FILE_NAME = "avro_table.avsc";
 
   WarehouseInstance(Logger logger, MiniDFSCluster cluster, Map<String, String> overridesForHiveConf,
       String keyNameForEncryptedZone) throws Exception {
@@ -106,8 +101,14 @@ public class WarehouseInstance implements Closeable {
     }
     Path cmRootPath = mkDir(fs, "/cmroot" + uniqueIdentifier);
     this.functionsRoot = mkDir(fs, "/functions" + uniqueIdentifier).toString();
-    initialize(cmRootPath.toString(), warehouseRoot.toString(), externalTableWarehouseRoot.toString(),
-            overridesForHiveConf);
+    String tmpDir = "/tmp/"
+        + TestReplicationScenarios.class.getCanonicalName().replace('.', '_')
+        + "_"
+        + System.nanoTime();
+
+    this.repldDir = mkDir(fs, tmpDir + "/hrepl" + uniqueIdentifier + "/").toString();
+    initialize(cmRootPath.toString(), externalTableWarehouseRoot.toString(),
+        warehouseRoot.toString(), overridesForHiveConf);
   }
 
   WarehouseInstance(Logger logger, MiniDFSCluster cluster,
@@ -115,18 +116,13 @@ public class WarehouseInstance implements Closeable {
     this(logger, cluster, overridesForHiveConf, null);
   }
 
-  private void initialize(String cmRoot, String warehouseRoot, String externalTableWarehouseRoot,
+  private void initialize(String cmRoot, String externalTableWarehouseRoot, String warehouseRoot,
       Map<String, String> overridesForHiveConf) throws Exception {
     hiveConf = new HiveConf(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
     for (Map.Entry<String, String> entry : overridesForHiveConf.entrySet()) {
       hiveConf.set(entry.getKey(), entry.getValue());
     }
     String metaStoreUri = System.getProperty("test." + HiveConf.ConfVars.METASTOREURIS.varname);
-    String hiveWarehouseLocation = System.getProperty("test.warehouse.dir", "/tmp")
-        + Path.SEPARATOR
-        + TestReplicationScenarios.class.getCanonicalName().replace('.', '_')
-        + "_"
-        + System.nanoTime();
     if (metaStoreUri != null) {
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, metaStoreUri);
       return;
@@ -143,8 +139,7 @@ public class WarehouseInstance implements Closeable {
     hiveConf.setVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR, functionsRoot);
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
         "jdbc:derby:memory:${test.tmp.dir}/APP;create=true");
-    hiveConf.setVar(HiveConf.ConfVars.REPLDIR,
-        hiveWarehouseLocation + "/hrepl" + uniqueIdentifier + "/");
+    hiveConf.setVar(HiveConf.ConfVars.REPLDIR, this.repldDir);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -158,11 +153,6 @@ public class WarehouseInstance implements Closeable {
 
     MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
 
-    Path testPath = new Path(hiveWarehouseLocation);
-    FileSystem testPathFileSystem = FileSystem.get(testPath.toUri(), hiveConf);
-    testPathFileSystem.mkdirs(testPath);
-
-    avroSchemaFile = createAvroSchemaFile(testPathFileSystem, testPath);
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
@@ -177,51 +167,8 @@ public class WarehouseInstance implements Closeable {
   private Path mkDir(DistributedFileSystem fs, String pathString)
       throws IOException, SemanticException {
     Path path = new Path(pathString);
-    fs.mkdir(path, new FsPermission("777"));
+    fs.mkdirs(path, new FsPermission("777"));
     return PathBuilder.fullyQualifiedHDFSUri(path, fs);
-  }
-
-  private Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
-    Path schemaFile = new Path(testPath, AVRO_SCHEMA_FILE_NAME);
-    String[] schemaVals = new String[] { "{",
-            "  \"type\" : \"record\",",
-            "  \"name\" : \"table1\",",
-            "  \"doc\" : \"Sqoop import of table1\",",
-            "  \"fields\" : [ {",
-            "    \"name\" : \"col1\",",
-            "    \"type\" : [ \"null\", \"string\" ],",
-            "    \"default\" : null,",
-            "    \"columnName\" : \"col1\",",
-            "    \"sqlType\" : \"12\"",
-            "  }, {",
-            "    \"name\" : \"col2\",",
-            "    \"type\" : [ \"null\", \"long\" ],",
-            "    \"default\" : null,",
-            "    \"columnName\" : \"col2\",",
-            "    \"sqlType\" : \"13\"",
-            "  } ],",
-            "  \"tableName\" : \"table1\"",
-            "}"
-    };
-    createTestDataFile(schemaFile.toUri().getPath(), schemaVals);
-    return schemaFile;
-  }
-
-  private void createTestDataFile(String filename, String[] lines) throws IOException {
-    FileWriter writer = null;
-    try {
-      File file = new File(filename);
-      file.deleteOnExit();
-      writer = new FileWriter(file);
-      int i=0;
-      for (String line : lines) {
-        writer.write(line + "\n");
-      }
-    } finally {
-      if (writer != null) {
-        writer.close();
-      }
-    }
   }
 
   public HiveConf getConf() {

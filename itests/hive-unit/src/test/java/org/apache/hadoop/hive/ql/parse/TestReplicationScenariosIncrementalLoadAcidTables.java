@@ -22,10 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
-
 import org.junit.rules.TestName;
 
 import org.slf4j.Logger;

@@ -68,7 +68,6 @@ show create table ext_t_imported;
 select * from ext_t_imported;
 
 -- should have repl.last.id
--- also - importing an external table replication export would turn the new table into a managed table
 import table ext_t_r_imported from 'ql/test/data/exports/ext_t_r';
 describe extended ext_t_imported;
 show table extended like ext_t_r_imported;

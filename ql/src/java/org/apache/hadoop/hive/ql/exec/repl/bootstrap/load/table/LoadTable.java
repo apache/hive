@@ -20,15 +20,17 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
@@ -54,7 +56,6 @@ import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Collections;
@@ -75,8 +76,7 @@ public class LoadTable {
   private final TableEvent event;
 
   public LoadTable(TableEvent event, Context context, ReplLogger replLogger,
-                   TableContext tableContext, TaskTracker limiter)
-      throws SemanticException, IOException {
+      TableContext tableContext, TaskTracker limiter) {
     this.event = event;
     this.context = context;
     this.replLogger = replLogger;
@@ -128,9 +128,9 @@ public class LoadTable {
           break;
       }
 
-      if (tableDesc.getLocation() == null) {
-        tableDesc.setLocation(location(tableDesc, parentDb));
-      }
+      TableLocationTuple
+          tableLocationTuple = tableLocation(tableDesc, parentDb, tableContext, context);
+      tableDesc.setLocation(tableLocationTuple.location);
 
   /* Note: In the following section, Metadata-only import handling logic is
      interleaved with regular repl-import logic. The rule of thumb being
@@ -141,7 +141,7 @@ public class LoadTable {
      or in the case of an unpartitioned table. In all other cases, it should
      behave like a noop or a pure MD alter.
   */
-      newTableTasks(tableDesc, tblRootTask);
+      newTableTasks(tableDesc, tblRootTask, tableLocationTuple);
 
       // Set Checkpoint task as dependant to create table task. So, if same dump is retried for
       // bootstrap, we skip current table update.
@@ -173,7 +173,8 @@ public class LoadTable {
     return ReplLoadOpType.LOAD_REPLACE;
   }
 
-  private void newTableTasks(ImportTableDesc tblDesc, Task<?> tblRootTask) throws Exception {
+  private void newTableTasks(ImportTableDesc tblDesc, Task<?> tblRootTask, TableLocationTuple tuple)
+      throws Exception {
     Table table = tblDesc.toTable(context.hiveConf);
     ReplicationSpec replicationSpec = event.replicationSpec();
     Task<?> createTableTask =
@@ -208,26 +209,58 @@ public class LoadTable {
       parentTask.addDependentTask(replTxnTask);
       parentTask = replTxnTask;
     }
-    if (!isPartitioned(tblDesc)) {
+    boolean shouldCreateLoadTableTask = (
+        !isPartitioned(tblDesc)
+            && !TableType.EXTERNAL_TABLE.equals(table.getTableType())
+    ) || tuple.isConvertedFromManagedToExternal;
+    if (shouldCreateLoadTableTask) {
       LOG.debug("adding dependent ReplTxnTask/CopyWork/MoveWork for table");
-      Task<?> loadTableTask =
-          loadTableTask(table, replicationSpec, new Path(tblDesc.getLocation()),
+      Task<?> loadTableTask = loadTableTask(table, replicationSpec, new Path(tblDesc.getLocation()),
               event.metadataPath());
       parentTask.addDependentTask(loadTableTask);
     }
     tracker.addTask(tblRootTask);
   }
 
-  private String location(ImportTableDesc tblDesc, Database parentDb)
-      throws MetaException, SemanticException {
-    if (!tableContext.waitOnPrecursor()) {
-      return context.warehouse.getDefaultTablePath(
-          parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString();
-    } else {
-      Path tablePath = context.warehouse.getDefaultTablePath(
-          tblDesc.getDatabaseName(), tblDesc.getTableName(), tblDesc.isExternal());
-      return context.warehouse.getDnsPath(tablePath).toString();
+  static class TableLocationTuple {
+    final String location;
+    private final boolean isConvertedFromManagedToExternal;
+
+    TableLocationTuple(String location, boolean isConvertedFromManagedToExternal) {
+      this.location = location;
+      this.isConvertedFromManagedToExternal = isConvertedFromManagedToExternal;
     }
+  }
+
+  static TableLocationTuple tableLocation(ImportTableDesc tblDesc, Database parentDb,
+      TableContext tableContext, Context context) throws MetaException, SemanticException {
+    Warehouse wh = context.warehouse;
+    Path defaultTablePath;
+    if (parentDb == null) {
+      defaultTablePath = wh.getDefaultTablePath(tblDesc.getDatabaseName(), tblDesc.getTableName(),
+          tblDesc.isExternal());
+    } else {
+      defaultTablePath = wh.getDefaultTablePath(
+          parentDb, tblDesc.getTableName(), tblDesc.isExternal()
+      );
+    }
+    // dont use TableType.EXTERNAL_TABLE.equals(tblDesc.tableType()) since this comes in as managed always for tables.
+    if (tblDesc.isExternal()) {
+      if (tblDesc.getLocation() == null) {
+        // this is the use case when the table got converted to external table as part of migration
+        // related rules to be applied to replicated tables across different versions of hive.
+        return new TableLocationTuple(wh.getDnsPath(defaultTablePath).toString(), true);
+      }
+      String currentLocation = new Path(tblDesc.getLocation()).toUri().getPath();
+      String newLocation =
+          ReplExternalTables.externalTableLocation(context.hiveConf, currentLocation);
+      LOG.debug("external table {} data location is: {}", tblDesc.getTableName(), newLocation);
+      return new TableLocationTuple(newLocation, false);
+    }
+    Path path = tableContext.waitOnPrecursor()
+        ? wh.getDnsPath(defaultTablePath)
+        : wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal());
+    return new TableLocationTuple(path.toString(), false);
   }
 
   private Task<?> loadTableTask(Table table, ReplicationSpec replicationSpec, Path tgtPath,

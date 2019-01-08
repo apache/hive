@@ -17,19 +17,24 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import org.apache.hadoop.hive.ql.parse.ReplicationTestUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.rules.TestName;
-import com.google.common.collect.Lists;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.isFullAcidTable;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.isTransactionalTable;
 import static org.junit.Assert.assertEquals;
@@ -58,38 +62,48 @@ import static org.junit.Assert.assertTrue;
  * TestReplicationWithTableMigration - test replication for Hive2 to Hive3 (Strict managed tables)
  */
 public class TestReplicationWithTableMigration {
+  private final static String AVRO_SCHEMA_FILE_NAME = "avro_table.avsc";
+
   @Rule
   public final TestName testName = new TestName();
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationWithTableMigration.class);
   private static WarehouseInstance primary, replica;
   private String primaryDbName, replicatedDbName;
-  private static HiveConf conf;
+  private Path avroSchemaFile = null;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    conf = new HiveConf(TestReplicationWithTableMigration.class);
+    HashMap<String, String> overrideProperties = new HashMap<>();
+    overrideProperties.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
+        GzipJSONMessageEncoder.class.getCanonicalName());
+    internalBeforeClassSetup(overrideProperties);
+  }
+
+  static void internalBeforeClassSetup(Map<String, String> overrideConfigs) throws Exception {
+    HiveConf conf = new HiveConf(TestReplicationWithTableMigration.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-           new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
-        put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-        put("hive.support.concurrency", "true");
-        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-        put("hive.metastore.client.capability.check", "false");
-        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-        put("hive.exec.dynamic.partition.mode", "nonstrict");
-        put("hive.strict.checks.bucketing", "false");
-        put("hive.mapred.mode", "nonstrict");
-        put("mapred.input.dir.recursive", "true");
-        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-        put("hive.strict.managed.tables", "true");
+        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+    final DistributedFileSystem fs = miniDFSCluster.getFileSystem();
+    HashMap<String, String> hiveConfigs = new HashMap<String, String>() {{
+      put("fs.defaultFS", fs.getUri().toString());
+      put("hive.support.concurrency", "true");
+      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+      put("hive.metastore.client.capability.check", "false");
+      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+      put("hive.exec.dynamic.partition.mode", "nonstrict");
+      put("hive.strict.checks.bucketing", "false");
+      put("hive.mapred.mode", "nonstrict");
+      put("mapred.input.dir.recursive", "true");
+      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+      put("hive.strict.managed.tables", "true");
     }};
-    replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
+    replica = new WarehouseInstance(LOG, miniDFSCluster, hiveConfigs);
 
-    HashMap<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
-      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+    HashMap<String, String> configsForPrimary = new HashMap<String, String>() {{
+      put("fs.defaultFS", fs.getUri().toString());
       put("hive.metastore.client.capability.check", "false");
       put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
       put("hive.exec.dynamic.partition.mode", "nonstrict");
@@ -101,7 +115,40 @@ public class TestReplicationWithTableMigration {
       put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
       put("hive.strict.managed.tables", "false");
     }};
-    primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
+    configsForPrimary.putAll(overrideConfigs);
+    primary = new WarehouseInstance(LOG, miniDFSCluster, configsForPrimary);
+  }
+
+  private static Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
+    Path schemaFile = new Path(testPath, AVRO_SCHEMA_FILE_NAME);
+    String[] schemaVals = new String[] { "{",
+        "  \"type\" : \"record\",",
+        "  \"name\" : \"table1\",",
+        "  \"doc\" : \"Sqoop import of table1\",",
+        "  \"fields\" : [ {",
+        "    \"name\" : \"col1\",",
+        "    \"type\" : [ \"null\", \"string\" ],",
+        "    \"default\" : null,",
+        "    \"columnName\" : \"col1\",",
+        "    \"sqlType\" : \"12\"",
+        "  }, {",
+        "    \"name\" : \"col2\",",
+        "    \"type\" : [ \"null\", \"long\" ],",
+        "    \"default\" : null,",
+        "    \"columnName\" : \"col2\",",
+        "    \"sqlType\" : \"13\"",
+        "  } ],",
+        "  \"tableName\" : \"table1\"",
+        "}"
+    };
+
+    try (FSDataOutputStream stream = fs.create(schemaFile)) {
+      for (String line : schemaVals) {
+        stream.write((line + "\n").getBytes());
+      }
+    }
+    fs.deleteOnExit(schemaFile);
+    return schemaFile;
   }
 
   @AfterClass
@@ -116,6 +163,12 @@ public class TestReplicationWithTableMigration {
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    if (avroSchemaFile == null) {
+      Path testPath = new Path("/tmp/avro_schema/definition/" + System.nanoTime());
+      DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+      fs.mkdirs(testPath, new FsPermission("777"));
+      avroSchemaFile = PathBuilder.fullyQualifiedHDFSUri(createAvroSchemaFile(fs, testPath), fs);
+    }
   }
 
   @After
@@ -125,39 +178,52 @@ public class TestReplicationWithTableMigration {
   }
 
   private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId) throws Throwable {
-    WarehouseInstance.Tuple tuple =  primary.run("use " + primaryDbName)
-            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
-            .run("insert into tacid values(1)")
-            .run("insert into tacid values(2)")
-            .run("insert into tacid values(3)")
-            .run("create table tacidpart (place string) partitioned by (country string) clustered by(place) " +
-                    "into 3 buckets stored as orc ")
-            .run("alter table tacidpart add partition(country='france')")
-            .run("insert into tacidpart partition(country='india') values('mumbai')")
-            .run("insert into tacidpart partition(country='us') values('sf')")
-            .run("insert into tacidpart partition(country='france') values('paris')")
-            .run("create table tflat (rank int) stored as orc tblproperties(\"transactional\"=\"false\")")
-            .run("insert into tflat values(11)")
-            .run("insert into tflat values(22)")
-            .run("create table tflattext (id int) ")
-            .run("insert into tflattext values(111), (222)")
-            .run("create table tflattextpart (id int) partitioned by (country string) ")
-            .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
-            .run("insert into tflattextpart partition(country='us') values(3333)")
-            .run("create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' ")
-            .run("insert into tacidloc values(1)")
-            .run("insert into tacidloc values(2)")
-            .run("insert into tacidloc values(3)")
-            .run("create table tacidpartloc (place string) partitioned by (country string) clustered by(place) " +
-                    "into 3 buckets stored as orc ")
-            .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/part'")
-            .run("insert into tacidpartloc partition(country='india') values('mumbai')")
-            .run("insert into tacidpartloc partition(country='us') values('sf')")
-            .run("insert into tacidpartloc partition(country='france') values('paris')")
-            .run("create table avro_table ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' " +
-                    "stored as avro tblproperties ('avro.schema.url'='" + primary.avroSchemaFile.toUri().toString() + "')")
-            .run("insert into avro_table values('str1', 10)")
-            .dump(primaryDbName, fromReplId);
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+        .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+        .run("insert into tacid values(1)")
+        .run("insert into tacid values(2)")
+        .run("insert into tacid values(3)")
+        .run(
+            "create table tacidpart (place string) partitioned by (country string) clustered by(place) "
+                +
+                "into 3 buckets stored as orc ")
+        .run("alter table tacidpart add partition(country='france')")
+        .run("insert into tacidpart partition(country='india') values('mumbai')")
+        .run("insert into tacidpart partition(country='us') values('sf')")
+        .run("insert into tacidpart partition(country='france') values('paris')")
+        .run(
+            "create table tflat (rank int) stored as orc tblproperties(\"transactional\"=\"false\")")
+        .run("insert into tflat values(11)")
+        .run("insert into tflat values(22)")
+        .run("create table tflattext (id int) ")
+        .run("insert into tflattext values(111), (222)")
+        .run("create table tflattextpart (id int) partitioned by (country string) ")
+        .run("insert into tflattextpart partition(country='india') values(1111), (2222)")
+        .run("insert into tflattextpart partition(country='us') values(3333)")
+        .run(
+            "create table tacidloc (id int) clustered by(id) into 3 buckets stored as orc  LOCATION '/tmp' ")
+        .run("insert into tacidloc values(1)")
+        .run("insert into tacidloc values(2)")
+        .run("insert into tacidloc values(3)")
+        .run(
+            "create table tacidpartloc (place string) partitioned by (country string) clustered by(place) "
+                +
+                "into 3 buckets stored as orc ")
+        .run("alter table tacidpartloc add partition(country='france') LOCATION '/tmp/part'")
+        .run("insert into tacidpartloc partition(country='india') values('mumbai')")
+        .run("insert into tacidpartloc partition(country='us') values('sf')")
+        .run("insert into tacidpartloc partition(country='france') values('paris')")
+        .run(
+            "create table avro_table ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' "
+                + "stored as avro tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri()
+                .toString() + "')")
+        .run("insert into avro_table values ('str1', 10)")
+        .run(
+            "create table avro_table_part partitioned by (country string) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe' "
+                + "stored as avro tblproperties ('avro.schema.url'='" + avroSchemaFile.toUri()
+                .toString() + "')")
+        .run("insert into avro_table_part partition (country='india') values ('another', 13)")
+        .dump(primaryDbName, fromReplId);
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacid")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpart")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflat")));
@@ -165,17 +231,24 @@ public class TestReplicationWithTableMigration {
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tflattextpart")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidloc")));
     assertFalse(isTransactionalTable(primary.getTable(primaryDbName, "tacidpartloc")));
-    Table avroTable = primary.getTable(primaryDbName, "avro_table");
-    assertFalse(isTransactionalTable(avroTable));
-    assertFalse(MetaStoreUtils.isExternalTable(avroTable));
+    assertAvroTableState(primaryDbName, "avro_table", "avro_table_part");
+    assertAvroTableState(primaryDbName,  "avro_table_part");
     return tuple;
+  }
+
+  private void assertAvroTableState(String primaryDbName, String... tableNames) throws Exception {
+    for (String tableName : tableNames) {
+      Table avroTable = primary.getTable(primaryDbName, tableName);
+      assertFalse(isTransactionalTable(avroTable));
+      assertFalse(MetaStoreUtils.isExternalTable(avroTable));
+    }
   }
 
   private void verifyLoadExecution(String replicatedDbName, String lastReplId) throws Throwable {
     replica.run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] {"tacid", "tacidpart", "tflat", "tflattext", "tflattextpart",
-                    "tacidloc", "tacidpartloc", "avro_table"})
+                "tacidloc", "tacidpartloc", "avro_table", "avro_table_part" })
             .run("repl status " + replicatedDbName)
             .verifyResult(lastReplId)
             .run("select id from tacid order by id")
@@ -193,7 +266,9 @@ public class TestReplicationWithTableMigration {
             .run("select country from tacidpartloc order by country")
             .verifyResults(new String[] {"france", "india", "us"})
             .run("select col1 from avro_table")
-            .verifyResults(new String[] {"str1"});
+            .verifyResults(new String[] { "str1" })
+            .run("select col1 from avro_table_part")
+            .verifyResults(new String[] { "another" });
 
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacid")));
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacidpart")));
@@ -204,23 +279,29 @@ public class TestReplicationWithTableMigration {
     assertTrue(isTransactionalTable(replica.getTable(replicatedDbName, "tflattextpart")));
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacidloc")));
     assertTrue(isFullAcidTable(replica.getTable(replicatedDbName, "tacidpartloc")));
+    assertTablePath(replicatedDbName, "avro_table");
+    assertPartitionPath(replicatedDbName, "avro_table_part");
+  }
 
-    /*Path databasePath = new Path(replica.warehouseRoot, replica.getDatabase(replicatedDbName).getLocationUri());
-    assertEquals(replica.getTable(replicatedDbName, "tacidloc").getSd().getLocation(),
-            new Path(databasePath,"tacidloc").toUri().toString());
+  private void assertPartitionPath(String replicatedDbName, String tableName) throws Exception {
+    Path tablePath = assertTablePath(replicatedDbName, tableName);
+    List<Partition> partitions = replica.getAllPartitions(replicatedDbName, tableName);
+    assertEquals(1, partitions.size());
+    String actualPartitionPath = partitions.iterator().next().getSd().getLocation().toLowerCase();
+    String expectedPartitionPath = new PathBuilder(tablePath.toString())
+        .addDescendant("country=india").build().toUri().toString().toLowerCase();
+    assertEquals(expectedPartitionPath, actualPartitionPath);
+  }
 
-    Path tablePath = new Path(databasePath, "tacidpartloc");
-    List<Partition> partitions = replica.getAllPartitions(replicatedDbName, "tacidpartloc");
-    for (Partition part : partitions) {
-      tablePath.equals(new Path(part.getSd().getLocation()).getParent());
-    }*/
-
-    Table avroTable = replica.getTable(replicatedDbName, "avro_table");
+  private Path assertTablePath(String replicatedDbName, String tableName) throws Exception {
+    Table avroTable = replica.getTable(replicatedDbName, tableName);
     assertTrue(MetaStoreUtils.isExternalTable(avroTable));
-    Path tablePath = new PathBuilder(replica.externalTableWarehouseRoot.toString()).addDescendant(replicatedDbName + ".db")
-            .addDescendant("avro_table")
-            .build();
-    assertEquals(avroTable.getSd().getLocation().toLowerCase(), tablePath.toUri().toString().toLowerCase());
+    Path tablePath = new PathBuilder(replica.externalTableWarehouseRoot.toString())
+        .addDescendant(replicatedDbName + ".db").addDescendant(tableName).build();
+    String expectedTablePath = tablePath.toUri().toString().toLowerCase();
+    String actualTablePath = avroTable.getSd().getLocation().toLowerCase();
+    assertEquals(expectedTablePath, actualTablePath);
+    return tablePath;
   }
 
   private void loadWithFailureInAddNotification(String tbl, String dumpLocation) throws Throwable {
@@ -231,12 +312,12 @@ public class TestReplicationWithTableMigration {
       public Boolean apply(@Nullable InjectableBehaviourObjectStore.CallerArguments args) {
         injectionPathCalled = true;
         if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.constraintTblName != null)) {
-          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
-                  + " Constraint Table: " + String.valueOf(args.constraintTblName));
+          LOG.warn("Verifier - DB: " + args.dbName
+                  + " Constraint Table: " + args.constraintTblName);
           return false;
         }
         if (args.tblName != null) {
-          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
+          LOG.warn("Verifier - Table: " + args.tblName);
           return args.tblName.equalsIgnoreCase(tbl);
         }
         return true;
