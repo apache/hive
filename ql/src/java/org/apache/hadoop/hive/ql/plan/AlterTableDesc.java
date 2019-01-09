@@ -104,7 +104,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   String newName;
   ArrayList<FieldSchema> newCols;
   String serdeName;
-  HashMap<String, String> props;
+  Map<String, String> props;
   String inputFormat;
   String outputFormat;
   String storageHandler;
@@ -484,7 +484,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
    * @return the props
    */
   @Explain(displayName = "properties")
-  public HashMap<String, String> getProps() {
+  public Map<String, String> getProps() {
     return props;
   }
 
@@ -492,7 +492,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
    * @param props
    *          the props to set
    */
-  public void setProps(HashMap<String, String> props) {
+  public void setProps(Map<String, String> props) {
     this.props = props;
   }
 
