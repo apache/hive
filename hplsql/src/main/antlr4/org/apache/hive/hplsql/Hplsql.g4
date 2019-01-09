@@ -363,6 +363,7 @@ alter_table_add_constraint_item :
      
 dtype :                  // Data types
        T_CHAR
+     | T_CHARACTER
      | T_BIGINT
      | T_BINARY_DOUBLE
      | T_BINARY_FLOAT
