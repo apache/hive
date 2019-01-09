@@ -1154,20 +1154,11 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public Table getTable(String catName, String dbName, String tblName, String validWriteIds) throws MetaException {
-    return getTable(catName, dbName, tblName, validWriteIds, false);
-  }
-
-  @Override
-  public Table getTable(String catName, String dbName, String tblName, String validWriteIds,
-                        boolean getColumnStats) throws MetaException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
-    // We do not cache statistics in Table object, so ignore cached copy when statistics is
-    // requested. Right now this is fine, since the statistics is requested only for bootstrap
-    // dump, which is not so frequent.
-    if (getColumnStats || !shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
-      return rawStore.getTable(catName, dbName, tblName, validWriteIds, getColumnStats);
+    if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
+      return rawStore.getTable(catName, dbName, tblName, validWriteIds);
     }
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
 
@@ -1177,7 +1168,7 @@ public class CachedStore implements RawStore, Configurable {
       // let's move this table to the top of tblNamesBeingPrewarmed stack,
       // so that it gets loaded to the cache faster and is available for subsequent requests
       tblsPendingPrewarm.prioritizeTableForPrewarm(tblName);
-      return rawStore.getTable(catName, dbName, tblName, validWriteIds, getColumnStats);
+      return rawStore.getTable(catName, dbName, tblName, validWriteIds);
     }
     if (validWriteIds != null) {
       tbl.setParameters(

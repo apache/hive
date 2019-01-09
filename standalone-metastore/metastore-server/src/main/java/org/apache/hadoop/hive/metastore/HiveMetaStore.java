@@ -1794,7 +1794,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void create_table_core(final RawStore ms, final Table tbl,
         final EnvironmentContext envContext)
             throws AlreadyExistsException, MetaException,
-            InvalidObjectException, NoSuchObjectException {
+            InvalidObjectException, NoSuchObjectException, InvalidInputException {
       create_table_core(ms, tbl, envContext, null, null, null, null, null, null);
     }
 
@@ -1804,7 +1804,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<SQLNotNullConstraint> notNullConstraints, List<SQLDefaultConstraint> defaultConstraints,
                                    List<SQLCheckConstraint> checkConstraints)
         throws AlreadyExistsException, MetaException,
-        InvalidObjectException, NoSuchObjectException {
+        InvalidObjectException, NoSuchObjectException, InvalidInputException {
       // To preserve backward compatibility throw MetaException in case of null database
       if (tbl.getDbName() == null) {
         throw new MetaException("Null database name is not allowed");
@@ -2038,18 +2038,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
       }
+
+      // If the table has column statistics, update it into the metastore. This feature is used
+      // by replication to replicate table level statistics.
+      if (tbl.isSetColStats()) {
+        // We do not replicate statistics for a transactional table right now and hence we do not
+        // expect a transactional table to have column statistics here. So passing null
+        // validWriteIds is fine for now.
+        updateTableColumnStatsInternal(tbl.getColStats(), null, tbl.getWriteId());
+      }
     }
 
     @Override
     public void create_table(final Table tbl) throws AlreadyExistsException,
-        MetaException, InvalidObjectException {
+        MetaException, InvalidObjectException, InvalidInputException {
       create_table_with_environment_context(tbl, null);
     }
 
     @Override
     public void create_table_with_environment_context(final Table tbl,
         final EnvironmentContext envContext)
-        throws AlreadyExistsException, MetaException, InvalidObjectException {
+        throws AlreadyExistsException, MetaException, InvalidObjectException,
+            InvalidInputException {
       startFunction("create_table", ": " + tbl.toString());
       boolean success = false;
       Exception ex = null;
@@ -2060,7 +2070,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         LOG.warn("create_table_with_environment_context got ", e);
         ex = e;
         throw new InvalidObjectException(e.getMessage());
-      } catch (MetaException | InvalidObjectException | AlreadyExistsException e) {
+      } catch (MetaException | InvalidObjectException | AlreadyExistsException | InvalidInputException e) {
         ex = e;
         throw e;
       } catch (Exception e) {
@@ -2078,7 +2088,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<SQLNotNullConstraint> notNullConstraints,
         List<SQLDefaultConstraint> defaultConstraints,
         List<SQLCheckConstraint> checkConstraints)
-        throws AlreadyExistsException, MetaException, InvalidObjectException {
+        throws AlreadyExistsException, MetaException, InvalidObjectException,
+            InvalidInputException {
       startFunction("create_table", ": " + tbl.toString());
       boolean success = false;
       Exception ex = null;
@@ -2089,7 +2100,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (NoSuchObjectException e) {
         ex = e;
         throw new InvalidObjectException(e.getMessage());
-      } catch (MetaException | InvalidObjectException | AlreadyExistsException e) {
+      } catch (MetaException | InvalidObjectException | AlreadyExistsException |
+              InvalidInputException e) {
         ex = e;
         throw e;
       } catch (Exception e) {
@@ -2986,10 +2998,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws MetaException, NoSuchObjectException {
       Table t = null;
       try {
-        t = getMS().getTable(catName, dbname, name, writeIdList, getColumnStats);
+        t = getMS().getTable(catName, dbname, name, writeIdList);
         if (t == null) {
           throw new NoSuchObjectException(TableName.getQualified(catName, dbname, name) +
             " table not found");
+        }
+
+        // If column statistics was requested and is valid fetch it.
+        if (getColumnStats) {
+          ColumnStatistics colStats = getMS().getTableColumnStatistics(catName, dbname, name,
+                  StatsSetupConst.getColumnsHavingStats(t.getParameters()), writeIdList);
+          if (colStats != null) {
+            t.setColStats(colStats);
+          }
         }
       } catch (Exception e) {
         throwMetaException(e);
