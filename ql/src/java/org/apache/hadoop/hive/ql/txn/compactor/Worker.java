@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.thrift.TException;
@@ -155,7 +156,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         if (ci.runAs == null) {
           ci.runAs = findUserToRunAs(sd.getLocation(), t);
         }
-        long compactorTxnId = msc.openTxns(ci.runAs, 1).getTxn_ids().get(0);
+        long compactorTxnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
 
         heartbeater = new CompactionHeartbeater(compactorTxnId, fullTableName, conf);
         heartbeater.start();
