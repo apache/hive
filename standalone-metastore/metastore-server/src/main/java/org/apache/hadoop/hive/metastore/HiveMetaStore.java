@@ -6721,7 +6721,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (dbName == null) {
           return getMS().listPrincipalTableGrantsAll(principalName, principalType);
         }
-        if (principalName == null) {
+        if (StringUtil.isNullOrEmpty(principalName)) {
           return getMS().listTableGrantsAll(catName, dbName, tableName);
         }
         return getMS().listAllTableGrants(principalName, principalType, catName, dbName, tableName);
