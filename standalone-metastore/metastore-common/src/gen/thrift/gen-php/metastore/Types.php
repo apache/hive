@@ -221,6 +221,19 @@ final class ResourceType {
   );
 }
 
+final class TxnType {
+  const DEFAULT = 0;
+  const REPL_CREATED = 1;
+  const READ_ONLY = 2;
+  const COMPACTION = 3;
+  static public $__names = array(
+    0 => 'DEFAULT',
+    1 => 'REPL_CREATED',
+    2 => 'READ_ONLY',
+    3 => 'COMPACTION',
+  );
+}
+
 final class FileMetadataExprType {
   const ORC_SARG = 1;
   static public $__names = array(
@@ -16778,6 +16791,10 @@ class OpenTxnRequest {
    * @var int[]
    */
   public $replSrcTxnIds = null;
+  /**
+   * @var int
+   */
+  public $txn_type =   0;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -16810,6 +16827,10 @@ class OpenTxnRequest {
             'type' => TType::I64,
             ),
           ),
+        7 => array(
+          'var' => 'txn_type',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -16830,6 +16851,9 @@ class OpenTxnRequest {
       }
       if (isset($vals['replSrcTxnIds'])) {
         $this->replSrcTxnIds = $vals['replSrcTxnIds'];
+      }
+      if (isset($vals['txn_type'])) {
+        $this->txn_type = $vals['txn_type'];
       }
     }
   }
@@ -16905,6 +16929,13 @@ class OpenTxnRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 7:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->txn_type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -16958,6 +16989,11 @@ class OpenTxnRequest {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->txn_type !== null) {
+      $xfer += $output->writeFieldBegin('txn_type', TType::I32, 7);
+      $xfer += $output->writeI32($this->txn_type);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

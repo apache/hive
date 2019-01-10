@@ -2227,20 +2227,26 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public long openTxn(String user, TxnType txnType) throws TException {
+    OpenTxnsResponse txns = openTxnsIntr(user, 1, null, null, txnType);
+    return txns.getTxn_ids().get(0);
+  }
+
+  @Override
   public OpenTxnsResponse openTxns(String user, int numTxns) throws TException {
-    return openTxnsIntr(user, numTxns, null, null);
+    return openTxnsIntr(user, numTxns, null, null, null);
   }
 
   @Override
   public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException {
     // As this is called from replication task, the user is the user who has fired the repl command.
     // This is required for standalone metastore authentication.
-    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds.size(), replPolicy, srcTxnIds);
+    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds.size(), replPolicy, srcTxnIds, null);
     return txns.getTxn_ids();
   }
 
   private OpenTxnsResponse openTxnsIntr(String user, int numTxns, String replPolicy,
-                                        List<Long> srcTxnIds) throws TException {
+                                        List<Long> srcTxnIds, TxnType txnType) throws TException {
     String hostname;
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -2257,6 +2263,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       rqst.setReplSrcTxnIds(srcTxnIds);
     } else {
       assert srcTxnIds == null;
+    }
+    if (txnType != null) {
+      rqst.setTxn_type(txnType);
     }
     return client.open_txns(rqst);
   }

@@ -166,19 +166,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   //todo: make these like OperationType and remove above char constants
   enum TxnStatus {OPEN, ABORTED, COMMITTED, UNKNOWN}
 
-  public enum TxnType {
-    DEFAULT(0), REPL_CREATED(1), READ_ONLY(2);
-
-    private final int value;
-    TxnType(int value) {
-      this.value = value;
-    }
-
-    public int getValue() {
-      return value;
-    }
-  }
-
   // Lock states
   static final protected char LOCK_ACQUIRED = 'a';
   static final protected char LOCK_WAITING = 'w';

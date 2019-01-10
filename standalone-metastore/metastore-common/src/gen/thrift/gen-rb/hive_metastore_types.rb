@@ -155,6 +155,15 @@ module ResourceType
   VALID_VALUES = Set.new([JAR, FILE, ARCHIVE]).freeze
 end
 
+module TxnType
+  DEFAULT = 0
+  REPL_CREATED = 1
+  READ_ONLY = 2
+  COMPACTION = 3
+  VALUE_MAP = {0 => "DEFAULT", 1 => "REPL_CREATED", 2 => "READ_ONLY", 3 => "COMPACTION"}
+  VALID_VALUES = Set.new([DEFAULT, REPL_CREATED, READ_ONLY, COMPACTION]).freeze
+end
+
 module FileMetadataExprType
   ORC_SARG = 1
   VALUE_MAP = {1 => "ORC_SARG"}
@@ -2604,6 +2613,7 @@ class OpenTxnRequest
   AGENTINFO = 4
   REPLPOLICY = 5
   REPLSRCTXNIDS = 6
+  TXN_TYPE = 7
 
   FIELDS = {
     NUM_TXNS => {:type => ::Thrift::Types::I32, :name => 'num_txns'},
@@ -2611,7 +2621,8 @@ class OpenTxnRequest
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
     AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    REPLSRCTXNIDS => {:type => ::Thrift::Types::LIST, :name => 'replSrcTxnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true}
+    REPLSRCTXNIDS => {:type => ::Thrift::Types::LIST, :name => 'replSrcTxnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
+    TXN_TYPE => {:type => ::Thrift::Types::I32, :name => 'txn_type', :default =>     0, :optional => true, :enum_class => ::TxnType}
   }
 
   def struct_fields; FIELDS; end
@@ -2620,6 +2631,9 @@ class OpenTxnRequest
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field num_txns is unset!') unless @num_txns
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user is unset!') unless @user
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hostname is unset!') unless @hostname
+    unless @txn_type.nil? || ::TxnType::VALID_VALUES.include?(@txn_type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field txn_type!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

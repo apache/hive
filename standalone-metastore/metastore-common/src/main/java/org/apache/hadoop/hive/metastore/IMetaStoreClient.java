@@ -116,6 +116,7 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
@@ -2854,6 +2855,15 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   long openTxn(String user) throws TException;
+
+  /**
+   * Initiate a transaction with given type.
+   * @param user User who is opening this transaction.
+   * @param txnType Type of needed transaction.
+   * @return transaction identifier
+   * @throws TException
+   */
+  long openTxn(String user, TxnType txnType) throws TException;
 
   /**
    * Initiate a transaction at the target cluster.
