@@ -870,6 +870,13 @@ enum ResourceType {
   ARCHIVE = 3,
 }
 
+enum TxnType {
+    DEFAULT      = 0,
+    REPL_CREATED = 1,
+    READ_ONLY    = 2,
+    COMPACTION   = 3
+}
+
 // specifies which info to return with GetTablesExtRequest
 enum GetTablesExtRequestFields {
   ACCESS_TYPE = 1,      // return accessType
@@ -927,6 +934,7 @@ struct OpenTxnRequest {
     4: optional string agentInfo = "Unknown",
     5: optional string replPolicy,
     6: optional list<i64> replSrcTxnIds,
+    7: optional TxnType txn_type = TxnType.DEFAULT,
 }
 
 struct OpenTxnsResponse {

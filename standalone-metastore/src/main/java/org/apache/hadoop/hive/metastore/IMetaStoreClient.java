@@ -2887,6 +2887,15 @@ public interface IMetaStoreClient {
   long openTxn(String user) throws TException;
 
   /**
+   * Initiate a transaction with given type.
+   * @param user User who is opening this transaction.
+   * @param txnType Type of needed transaction.
+   * @return transaction identifier
+   * @throws TException
+   */
+  long openTxn(String user, TxnType txnType) throws TException;
+
+  /**
    * Initiate a transaction at the target cluster.
    * @param replPolicy The replication policy to uniquely identify the source cluster.
    * @param srcTxnIds The list of transaction ids at the source cluster
