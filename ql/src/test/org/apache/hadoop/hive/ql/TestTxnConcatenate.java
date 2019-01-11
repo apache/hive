@@ -142,18 +142,14 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into T values(5,6),(8,8)");
     String testQuery = "select a, b, INPUT__FILE__NAME from T order by a, b";
     String[][] expected = new String[][] {
-        {"1\t2",
-            "t/delta_0000001_0000001_0000/000000_0"},
-        {"4\t5",
-            "t/delta_0000001_0000001_0000/000000_0"},
-        {"5\t6",
-            "t/delta_0000002_0000002_0000/000000_0"},
-        {"8\t8",
-            "t/delta_0000002_0000002_0000/000000_0"}};
+        {"1\t2", "t/delta_0000001_0000001_0000/000000_0"},
+        {"4\t5", "t/delta_0000001_0000001_0000/000000_0"},
+        {"5\t6", "t/delta_0000002_0000002_0000/000000_0"},
+        {"8\t8", "t/delta_0000002_0000002_0000/000000_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
-        /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
-     but in normal usage 'concatenate' is blocking, */
+    /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
+      but in normal usage 'concatenate' is blocking, */
     hiveConf.setBoolVar(HiveConf.ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, true);
     runStatementOnDriver("alter table T concatenate");
 
@@ -166,14 +162,10 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
     String[][] expected2 = new String[][] {
-        {"1\t2",
-            "t/base_0000002/000000_0"},
-        {"4\t5",
-            "t/base_0000002/000000_0"},
-        {"5\t6",
-            "t/base_0000002/000000_0"},
-        {"8\t8",
-            "t/base_0000002/000000_0"}};
+        {"1\t2", "t/base_0000002_v0000020/000000_0"},
+        {"4\t5", "t/base_0000002_v0000020/000000_0"},
+        {"5\t6", "t/base_0000002_v0000020/000000_0"},
+        {"8\t8", "t/base_0000002_v0000020/000000_0"}};
     checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
   }
 }
