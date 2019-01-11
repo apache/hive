@@ -2378,18 +2378,7 @@ public class StatsRulesProcFactory {
         // number of distincts should not change. Update the distinct count only when
         // the output number of rows is less than input number of rows.
         if (ratio <= 1.0) {
-          long proposedNDV = (long) Math.ceil(ratio * oldDV);
-          long adjustedNDV = proposedNDV;
-          LOG.info("Deepak : Ratio = " + ratio + ", ");
-          if (ratio < 0.5 && HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_USE_NDV_ADJUSTMENT)) {
-            adjustedNDV = (long)(adjustedNDV * (oldRowCount/oldDV) * 0.4);
-            LOG.info("Deepak : oldRowCount, oldDV, adjustedNDV = " + oldRowCount + ", " + oldDV + ", and " + adjustedNDV);
-            if (adjustedNDV > oldDV) {
-              adjustedNDV = oldDV;
-            }
-          }
-          LOG.info("Deepak : proposedNDV = " + proposedNDV + " and adjusted ndv = " + adjustedNDV);
-          newDV = Math.max(proposedNDV, adjustedNDV);
+          newDV = (long) Math.ceil(ratio * oldDV);
         }
 
         cs.setCountDistint(newDV);
