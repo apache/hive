@@ -779,15 +779,6 @@ public class GenTezUtils {
       this.grandParent = grandParent;
       this.generator = generator;
     }
-
-    public ExprNodeDesc getKeyCol() {
-      ExprNodeDesc keyCol = desc.getTarget();
-      if (keyCol != null) {
-        return keyCol;
-      }
-
-      return generator.getConf().getKeyCols().get(desc.getKeyIndex());
-    }
   }
 
   public static class DynamicPartitionPrunerContext implements NodeProcessorCtx,

@@ -31,27 +31,15 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
 
   Operator<? extends OperatorDesc> source;
   int keyIndex;
-  // Target name, if key is not set
-  ExprNodeDesc target;
 
   public ExprNodeDynamicListDesc() {
   }
 
-  // keyIndex is not used
   public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source,
-      int keyIndex, ExprNodeDesc target) {
+      int keyIndex) {
     super(typeInfo);
     this.source = source;
     this.keyIndex = keyIndex;
-    this.target = target;
-  }
-
-  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source,
-                                 int keyIndex) {
-    super(typeInfo);
-    this.source = source;
-    this.keyIndex = keyIndex;
-    this.target = null;
   }
 
   public void setSource(Operator<? extends OperatorDesc> source) {
@@ -70,13 +58,9 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
     return this.keyIndex;
   }
 
-  public ExprNodeDesc getTarget() {
-    return target;
-  }
-
   @Override
   public ExprNodeDesc clone() {
-    return new ExprNodeDynamicListDesc(typeInfo, source, keyIndex, target);
+    return new ExprNodeDynamicListDesc(typeInfo, source, keyIndex);
   }
 
   @Override

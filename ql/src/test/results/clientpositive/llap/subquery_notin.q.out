@@ -7191,7 +7191,7 @@ PREHOOK: query: drop table t1_n0
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table t1_n0
 POSTHOOK: type: DROPTABLE
-Warning: Shuffle Join MERGEJOIN[53][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[51][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select *
 from src b
 where b.key not in
@@ -7410,7 +7410,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[53][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[51][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select *
 from src b
 where b.key not in
