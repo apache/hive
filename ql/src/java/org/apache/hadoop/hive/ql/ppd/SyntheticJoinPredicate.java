@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -179,65 +180,148 @@ public class SyntheticJoinPredicate extends Transform {
         List<ExprNodeDesc> sourceKeys = source.getConf().getKeyCols();
         List<ExprNodeDesc> targetKeys = target.getConf().getKeyCols();
 
-        if (sourceKeys.size() < 1) {
-          continue;
-        }
-
         ExprNodeDesc syntheticExpr = null;
 
-        for (int i = 0; i < sourceKeys.size(); ++i) {
-          final ExprNodeDesc sourceKey = sourceKeys.get(i);
+        if (sourceKeys.size() > 0) {
+          for (int i = 0; i < sourceKeys.size(); ++i) {
+            final ExprNodeDesc sourceKey = sourceKeys.get(i);
 
-          List<ExprNodeDesc> inArgs = new ArrayList<>();
-          inArgs.add(sourceKey);
+            List<ExprNodeDesc> inArgs = new ArrayList<>();
+            inArgs.add(sourceKey);
 
-          ExprNodeDynamicListDesc dynamicExpr =
+            ExprNodeDynamicListDesc dynamicExpr =
               new ExprNodeDynamicListDesc(targetKeys.get(i).getTypeInfo(), target, i);
 
-          inArgs.add(dynamicExpr);
+            inArgs.add(dynamicExpr);
 
-          ExprNodeDesc syntheticInExpr =
+            ExprNodeDesc syntheticInExpr =
               ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo("in")
-                  .getGenericUDF(), inArgs);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Synthetic predicate in " + join + ": " + srcPos + " --> " + targetPos + " (" + syntheticInExpr + ")");
-          }
-
-          List<ExprNodeDesc> andArgs = new ArrayList<>();
-          if (syntheticExpr != null) {
-            andArgs.add(syntheticExpr);
-          }
-          andArgs.add(syntheticInExpr);
-
-          if(sCtx.isExtended()) {
-            // Backtrack
-            List<ExprNodeDesc> newExprs = createDerivatives(target.getParentOperators().get(0), targetKeys.get(i), sourceKey);
-            if (!newExprs.isEmpty()) {
-              if (LOG.isDebugEnabled()) {
-                for (ExprNodeDesc expr : newExprs) {
-                  LOG.debug("Additional synthetic predicate in " + join + ": " + srcPos + " --> " + targetPos + " (" + expr + ")");
-                }
-              }
-              andArgs.addAll(newExprs);
+                .getGenericUDF(), inArgs);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Synthetic predicate in " + join + ": " + srcPos + " --> " + targetPos + " (" + syntheticInExpr + ")");
             }
-          }
 
-          if (andArgs.size() < 2) {
-            syntheticExpr = syntheticInExpr;
-          } else {
-            // Create AND expression
-            syntheticExpr =
+            List<ExprNodeDesc> andArgs = new ArrayList<>();
+            if (syntheticExpr != null) {
+              andArgs.add(syntheticExpr);
+            }
+            andArgs.add(syntheticInExpr);
+
+            if (sCtx.isExtended()) {
+              // Backtrack
+              List<ExprNodeDesc> newExprs = createDerivatives(target.getParentOperators().get(0), targetKeys.get(i), sourceKey);
+              if (!newExprs.isEmpty()) {
+                if (LOG.isDebugEnabled()) {
+                  for (ExprNodeDesc expr : newExprs) {
+                    LOG.debug("Additional synthetic predicate in " + join + ": " + srcPos + " --> " + targetPos + " (" + expr + ")");
+                  }
+                }
+                andArgs.addAll(newExprs);
+              }
+            }
+
+            if (andArgs.size() < 2) {
+              syntheticExpr = syntheticInExpr;
+            } else {
+              // Create AND expression
+              syntheticExpr =
                 ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo("and")
-                    .getGenericUDF(), andArgs);
+                  .getGenericUDF(), andArgs);
+            }
           }
         }
 
-        Operator<FilterDesc> newFilter = createFilter(source, parent, parentRS, syntheticExpr);
-        parent = newFilter;
+        // Handle non-equi joins like <, <=, >, and >=
+        List<ExprNodeDesc> residualFilters = join.getConf().getResidualFilterExprs();
+        if (residualFilters != null && residualFilters.size() != 0 &&
+          !(srcPos > 1 || targetPos > 1)) { // Either srcPos or targetPos is larger than 1, making this filter a complex one.
+
+          for (ExprNodeDesc filter : residualFilters) {
+            if (!(filter instanceof ExprNodeGenericFuncDesc)) {
+              continue;
+            }
+
+            ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) filter;
+            // filter should be of type <, >, <= or >=
+            if (getFuncText(funcDesc.getFuncText(), 1) == null) {
+              // unsupported
+              continue;
+            }
+
+            final ExprNodeDesc sourceChild = funcDesc.getChildren().get(srcPos);
+            final ExprNodeDesc targetChild = funcDesc.getChildren().get(targetPos);
+            if (!(sourceChild instanceof ExprNodeColumnDesc &&
+              targetChild instanceof ExprNodeColumnDesc)) {
+              continue;
+            }
+            // Create non-equi function.
+            List<ExprNodeDesc> funcArgs = new ArrayList<>();
+            ExprNodeDesc sourceKey = getRSColExprFromResidualFilter(sourceChild, join);
+            funcArgs.add(sourceKey);
+            final ExprNodeDynamicListDesc dynamicExpr =
+              new ExprNodeDynamicListDesc(targetChild.getTypeInfo(), target, 0,
+                getRSColExprFromResidualFilter(targetChild, join));
+            funcArgs.add(dynamicExpr);
+            ExprNodeDesc funcExpr =
+              ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo(getFuncText(funcDesc.getFuncText(), srcPos)).getGenericUDF(), funcArgs);
+
+            // TODO : deduplicate the code below.
+            if (LOG.isDebugEnabled()) {
+              LOG.debug(" Non-Equi Join Predicate " + funcExpr);
+            }
+
+            List<ExprNodeDesc> andArgs = new ArrayList<>();
+            if (syntheticExpr != null) {
+              andArgs.add(syntheticExpr);
+            }
+            andArgs.add(funcExpr);
+
+            // TODO : HIVE-21098 : Support for extended predicates
+            if (andArgs.size() < 2) {
+              syntheticExpr = funcExpr;
+            } else {
+              syntheticExpr =
+                ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo("and").getGenericUDF(), andArgs);
+            }
+          }
+        }
+
+        if (syntheticExpr != null) {
+          Operator<FilterDesc> newFilter = createFilter(source, parent, parentRS, syntheticExpr);
+          parent = newFilter;
+        }
       }
 
       return null;
     }
+
+    private ExprNodeDesc getRSColExprFromResidualFilter(ExprNodeDesc childExpr, CommonJoinOperator<JoinDesc> join) {
+      ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(childExpr);
+
+      final String joinColName = colExpr.getColumn();
+      // use name to get the alias pos of parent and name in parent
+      final int aliasPos = join.getConf().getReversedExprs().get(joinColName);
+      final ExprNodeDesc rsColExpr = join.getColumnExprMap().get(joinColName);
+
+      // Get the correct parent
+      final ReduceSinkOperator parentRS = (ReduceSinkOperator) (join.getParentOperators().get(aliasPos));
+
+      // Fetch the colExpr from parent
+      return parentRS.getColumnExprMap().get(
+        ExprNodeDescUtils.extractColName(rsColExpr));
+    }
+
+    // This function serves two purposes
+    // 1. As the name suggests, provides inverted function text for a given function text
+    // 2. If inversion fails, it can be inferred that the given function is not supported.
+    String getFuncText(String funcText, final int srcPos) {
+      if (srcPos == 0) {
+        return funcText;
+      }
+
+      return FunctionRegistry.invertFuncText(funcText);
+    }
+
 
     // calculate filter propagation directions for each alias
     // L<->R for inner/semi join, L<-R for left outer join, R<-L for right outer
