@@ -1851,4 +1851,24 @@ public final class FunctionRegistry {
       String blackListStr) {
     system.setupPermissionsForUDFs(whiteListStr, blackListStr);
   }
+
+  /**
+   * Function to invert non-equi function texts
+   * @param funcText
+   */
+  public static String invertFuncText(final String funcText) {
+    // Reverse the text
+    switch (funcText) {
+      case "<":
+        return ">";
+      case "<=":
+        return ">=";
+      case ">":
+        return "<";
+      case ">=":
+        return "<=";
+      default:
+        return null; // helps identify unsupported functions
+    }
+  }
 }
