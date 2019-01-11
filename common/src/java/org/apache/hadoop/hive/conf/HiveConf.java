@@ -2489,7 +2489,7 @@ public class HiveConf extends Configuration {
         "UDTFs change the number of rows of the output. A common UDTF is the explode() method that creates\n" +
         "multiple rows for each element in the input array. This factor is applied to the number of\n" +
         "output rows and output size."),
-
+    HIVE_STATS_USE_NDV_ADJUSTMENT("hive.stats.use.ndv.adjustment", false, "Use nDV adjustment for other columns in join"),
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +

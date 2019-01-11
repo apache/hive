@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -171,5 +172,16 @@ public interface HiveStorageHandler extends Configurable {
 
   default LockType getLockType(WriteEntity writeEntity){
     return LockType.EXCLUSIVE;
+  }
+
+  /**
+   * Test if the storage handler allows the push-down of join filter predicate to prune further the splits.
+   *
+   * @param syntheticFilterPredicate Join filter predicate.
+   * @return true if supports dynamic split pruning for the given predicate.
+   */
+
+  default boolean addDynamicSplitPruningEdge(ExprNodeDesc syntheticFilterPredicate) {
+    return false;
   }
 }
