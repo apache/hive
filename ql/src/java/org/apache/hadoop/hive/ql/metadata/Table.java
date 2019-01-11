@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -1110,5 +1112,25 @@ public class Table implements Serializable {
 
   public ColumnStatistics getColStats() {
     return tTable.isSetColStats() ? tTable.getColStats() : null;
+  }
+
+  /**
+   * Setup the table level stats as if the table is new. Used when setting up Table for a new
+   * table or during replication.
+   */
+  public void setStatsStateLikeNewTable() {
+    // We do not replicate statistics for
+    // an ACID Table right now, so don't touch them right now.
+    if (AcidUtils.isTransactionalTable(this)) {
+      return;
+    }
+
+    if (isPartitioned()) {
+      StatsSetupConst.setStatsStateForCreateTable(getParameters(), null,
+              StatsSetupConst.FALSE);
+    } else {
+      StatsSetupConst.setStatsStateForCreateTable(getParameters(),
+              MetaStoreUtils.getColumnNames(getCols()), StatsSetupConst.TRUE);
+    }
   }
 };

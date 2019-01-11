@@ -307,7 +307,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean inReplicationScope = false;
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       tblDesc.setReplicationSpec(replicationSpec);
-      StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
+      // Statistics for a non-transactional table will be replicated separately. Don't bother
+      // with it here.
+      if (TxnUtils.isTransactionalTable(tblDesc.getTblProps())) {
+        StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
+      }
       inReplicationScope = true;
       tblDesc.setReplWriteId(writeId);
     }
