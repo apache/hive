@@ -616,7 +616,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       if (doWait) {
         SessionState.start(ss); // This is the first call, open the session
       }
-      DriverUtils.runOnDriver(conf, user, ss, cmd, null);
+      DriverUtils.runOnDriver(conf, user, ss, cmd);
     } catch (Exception e) {
       LOG.error("Analyze command failed: " + cmd, e);
       try {
