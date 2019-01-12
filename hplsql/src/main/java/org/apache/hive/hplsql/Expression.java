@@ -148,6 +148,9 @@ public class Expression {
   public void execBoolSql(HplsqlParser.Bool_exprContext ctx) {
     StringBuilder sql = new StringBuilder();
     if (ctx.T_OPEN_P() != null) {
+      if (ctx.T_NOT() != null) {
+        sql.append(ctx.T_NOT().getText() + " ");
+      }
       sql.append("(");
       sql.append(evalPop(ctx.bool_expr(0)).toString());
       sql.append(")");
