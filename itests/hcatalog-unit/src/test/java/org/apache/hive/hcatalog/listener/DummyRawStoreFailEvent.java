@@ -275,12 +275,6 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName,
-                        String writeIdList, boolean getColumnStats) throws MetaException {
-    return objectStore.getTable(catName, dbName, tableName, writeIdList, getColumnStats);
-  }
-
-  @Override
   public boolean addPartition(Partition part)
       throws InvalidObjectException, MetaException {
     return objectStore.addPartition(part);
