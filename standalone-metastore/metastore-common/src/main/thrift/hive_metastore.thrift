@@ -463,6 +463,7 @@ struct Partition {
   9: optional string catName,
   10: optional i64 writeId=-1,
   11: optional bool isStatsCompliant
+  12: optional ColumnStatistics colStats; // column statistics for partition
 }
 
 struct PartitionWithoutSD {
@@ -2101,7 +2102,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // get partitions give a list of partition names
-  list<Partition> get_partitions_by_names(1:string db_name 2:string tbl_name 3:list<string> names)
+  list<Partition> get_partitions_by_names(1:string db_name 2:string tbl_name 3:list<string> names, 4:bool get_col_stats)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // changes the partition to the new partition object. partition is identified from the part values

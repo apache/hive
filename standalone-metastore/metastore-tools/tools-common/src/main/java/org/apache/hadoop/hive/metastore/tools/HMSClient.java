@@ -293,9 +293,9 @@ final class HMSClient implements AutoCloseable {
                                        @Nullable List<String> names) throws TException {
     if (names == null) {
       return client.get_partitions_by_names(dbName, tableName,
-          getPartitionNames(dbName, tableName));
+          getPartitionNames(dbName, tableName), false);
     }
-    return client.get_partitions_by_names(dbName, tableName, names);
+    return client.get_partitions_by_names(dbName, tableName, names, false);
   }
 
   boolean alterTable(@NotNull String dbName, @NotNull String tableName, @NotNull Table newTable)

@@ -1389,8 +1389,15 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names) throws NoSuchObjectException, MetaException, TException {
-    List<Partition> parts = client.get_partitions_by_names(db_name, tbl_name, part_names);
+                                              List<String> part_names) throws NoSuchObjectException, MetaException, TException {
+    return getPartitionsByNames(db_name, tbl_name, part_names, false);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+                                              List<String> part_names, boolean get_col_stats)
+          throws NoSuchObjectException, MetaException, TException {
+    List<Partition> parts = client.get_partitions_by_names(db_name, tbl_name, part_names, get_col_stats);
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
   }
 
@@ -3258,6 +3265,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
                                               List<String> part_names) throws NoSuchObjectException,
       MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                              List<String> part_names, boolean getColStats)
+          throws NoSuchObjectException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 

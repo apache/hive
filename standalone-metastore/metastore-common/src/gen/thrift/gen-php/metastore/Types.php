@@ -7442,6 +7442,10 @@ class Partition {
    * @var bool
    */
   public $isStatsCompliant = null;
+  /**
+   * @var \metastore\ColumnStatistics
+   */
+  public $colStats = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -7504,6 +7508,11 @@ class Partition {
           'var' => 'isStatsCompliant',
           'type' => TType::BOOL,
           ),
+        12 => array(
+          'var' => 'colStats',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\ColumnStatistics',
+          ),
         );
     }
     if (is_array($vals)) {
@@ -7539,6 +7548,9 @@ class Partition {
       }
       if (isset($vals['isStatsCompliant'])) {
         $this->isStatsCompliant = $vals['isStatsCompliant'];
+      }
+      if (isset($vals['colStats'])) {
+        $this->colStats = $vals['colStats'];
       }
     }
   }
@@ -7664,6 +7676,14 @@ class Partition {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 12:
+          if ($ftype == TType::STRUCT) {
+            $this->colStats = new \metastore\ColumnStatistics();
+            $xfer += $this->colStats->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -7761,6 +7781,14 @@ class Partition {
     if ($this->isStatsCompliant !== null) {
       $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 11);
       $xfer += $output->writeBool($this->isStatsCompliant);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->colStats !== null) {
+      if (!is_object($this->colStats)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('colStats', TType::STRUCT, 12);
+      $xfer += $this->colStats->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

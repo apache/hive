@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -245,6 +246,27 @@ public class TestStats {
     Assert.assertEquals(partNames.size(), aggr.getPartsFound());
     Assert.assertEquals(colMap.size(), aggr.getColStatsSize());
     aggr.getColStats().forEach(cso -> colMap.get(cso.getColName()).compareAggr(cso));
+
+    // Test column stats obtained through getPartitions call
+    for (int i = 0; i < partNames.size(); i++) {
+      String partName = partNames.get(i);
+      List<Partition> partitions = catName.equals(NO_CAT) ?
+              client.getPartitionsByNames(dbName, tableName, Collections.singletonList(partName),
+                      true) :
+              client.getPartitionsByNames(catName, dbName, tableName,
+                      Collections.singletonList(partName), true);
+      Partition partition = partitions.get(0);
+      compareStatsForOneTableOrPartition(partition.getColStats().getStatsObj(), i, colMap);
+
+      // Also test that we do not get statistics when not requested
+      partitions = catName.equals(NO_CAT) ?
+              client.getPartitionsByNames(dbName, tableName, Collections.singletonList(partName),
+                      true) :
+              client.getPartitionsByNames(catName, dbName, tableName,
+                      Collections.singletonList(partName), true);
+      partition = partitions.get(0);
+      Assert.assertFalse(partition.isSetColStats());
+    }
   }
 
   private void compareStatsForOneTableOrPartition(List<ColumnStatisticsObj> objs,

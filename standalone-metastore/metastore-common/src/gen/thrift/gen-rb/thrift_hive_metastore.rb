@@ -1400,13 +1400,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_num_partitions_by_filter failed: unknown result')
     end
 
-    def get_partitions_by_names(db_name, tbl_name, names)
-      send_get_partitions_by_names(db_name, tbl_name, names)
+    def get_partitions_by_names(db_name, tbl_name, names, get_col_stats)
+      send_get_partitions_by_names(db_name, tbl_name, names, get_col_stats)
       return recv_get_partitions_by_names()
     end
 
-    def send_get_partitions_by_names(db_name, tbl_name, names)
-      send_message('get_partitions_by_names', Get_partitions_by_names_args, :db_name => db_name, :tbl_name => tbl_name, :names => names)
+    def send_get_partitions_by_names(db_name, tbl_name, names, get_col_stats)
+      send_message('get_partitions_by_names', Get_partitions_by_names_args, :db_name => db_name, :tbl_name => tbl_name, :names => names, :get_col_stats => get_col_stats)
     end
 
     def recv_get_partitions_by_names()
@@ -4805,7 +4805,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_partitions_by_names_args)
       result = Get_partitions_by_names_result.new()
       begin
-        result.success = @handler.get_partitions_by_names(args.db_name, args.tbl_name, args.names)
+        result.success = @handler.get_partitions_by_names(args.db_name, args.tbl_name, args.names, args.get_col_stats)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
@@ -9636,11 +9636,13 @@ module ThriftHiveMetastore
     DB_NAME = 1
     TBL_NAME = 2
     NAMES = 3
+    GET_COL_STATS = 4
 
     FIELDS = {
       DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
       TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-      NAMES => {:type => ::Thrift::Types::LIST, :name => 'names', :element => {:type => ::Thrift::Types::STRING}}
+      NAMES => {:type => ::Thrift::Types::LIST, :name => 'names', :element => {:type => ::Thrift::Types::STRING}},
+      GET_COL_STATS => {:type => ::Thrift::Types::BOOL, :name => 'get_col_stats'}
     }
 
     def struct_fields; FIELDS; end

@@ -704,12 +704,13 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def get_partitions_by_names(self, db_name, tbl_name, names):
+  def get_partitions_by_names(self, db_name, tbl_name, names, get_col_stats):
     """
     Parameters:
      - db_name
      - tbl_name
      - names
+     - get_col_stats
     """
     pass
 
@@ -4796,22 +4797,24 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o2
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_num_partitions_by_filter failed: unknown result")
 
-  def get_partitions_by_names(self, db_name, tbl_name, names):
+  def get_partitions_by_names(self, db_name, tbl_name, names, get_col_stats):
     """
     Parameters:
      - db_name
      - tbl_name
      - names
+     - get_col_stats
     """
-    self.send_get_partitions_by_names(db_name, tbl_name, names)
+    self.send_get_partitions_by_names(db_name, tbl_name, names, get_col_stats)
     return self.recv_get_partitions_by_names()
 
-  def send_get_partitions_by_names(self, db_name, tbl_name, names):
+  def send_get_partitions_by_names(self, db_name, tbl_name, names, get_col_stats):
     self._oprot.writeMessageBegin('get_partitions_by_names', TMessageType.CALL, self._seqid)
     args = get_partitions_by_names_args()
     args.db_name = db_name
     args.tbl_name = tbl_name
     args.names = names
+    args.get_col_stats = get_col_stats
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -11959,7 +11962,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = get_partitions_by_names_result()
     try:
-      result.success = self._handler.get_partitions_by_names(args.db_name, args.tbl_name, args.names)
+      result.success = self._handler.get_partitions_by_names(args.db_name, args.tbl_name, args.names, args.get_col_stats)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -30094,6 +30097,7 @@ class get_partitions_by_names_args:
    - db_name
    - tbl_name
    - names
+   - get_col_stats
   """
 
   thrift_spec = (
@@ -30101,12 +30105,14 @@ class get_partitions_by_names_args:
     (1, TType.STRING, 'db_name', None, None, ), # 1
     (2, TType.STRING, 'tbl_name', None, None, ), # 2
     (3, TType.LIST, 'names', (TType.STRING,None), None, ), # 3
+    (4, TType.BOOL, 'get_col_stats', None, None, ), # 4
   )
 
-  def __init__(self, db_name=None, tbl_name=None, names=None,):
+  def __init__(self, db_name=None, tbl_name=None, names=None, get_col_stats=None,):
     self.db_name = db_name
     self.tbl_name = tbl_name
     self.names = names
+    self.get_col_stats = get_col_stats
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -30137,6 +30143,11 @@ class get_partitions_by_names_args:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.BOOL:
+          self.get_col_stats = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -30162,6 +30173,10 @@ class get_partitions_by_names_args:
         oprot.writeString(iter1248)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.get_col_stats is not None:
+      oprot.writeFieldBegin('get_col_stats', TType.BOOL, 4)
+      oprot.writeBool(self.get_col_stats)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -30174,6 +30189,7 @@ class get_partitions_by_names_args:
     value = (value * 31) ^ hash(self.db_name)
     value = (value * 31) ^ hash(self.tbl_name)
     value = (value * 31) ^ hash(self.names)
+    value = (value * 31) ^ hash(self.get_col_stats)
     return value
 
   def __repr__(self):

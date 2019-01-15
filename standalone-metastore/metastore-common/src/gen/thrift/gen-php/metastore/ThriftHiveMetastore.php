@@ -705,11 +705,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    * @param string $db_name
    * @param string $tbl_name
    * @param string[] $names
+   * @param bool $get_col_stats
    * @return \metastore\Partition[]
    * @throws \metastore\MetaException
    * @throws \metastore\NoSuchObjectException
    */
-  public function get_partitions_by_names($db_name, $tbl_name, array $names);
+  public function get_partitions_by_names($db_name, $tbl_name, array $names, $get_col_stats);
   /**
    * @param string $db_name
    * @param string $tbl_name
@@ -6426,18 +6427,19 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("get_num_partitions_by_filter failed: unknown result");
   }
 
-  public function get_partitions_by_names($db_name, $tbl_name, array $names)
+  public function get_partitions_by_names($db_name, $tbl_name, array $names, $get_col_stats)
   {
-    $this->send_get_partitions_by_names($db_name, $tbl_name, $names);
+    $this->send_get_partitions_by_names($db_name, $tbl_name, $names, $get_col_stats);
     return $this->recv_get_partitions_by_names();
   }
 
-  public function send_get_partitions_by_names($db_name, $tbl_name, array $names)
+  public function send_get_partitions_by_names($db_name, $tbl_name, array $names, $get_col_stats)
   {
     $args = new \metastore\ThriftHiveMetastore_get_partitions_by_names_args();
     $args->db_name = $db_name;
     $args->tbl_name = $tbl_name;
     $args->names = $names;
+    $args->get_col_stats = $get_col_stats;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -34793,6 +34795,10 @@ class ThriftHiveMetastore_get_partitions_by_names_args {
    * @var string[]
    */
   public $names = null;
+  /**
+   * @var bool
+   */
+  public $get_col_stats = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -34813,6 +34819,10 @@ class ThriftHiveMetastore_get_partitions_by_names_args {
             'type' => TType::STRING,
             ),
           ),
+        4 => array(
+          'var' => 'get_col_stats',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -34824,6 +34834,9 @@ class ThriftHiveMetastore_get_partitions_by_names_args {
       }
       if (isset($vals['names'])) {
         $this->names = $vals['names'];
+      }
+      if (isset($vals['get_col_stats'])) {
+        $this->get_col_stats = $vals['get_col_stats'];
       }
     }
   }
@@ -34878,6 +34891,13 @@ class ThriftHiveMetastore_get_partitions_by_names_args {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->get_col_stats);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -34916,6 +34936,11 @@ class ThriftHiveMetastore_get_partitions_by_names_args {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->get_col_stats !== null) {
+      $xfer += $output->writeFieldBegin('get_col_stats', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->get_col_stats);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

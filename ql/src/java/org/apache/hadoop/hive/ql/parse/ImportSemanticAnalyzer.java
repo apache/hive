@@ -341,7 +341,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           getBaseAddPartitionDescFromPartition(fromPath, dbname, tblDesc, partition,
               replicationSpec, x.getConf());
       if (inReplicationScope){
-        StatsSetupConst.setBasicStatsState(partsDesc.getPartition(0).getPartParams(), StatsSetupConst.FALSE);
+        // Statistics for a non-transactional table will be replicated separately. Don't bother
+        // with it here.
+        if (TxnUtils.isTransactionalTable(tblDesc.getTblProps())) {
+          StatsSetupConst.setBasicStatsState(partsDesc.getPartition(0).getPartParams(), StatsSetupConst.FALSE);
+        }
       }
       partitionDescs.add(partsDesc);
     }

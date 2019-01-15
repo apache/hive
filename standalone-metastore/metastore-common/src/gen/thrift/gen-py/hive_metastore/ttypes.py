@@ -5142,6 +5142,7 @@ class Partition:
    - catName
    - writeId
    - isStatsCompliant
+   - colStats
   """
 
   thrift_spec = (
@@ -5157,9 +5158,10 @@ class Partition:
     (9, TType.STRING, 'catName', None, None, ), # 9
     (10, TType.I64, 'writeId', None, -1, ), # 10
     (11, TType.BOOL, 'isStatsCompliant', None, None, ), # 11
+    (12, TType.STRUCT, 'colStats', (ColumnStatistics, ColumnStatistics.thrift_spec), None, ), # 12
   )
 
-  def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None, writeId=thrift_spec[10][4], isStatsCompliant=None,):
+  def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None, writeId=thrift_spec[10][4], isStatsCompliant=None, colStats=None,):
     self.values = values
     self.dbName = dbName
     self.tableName = tableName
@@ -5171,6 +5173,7 @@ class Partition:
     self.catName = catName
     self.writeId = writeId
     self.isStatsCompliant = isStatsCompliant
+    self.colStats = colStats
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5249,6 +5252,12 @@ class Partition:
           self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.STRUCT:
+          self.colStats = ColumnStatistics()
+          self.colStats.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5310,6 +5319,10 @@ class Partition:
       oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 11)
       oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
+    if self.colStats is not None:
+      oprot.writeFieldBegin('colStats', TType.STRUCT, 12)
+      self.colStats.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -5330,6 +5343,7 @@ class Partition:
     value = (value * 31) ^ hash(self.catName)
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.isStatsCompliant)
+    value = (value * 31) ^ hash(self.colStats)
     return value
 
   def __repr__(self):
