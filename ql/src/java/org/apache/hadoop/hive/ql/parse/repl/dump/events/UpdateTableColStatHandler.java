@@ -17,9 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnStatMessage> {
@@ -35,23 +37,24 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    boolean dumpThisEvent = true;
+    if (!Utils.shouldReplicate(event, withinContext.replicationSpec, withinContext.db,
+                                withinContext.hiveConf)) {
+      return;
+    }
 
     // Statistics without data doesn't make sense.
     if (withinContext.replicationSpec.isMetadataOnly()) {
-      dumpThisEvent = false;
+      return;
     }
     // For now we do not replicate the statistics for transactional tables.
     if (eventMessage.getWriteId() > 0 || eventMessage.getValidWriteIds() != null) {
-      dumpThisEvent = false;
+      return;
     }
 
-    if (dumpThisEvent) {
-      LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
-      DumpMetaData dmd = withinContext.createDmd(this);
-      dmd.setPayload(eventMessageAsJSON);
-      dmd.write();
-    }
+    LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
+    DumpMetaData dmd = withinContext.createDmd(this);
+    dmd.setPayload(eventMessageAsJSON);
+    dmd.write();
   }
 
   @Override

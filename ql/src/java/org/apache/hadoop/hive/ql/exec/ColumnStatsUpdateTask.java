@@ -21,9 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -303,13 +301,13 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     // We do not support stats replication for a transactional table yet. If we are converting
     // a non-transactional table to a transactional table during replication, we might get
     // column statistics but we shouldn't update those.
-    if (AcidUtils.isTransactionalTable(getHive().getTable(colStatsDesc.getDbName(),
-                                                          colStatsDesc.getTableName())) &&
-        work.getColStats() != null) {
-        LOG.debug("Skipped updating column stats for table " +
+    if (work.getColStats() != null &&
+        AcidUtils.isTransactionalTable(getHive().getTable(colStatsDesc.getDbName(),
+                                                          colStatsDesc.getTableName()))) {
+      LOG.debug("Skipped updating column stats for table " +
                 TableName.getDbTable(colStatsDesc.getDbName(), colStatsDesc.getTableName()) +
                 " because it is converted to a transactional table during replication.");
-        return 0;
+      return 0;
     }
 
     SetPartitionsStatsRequest request =

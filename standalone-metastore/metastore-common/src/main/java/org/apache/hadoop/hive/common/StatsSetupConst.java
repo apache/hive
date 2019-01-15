@@ -261,10 +261,6 @@ public class StatsSetupConst {
         stats.columnStats.put(colName, true);
       }
     }
-    // When we set basic stats to false, we also remove the column stats. So, when we are setting
-    // column stats, basic stats should be true. If an implication is true, its contrapositive is
-    // true.
-    stats.basicStats = true;
 
     try {
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));

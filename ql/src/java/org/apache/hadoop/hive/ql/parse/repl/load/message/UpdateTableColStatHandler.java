@@ -45,7 +45,7 @@ public class UpdateTableColStatHandler extends AbstractMessageHandler {
         ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
         colStatsDesc.setDbName(context.dbName);
         if (!context.isTableNameEmpty()) {
-            colStatsDesc.setTableName(context.tableName);
+          colStatsDesc.setTableName(context.tableName);
         }
         if (!context.isDbNameEmpty()) {
             updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName,

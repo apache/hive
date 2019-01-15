@@ -18,11 +18,9 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 
@@ -102,7 +100,7 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
       // as well, since that won't be accurate. So reset them to what they would look like for an
       // empty table.
       if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
-          qlMdTableAfter.setStatsStateLikeNewTable();
+        qlMdTableAfter.setStatsStateLikeNewTable();
       }
 
       EximUtil.createExportDump(
