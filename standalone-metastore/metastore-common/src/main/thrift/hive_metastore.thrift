@@ -340,10 +340,9 @@ struct GrantRevokeRoleResponse {
 struct Catalog {
   1: string name,                    // Name of the catalog
   2: optional string description,    // description of the catalog
-  3: string locationUri,              // default storage location.  When databases are created in
-                                      // this catalog, if they do not specify a location, they will
-                                      // be placed in this location.
-  4: optional i32 createTime          // creation time of catalog in seconds since epoch
+  3: string locationUri              // default storage location.  When databases are created in
+                                     // this catalog, if they do not specify a location, they will
+                                     // be placed in this location.
 }
 
 struct CreateCatalogRequest {
@@ -380,8 +379,7 @@ struct Database {
   5: optional PrincipalPrivilegeSet privileges,
   6: optional string ownerName,
   7: optional PrincipalType ownerType,
-  8: optional string catalogName,
-  9: optional i32 createTime               // creation time of database in seconds since epoch
+  8: optional string catalogName
 }
 
 // This object holds the information needed by SerDes

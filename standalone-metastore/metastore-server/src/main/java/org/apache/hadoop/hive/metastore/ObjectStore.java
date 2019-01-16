@@ -649,7 +649,6 @@ public class ObjectStore implements RawStore, Configurable {
       mCat.setDescription(cat.getDescription());
     }
     mCat.setLocationUri(cat.getLocationUri());
-    mCat.setCreateTime(cat.getCreateTime());
     return mCat;
   }
 
@@ -658,7 +657,6 @@ public class ObjectStore implements RawStore, Configurable {
     if (mCat.getDescription() != null) {
       cat.setDescription(mCat.getDescription());
     }
-    cat.setCreateTime(mCat.getCreateTime());
     return cat;
   }
 
@@ -676,7 +674,6 @@ public class ObjectStore implements RawStore, Configurable {
     mdb.setOwnerName(db.getOwnerName());
     PrincipalType ownerType = db.getOwnerType();
     mdb.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
-    mdb.setCreateTime(db.getCreateTime());
     try {
       openTransaction();
       pm.makePersistent(mdb);
@@ -770,7 +767,6 @@ public class ObjectStore implements RawStore, Configurable {
     PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
     db.setOwnerType(principalType);
     db.setCatalogName(catName);
-    db.setCreateTime(mdb.getCreateTime());
     return db;
   }
 
