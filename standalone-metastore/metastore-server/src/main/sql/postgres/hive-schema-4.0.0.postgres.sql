@@ -63,8 +63,7 @@ CREATE TABLE "CTLGS" (
     "CTLG_ID" BIGINT PRIMARY KEY,
     "NAME" VARCHAR(256) UNIQUE,
     "DESC" VARCHAR(4000),
-    "LOCATION_URI" VARCHAR(4000) NOT NULL,
-    "CREATE_TIME" bigint
+    "LOCATION_URI" VARCHAR(4000) NOT NULL
 );
 
 --
@@ -78,8 +77,7 @@ CREATE TABLE "DBS" (
     "NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying,
-    "CTLG_NAME" varchar(256),
-    "CREATE_TIME" bigint
+    "CTLG_NAME" varchar(256)
 );
 
 

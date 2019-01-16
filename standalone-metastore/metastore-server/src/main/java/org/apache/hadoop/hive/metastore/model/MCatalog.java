@@ -21,7 +21,6 @@ public class MCatalog {
   private String name;
   private String description;
   private String locationUri;
-  private int createTime;
 
   public MCatalog() {
 
@@ -55,13 +54,5 @@ public class MCatalog {
 
   public void setLocationUri(String locationUri) {
     this.locationUri = locationUri;
-  }
-
-  public int getCreateTime() {
-    return createTime;
-  }
-
-  public void setCreateTime(int createTime) {
-    this.createTime = createTime;
   }
 }

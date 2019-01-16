@@ -41,7 +41,6 @@ public class DatabaseBuilder {
   private Map<String, String> params = new HashMap<>();
   private String ownerName;
   private PrincipalType ownerType;
-  private int createTime;
 
   public DatabaseBuilder() {
   }
@@ -91,17 +90,11 @@ public class DatabaseBuilder {
     return this;
   }
 
-  public DatabaseBuilder setCreateTime(int createTime) {
-    this.createTime = createTime;
-    return this;
-  }
-
   public Database build(Configuration conf) throws MetaException {
     if (name == null) throw new MetaException("You must name the database");
     if (catalogName == null) catalogName = MetaStoreUtils.getDefaultCatalog(conf);
     Database db = new Database(name, description, location, params);
     db.setCatalogName(catalogName);
-    db.setCreateTime(createTime);
     try {
       if (ownerName == null) ownerName = SecurityUtils.getUser();
       db.setOwnerName(ownerName);
