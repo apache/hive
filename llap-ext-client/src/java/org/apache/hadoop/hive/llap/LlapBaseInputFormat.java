@@ -114,6 +114,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String PWD_KEY = "llap.if.pwd";
   public static final String HANDLE_ID = "llap.if.handleid";
   public static final String DB_KEY = "llap.if.database";
+  public static final String SESSION_QUERIES_FOR_GET_NUM_SPLITS = "llap.session.queries.for.get.num.splits";
 
   public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
   public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
@@ -259,6 +260,15 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
         if (database != null && !database.isEmpty()) {
           stmt.execute("USE " + database);
         }
+        String sessionQueries = job.get(SESSION_QUERIES_FOR_GET_NUM_SPLITS);
+        if (sessionQueries != null && !sessionQueries.trim().isEmpty()) {
+          String[] queries = sessionQueries.trim().split(",");
+          for (String q : queries) {
+            LOG.debug("Executing session query: {}", q);
+            stmt.execute(q);
+          }
+        }
+
         ResultSet res = stmt.executeQuery(sql);
         while (res.next()) {
           // deserialize split
