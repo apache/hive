@@ -5841,15 +5841,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         parameters = getMS().updateTableColumnStatistics(colStats, validWriteIds, writeId);
         if (parameters != null) {
+          Table tableObj = getMS().getTable(colStats.getStatsDesc().getCatName(),
+                                            colStats.getStatsDesc().getDbName(),
+                                            colStats.getStatsDesc().getTableName(), validWriteIds);
           if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.UPDATE_TABLE_COLUMN_STAT,
-                    new UpdateTableColumnStatEvent(colStats, parameters, validWriteIds, writeId, this));
+                    new UpdateTableColumnStatEvent(colStats, tableObj, parameters, validWriteIds,
+                            writeId, this));
           }
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.UPDATE_TABLE_COLUMN_STAT,
-                    new UpdateTableColumnStatEvent(colStats, parameters, validWriteIds, writeId, this));
+                    new UpdateTableColumnStatEvent(colStats, tableObj, parameters, validWriteIds,
+                            writeId,this));
           }
         }
         committed = getMS().commitTransaction();
