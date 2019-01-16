@@ -243,14 +243,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       typeName = varcharTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_TIMESTAMPLOCALTZ:
-      HiveConf conf;
-      try {
-        conf = Hive.get().getConf();
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
-      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = TypeInfoFactory.getTimestampTZTypeInfo(
-          conf.getLocalTimeZone());
+      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo =
+          TypeInfoFactory.getTimestampTZTypeInfo(null);
       typeName = timestampLocalTZTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_DECIMAL:

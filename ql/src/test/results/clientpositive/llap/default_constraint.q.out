@@ -299,7 +299,7 @@ POSTHOOK: Input: default@table1_n16
 # col_name            	data_type           	comment             
 d                   	date                	                    
 t                   	timestamp           	                    
-tz                  	timestamp with local time zone('US/Pacific')	                    
+tz                  	timestamp with local time zone	                    
 d1                  	date                	                    
 t1                  	timestamp           	                    
 	 	 
@@ -1082,7 +1082,7 @@ b5                  	bigint
 b6                  	smallint            	                    
 j                   	varchar(50)         	                    
 k                   	string              	                    
-tz1                 	timestamp with local time zone('US/Pacific')	                    
+tz1                 	timestamp with local time zone	                    
 ts                  	timestamp           	                    
 dc                  	decimal(8,2)        	                    
 c2                  	double              	                    
