@@ -2347,3 +2347,34 @@ from part where p_mfgr = 'm1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+PREHOOK: query: DROP TABLE IF EXISTS struct_table_example
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS struct_table_example
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE struct_table_example (a int, s1 struct<f1: boolean, f2: string, f3: int, f4: int> ) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@struct_table_example
+POSTHOOK: query: CREATE TABLE struct_table_example (a int, s1 struct<f1: boolean, f2: string, f3: int, f4: int> ) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@struct_table_example
+PREHOOK: query: INSERT INTO TABLE struct_table_example SELECT 1, named_struct('f1', false, 'f2', 'test', 'f3', 3, 'f4', 4)  FROM part limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Output: default@struct_table_example
+POSTHOOK: query: INSERT INTO TABLE struct_table_example SELECT 1, named_struct('f1', false, 'f2', 'test', 'f3', 3, 'f4', 4)  FROM part limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Output: default@struct_table_example
+POSTHOOK: Lineage: struct_table_example.a SIMPLE []
+POSTHOOK: Lineage: struct_table_example.s1 EXPRESSION []
+PREHOOK: query: select s1.f1, s1.f2, rank() over (partition by s1.f2 order by s1.f4) from struct_table_example
+PREHOOK: type: QUERY
+PREHOOK: Input: default@struct_table_example
+#### A masked pattern was here ####
+POSTHOOK: query: select s1.f1, s1.f2, rank() over (partition by s1.f2 order by s1.f4) from struct_table_example
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@struct_table_example
+#### A masked pattern was here ####
+false	test	1
