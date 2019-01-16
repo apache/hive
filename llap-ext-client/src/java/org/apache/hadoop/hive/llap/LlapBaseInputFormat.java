@@ -37,6 +37,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -115,6 +116,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String HANDLE_ID = "llap.if.handleid";
   public static final String DB_KEY = "llap.if.database";
   public static final String SESSION_QUERIES_FOR_GET_NUM_SPLITS = "llap.session.queries.for.get.num.splits";
+  public static final Pattern SET_QUERY_PATTERN = Pattern.compile("^\\s*set\\s+.*=.+$", Pattern.CASE_INSENSITIVE);
 
   public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
   public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
@@ -264,8 +266,13 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
         if (sessionQueries != null && !sessionQueries.trim().isEmpty()) {
           String[] queries = sessionQueries.trim().split(",");
           for (String q : queries) {
-            LOG.debug("Executing session query: {}", q);
-            stmt.execute(q);
+            //allow only set queries
+            if (SET_QUERY_PATTERN.matcher(q).matches()) {
+              LOG.debug("Executing session query: {}", q);
+              stmt.execute(q);
+            } else {
+              LOG.warn("Only SET queries are allowed, not executing this query: {}", q);
+            }
           }
         }
 
