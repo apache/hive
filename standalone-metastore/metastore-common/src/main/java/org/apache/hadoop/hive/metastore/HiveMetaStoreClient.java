@@ -363,7 +363,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (uriResolverClassName.equals("")) {
       return null;
     } else {
-      LOG.info("Loading uri resolver" + uriResolverClassName);
+      LOG.info("Loading uri resolver : " + uriResolverClassName);
       try {
         Class<?> uriResolverClass = Class.forName(uriResolverClassName, true,
                 JavaUtils.getClassLoader());
@@ -533,7 +533,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
-        LOG.info("Trying to connect to metastore with URI " + store);
+        LOG.info("Trying to connect to metastore with URI (" + store + ")");
 
         try {
           if (useSSL) {
@@ -549,7 +549,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               // Create an SSL socket and connect
               transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
                   trustStorePath, trustStorePassword );
-              LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
+              LOG.debug("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
               if (LOG.isTraceEnabled()) {
                 LOG.trace("", new LogUtils.StackTraceLogger("METASTORE SSL CONNECTION TRACE - open - " +
                         System.identityHashCode(this)));
@@ -580,13 +580,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               tokenStrForm = SecurityUtils.getTokenStrForm(tokenSig);
 
               if(tokenStrForm != null) {
-                LOG.info("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
+                LOG.debug("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
                 // authenticate using delegation tokens via the "DIGEST" mechanism
                 transport = authBridge.createClientTransport(null, store.getHost(),
                     "DIGEST", tokenStrForm, transport,
                         MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
               } else {
-                LOG.info("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
+                LOG.debug("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
                 String principalConfig =
                     MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL);
                 transport = authBridge.createClientTransport(
@@ -613,7 +613,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           try {
             if (!transport.isOpen()) {
               transport.open();
-              LOG.info("Opened a connection to metastore, current connections: " + connCount.incrementAndGet());
+              LOG.info("Opened a connection to metastore, URI (" + store + ") current connections: " + connCount.incrementAndGet());
               if (LOG.isTraceEnabled()) {
                 LOG.trace("", new LogUtils.StackTraceLogger("METASTORE CONNECTION TRACE - open - " +
                         System.identityHashCode(this)));
@@ -623,10 +623,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           } catch (TTransportException e) {
             tte = e;
             if (LOG.isDebugEnabled()) {
-              LOG.warn("Failed to connect to the MetaStore Server...", e);
+              LOG.warn("Failed to connect to the MetaStore Server URI (" + store + ")", e);
             } else {
               // Don't print full exception trace if DEBUG is not on.
-              LOG.warn("Failed to connect to the MetaStore Server...");
+              LOG.warn("Failed to connect to the MetaStore Server URI (" + store + ")");
             }
           }
 
@@ -647,8 +647,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             }
           }
         } catch (MetaException e) {
-          LOG.error("Unable to connect to metastore with URI " + store
-                    + " in attempt " + attempt, e);
+          LOG.error("Failed to connect to metastore with URI (" + store
+                    + ") in attempt " + attempt, e);
         }
         if (isConnected) {
           break;
