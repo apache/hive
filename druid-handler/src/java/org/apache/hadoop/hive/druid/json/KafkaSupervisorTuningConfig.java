@@ -18,15 +18,16 @@
 
 package org.apache.hadoop.hive.druid.json;
 
-import io.druid.segment.IndexSpec;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
+import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.indexing.TuningConfigs;
+import org.apache.druid.segment.writeout.SegmentWriteOutMediumFactory;
 import org.joda.time.Duration;
 import org.joda.time.Period;
 
+import javax.annotation.Nullable;
 import java.io.File;
 
 /**
@@ -44,7 +45,9 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig {
   private final Duration offsetFetchPeriod;
 
   public KafkaSupervisorTuningConfig(@JsonProperty("maxRowsInMemory") Integer maxRowsInMemory,
+      @JsonProperty("maxBytesInMemory") Long maxBytesInMemory,
       @JsonProperty("maxRowsPerSegment") Integer maxRowsPerSegment,
+      @JsonProperty("maxTotalRows") Long maxTotalRows,
       @JsonProperty("intermediatePersistPeriod") Period intermediatePersistPeriod,
       @JsonProperty("basePersistDirectory") File basePersistDirectory,
       @JsonProperty("maxPendingPersists") Integer maxPendingPersists,
@@ -53,26 +56,35 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig {
       @JsonProperty("buildV9Directly") Boolean buildV9Directly,
       @JsonProperty("reportParseExceptions") Boolean reportParseExceptions,
       @JsonProperty("handoffConditionTimeout") Long handoffConditionTimeout,
-      // for backward compatibility
       @JsonProperty("resetOffsetAutomatically") Boolean resetOffsetAutomatically,
+      @JsonProperty("segmentWriteOutMediumFactory") @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory,
       @JsonProperty("workerThreads") Integer workerThreads,
       @JsonProperty("chatThreads") Integer chatThreads,
       @JsonProperty("chatRetries") Long chatRetries,
       @JsonProperty("httpTimeout") Period httpTimeout,
       @JsonProperty("shutdownTimeout") Period shutdownTimeout,
-      @JsonProperty("offsetFetchPeriod") Period offsetFetchPeriod) {
+      @JsonProperty("offsetFetchPeriod") Period offsetFetchPeriod,
+      @JsonProperty("intermediateHandoffPeriod") Period intermediateHandoffPeriod,
+      @JsonProperty("logParseExceptions") @Nullable Boolean logParseExceptions,
+      @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
+      @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions) {
     super(maxRowsInMemory,
+        maxBytesInMemory,
         maxRowsPerSegment,
+        maxTotalRows,
         intermediatePersistPeriod,
         basePersistDirectory,
         maxPendingPersists,
         indexSpec,
         true,
         reportParseExceptions,
-        // Supervised kafka tasks should respect KafkaSupervisorIOConfig.completionTimeout instead of
-        // handoffConditionTimeout
         handoffConditionTimeout,
-        resetOffsetAutomatically);
+        resetOffsetAutomatically,
+        segmentWriteOutMediumFactory,
+        intermediateHandoffPeriod,
+        logParseExceptions,
+        maxParseExceptions,
+        maxSavedParseExceptions);
 
     this.workerThreads = workerThreads;
     this.chatThreads = chatThreads;
@@ -107,12 +119,15 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig {
   }
 
   @Override public String toString() {
-    //noinspection deprecation
     return "KafkaSupervisorTuningConfig{"
         + "maxRowsInMemory="
         + getMaxRowsInMemory()
         + ", maxRowsPerSegment="
         + getMaxRowsPerSegment()
+        + ", maxTotalRows="
+        + getMaxTotalRows()
+        + ", maxBytesInMemory="
+        + TuningConfigs.getMaxBytesInMemoryOrDefault(getMaxBytesInMemory())
         + ", intermediatePersistPeriod="
         + getIntermediatePersistPeriod()
         + ", basePersistDirectory="
@@ -127,6 +142,8 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig {
         + getHandoffConditionTimeout()
         + ", resetOffsetAutomatically="
         + isResetOffsetAutomatically()
+        + ", segmentWriteOutMediumFactory="
+        + getSegmentWriteOutMediumFactory()
         + ", workerThreads="
         + workerThreads
         + ", chatThreads="
@@ -139,6 +156,14 @@ public class KafkaSupervisorTuningConfig extends KafkaTuningConfig {
         + shutdownTimeout
         + ", offsetFetchPeriod="
         + offsetFetchPeriod
+        + ", intermediateHandoffPeriod="
+        + getIntermediateHandoffPeriod()
+        + ", logParseExceptions="
+        + isLogParseExceptions()
+        + ", maxParseExceptions="
+        + getMaxParseExceptions()
+        + ", maxSavedParseExceptions="
+        + getMaxSavedParseExceptions()
         + '}';
   }
 

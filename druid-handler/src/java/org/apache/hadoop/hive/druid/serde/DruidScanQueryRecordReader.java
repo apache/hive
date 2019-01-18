@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import io.druid.query.scan.ScanResultValue;
+import org.apache.druid.query.scan.ScanResultValue;
 
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;

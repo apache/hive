@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.druid.serde;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
-import io.druid.query.Result;
-import io.druid.query.timeseries.TimeseriesResultValue;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.timeseries.TimeseriesResultValue;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.io.NullWritable;

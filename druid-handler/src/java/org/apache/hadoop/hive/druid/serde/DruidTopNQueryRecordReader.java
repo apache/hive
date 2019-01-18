@@ -27,9 +27,9 @@ import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.druid.query.Result;
-import io.druid.query.topn.DimensionAndMetricValueExtractor;
-import io.druid.query.topn.TopNResultValue;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.topn.DimensionAndMetricValueExtractor;
+import org.apache.druid.query.topn.TopNResultValue;
 
 /**
  * Record reader for results for Druid TopNQuery.
