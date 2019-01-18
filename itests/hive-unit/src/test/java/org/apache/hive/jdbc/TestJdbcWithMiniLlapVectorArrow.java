@@ -134,7 +134,7 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     List<?> c8Value;
     List<?> c13Value;
     List<?> c15Value;
-    
+
     if (second) {
       // Second Row
       rowValues = rowCollector.rows.get(rowIndex++);
@@ -187,7 +187,7 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     if (third) {
       // Third row
       rowValues = rowCollector.rows.get(rowIndex++);
-      
+
       assertEquals(Integer.valueOf(1), rowValues[0]);
       assertEquals(Boolean.TRUE, rowValues[1]);
       assertEquals(Double.valueOf(1.1d), rowValues[2]);
