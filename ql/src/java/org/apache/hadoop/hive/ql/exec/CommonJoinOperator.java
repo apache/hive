@@ -45,6 +45,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Join operator implementation.
  */
@@ -145,6 +147,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   int joinCacheSize = 0;
   long nextSz = 0;
   transient Byte lastAlias = null;
+  private long logEveryNRows = 0L;
 
   transient boolean handleSkewJoin = false;
 
@@ -170,6 +173,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.joinEmitInterval = clone.joinEmitInterval;
     this.joinCacheSize = clone.joinCacheSize;
     this.nextSz = clone.nextSz;
+    this.logEveryNRows = clone.logEveryNRows;
     this.childOperators = clone.childOperators;
     this.parentOperators = clone.parentOperators;
     this.done = clone.done;
@@ -294,6 +298,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     joinCacheSize = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEJOINCACHESIZE);
 
+    logEveryNRows = HiveConf.getLongVar(hconf,
+        HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
+
     // construct dummy null row (indicating empty table) and
     // construct spill table serde which is used if input is too
     // large to fit into main memory.
@@ -394,13 +401,22 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     super.startGroup();
   }
 
+  /**
+   * Determine the frequency with which to emit a log message instead of
+   * one for every for every event.
+   *
+   * @param sz The current number of events
+   * @return The next event count to emit a log message
+   */
   protected long getNextSize(long sz) {
-    // A very simple counter to keep track of join entries for a key
-    if (sz >= 100000) {
-      return sz + 100000;
+    Preconditions.checkArgument(sz >= 0L);
+    // If no logging is configured, log every 1, 10, 100, 1000, ..., 100000
+    if (this.logEveryNRows == 0L) {
+      final long next = (long) Math.pow(10.0, Math.ceil(Math.log10(sz + 1)));
+      return Math.min(100000L, next);
     }
-
-    return 2 * sz;
+    // Log every N rows
+    return ((sz / this.logEveryNRows) + 1L) * this.logEveryNRows;
   }
 
   protected transient Byte alias;
