@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -434,6 +435,10 @@ public class ExprNodeDescUtils {
     for (Map.Entry<String, ExprNodeDesc> mapEntry : reduceSinkOp.getColumnExprMap().entrySet()) {
       if (mapEntry.getValue().equals(source)) {
         String columnInternalName = mapEntry.getKey();
+        // Joins always use KEY columns for the keys, so avoid resolving to VALUE columns
+        if(columnInternalName.startsWith(Utilities.ReduceField.VALUE.toString())) {
+          continue;
+        }
         if (source instanceof ExprNodeColumnDesc) {
           // The join key is a table column. Create the ExprNodeDesc based on this column.
           ColumnInfo columnInfo = reduceSinkOp.getSchema().getColumnInfo(columnInternalName);
