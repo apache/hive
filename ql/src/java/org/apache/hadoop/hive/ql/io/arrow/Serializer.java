@@ -103,7 +103,7 @@ public class Serializer {
   private final static byte[] EMPTY_BYTES = new byte[0];
 
   // Hive columns
-  private final VectorizedRowBatch batch;
+  private final VectorizedRowBatch vectorizedRowBatch;
   private final VectorAssignRow vectorAssignRow;
   private int batchSize;
   private BufferAllocator allocator;
@@ -128,7 +128,7 @@ public class Serializer {
         childAllocatorLimit);
     rootVector = StructVector.empty(null, allocator);
     //These last fields are unused in non-serde usage
-    batch = null;
+    vectorizedRowBatch = null;
     vectorAssignRow = null;
     MAX_BUFFERED_ROWS = 0;
   }
@@ -154,13 +154,13 @@ public class Serializer {
     rootVector = StructVector.empty(null, allocator);
 
     // Init Hive stuffs
-    batch = new VectorizedRowBatch(fieldSize);
+    vectorizedRowBatch = new VectorizedRowBatch(fieldSize);
     for (int fieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
       final ColumnVector columnVector = createColumnVector(fieldTypeInfos.get(fieldIndex));
-      batch.cols[fieldIndex] = columnVector;
+      vectorizedRowBatch.cols[fieldIndex] = columnVector;
       columnVector.init();
     }
-    batch.ensureSize(MAX_BUFFERED_ROWS);
+    vectorizedRowBatch.ensureSize(MAX_BUFFERED_ROWS);
     vectorAssignRow = new VectorAssignRow();
     try {
       vectorAssignRow.init(serDe.rowObjectInspector);
@@ -187,13 +187,14 @@ public class Serializer {
   //Used for both:
   //1. VectorizedRowBatch constructed by batching rows
   //2. VectorizedRowBatch provided from upstream (isNative)
-  public ArrowWrapperWritable serializeBatch(VectorizedRowBatch batch, boolean isNative) {
+  public ArrowWrapperWritable serializeBatch(VectorizedRowBatch vectorizedRowBatch,
+      boolean isNative) {
     rootVector.setValueCount(0);
 
-    final int size = isNative ? batch.size : batchSize;
-    for (int fieldIndex = 0; fieldIndex < batch.projectionSize; fieldIndex++) {
-      final int projectedColumn = batch.projectedColumns[fieldIndex];
-      final ColumnVector hiveVector = batch.cols[projectedColumn];
+    final int size = isNative ? vectorizedRowBatch.size : batchSize;
+    for (int fieldIndex = 0; fieldIndex < vectorizedRowBatch.projectionSize; fieldIndex++) {
+      final int projectedColumn = vectorizedRowBatch.projectedColumns[fieldIndex];
+      final ColumnVector hiveVector = vectorizedRowBatch.cols[projectedColumn];
       final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
       final String fieldName = fieldNames.get(fieldIndex);
       final FieldType fieldType = toFieldType(fieldTypeInfo);
@@ -202,11 +203,12 @@ public class Serializer {
       final FieldVector arrowVector = rootVector.addOrGet(fieldName, fieldType, FieldVector.class);
       arrowVector.setInitialCapacity(size);
       arrowVector.allocateNew();
-      write(arrowVector, hiveVector, fieldTypeInfo, size, batch.selectedInUse, batch.selected);
+      write(arrowVector, hiveVector, fieldTypeInfo, size, vectorizedRowBatch.selectedInUse,
+          vectorizedRowBatch.selected);
     }
     if(!isNative) {
       //Only mutate batches that are constructed by this serde
-      batch.reset();
+      vectorizedRowBatch.reset();
     }
     rootVector.setValueCount(size);
 
@@ -471,16 +473,16 @@ public class Serializer {
     // if row is null, it means there are no more rows (closeOp()).
     // another case can be that the buffer is full.
     if (obj == null) {
-      return serializeBatch(batch, false);
+      return serializeBatch(vectorizedRowBatch, false);
     }
     List<Object> standardObjects = new ArrayList<Object>();
     ObjectInspectorUtils.copyToStandardObject(standardObjects, obj,
         ((StructObjectInspector) objInspector), WRITABLE);
 
-    vectorAssignRow.assignRow(batch, batchSize, standardObjects, fieldSize);
+    vectorAssignRow.assignRow(vectorizedRowBatch, batchSize, standardObjects, fieldSize);
     batchSize++;
     if (batchSize == MAX_BUFFERED_ROWS) {
-      return serializeBatch(batch, false);
+      return serializeBatch(vectorizedRowBatch, false);
     }
     return null;
   }

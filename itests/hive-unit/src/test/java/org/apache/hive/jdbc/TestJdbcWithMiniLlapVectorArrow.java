@@ -18,6 +18,8 @@
 
 package org.apache.hive.jdbc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import java.math.BigDecimal;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -34,8 +36,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * TestJdbcWithMiniLlap for Arrow format with vectorized output sink
@@ -195,9 +195,6 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
 
       c5Value = (List<?>) rowValues[4];
       assertEquals(2, c5Value.size());
-      if (!c5Value.get(0).equals(Integer.valueOf(1))) {
-        fail(c5Value.toString());
-      }
       assertEquals(Integer.valueOf(1), c5Value.get(0));
       assertEquals(Integer.valueOf(2), c5Value.get(1));
 
