@@ -1013,7 +1013,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t0
+<<<<<<< HEAD
                   filterExpr: phi is not null (type: boolean)
+=======
+>>>>>>> 1b02f93648... BUG-117334 HIVE-21107: Cannot find field" error during dynamically partitioned hash join (Vineet Garg, reviewed by Gopal V)
                   Statistics: Num rows: 8146725 Data size: 46331126445 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: phi is not null (type: boolean)
@@ -1030,7 +1033,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+<<<<<<< HEAD
                   filterExpr: (phi is not null and pli is not null) (type: boolean)
+=======
+>>>>>>> 1b02f93648... BUG-117334 HIVE-21107: Cannot find field" error during dynamically partitioned hash join (Vineet Garg, reviewed by Gopal V)
                   Statistics: Num rows: 15680439 Data size: 56180088521 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (phi is not null and pli is not null) (type: boolean)
@@ -1047,7 +1053,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+<<<<<<< HEAD
                   filterExpr: pli is not null (type: boolean)
+=======
+>>>>>>> 1b02f93648... BUG-117334 HIVE-21107: Cannot find field" error during dynamically partitioned hash join (Vineet Garg, reviewed by Gopal V)
                   Statistics: Num rows: 15390381 Data size: 116471238533 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: pli is not null (type: boolean)
@@ -1073,7 +1082,10 @@ STAGE PLANS:
                 input vertices:
                   0 Map 1
                 Statistics: Num rows: 17248483 Data size: 61798098712 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                 DynamicPartitionHashJoin: true
+=======
+>>>>>>> 1b02f93648... BUG-117334 HIVE-21107: Cannot find field" error during dynamically partitioned hash join (Vineet Garg, reviewed by Gopal V)
                 HybridGraceHashJoin: true
                 Reduce Output Operator
                   key expressions: _col314 (type: bigint), 'P30' (type: string)
@@ -1094,7 +1106,10 @@ STAGE PLANS:
                 input vertices:
                   1 Map 5
                 Statistics: Num rows: 18973331 Data size: 67977910056 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                 DynamicPartitionHashJoin: true
+=======
+>>>>>>> 1b02f93648... BUG-117334 HIVE-21107: Cannot find field" error during dynamically partitioned hash join (Vineet Garg, reviewed by Gopal V)
                 HybridGraceHashJoin: true
                 Select Operator
                   expressions: 'P30' (type: string), _col1 (type: string), _col314 (type: bigint), _col406 (type: bigint), _col1 (type: string)
@@ -2575,7 +2590,10 @@ STAGE PLANS:
                       Statistics: Num rows: 139943033 Data size: 26813085279 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string), _col99 (type: bigint)
+<<<<<<< HEAD
                         minReductionHashAggr: 0.99
+=======
+>>>>>>> 1b02f93648... BUG-117334 HIVE-21107: Cannot find field" error during dynamically partitioned hash join (Vineet Garg, reviewed by Gopal V)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 139943033 Data size: 26813085279 Basic stats: COMPLETE Column stats: NONE
@@ -2680,7 +2698,10 @@ STAGE PLANS:
                 input vertices:
                   0 Map 6
                 Statistics: Num rows: 76968669 Data size: 14747197116 Basic stats: COMPLETE Column stats: NONE
+<<<<<<< HEAD
                 DynamicPartitionHashJoin: true
+=======
+>>>>>>> 1b02f93648... BUG-117334 HIVE-21107: Cannot find field" error during dynamically partitioned hash join (Vineet Garg, reviewed by Gopal V)
                 HybridGraceHashJoin: true
                 Map Join Operator
                   condition map:
