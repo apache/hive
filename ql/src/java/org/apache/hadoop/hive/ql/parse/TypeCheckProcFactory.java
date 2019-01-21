@@ -1229,6 +1229,9 @@ public class TypeCheckProcFactory {
           List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(
               children.size());
           for (ExprNodeDesc child : children) {
+            if (TypeInfoFactory.getPrimitiveTypeInfo("void").equals(child.getTypeInfo())) {
+              child.setTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("boolean"));
+            }
             if (FunctionRegistry.isOpOr(child)) {
               childrenList.addAll(child.getChildren());
             } else {
@@ -1242,6 +1245,9 @@ public class TypeCheckProcFactory {
           List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(
               children.size());
           for (ExprNodeDesc child : children) {
+            if (TypeInfoFactory.getPrimitiveTypeInfo("void").equals(child.getTypeInfo())) {
+              child.setTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("boolean"));
+            }
             if (FunctionRegistry.isOpAnd(child)) {
               childrenList.addAll(child.getChildren());
             } else {
