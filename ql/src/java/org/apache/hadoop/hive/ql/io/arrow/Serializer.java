@@ -642,8 +642,6 @@ public class Serializer {
       -> {
     final DecimalVector decimalVector = (DecimalVector) arrowVector;
     final int scale = decimalVector.getScale();
-    decimalVector.set(i, ((DecimalColumnVector) hiveVector).vector[j].getHiveDecimal().bigDecimalValue().setScale(scale));
-
     final HiveDecimalWritable writable = ((DecimalColumnVector) hiveVector).vector[i];
     decimalHolder.precision = writable.precision();
     decimalHolder.scale = scale;
