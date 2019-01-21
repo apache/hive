@@ -41,10 +41,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sales
-            filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
+            filterExpr: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
+              predicate: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
@@ -237,10 +237,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sales
-            filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
+            filterExpr: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
+              predicate: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
                 key expressions: store_id (type: int)
