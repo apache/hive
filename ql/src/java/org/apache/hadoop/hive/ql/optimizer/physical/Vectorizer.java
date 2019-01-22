@@ -249,6 +249,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private static final Pattern supportedDataTypesPattern;
 
+  private static final TypeInfo[] EMPTY_TYPEINFO_ARRAY = new TypeInfo[0];
+
   static {
     StringBuilder patternBuilder = new StringBuilder();
     patternBuilder.append("int");
@@ -1378,7 +1380,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       String inputFileFormatClassName = inputFileFormatClass.getName();
       final TypeInfo[] dataTypeInfos;
       if (dataTypeInfoList == null) {
-        dataTypeInfos = new TypeInfo[0];
+        dataTypeInfos = EMPTY_TYPEINFO_ARRAY;
       } else {
         dataTypeInfos = dataTypeInfoList.toArray(new TypeInfo[dataTypeInfoList.size()]);
       }
