@@ -216,7 +216,9 @@ public class MetastoreConf {
       ConfVars.AGGREGATE_STATS_CACHE_MAX_FULL,
       ConfVars.AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      ConfVars.FILE_METADATA_THREADS
+      ConfVars.FILE_METADATA_THREADS,
+      ConfVars.METASTORE_CLIENT_FILTER_ENABLED,
+      ConfVars.METASTORE_SERVER_FILTER_ENABLED
   };
 
   /**
@@ -657,6 +659,10 @@ public class MetastoreConf {
             "metadata being exported to the current user's home directory on HDFS."),
     METASTORE_MAX_EVENT_RESPONSE("metastore.max.event.response", "hive.metastore.max.event.response", 1000000,
         "The parameter will decide the maximum number of events that HMS will respond."),
+    METASTORE_CLIENT_FILTER_ENABLED("metastore.client.filter.enabled", "hive.metastore.client.filter.enabled", true,
+        "Enable filtering the metadata read results at HMS client. Default is true."),
+    METASTORE_SERVER_FILTER_ENABLED("metastore.server.filter.enabled", "hive.metastore.server.filter.enabled", false,
+        "Enable filtering the metadata read results at HMS server. Default is false."),
     MOVE_EXPORTED_METADATA_TO_TRASH("metastore.metadata.move.exported.metadata.to.trash",
         "hive.metadata.move.exported.metadata.to.trash", true,
         "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +
