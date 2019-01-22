@@ -18,7 +18,7 @@ export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 llap () {
   TMPDIR=$(mktemp -d /tmp/staging-yarn-XXXXXX)
-  CLASS=org.apache.hadoop.hive.llap.cli.LlapServiceDriver;
+  CLASS=org.apache.hadoop.hive.llap.cli.service.LlapServiceDriver;
   if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
     echo "Missing Hive CLI Jar"
     exit 3;
@@ -44,7 +44,7 @@ llap () {
 }
 
 llap_help () {
-  CLASS=org.apache.hadoop.hive.llap.cli.LlapServiceDriver;
+  CLASS=org.apache.hadoop.hive.llap.cli.service.LlapServiceDriver;
   execHiveCmd $CLASS "--help"
 } 
 
