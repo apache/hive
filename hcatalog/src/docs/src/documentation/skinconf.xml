@@ -28,7 +28,7 @@ which will be used to configure the chosen Forrest skin.
     Add box-location="alt" to move the search box to an alternate location
     (if the skin supports it) and box-location="all" to show it in all
     available locations on the page.  Remove the <search> element to show
-    no search box. @domain will enable sitesearch for the specific domain with google.
+    no search box. @domain will enable site search for the specific domain with google.
     In other words google will search the @domain for the query string.
   -->
 
@@ -38,11 +38,11 @@ which will be used to configure the chosen Forrest skin.
   <disable-pdf-link>false</disable-pdf-link>
 <!-- Disable the POD link? -->
   <disable-pod-link>true</disable-pod-link>
-<!-- Disable the Text link? FIXME: NOT YET IMPLEMENETED. -->
+<!-- Disable the Text link? FIXME: NOT YET IMPLEMENTED. -->
   <disable-txt-link>true</disable-txt-link>
 <!-- Disable the xml source link? -->
 <!-- The xml source link makes it possible to access the xml rendition
-    of the source frim the html page, and to have it generated statically.
+    of the source firm the html page, and to have it generated statically.
     This can be used to enable other sites and services to reuse the
     xml format for their uses. Keep this disabled if you don't want other
     sites to easily reuse your pages.-->
@@ -63,7 +63,7 @@ which will be used to configure the chosen Forrest skin.
 <!-- mandatory project logo
        default skin: renders it at the top -->
   <project-name>HCatalog</project-name>
-  <project-description>A table abstraction on top of data for use with java MapReduce programs, Pig scripts and Hive queryies.</project-description>
+  <project-description>A table abstraction on top of data for use with java MapReduce programs, Pig scripts and Hive queries.</project-description>
   <project-url></project-url>
   <project-logo>images/hcat-box.jpg</project-logo>
 
