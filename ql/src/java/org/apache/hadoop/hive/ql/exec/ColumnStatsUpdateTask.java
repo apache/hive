@@ -84,7 +84,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       LOG.debug("Got stats through replication for " +
               colStats.getStatsDesc().getDbName() + "." +
               colStats.getStatsDesc().getTableName());
-      return work.getColStats();
+      return colStats;
     }
     String dbName = work.dbName();
     String tableName = work.getTableName();

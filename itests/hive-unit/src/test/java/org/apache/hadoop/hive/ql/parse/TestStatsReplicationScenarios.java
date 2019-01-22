@@ -189,13 +189,12 @@ public class TestStatsReplicationScenarios {
   /**
    * Dumps primarydb on primary, loads it on replica as replicadb, verifies that the statistics
    * loaded are same as the ones on primary.
-   * @params tableNames, names of tables on primary expected to be loaded
-   * @params lastReplicationId of the last dump, for incremental dump/load
-   * @params parallelLoad, if true, parallel bootstrap load is used
-   * @params metadataOnly, only metadata is dumped and loaded.
-   * @returns lastReplicationId of the dump performed.
+   * @param tableNames, names of tables on primary expected to be loaded
+   * @param lastReplicationId of the last dump, for incremental dump/load
+   * @param parallelLoad, if true, parallel bootstrap load is used
+   * @param metadataOnly, only metadata is dumped and loaded.
+   * @return lastReplicationId of the dump performed.
    */
-  //
   private String dumpLoadVerify(List<String> tableNames, String lastReplicationId,
                                 boolean parallelLoad, boolean metadataOnly)
           throws Throwable {
