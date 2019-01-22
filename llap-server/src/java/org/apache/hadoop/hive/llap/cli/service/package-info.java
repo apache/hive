@@ -16,16 +16,8 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.cli;
+/**
+ * Package consisting the program LlapServiceDriver (and other classes used by it) which is starting up the llap daemon.
+ */
+package org.apache.hadoop.hive.llap.cli.service;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.yarn.service.client.ServiceClient;
-
-public class LlapSliderUtils {
-  public static ServiceClient createServiceClient(Configuration conf) throws Exception {
-    ServiceClient serviceClient = new ServiceClient();
-    serviceClient.init(conf);
-    serviceClient.start();
-    return serviceClient;
-  }
-}
