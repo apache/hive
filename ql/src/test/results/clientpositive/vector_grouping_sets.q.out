@@ -151,7 +151,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: store_n1
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -161,7 +161,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [1]
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
@@ -173,7 +173,7 @@ STAGE PLANS:
                 keys: s_store_id (type: string), 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: bigint)
                   sort order: ++
@@ -183,7 +183,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -203,11 +203,11 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
           pruneGroupingSetId: true
           File Output Operator
             compressed: false
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -266,7 +266,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: store_n1
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -276,7 +276,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [1]
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
@@ -288,7 +288,7 @@ STAGE PLANS:
                 keys: _col0 (type: string), 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: bigint)
                   sort order: ++
@@ -298,7 +298,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -318,14 +318,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -380,35 +380,35 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: store_n1
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: s_store_id (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 keys: _col0 (type: string), 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: bigint)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
-                  Statistics: Num rows: 24 Data size: 51264 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
       Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12 Data size: 1296 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

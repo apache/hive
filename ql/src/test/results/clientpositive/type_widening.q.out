@@ -1131,14 +1131,14 @@ STAGE PLANS:
         TableScan
           alias: t1_n114
           filterExpr: (a > 2Y) (type: boolean)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (a > 2Y) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: tinyint), b (type: smallint)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: explain select * from t1_n114 where b < 2
@@ -1160,14 +1160,14 @@ STAGE PLANS:
         TableScan
           alias: t1_n114
           filterExpr: (b < 2S) (type: boolean)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (b < 2S) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: tinyint), b (type: smallint)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: explain select * from t1_n114 where a < 200
@@ -1189,14 +1189,14 @@ STAGE PLANS:
         TableScan
           alias: t1_n114
           filterExpr: (UDFToInteger(a) < 200) (type: boolean)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (UDFToInteger(a) < 200) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: tinyint), b (type: smallint)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: explain select * from t1_n114 where b > 40000
@@ -1218,14 +1218,14 @@ STAGE PLANS:
         TableScan
           alias: t1_n114
           filterExpr: (UDFToInteger(b) > 40000) (type: boolean)
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (UDFToInteger(b) > 40000) (type: boolean)
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: tinyint), b (type: smallint)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: drop table t1_n114

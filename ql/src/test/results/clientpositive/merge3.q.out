@@ -82,18 +82,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: merge_src
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -112,16 +112,16 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: col1, col2
-                Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
                     value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                     auto parallelism: false
@@ -184,13 +184,13 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2443,14 +2443,13 @@ FROM `default`.`merge_src_part`
 WHERE `ds` IS NOT NULL
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-8 depends on stages: Stage-2 , consists of Stage-5, Stage-4, Stage-6
-  Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-3 depends on stages: Stage-0
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-6
-  Stage-7 depends on stages: Stage-6
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2459,49 +2458,60 @@ STAGE PLANS:
           TableScan
             alias: merge_src_part
             filterExpr: ds is not null (type: boolean)
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
               expressions: key (type: string), value (type: string), ds (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+#### A masked pattern was here ####
+                NumFilesPerFileSink: 1
+                Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.merge_src_part2
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct merge_src_part2 { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.merge_src_part2
+                TotalFiles: 1
+                GatherStats: true
+                MultiFileSpray: false
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                 outputColumnNames: key, value, ds
-                Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                   keys: ds (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 2128 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     null sort order: a
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 2128 Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
                     value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                     auto parallelism: false
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-#### A masked pattern was here ####
-                NumFilesPerFileSink: 1
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    properties:
-                      column.name.delimiter ,
-                      columns _col0,_col1,_col2
-                      columns.types string,string,string
-                      escape.delim \
-                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                TotalFiles: 1
-                GatherStats: false
-                MultiFileSpray: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2611,17 +2621,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 2128 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 2128 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 2128 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2639,87 +2649,10 @@ STAGE PLANS:
               GatherStats: false
               MultiFileSpray: false
 
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            GatherStats: false
-            Reduce Output Operator
-              key expressions: _col2 (type: string)
-              null sort order: a
-              sort order: +
-              Map-reduce partition columns: _col2 (type: string)
-              tag: -1
-              value expressions: _col0 (type: string), _col1 (type: string)
-              auto parallelism: false
-      Execution mode: vectorized
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10002
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              column.name.delimiter ,
-              columns _col0,_col1,_col2
-              columns.types string,string,string
-              escape.delim \
-              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                column.name.delimiter ,
-                columns _col0,_col1,_col2
-                columns.types string,string,string
-                escape.delim \
-                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
-      Needs Tagging: false
-      Reduce Operator Tree:
-        Select Operator
-          expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY._col2 (type: string)
-          outputColumnNames: _col0, _col1, _col2
-          File Output Operator
-            compressed: false
-            GlobalTableId: 1
-#### A masked pattern was here ####
-            Dp Sort State: PARTITION_SORTED
-            NumFilesPerFileSink: 1
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  bucket_count -1
-                  column.name.delimiter ,
-                  columns key,value
-                  columns.comments 
-                  columns.types string:string
-#### A masked pattern was here ####
-                  name default.merge_src_part2
-                  partition_columns ds
-                  partition_columns.types string
-                  serialization.ddl struct merge_src_part2 { string key, string value}
-                  serialization.format 1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.merge_src_part2
-            TotalFiles: 1
-            GatherStats: true
-            MultiFileSpray: false
-
-  Stage: Stage-8
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-5
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
@@ -2752,7 +2685,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats Work
       Basic Stats Work:
 #### A masked pattern was here ####
@@ -2762,7 +2695,7 @@ STAGE PLANS:
           Table: default.merge_src_part2
           Is Table Level Stats: false
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -2799,7 +2732,85 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: -ext-10003
+            base file name: -ext-10002
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              column.name.delimiter ,
+              columns key,value
+              columns.comments 
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.merge_src_part2
+              partition_columns ds
+              partition_columns.types string
+              serialization.ddl struct merge_src_part2 { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.merge_src_part2
+                partition_columns ds
+                partition_columns.types string
+                serialization.ddl struct merge_src_part2 { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.merge_src_part2
+            name: default.merge_src_part2
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.comments 
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.merge_src_part2
+                    partition_columns ds
+                    partition_columns.types string
+                    serialization.ddl struct merge_src_part2 { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.merge_src_part2
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -2841,84 +2852,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
   Stage: Stage-6
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            GatherStats: false
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-#### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    bucket_count -1
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.merge_src_part2
-                    partition_columns ds
-                    partition_columns.types string
-                    serialization.ddl struct merge_src_part2 { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.merge_src_part2
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: -ext-10003
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            properties:
-              bucket_count -1
-              column.name.delimiter ,
-              columns key,value
-              columns.comments 
-              columns.types string:string
-#### A masked pattern was here ####
-              name default.merge_src_part2
-              partition_columns ds
-              partition_columns.types string
-              serialization.ddl struct merge_src_part2 { string key, string value}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                column.name.delimiter ,
-                columns key,value
-                columns.comments 
-                columns.types string:string
-#### A masked pattern was here ####
-                name default.merge_src_part2
-                partition_columns ds
-                partition_columns.types string
-                serialization.ddl struct merge_src_part2 { string key, string value}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.merge_src_part2
-            name: default.merge_src_part2
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
-
-  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
@@ -5015,19 +4948,20 @@ STAGE PLANS:
           TableScan
             alias: merge_src_part
             filterExpr: ds is not null (type: boolean)
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
               expressions: key (type: string), value (type: string), ds (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col2 (type: string)
-                null sort order: aa
-                sort order: ++
+                null sort order: a
+                sort order: +
                 Map-reduce partition columns: _col2 (type: string)
+                Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: -1
-                value expressions: _col0 (type: string), _col1 (type: string)
+                value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                 auto parallelism: false
       Execution mode: vectorized
       Path -> Alias:
@@ -5135,15 +5069,15 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY._col2 (type: string)
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 1
 #### A masked pattern was here ####
-            Dp Sort State: PARTITION_SORTED
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5167,6 +5101,42 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: true
             MultiFileSpray: false
+          Select Operator
+            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+            outputColumnNames: key, value, ds
+            Statistics: Num rows: 2000 Data size: 724000 Basic stats: COMPLETE Column stats: COMPLETE
+            Group By Operator
+              aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+              keys: ds (type: string)
+              mode: complete
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 2 Data size: 2128 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 2128 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 2 Data size: 2128 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col1,_col2
+                        columns.types struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>:struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>:string
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
 
   Stage: Stage-7
     Conditional Operator

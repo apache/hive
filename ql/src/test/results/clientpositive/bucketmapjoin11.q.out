@@ -270,12 +270,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: (part is not null and key is not null) (type: boolean)
-            Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 219 Data size: 86460 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 209 Data size: 82512 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -295,12 +295,12 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: (part is not null and key is not null) (type: boolean)
-            Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 219 Data size: 86460 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 209 Data size: 82512 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -308,7 +308,7 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 Position of Big Table: 0
-                Statistics: Num rows: 240 Data size: 94182 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 229 Data size: 90763 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -623,12 +623,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: (part is not null and key is not null) (type: boolean)
-            Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 219 Data size: 126756 Basic stats: PARTIAL Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 209 Data size: 120968 Basic stats: PARTIAL Column stats: PARTIAL
               HashTable Sink Operator
                 keys:
                   0 key (type: int), part (type: string)
@@ -648,12 +648,12 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: (part is not null and key is not null) (type: boolean)
-            Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 219 Data size: 126756 Basic stats: PARTIAL Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 219 Data size: 85620 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 209 Data size: 120968 Basic stats: PARTIAL Column stats: PARTIAL
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -661,7 +661,7 @@ STAGE PLANS:
                   0 key (type: int), part (type: string)
                   1 key (type: int), part (type: string)
                 Position of Big Table: 0
-                Statistics: Num rows: 240 Data size: 94182 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 229 Data size: 133064 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()

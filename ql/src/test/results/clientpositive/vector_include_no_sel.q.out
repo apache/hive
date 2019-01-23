@@ -199,7 +199,7 @@ STAGE PLANS:
         customer_demographics 
           TableScan
             alias: customer_demographics
-            Statistics: Num rows: 200 Data size: 74200 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 200 Data size: 17800 Basic stats: COMPLETE Column stats: COMPLETE
             HashTable Sink Operator
               keys:
                 0 
@@ -210,7 +210,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: store_sales_n1
-            Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 3796 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
             Map Join Operator
@@ -226,20 +226,20 @@ STAGE PLANS:
                   nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
               outputColumnNames: _col0, _col2, _col16
-              Statistics: Num rows: 200000 Data size: 92055200 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 200000 Data size: 18599796 Basic stats: COMPLETE Column stats: COMPLETE
               Filter Operator
                 Filter Vectorization:
                     className: VectorFilterOperator
                     native: true
                     predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 0:int, col 2:int), FilterStringGroupColEqualStringScalar(col 1:string, val M)), FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 0:int, col 2:int), FilterStringGroupColEqualStringScalar(col 1:string, val U)))
                 predicate: (((_col0 = _col16) and (_col2 = 'M')) or ((_col0 = _col16) and (_col2 = 'U'))) (type: boolean)
-                Statistics: Num rows: 100000 Data size: 46027600 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: []
-                  Statistics: Num rows: 100000 Data size: 46027600 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(1)
                     Group By Vectorization:
@@ -251,7 +251,7 @@ STAGE PLANS:
                         projectedOutputColumnNums: [0]
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
                       Reduce Sink Vectorization:
@@ -259,7 +259,7 @@ STAGE PLANS:
                           native: false
                           nativeConditionsMet: No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false, hive.execution.engine mr IN [tez, spark] IS false
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Map Vectorization:
@@ -282,10 +282,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

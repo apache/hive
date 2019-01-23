@@ -185,16 +185,16 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
-            Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 78 Data size: 44908 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 75 Data size: 43180 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 75 Data size: 43180 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -207,16 +207,16 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 149 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 149 Data size: 85004 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 149 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 142 Data size: 81010 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 149 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 142 Data size: 81010 Basic stats: PARTIAL Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -225,17 +225,17 @@ STAGE PLANS:
                     1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col3
                   Position of Big Table: 0
-                  Statistics: Num rows: 163 Data size: 63932 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 156 Data size: 89111 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: CAST( _col0 AS STRING) (type: string), _col1 (type: string), _col3 (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 163 Data size: 63932 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 156 Data size: 89111 Basic stats: PARTIAL Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 163 Data size: 63932 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 156 Data size: 89111 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -266,7 +266,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                       outputColumnNames: key, value1, value2
-                      Statistics: Num rows: 163 Data size: 63932 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 156 Data size: 89111 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: compute_stats(key, 'hll'), compute_stats(value1, 'hll'), compute_stats(value2, 'hll')
                         mode: hash
@@ -646,16 +646,16 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
-            Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 78 Data size: 44908 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 75 Data size: 43180 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 78 Data size: 30620 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 75 Data size: 43180 Basic stats: PARTIAL Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -668,16 +668,16 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 149 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 149 Data size: 85004 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 149 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 142 Data size: 81010 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 149 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 142 Data size: 81010 Basic stats: PARTIAL Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -686,17 +686,17 @@ STAGE PLANS:
                     1 _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col3
                   Position of Big Table: 0
-                  Statistics: Num rows: 163 Data size: 63932 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 156 Data size: 89111 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: CAST( _col0 AS STRING) (type: string), _col1 (type: string), _col3 (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 163 Data size: 63932 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 156 Data size: 89111 Basic stats: PARTIAL Column stats: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 163 Data size: 63932 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 156 Data size: 89111 Basic stats: PARTIAL Column stats: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -727,7 +727,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                       outputColumnNames: key, value1, value2
-                      Statistics: Num rows: 163 Data size: 63932 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 156 Data size: 89111 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: compute_stats(key, 'hll'), compute_stats(value1, 'hll'), compute_stats(value2, 'hll')
                         mode: hash

@@ -114,12 +114,12 @@ STAGE PLANS:
         TableScan
           alias: dynamic_part_table
           filterExpr: ((partcol1 = '1') and (partcol2 = '1')) (type: boolean)
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain extended select intcol from dynamic_part_table where partcol1='1' and partcol2='1'
@@ -194,12 +194,12 @@ STAGE PLANS:
         TableScan
           alias: dynamic_part_table
           filterExpr: ((partcol1 = '1') and (partcol2 = '1')) (type: boolean)
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain extended select intcol from dynamic_part_table where (partcol1='1' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__')
@@ -320,11 +320,11 @@ STAGE PLANS:
         TableScan
           alias: dynamic_part_table
           filterExpr: ((partcol2) IN ('1', '__HIVE_DEFAULT_PARTITION__') and (partcol1 = '1')) (type: boolean)
-          Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: PARTIAL
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
             outputColumnNames: _col0
-            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 

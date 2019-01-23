@@ -113,10 +113,10 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -172,7 +172,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join 0 to 1
@@ -233,7 +233,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join 0 to 1
@@ -293,7 +293,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Full Outer Join 0 to 1
@@ -359,10 +359,10 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -418,7 +418,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Left Outer Join 0 to 1
@@ -479,7 +479,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Right Outer Join 0 to 1
@@ -539,7 +539,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Sorted Merge Bucket Map Join Operator
               condition map:
                    Full Outer Join 0 to 1

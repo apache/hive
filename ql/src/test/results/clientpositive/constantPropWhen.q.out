@@ -38,14 +38,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_1_n4
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (not COALESCE((id = id2),false)) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -88,14 +88,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_1_n4
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (not COALESCE((id = id2),false)) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -138,14 +138,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_1_n4
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: COALESCE((id = id2),false) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -188,14 +188,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_1_n4
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: COALESCE((id = id2),false) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -238,14 +238,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_1_n4
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (not COALESCE((id = id2),false)) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -288,14 +288,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_1_n4
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: (not COALESCE((id = id2),false)) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -338,14 +338,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_1_n4
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: COALESCE((id = id2),false) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -388,14 +388,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_1_n4
-            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: COALESCE((id = id2),false) (type: boolean)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
