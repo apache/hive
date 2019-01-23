@@ -50,7 +50,8 @@ public class TestHiveCredentialProviders {
 
   private static final Collection<String> REDACTED_PROPERTIES = Arrays.asList(
       JobConf.MAPRED_MAP_TASK_ENV,
-      JobConf.MAPRED_REDUCE_TASK_ENV);
+      JobConf.MAPRED_REDUCE_TASK_ENV,
+      MRJobConfig.MR_AM_ADMIN_USER_ENV);
 
   private Configuration jobConf;
 
@@ -102,6 +103,9 @@ public class TestHiveCredentialProviders {
     Assert.assertEquals(HIVE_JOB_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
         jobConf.get(JobConf.MAPRED_REDUCE_TASK_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
+    Assert.assertEquals(HIVE_JOB_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
+        jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
+
     Assert.assertTrue(jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
         .containsAll(REDACTED_PROPERTIES));
   }
@@ -126,6 +130,9 @@ public class TestHiveCredentialProviders {
     Assert.assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
         jobConf.get(JobConf.MAPRED_REDUCE_TASK_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
+    Assert.assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
+        jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
+
     Assert.assertTrue(jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
         .containsAll(REDACTED_PROPERTIES));
   }
@@ -144,6 +151,9 @@ public class TestHiveCredentialProviders {
         HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
     Assert.assertNull(getValueFromJobConf(jobConf.get(JobConf.MAPRED_REDUCE_TASK_ENV),
+        HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
+
+    Assert.assertNull(getValueFromJobConf(jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV),
         HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
     REDACTED_PROPERTIES.forEach(property -> Assert.assertFalse(
@@ -169,6 +179,9 @@ public class TestHiveCredentialProviders {
     Assert.assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
         jobConf.get(JobConf.MAPRED_REDUCE_TASK_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
+    Assert.assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
+        jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
+
     Assert.assertTrue(jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
         .containsAll(REDACTED_PROPERTIES));
   }
@@ -186,6 +199,7 @@ public class TestHiveCredentialProviders {
         jobConf.get(HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG));
     Assert.assertNull(jobConf.get(JobConf.MAPRED_MAP_TASK_ENV));
     Assert.assertNull(jobConf.get(JobConf.MAPRED_REDUCE_TASK_ENV));
+    Assert.assertNull(jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV));
 
     REDACTED_PROPERTIES.forEach(property -> Assert.assertFalse(
         jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
@@ -199,6 +213,7 @@ public class TestHiveCredentialProviders {
         jobConf.get(HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG));
     Assert.assertNull(jobConf.get(JobConf.MAPRED_MAP_TASK_ENV));
     Assert.assertNull(jobConf.get(JobConf.MAPRED_REDUCE_TASK_ENV));
+    Assert.assertNull(jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV));
 
     REDACTED_PROPERTIES.forEach(property -> Assert.assertFalse(
         jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
@@ -223,6 +238,9 @@ public class TestHiveCredentialProviders {
     assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
         jobConf.get(JobConf.MAPRED_REDUCE_TASK_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
+    Assert.assertEquals(HADOOP_CREDSTORE_PASSWORD_ENVVAR_VAL, getValueFromJobConf(
+        jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV), HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
+
     Assert.assertTrue(jobConf.getStringCollection(MRJobConfig.MR_JOB_REDACTED_PROPERTIES)
         .containsAll(REDACTED_PROPERTIES));
   }
@@ -241,6 +259,9 @@ public class TestHiveCredentialProviders {
         HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
     assertNull(getValueFromJobConf(jobConf.get(JobConf.MAPRED_REDUCE_TASK_ENV),
+        HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
+
+    assertNull(getValueFromJobConf(jobConf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV),
         HADOOP_CREDENTIAL_PASSWORD_ENVVAR));
 
     REDACTED_PROPERTIES.forEach(property -> Assert.assertFalse(

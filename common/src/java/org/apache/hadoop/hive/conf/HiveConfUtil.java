@@ -42,6 +42,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
+import static org.apache.hive.common.util.HiveStringUtils.COMMA;
+import static org.apache.hive.common.util.HiveStringUtils.EQUALS;
+
 /**
  * Hive Configuration utils
  */
@@ -205,7 +208,7 @@ public class HiveConfUtil {
         Stream.of(
             JobConf.MAPRED_MAP_TASK_ENV,
             JobConf.MAPRED_REDUCE_TASK_ENV,
-            "yarn.app.mapreduce.am.admin.user.env")
+            MRJobConfig.MR_AM_ADMIN_USER_ENV)
 
             .forEach(property -> {
               addKeyValuePair(jobConf, property,
@@ -215,7 +218,7 @@ public class HiveConfUtil {
 
         // Hide sensitive configuration values from MR HistoryUI by telling MR to redact the following list.
         jobConf.set(MRJobConfig.MR_JOB_REDACTED_PROPERTIES,
-            StringUtils.join(redactedProperties, ","));
+            StringUtils.join(redactedProperties, COMMA));
       }
     }
   }
@@ -241,14 +244,13 @@ public class HiveConfUtil {
     return null;
   }
 
-  private static void addKeyValuePair(Configuration jobConf, String property, String keyName,
-      String newKeyValue) {
+  private static void addKeyValuePair(Configuration jobConf, String property, String keyName, String newKeyValue) {
     String existingValue = jobConf.get(property);
-    if (existingValue == null) {
-      jobConf.set(property, (keyName + "=" + newKeyValue));
+
+    if (StringUtils.isBlank(existingValue)) {
+      jobConf.set(property, (keyName + EQUALS + newKeyValue));
       return;
     }
-
     String propertyValue = HiveStringUtils.insertValue(keyName, newKeyValue, existingValue);
     jobConf.set(property, propertyValue);
   }
