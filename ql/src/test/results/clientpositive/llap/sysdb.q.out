@@ -3800,11 +3800,11 @@ POSTHOOK: query: select param_key, param_value from partition_params order by pa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 #### A masked pattern was here ####
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+COLUMN_STATS_ACCURATE	org.apache.derby.impl.jdbc.EmbedClob@23de4f0c
+COLUMN_STATS_ACCURATE	org.apache.derby.impl.jdbc.EmbedClob@3851c7fc
+COLUMN_STATS_ACCURATE	org.apache.derby.impl.jdbc.EmbedClob@461350a1
+COLUMN_STATS_ACCURATE	org.apache.derby.impl.jdbc.EmbedClob@577e6edb
+COLUMN_STATS_ACCURATE	org.apache.derby.impl.jdbc.EmbedClob@59de8f0b
 PREHOOK: query: select grantor, principal_name from part_col_privs order by grantor, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_privs
@@ -4032,7 +4032,7 @@ POSTHOOK: query: select count(*) from skewed_string_list
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list
 #### A masked pattern was here ####
-6
+3
 PREHOOK: query: select count(*) from skewed_string_list_values
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_string_list_values
@@ -4041,7 +4041,7 @@ POSTHOOK: query: select count(*) from skewed_string_list_values
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list_values
 #### A masked pattern was here ####
-6
+3
 PREHOOK: query: select count(*) from skewed_values
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_values
@@ -4200,11 +4200,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 POSTHOOK: Input: sys@partition_stats_view
 #### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
-{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
+org.apache.derby.impl.jdbc.EmbedClob@29ae903	org.apache.derby.impl.jdbc.EmbedClob@72ec31fe	org.apache.derby.impl.jdbc.EmbedClob@419e9aa4	org.apache.derby.impl.jdbc.EmbedClob@7068956c	org.apache.derby.impl.jdbc.EmbedClob@5b5171b9
+org.apache.derby.impl.jdbc.EmbedClob@2a11c483	org.apache.derby.impl.jdbc.EmbedClob@739a549	org.apache.derby.impl.jdbc.EmbedClob@723734f4	org.apache.derby.impl.jdbc.EmbedClob@28952f2a	org.apache.derby.impl.jdbc.EmbedClob@7df1ab38
+org.apache.derby.impl.jdbc.EmbedClob@32cd185f	org.apache.derby.impl.jdbc.EmbedClob@12235566	org.apache.derby.impl.jdbc.EmbedClob@227189ce	org.apache.derby.impl.jdbc.EmbedClob@29024e98	org.apache.derby.impl.jdbc.EmbedClob@a7dc218
+org.apache.derby.impl.jdbc.EmbedClob@3ddc8d06	org.apache.derby.impl.jdbc.EmbedClob@30527d42	org.apache.derby.impl.jdbc.EmbedClob@4a8d41d1	org.apache.derby.impl.jdbc.EmbedClob@771e4f2d	org.apache.derby.impl.jdbc.EmbedClob@7b4c43d5
+org.apache.derby.impl.jdbc.EmbedClob@4d1ea200	org.apache.derby.impl.jdbc.EmbedClob@6001f807	org.apache.derby.impl.jdbc.EmbedClob@7786290e	org.apache.derby.impl.jdbc.EmbedClob@4b6c7ee0	org.apache.derby.impl.jdbc.EmbedClob@5cbaebc5
 PREHOOK: query: describe sys.tab_col_stats
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: sys@tab_col_stats
