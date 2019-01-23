@@ -1,0 +1,7 @@
+PREHOOK: query: create database asd
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:asd
+POSTHOOK: query: create database asd
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:asd
+FAILED: SemanticException Line 2:13 Table or database name may not contain dot(.) character 'asd.tbl'

@@ -1,0 +1,29 @@
+PREHOOK: query: create database tdb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tdb
+POSTHOOK: query: create database tdb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tdb
+PREHOOK: query: use tdb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:tdb
+POSTHOOK: query: use tdb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:tdb
+PREHOOK: query: create table t1(id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tdb
+PREHOOK: Output: tdb@t1
+POSTHOOK: query: create table t1(id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tdb
+POSTHOOK: Output: tdb@t1
+PREHOOK: query: create table t2(id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tdb
+PREHOOK: Output: tdb@t2
+POSTHOOK: query: create table t2(id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tdb
+POSTHOOK: Output: tdb@t2
+FAILED: SemanticException Line 2:20 Table or database name may not contain dot(.) character 'tdb.t1'

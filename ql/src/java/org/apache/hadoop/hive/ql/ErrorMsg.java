@@ -470,6 +470,7 @@ public enum ErrorMsg {
   RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
   RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
   INCOMPATIBLE_STRUCT(10419, "Incompatible structs.", true),
+  OBJECTNAME_CONTAINS_DOT(10420, "Table or database name may not contain dot(.) character", true),
 
   //========================== 20000 range starts here ========================//
 
