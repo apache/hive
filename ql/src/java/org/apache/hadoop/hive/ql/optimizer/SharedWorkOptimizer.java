@@ -354,19 +354,21 @@ public class SharedWorkOptimizer extends Transform {
             LOG.debug("Merging subtree starting at {} into subtree starting at {}",
                 discardableTsOp, retainableTsOp);
           } else {
-            // Only TS operator
-            ExprNodeGenericFuncDesc exprNode = null;
             if (retainableTsOp.getConf().getFilterExpr() != null) {
-              // Push filter on top of children
+              // Push filter on top of children for retainable
               pushFilterToTopOfTableScan(optimizerCache, retainableTsOp);
-              // Clone to push to table scan
-              exprNode = (ExprNodeGenericFuncDesc) retainableTsOp.getConf().getFilterExpr();
             }
             if (discardableTsOp.getConf().getFilterExpr() != null) {
-              // Push filter on top
+              // Push filter on top of children for discardable
               pushFilterToTopOfTableScan(optimizerCache, discardableTsOp);
+            }
+            // Obtain filter for shared TS operator
+            ExprNodeGenericFuncDesc exprNode = null;
+            if (retainableTsOp.getConf().getFilterExpr() != null && discardableTsOp.getConf().getFilterExpr() != null) {
+              // Combine
+              exprNode = retainableTsOp.getConf().getFilterExpr();
               ExprNodeGenericFuncDesc tsExprNode = discardableTsOp.getConf().getFilterExpr();
-              if (exprNode != null && !exprNode.isSame(tsExprNode)) {
+              if (!exprNode.isSame(tsExprNode)) {
                 // We merge filters from previous scan by ORing with filters from current scan
                 if (exprNode.getGenericUDF() instanceof GenericUDFOPOr) {
                   List<ExprNodeDesc> newChildren = new ArrayList<>(exprNode.getChildren().size() + 1);
