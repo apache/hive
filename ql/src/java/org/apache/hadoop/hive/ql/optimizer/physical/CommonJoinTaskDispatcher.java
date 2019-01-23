@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -173,7 +172,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
   // create map join task and set big table as bigTablePosition
   private MapRedTask convertTaskToMapJoinTask(MapredWork newWork, int bigTablePosition)
-      throws UnsupportedEncodingException, SemanticException {
+      throws SemanticException {
     // create a mapred task for this work
     MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork);
     JoinOperator newJoinOp = getJoinOp(newTask);

@@ -55,6 +55,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,11 +113,10 @@ public class HiveConf extends Configuration {
   }
 
   public static class URLEncoderDecoder implements EncoderDecoder<String, String> {
-    private static final String UTF_8 = "UTF-8";
     @Override
     public String encode(String key) {
       try {
-        return URLEncoder.encode(key, UTF_8);
+        return URLEncoder.encode(key, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException e) {
         return key;
       }
@@ -125,7 +125,7 @@ public class HiveConf extends Configuration {
     @Override
     public String decode(String value) {
       try {
-        return URLDecoder.decode(value, UTF_8);
+        return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException e) {
         return value;
       }

@@ -19,7 +19,6 @@
 package org.apache.hive.service.cli.thrift;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
@@ -297,9 +296,8 @@ public class ThriftHttpServlet extends TServlet {
    * returns the client name associated with the session. Else, it returns null.
    * @param request The HTTP Servlet Request send by the client
    * @return Client Username if the request has valid HS2 cookie, else returns null
-   * @throws UnsupportedEncodingException
    */
-  private String validateCookie(HttpServletRequest request) throws UnsupportedEncodingException {
+  private String validateCookie(HttpServletRequest request) {
     // Find all the valid cookies associated with the request.
     Cookie[] cookies = request.getCookies();
 
@@ -319,9 +317,8 @@ public class ThriftHttpServlet extends TServlet {
    * Generate a server side cookie given the cookie value as the input.
    * @param str Input string token.
    * @return The generated cookie.
-   * @throws UnsupportedEncodingException
    */
-  private Cookie createCookie(String str) throws UnsupportedEncodingException {
+  private Cookie createCookie(String str) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Cookie name = " + AUTH_COOKIE + " value = " + str);
     }

@@ -25,11 +25,11 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -70,10 +70,12 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
           + " and error output to file " + sessionState.getTmpErrOutputFile().toString());
       sessionState.in = null; // hive server's session input stream is not used
       // open a per-session file in auto-flush mode for writing temp results and tmp error output
-      sessionState.out =
-          new SessionStream(new FileOutputStream(sessionState.getTmpOutputFile()), true, CharEncoding.UTF_8);
-      sessionState.err =
-          new SessionStream(new FileOutputStream(sessionState.getTmpErrOutputFile()), true,CharEncoding.UTF_8);
+      sessionState.out = new SessionStream(
+          new FileOutputStream(sessionState.getTmpOutputFile()), true,
+          StandardCharsets.UTF_8.name());
+      sessionState.err = new SessionStream(
+          new FileOutputStream(sessionState.getTmpErrOutputFile()), true,
+          StandardCharsets.UTF_8.name());
     } catch (IOException e) {
       LOG.error("Error in creating temp output file ", e);
 
@@ -82,8 +84,10 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
 
       try {
         sessionState.in = null;
-        sessionState.out = new SessionStream(System.out, true, CharEncoding.UTF_8);
-        sessionState.err = new SessionStream(System.err, true, CharEncoding.UTF_8);
+        sessionState.out =
+            new SessionStream(System.out, true, StandardCharsets.UTF_8.name());
+        sessionState.err =
+            new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
       } catch (UnsupportedEncodingException ee) {
         LOG.error("Error creating PrintStream", e);
         ee.printStackTrace();

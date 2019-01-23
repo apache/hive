@@ -22,10 +22,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -778,20 +778,12 @@ public class SerializationUtilities {
   }
 
   public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
-    try {
-      return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)), "UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)),
+        StandardCharsets.UTF_8);
   }
 
   public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
-    byte[] bytes;
-    try {
-      bytes = Base64.decodeBase64(s.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
     return deserializeExpressionFromKryo(bytes);
   }
 
@@ -822,19 +814,14 @@ public class SerializationUtilities {
   }
 
   public static String serializeObject(Serializable expr) {
-    try {
-      return new String(Base64.encodeBase64(serializeObjectToKryo(expr)), "UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
+        StandardCharsets.UTF_8);
   }
 
-  public static <T extends Serializable> T deserializeObject(String s, Class<T> clazz) {
-    try {
-      return deserializeObjectFromKryo(Base64.decodeBase64(s.getBytes("UTF-8")), clazz);
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+  public static <T extends Serializable> T deserializeObject(String s,
+      Class<T> clazz) {
+    return deserializeObjectFromKryo(
+        Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8)), clazz);
   }
 
 }

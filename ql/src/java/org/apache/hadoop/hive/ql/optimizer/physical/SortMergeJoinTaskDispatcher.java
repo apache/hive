@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -164,7 +163,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   private MapRedTask convertSMBTaskToMapJoinTask(MapredWork origWork,
       int bigTablePosition,
       SMBMapJoinOperator smbJoinOp)
-      throws UnsupportedEncodingException, SemanticException {
+      throws SemanticException {
     // deep copy a new mapred work
     MapredWork newWork = SerializationUtilities.clonePlan(origWork);
     // create a mapred task for this work
