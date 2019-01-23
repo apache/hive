@@ -66,6 +66,7 @@ import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLI
  * TestReplicationScenariosAcidTables - test replication for ACID tables
  */
 public class TestReplicationScenariosAcidTables {
+
   @Rule
   public final TestName testName = new TestName();
 

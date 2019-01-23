@@ -284,6 +284,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         //if the conversion is from non transactional to transactional table
         if (TxnUtils.isTransactionalTable(tblObj)) {
           replicationSpec.setMigratingToTxnTable();
+          // There won't be any writeId associated with statistics on source non-transactional
+          // table. We will need to associate a cooked up writeId on target for those. But that's
+          // not done yet. Till then we don't replicate statistics for ACID table even if it's
+          // available on the source.
+          tblObj.unsetColStats();
         }
         tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
         if (TableType.valueOf(tblObj.getTableType()) == TableType.EXTERNAL_TABLE) {
@@ -302,7 +307,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean inReplicationScope = false;
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       tblDesc.setReplicationSpec(replicationSpec);
-      StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
+      // Statistics for a non-transactional table will be replicated separately. Don't bother
+      // with it here.
+      if (TxnUtils.isTransactionalTable(tblDesc.getTblProps())) {
+        StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
+      }
       inReplicationScope = true;
       tblDesc.setReplWriteId(writeId);
     }

@@ -724,6 +724,25 @@ public interface IMetaStoreClient {
       TException, NoSuchObjectException;
 
   /**
+   * Get a table object in the default catalog.
+   *
+   * @param dbName
+   *          The database the table is located in.
+   * @param tableName
+   *          Name of the table to fetch.
+   * @param getColumnStats
+   *          get the column stats, if available, when true
+   * @return An object representing the table.
+   * @throws MetaException
+   *           Could not fetch the table
+   * @throws TException
+   *           A thrift communication error occurred
+   * @throws NoSuchObjectException
+   *           In case the table wasn't found.
+   */
+  Table getTable(String dbName, String tableName, boolean getColumnStats) throws MetaException,
+          TException, NoSuchObjectException;
+  /**
    * Get a table object.
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
@@ -734,8 +753,33 @@ public interface IMetaStoreClient {
    */
   Table getTable(String catName, String dbName, String tableName) throws MetaException, TException;
 
+  /**
+   * Get a table object.
+   * @param catName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param validWriteIdList applicable snapshot
+   * @return table object.
+   * @throws MetaException Something went wrong, usually in the RDBMS.
+   * @throws TException general thrift error.
+   */
   Table getTable(String catName, String dbName, String tableName,
                         String validWriteIdList) throws TException;
+
+  /**
+   * Get a table object.
+   * @param catName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param validWriteIdList applicable snapshot
+   * @param getColumnStats get the column stats, if available, when true
+   * @return table object.
+   * @throws MetaException Something went wrong, usually in the RDBMS.
+   * @throws TException general thrift error.
+   */
+  Table getTable(String catName, String dbName, String tableName,
+                 String validWriteIdList, boolean getColumnStats) throws TException;
+
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.

@@ -97,6 +97,11 @@ public class FSTableEvent implements TableEvent {
         // If the conversion is from non transactional to transactional table
         if (AcidUtils.isTransactionalTable(table)) {
           replicationSpec().setMigratingToTxnTable();
+          // There won't be any writeId associated with statistics on source non-transactional
+          // table. We will need to associate a cooked up writeId on target for those. But that's
+          // not done yet. Till then we don't replicate statistics for ACID table even if it's
+          // available on the source.
+          table.getTTable().unsetColStats();
         }
         if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
           // since we have converted to an external table now after applying the migration rules the

@@ -84,7 +84,8 @@ public class ImportTableDesc {
                 null,
                 null,
             null,
-            null);
+            null,
+                table.getColStats());
         this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
         break;
       case VIEW:

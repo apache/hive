@@ -570,6 +570,7 @@ public class TestReplicationScenarios {
       @Nullable
       @Override
       public Table apply(@Nullable Table table) {
+        LOG.info("Performing injection on table " + table.getTableName());
         if (table.getTableName().equalsIgnoreCase("ptned")){
           injectionPathCalled = true;
           return null;

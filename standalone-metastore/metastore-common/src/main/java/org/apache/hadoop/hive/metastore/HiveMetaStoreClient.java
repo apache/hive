@@ -1877,10 +1877,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public Table getTable(String dbname, String name, boolean getColumnStats) throws TException {
+    return getTable(getDefaultCatalog(conf), dbname, name, getColumnStats);
+  }
+
+  @Override
   public Table getTable(String catName, String dbName, String tableName) throws TException {
+    return getTable(catName, dbName, tableName, false);
+  }
+
+  public Table getTable(String catName, String dbName, String tableName, boolean getColumnStats) throws TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
     req.setCapabilities(version);
+    req.setGetColumnStats(getColumnStats);
     Table t = client.get_table_req(req).getTable();
     return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
   }
@@ -1888,10 +1898,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Table getTable(String catName, String dbName, String tableName,
     String validWriteIdList) throws TException {
+    return getTable(catName, dbName, tableName, validWriteIdList, false);
+  }
+
+  @Override
+  public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
+                        boolean getColumnStats) throws TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
     req.setCapabilities(version);
     req.setValidWriteIdList(validWriteIdList);
+    req.setGetColumnStats(getColumnStats);
     Table t = client.get_table_req(req).getTable();
     return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
   }
