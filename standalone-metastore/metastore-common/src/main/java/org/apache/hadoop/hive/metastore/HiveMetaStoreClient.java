@@ -924,7 +924,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<String> colNames, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
     PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
-        partNames);
+        partNames == null ? new ArrayList<String>() : partNames);
     rqst.setCatName(catName);
     rqst.setValidWriteIdList(validWriteIdList);
     return client.get_partitions_statistics_req(rqst).getPartStats();

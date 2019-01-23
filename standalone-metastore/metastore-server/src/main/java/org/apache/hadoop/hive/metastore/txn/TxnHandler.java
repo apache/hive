@@ -2028,7 +2028,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         ValidWriteIdList tblValidWriteIdList =
             validReaderWriteIdList.getTableValidWriteIdList(fullyQualifiedName);
         if (tblValidWriteIdList == null) {
-          LOG.warn("ValidWriteIdList for table {} not present in creation metadata, this should not happen");
+          LOG.warn("ValidWriteIdList for table {} not present in creation metadata, this should not happen", fullyQualifiedName);
           return null;
         }
         query.append(" AND (ctc_writeid > " + tblValidWriteIdList.getHighWatermark());

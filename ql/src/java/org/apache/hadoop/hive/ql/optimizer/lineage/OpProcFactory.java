@@ -271,9 +271,9 @@ public class OpProcFactory {
         }
         int left = conds[i].getLeft();
         int right = conds[i].getRight();
-        if (joinKeys.length < left
+        if (joinKeys.length <= left
             || joinKeys[left].length == 0
-            || joinKeys.length < right
+            || joinKeys.length <= right
             || joinKeys[right].length == 0
             || parents < left
             || parents < right) {

@@ -8810,7 +8810,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, List<String> colNames,
       String writeIdList)
       throws MetaException, NoSuchObjectException {
-    if (partNames == null && partNames.isEmpty()) {
+    if (partNames == null || partNames.isEmpty()) {
       return null;
     }
     List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
@@ -8897,7 +8897,7 @@ public class ObjectStore implements RawStore, Configurable {
     // If the current stats in the metastore doesn't comply with
     // the isolation level of the query, return null.
     if (writeIdList != null) {
-      if (partNames == null && partNames.isEmpty()) {
+      if (partNames == null || partNames.isEmpty()) {
         return null;
       }
 

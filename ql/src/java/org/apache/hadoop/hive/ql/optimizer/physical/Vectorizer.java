@@ -2404,7 +2404,6 @@ public class Vectorizer implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext physicalContext) throws SemanticException {
 
-    physicalContext = physicalContext;
     hiveConf = physicalContext.getConf();
     planMapper = physicalContext.getContext().getPlanMapper();
 
