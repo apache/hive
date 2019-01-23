@@ -3465,6 +3465,7 @@ class Catalog:
    - name
    - description
    - locationUri
+   - createTime
   """
 
   thrift_spec = (
@@ -3472,12 +3473,14 @@ class Catalog:
     (1, TType.STRING, 'name', None, None, ), # 1
     (2, TType.STRING, 'description', None, None, ), # 2
     (3, TType.STRING, 'locationUri', None, None, ), # 3
+    (4, TType.I32, 'createTime', None, None, ), # 4
   )
 
-  def __init__(self, name=None, description=None, locationUri=None,):
+  def __init__(self, name=None, description=None, locationUri=None, createTime=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
+    self.createTime = createTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3503,6 +3506,11 @@ class Catalog:
           self.locationUri = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I32:
+          self.createTime = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3525,6 +3533,10 @@ class Catalog:
       oprot.writeFieldBegin('locationUri', TType.STRING, 3)
       oprot.writeString(self.locationUri)
       oprot.writeFieldEnd()
+    if self.createTime is not None:
+      oprot.writeFieldBegin('createTime', TType.I32, 4)
+      oprot.writeI32(self.createTime)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3537,6 +3549,7 @@ class Catalog:
     value = (value * 31) ^ hash(self.name)
     value = (value * 31) ^ hash(self.description)
     value = (value * 31) ^ hash(self.locationUri)
+    value = (value * 31) ^ hash(self.createTime)
     return value
 
   def __repr__(self):
@@ -3975,6 +3988,7 @@ class Database:
    - ownerName
    - ownerType
    - catalogName
+   - createTime
   """
 
   thrift_spec = (
@@ -3987,9 +4001,10 @@ class Database:
     (6, TType.STRING, 'ownerName', None, None, ), # 6
     (7, TType.I32, 'ownerType', None, None, ), # 7
     (8, TType.STRING, 'catalogName', None, None, ), # 8
+    (9, TType.I32, 'createTime', None, None, ), # 9
   )
 
-  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None,):
+  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None, createTime=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
@@ -3998,6 +4013,7 @@ class Database:
     self.ownerName = ownerName
     self.ownerType = ownerType
     self.catalogName = catalogName
+    self.createTime = createTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4055,6 +4071,11 @@ class Database:
           self.catalogName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.I32:
+          self.createTime = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4101,6 +4122,10 @@ class Database:
       oprot.writeFieldBegin('catalogName', TType.STRING, 8)
       oprot.writeString(self.catalogName)
       oprot.writeFieldEnd()
+    if self.createTime is not None:
+      oprot.writeFieldBegin('createTime', TType.I32, 9)
+      oprot.writeI32(self.createTime)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4118,6 +4143,7 @@ class Database:
     value = (value * 31) ^ hash(self.ownerName)
     value = (value * 31) ^ hash(self.ownerType)
     value = (value * 31) ^ hash(self.catalogName)
+    value = (value * 31) ^ hash(self.createTime)
     return value
 
   def __repr__(self):
@@ -4765,6 +4791,7 @@ class Table:
    - ownerType
    - writeId
    - isStatsCompliant
+   - colStats
   """
 
   thrift_spec = (
@@ -4790,9 +4817,10 @@ class Table:
     (19, TType.I32, 'ownerType', None,     1, ), # 19
     (20, TType.I64, 'writeId', None, -1, ), # 20
     (21, TType.BOOL, 'isStatsCompliant', None, None, ), # 21
+    (22, TType.STRUCT, 'colStats', (ColumnStatistics, ColumnStatistics.thrift_spec), None, ), # 22
   )
 
-  def __init__(self, id=None, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[15][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[19][4], writeId=thrift_spec[20][4], isStatsCompliant=None,):
+  def __init__(self, id=None, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[15][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[19][4], writeId=thrift_spec[20][4], isStatsCompliant=None, colStats=None,):
     self.id = id
     self.tableName = tableName
     self.dbName = dbName
@@ -4814,6 +4842,7 @@ class Table:
     self.ownerType = ownerType
     self.writeId = writeId
     self.isStatsCompliant = isStatsCompliant
+    self.colStats = colStats
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4944,6 +4973,12 @@ class Table:
           self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 22:
+        if ftype == TType.STRUCT:
+          self.colStats = ColumnStatistics()
+          self.colStats.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5045,6 +5080,10 @@ class Table:
       oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 21)
       oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
+    if self.colStats is not None:
+      oprot.writeFieldBegin('colStats', TType.STRUCT, 22)
+      self.colStats.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -5075,6 +5114,7 @@ class Table:
     value = (value * 31) ^ hash(self.ownerType)
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.isStatsCompliant)
+    value = (value * 31) ^ hash(self.colStats)
     return value
 
   def __repr__(self):
@@ -18132,6 +18172,7 @@ class GetTableRequest:
    - capabilities
    - catName
    - validWriteIdList
+   - getColumnStats
   """
 
   thrift_spec = (
@@ -18142,14 +18183,16 @@ class GetTableRequest:
     (4, TType.STRING, 'catName', None, None, ), # 4
     None, # 5
     (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
+    (7, TType.BOOL, 'getColumnStats', None, None, ), # 7
   )
 
-  def __init__(self, dbName=None, tblName=None, capabilities=None, catName=None, validWriteIdList=None,):
+  def __init__(self, dbName=None, tblName=None, capabilities=None, catName=None, validWriteIdList=None, getColumnStats=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.capabilities = capabilities
     self.catName = catName
     self.validWriteIdList = validWriteIdList
+    self.getColumnStats = getColumnStats
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18186,6 +18229,11 @@ class GetTableRequest:
           self.validWriteIdList = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.BOOL:
+          self.getColumnStats = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -18216,6 +18264,10 @@ class GetTableRequest:
       oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
+    if self.getColumnStats is not None:
+      oprot.writeFieldBegin('getColumnStats', TType.BOOL, 7)
+      oprot.writeBool(self.getColumnStats)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -18234,6 +18286,7 @@ class GetTableRequest:
     value = (value * 31) ^ hash(self.capabilities)
     value = (value * 31) ^ hash(self.catName)
     value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.getColumnStats)
     return value
 
   def __repr__(self):

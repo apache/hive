@@ -37,25 +37,25 @@ public class KillTriggerActionHandler implements TriggerActionHandler<TezSession
   public void applyAction(final Map<TezSessionState, Trigger> queriesViolated) {
     for (Map.Entry<TezSessionState, Trigger> entry : queriesViolated.entrySet()) {
       switch (entry.getValue().getAction().getType()) {
-        case KILL_QUERY:
-          TezSessionState sessionState = entry.getKey();
-          String queryId = sessionState.getWmContext().getQueryId();
-          try {
-            SessionState ss = new SessionState(new HiveConf());
-            ss.setIsHiveServerQuery(true);
-            SessionState.start(ss);
-            KillQuery killQuery = sessionState.getKillQuery();
-            // if kill query is null then session might have been released to pool or closed already
-            if (killQuery != null) {
-              sessionState.getKillQuery().killQuery(queryId, entry.getValue().getViolationMsg(),
+      case KILL_QUERY:
+        TezSessionState sessionState = entry.getKey();
+        String queryId = sessionState.getWmContext().getQueryId();
+        try {
+          SessionState ss = new SessionState(new HiveConf());
+          ss.setIsHiveServerQuery(true);
+          SessionState.start(ss);
+          KillQuery killQuery = sessionState.getKillQuery();
+          // if kill query is null then session might have been released to pool or closed already
+          if (killQuery != null) {
+            sessionState.getKillQuery().killQuery(queryId, entry.getValue().getViolationMsg(),
                       sessionState.getConf());
-            }
-          } catch (HiveException e) {
-            LOG.warn("Unable to kill query {} for trigger violation");
           }
-          break;
-        default:
-          throw new RuntimeException("Unsupported action: " + entry.getValue());
+        } catch (HiveException e) {
+          LOG.warn("Unable to kill query {} for trigger violation", queryId);
+        }
+        break;
+      default:
+        throw new RuntimeException("Unsupported action: " + entry.getValue());
       }
     }
   }

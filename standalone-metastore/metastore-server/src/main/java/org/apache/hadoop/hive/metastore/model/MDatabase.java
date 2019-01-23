@@ -40,6 +40,7 @@ public class MDatabase {
   private String ownerName;
   private String ownerType;
   private String catalogName;
+  private int createTime;
 
   /**
    * Default construction to keep jpox/jdo happy
@@ -153,5 +154,13 @@ public class MDatabase {
 
   public void setCatalogName(String catalogName) {
     this.catalogName = catalogName;
+  }
+
+  public int getCreateTime() {
+    return createTime;
+  }
+
+  public void setCreateTime(int createTime) {
+    this.createTime = createTime;
   }
 }

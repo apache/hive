@@ -214,7 +214,6 @@ public interface RawStore extends Configurable {
    * @param catalogName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
-   * @param txnId transaction id of the calling transaction
    * @param writeIdList string format of valid writeId transaction list
    * @return table object, or null if no such table exists (wow it would be nice if we either
    * consistently returned null or consistently threw NoSuchObjectException).

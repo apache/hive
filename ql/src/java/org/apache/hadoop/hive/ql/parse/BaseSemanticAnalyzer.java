@@ -364,24 +364,36 @@ public abstract class BaseSemanticAnalyzer {
    * Get dequoted name from a table/column node.
    * @param tableOrColumnNode the table or column node
    * @return for table node, db.tab or tab. for column node column.
+   * @throws SemanticException
    */
-  public static String getUnescapedName(ASTNode tableOrColumnNode) {
+  public static String getUnescapedName(ASTNode tableOrColumnNode) throws SemanticException {
     return getUnescapedName(tableOrColumnNode, null);
   }
 
-  public static Map.Entry<String,String> getDbTableNamePair(ASTNode tableNameNode) {
-    assert(tableNameNode.getToken().getType() == HiveParser.TOK_TABNAME);
+  public static Map.Entry<String, String> getDbTableNamePair(ASTNode tableNameNode) throws SemanticException {
+
+    if (tableNameNode.getType() != HiveParser.TOK_TABNAME ||
+        (tableNameNode.getChildCount() != 1 && tableNameNode.getChildCount() != 2)) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME.getMsg(tableNameNode));
+    }
+
     if (tableNameNode.getChildCount() == 2) {
       String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
       String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
+      if (dbName.contains(".") || tableName.contains(".")) {
+        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tableNameNode));
+      }
       return Pair.of(dbName, tableName);
     } else {
       String tableName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+      if (tableName.contains(".")) {
+        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tableNameNode));
+      }
       return Pair.of(null,tableName);
     }
   }
 
-  public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) {
+  public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) throws SemanticException {
     int tokenType = tableOrColumnNode.getToken().getType();
     if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
@@ -410,9 +422,15 @@ public abstract class BaseSemanticAnalyzer {
     if (tabNameNode.getChildCount() == 2) {
       String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
       String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
+      if (dbName.contains(".") || tableName.contains(".")) {
+        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tabNameNode));
+      }
       return new String[] {dbName, tableName};
     }
     String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+    if (tableName.contains(".")) {
+      throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tabNameNode));
+    }
     return Utilities.getDbTableName(tableName);
   }
 
@@ -434,8 +452,9 @@ public abstract class BaseSemanticAnalyzer {
    * @param node the table node
    * @return the table name without schema qualification
    *         (i.e., if name is "db.table" or "table", returns "table")
+   * @throws SemanticException
    */
-  public static String getUnescapedUnqualifiedTableName(ASTNode node) {
+  public static String getUnescapedUnqualifiedTableName(ASTNode node) throws SemanticException {
     assert node.getChildCount() <= 2;
 
     if (node.getChildCount() == 2) {
@@ -2288,12 +2307,13 @@ public abstract class BaseSemanticAnalyzer {
         Configuration conf = new Configuration();
         conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystore);
         boolean found = false;
-        for (CredentialProvider provider : CredentialProviderFactory.getProviders(conf))
+        for (CredentialProvider provider : CredentialProviderFactory.getProviders(conf)) {
           if (provider instanceof AbstractJavaKeyStoreProvider) {
             Path path = ((AbstractJavaKeyStoreProvider) provider).getPath();
             inputs.add(toReadEntity(path));
             found = true;
           }
+        }
         if (!found) {
           throw new SemanticException("Cannot recognize keystore " + keystore + ", only JavaKeyStoreProvider is " +
                   "supported");

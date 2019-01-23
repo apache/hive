@@ -18,11 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Externalizable;
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -72,8 +69,7 @@ public class AggregationDesc implements java.io.Serializable {
   public void setGenericUDAFEvaluator(
       final GenericUDAFEvaluator genericUDAFEvaluator) {
     this.genericUDAFEvaluator = genericUDAFEvaluator;
-    if (genericUDAFEvaluator instanceof Serializable ||
-        genericUDAFEvaluator instanceof Externalizable) {
+    if (genericUDAFEvaluator instanceof Serializable) {
       this.genericUDAFWritableEvaluator = genericUDAFEvaluator;
     } else {
       this.genericUDAFEvaluatorClassName = genericUDAFEvaluator.getClass().getName();

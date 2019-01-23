@@ -649,6 +649,7 @@ public class ObjectStore implements RawStore, Configurable {
       mCat.setDescription(cat.getDescription());
     }
     mCat.setLocationUri(cat.getLocationUri());
+    mCat.setCreateTime(cat.getCreateTime());
     return mCat;
   }
 
@@ -657,6 +658,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (mCat.getDescription() != null) {
       cat.setDescription(mCat.getDescription());
     }
+    cat.setCreateTime(mCat.getCreateTime());
     return cat;
   }
 
@@ -674,6 +676,7 @@ public class ObjectStore implements RawStore, Configurable {
     mdb.setOwnerName(db.getOwnerName());
     PrincipalType ownerType = db.getOwnerType();
     mdb.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
+    mdb.setCreateTime(db.getCreateTime());
     try {
       openTransaction();
       pm.makePersistent(mdb);
@@ -767,6 +770,7 @@ public class ObjectStore implements RawStore, Configurable {
     PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
     db.setOwnerType(principalType);
     db.setCatalogName(catName);
+    db.setCreateTime(mdb.getCreateTime());
     return db;
   }
 
@@ -1242,8 +1246,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName,
-                        String writeIdList)
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList)
       throws MetaException {
     boolean commited = false;
     Table tbl = null;
@@ -1283,6 +1286,7 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+
     return tbl;
   }
 
@@ -8806,7 +8810,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, List<String> colNames,
       String writeIdList)
       throws MetaException, NoSuchObjectException {
-    if (partNames == null && partNames.isEmpty()) {
+    if (partNames == null || partNames.isEmpty()) {
       return null;
     }
     List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
@@ -8893,7 +8897,7 @@ public class ObjectStore implements RawStore, Configurable {
     // If the current stats in the metastore doesn't comply with
     // the isolation level of the query, return null.
     if (writeIdList != null) {
-      if (partNames == null && partNames.isEmpty()) {
+      if (partNames == null || partNames.isEmpty()) {
         return null;
       }
 

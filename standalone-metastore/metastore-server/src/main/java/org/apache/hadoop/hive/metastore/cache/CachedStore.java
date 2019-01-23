@@ -1161,6 +1161,7 @@ public class CachedStore implements RawStore, Configurable {
       return rawStore.getTable(catName, dbName, tblName, validWriteIds);
     }
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
+
     if (tbl == null) {
       // This table is not yet loaded in cache
       // If the prewarm thread is working on this table's database,

@@ -22,6 +22,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
   private String validWriteIds;
   private long writeId;
   private Map<String, String> parameters;
+  private Table tableObj;
 
   /**
    * @param colStats Columns statistics Info.
@@ -45,13 +47,15 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
    * @param colStats writeId for the query.
    * @param handler handler that is firing the event
    */
-  public UpdateTableColumnStatEvent(ColumnStatistics colStats, Map<String, String> parameters, String validWriteIds,
+  public UpdateTableColumnStatEvent(ColumnStatistics colStats, Table tableObj,
+                                    Map<String, String> parameters, String validWriteIds,
                                     long writeId, IHMSHandler handler) {
     super(true, handler);
     this.colStats = colStats;
     this.validWriteIds = validWriteIds;
     this.writeId = writeId;
     this.parameters = parameters;
+    this.tableObj = tableObj;
   }
 
   /**
@@ -64,6 +68,7 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
     this.validWriteIds = null;
     this.writeId = 0;
     this.parameters = null;
+    this.tableObj = null;
   }
 
   public ColumnStatistics getColStats() {
@@ -80,5 +85,9 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
 
   public Map<String, String> getTableParameters() {
     return parameters;
+  }
+
+  public Table getTableObj() {
+    return tableObj;
   }
 }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -42,6 +43,7 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
   private final String tableName;
   private final String colName;
   private final String colType;
+  private final ColumnStatistics colStats;
   private long writeId;
 
   public ColumnStatsUpdateWork(String partName,
@@ -56,6 +58,17 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
     this.tableName = tableName;
     this.colName = colName;
     this.colType = colType;
+    this.colStats = null;
+  }
+
+  public ColumnStatsUpdateWork(ColumnStatistics colStats) {
+    this.colStats = colStats;
+    this.partName = null;
+    this.mapProp = null;
+    this.dbName = null;
+    this.tableName = null;
+    this.colName = null;
+    this.colType = null;
   }
 
   @Override
@@ -86,6 +99,8 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
   public String getColType() {
     return colType;
   }
+
+  public ColumnStatistics getColStats() { return colStats; }
 
   @Override
   public void setWriteId(long writeId) {

@@ -37,12 +37,12 @@ PREHOOK: query: DESCRIBE FUNCTION <=>
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION <=>
 POSTHOOK: type: DESCFUNCTION
-a <=> b - Returns same result with EQUAL(=) operator for non-null operands, but returns TRUE if both are NULL, FALSE if one of the them is NULL
+a <=> b - Returns same result with EQUALNS (IS NOT DISTINCT FROM) operator for non-null operands, but returns TRUE if both are NULL, FALSE if one of the them is NULL
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED <=>
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED <=>
 POSTHOOK: type: DESCFUNCTION
-a <=> b - Returns same result with EQUAL(=) operator for non-null operands, but returns TRUE if both are NULL, FALSE if one of the them is NULL
+a <=> b - Returns same result with EQUALNS (IS NOT DISTINCT FROM) operator for non-null operands, but returns TRUE if both are NULL, FALSE if one of the them is NULL
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS
 Function type:BUILTIN
 PREHOOK: query: SELECT true<=>false, false<=>true, false<=>false, true<=>true, NULL<=>NULL, true<=>NULL, NULL<=>true, false<=>NULL, NULL<=>false FROM src tablesample (1 rows)
