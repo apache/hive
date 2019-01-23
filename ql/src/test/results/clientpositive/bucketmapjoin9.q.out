@@ -153,12 +153,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: ((part = '1') and key is not null) (type: boolean)
-            Statistics: Num rows: 145 Data size: 42000 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 145 Data size: 42556 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 145 Data size: 42000 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 138 Data size: 40501 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -171,12 +171,12 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: ((part = '1') and key is not null) (type: boolean)
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 95 Data size: 27868 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 91 Data size: 26694 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -184,7 +184,7 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 Position of Big Table: 0
-                Statistics: Num rows: 159 Data size: 46200 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 151 Data size: 44551 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -434,12 +434,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: ((part = '1') and key is not null) (type: boolean)
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 95 Data size: 27868 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 91 Data size: 26694 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -452,12 +452,12 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: ((part = '1') and key is not null) (type: boolean)
-            Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 95 Data size: 27868 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 95 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 91 Data size: 26694 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -465,7 +465,7 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 Position of Big Table: 0
-                Statistics: Num rows: 104 Data size: 30250 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 100 Data size: 29363 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

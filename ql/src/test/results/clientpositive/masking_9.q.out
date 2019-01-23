@@ -31,17 +31,17 @@ STAGE PLANS:
           TableScan
             alias: masking_test
             filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 250 Data size: 952 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                 outputColumnNames: _col0
-                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 952 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 952 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

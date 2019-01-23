@@ -45,17 +45,17 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr: (((key = '0') and (value = 'val_0')) or ((key = '1') and (value = 'val_1')) or ((key = '2') and (value = 'val_2')) or ((key = '3') and (value = 'val_3')) or ((key = '4') and (value = 'val_4')) or ((key = '5') and (value = 'val_5')) or ((key = '6') and (value = 'val_6')) or ((key = '7') and (value = 'val_7')) or ((key = '8') and (value = 'val_8')) or ((key = '9') and (value = 'val_9')) or ((key = '10') and (value = 'val_10'))) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((key = '0') and (value = 'val_0')) or ((key = '1') and (value = 'val_1')) or ((key = '10') and (value = 'val_10')) or ((key = '2') and (value = 'val_2')) or ((key = '3') and (value = 'val_3')) or ((key = '4') and (value = 'val_4')) or ((key = '5') and (value = 'val_5')) or ((key = '6') and (value = 'val_6')) or ((key = '7') and (value = 'val_7')) or ((key = '8') and (value = 'val_8')) or ((key = '9') and (value = 'val_9'))) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 957 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 957 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -154,17 +154,17 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -263,17 +263,17 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -262,12 +262,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: (part is not null and key is not null) (type: boolean)
-            Statistics: Num rows: 178 Data size: 69500 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 178 Data size: 70184 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 178 Data size: 69500 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 170 Data size: 67029 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -280,12 +280,12 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: (part is not null and key is not null) (type: boolean)
-            Statistics: Num rows: 178 Data size: 69500 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 178 Data size: 70184 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 178 Data size: 69500 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 170 Data size: 67029 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -293,7 +293,7 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 Position of Big Table: 0
-                Statistics: Num rows: 195 Data size: 76450 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 187 Data size: 73731 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

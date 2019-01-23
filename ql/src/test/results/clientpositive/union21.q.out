@@ -50,102 +50,102 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 42500 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 201144 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                     value expressions: _col1 (type: bigint)
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: reverse(key) (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 201144 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                     value expressions: _col1 (type: bigint)
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 201144 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                     value expressions: _col1 (type: bigint)
           TableScan
             alias: src_thrift
-            Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: astring (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 2024 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 201144 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                     value expressions: _col1 (type: bigint)
           TableScan
             alias: src_thrift
-            Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 21120 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: lstring[0] (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 21120 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 201144 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
                     value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -153,10 +153,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 316 Data size: 60672 Basic stats: COMPLETE Column stats: PARTIAL
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

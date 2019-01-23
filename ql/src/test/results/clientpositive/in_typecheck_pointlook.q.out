@@ -51,20 +51,20 @@ STAGE PLANS:
           TableScan
             alias: customer_demographics
             filterExpr: (((cd_marital_status = 'M') and (cd_education_status = 'Unknown             ')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree     '))) (type: boolean)
-            Statistics: Num rows: 4 Data size: 88 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((cd_marital_status = 'M') and (cd_education_status = 'Unknown             ')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree     '))) (type: boolean)
-              Statistics: Num rows: 2 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 2 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -72,10 +72,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -129,30 +129,30 @@ STAGE PLANS:
           TableScan
             alias: customer_demographics
             filterExpr: (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     ')) (type: boolean)
-            Statistics: Num rows: 4 Data size: 88 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     ')) (type: boolean)
-              Statistics: Num rows: 2 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 2 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

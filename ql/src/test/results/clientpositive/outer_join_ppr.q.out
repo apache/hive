@@ -44,44 +44,44 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 0
                   value expressions: _col1 (type: string)
                   auto parallelism: false
           TableScan
             alias: b
             filterExpr: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 20.0D)) (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
-              Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: PARTIAL
                   tag: 1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
@@ -247,13 +247,13 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -361,44 +361,44 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
-              Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 0
                   value expressions: _col1 (type: string)
                   auto parallelism: false
           TableScan
             alias: b
             filterExpr: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 20.0D)) (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
-              Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: PARTIAL
                   tag: 1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
@@ -564,13 +564,13 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 122 Data size: 1296 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 55 Data size: 19580 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat

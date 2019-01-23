@@ -33,17 +33,17 @@ STAGE PLANS:
           TableScan
             alias: src_union_1_n0
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 86 (type: int), value (type: string), '1' (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -67,17 +67,17 @@ STAGE PLANS:
           TableScan
             alias: src_union_2_n0
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 86 (type: int), value (type: string), '2' (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -101,17 +101,17 @@ STAGE PLANS:
           TableScan
             alias: src_union_3_n0
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 86 (type: int), value (type: string), '3' (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -175,23 +175,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 550 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -201,23 +201,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((ds = '1') and (key = 86)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Union
-                  Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 550 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -227,23 +227,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((ds = '1') and (key = 86)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Union
-                  Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 550 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -268,23 +268,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((ds = '2') and (key = 86)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 641 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -294,23 +294,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 641 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -320,23 +320,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((ds = '2') and (key = 86)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 641 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -361,23 +361,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((ds = '3') and (key = 86)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 641 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -387,23 +387,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((ds = '3') and (key = 86)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 641 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -413,23 +413,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 641 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 1365 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -454,23 +454,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 558 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string), ds (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 550 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 2200 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -480,23 +480,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string), ds (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 825 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 2200 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -506,23 +506,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 837 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string), ds (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 825 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 2200 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), _col1 (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1250 Data size: 13280 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -557,79 +557,79 @@ STAGE PLANS:
             filterExpr: (ds = '1') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
           TableScan
             alias: src_union_2_n0
             filterExpr: (ds = '1') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ds = '1') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
           TableScan
             alias: src_union_3_n0
             filterExpr: (ds = '1') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ds = '1') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -654,79 +654,79 @@ STAGE PLANS:
             filterExpr: (ds = '2') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ds = '2') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
           TableScan
             alias: src_union_2_n0
             filterExpr: (ds = '2') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 18624 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
           TableScan
             alias: src_union_3_n0
             filterExpr: (ds = '2') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ds = '2') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -751,79 +751,79 @@ STAGE PLANS:
             filterExpr: (ds = '3') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ds = '3') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
           TableScan
             alias: src_union_2_n0
             filterExpr: (ds = '3') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ds = '3') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
           TableScan
             alias: src_union_3_n0
             filterExpr: (ds = '3') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 18624 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1002 Data size: 8016 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -851,23 +851,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((ds = '4') and (key = 86)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Union
-                  Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 550 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -877,23 +877,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((ds = '4') and (key = 86)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                 Union
-                  Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 550 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -903,23 +903,23 @@ STAGE PLANS:
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key = 86) (type: boolean)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: value (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 550 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 1092 Basic stats: COMPLETE Column stats: PARTIAL
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -945,79 +945,79 @@ STAGE PLANS:
             filterExpr: (ds = '4') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ds = '4') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
           TableScan
             alias: src_union_2_n0
             filterExpr: (ds = '4') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ds = '4') (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Union
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
           TableScan
             alias: src_union_3_n0
             filterExpr: (ds = '4') (type: boolean)
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 502 Data size: 4016 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

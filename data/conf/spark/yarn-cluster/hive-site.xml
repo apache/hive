@@ -311,6 +311,12 @@
   <value>false</value>
 </property>
 
+<!-- remove this after HIVE-18139 and HIVE-20573 -->
+<property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>false</value>
+</property>
+
 <property>
   <name>hive.query.results.cache.enabled</name>
   <value>false</value>

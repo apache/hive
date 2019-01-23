@@ -123,7 +123,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over1korc
-            Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1049 Data size: 101753 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -134,19 +134,19 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [7, 13, 18]
                   selectExpressions: StringGroupColConcatStringScalar(col 12:string, val       )(children: StringScalarConcatStringGroupCol(val       , col 7:string) -> 12:string) -> 13:string, StringGroupColConcatStringScalar(col 17:string, val |)(children: StringScalarConcatStringGroupCol(val |, col 16:string)(children: StringRTrim(col 15:string)(children: StringGroupColConcatStringScalar(col 14:string, val       )(children: StringScalarConcatStringGroupCol(val       , col 7:string) -> 14:string) -> 15:string) -> 16:string) -> 17:string) -> 18:string
-              Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1049 Data size: 487785 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
                 Number of rows: 20
                 Limit Vectorization:
                     className: VectorLimitOperator
                     native: true
-                Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -338,7 +338,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vectortab2korc_n0
-            Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 106288 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -349,7 +349,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [25]
                   selectExpressions: StringGroupConcatColCol(col 22:string, col 24:string)(children: StringGroupColConcatStringScalar(col 21:string, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 20:string)(children: CastLongToString(col 19:int)(children: CastDoubleToLong(col 18:double)(children: DoubleColAddDoubleScalar(col 17:double, val 1.0)(children: DoubleColDivideDoubleScalar(col 16:double, val 3.0)(children: CastLongToDouble(col 15:int)(children: LongColSubtractLongScalar(col 14:int, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 14:int) -> 15:int) -> 16:double) -> 17:double) -> 18:double) -> 19:int) -> 20:string) -> 21:string) -> 22:string, CastLongToString(col 23:int)(children: VectorUDFYearDate(col 12, field YEAR) -> 23:int) -> 24:string) -> 25:string
-              Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2000 Data size: 106288 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
@@ -361,7 +361,7 @@ STAGE PLANS:
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
@@ -371,7 +371,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 184000 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Map Vectorization:
@@ -392,7 +392,7 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             table:
@@ -414,7 +414,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
               TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Map Vectorization:
@@ -434,13 +434,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col0
-          Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 50
-            Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 50 Data size: 9200 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 50 Data size: 9200 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

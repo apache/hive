@@ -28,11 +28,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: s_n5
-          Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: alter table s_n5 update statistics set('numRows'='12')
@@ -61,11 +61,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: s_n5
-          Statistics: Num rows: 12 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 12 Data size: 2136 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 12 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12 Data size: 2136 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: analyze table s_n5 compute statistics
@@ -94,11 +94,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: s_n5
-          Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: alter table s_n5 update statistics set('numRows'='1212', 'rawDataSize'='500500')
@@ -127,11 +127,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: s_n5
-          Statistics: Num rows: 1212 Data size: 500500 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1212 Data size: 215736 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1212 Data size: 500500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1212 Data size: 215736 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: CREATE TABLE calendarp_n0 (`year` int)  partitioned by (p int)
@@ -172,11 +172,11 @@ STAGE PLANS:
         TableScan
           alias: calendarp_n0
           filterExpr: (p = 1) (type: boolean)
-          Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: year (type: int), 1 (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: alter table calendarp_n0 partition (p=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
@@ -209,11 +209,11 @@ STAGE PLANS:
         TableScan
           alias: calendarp_n0
           filterExpr: (p = 1) (type: boolean)
-          Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1000020000 Data size: 4000080000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: year (type: int), 1 (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000020000 Data size: 8000160000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: create table src_stat_part_two_n0(key string, value string) partitioned by (px int, py string)
@@ -281,11 +281,11 @@ STAGE PLANS:
         TableScan
           alias: src_stat_part_two_n0
           filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
-          Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
@@ -311,11 +311,11 @@ STAGE PLANS:
         TableScan
           alias: src_stat_part_two_n0
           filterExpr: (px = 1) (type: boolean)
-          Statistics: Num rows: 11 Data size: 115 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 11 Data size: 3982 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 11 Data size: 115 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 4026 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: alter table src_stat_part_two_n0 partition (px=1, py='a') update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
@@ -348,11 +348,11 @@ STAGE PLANS:
         TableScan
           alias: src_stat_part_two_n0
           filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
-          Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1000020000 Data size: 178003560000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000020000 Data size: 267005340000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
@@ -378,11 +378,11 @@ STAGE PLANS:
         TableScan
           alias: src_stat_part_two_n0
           filterExpr: (px = 1) (type: boolean)
-          Statistics: Num rows: 1000020010 Data size: 300040104 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1000020010 Data size: 362007243620 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1000020010 Data size: 300040104 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000020010 Data size: 366007323660 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: alter table src_stat_part_two_n0 partition (px=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
@@ -418,11 +418,11 @@ STAGE PLANS:
         TableScan
           alias: src_stat_part_two_n0
           filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
-          Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1000020000 Data size: 178003560000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000020000 Data size: 267005340000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
@@ -448,10 +448,10 @@ STAGE PLANS:
         TableScan
           alias: src_stat_part_two_n0
           filterExpr: (px = 1) (type: boolean)
-          Statistics: Num rows: 2000040000 Data size: 600080000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2000040000 Data size: 724014480000 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 2000040000 Data size: 600080000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000040000 Data size: 732014640000 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
