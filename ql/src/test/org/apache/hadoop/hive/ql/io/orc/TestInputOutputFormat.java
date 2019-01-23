@@ -2208,7 +2208,7 @@ public class TestInputOutputFormat {
       PartitionDesc part = new PartitionDesc(tbl, partSpec);
       if (isVectorized) {
         part.setVectorPartitionDesc(
-            VectorPartitionDesc.createVectorizedInputFileFormat("MockInputFileFormatClassName", false));
+            VectorPartitionDesc.createVectorizedInputFileFormat("MockInputFileFormatClassName", false, null));
       }
       partMap.put(path, part);
     }
