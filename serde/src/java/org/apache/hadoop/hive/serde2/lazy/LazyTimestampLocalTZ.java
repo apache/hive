@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 
@@ -29,16 +29,12 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * LazyPrimitive for TimestampLocalTZ. Similar to LazyTimestamp.
  */
 public class LazyTimestampLocalTZ extends
     LazyPrimitive<LazyTimestampLocalTZObjectInspector, TimestampLocalTZWritable> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(LazyTimestampLocalTZ.class);
 
   private ZoneId timeZone;
 
@@ -68,7 +64,7 @@ public class LazyTimestampLocalTZ extends
 
     TimestampTZ t = null;
     try {
-      s = new String(bytes.getData(), start, length, "US-ASCII");
+      s = new String(bytes.getData(), start, length, StandardCharsets.US_ASCII);
       if (s.equals("NULL")) {
         isNull = true;
         logExceptionMessage(bytes, start, length,
@@ -77,9 +73,6 @@ public class LazyTimestampLocalTZ extends
         t = TimestampTZUtil.parse(s, timeZone);
         isNull = false;
       }
-    } catch (UnsupportedEncodingException e) {
-      isNull = true;
-      LOG.error("Unsupported encoding found ", e);
     } catch (DateTimeParseException e) {
       isNull = true;
       logExceptionMessage(bytes, start, length, serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.toUpperCase());
@@ -93,10 +86,10 @@ public class LazyTimestampLocalTZ extends
   }
 
   public static void writeUTF8(OutputStream out, TimestampLocalTZWritable i) throws IOException {
-    if (i == null) {
-      out.write(TimestampLocalTZWritable.nullBytes);
-    } else {
-      out.write(i.toString().getBytes("US-ASCII"));
+    byte[] b = TimestampLocalTZWritable.nullBytes;
+    if (i != null) {
+      b = i.toString().getBytes(StandardCharsets.US_ASCII);
     }
+    out.write(b);
   }
 }

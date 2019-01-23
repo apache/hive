@@ -41,9 +41,9 @@ import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -275,12 +275,7 @@ public final class ParquetDataColumnReaderFactory {
      * Method to convert string to UTF-8 bytes.
      */
     protected static byte[] convertToBytes(String value) {
-      try {
-        // convert integer to string
-        return value.getBytes("UTF-8");
-      } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException("Failed to encode string in UTF-8", e);
-      }
+      return value.getBytes(StandardCharsets.UTF_8);
     }
 
     /**
