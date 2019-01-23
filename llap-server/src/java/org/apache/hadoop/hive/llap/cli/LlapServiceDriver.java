@@ -159,7 +159,7 @@ public class LlapServiceDriver {
         conf.set(key, (String) props.getValue());
       } else {
         if (key.startsWith(HiveConf.PREFIX_LLAP) || key.startsWith(HiveConf.PREFIX_HIVE_LLAP)) {
-          LOG.warn("Adding key [{}] even though it is not in the set of known llap-server keys");
+          LOG.warn("Adding key [{}] even though it is not in the set of known llap-server keys", key);
           conf.set(key, (String) props.getValue());
         } else {
           LOG.warn("Ignoring unknown llap server parameter: [{}]", key);

@@ -263,7 +263,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                 && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())
                 && !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
             if (shouldWriteExternalTableLocationInfo) {
-              LOG.debug("adding table {} to external tables list");
+              LOG.debug("adding table {} to external tables list", tblName);
               writer.dataLocationDump(tableTuple.object);
             }
             dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,

@@ -576,7 +576,12 @@ public class VectorizedBatchUtil {
 
   public static ColumnVector makeLikeColumnVector(ColumnVector source
                                         ) throws HiveException{
-    if (source instanceof LongColumnVector) {
+    if (source instanceof Decimal64ColumnVector) {
+      Decimal64ColumnVector dec64ColVector = (Decimal64ColumnVector) source;
+      return new DecimalColumnVector(dec64ColVector.vector.length,
+          dec64ColVector.precision,
+          dec64ColVector.scale);
+    } else if (source instanceof LongColumnVector) {
       return new LongColumnVector(((LongColumnVector) source).vector.length);
     } else if (source instanceof DoubleColumnVector) {
       return new DoubleColumnVector(((DoubleColumnVector) source).vector.length);
@@ -587,11 +592,6 @@ public class VectorizedBatchUtil {
       return new DecimalColumnVector(decColVector.vector.length,
           decColVector.precision,
           decColVector.scale);
-    } else if (source instanceof Decimal64ColumnVector) {
-        Decimal64ColumnVector dec64ColVector = (Decimal64ColumnVector) source;
-        return new DecimalColumnVector(dec64ColVector.vector.length,
-            dec64ColVector.precision,
-            dec64ColVector.scale);
     } else if (source instanceof TimestampColumnVector) {
       return new TimestampColumnVector(((TimestampColumnVector) source).getLength());
     } else if (source instanceof IntervalDayTimeColumnVector) {
