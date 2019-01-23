@@ -6705,6 +6705,11 @@ void Table::__set_isStatsCompliant(const bool val) {
 __isset.isStatsCompliant = true;
 }
 
+void Table::__set_colStats(const ColumnStatistics& val) {
+  this->colStats = val;
+__isset.colStats = true;
+}
+
 uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -6915,6 +6920,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 21:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->colStats.read(iprot);
+          this->__isset.colStats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -7037,6 +7050,11 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeBool(this->isStatsCompliant);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.colStats) {
+    xfer += oprot->writeFieldBegin("colStats", ::apache::thrift::protocol::T_STRUCT, 21);
+    xfer += this->colStats.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -7064,6 +7082,7 @@ void swap(Table &a, Table &b) {
   swap(a.ownerType, b.ownerType);
   swap(a.writeId, b.writeId);
   swap(a.isStatsCompliant, b.isStatsCompliant);
+  swap(a.colStats, b.colStats);
   swap(a.__isset, b.__isset);
 }
 
@@ -7088,6 +7107,7 @@ Table::Table(const Table& other261) {
   ownerType = other261.ownerType;
   writeId = other261.writeId;
   isStatsCompliant = other261.isStatsCompliant;
+  colStats = other261.colStats;
   __isset = other261.__isset;
 }
 Table& Table::operator=(const Table& other262) {
@@ -7111,6 +7131,7 @@ Table& Table::operator=(const Table& other262) {
   ownerType = other262.ownerType;
   writeId = other262.writeId;
   isStatsCompliant = other262.isStatsCompliant;
+  colStats = other262.colStats;
   __isset = other262.__isset;
   return *this;
 }
@@ -7137,6 +7158,7 @@ void Table::printTo(std::ostream& out) const {
   out << ", " << "ownerType="; (__isset.ownerType ? (out << to_string(ownerType)) : (out << "<null>"));
   out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "isStatsCompliant="; (__isset.isStatsCompliant ? (out << to_string(isStatsCompliant)) : (out << "<null>"));
+  out << ", " << "colStats="; (__isset.colStats ? (out << to_string(colStats)) : (out << "<null>"));
   out << ")";
 }
 
@@ -26092,6 +26114,11 @@ void GetTableRequest::__set_validWriteIdList(const std::string& val) {
 __isset.validWriteIdList = true;
 }
 
+void GetTableRequest::__set_getColumnStats(const bool val) {
+  this->getColumnStats = val;
+__isset.getColumnStats = true;
+}
+
 uint32_t GetTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -26155,6 +26182,14 @@ uint32_t GetTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->getColumnStats);
+          this->__isset.getColumnStats = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -26199,6 +26234,11 @@ uint32_t GetTableRequest::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.getColumnStats) {
+    xfer += oprot->writeFieldBegin("getColumnStats", ::apache::thrift::protocol::T_BOOL, 7);
+    xfer += oprot->writeBool(this->getColumnStats);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -26211,6 +26251,7 @@ void swap(GetTableRequest &a, GetTableRequest &b) {
   swap(a.capabilities, b.capabilities);
   swap(a.catName, b.catName);
   swap(a.validWriteIdList, b.validWriteIdList);
+  swap(a.getColumnStats, b.getColumnStats);
   swap(a.__isset, b.__isset);
 }
 
@@ -26220,6 +26261,7 @@ GetTableRequest::GetTableRequest(const GetTableRequest& other1017) {
   capabilities = other1017.capabilities;
   catName = other1017.catName;
   validWriteIdList = other1017.validWriteIdList;
+  getColumnStats = other1017.getColumnStats;
   __isset = other1017.__isset;
 }
 GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other1018) {
@@ -26228,6 +26270,7 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other1018) {
   capabilities = other1018.capabilities;
   catName = other1018.catName;
   validWriteIdList = other1018.validWriteIdList;
+  getColumnStats = other1018.getColumnStats;
   __isset = other1018.__isset;
   return *this;
 }
@@ -26239,6 +26282,7 @@ void GetTableRequest::printTo(std::ostream& out) const {
   out << ", " << "capabilities="; (__isset.capabilities ? (out << to_string(capabilities)) : (out << "<null>"));
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
+  out << ", " << "getColumnStats="; (__isset.getColumnStats ? (out << to_string(getColumnStats)) : (out << "<null>"));
   out << ")";
 }
 

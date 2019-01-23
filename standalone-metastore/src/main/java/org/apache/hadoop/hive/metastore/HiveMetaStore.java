@@ -1941,7 +1941,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void create_table_core(final RawStore ms, final Table tbl,
         final EnvironmentContext envContext)
             throws AlreadyExistsException, MetaException,
-            InvalidObjectException, NoSuchObjectException {
+            InvalidObjectException, NoSuchObjectException, InvalidInputException {
       create_table_core(ms, tbl, envContext, null, null, null, null, null, null);
     }
 
@@ -1951,7 +1951,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<SQLNotNullConstraint> notNullConstraints, List<SQLDefaultConstraint> defaultConstraints,
                                    List<SQLCheckConstraint> checkConstraints)
         throws AlreadyExistsException, MetaException,
-        InvalidObjectException, NoSuchObjectException {
+            InvalidObjectException, NoSuchObjectException, InvalidInputException {
       if (!MetaStoreUtils.validateName(tbl.getTableName(), conf)) {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
@@ -2175,18 +2175,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
       }
+
+      // If the table has column statistics, update it into the metastore. This feature is used
+      // by replication to replicate table level statistics.
+      if (tbl.isSetColStats()) {
+        // We do not replicate statistics for a transactional table right now and hence we do not
+        // expect a transactional table to have column statistics here. So passing null
+        // validWriteIds is fine for now.
+        updateTableColumnStatsInternal(tbl.getColStats(), null, tbl.getWriteId());
+      }
     }
 
     @Override
     public void create_table(final Table tbl) throws AlreadyExistsException,
-        MetaException, InvalidObjectException {
+        MetaException, InvalidObjectException, InvalidInputException {
       create_table_with_environment_context(tbl, null);
     }
 
     @Override
     public void create_table_with_environment_context(final Table tbl,
         final EnvironmentContext envContext)
-        throws AlreadyExistsException, MetaException, InvalidObjectException {
+        throws AlreadyExistsException, MetaException, InvalidObjectException,
+            InvalidInputException {
       startFunction("create_table", ": " + tbl.toString());
       boolean success = false;
       Exception ex = null;
@@ -2205,6 +2215,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw (InvalidObjectException) e;
         } else if (e instanceof AlreadyExistsException) {
           throw (AlreadyExistsException) e;
+        } else if (e instanceof InvalidInputException) {
+          throw (InvalidInputException) e;
         } else {
           throw newMetaException(e);
         }
@@ -2220,7 +2232,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<SQLNotNullConstraint> notNullConstraints,
         List<SQLDefaultConstraint> defaultConstraints,
         List<SQLCheckConstraint> checkConstraints)
-        throws AlreadyExistsException, MetaException, InvalidObjectException {
+        throws AlreadyExistsException, MetaException, InvalidObjectException,
+            InvalidInputException {
       startFunction("create_table", ": " + tbl.toString());
       boolean success = false;
       Exception ex = null;
@@ -2239,6 +2252,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw (InvalidObjectException) e;
         } else if (e instanceof AlreadyExistsException) {
           throw (AlreadyExistsException) e;
+        } else if (e instanceof  InvalidInputException) {
+          throw (InvalidInputException) e;
         } else {
           throw newMetaException(e);
         }
@@ -3072,7 +3087,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String[] parsedDbName = parseDbName(dbname, conf);
       return getTableInternal(
-          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null);
+          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null, false);
     }
 
     @Override
@@ -3080,11 +3095,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
       return new GetTableResult(getTableInternal(catName, req.getDbName(), req.getTblName(),
-          req.getCapabilities(), req.getValidWriteIdList()));
+          req.getCapabilities(), req.getValidWriteIdList(), req.isGetColumnStats()));
     }
 
     private Table getTableInternal(String catName, String dbname, String name,
-        ClientCapabilities capabilities, String writeIdList)
+        ClientCapabilities capabilities, String writeIdList, boolean getColumnStats)
         throws MetaException, NoSuchObjectException {
       if (isInTest) {
         assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
@@ -3095,7 +3110,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startTableFunction("get_table", catName, dbname, name);
       Exception ex = null;
       try {
-        t = get_table_core(catName, dbname, name, writeIdList);
+        t = get_table_core(catName, dbname, name, writeIdList, getColumnStats);
         if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
           assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
               "insert-only tables", "get_table_req");
@@ -3142,12 +3157,30 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String name,
         final String writeIdList)
         throws MetaException, NoSuchObjectException {
+      return get_table_core(catName, dbname, name, writeIdList, false);
+    }
+
+    public Table get_table_core(final String catName,
+        final String dbname,
+        final String name,
+        final String writeIdList,
+        boolean getColumnStats)
+        throws MetaException, NoSuchObjectException {
       Table t = null;
       try {
         t = getMS().getTable(catName, dbname, name, writeIdList);
         if (t == null) {
           throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbname, name) +
             " table not found");
+        }
+
+        // If column statistics was requested and is valid fetch it.
+        if (getColumnStats) {
+          ColumnStatistics colStats = getMS().getTableColumnStatistics(catName, dbname, name,
+                  StatsSetupConst.getColumnsHavingStats(t.getParameters()), writeIdList);
+          if (colStats != null) {
+            t.setColStats(colStats);
+          }
         }
       } catch (Exception e) {
         throwMetaException(e);
@@ -6040,15 +6073,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         parameters = getMS().updateTableColumnStatistics(colStats, validWriteIds, writeId);
         if (parameters != null) {
+          Table tableObj = getMS().getTable(colStats.getStatsDesc().getCatName(),
+                                            colStats.getStatsDesc().getDbName(),
+                                            colStats.getStatsDesc().getTableName(), validWriteIds);
           if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.UPDATE_TABLE_COLUMN_STAT,
-                    new UpdateTableColumnStatEvent(colStats, parameters, validWriteIds, writeId, this));
+                    new UpdateTableColumnStatEvent(colStats, tableObj, parameters, validWriteIds,
+                            writeId, this));
           }
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.UPDATE_TABLE_COLUMN_STAT,
-                    new UpdateTableColumnStatEvent(colStats, parameters, validWriteIds, writeId, this));
+                    new UpdateTableColumnStatEvent(colStats, tableObj, parameters, validWriteIds,
+                            writeId,this));
           }
         }
         committed = getMS().commitTransaction();

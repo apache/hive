@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.thrift.TException;
 import java.util.Map;
@@ -39,6 +40,9 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   @JsonProperty
   private Map<String, String> parameters;
 
+  @JsonProperty
+  private String tableObjJson;
+
   /**
    * Default constructor, needed for Jackson.
    */
@@ -46,7 +50,8 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   }
 
   public JSONUpdateTableColumnStatMessage(String server, String servicePrincipal, Long timestamp,
-                      ColumnStatistics colStats, Map<String, String> parameters, String validWriteIds, long writeId) {
+                      ColumnStatistics colStats, Table tableObj, Map<String, String> parameters,
+                                          String validWriteIds, long writeId) {
     this.timestamp = timestamp;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
@@ -56,6 +61,7 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
     this.validWriteIds = validWriteIds;
     try {
       this.colStatsJson = JSONMessageFactory.createTableColumnStatJson(colStats);
+      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize JSONUpdateTableColumnStatMessage : ", e);
     }
@@ -88,6 +94,11 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
     } catch (Exception e) {
       throw new RuntimeException("failed to get the ColumnStatistics object ", e);
     }
+  }
+
+  @Override
+  public Table getTableObject() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjJson, Table.class);
   }
 
   @Override

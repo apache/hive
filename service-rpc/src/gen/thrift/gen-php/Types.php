@@ -10454,8 +10454,6 @@ final class Constant extends \Thrift\Type\TConstant {
 
   static protected function init_TYPE_NAMES() {
     return array(
-            21 => "INTERVAL_DAY_TIME",
-            22 => "TIMESTAMP WITH LOCAL TIME ZONE",
             0 => "BOOLEAN",
             1 => "TINYINT",
             2 => "SMALLINT",
@@ -10476,6 +10474,8 @@ final class Constant extends \Thrift\Type\TConstant {
             18 => "VARCHAR",
             19 => "CHAR",
             20 => "INTERVAL_YEAR_MONTH",
+            21 => "INTERVAL_DAY_TIME",
+            22 => "TIMESTAMP WITH LOCAL TIME ZONE",
     );
   }
 

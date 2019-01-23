@@ -75,8 +75,6 @@ import org.slf4j.LoggerFactory;
 
   public static final Map<TTypeId,String> TYPE_NAMES = new HashMap<TTypeId,String>();
   static {
-    TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_DAY_TIME_TYPE, "INTERVAL_DAY_TIME");
-    TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.TIMESTAMPLOCALTZ_TYPE, "TIMESTAMP WITH LOCAL TIME ZONE");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.BOOLEAN_TYPE, "BOOLEAN");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.TINYINT_TYPE, "TINYINT");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.SMALLINT_TYPE, "SMALLINT");
@@ -97,6 +95,8 @@ import org.slf4j.LoggerFactory;
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.VARCHAR_TYPE, "VARCHAR");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.CHAR_TYPE, "CHAR");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_YEAR_MONTH_TYPE, "INTERVAL_YEAR_MONTH");
+    TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_DAY_TIME_TYPE, "INTERVAL_DAY_TIME");
+    TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.TIMESTAMPLOCALTZ_TYPE, "TIMESTAMP WITH LOCAL TIME ZONE");
   }
 
   public static final String CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";

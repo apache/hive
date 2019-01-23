@@ -260,7 +260,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           LOG.debug(
               "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
           try {
-            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName);
+            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName,
+                                                                                        conf);
             boolean shouldWriteExternalTableLocationInfo =
                 conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
                 && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())
@@ -338,6 +339,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // added/modified by concurrent txns which are later than current txn. So, need to set last repl Id of this table
       // as bootstrap dump's last repl Id.
       tuple.replicationSpec.setCurrentReplicationState(String.valueOf(lastReplId));
+
+      // For now we do not replicate stats for ACID table. So, wipe out column stats if any.
+      tableSpec.tableHandle.getTTable().unsetColStats();
     }
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     new TableExport(

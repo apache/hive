@@ -1525,8 +1525,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName,
-                        String writeIdList)
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList)
       throws MetaException {
     boolean commited = false;
     Table tbl = null;
@@ -1566,6 +1565,7 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+
     return tbl;
   }
 

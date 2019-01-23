@@ -3240,7 +3240,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -3261,6 +3261,7 @@ typedef struct _Table__isset {
   bool ownerType :1;
   bool writeId :1;
   bool isStatsCompliant :1;
+  bool colStats :1;
 } _Table__isset;
 
 class Table {
@@ -3294,6 +3295,7 @@ class Table {
   PrincipalType::type ownerType;
   int64_t writeId;
   bool isStatsCompliant;
+  ColumnStatistics colStats;
 
   _Table__isset __isset;
 
@@ -3336,6 +3338,8 @@ class Table {
   void __set_writeId(const int64_t val);
 
   void __set_isStatsCompliant(const bool val);
+
+  void __set_colStats(const ColumnStatistics& val);
 
   bool operator == (const Table & rhs) const
   {
@@ -3394,6 +3398,10 @@ class Table {
     if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
       return false;
     else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
+      return false;
+    if (__isset.colStats != rhs.__isset.colStats)
+      return false;
+    else if (__isset.colStats && !(colStats == rhs.colStats))
       return false;
     return true;
   }
@@ -10718,10 +10726,11 @@ inline std::ostream& operator<<(std::ostream& out, const ClientCapabilities& obj
 }
 
 typedef struct _GetTableRequest__isset {
-  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false) {}
+  _GetTableRequest__isset() : capabilities(false), catName(false), validWriteIdList(false), getColumnStats(false) {}
   bool capabilities :1;
   bool catName :1;
   bool validWriteIdList :1;
+  bool getColumnStats :1;
 } _GetTableRequest__isset;
 
 class GetTableRequest {
@@ -10729,7 +10738,7 @@ class GetTableRequest {
 
   GetTableRequest(const GetTableRequest&);
   GetTableRequest& operator=(const GetTableRequest&);
-  GetTableRequest() : dbName(), tblName(), catName(), validWriteIdList() {
+  GetTableRequest() : dbName(), tblName(), catName(), validWriteIdList(), getColumnStats(0) {
   }
 
   virtual ~GetTableRequest() throw();
@@ -10738,6 +10747,7 @@ class GetTableRequest {
   ClientCapabilities capabilities;
   std::string catName;
   std::string validWriteIdList;
+  bool getColumnStats;
 
   _GetTableRequest__isset __isset;
 
@@ -10750,6 +10760,8 @@ class GetTableRequest {
   void __set_catName(const std::string& val);
 
   void __set_validWriteIdList(const std::string& val);
+
+  void __set_getColumnStats(const bool val);
 
   bool operator == (const GetTableRequest & rhs) const
   {
@@ -10768,6 +10780,10 @@ class GetTableRequest {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.getColumnStats != rhs.__isset.getColumnStats)
+      return false;
+    else if (__isset.getColumnStats && !(getColumnStats == rhs.getColumnStats))
       return false;
     return true;
   }

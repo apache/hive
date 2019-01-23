@@ -18,18 +18,35 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class UpdateTableColStatHandler extends AbstractEventHandler {
 
-  UpdateTableColStatHandler(NotificationEvent event) {
-    super(event);
-  }
+  UpdateTableColStatHandler(NotificationEvent event) { super(event); }
 
   @Override
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), event.getMessage());
+    UpdateTableColumnStatMessage utcsm = deserializer.getUpdateTableColumnStatMessage(event.getMessage());
+    Table qlMdTable = new Table(utcsm.getTableObject());
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
+      return;
+    }
+
+    // Statistics without data doesn't make sense.
+    if (withinContext.replicationSpec.isMetadataOnly()) {
+      return;
+    }
+    // For now we do not replicate the statistics for transactional tables.
+    if (AcidUtils.isTransactionalTable(qlMdTable)) {
+      return;
+    }
+
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(event.getMessage());
     dmd.write();

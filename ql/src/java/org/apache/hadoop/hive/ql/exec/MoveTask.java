@@ -395,8 +395,24 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             Utilities.FILE_OP_LOGGER.trace("loadTable called from " + tbd.getSourcePath()
               + " into " + tbd.getTable().getTableName());
           }
+
+          boolean resetStatistics;
+          if (hasFollowingStatsTask()) {
+            // If there's a follow-on stats task then the stats will be correct after load, so don't
+            // need to reset the statistics.
+            resetStatistics = false;
+          } else if (!work.getIsInReplicationScope()) {
+            // If the load is not happening during replication and there is not follow-on stats
+            // task, stats will be inaccurate after load and so need to be reset.
+            resetStatistics = true;
+          } else {
+            // If we are loading a table during replication, the stats will also be replicated
+            // and hence accurate if it's a non-transactional table. For transactional table we
+            // do not replicate stats yet.
+            resetStatistics = AcidUtils.isTransactionalTable(table.getParameters());
+          }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
-              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, hasFollowingStatsTask(),
+              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, resetStatistics,
               tbd.getWriteId(), tbd.getStmtId(), tbd.isInsertOverwrite());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,

@@ -6768,6 +6768,10 @@ class Table {
    * @var bool
    */
   public $isStatsCompliant = null;
+  /**
+   * @var \metastore\ColumnStatistics
+   */
+  public $colStats = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -6868,6 +6872,11 @@ class Table {
           'var' => 'isStatsCompliant',
           'type' => TType::BOOL,
           ),
+        21 => array(
+          'var' => 'colStats',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\ColumnStatistics',
+          ),
         );
     }
     if (is_array($vals)) {
@@ -6930,6 +6939,9 @@ class Table {
       }
       if (isset($vals['isStatsCompliant'])) {
         $this->isStatsCompliant = $vals['isStatsCompliant'];
+      }
+      if (isset($vals['colStats'])) {
+        $this->colStats = $vals['colStats'];
       }
     }
   }
@@ -7120,6 +7132,14 @@ class Table {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 21:
+          if ($ftype == TType::STRUCT) {
+            $this->colStats = new \metastore\ColumnStatistics();
+            $xfer += $this->colStats->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -7265,6 +7285,14 @@ class Table {
     if ($this->isStatsCompliant !== null) {
       $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 20);
       $xfer += $output->writeBool($this->isStatsCompliant);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->colStats !== null) {
+      if (!is_object($this->colStats)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('colStats', TType::STRUCT, 21);
+      $xfer += $this->colStats->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -25663,6 +25691,10 @@ class GetTableRequest {
    * @var string
    */
   public $validWriteIdList = null;
+  /**
+   * @var bool
+   */
+  public $getColumnStats = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -25688,6 +25720,10 @@ class GetTableRequest {
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
+        7 => array(
+          'var' => 'getColumnStats',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -25705,6 +25741,9 @@ class GetTableRequest {
       }
       if (isset($vals['validWriteIdList'])) {
         $this->validWriteIdList = $vals['validWriteIdList'];
+      }
+      if (isset($vals['getColumnStats'])) {
+        $this->getColumnStats = $vals['getColumnStats'];
       }
     }
   }
@@ -25764,6 +25803,13 @@ class GetTableRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 7:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->getColumnStats);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -25803,6 +25849,11 @@ class GetTableRequest {
     if ($this->validWriteIdList !== null) {
       $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 6);
       $xfer += $output->writeString($this->validWriteIdList);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->getColumnStats !== null) {
+      $xfer += $output->writeFieldBegin('getColumnStats', TType::BOOL, 7);
+      $xfer += $output->writeBool($this->getColumnStats);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

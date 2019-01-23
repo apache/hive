@@ -353,6 +353,7 @@ public abstract class MessageFactory {
    *
    */
   public abstract UpdateTableColumnStatMessage buildUpdateTableColumnStatMessage(ColumnStatistics colStats,
+                                                                                 Table tableObj,
                                                                                    Map<String, String> parameters,
                                                                                    String validWriteIds, long writeId);
   /**

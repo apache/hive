@@ -689,6 +689,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   public void onUpdateTableColumnStat(UpdateTableColumnStatEvent updateTableColumnStatEvent) throws MetaException {
     UpdateTableColumnStatMessage msg = msgFactory
             .buildUpdateTableColumnStatMessage(updateTableColumnStatEvent.getColStats(),
+                    updateTableColumnStatEvent.getTableObj(),
                     updateTableColumnStatEvent.getTableParameters(),
                     updateTableColumnStatEvent.getValidWriteIds(), updateTableColumnStatEvent.getWriteId());
     NotificationEvent event = new NotificationEvent(0, now(), EventType.UPDATE_TABLE_COLUMN_STAT.toString(),

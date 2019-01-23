@@ -4706,6 +4706,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtTbl.getReplaceMode()) {
       ReplicationSpec replicationSpec = crtTbl.getReplicationSpec();
       long writeId = 0;
+      EnvironmentContext environmentContext = null;
       if (replicationSpec != null && replicationSpec.isInReplicationScope()) {
         if (replicationSpec.isMigratingToTxnTable()) {
           // for migration we start the transaction and allocate write id in repl txn task for migration.
@@ -4717,11 +4718,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         } else {
           writeId = crtTbl.getReplWriteId();
         }
+
+        // In case of replication statistics is obtained from the source, so do not update those
+        // on replica. Since we are not replicating statisics for transactional tables, do not do
+        // so for transactional tables right now.
+        if (!AcidUtils.isTransactionalTable(crtTbl)) {
+          environmentContext = new EnvironmentContext();
+          environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+        }
       }
 
       // replace-mode creates are really alters using CreateTableDesc.
-      db.alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false, null,
-              true, writeId);
+      db.alterTable(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), tbl, false,
+              environmentContext, true, writeId);
     } else {
       if ((foreignKeys != null && foreignKeys.size() > 0) ||
           (primaryKeys != null && primaryKeys.size() > 0) ||
