@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -37,20 +36,25 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.FileNotFoundException;
-
+import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Reader;
+import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.DirCopyWork;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -59,9 +63,6 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_STATUS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TABNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_TO;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
-
 
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // Database name or pattern
@@ -98,7 +99,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     LOG.debug("ReplicationSemanticAanalyzer: analyzeInternal");
     LOG.debug(ast.getName() + ":" + ast.getToken().getText() + "=" + ast.getText());
-
     // Some of the txn related configs were not set when ReplicationSemanticAnalyzer.conf was initialized.
     // It should be set first.
     setTxnConfigs();
@@ -188,12 +188,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       Database database = db.getDatabase(dbName);
       if (database != null) {
         if (!isMetaDataOnly && !ReplChangeManager.isSourceOfReplication(database)) {
-          LOG.error("Cannot dump database " + dbName +
+          LOG.error("Cannot dump database " + dbNameOrPattern +
                   " as it is not a source of replication (repl.source.for)");
           throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getMsg());
         }
       } else {
-        throw new SemanticException("Cannot dump database " + dbName + " as it does not exist");
+        throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
       }
     }
   }
@@ -246,7 +246,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (StringUtils.isBlank(scheme)) {
       throw new HiveException("Cannot get valid scheme for " + filePath);
     }
+
     LOG.info("scheme is " + scheme);
+
     String[] schmeList = conf.get(REPL_MOVE_OPTIMIZED_FILE_SCHEMES.varname).toLowerCase().split(",");
     for (String schemeIter : schmeList) {
       if (schemeIter.trim().equalsIgnoreCase(scheme.trim())) {
@@ -372,20 +374,41 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
       boolean evDump = false;
-      if (dmd.isIncrementalDump()){
+      // we will decide what hdfs locations needs to be copied over here as well.
+      if (dmd.isIncrementalDump()) {
         LOG.debug("{} contains an incremental dump", loadPath);
         evDump = true;
       } else {
         LOG.debug("{} contains an bootstrap dump", loadPath);
       }
-
       ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-              tblNameOrPattern, queryState.getLineageState(), evDump, dmd.getEventTo());
+          tblNameOrPattern, queryState.getLineageState(), evDump, dmd.getEventTo(),
+          dirLocationsToCopy(loadPath, evDump));
       rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
     }
+  }
+
+  private List<DirCopyWork> dirLocationsToCopy(Path loadPath, boolean isIncrementalPhase)
+      throws HiveException, IOException {
+    List<DirCopyWork> list = new ArrayList<>();
+    String baseDir = conf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
+    // this is done to remove any scheme related information that will be present in the base path
+    // specifically when we are replicating to cloud storage
+    Path basePath = new Path(baseDir);
+
+    for (String location : new Reader(conf, loadPath, isIncrementalPhase).sourceLocationsToCopy()) {
+      Path sourcePath = new Path(location);
+      String targetPathWithoutSchemeAndAuth = basePath.toUri().getPath() + sourcePath.toUri().getPath();
+      Path fullyQualifiedTargetUri = PathBuilder.fullyQualifiedHDFSUri(
+          new Path(targetPathWithoutSchemeAndAuth),
+          basePath.getFileSystem(conf)
+      );
+      list.add(new DirCopyWork(sourcePath, fullyQualifiedTargetUri));
+    }
+    return list;
   }
 
   private void setConfigs(ASTNode node) throws SemanticException {

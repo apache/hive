@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 
 public class TruncateTableHandler extends AbstractMessageHandler {
@@ -46,6 +45,7 @@ public class TruncateTableHandler extends AbstractMessageHandler {
     context.log.debug("Added truncate tbl task : {}:{}:{}", truncateTableTask.getId(),
         truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
+
     try {
       return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
               context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore());

@@ -108,7 +108,8 @@ public class ReplUtils {
 
   public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf)
           throws SemanticException {
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, tableDesc.getTableName(), tableDesc.tableType());
+    TableType tableType = tableDesc.isExternal() ? TableType.EXTERNAL_TABLE : tableDesc.tableType();
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, tableDesc.getTableName(), tableType);
     return TaskFactory.get(replLogWork, conf);
   }
 
@@ -141,10 +142,10 @@ public class ReplUtils {
   }
 
   public static List<Task<? extends Serializable>> addOpenTxnTaskForMigration(String actualDbName,
-                                                                   String actualTblName, HiveConf conf,
-                                                                   UpdatedMetaDataTracker updatedMetaDataTracker,
-                                                                   Task<? extends Serializable> childTask,
-                                                                   org.apache.hadoop.hive.metastore.api.Table tableObj)
+                                                                  String actualTblName, HiveConf conf,
+                                                                  UpdatedMetaDataTracker updatedMetaDataTracker,
+                                                                  Task<? extends Serializable> childTask,
+                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj)
           throws IOException, TException {
     List<Task<? extends Serializable>> taskList = new ArrayList<>();
     taskList.add(childTask);
@@ -157,11 +158,11 @@ public class ReplUtils {
                       null, conf, null, true);
       if (migrationOption == MANAGED) {
         //if conversion to managed table.
-        Task<? extends Serializable> replTxnTaskTask =
-                TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName), conf);
-        replTxnTaskTask.addDependentTask(childTask);
+        Task<? extends Serializable> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
+                        ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), conf);
+        replTxnTask.addDependentTask(childTask);
         updatedMetaDataTracker.setNeedCommitTxn(true);
-        taskList.add(replTxnTaskTask);
+        taskList.add(replTxnTask);
       }
     }
     return taskList;

@@ -560,7 +560,7 @@ public class Table implements Serializable {
 
   public void setDataLocation(Path path) {
     this.path = path;
-    tTable.getSd().setLocation(path.toString());
+    tTable.getSd().setLocation(path == null ? null : path.toString());
   }
 
   public void unsetDataLocation() {

@@ -25,9 +25,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.exec.ReplTxnTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
@@ -37,12 +35,8 @@ import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -74,8 +68,8 @@ import java.util.HashSet;
 public class IncrementalLoadTasksBuilder {
   private final String dbName, tableName;
   private final IncrementalLoadEventsIterator iterator;
-  private HashSet<ReadEntity> inputs;
-  private HashSet<WriteEntity> outputs;
+  private final HashSet<ReadEntity> inputs;
+  private final HashSet<WriteEntity> outputs;
   private Logger log;
   private final HiveConf conf;
   private final ReplLogger replLogger;
@@ -98,14 +92,13 @@ public class IncrementalLoadTasksBuilder {
   }
 
   public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
-                                            ReplLoadWork loadWork) throws Exception {
+      ReplLoadWork loadWork, TaskTracker tracker) throws Exception {
     Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
     Task<? extends Serializable> taskChainTail = evTaskRoot;
     Long lastReplayedEvent = null;
     this.log = log;
     numIteration++;
     this.log.debug("Iteration num " + numIteration);
-    TaskTracker tracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
 
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();
@@ -159,10 +152,7 @@ public class IncrementalLoadTasksBuilder {
       lastReplayedEvent = eventDmd.getEventTo();
     }
 
-    if (iterator.hasNext()) {
-      // add load task to start the next iteration
-      taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
-    } else {
+    if (!hasMoreWork()) {
       // if no events were replayed, then add a task to update the last repl id of the database/table to last event id.
       if (taskChainTail == evTaskRoot) {
         String lastEventid = eventTo.toString();
@@ -183,10 +173,15 @@ public class IncrementalLoadTasksBuilder {
       this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
               taskChainTail.getClass(), taskChainTail.getId(),
               barrierTask.getClass(), barrierTask.getId());
+      if (loadWork.getPathsToCopyIterator().hasNext()) {
+        taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
+      }
     }
-    log.info("Iteration " + numIteration + " done with num task : " +
-            tracker.numberOfTasks() + ", lastReplayedEvent : " + lastReplayedEvent);
     return evTaskRoot;
+  }
+
+  public boolean hasMoreWork() {
+    return iterator.hasNext();
   }
 
   private boolean isEventNotReplayed(Map<String, String> params, FileStatus dir, DumpType dumpType) {
@@ -246,25 +241,27 @@ public class IncrementalLoadTasksBuilder {
   }
 
   private Task<? extends Serializable> getMigrationCommitTxnTask(String dbName, String tableName,
-                                                                 List<Map <String, String>> partSpec, String replState,
-                                                                 boolean needUpdateDBReplId,
-                                                                 Task<? extends Serializable> preCursor)
-          throws SemanticException {
+                                                    List<Map <String, String>> partSpec, String replState,
+                                                    boolean needUpdateDBReplId,
+                                                    Task<? extends Serializable> preCursor) throws SemanticException {
     ReplLastIdInfo replLastIdInfo = new ReplLastIdInfo(dbName, Long.parseLong(replState));
     replLastIdInfo.setTable(tableName);
     replLastIdInfo.setNeedUpdateDBReplId(needUpdateDBReplId);
     if (partSpec != null && !partSpec.isEmpty()) {
       List<String> partitionList = new ArrayList<>();
-      for (Map<String, String> part : partSpec) {
+      for (Map <String, String> part : partSpec) {
         try {
           partitionList.add(Warehouse.makePartName(part, false));
         } catch (MetaException e) {
           throw new SemanticException(e.getMessage());
         }
       }
+      replLastIdInfo.setPartitionList(partitionList);
     }
 
-    Task<? extends Serializable> updateReplIdTxnTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo), conf);
+    Task<? extends Serializable> updateReplIdTxnTask = TaskFactory.get(new ReplTxnWork(replLastIdInfo, ReplTxnWork
+            .OperationType.REPL_MIGRATION_COMMIT_TXN), conf);
+
     if (preCursor != null) {
       preCursor.addDependentTask(updateReplIdTxnTask);
       log.debug("Added {}:{} as a precursor of {}:{}", preCursor.getClass(), preCursor.getId(),
@@ -325,8 +322,10 @@ public class IncrementalLoadTasksBuilder {
 
     boolean needCommitTx = updatedMetaDataTracker.isNeedCommitTxn();
     // In migration flow, we should have only one table update per event.
-    if (needCommitTx && updatedMetaDataTracker.getUpdateMetaDataList().size() > 1) {
-      throw new SemanticException(" more than one table is updated in an event during migration.");
+    if (needCommitTx) {
+      // currently, only commit txn event can have updates in multiple table. Commit txn does not starts
+      // a txn and thus needCommitTx must have set to false.
+      assert updatedMetaDataTracker.getUpdateMetaDataList().size() <= 1;
     }
 
     // Create a barrier task for dependency collection of import tasks
@@ -335,7 +334,6 @@ public class IncrementalLoadTasksBuilder {
     List<Task<? extends Serializable>> tasks = new ArrayList<>();
     Task<? extends Serializable> updateReplIdTask;
 
-    // If any partition is updated, then update repl state in partition object
     for (UpdatedMetaDataTracker.UpdateMetaData updateMetaData : updatedMetaDataTracker.getUpdateMetaDataList()) {
       String replState = updateMetaData.getReplState();
       String dbName = updateMetaData.getDbName();

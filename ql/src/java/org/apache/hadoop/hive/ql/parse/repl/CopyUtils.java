@@ -26,13 +26,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 
 import javax.security.auth.login.LoginException;
 import java.io.FileNotFoundException;
@@ -49,7 +49,7 @@ public class CopyUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(CopyUtils.class);
   // https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
-  private static final String RAW_RESERVED_VIRTUAL_PATH = "/.reserved/raw/";
+  public static final String RAW_RESERVED_VIRTUAL_PATH = "/.reserved/raw/";
   private static final int MAX_COPY_RETRY = 5;
 
   private final HiveConf hiveConf;

@@ -29,8 +29,8 @@ import javax.security.auth.login.LoginException;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -57,8 +57,8 @@ public class FileOperations {
   private final Path exportRootDataDir;
   private final String distCpDoAsUser;
   private HiveConf hiveConf;
+  private FileSystem exportFileSystem, dataFileSystem;
   private final MmContext mmCtx;
-  private FileSystem dataFileSystem, exportFileSystem;
 
   public FileOperations(List<Path> dataPathList, Path exportRootDataDir, String distCpDoAsUser,
       HiveConf hiveConf, MmContext mmCtx) throws IOException {
@@ -139,7 +139,6 @@ public class FileOperations {
       }
     }
   }
-
 
   /**
    * This needs the root data directory to which the data needs to be exported to.

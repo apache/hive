@@ -182,11 +182,13 @@ public class Utils {
     }
 
     if (replicationSpec.isInReplicationScope()) {
-      if (!hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) &&
-              MetaStoreUtils.isExternalTable(tableHandle.getTTable()) && !replicationSpec.isMetadataOnly()) {
+      if (tableHandle.isTemporary()) {
         return false;
       }
-      return !tableHandle.isTemporary();
+
+      if (MetaStoreUtils.isExternalTable(tableHandle.getTTable())) {
+        return hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) || replicationSpec.isMetadataOnly();
+      }
     }
     return true;
   }

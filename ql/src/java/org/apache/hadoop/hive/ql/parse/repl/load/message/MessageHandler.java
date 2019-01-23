@@ -89,6 +89,10 @@ public interface MessageHandler {
       return StringUtils.isEmpty(dbName);
     }
 
+    /**
+     * not sure why we have this, this should always be read from the _metadata file via the
+     * {@link org.apache.hadoop.hive.ql.parse.repl.load.MetadataJson#readReplicationSpec}
+     */
     ReplicationSpec eventOnlyReplicationSpec() throws SemanticException {
       String eventId = dmd.getEventTo().toString();
       return new ReplicationSpec(eventId, eventId);

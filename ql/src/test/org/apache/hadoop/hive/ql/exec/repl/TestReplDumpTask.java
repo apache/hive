@@ -21,6 +21,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,9 +46,11 @@ import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ Utils.class })
+@PrepareForTest({ Utils.class, ReplDumpTask.class})
 @PowerMockIgnore({ "javax.management.*" })
 public class TestReplDumpTask {
 
@@ -111,12 +115,17 @@ public class TestReplDumpTask {
     when(hive.getAllFunctions()).thenReturn(Collections.emptyList());
     when(queryState.getConf()).thenReturn(conf);
     when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
+    when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
+
+    whenNew(Writer.class).withAnyArguments().thenReturn(mock(Writer.class));
+    whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
 
     ReplDumpTask task = new StubReplDumpTask() {
       private int tableDumpCount = 0;
 
       @Override
-      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot, long lastReplId, Hive hiveDb)
+      void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot,
+          long lastReplId, Hive hiveDb, HiveWrapper.Tuple<Table> tuple)
           throws Exception {
         tableDumpCount++;
         if (tableDumpCount > 1) {

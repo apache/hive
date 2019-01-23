@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -58,8 +57,6 @@ import org.codehaus.plexus.util.ExceptionUtils;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -75,19 +72,17 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class WarehouseInstance implements Closeable {
-  final String functionsRoot;
+  final String functionsRoot, repldDir;
   private Logger logger;
   private IDriver driver;
   HiveConf hiveConf;
   MiniDFSCluster miniDFSCluster;
   private HiveMetaStoreClient client;
-  public final Path warehouseRoot;
-  public final Path externalTableWarehouseRoot;
-  public Path avroSchemaFile;
+  final Path warehouseRoot;
+  final Path externalTableWarehouseRoot;
 
   private static int uniqueIdentifier = 0;
 
-  private final static String AVRO_SCHEMA_FILE_NAME = "avro_table.avsc";
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
 
   WarehouseInstance(Logger logger, MiniDFSCluster cluster, Map<String, String> overridesForHiveConf,
@@ -106,27 +101,28 @@ public class WarehouseInstance implements Closeable {
     }
     Path cmRootPath = mkDir(fs, "/cmroot" + uniqueIdentifier);
     this.functionsRoot = mkDir(fs, "/functions" + uniqueIdentifier).toString();
-    initialize(cmRootPath.toString(), warehouseRoot.toString(), externalTableWarehouseRoot.toString(),
-            overridesForHiveConf);
+    String tmpDir = "/tmp/"
+        + TestReplicationScenarios.class.getCanonicalName().replace('.', '_')
+        + "_"
+        + System.nanoTime();
+
+    this.repldDir = mkDir(fs, tmpDir + "/hrepl" + uniqueIdentifier + "/").toString();
+    initialize(cmRootPath.toString(), externalTableWarehouseRoot.toString(),
+        warehouseRoot.toString(), overridesForHiveConf);
   }
 
-  public WarehouseInstance(Logger logger, MiniDFSCluster cluster,
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster,
       Map<String, String> overridesForHiveConf) throws Exception {
     this(logger, cluster, overridesForHiveConf, null);
   }
 
-  private void initialize(String cmRoot, String warehouseRoot, String externalTableWarehouseRoot,
+  private void initialize(String cmRoot, String externalTableWarehouseRoot, String warehouseRoot,
       Map<String, String> overridesForHiveConf) throws Exception {
     hiveConf = new HiveConf(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
     for (Map.Entry<String, String> entry : overridesForHiveConf.entrySet()) {
       hiveConf.set(entry.getKey(), entry.getValue());
     }
     String metaStoreUri = System.getProperty("test." + HiveConf.ConfVars.METASTOREURIS.varname);
-    String hiveWarehouseLocation = System.getProperty("test.warehouse.dir", "/tmp")
-        + Path.SEPARATOR
-        + TestReplicationScenarios.class.getCanonicalName().replace('.', '_')
-        + "_"
-        + System.nanoTime();
     if (metaStoreUri != null) {
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, metaStoreUri);
       return;
@@ -143,8 +139,7 @@ public class WarehouseInstance implements Closeable {
     hiveConf.setVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR, functionsRoot);
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
         "jdbc:derby:memory:${test.tmp.dir}/APP;create=true");
-    hiveConf.setVar(HiveConf.ConfVars.REPLDIR,
-        hiveWarehouseLocation + "/hrepl" + uniqueIdentifier + "/");
+    hiveConf.setVar(HiveConf.ConfVars.REPLDIR, this.repldDir);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -156,14 +151,8 @@ public class WarehouseInstance implements Closeable {
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
-    HiveConf hiveConfCopy = new HiveConf(hiveConf);
-    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConfCopy);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
 
-    Path testPath = new Path(hiveWarehouseLocation);
-    FileSystem testPathFileSystem = FileSystem.get(testPath.toUri(), hiveConf);
-    testPathFileSystem.mkdirs(testPath);
-
-    avroSchemaFile = createAvroSchemaFile(testPathFileSystem, testPath);
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
@@ -178,51 +167,8 @@ public class WarehouseInstance implements Closeable {
   private Path mkDir(DistributedFileSystem fs, String pathString)
       throws IOException, SemanticException {
     Path path = new Path(pathString);
-    fs.mkdir(path, new FsPermission("777"));
+    fs.mkdirs(path, new FsPermission("777"));
     return PathBuilder.fullyQualifiedHDFSUri(path, fs);
-  }
-
-  private Path createAvroSchemaFile(FileSystem fs, Path testPath) throws IOException {
-    Path schemaFile = new Path(testPath, AVRO_SCHEMA_FILE_NAME);
-    String[] schemaVals = new String[] { "{",
-                                         "  \"type\" : \"record\",",
-                                         "  \"name\" : \"table1\",",
-                                         "  \"doc\" : \"Sqoop import of table1\",",
-                                         "  \"fields\" : [ {",
-                                         "    \"name\" : \"col1\",",
-                                         "    \"type\" : [ \"null\", \"string\" ],",
-                                         "    \"default\" : null,",
-                                         "    \"columnName\" : \"col1\",",
-                                         "    \"sqlType\" : \"12\"",
-                                         "  }, {",
-                                         "    \"name\" : \"col2\",",
-                                         "    \"type\" : [ \"null\", \"long\" ],",
-                                         "    \"default\" : null,",
-                                         "    \"columnName\" : \"col2\",",
-                                         "    \"sqlType\" : \"13\"",
-                                         "  } ],",
-                                         "  \"tableName\" : \"table1\"",
-                                         "}"
-    };
-    createTestDataFile(schemaFile.toUri().getPath(), schemaVals);
-    return schemaFile;
-  }
-
-  private void createTestDataFile(String filename, String[] lines) throws IOException {
-    FileWriter writer = null;
-    try {
-      File file = new File(filename);
-      file.deleteOnExit();
-      writer = new FileWriter(file);
-      int i=0;
-      for (String line : lines) {
-        writer.write(line + "\n");
-      }
-    } finally {
-      if (writer != null) {
-        writer.close();
-      }
-    }
   }
 
   public HiveConf getConf() {
@@ -471,10 +417,6 @@ public class WarehouseInstance implements Closeable {
     return new ReplicationV1CompatRule(client, hiveConf, testsToSkip);
   }
 
-  public boolean isAcidEnabled() {
-    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
-  }
-
   // Test if the number of events between the given event ids and with the given database name are
   // same as expected. toEventId = 0 is treated as unbounded. Same is the case with limit 0.
   public void testEventCounts(String dbName, long fromEventId, Long toEventId, Integer limit,
@@ -489,6 +431,10 @@ public class WarehouseInstance implements Closeable {
     }
 
     assertEquals(expectedCount, client.getNotificationEventsCount(rqst).getEventsCount());
+  }
+
+  public boolean isAcidEnabled() {
+    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
   }
 
   @Override

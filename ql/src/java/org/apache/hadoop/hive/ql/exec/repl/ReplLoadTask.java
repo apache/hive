@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
@@ -44,7 +45,6 @@ import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -126,15 +126,15 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           loadTaskTracker.update(dbTracker);
           if (work.hasDbState()) {
             loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
+          }  else {
+            // Scope might have set to database in some previous iteration of loop, so reset it to false if database
+            // tracker has no tasks.
+            scope.database = false;
           }
           work.updateDbEventState(dbEvent.toState());
           if (dbTracker.hasTasks()) {
             scope.rootTasks.addAll(dbTracker.tasks());
             scope.database = true;
-          } else {
-            // Scope might have set to database in some previous iteration of loop, so reset it to false if database
-            // tracker has no tasks.
-            scope.database = false;
           }
           dbTracker.debugLog("database");
           break;
@@ -228,8 +228,16 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           createEndReplLogTask(context, scope, iterator.replLogger());
         }
       }
-      boolean addAnotherLoadTask = iterator.hasNext() || loadTaskTracker.hasReplicationState()
-          || constraintIterator.hasNext();
+
+      if (loadTaskTracker.canAddMoreTasks()) {
+        scope.rootTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(loadTaskTracker));
+      }
+
+      boolean addAnotherLoadTask = iterator.hasNext()
+          || loadTaskTracker.hasReplicationState()
+          || constraintIterator.hasNext()
+          || work.getPathsToCopyIterator().hasNext();
+
       if (addAnotherLoadTask) {
         createBuilderTask(scope.rootTasks);
       }
@@ -300,7 +308,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private void partitionsPostProcessing(BootstrapEventsIterator iterator,
       Scope scope, TaskTracker loadTaskTracker, TaskTracker tableTracker,
-      TaskTracker partitionsTracker) throws SemanticException {
+      TaskTracker partitionsTracker) {
     setUpDependencies(tableTracker, partitionsTracker);
     if (!scope.database && !scope.table) {
       scope.rootTasks.addAll(partitionsTracker.tasks());
@@ -343,8 +351,43 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private int executeIncrementalLoad(DriverContext driverContext) {
     try {
-      IncrementalLoadTasksBuilder load = work.getIncrementalLoadTaskBuilder();
-      this.childTasks = Collections.singletonList(load.build(driverContext, getHive(), LOG, work));
+      List<Task<? extends Serializable>> childTasks = new ArrayList<>();
+      int parallelism = conf.getIntVar(HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
+      // during incremental we will have no parallelism from replication tasks since they are event based
+      // and hence are linear. To achieve prallelism we have to use copy tasks(which have no DAG) for
+      // all threads except one, in execution phase.
+      int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
+      IncrementalLoadTasksBuilder builder = work.getIncrementalLoadTaskBuilder();
+
+      // If the total number of tasks that can be created are less than the parallelism we can achieve
+      // do nothing since someone is working on 1950's machine. else try to achieve max parallelism
+      int calculatedMaxNumOfTasks = 0, maxNumOfHDFSTasks = 0;
+      if (maxTasks <= parallelism) {
+        if (builder.hasMoreWork()) {
+          calculatedMaxNumOfTasks = maxTasks;
+        } else {
+          maxNumOfHDFSTasks = maxTasks;
+        }
+      } else {
+        calculatedMaxNumOfTasks = maxTasks - parallelism + 1;
+        maxNumOfHDFSTasks = parallelism - 1;
+      }
+      TaskTracker trackerForReplIncremental = new TaskTracker(calculatedMaxNumOfTasks);
+      Task<? extends Serializable> incrementalLoadTaskRoot =
+          builder.build(driverContext, getHive(), LOG, work, trackerForReplIncremental);
+      // we are adding the incremental task first so that its always processed first,
+      // followed by dir copy tasks if capacity allows.
+      childTasks.add(incrementalLoadTaskRoot);
+
+      TaskTracker trackerForCopy = new TaskTracker(maxNumOfHDFSTasks);
+      childTasks
+          .addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(trackerForCopy));
+
+      // either the incremental has more work or the external table file copy has more paths to process
+      if (builder.hasMoreWork() || work.getPathsToCopyIterator().hasNext()) {
+        DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
+      }
+      this.childTasks = childTasks;
       return 0;
     } catch (Exception e) {
       LOG.error("failed replication", e);

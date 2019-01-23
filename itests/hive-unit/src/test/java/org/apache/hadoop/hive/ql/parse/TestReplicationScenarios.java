@@ -18,11 +18,11 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -52,56 +51,54 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
-import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.authorize.ProxyUsers;
-import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import javax.annotation.Nullable;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenarios {
 
@@ -116,19 +113,15 @@ public class TestReplicationScenarios {
   private final static String TEST_PATH =
       System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
 
-  private static HiveConf hconf;
+  static HiveConf hconf;
+  static HiveMetaStoreClient metaStoreClient;
   private static IDriver driver;
-  private static HiveMetaStoreClient metaStoreClient;
   private static String proxySettingName;
-  static HiveConf hconfMirror;
-  static IDriver driverMirror;
-  static HiveMetaStoreClient metaStoreClientMirror;
-  static private boolean isMigrationTest;
+  private static HiveConf hconfMirror;
+  private static IDriver driverMirror;
+  private static HiveMetaStoreClient metaStoreClientMirror;
+  private static boolean isMigrationTest;
 
-  @Rule
-  public TestRule replV1BackwardCompatibleRule =
-      new ReplicationV1CompatRule(metaStoreClient, hconf,
-          new ArrayList<>(Arrays.asList("testEventFilters")));
   // Make sure we skip backward-compat checking for those tests that don't generate events
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
@@ -143,46 +136,51 @@ public class TestReplicationScenarios {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    internalBeforeClassSetup(false);
+    HashMap<String, String> overrideProperties = new HashMap<>();
+    internalBeforeClassSetup(overrideProperties, false);
   }
 
-  static void internalBeforeClassSetup(boolean forMigration) throws Exception {
+  static void internalBeforeClassSetup(Map<String, String> additionalProperties, boolean forMigration)
+      throws Exception {
     hconf = new HiveConf(TestReplicationScenarios.class);
-    String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTOREURIS.varname);
+    String metastoreUri = System.getProperty("test."+MetastoreConf.ConfVars.THRIFT_URIS.getHiveName());
     if (metastoreUri != null) {
-      hconf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
+      hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
       return;
     }
-
     isMigrationTest = forMigration;
 
-    hconf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
-            DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
+    hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
+        DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
     hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
     proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
     hconf.set(proxySettingName, "*");
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
-    hconf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+    hconf.set(MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES.getHiveName(), "3");
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hconf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
-            "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+        "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
-            "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
+        "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
+    additionalProperties.forEach((key, value) -> {
+      hconf.set(key, value);
+    });
+
+    MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
+
     Path testPath = new Path(TEST_PATH);
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
     fs.mkdirs(testPath);
-
     driver = DriverFactory.newDriver(hconf);
     SessionState.start(new CliSessionState(hconf));
     metaStoreClient = new HiveMetaStoreClient(hconf);
@@ -198,16 +196,14 @@ public class TestReplicationScenarios {
     if (forMigration) {
       hconfMirror.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES, true);
       hconfMirror.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
-      hconfMirror.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-      isMigrationTest = true;
+      hconfMirror.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
+              "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     }
-
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
     ObjectStore.setTwoMetastoreTesting(true);
   }
-
 
   @AfterClass
   public static void tearDownAfterClass(){
@@ -392,9 +388,10 @@ public class TestReplicationScenarios {
     HiveConf confTemp = new HiveConf();
     confTemp.set("hive.repl.enable.move.optimization", "true");
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, tuple.dumpLocation, replicadb,
-            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId));
+            null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
+        Collections.emptyList());
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
-    replLoadTask.initialize(null, null, new DriverContext(new Context(driverMirror.getConf())), null);
+    replLoadTask.initialize(null, null, new DriverContext(driver.getContext()), null);
     replLoadTask.executeTask(null);
     Hive.closeCurrent();
     return replLoadWork.getRootTask();
@@ -1575,6 +1572,7 @@ public class TestReplicationScenarios {
       // we will get two records.
       verifyRun("SELECT a from " + replDbName + ".unptned",
               new String[]{unptn_data[0], unptn_data[0]}, driverMirror);
+
     } else {
       verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data[0], driverMirror);
     }
@@ -2685,13 +2683,15 @@ public class TestReplicationScenarios {
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
     run("ALTER TABLE " + dbName + ".unptned CONCATENATE", driver);
 
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
+
     // Replicate all the events happened after bootstrap
     Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
-    if (isMigrationTest) {
-      //CONCATENATE is failing at source with no merge happening. The map tasks are not generating any merge file.
-      return;
+
+    // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
+    if (!isMigrationTest) {
+      verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
     }
-    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
   }
 
   @Test
@@ -2720,12 +2720,12 @@ public class TestReplicationScenarios {
 
     // Replicate all the events happened so far
     Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
-    if (isMigrationTest) {
-      //CONCATENATE is failing at source with no merge happening. The map tasks are not generating any merge file.
-      return;
+
+    // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
+    if (!isMigrationTest) {
+      verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+      verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
     }
-    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
-    verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
   }
 
   @Test

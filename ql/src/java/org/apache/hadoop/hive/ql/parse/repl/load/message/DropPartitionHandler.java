@@ -41,8 +41,7 @@ public class DropPartitionHandler extends AbstractMessageHandler {
       String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
       String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
       Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
-          ReplUtils.genPartSpecs(new Table(msg.getTableObj()),
-              msg.getPartitions());
+          ReplUtils.genPartSpecs(new Table(msg.getTableObj()), msg.getPartitions());
       if (partSpecs.size() > 0) {
         DropTableDesc dropPtnDesc = new DropTableDesc(actualDbName + "." + actualTblName,
             partSpecs, null, true, context.eventOnlyReplicationSpec());
@@ -52,8 +51,7 @@ public class DropPartitionHandler extends AbstractMessageHandler {
         context.log.debug("Added drop ptn task : {}:{},{}", dropPtnTask.getId(),
             dropPtnDesc.getTableName(), msg.getPartitions());
         updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
-        return ReplUtils.addOpenTxnTaskForMigration(actualDbName, actualTblName,
-                context.hiveConf, updatedMetadata, dropPtnTask, msg.getTableObj());
+        return Collections.singletonList(dropPtnTask);
       } else {
         throw new SemanticException(
             "DROP PARTITION EVENT does not return any part descs for event message :"
