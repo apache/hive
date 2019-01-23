@@ -764,7 +764,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
-                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
