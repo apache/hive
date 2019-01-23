@@ -643,7 +643,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p
-                  filterExpr: (p_type is not null or p_type is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
