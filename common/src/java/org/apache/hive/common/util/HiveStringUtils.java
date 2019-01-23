@@ -510,32 +510,40 @@ public class HiveStringUtils {
   }
 
   /**
-   * In a given string of comma-separated key=value pairs insert a new value of a given key
+   * In a given string of comma-separated key=value pairs associates the specified value with
+   * the specified key.
+   * If the `string` previously contained a mapping for the key, the old value is replaced.
    *
-   * @param key The key whose value needs to be replaced
-   * @param newValue The new value of the key
+   * @param key key with which the specified value is to be associated
+   * @param value value to be associated with the specified key
    * @param strKvPairs Comma separated key=value pairs Eg: "k1=v1, k2=v2, k3=v3"
-   * @return Comma separated string of key=value pairs with the new value for key keyName
+   * @return Updated comma separated string of key=value pairs
    */
-  public static String insertValue(String key, String newValue,
-      String strKvPairs) {
+  public static String insertValue(String key, String value, String strKvPairs) {
+    boolean keyNotFound = true;
+
     String[] keyValuePairs = HiveStringUtils.split(strKvPairs);
     StringBuilder sb = new StringBuilder();
+
     for (int i = 0; i < keyValuePairs.length; i++) {
       String[] pair = HiveStringUtils.split(keyValuePairs[i], ESCAPE_CHAR, EQUALS);
       if (pair.length != 2) {
         throw new RuntimeException("Error parsing the keyvalue pair " + keyValuePairs[i]);
       }
-      sb.append(pair[0]);
-      sb.append(EQUALS);
+      sb.append(pair[0]).append(EQUALS);
       if (pair[0].equals(key)) {
-        sb.append(newValue);
+        sb.append(value);
+        keyNotFound = false;
       } else {
         sb.append(pair[1]);
       }
-      if (i < (keyValuePairs.length - 1)) {
+      if (i < (keyValuePairs.length - 1) || keyNotFound) {
         sb.append(COMMA);
       }
+    }
+
+    if (keyNotFound) {
+      sb.append(key).append(EQUALS).append(value);
     }
     return sb.toString();
   }
