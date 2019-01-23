@@ -297,13 +297,13 @@ public class SubQueryUtils {
     return r;
   }
 
-  static List<String> getTableAliasesInSubQuery(ASTNode fromClause) {
+  static List<String> getTableAliasesInSubQuery(ASTNode fromClause) throws SemanticException {
     List<String> aliases = new ArrayList<String>();
     getTableAliasesInSubQuery((ASTNode) fromClause.getChild(0), aliases);
     return aliases;
   }
 
-  private static void getTableAliasesInSubQuery(ASTNode joinNode, List<String> aliases) {
+  private static void getTableAliasesInSubQuery(ASTNode joinNode, List<String> aliases) throws SemanticException {
 
     if ((joinNode.getToken().getType() == HiveParser.TOK_TABREF)
         || (joinNode.getToken().getType() == HiveParser.TOK_SUBQUERY)
@@ -324,7 +324,7 @@ public class SubQueryUtils {
       getTableAliasesInSubQuery(right, aliases);
     }
   }
-  
+
   static ASTNode hasUnQualifiedColumnReferences(ASTNode ast) {
     int type = ast.getType();
     if ( type == HiveParser.DOT ) {
@@ -333,7 +333,7 @@ public class SubQueryUtils {
     else if ( type == HiveParser.TOK_TABLE_OR_COL ) {
       return ast;
     }
-    
+
     for(int i=0; i < ast.getChildCount(); i++ ) {
       ASTNode c = hasUnQualifiedColumnReferences((ASTNode) ast.getChild(i));
       if ( c != null ) {
@@ -368,7 +368,7 @@ public class SubQueryUtils {
     }
     return ast;
   }
-  
+
   static ASTNode subQueryWhere(ASTNode insertClause) {
     if (insertClause.getChildCount() > 2 &&
         insertClause.getChild(2).getType() == HiveParser.TOK_WHERE ) {
@@ -502,15 +502,15 @@ public class SubQueryUtils {
    * This Subquery is joined with the Outer Query plan on the join condition 'c = 0'.
    * The join condition ensures that in case there are null values in the joining column
    * the Query returns no rows.
-   * 
+   *
    * The AST tree for this is:
-   * 
+   *
    * ^(TOK_QUERY
    *    ^(TOK FROM
    *        ^(TOK_SUBQUERY
    *            {the input SubQuery, with correlation removed}
-   *            subQueryAlias 
-   *          ) 
+   *            subQueryAlias
+   *          )
    *     )
    *     ^(TOK_INSERT
    *         ^(TOK_DESTINATION...)
@@ -518,51 +518,51 @@ public class SubQueryUtils {
    *             ^(TOK_SELECTEXPR {ast tree for count *}
    *          )
    *          ^(TOK_WHERE
-   *             {is null check for joining column} 
+   *             {is null check for joining column}
    *           )
    *      )
    * )
-   */  
-  static ASTNode buildNotInNullCheckQuery(ASTNode subQueryAST, 
-      String subQueryAlias, 
+   */
+  static ASTNode buildNotInNullCheckQuery(ASTNode subQueryAST,
+      String subQueryAlias,
       String cntAlias,
       List<ASTNode> corrExprs,
       RowResolver sqRR) {
-    
+
     subQueryAST = (ASTNode) ParseDriver.adaptor.dupTree(subQueryAST);
-    ASTNode qry = (ASTNode) 
+    ASTNode qry = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_QUERY, "TOK_QUERY");
-    
+
     qry.addChild(buildNotInNullCheckFrom(subQueryAST, subQueryAlias));
     ASTNode insertAST = buildNotInNullCheckInsert();
     qry.addChild(insertAST);
     insertAST.addChild(buildNotInNullCheckSelect(cntAlias));
-    insertAST.addChild(buildNotInNullCheckWhere(subQueryAST, 
+    insertAST.addChild(buildNotInNullCheckWhere(subQueryAST,
         subQueryAlias, corrExprs, sqRR));
-    
+
     return qry;
   }
-  
+
   /*
    * build:
    *    ^(TOK FROM
    *        ^(TOK_SUBQUERY
    *            {the input SubQuery, with correlation removed}
-   *            subQueryAlias 
-   *          ) 
+   *            subQueryAlias
+   *          )
    *     )
 
    */
   static ASTNode buildNotInNullCheckFrom(ASTNode subQueryAST, String subQueryAlias) {
     ASTNode from = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FROM, "TOK_FROM");
-    ASTNode sqExpr = (ASTNode) 
+    ASTNode sqExpr = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY");
     sqExpr.addChild(subQueryAST);
     sqExpr.addChild(createAliasAST(subQueryAlias));
     from.addChild(sqExpr);
     return from;
   }
-  
+
   /*
    * build
    *     ^(TOK_INSERT
@@ -570,21 +570,21 @@ public class SubQueryUtils {
    *      )
    */
   static ASTNode buildNotInNullCheckInsert() {
-    ASTNode insert = (ASTNode) 
+    ASTNode insert = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_INSERT, "TOK_INSERT");
-    ASTNode dest = (ASTNode) 
+    ASTNode dest = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_DESTINATION, "TOK_DESTINATION");
-    ASTNode dir = (ASTNode) 
+    ASTNode dir = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_DIR, "TOK_DIR");
-    ASTNode tfile = (ASTNode) 
+    ASTNode tfile = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_TMP_FILE, "TOK_TMP_FILE");
     insert.addChild(dest);
     dest.addChild(dir);
     dir.addChild(tfile);
-    
+
     return insert;
   }
-  
+
   /*
    * build:
    *         ^(TOK_SELECT
@@ -592,37 +592,37 @@ public class SubQueryUtils {
    *          )
    */
   static ASTNode buildNotInNullCheckSelect(String cntAlias) {
-    ASTNode select = (ASTNode) 
+    ASTNode select = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_SELECT, "TOK_SELECT");
-    ASTNode selectExpr = (ASTNode) 
+    ASTNode selectExpr = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
-    ASTNode countStar = (ASTNode) 
+    ASTNode countStar = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONSTAR, "TOK_FUNCTIONSTAR");
     ASTNode alias = (createAliasAST(cntAlias));
-    
+
     countStar.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "count"));
     select.addChild(selectExpr);
     selectExpr.addChild(countStar);
     selectExpr.addChild(alias);
-    
+
     return select;
   }
-  
+
   /*
    * build:
    *          ^(TOK_WHERE
-   *             {is null check for joining column} 
+   *             {is null check for joining column}
    *           )
    */
-  static ASTNode buildNotInNullCheckWhere(ASTNode subQueryAST, 
-      String sqAlias, 
+  static ASTNode buildNotInNullCheckWhere(ASTNode subQueryAST,
+      String sqAlias,
       List<ASTNode> corrExprs,
       RowResolver sqRR) {
-    
+
     ASTNode sqSelect = (ASTNode) subQueryAST.getChild(1).getChild(1);
     ASTNode selExpr = (ASTNode) sqSelect.getChild(0);
     String colAlias = null;
-    
+
     if ( selExpr.getChildCount() == 2 ) {
       colAlias = selExpr.getChild(1).getText();
     } else if (selExpr.getChild(0).getType() != HiveParser.TOK_ALLCOLREF) {
@@ -634,29 +634,29 @@ public class SubQueryUtils {
       String[] joinColName = sqRR.reverseLookup(joinColumn.getInternalName());
       colAlias = joinColName[1];
     }
-    
+
     ASTNode searchCond = isNull(createColRefAST(sqAlias, colAlias));
-    
+
     for(ASTNode e : corrExprs ) {
       ASTNode p = (ASTNode) ParseDriver.adaptor.dupTree(e);
-      p = isNull(p);      
-      searchCond = orAST(searchCond, p);      
+      p = isNull(p);
+      searchCond = orAST(searchCond, p);
     }
-    
+
     ASTNode where = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_WHERE, "TOK_WHERE");
     where.addChild(searchCond);
     return where;
   }
-  
+
   static ASTNode buildNotInNullJoinCond(String subqueryAlias, String cntAlias) {
-    
-    ASTNode eq = (ASTNode) 
+
+    ASTNode eq = (ASTNode)
         ParseDriver.adaptor.create(HiveParser.EQUAL, "=");
-    
+
     eq.addChild(createColRefAST(subqueryAlias, cntAlias));
-    eq.addChild((ASTNode) 
+    eq.addChild((ASTNode)
         ParseDriver.adaptor.create(HiveParser.Number, "0"));
-    
+
     return eq;
   }
 
@@ -716,7 +716,7 @@ public class SubQueryUtils {
       }
     }
   }
-  
+
   public static interface ISubQueryJoinInfo {
     public String getAlias();
     public JoinType getJoinType();
@@ -726,7 +726,7 @@ public class SubQueryUtils {
     public String getOuterQueryId();
   };
 
-    
+
   /*
    * Using CommonTreeAdaptor because the Adaptor in ParseDriver doesn't carry
    * the token indexes when duplicating a Tree.
