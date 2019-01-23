@@ -21,11 +21,11 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -77,6 +78,14 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private ColumnStatistics constructColumnStatsFromInput()
       throws SemanticException, MetaException {
 
+    // If we are replicating the stats, we don't need to construct those again.
+    if (work.getColStats() != null) {
+      ColumnStatistics colStats = work.getColStats();
+      LOG.debug("Got stats through replication for " +
+              colStats.getStatsDesc().getDbName() + "." +
+              colStats.getStatsDesc().getTableName());
+      return colStats;
+    }
     String dbName = work.dbName();
     String tableName = work.getTableName();
     String partName = work.getPartName();
@@ -287,9 +296,22 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   }
 
   private int persistColumnStats(Hive db) throws HiveException, MetaException, IOException {
-    List<ColumnStatistics> colStats = new ArrayList<>();
-    colStats.add(constructColumnStatsFromInput());
-    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
+    ColumnStatistics colStats = constructColumnStatsFromInput();
+    ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
+    // We do not support stats replication for a transactional table yet. If we are converting
+    // a non-transactional table to a transactional table during replication, we might get
+    // column statistics but we shouldn't update those.
+    if (work.getColStats() != null &&
+        AcidUtils.isTransactionalTable(getHive().getTable(colStatsDesc.getDbName(),
+                                                          colStatsDesc.getTableName()))) {
+      LOG.debug("Skipped updating column stats for table " +
+                TableName.getDbTable(colStatsDesc.getDbName(), colStatsDesc.getTableName()) +
+                " because it is converted to a transactional table during replication.");
+      return 0;
+    }
+
+    SetPartitionsStatsRequest request =
+            new SetPartitionsStatsRequest(Collections.singletonList(colStats));
     db.setPartitionColumnStatistics(request);
     return 0;
   }

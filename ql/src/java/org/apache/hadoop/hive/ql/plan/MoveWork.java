@@ -56,6 +56,7 @@ public class MoveWork implements Serializable {
    */
   protected List<Partition> movedParts;
   private boolean isNoop;
+  private boolean isInReplicationScope = false;
 
   public MoveWork() {
   }
@@ -163,5 +164,13 @@ public class MoveWork implements Serializable {
 
   public void setNeedCleanTarget(boolean needCleanTarget) {
     this.needCleanTarget = needCleanTarget;
+  }
+
+  public void setIsInReplicationScope(boolean isInReplicationScope) {
+    this.isInReplicationScope = isInReplicationScope;
+  }
+
+  public boolean getIsInReplicationScope() {
+    return this.isInReplicationScope;
   }
 }

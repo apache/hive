@@ -72,9 +72,11 @@ public class TableExport {
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) || (this.tableSpec != null
-        && this.tableSpec.tableHandle.isView())) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) ||
+            (this.tableSpec != null && this.tableSpec.tableHandle.isView())) {
       this.replicationSpec.setIsMetadataOnly(true);
+
+      this.tableSpec.tableHandle.setStatsStateLikeNewTable();
     }
     this.db = db;
     this.distCpDoAsUser = distCpDoAsUser;
