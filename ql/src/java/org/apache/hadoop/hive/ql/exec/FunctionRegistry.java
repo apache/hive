@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
 import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
+import org.apache.hadoop.hive.ql.udf.UDFBuildVersion;
 import org.apache.hadoop.hive.ql.udf.UDFChr;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
@@ -394,6 +395,7 @@ public final class FunctionRegistry {
 
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
+    system.registerUDF("buildversion", UDFBuildVersion.class, false);
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
