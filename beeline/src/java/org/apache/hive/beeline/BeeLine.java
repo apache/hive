@@ -174,7 +174,7 @@ public class BeeLine implements Closeable {
   private static final String HIVE_VAR_PREFIX = "--hivevar";
   private static final String HIVE_CONF_PREFIX = "--hiveconf";
   private static final String PROP_FILE_PREFIX = "--property-file";
-  static final String PASSWD_MASK = "[passwd stripped]";
+  public static final String PASSWD_MASK = "[passwd stripped]";
 
   private final Map<Object, Object> formats = map(new Object[] {
       "vertical", new VerticalOutputFormat(this),
@@ -807,6 +807,9 @@ public class BeeLine implements Closeable {
     if(!connSuccessful && !exit) {
       connSuccessful = defaultBeelineConnect(cl);
     }
+    if (exit) {
+      return 1;
+    }
 
     int code = 0;
     if (cl.getOptionValues('e') != null) {
@@ -1075,12 +1078,15 @@ public class BeeLine implements Closeable {
     getOpts().setNullEmptyString(true);
   }
 
+  public int begin(String[] args, InputStream inputStream) throws IOException {
+    return begin(args, inputStream, true);
+  }
   /**
    * Start accepting input from stdin, and dispatch it
    * to the appropriate {@link CommandHandler} until the
    * global variable <code>exit</code> is true.
    */
-  public int begin(String[] args, InputStream inputStream) throws IOException {
+  public int begin(String[] args, InputStream inputStream, boolean keepHistory) throws IOException {
     try {
       // load the options first, so we can override on the command line
       getOpts().load();
@@ -1088,7 +1094,9 @@ public class BeeLine implements Closeable {
       // nothing
     }
 
-    setupHistory();
+    if (keepHistory) {
+      setupHistory();
+    }
 
     //add shutdown hook to cleanup the beeline for smooth exit
     addBeelineShutdownHook();
@@ -1262,7 +1270,8 @@ public class BeeLine implements Closeable {
             }
           }
         } finally {
-          exit = false;
+          //exit beeline if there is initScript failure and --force is not set
+          exit = exitOnError && executionResult != ERRNO_OK;
         }
       }
     }
@@ -1392,7 +1401,11 @@ public class BeeLine implements Closeable {
 
     try {
       // now set the output for the history
-      consoleReader.setHistory(this.history);
+      if (this.history != null) {
+        consoleReader.setHistory(this.history);
+      } else {
+        consoleReader.setHistoryEnabled(false);
+      }
     } catch (Exception e) {
       handleException(e);
     }
