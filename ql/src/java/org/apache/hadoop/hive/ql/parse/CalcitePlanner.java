@@ -224,6 +224,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstant
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExpandExpressionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExtractJoinFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCFilterJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCFilterPushDownRule;
@@ -1930,9 +1931,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
             JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN,
             JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
             JDBCFilterJoinRule.INSTANCE,
-            JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
-            JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE,
-            JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
+            JDBCJoinPushDownRule.INSTANCE,
+            JDBCUnionPushDownRule.INSTANCE,
+            JDBCFilterPushDownRule.INSTANCE,
+            JDBCProjectPushDownRule.INSTANCE,
+            JDBCAggregationPushDownRule.INSTANCE,
+            JDBCSortPushDownRule.INSTANCE,
+            JDBCExpandExpressionsRule.FILTER_INSTANCE,
+            JDBCExpandExpressionsRule.JOIN_INSTANCE,
+            JDBCExpandExpressionsRule.PROJECT_INSTANCE
         );
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: JDBC transformation rules");
       }

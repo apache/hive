@@ -707,6 +707,70 @@ POSTHOOK: Input: default@db1_ext_auth2
 40	50	-455.4543	330.767
 44	53	-455.454	330.76
 PREHOOK: query: EXPLAIN
+SELECT P.ikey
+FROM
+  db1_ext_auth1 P
+WHERE
+  NOT TRUE OR P.`ikey` IS NOT NULL
+  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
+    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT P.ikey
+FROM
+  db1_ext_auth1 P
+WHERE
+  NOT TRUE OR P.`ikey` IS NOT NULL
+  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
+    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: p
+          properties:
+            hive.sql.query SELECT "ikey"
+FROM "SIMPLE_DERBY_TABLE1"
+WHERE "bkey" IN (10, 20) AND "dkey" IN (15.15, 25.25) AND ("bkey" = 10 AND "dkey" = 15.15 OR "bkey" = 20 AND "dkey" = 25.25) AND "ikey" IS NOT NULL
+            hive.sql.query.fieldNames ikey
+            hive.sql.query.fieldTypes int
+            hive.sql.query.split true
+          Select Operator
+            expressions: ikey (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT P.ikey
+FROM
+  db1_ext_auth1 P
+WHERE
+  NOT TRUE OR P.`ikey` IS NOT NULL
+  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
+    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT P.ikey
+FROM
+  db1_ext_auth1 P
+WHERE
+  NOT TRUE OR P.`ikey` IS NOT NULL
+  AND (P.`bkey` = 10 AND P.`dkey` = 15.15
+    OR P.`bkey` = 20 AND P.`dkey` = 25.25)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@db1_ext_auth1
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN
 SELECT * FROM db1_ext_auth1 UNION ALL SELECT * FROM db1_ext_auth2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@db1_ext_auth1
