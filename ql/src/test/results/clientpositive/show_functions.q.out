@@ -41,6 +41,7 @@ bin
 bloom_filter
 bround
 bucket_number
+buildversion
 cardinality_violation
 case
 cbrt
