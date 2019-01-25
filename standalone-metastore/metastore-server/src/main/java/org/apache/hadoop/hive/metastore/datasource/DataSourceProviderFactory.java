@@ -27,40 +27,26 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
  * Configuration object.
  */
 public abstract  class DataSourceProviderFactory {
-
-  private static final ImmutableList<DataSourceProvider> FACTORIES =
-      ImmutableList.<DataSourceProvider>builder().add(new HikariCPDataSourceProvider(), new BoneCPDataSourceProvider(),
-              new DbCPDataSourceProvider()).build();
-
-  /**
-   * @param hdpConfig hadoop configuration
-   * @return factory for the configured datanucleus.connectionPoolingType
-   */
-  public static DataSourceProvider getDataSourceProvider(Configuration hdpConfig) {
-
-    for (DataSourceProvider factory : FACTORIES) {
-
-      if (factory.supports(hdpConfig)) {
-        return factory;
-      }
-    }
-    return null;
-  }
+  private static final ImmutableList<DataSourceProvider> FACTORIES = ImmutableList.of(
+    new HikariCPDataSourceProvider(),
+    new BoneCPDataSourceProvider(),
+    new DbCPDataSourceProvider());
 
   /**
+   * The data source providers declare if they are supported or not based on the config.
+   * This function looks through all the data source providers and picks the first one which is
+   * supported. If no data source provider is found, returns a null.
+   *
    * @param hdpConfig hadoop configuration
-   * @return true if the configuration contains settings specifically aimed for one
-   * of the supported conntection pool implementations.
+   * @return factory for the configured datanucleus.connectionPoolingType or null if no supported
+   *         data source providers are found.
    */
-  public static boolean hasProviderSpecificConfigurations(Configuration hdpConfig) {
-
-    String poolingType = MetastoreConf.getVar(hdpConfig, MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
-
-    return Iterables.any(hdpConfig, entry ->
-    {
-      String key = entry.getKey();
-      return key != null && (key.startsWith(poolingType));
-    });
+  public static DataSourceProvider tryGetDataSourceProviderOrNull(Configuration hdpConfig) {
+    final String configuredPoolingType = MetastoreConf.getVar(hdpConfig,
+        MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE);
+    return Iterables.tryFind(FACTORIES, factory -> {
+      String poolingType = factory.getPoolingType();
+      return poolingType != null && poolingType.equalsIgnoreCase(configuredPoolingType);
+    }).orNull();
   }
-
 }

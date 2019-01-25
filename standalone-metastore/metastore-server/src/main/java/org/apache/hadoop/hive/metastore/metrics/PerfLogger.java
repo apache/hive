@@ -164,21 +164,28 @@ public class PerfLogger {
     return ImmutableMap.copyOf(endTimes);
   }
 
-  //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
-  protected transient Map<String, Timer.Context> timerContexts = new HashMap<>();
+  // Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
+  private transient Map<String, Timer.Context> timerContexts = new HashMap<>();
+  private transient Timer.Context totalApiCallsTimerContext = null;
 
   private void beginMetrics(String method) {
     Timer timer = Metrics.getOrCreateTimer(MetricsConstants.API_PREFIX + method);
     if (timer != null) {
       timerContexts.put(method, timer.time());
     }
-
+    timer = Metrics.getOrCreateTimer(MetricsConstants.TOTAL_API_CALLS);
+    if (timer != null) {
+      totalApiCallsTimerContext = timer.time();
+    }
   }
 
   private void endMetrics(String method) {
     Timer.Context context = timerContexts.remove(method);
     if (context != null) {
       context.close();
+    }
+    if (totalApiCallsTimerContext != null) {
+      totalApiCallsTimerContext.close();
     }
   }
 
@@ -190,5 +197,9 @@ public class PerfLogger {
       context.close();
     }
     timerContexts.clear();
+    if (totalApiCallsTimerContext != null) {
+      totalApiCallsTimerContext.close();
+      totalApiCallsTimerContext = null;
+    }
   }
 }

@@ -54,7 +54,6 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -225,9 +224,7 @@ public class PersistenceManagerProvider {
   }
 
   private static void initPMF(Configuration conf) {
-    DataSourceProvider dsp = DataSourceProviderFactory
-        .hasProviderSpecificConfigurations(conf) ? DataSourceProviderFactory
-        .getDataSourceProvider(conf) : null;
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
 
     if (dsp == null) {
       pmf = JDOHelper.getPersistenceManagerFactory(prop);

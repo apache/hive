@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
+import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
@@ -109,9 +110,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
   }
 
   @Override
-  public boolean supports(Configuration configuration) {
-    String poolingType = MetastoreConf.getVar(configuration,
-            MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE);
-    return DBCP.equalsIgnoreCase(poolingType);
+  public String getPoolingType() {
+    return DBCP;
   }
 }
