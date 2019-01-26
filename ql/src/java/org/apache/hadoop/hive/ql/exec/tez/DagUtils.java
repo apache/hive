@@ -1500,11 +1500,14 @@ public class DagUtils {
     scratchDir = new Path(scratchDir, userName);
 
     Path tezDir = getTezDir(scratchDir);
-    FileSystem fs = tezDir.getFileSystem(conf);
-    LOG.debug("TezDir path set " + tezDir + " for user: " + userName);
-    // since we are adding the user name to the scratch dir, we do not
-    // need to give more permissions here
-    fs.mkdirs(tezDir);
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+      FileSystem fs = tezDir.getFileSystem(conf);
+      LOG.debug("TezDir path set " + tezDir + " for user: " + userName);
+      // since we are adding the user name to the scratch dir, we do not
+      // need to give more permissions here
+      // Since we are doing RPC creating a dir is not necessary
+      fs.mkdirs(tezDir);
+    }
 
     return tezDir;
 
