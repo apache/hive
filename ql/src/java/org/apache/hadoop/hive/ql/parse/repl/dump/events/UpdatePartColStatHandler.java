@@ -48,11 +48,6 @@ class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColum
       return;
     }
 
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj),
-                              withinContext.hiveConf)) {
-      return;
-    }
-
     // Statistics without any data does not make sense.
     if (withinContext.replicationSpec.isMetadataOnly()) {
       return;
@@ -61,6 +56,11 @@ class UpdatePartColStatHandler extends AbstractEventHandler<UpdatePartitionColum
     // For now we do not dump statistics for a transactional table since replicating the same is
     // not supported.
     if (AcidUtils.isTransactionalTable(tableObj)) {
+      return;
+    }
+
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj),
+                              withinContext.hiveConf)) {
       return;
     }
 

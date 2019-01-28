@@ -1397,7 +1397,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
                                               List<String> part_names, boolean get_col_stats)
           throws NoSuchObjectException, MetaException, TException {
-    List<Partition> parts = client.get_partitions_by_names(db_name, tbl_name, part_names, get_col_stats);
+    GetPartitionsByNamesRequest gpbnr = new GetPartitionsByNamesRequest(db_name, tbl_name);
+    gpbnr.setNames(part_names);
+    gpbnr.setGet_col_stats(get_col_stats);
+    List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
   }
 

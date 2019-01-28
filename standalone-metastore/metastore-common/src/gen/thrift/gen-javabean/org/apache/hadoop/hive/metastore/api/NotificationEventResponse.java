@@ -354,14 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // EVENTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list748 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list748.size);
-                NotificationEvent _elem749;
-                for (int _i750 = 0; _i750 < _list748.size; ++_i750)
+                org.apache.thrift.protocol.TList _list764 = iprot.readListBegin();
+                struct.events = new ArrayList<NotificationEvent>(_list764.size);
+                NotificationEvent _elem765;
+                for (int _i766 = 0; _i766 < _list764.size; ++_i766)
                 {
-                  _elem749 = new NotificationEvent();
-                  _elem749.read(iprot);
-                  struct.events.add(_elem749);
+                  _elem765 = new NotificationEvent();
+                  _elem765.read(iprot);
+                  struct.events.add(_elem765);
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(EVENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.events.size()));
-          for (NotificationEvent _iter751 : struct.events)
+          for (NotificationEvent _iter767 : struct.events)
           {
-            _iter751.write(oprot);
+            _iter767.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -414,9 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.events.size());
-        for (NotificationEvent _iter752 : struct.events)
+        for (NotificationEvent _iter768 : struct.events)
         {
-          _iter752.write(oprot);
+          _iter768.write(oprot);
         }
       }
     }
@@ -425,14 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, NotificationEventResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list753 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list753.size);
-        NotificationEvent _elem754;
-        for (int _i755 = 0; _i755 < _list753.size; ++_i755)
+        org.apache.thrift.protocol.TList _list769 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.events = new ArrayList<NotificationEvent>(_list769.size);
+        NotificationEvent _elem770;
+        for (int _i771 = 0; _i771 < _list769.size; ++_i771)
         {
-          _elem754 = new NotificationEvent();
-          _elem754.read(iprot);
-          struct.events.add(_elem754);
+          _elem770 = new NotificationEvent();
+          _elem770.read(iprot);
+          struct.events.add(_elem770);
         }
       }
       struct.setEventsIsSet(true);

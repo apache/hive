@@ -195,7 +195,7 @@ public class FSTableEvent implements TableEvent {
       if (partition.isSetColStats() && !replicationSpec().isMigratingToTxnTable()) {
         ColumnStatistics colStats = partition.getColStats();
         ColumnStatisticsDesc colStatsDesc = new ColumnStatisticsDesc(colStats.getStatsDesc());
-        colStatsDesc.setDbName(tblDesc.getTableName());
+        colStatsDesc.setTableName(tblDesc.getTableName());
         colStatsDesc.setDbName(tblDesc.getDatabaseName());
         partDesc.setColStats(new ColumnStatistics(colStatsDesc, colStats.getStatsObj()));
       }

@@ -113,7 +113,7 @@ public class TestStatsReplicationScenarios {
 
 
   private Map<String, String> collectStatsParams(Map<String, String> allParams) {
-    Map<String, String> statsParams = new HashMap<String, String>();
+    Map<String, String> statsParams = new HashMap<>();
     List<String> params = new ArrayList<>(StatsSetupConst.SUPPORTED_STATS);
     params.add(StatsSetupConst.COLUMN_STATS_ACCURATE);
     for (String param : params) {
@@ -174,7 +174,6 @@ public class TestStatsReplicationScenarios {
     // or false. Either is fine with us so don't bother checking exact values.
     Map<String, String> rParams =
             collectStatsParams(replica.getTable(replicatedDbName, tableName).getParameters());
-    List<String> params = new ArrayList<>(StatsSetupConst.SUPPORTED_STATS);
     Map<String, String> expectedFalseParams = new HashMap<>();
     Map<String, String> expectedTrueParams = new HashMap<>();
     StatsSetupConst.setStatsStateForCreateTable(expectedTrueParams,
@@ -209,9 +208,13 @@ public class TestStatsReplicationScenarios {
   }
 
   private List<String> createBootStrapData() throws Throwable {
+    // Unpartitioned table with data
     String simpleTableName = "sTable";
+    // partitioned table with data
     String partTableName = "pTable";
+    // Unpartitioned table without data during bootstrap and hence no stats
     String ndTableName = "ndTable";
+    // Partitioned table without data during bootstrap and hence no stats.
     String ndPartTableName = "ndPTable";
 
     primary.run("use " + primaryDbName)
@@ -224,7 +227,7 @@ public class TestStatsReplicationScenarios {
             .run("create table " + ndTableName + " (str string)")
             .run("create table " + ndPartTableName + " (val string) partitioned by (pk int)");
 
-    List<String> tableNames = new ArrayList<String>(Arrays.asList(simpleTableName, partTableName,
+    List<String> tableNames = new ArrayList<>(Arrays.asList(simpleTableName, partTableName,
             ndTableName, ndPartTableName));
 
     // Run analyze on each of the tables, if they are not being gathered automatically.
@@ -267,7 +270,7 @@ public class TestStatsReplicationScenarios {
             .dump(primaryDbName, lastReplicationId, withClauseList);
 
     // Load, if necessary changing configuration.
-    if (parallelLoad && lastReplicationId == null) {
+    if (parallelLoad) {
       replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXECPARALLEL, true);
     }
 
@@ -299,6 +302,7 @@ public class TestStatsReplicationScenarios {
   }
 
   private void createIncrementalData(List<String> tableNames) throws Throwable {
+    // Annotations for this table are same as createBootStrapData
     String simpleTableName = "sTable";
     String partTableName = "pTable";
     String ndTableName = "ndTable";
@@ -306,6 +310,8 @@ public class TestStatsReplicationScenarios {
 
     Assert.assertTrue(tableNames.containsAll(Arrays.asList(simpleTableName, partTableName,
                                                          ndTableName, ndPartTableName)));
+    // New tables created during incremental phase and thus loaded with data and stats during
+    // incremental phase.
     String incTableName = "iTable"; // New table
     String incPartTableName = "ipTable"; // New partitioned table
 
@@ -341,7 +347,7 @@ public class TestStatsReplicationScenarios {
     }
   }
 
-  public void testStatsReplicationCommon(boolean parallelBootstrap, boolean metadataOnly) throws Throwable {
+  private void testStatsReplicationCommon(boolean parallelBootstrap, boolean metadataOnly) throws Throwable {
     List<String> tableNames = createBootStrapData();
     String lastReplicationId = dumpLoadVerify(tableNames, null, parallelBootstrap,
             metadataOnly);

@@ -3521,6 +3521,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                     new AddPartitionEvent(tbl, newParts, true, this));
         }
 
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventType.ADD_PARTITION,
+                  new AddPartitionEvent(tbl, newParts, true, this),
+                  null,
+                  transactionalListenerResponses, ms);
+
+          if (!existingParts.isEmpty()) {
+            // The request has succeeded but we failed to add these partitions.
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.ADD_PARTITION,
+                    new AddPartitionEvent(tbl, existingParts, false, this),
+                    null, null, ms);
+          }
+        }
+
+        // Update partition column statistics if available
+        for (Partition newPart : newParts) {
+          if (newPart.isSetColStats()) {
+            updatePartitonColStatsInternal(tbl, newPart.getColStats(), null, newPart.getWriteId());
+          }
+        }
+
         success = ms.commitTransaction();
       } finally {
         if (!success) {
@@ -3533,31 +3556,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                   new AddPartitionEvent(tbl, parts, false, this),
                                                   null, null, ms);
           }
-        } else {
-          if (!listeners.isEmpty()) {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                  EventType.ADD_PARTITION,
-                                                  new AddPartitionEvent(tbl, newParts, true, this),
-                                                  null,
-                                                  transactionalListenerResponses, ms);
-
-            if (!existingParts.isEmpty()) {
-              // The request has succeeded but we failed to add these partitions.
-              MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                    EventType.ADD_PARTITION,
-                                                    new AddPartitionEvent(tbl, existingParts, false, this),
-                                                    null, null, ms);
-            }
-          }
         }
       }
 
-      // Update partition column statistics if available
-      for (Partition newPart : newParts) {
-        if (newPart.isSetColStats()) {
-          updatePartitonColStatsInternal(tbl, newPart.getColStats(), null, newPart.getWriteId());
-        }
-      }
       return newParts;
     }
 
@@ -6344,6 +6345,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
+                                                   final List<String> partNames) throws TException {
+      return get_partitions_by_names(dbName, tblName, partNames, false);
+    }
+
+    @Override
+    public GetPartitionsByNamesResult get_partitions_by_names_req(GetPartitionsByNamesRequest gpbnr)
+            throws TException {
+      List<Partition> partitions = get_partitions_by_names(gpbnr.getDb_name(),
+              gpbnr.getTbl_name(), gpbnr.getNames(),
+              gpbnr.isSetGet_col_stats() && gpbnr.isGet_col_stats());
+      return new GetPartitionsByNamesResult(partitions);
+    }
+
+    public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
            final List<String> partNames, boolean getColStats) throws TException {
 
       String[] dbNameParts = parseDbName(dbName, conf);
@@ -6351,9 +6366,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String parsedDbName = dbNameParts[DB_NAME];
       List<Partition> ret = null;
       Exception ex = null;
+      boolean success = false;
       startTableFunction("get_partitions_by_names", parsedCatName, parsedDbName,
               tblName);
       try {
+        getMS().openTransaction();
         authorizeTableForPartitionMetadata(parsedCatName, parsedDbName, tblName);
 
         fireReadTablePreEvent(parsedCatName, parsedDbName, tblName);
@@ -6380,10 +6397,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             }
           }
         }
+
+        success = getMS().commitTransaction();
       } catch (Exception e) {
         ex = e;
         rethrowException(e);
       } finally {
+        if (!success) {
+          getMS().rollbackTransaction();
+        }
         endFunction("get_partitions_by_names", ret != null, ex, tblName);
       }
       return ret;

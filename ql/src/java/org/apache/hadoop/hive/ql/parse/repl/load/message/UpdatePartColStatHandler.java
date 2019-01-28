@@ -43,11 +43,11 @@ public class UpdatePartColStatHandler extends AbstractMessageHandler {
     // Update tablename and database name in the statistics object
     ColumnStatistics colStats = upcsm.getColumnStatistics();
     ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
-    colStatsDesc.setDbName(context.dbName);
     if (!context.isTableNameEmpty()) {
       colStatsDesc.setTableName(context.tableName);
     }
     if (!context.isDbNameEmpty()) {
+      colStatsDesc.setDbName(context.dbName);
       updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName,
                   null);
     }
