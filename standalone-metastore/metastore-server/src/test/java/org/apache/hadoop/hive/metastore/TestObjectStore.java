@@ -145,9 +145,9 @@ public class TestObjectStore {
   @After
   public void tearDown() throws Exception {
     // Clear the SSL system properties before each test.
-    System.clearProperty("javax.net.ssl.trustStore");
-    System.clearProperty("javax.net.ssl.trustStorePassword");
-    System.clearProperty("javax.net.ssl.trustStoreType");
+    System.clearProperty(ObjectStore.TRUSTSTORE_PATH_KEY);
+    System.clearProperty(ObjectStore.TRUSTSTORE_PASSWORD_KEY);
+    System.clearProperty(ObjectStore.TRUSTSTORE_TYPE_KEY);
   }
 
   @Test
@@ -1050,7 +1050,7 @@ public class TestObjectStore {
   }
 
   /**
-   * Test the property metastore.dbaccess.use.SSL (hive.metastore.dbaccess.use.SSL) to ensure that it correctly
+   * Test the property {@link MetastoreConf.ConfVars#DBACCESS_USE_SSL} to ensure that it correctly
    * toggles whether or not the SSL configuration parameters will be set. Effectively, this is testing whether
    * SSL can be turned on/off correctly.
    */
@@ -1060,32 +1060,36 @@ public class TestObjectStore {
   }
 
   /**
-   * Test that the deprecated property metastore.dbaccess.ssl.properties is overwritten by the javax.net.ssl.* properties
-   * if both are set.
+   * Test that the deprecated property {@link MetastoreConf.ConfVars#DBACCESS_SSL_PROPS} is overwritten by the
+   * MetastoreConf.ConfVars#DBACCESS_SSL_* properties if both are set.
    *
-   * This is not an ideal scenario. It is highly recommend to only set the javax.net.ssl.* properties.
+   * This is not an ideal scenario. It is highly recommend to only set the MetastoreConf#ConfVars.DBACCESS_SSL_* properties.
    */
   @Test
   public void testDeprecatedConfigIsOverwritten() {
     // Different from the values in the safe config
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_PROPS,
-          "javax.net.ssl.trustStore=/tmp/truststore.p12,javax.net.ssl.trustStorePassword=pwd,javax.net.ssl.trustStoreType=pkcs12");
+        ObjectStore.TRUSTSTORE_PATH_KEY + "=/tmp/truststore.p12," + ObjectStore.TRUSTSTORE_PASSWORD_KEY + "=pwd," +
+            ObjectStore.TRUSTSTORE_TYPE_KEY + "=pkcs12");
 
     // Safe config
     setAndCheckSSLProperties(true, "/tmp/truststore.jks", "password", "jks");
   }
 
   /**
-   * Ensure that an empty trustStore path in metastore.dbaccess.ssl.truststore.path (hive.metastore.dbaccess.ssl.truststore.path)
-   * throws an IllegalArgumentException.
+   * Test that providing an empty truststore path and truststore password will not throw an exception.
    */
-  @Test(expected = IllegalArgumentException.class)
-  public void testEmptyTrustStorePath() {
-    setAndCheckSSLProperties(true, "", "password", "jks");
+  @Test
+  public void testEmptyTrustStoreProps() {
+    setAndCheckSSLProperties(true, "", "", "jks");
   }
 
   /**
    * Helper method for setting and checking the SSL configuration parameters.
+   * @param useSSL whether or not SSL is enabled
+   * @param trustStorePath truststore path, corresponding to the value for {@link MetastoreConf.ConfVars#DBACCESS_SSL_TRUSTSTORE_PATH}
+   * @param trustStorePassword truststore password, corresponding to the value for {@link MetastoreConf.ConfVars#DBACCESS_SSL_TRUSTSTORE_PASSWORD}
+   * @param trustStoreType truststore type, corresponding to the value for {@link MetastoreConf.ConfVars#DBACCESS_SSL_TRUSTSTORE_TYPE}
    */
   private void setAndCheckSSLProperties(boolean useSSL, String trustStorePath, String trustStorePassword, String trustStoreType) {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.DBACCESS_USE_SSL, useSSL);
@@ -1094,15 +1098,23 @@ public class TestObjectStore {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.DBACCESS_SSL_TRUSTSTORE_TYPE, trustStoreType);
     objectStore.setConf(conf); // Calls configureSSL()
 
-    // Check that the Java system values correspond to the values that we set
-    if (useSSL) {
-      Assert.assertEquals(trustStorePath, System.getProperty("javax.net.ssl.trustStore"));
-      Assert.assertEquals(trustStorePassword, System.getProperty("javax.net.ssl.trustStorePassword"));
-      Assert.assertEquals(trustStoreType, System.getProperty("javax.net.ssl.trustStoreType"));
+    // Check that the properties were set correctly
+    checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_PATH_KEY, trustStorePath);
+    checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_PASSWORD_KEY, trustStorePassword);
+    checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_TYPE_KEY, trustStoreType);
+  }
+
+  /**
+   * Helper method to check whether the Java system properties were set correctly in {@link ObjectStore#configureSSL(Configuration)}
+   * @param useSSL whether or not SSL is enabled
+   * @param key Java system property key
+   * @param value Java system property value indicated by the key
+   */
+  private void checkSSLProperty(boolean useSSL, String key, String value) {
+    if (useSSL && !value.isEmpty()) {
+      Assert.assertEquals(value, System.getProperty(key));
     } else {
-      Assert.assertNull(System.getProperty("javax.net.ssl.trustStore"));
-      Assert.assertNull(System.getProperty("javax.net.ssl.trustStorePassword"));
-      Assert.assertNull(System.getProperty("javax.net.ssl.trustStoreType"));
+      Assert.assertNull(System.getProperty(key));
     }
   }
 
