@@ -177,6 +177,20 @@ public class ReduceSinkDeDuplication extends Transform {
 
   static class GroupbyReducerProc extends AbsctractReducerReducerProc {
 
+    // given a group by operator this determines if that group by belongs to semi-join branch
+    // note that this works only for second last group by in semi-join branch (X-GB-RS-GB-RS)
+    private boolean isSemiJoinBranch(final GroupByOperator gOp, ReduceSinkDeduplicateProcCtx dedupCtx) {
+      for(int i=0; i<gOp.getChildren().size(); i++) {
+        if(gOp.getChildren().get(i) instanceof  ReduceSinkOperator) {
+          ReduceSinkOperator rsOp = (ReduceSinkOperator)gOp.getChildren().get(i);
+          if(dedupCtx.getPctx().getRsToSemiJoinBranchInfo().containsKey(rsOp)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     // pRS-pGBY-cRS
     @Override
     public Object process(ReduceSinkOperator cRS, ReduceSinkDeduplicateProcCtx dedupCtx)
@@ -185,6 +199,9 @@ public class ReduceSinkDeDuplication extends Transform {
           CorrelationUtilities.findPossibleParent(
               cRS, GroupByOperator.class, dedupCtx.trustScript());
       if (pGBY == null) {
+        return false;
+      }
+      if(isSemiJoinBranch(pGBY, dedupCtx)) {
         return false;
       }
       ReduceSinkOperator pRS =
@@ -209,6 +226,9 @@ public class ReduceSinkDeDuplication extends Transform {
           CorrelationUtilities.findPossibleParent(
               start, GroupByOperator.class, dedupCtx.trustScript());
       if (pGBY == null) {
+        return false;
+      }
+      if(isSemiJoinBranch(cGBY, dedupCtx)) {
         return false;
       }
       ReduceSinkOperator pRS =
