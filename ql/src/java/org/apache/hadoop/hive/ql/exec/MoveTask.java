@@ -269,6 +269,26 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     return false;
   }
 
+  // Whether statistics need to be reset as part of MoveTask execution.
+  private boolean resetStatisticsProps(Table table) {
+    if (hasFollowingStatsTask()) {
+      // If there's a follow-on stats task then the stats will be correct after load, so don't
+      // need to reset the statistics.
+      return false;
+    }
+
+    if (!work.getIsInReplicationScope()) {
+      // If the load is not happening during replication and there is not follow-on stats
+      // task, stats will be inaccurate after load and so need to be reset.
+      return true;
+    }
+
+    // If we are loading a table during replication, the stats will also be replicated
+    // and hence accurate if it's a non-transactional table. For transactional table we
+    // do not replicate stats yet.
+    return AcidUtils.isTransactionalTable(table.getParameters());
+  }
+
   private final static class TaskInformation {
     public List<BucketCol> bucketCols = null;
     public List<SortCol> sortCols = null;
@@ -399,24 +419,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               + " into " + tbd.getTable().getTableName());
           }
 
-          boolean resetStatistics;
-          if (hasFollowingStatsTask()) {
-            // If there's a follow-on stats task then the stats will be correct after load, so don't
-            // need to reset the statistics.
-            resetStatistics = false;
-          } else if (!work.getIsInReplicationScope()) {
-            // If the load is not happening during replication and there is not follow-on stats
-            // task, stats will be inaccurate after load and so need to be reset.
-            resetStatistics = true;
-          } else {
-            // If we are loading a table during replication, the stats will also be replicated
-            // and hence accurate if it's a non-transactional table. For transactional table we
-            // do not replicate stats yet.
-            resetStatistics = AcidUtils.isTransactionalTable(table.getParameters());
-          }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
-              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, resetStatistics,
-              tbd.getWriteId(), tbd.getStmtId(), tbd.isInsertOverwrite());
+                  work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp,
+                  resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
+                  tbd.isInsertOverwrite());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
@@ -513,12 +519,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     db.loadPartition(tbd.getSourcePath(), db.getTable(tbd.getTable().getTableName()),
-        tbd.getPartitionSpec(), tbd.getLoadFileType(), tbd.getInheritTableSpecs(),
-        tbd.getInheritLocation(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
-            !tbd.isMmTable(),
-         hasFollowingStatsTask(),
-        tbd.getWriteId(), tbd.getStmtId(), tbd.isInsertOverwrite());
+            tbd.getPartitionSpec(), tbd.getLoadFileType(), tbd.getInheritTableSpecs(),
+            tbd.getInheritLocation(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
+            work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
+                    !tbd.isMmTable(),
+            resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
+            tbd.isInsertOverwrite());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
     // See the comment inside updatePartitionBucketSortColumns.
@@ -563,7 +569,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             !tbd.isMmTable(),
         work.getLoadTableWork().getWriteId(),
         tbd.getStmtId(),
-        hasFollowingStatsTask(),
+        resetStatisticsProps(table),
         work.getLoadTableWork().getWriteType(),
         tbd.isInsertOverwrite());
 

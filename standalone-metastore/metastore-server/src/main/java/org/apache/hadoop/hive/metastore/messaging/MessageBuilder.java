@@ -300,9 +300,9 @@ public class MessageBuilder {
 
   public JSONUpdatePartitionColumnStatMessage buildUpdatePartitionColumnStatMessage(ColumnStatistics colStats,
                                                             List<String> partVals, Map<String, String> parameters,
-                                                            String validWriteIds, long writeId) {
+                                                            Table tableObj, String validWriteIds, long writeId) {
     return new JSONUpdatePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), colStats, partVals,
-            parameters, validWriteIds, writeId);
+            parameters, tableObj, validWriteIds, writeId);
   }
 
   public JSONDeletePartitionColumnStatMessage buildDeletePartitionColumnStatMessage(String dbName, String colName,

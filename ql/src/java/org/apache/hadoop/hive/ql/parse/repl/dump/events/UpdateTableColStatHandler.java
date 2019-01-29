@@ -36,6 +36,7 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
 
   @Override
   public void handle(Context withinContext) throws Exception {
+    LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
     Table qlMdTable = new Table(eventMessage.getTableObject());
     if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
       return;
@@ -50,7 +51,6 @@ class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnSt
       return;
     }
 
-    LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);
     dmd.write();
