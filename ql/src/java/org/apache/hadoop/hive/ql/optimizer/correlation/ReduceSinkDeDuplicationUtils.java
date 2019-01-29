@@ -475,6 +475,40 @@ public class ReduceSinkDeDuplicationUtils {
     return 0;
   }
 
+  // Check that in the path between cRS and pRS, there are only Select operators
+  // i.e. the sequence must be pRS-SEL*-cRS
+  // ensure SEL does not branch
+  protected static boolean checkSelectSingleBranchOnly(ReduceSinkOperator cRS, ReduceSinkOperator pRS) {
+    Operator<? extends OperatorDesc> parent = cRS.getParentOperators().get(0);
+    while (parent != pRS) {
+      assert parent.getNumParent() == 1;
+      if (!(parent instanceof SelectOperator)) {
+        return false;
+      }
+      if (parent.getChildOperators().size() > 1) {
+        return false;
+      }
+
+      parent = parent.getParentOperators().get(0);
+    }
+    return true;
+  }
+
+  // Check that in the path between cRS and pRS, there are only single branch
+  // i.e. the sequence must be pRS-Op*-cRS
+  protected static boolean checkSingleBranchOnly(ReduceSinkOperator cRS, ReduceSinkOperator pRS) {
+    Operator<? extends OperatorDesc> parent = cRS.getParentOperators().get(0);
+    while (parent != pRS) {
+      assert parent.getNumParent() == 1;
+      if (parent.getChildOperators().size() > 1) {
+        return false;
+      }
+
+      parent = parent.getParentOperators().get(0);
+    }
+    return true;
+  }
+
   protected static boolean aggressiveDedup(ReduceSinkOperator cRS, ReduceSinkOperator pRS,
           ReduceSinkDeduplicateProcCtx dedupCtx) throws SemanticException {
     assert cRS.getNumParent() == 1;
@@ -484,15 +518,8 @@ public class ReduceSinkDeDuplicationUtils {
     List<ExprNodeDesc> cKeys = cConf.getKeyCols();
     List<ExprNodeDesc> pKeys = pConf.getKeyCols();
 
-    // Check that in the path between cRS and pRS, there are only Select operators
-    // i.e. the sequence must be pRS-SEL*-cRS
-    Operator<? extends OperatorDesc> parent = cRS.getParentOperators().get(0);
-    while (parent != pRS) {
-      assert parent.getNumParent() == 1;
-      if (!(parent instanceof SelectOperator)) {
-        return false;
-      }
-      parent = parent.getParentOperators().get(0);
+    if (!checkSelectSingleBranchOnly(cRS, pRS)) {
+      return false;
     }
 
     // If child keys are null or empty, we bail out
@@ -564,7 +591,7 @@ public class ReduceSinkDeDuplicationUtils {
 
     // Replace pRS with cRS and remove operator sequence from pRS to cRS
     // Recall that the sequence must be pRS-SEL*-cRS
-    parent = cRS.getParentOperators().get(0);
+    Operator<? extends OperatorDesc> parent = cRS.getParentOperators().get(0);
     while (parent != pRS) {
       dedupCtx.addRemovedOperator(parent);
       parent = parent.getParentOperators().get(0);

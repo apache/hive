@@ -387,7 +387,7 @@ public final class CorrelationUtilities {
     SelectDesc select = new SelectDesc(childRS.getConf().getValueCols(), childRS.getConf().getOutputValueColumnNames());
 
     Operator<?> parent = getSingleParent(childRS);
-    parent.getChildOperators().clear();
+    parent.removeChild(childRS);
 
     SelectOperator sel = (SelectOperator) OperatorFactory.getAndMakeChild(
             select, new RowSchema(inputRS.getSignature()), parent);

@@ -501,12 +501,10 @@ public class SortedDynPartitionOptimizer extends Transform {
       ArrayList<ExprNodeDesc> keyCols = Lists.newArrayList();
       List<Integer> newSortOrder = Lists.newArrayList();
       List<Integer> newSortNullOrder = Lists.newArrayList();
-      int numPartAndBuck = partitionPositions.size();
 
       keyColsPosInVal.addAll(partitionPositions);
       if (bucketColumns != null && !bucketColumns.isEmpty()) {
         keyColsPosInVal.add(-1);
-        numPartAndBuck += 1;
       }
       keyColsPosInVal.addAll(sortPositions);
 
@@ -517,10 +515,9 @@ public class SortedDynPartitionOptimizer extends Transform {
           order = 0;
         }
       }
-      for (int i = 0; i < numPartAndBuck; i++) {
+      for (int i = 0; i < keyColsPosInVal.size(); i++) {
         newSortOrder.add(order);
       }
-      newSortOrder.addAll(sortOrder);
 
       String orderStr = "";
       for (Integer i : newSortOrder) {
@@ -541,10 +538,9 @@ public class SortedDynPartitionOptimizer extends Transform {
           nullOrder = 1;
         }
       }
-      for (int i = 0; i < numPartAndBuck; i++) {
+      for (int i = 0; i < keyColsPosInVal.size(); i++) {
         newSortNullOrder.add(nullOrder);
       }
-      newSortNullOrder.addAll(sortNullOrder);
 
       String nullOrderStr = "";
       for (Integer i : newSortNullOrder) {
