@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
@@ -50,6 +51,13 @@ class AddPartitionHandler extends AbstractEventHandler {
   @Override
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} ADD_PARTITION message : {}", fromEventId(), eventMessageAsJSON);
+
+    // We do not dump partitions during metadata only bootstrap dump (See TableExport
+    // .getPartitions(), for bootstrap dump we pass tableSpec with TABLE_ONLY set.). So don't
+    // dump partition related events for metadata-only dump.
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+      return;
+    }
 
     AddPartitionMessage apm = (AddPartitionMessage) eventMessage;
     org.apache.hadoop.hive.metastore.api.Table tobj = apm.getTableObj();

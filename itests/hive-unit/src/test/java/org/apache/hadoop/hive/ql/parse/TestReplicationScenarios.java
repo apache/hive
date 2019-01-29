@@ -423,10 +423,11 @@ public class TestReplicationScenarios {
     run("insert into table " + dbName + ".t2 partition(country='india') values ('delhi')", driver);
     dump = replDumpDb(dbName, dump.lastReplId, null, null);
 
-    //no partition task should be added as the operation is inserting into an existing partition
+    // Partition level statistics gets updated as part of the INSERT above. So we see a partition
+    // task corresponding to an ALTER_PARTITION event.
     task = getReplLoadRootTask(dbNameReplica, true, dump);
     assertEquals(true, hasMoveTask(task));
-    assertEquals(false, hasPartitionTask(task));
+    assertEquals(true, hasPartitionTask(task));
 
     loadAndVerify(dbNameReplica, dump.dumpLocation, dump.lastReplId);
 

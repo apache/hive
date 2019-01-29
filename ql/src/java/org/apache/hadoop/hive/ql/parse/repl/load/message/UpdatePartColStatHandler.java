@@ -17,10 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
+import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -34,10 +37,21 @@ public class UpdatePartColStatHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-    context.log.info("Replication of partition stat update event is not supported yet");
-    if (!context.isDbNameEmpty()) {
-      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
+    UpdatePartitionColumnStatMessage upcsm =
+            deserializer.getUpdatePartitionColumnStatMessage(context.dmd.getPayload());
+
+    // Update tablename and database name in the statistics object
+    ColumnStatistics colStats = upcsm.getColumnStatistics();
+    ColumnStatisticsDesc colStatsDesc = colStats.getStatsDesc();
+    if (!context.isTableNameEmpty()) {
+      colStatsDesc.setTableName(context.tableName);
     }
-    return Collections.singletonList(TaskFactory.get(new DependencyCollectionWork(), context.hiveConf));
+    if (!context.isDbNameEmpty()) {
+      colStatsDesc.setDbName(context.dbName);
+      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName,
+                  null);
+    }
+    return Collections.singletonList(TaskFactory.get(new ColumnStatsUpdateWork(colStats),
+            context.hiveConf));
   }
 }

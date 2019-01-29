@@ -462,7 +462,8 @@ struct Partition {
   8: optional PrincipalPrivilegeSet privileges,
   9: optional string catName,
   10: optional i64 writeId=-1,
-  11: optional bool isStatsCompliant
+  11: optional bool isStatsCompliant,
+  12: optional ColumnStatistics colStats // column statistics for partition
 }
 
 struct PartitionWithoutSD {
@@ -824,6 +825,17 @@ struct PartitionValuesRow {
 
 struct PartitionValuesResponse {
   1: required list<PartitionValuesRow> partitionValues;
+}
+
+struct GetPartitionsByNamesRequest {
+  1: required string db_name,
+  2: required string tbl_name,
+  3: optional list<string> names,
+  4: optional bool get_col_stats
+}
+
+struct GetPartitionsByNamesResult {
+  1: required list<Partition> partitions
 }
 
 enum FunctionType {
@@ -2103,6 +2115,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // get partitions give a list of partition names
   list<Partition> get_partitions_by_names(1:string db_name 2:string tbl_name 3:list<string> names)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  GetPartitionsByNamesResult get_partitions_by_names_req(1:GetPartitionsByNamesRequest req)
+                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // changes the partition to the new partition object. partition is identified from the part values
   // in the new_part
