@@ -1056,16 +1056,27 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     }
     return matchedParts;
   }
+
   /**
    * partNames are like "p=1/q=2" type strings.  The values (RHS of =) are escaped.
    */
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tblName,
-      List<String> partNames) throws TException {
+                                              List<String> partNames) throws TException {
+    return getPartitionsByNames(db_name, tblName, partNames, false);
+  }
+
+  /**
+   * partNames are like "p=1/q=2" type strings.  The values (RHS of =) are escaped.
+   */
+  @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tblName,
+                                              List<String> partNames, boolean getColStats)
+          throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(db_name, tblName);
     if (table == null) {
       //(assume) not a temp table - Try underlying client
-      return super.getPartitionsByNames(db_name, tblName, partNames);
+      return super.getPartitionsByNames(db_name, tblName, partNames, getColStats);
     }
     TempTable tt = getTempTable(table);
     if(tt == null) {

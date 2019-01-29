@@ -18,7 +18,11 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class UpdatePartColStatHandler extends AbstractEventHandler {
@@ -30,6 +34,32 @@ class UpdatePartColStatHandler extends AbstractEventHandler {
   @Override
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), event.getMessage());
+    UpdatePartitionColumnStatMessage upcsm =
+            deserializer.getUpdatePartitionColumnStatMessage(event.getMessage());
+
+    org.apache.hadoop.hive.metastore.api.Table tableObj = upcsm.getTableObject();
+    if (tableObj == null) {
+      LOG.debug("Event#{} was an event of type {} with no table listed", fromEventId(),
+              event.getEventType());
+      return;
+    }
+
+    // Statistics without any data does not make sense.
+    if (withinContext.replicationSpec.isMetadataOnly()) {
+      return;
+    }
+
+    // For now we do not dump statistics for a transactional table since replicating the same is
+    // not supported.
+    if (AcidUtils.isTransactionalTable(tableObj)) {
+      return;
+    }
+
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj),
+                              withinContext.hiveConf)) {
+      return;
+    }
+
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(event.getMessage());
     dmd.write();

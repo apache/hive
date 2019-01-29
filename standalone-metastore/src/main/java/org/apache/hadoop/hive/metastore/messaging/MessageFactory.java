@@ -368,7 +368,7 @@ public abstract class MessageFactory {
    */
   public abstract UpdatePartitionColumnStatMessage buildUpdatePartitionColumnStatMessage(ColumnStatistics colStats,
                                                                  List<String> partVals, Map<String, String> parameters,
-                                                                 String validWriteIds, long writeId);
+                                                                 Table tableObj, String validWriteIds, long writeId);
 
   /**
    * Factory method for building DeletePartitionColumnStat message

@@ -720,6 +720,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
             .buildUpdatePartitionColumnStatMessage(updatePartColStatEvent.getPartColStats(),
                     updatePartColStatEvent.getPartVals(),
                     updatePartColStatEvent.getPartParameters(),
+                    updatePartColStatEvent.getTableObj(),
                     updatePartColStatEvent.getValidWriteIds(), updatePartColStatEvent.getWriteId());
     NotificationEvent event = new NotificationEvent(0, now(), EventType.UPDATE_PARTITION_COLUMN_STAT.toString(),
             msg.toString());

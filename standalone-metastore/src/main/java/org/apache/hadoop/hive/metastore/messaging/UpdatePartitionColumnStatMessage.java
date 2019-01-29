@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.metastore.messaging;
 
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.Table;
+
 import java.util.List;
 import java.util.Map;
 
@@ -41,4 +43,6 @@ public abstract class UpdatePartitionColumnStatMessage extends EventMessage {
   public abstract Map<String, String> getParameters();
 
   public abstract List<String> getPartVals();
+
+  public abstract Table getTableObject() throws Exception;
 }

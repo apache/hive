@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
   private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)10);
   private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)11);
+  private static final org.apache.thrift.protocol.TField COL_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("colStats", org.apache.thrift.protocol.TType.STRUCT, (short)12);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -67,6 +68,7 @@ import org.slf4j.LoggerFactory;
   private String catName; // optional
   private long writeId; // optional
   private boolean isStatsCompliant; // optional
+  private ColumnStatistics colStats; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -80,7 +82,8 @@ import org.slf4j.LoggerFactory;
     PRIVILEGES((short)8, "privileges"),
     CAT_NAME((short)9, "catName"),
     WRITE_ID((short)10, "writeId"),
-    IS_STATS_COMPLIANT((short)11, "isStatsCompliant");
+    IS_STATS_COMPLIANT((short)11, "isStatsCompliant"),
+    COL_STATS((short)12, "colStats");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -117,6 +120,8 @@ import org.slf4j.LoggerFactory;
           return WRITE_ID;
         case 11: // IS_STATS_COMPLIANT
           return IS_STATS_COMPLIANT;
+        case 12: // COL_STATS
+          return COL_STATS;
         default:
           return null;
       }
@@ -162,7 +167,7 @@ import org.slf4j.LoggerFactory;
   private static final int __WRITEID_ISSET_ID = 2;
   private static final int __ISSTATSCOMPLIANT_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.CAT_NAME,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.CAT_NAME,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT,_Fields.COL_STATS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -191,6 +196,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.COL_STATS, new org.apache.thrift.meta_data.FieldMetaData("colStats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "ColumnStatistics")));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Partition.class, metaDataMap);
   }
@@ -253,6 +260,9 @@ import org.slf4j.LoggerFactory;
     }
     this.writeId = other.writeId;
     this.isStatsCompliant = other.isStatsCompliant;
+    if (other.isSetColStats()) {
+      this.colStats = other.colStats;
+    }
   }
 
   public Partition deepCopy() {
@@ -276,6 +286,7 @@ import org.slf4j.LoggerFactory;
 
     setIsStatsCompliantIsSet(false);
     this.isStatsCompliant = false;
+    this.colStats = null;
   }
 
   public int getValuesSize() {
@@ -553,6 +564,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
   }
 
+  public ColumnStatistics getColStats() {
+    return this.colStats;
+  }
+
+  public void setColStats(ColumnStatistics colStats) {
+    this.colStats = colStats;
+  }
+
+  public void unsetColStats() {
+    this.colStats = null;
+  }
+
+  /** Returns true if field colStats is set (has been assigned a value) and false otherwise */
+  public boolean isSetColStats() {
+    return this.colStats != null;
+  }
+
+  public void setColStatsIsSet(boolean value) {
+    if (!value) {
+      this.colStats = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case VALUES:
@@ -643,6 +677,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case COL_STATS:
+      if (value == null) {
+        unsetColStats();
+      } else {
+        setColStats((ColumnStatistics)value);
+      }
+      break;
+
     }
   }
 
@@ -681,6 +723,9 @@ import org.slf4j.LoggerFactory;
     case IS_STATS_COMPLIANT:
       return isIsStatsCompliant();
 
+    case COL_STATS:
+      return getColStats();
+
     }
     throw new IllegalStateException();
   }
@@ -714,6 +759,8 @@ import org.slf4j.LoggerFactory;
       return isSetWriteId();
     case IS_STATS_COMPLIANT:
       return isSetIsStatsCompliant();
+    case COL_STATS:
+      return isSetColStats();
     }
     throw new IllegalStateException();
   }
@@ -830,6 +877,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_colStats = true && this.isSetColStats();
+    boolean that_present_colStats = true && that.isSetColStats();
+    if (this_present_colStats || that_present_colStats) {
+      if (!(this_present_colStats && that_present_colStats))
+        return false;
+      if (!this.colStats.equals(that.colStats))
+        return false;
+    }
+
     return true;
   }
 
@@ -891,6 +947,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_isStatsCompliant);
     if (present_isStatsCompliant)
       list.add(isStatsCompliant);
+
+    boolean present_colStats = true && (isSetColStats());
+    list.add(present_colStats);
+    if (present_colStats)
+      list.add(colStats);
 
     return list.hashCode();
   }
@@ -1013,6 +1074,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetColStats()).compareTo(other.isSetColStats());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetColStats()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.colStats, other.colStats);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1110,6 +1181,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("isStatsCompliant:");
       sb.append(this.isStatsCompliant);
+      first = false;
+    }
+    if (isSetColStats()) {
+      if (!first) sb.append(", ");
+      sb.append("colStats:");
+      if (this.colStats == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.colStats);
+      }
       first = false;
     }
     sb.append(")");
@@ -1275,6 +1356,15 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 12: // COL_STATS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.colStats = new ColumnStatistics();
+              struct.colStats.read(iprot);
+              struct.setColStatsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1358,6 +1448,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.isStatsCompliant);
         oprot.writeFieldEnd();
       }
+      if (struct.colStats != null) {
+        if (struct.isSetColStats()) {
+          oprot.writeFieldBegin(COL_STATS_FIELD_DESC);
+          struct.colStats.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1409,7 +1506,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsStatsCompliant()) {
         optionals.set(10);
       }
-      oprot.writeBitSet(optionals, 11);
+      if (struct.isSetColStats()) {
+        optionals.set(11);
+      }
+      oprot.writeBitSet(optionals, 12);
       if (struct.isSetValues()) {
         {
           oprot.writeI32(struct.values.size());
@@ -1456,12 +1556,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsStatsCompliant()) {
         oprot.writeBool(struct.isStatsCompliant);
       }
+      if (struct.isSetColStats()) {
+        struct.colStats.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Partition struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(11);
+      BitSet incoming = iprot.readBitSet(12);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list235 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
@@ -1527,6 +1630,11 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(10)) {
         struct.isStatsCompliant = iprot.readBool();
         struct.setIsStatsCompliantIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.colStats = new ColumnStatistics();
+        struct.colStats.read(iprot);
+        struct.setColStatsIsSet(true);
       }
     }
   }

@@ -1475,6 +1475,20 @@ public interface IMetaStoreClient {
 
   /**
    * Get partitions by a list of partition names.
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @param getColStats if true include statistics in the Partition object
+   * @return list of Partition objects
+   * @throws NoSuchObjectException No such partitions
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
+      boolean getColStats) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get partitions by a list of partition names.
    * @param catName catalog name
    * @param db_name database name
    * @param tbl_name table name
@@ -1487,6 +1501,22 @@ public interface IMetaStoreClient {
   List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
                                        List<String> part_names)
       throws NoSuchObjectException, MetaException, TException;
+
+    /**
+     * Get partitions by a list of partition names.
+     * @param catName catalog name
+     * @param db_name database name
+     * @param tbl_name table name
+     * @param part_names list of partition names
+     * @param getColStats if true, column statistics is added to the Partition objects
+     * @return list of Partition objects
+     * @throws NoSuchObjectException No such partitions
+     * @throws MetaException error accessing the RDBMS.
+     * @throws TException thrift transport error
+     */
+    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                         List<String> part_names, boolean getColStats)
+            throws NoSuchObjectException, MetaException, TException;
 
   /**
    * List partitions along with privilege information for a user or groups

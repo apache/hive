@@ -313,6 +313,7 @@ public class LoadPartitions {
       loadTableWork.setInheritTableSpecs(false);
       moveWork.setLoadTableWork(loadTableWork);
     }
+    moveWork.setIsInReplicationScope(event.replicationSpec().isInReplicationScope());
 
     return TaskFactory.get(moveWork, context.hiveConf);
   }

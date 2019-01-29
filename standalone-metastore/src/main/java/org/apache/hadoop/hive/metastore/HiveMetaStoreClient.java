@@ -1648,10 +1648,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+                                              List<String> part_names, boolean getColStats)
+          throws TException {
+    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats);
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
                                               List<String> part_names) throws TException {
-    List<Partition> parts =
-        client.get_partitions_by_names(prependCatalogToDbName(catName, db_name, conf), tbl_name, part_names);
+    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false);
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                              List<String> part_names, boolean getColStats) throws TException {
+    GetPartitionsByNamesRequest gpbnr =
+            new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
+                    tbl_name);
+    gpbnr.setNames(part_names);
+    gpbnr.setGet_col_stats(getColStats);
+    List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
     return deepCopyPartitions(filterHook.filterPartitions(parts));
   }
 
