@@ -94,7 +94,7 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
     }
 
     List<FileStatus> dbsToCreate = Arrays.stream(fileStatuses).filter(
-            f -> !f.getPath().getName().equals(ReplUtils.CONSTRAINTS_ROOT_DIR_NAME)
+      f -> !f.getPath().getName().equals(ReplUtils.CONSTRAINTS_ROOT_DIR_NAME)
     ).collect(Collectors.toList());
     dbEventsIterator = dbsToCreate.stream().map(f -> {
       try {

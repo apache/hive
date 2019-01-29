@@ -490,14 +490,14 @@ public class HiveConf extends Configuration {
           + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
           + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
           + " always by default. If this config parameter is enabled on an on-going replication policy which is in\n"
-          + " incremental phase, then need to set 'hive.repl.bootstrap.external.tables' to true for the first repl dump \n"
-          + " to bootstrap all external tables."),
+          + " incremental phase, then need to set 'hive.repl.bootstrap.external.tables' to true for the first \n"
+          + " repl dump to bootstrap all external tables."),
     REPL_BOOTSTRAP_EXTERNAL_TABLES("hive.repl.bootstrap.external.tables", false,
-        "Indicates if repl dump should bootstrap the information about external tables during incremental phase of replication. \n"
-          + "It should be used in conjunction with 'hive.repl.include.external.tables' set to true. \n"
-          + "If 'hive.repl.include.external.tables' is set to false, then this config parameter has no effect. \n"
-          + "This config parameter should be set to true only once for repl dump after enabling 'hive.repl.include.external.tables' \n"
-          + "to true."),
+        "Indicates if repl dump should bootstrap the information about external tables during incremental \n"
+          + "phase of replication. It should be used in conjunction with 'hive.repl.include.external.tables' \n"
+          + "set to true. If 'hive.repl.include.external.tables' is set to false, then this config parameter \n"
+          + "has no effect. This config parameter should be set to true only once for repl dump after enabling \n"
+          + "'hive.repl.include.external.tables' to true."),
     REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
           "If its set to true, REPL LOAD copies data files directly to the target table/partition location \n"
           + "instead of copying to staging directory first and then move to target location. This optimizes \n"

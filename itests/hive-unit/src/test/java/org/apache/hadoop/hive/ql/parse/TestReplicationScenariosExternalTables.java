@@ -397,8 +397,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
   @Test
   public void bootstrapExternalTablesDuringIncrementalPhase() throws Throwable {
     List<String> loadWithClause = externalTableBasePathWithClause();
-    List<String> dumpWithClause = Collections.singletonList
-            ("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'");
+    List<String> dumpWithClause = Collections.singletonList(
+      "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
+    );
 
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
@@ -420,9 +421,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResult(tuple.lastReplicationId)
             .run("use " + replicatedDbName)
             .run("show tables like 't1'")
-            .verifyFailure(new String[] { "t1" })
+            .verifyFailure(new String[] {"t1" })
             .run("show tables like 't2'")
-            .verifyFailure(new String[] { "t2" });
+            .verifyFailure(new String[] {"t2" });
 
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
                                    "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
@@ -459,7 +460,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResult(tuple.lastReplicationId)
             .run("use " + replicatedDbName)
             .run("show tables like 't1'")
-            .verifyFailure(new String[] { "t1" })
+            .verifyFailure(new String[] {"t1" })
             .run("show tables like 't2'")
             .verifyResult("t2")
             .run("show tables like 't3'")
