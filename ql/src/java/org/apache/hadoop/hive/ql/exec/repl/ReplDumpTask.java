@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFil
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -80,15 +81,13 @@ import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
-  private static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
-  private static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
-  private static final String FUNCTION_METADATA_FILE_NAME = "_metadata";
+  private static final String FUNCTION_METADATA_FILE_NAME = EximUtil.METADATA_NAME;
   private static final long SLEEP_TIME = 60000;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
     private final String prefix;
-    private ConstraintFileType(String name, String prefix) {
+    ConstraintFileType(String name, String prefix) {
       this.name = name;
       this.prefix = prefix;
     }
@@ -195,18 +194,31 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot);
     dmd.write();
 
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) &&
-        !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
+      && (!conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)
+        || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES))) {
+      Path dbRoot = getBootstrapDbRoot(dumpRoot, dbName, true);
       try (Writer writer = new Writer(dumpRoot, conf)) {
         for (String tableName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
           Table table = hiveDb.getTable(dbName, tableName);
           if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
             writer.dataLocationDump(table);
+            if (conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES)) {
+              HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(table);
+              dumpTable(dbName, tableName, null, dbRoot, 0, hiveDb, tableTuple);
+            }
           }
         }
       }
     }
     return lastReplId;
+  }
+
+  private Path getBootstrapDbRoot(Path dumpRoot, String dbName, boolean isIncrementalPhase) {
+    if (isIncrementalPhase) {
+      dumpRoot = new Path(dumpRoot, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
+    }
+    return new Path(dumpRoot, dbName);
   }
 
   private void dumpEvent(NotificationEvent ev, Path evRoot, Path cmRoot, Hive db) throws Exception {
@@ -237,7 +249,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // Last repl id would've been captured during compile phase in queryState configs before opening txn.
     // This is needed as we dump data on ACID/MM tables based on read snapshot or else we may lose data from
     // concurrent txns when bootstrap dump in progress. If it is not available, then get it from metastore.
-    Long bootDumpBeginReplId = queryState.getConf().getLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, -1L);
+    Long bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
     assert (bootDumpBeginReplId >= 0L);
 
     String validTxnList = getValidTxnListForReplDump(hiveDb);
@@ -252,6 +264,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
       String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
       Exception caught = null;
+      boolean shouldWriteExternalTableLocationInfo =
+              conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
+                      && !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
       try (Writer writer = new Writer(dbRoot, conf)) {
         for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
           LOG.debug(
@@ -259,12 +274,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           try {
             HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName,
                                                                                         conf);
-            boolean shouldWriteExternalTableLocationInfo =
-                conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
-                && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())
-                && !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
-            if (shouldWriteExternalTableLocationInfo) {
-              LOG.debug("adding table {} to external tables list", tblName);
+            if (shouldWriteExternalTableLocationInfo
+                    && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
+              LOG.debug("Adding table {} to external tables list", tblName);
               writer.dataLocationDump(tableTuple.object);
             }
             dumpTable(dbName, tblName, validTxnList, dbRoot, bootDumpBeginReplId, hiveDb,
@@ -312,7 +324,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   Path dumpDbMetadata(String dbName, Path dumpRoot, long lastReplId, Hive hiveDb) throws Exception {
-    Path dbRoot = new Path(dumpRoot, dbName);
+    Path dbRoot = getBootstrapDbRoot(dumpRoot, dbName, false);
     // TODO : instantiating FS objects are generally costly. Refactor
     FileSystem fs = dbRoot.getFileSystem(conf);
     Path dumpPath = new Path(dbRoot, EximUtil.METADATA_NAME);
@@ -435,7 +447,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   void dumpFunctionMetadata(String dbName, Path dumpRoot, Hive hiveDb) throws Exception {
-    Path functionsRoot = new Path(new Path(dumpRoot, dbName), FUNCTIONS_ROOT_DIR_NAME);
+    Path functionsRoot = new Path(new Path(dumpRoot, dbName), ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
     List<String> functionNames = hiveDb.getFunctions(dbName, "*");
     for (String functionName : functionNames) {
       HiveWrapper.Tuple<Function> tuple = functionTuple(functionName, dbName, hiveDb);
@@ -455,7 +467,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb) throws Exception {
     try {
-      Path constraintsRoot = new Path(dbRoot, CONSTRAINTS_ROOT_DIR_NAME);
+      Path constraintsRoot = new Path(dbRoot, ReplUtils.CONSTRAINTS_ROOT_DIR_NAME);
       Path commonConstraintsFile = new Path(constraintsRoot, ConstraintFileType.COMMON.getPrefix() + tblName);
       Path fkConstraintsFile = new Path(constraintsRoot, ConstraintFileType.FOREIGNKEY.getPrefix() + tblName);
       List<SQLPrimaryKey> pks = hiveDb.getPrimaryKeyList(dbName, tblName);

@@ -166,8 +166,8 @@ public class Utils {
    * validates if a table can be exported, similar to EximUtil.shouldExport with few replication
    * specific checks.
    */
-  public static Boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle,
-      HiveConf hiveConf) {
+  public static boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle,
+                                        boolean isEventDump, HiveConf hiveConf) {
     if (replicationSpec == null) {
       replicationSpec = new ReplicationSpec();
     }
@@ -187,7 +187,14 @@ public class Utils {
       }
 
       if (MetaStoreUtils.isExternalTable(tableHandle.getTTable())) {
-        return hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES) || replicationSpec.isMetadataOnly();
+        boolean shouldReplicateExternalTables = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
+                || replicationSpec.isMetadataOnly();
+        if (isEventDump) {
+          // Skip dumping of events related to external tables if bootstrap is enabled on it.
+          shouldReplicateExternalTables = shouldReplicateExternalTables
+                  && !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES);
+        }
+        return shouldReplicateExternalTables;
       }
     }
     return true;
@@ -204,7 +211,7 @@ public class Utils {
               .getTableName(), e);
       return false;
     }
-    return shouldReplicate(replicationSpec, table, hiveConf);
+    return shouldReplicate(replicationSpec, table, false, hiveConf);
   }
 
   static List<Path> getDataPathList(Path fromPath, ReplicationSpec replicationSpec, HiveConf conf)

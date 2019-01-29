@@ -396,6 +396,10 @@ public class IncrementalLoadTasksBuilder {
     return tasks;
   }
 
+  public Long eventTo() {
+    return eventTo;
+  }
+
   public static long getNumIteration() {
     return numIteration;
   }

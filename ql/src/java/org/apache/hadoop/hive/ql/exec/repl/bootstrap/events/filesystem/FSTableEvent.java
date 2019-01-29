@@ -123,9 +123,6 @@ public class FSTableEvent implements TableEvent {
         tableDesc.setExternal(true);
       }
       tableDesc.setReplicationSpec(replicationSpec());
-      if (table.getTableType() == TableType.EXTERNAL_TABLE) {
-        tableDesc.setExternal(true);
-      }
       return tableDesc;
     } catch (Exception e) {
       throw new SemanticException(e);

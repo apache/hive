@@ -62,6 +62,10 @@ public class HiveWrapper {
             getColStats));
   }
 
+  public Tuple<Table> table(final Table tblObj) throws HiveException {
+    return new Tuple<>(functionForSpec, () -> tblObj);
+  }
+
   public static class Tuple<T> {
 
     interface Function<T> {

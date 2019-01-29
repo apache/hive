@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.LoadTable;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.TableContext;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -49,7 +50,9 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 
@@ -96,8 +99,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           of multiple databases once we have the basic flow to chain creating of tasks in place for
           a database ( directory )
       */
-      BootstrapEventsIterator iterator = work.iterator();
-      ConstraintEventsIterator constraintIterator = work.constraintIterator();
+      BootstrapEventsIterator iterator = work.bootstrapIterator();
+      ConstraintEventsIterator constraintIterator = work.constraintsIterator();
       /*
       This is used to get hold of a reference during the current creation of tasks and is initialized
       with "0" tasks such that it will be non consequential in any operations done with task tracker
@@ -241,7 +244,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (addAnotherLoadTask) {
         createBuilderTask(scope.rootTasks);
       }
-      if (!iterator.hasNext() && !constraintIterator.hasNext()) {
+
+      // Update last repl ID of the database only if the current dump is not incremental. If bootstrap
+      // is combined with incremental dump, it contains only tables to bootstrap. So, needn't change
+      // last repl ID of the database.
+      if (!iterator.hasNext() && !constraintIterator.hasNext() && !work.isIncrementalLoad()) {
         loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
         work.updateDbEventState(null);
       }
@@ -268,9 +275,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private void createEndReplLogTask(Context context, Scope scope,
-                                                  ReplLogger replLogger) throws SemanticException {
-    Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbInMetadata.getParameters());
+                                    ReplLogger replLogger) throws SemanticException {
+    Map<String, String> dbProps;
+    if (work.isIncrementalLoad()) {
+      dbProps = new HashMap<>();
+      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+                  work.incrementalLoadTasksBuilder().eventTo().toString());
+    } else {
+      Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
+      dbProps = dbInMetadata.getParameters();
+    }
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbProps);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork);
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);
@@ -351,13 +366,23 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private int executeIncrementalLoad(DriverContext driverContext) {
     try {
+      IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
+
+      // If incremental events are already applied, then check and perform if need to bootstrap any tables.
+      if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
+        if (work.hasBootstrapLoadTasks()) {
+          LOG.debug("Current incremental dump have tables to be bootstrapped. Switching to bootstrap "
+                  + "mode after applying all events.");
+          return executeBootStrapLoad(driverContext);
+        }
+      }
+
       List<Task<? extends Serializable>> childTasks = new ArrayList<>();
       int parallelism = conf.getIntVar(HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
       // during incremental we will have no parallelism from replication tasks since they are event based
       // and hence are linear. To achieve prallelism we have to use copy tasks(which have no DAG) for
       // all threads except one, in execution phase.
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
-      IncrementalLoadTasksBuilder builder = work.getIncrementalLoadTaskBuilder();
 
       // If the total number of tasks that can be created are less than the parallelism we can achieve
       // do nothing since someone is working on 1950's machine. else try to achieve max parallelism
@@ -383,8 +408,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       childTasks
           .addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(trackerForCopy));
 
-      // either the incremental has more work or the external table file copy has more paths to process
-      if (builder.hasMoreWork() || work.getPathsToCopyIterator().hasNext()) {
+      // Either the incremental has more work or the external table file copy has more paths to process.
+      // Once all the incremental events are applied and external tables file copies are done, enable
+      // bootstrap of tables if exist.
+      if (builder.hasMoreWork() || work.getPathsToCopyIterator().hasNext() || work.hasBootstrapLoadTasks()) {
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
       }
       this.childTasks = childTasks;

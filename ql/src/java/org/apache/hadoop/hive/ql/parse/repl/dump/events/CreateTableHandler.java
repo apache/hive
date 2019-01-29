@@ -54,7 +54,7 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
 
     Table qlMdTable = new Table(tobj);
 
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
       return;
     }
 

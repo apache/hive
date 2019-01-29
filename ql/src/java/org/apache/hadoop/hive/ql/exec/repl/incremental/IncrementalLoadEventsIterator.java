@@ -22,7 +22,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class IncrementalLoadEventsIterator implements Iterator<FileStatus> {
   public IncrementalLoadEventsIterator(String loadPath, HiveConf conf) throws IOException {
     Path eventPath = new Path(loadPath);
     FileSystem fs = eventPath.getFileSystem(conf);
-    eventDirs = fs.listStatus(eventPath, EximUtil.getDirectoryFilter(fs));
+    eventDirs = fs.listStatus(eventPath, ReplUtils.getEventsDirectoryFilter(fs));
     if ((eventDirs == null) || (eventDirs.length == 0)) {
       currentIndex = 0;
       numEvents = 0;

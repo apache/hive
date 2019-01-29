@@ -17,12 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -44,8 +47,7 @@ public class ReplLoadWork implements Serializable {
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
   private final transient BootstrapEventsIterator bootstrapIterator;
-  private final transient IncrementalLoadEventsIterator incrementalIterator;
-  private final transient IncrementalLoadTasksBuilder incrementalLoad;
+  private transient IncrementalLoadTasksBuilder incrementalLoadTasksBuilder;
   private transient Task<? extends Serializable> rootTask;
   private final transient Iterator<DirCopyWork> pathsToCopyIterator;
 
@@ -65,26 +67,36 @@ public class ReplLoadWork implements Serializable {
     this.dbNameToLoadIn = dbNameToLoadIn;
     rootTask = null;
     if (isIncrementalDump) {
-      incrementalIterator = new IncrementalLoadEventsIterator(dumpDirectory, hiveConf);
-      this.bootstrapIterator = null;
-      this.constraintsIterator = null;
-      incrementalLoad =
+      incrementalLoadTasksBuilder =
           new IncrementalLoadTasksBuilder(dbNameToLoadIn, tableNameToLoadIn, dumpDirectory,
-              incrementalIterator, hiveConf, eventTo);
+                  new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo);
+
+      /*
+       * If the current incremental dump also includes bootstrap for some tables, then create iterator
+       * for the same.
+       */
+      Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
+      FileSystem fs = incBootstrapDir.getFileSystem(hiveConf);
+      if (fs.exists(incBootstrapDir)) {
+        this.bootstrapIterator = new BootstrapEventsIterator(incBootstrapDir.toString(), dbNameToLoadIn, hiveConf);
+        this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
+      } else {
+        this.bootstrapIterator = null;
+        this.constraintsIterator = null;
+      }
     } else {
       this.bootstrapIterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
       this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
-      incrementalIterator = null;
-      incrementalLoad = null;
+      incrementalLoadTasksBuilder = null;
     }
     this.pathsToCopyIterator = pathsToCopyIterator.iterator();
   }
 
-  public BootstrapEventsIterator iterator() {
+  BootstrapEventsIterator bootstrapIterator() {
     return bootstrapIterator;
   }
 
-  public ConstraintEventsIterator constraintIterator() {
+  ConstraintEventsIterator constraintsIterator() {
     return constraintsIterator;
   }
 
@@ -104,16 +116,17 @@ public class ReplLoadWork implements Serializable {
     return state != null;
   }
 
-  public boolean isIncrementalLoad() {
-    return incrementalIterator != null;
+  boolean isIncrementalLoad() {
+    return incrementalLoadTasksBuilder != null;
   }
 
-  public IncrementalLoadEventsIterator getIncrementalIterator() {
-    return incrementalIterator;
+  boolean hasBootstrapLoadTasks() {
+    return (((bootstrapIterator != null) && bootstrapIterator.hasNext())
+            || ((constraintsIterator != null) && constraintsIterator.hasNext()));
   }
 
-  public IncrementalLoadTasksBuilder getIncrementalLoadTaskBuilder() {
-    return incrementalLoad;
+  IncrementalLoadTasksBuilder incrementalLoadTasksBuilder() {
+    return incrementalLoadTasksBuilder;
   }
 
   public Task<? extends Serializable> getRootTask() {
