@@ -92,7 +92,7 @@ public class IncrementalLoadTasksBuilder {
   }
 
   public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
-      ReplLoadWork loadWork, TaskTracker tracker) throws Exception {
+                                            TaskTracker tracker) throws Exception {
     Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
     Task<? extends Serializable> taskChainTail = evTaskRoot;
     Long lastReplayedEvent = null;
@@ -173,9 +173,6 @@ public class IncrementalLoadTasksBuilder {
       this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
               taskChainTail.getClass(), taskChainTail.getId(),
               barrierTask.getClass(), barrierTask.getId());
-      if (loadWork.getPathsToCopyIterator().hasNext()) {
-        taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
-      }
     }
     return evTaskRoot;
   }

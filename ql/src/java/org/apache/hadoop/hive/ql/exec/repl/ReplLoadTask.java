@@ -64,6 +64,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return (work.isIncrementalLoad() ? "REPL_INCREMENTAL_LOAD" : "REPL_BOOTSTRAP_LOAD");
   }
 
+  @Override
+  public StageType getType() {
+    return work.isIncrementalLoad() ? StageType.REPL_INCREMENTAL_LOAD : StageType.REPL_BOOTSTRAP_LOAD;
+  }
+
   /**
    * Provides the root Tasks created as a result of this loadTask run which will be executed
    * by the driver. It does not track details across multiple runs of LoadTask.
@@ -359,11 +364,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(loadTask));
   }
 
-  @Override
-  public StageType getType() {
-    return work.isIncrementalLoad() ? StageType.REPL_INCREMENTAL_LOAD : StageType.REPL_BOOTSTRAP_LOAD;
-  }
-
   private int executeIncrementalLoad(DriverContext driverContext) {
     try {
       IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
@@ -380,7 +380,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       List<Task<? extends Serializable>> childTasks = new ArrayList<>();
       int parallelism = conf.getIntVar(HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
       // during incremental we will have no parallelism from replication tasks since they are event based
-      // and hence are linear. To achieve prallelism we have to use copy tasks(which have no DAG) for
+      // and hence are linear. To achieve parallelism we have to use copy tasks(which have no DAG) for
       // all threads except one, in execution phase.
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
 
@@ -399,14 +399,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       TaskTracker trackerForReplIncremental = new TaskTracker(calculatedMaxNumOfTasks);
       Task<? extends Serializable> incrementalLoadTaskRoot =
-          builder.build(driverContext, getHive(), LOG, work, trackerForReplIncremental);
+              builder.build(driverContext, getHive(), LOG, trackerForReplIncremental);
       // we are adding the incremental task first so that its always processed first,
       // followed by dir copy tasks if capacity allows.
       childTasks.add(incrementalLoadTaskRoot);
 
       TaskTracker trackerForCopy = new TaskTracker(maxNumOfHDFSTasks);
-      childTasks
-          .addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(trackerForCopy));
+      childTasks.addAll(new ExternalTableCopyTaskBuilder(work, conf).tasks(trackerForCopy));
 
       // Either the incremental has more work or the external table file copy has more paths to process.
       // Once all the incremental events are applied and external tables file copies are done, enable

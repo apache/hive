@@ -201,7 +201,7 @@ public class Utils {
   }
 
   public static boolean shouldReplicate(NotificationEvent tableForEvent,
-      ReplicationSpec replicationSpec, Hive db, HiveConf hiveConf) {
+      ReplicationSpec replicationSpec, Hive db, boolean isEventDump, HiveConf hiveConf) {
     Table table;
     try {
       table = db.getTable(tableForEvent.getDbName(), tableForEvent.getTableName());
@@ -211,7 +211,7 @@ public class Utils {
               .getTableName(), e);
       return false;
     }
-    return shouldReplicate(replicationSpec, table, false, hiveConf);
+    return shouldReplicate(replicationSpec, table, isEventDump, hiveConf);
   }
 
   static List<Path> getDataPathList(Path fromPath, ReplicationSpec replicationSpec, HiveConf conf)

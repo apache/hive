@@ -398,7 +398,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
   public void bootstrapExternalTablesDuringIncrementalPhase() throws Throwable {
     List<String> loadWithClause = externalTableBasePathWithClause();
     List<String> dumpWithClause = Collections.singletonList(
-      "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
+        "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
     );
 
     WarehouseInstance.Tuple tuple = primary

@@ -193,6 +193,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot);
     dmd.write();
 
+    // If external tables are enabled for replication and
+    // - If bootstrap is enabled, then need to combine bootstrap dump of external tables.
+    // - If metadata-only dump is enabled, then shall skip dumping external tables data locations to
+    //   _external_tables_info file. If not metadata-only, then dump the data locations.
     if (conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)
         && (!conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)
         || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES))) {
