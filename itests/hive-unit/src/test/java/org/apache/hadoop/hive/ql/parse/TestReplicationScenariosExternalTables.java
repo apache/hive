@@ -216,7 +216,13 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
-    List<String> loadWithClause = externalTableBasePathWithClause();
+    // Create base directory but use HDFS path without schema or authority details.
+    // Hive should pick up the local cluster's HDFS schema/authority.
+    externalTableBasePathWithClause();
+    List<String> loadWithClause = Collections.singletonList(
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
+                    + REPLICA_EXTERNAL_BASE + "'"
+    );
 
     WarehouseInstance.Tuple bootstrapTuple = primary.run("use " + primaryDbName)
         .run("create external table a (i int, j int) "
