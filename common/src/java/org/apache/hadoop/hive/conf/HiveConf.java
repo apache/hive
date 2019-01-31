@@ -493,11 +493,12 @@ public class HiveConf extends Configuration {
           + " incremental phase, then need to set 'hive.repl.bootstrap.external.tables' to true for the first \n"
           + " repl dump to bootstrap all external tables."),
     REPL_BOOTSTRAP_EXTERNAL_TABLES("hive.repl.bootstrap.external.tables", false,
-        "Indicates if repl dump should bootstrap the information about external tables during incremental \n"
-          + "phase of replication. It should be used in conjunction with 'hive.repl.include.external.tables' \n"
-          + "set to true. If 'hive.repl.include.external.tables' is set to false, then this config parameter \n"
-          + "has no effect. This config parameter should be set to true only once for repl dump after enabling \n"
-          + "'hive.repl.include.external.tables' to true."),
+        "Indicates if repl dump should bootstrap the information about external tables along with incremental \n"
+          + "dump for replication. It is recommended to keep this config parameter as false always and should be \n"
+          + "set to true only via WITH clause of REPL DUMP command. It should be used in conjunction with \n"
+          + "'hive.repl.include.external.tables' when sets to true. If 'hive.repl.include.external.tables' is \n"
+          + "set to false, then this config parameter has no effect. It should be set to true only once for \n"
+          + "incremental repl dump on each existing replication policy after enabling external tables replication."),
     REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
           "If its set to true, REPL LOAD copies data files directly to the target table/partition location \n"
           + "instead of copying to staging directory first and then move to target location. This optimizes \n"
