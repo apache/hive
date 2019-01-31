@@ -131,7 +131,7 @@ PREHOOK: Input: escape_comments_db@escape_comments_view1
 POSTHOOK: query: show create table escape_comments_view1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: escape_comments_db@escape_comments_view1
-CREATE VIEW `escape_comments_view1` AS SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`
+CREATE VIEW `escape_comments_view1` AS SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_view1`
 PREHOOK: query: describe formatted escape_comments_view1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: escape_comments_db@escape_comments_view1
@@ -163,7 +163,7 @@ Sort Columns:       	[]                  	NULL
 	NULL	NULL
 # View Information	NULL	NULL
 Original Query:     	select col1 from escape_comments_tbl1	NULL
-Expanded Query:     	SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`	NULL
+Expanded Query:     	SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_view1`	NULL
 PREHOOK: query: drop database escape_comments_db cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:escape_comments_db
