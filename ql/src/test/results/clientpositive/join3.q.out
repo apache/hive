@@ -20,9 +20,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n46
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0, Stage-3
-  Stage-3 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0, Stage-4
+  Stage-4 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -60,6 +61,31 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col0
+          Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: src3
             filterExpr: key is not null (type: boolean)
@@ -81,11 +107,9 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Inner Join 0 to 2
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
-            2 _col0 (type: string)
           outputColumnNames: _col0, _col3
           Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
@@ -126,7 +150,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dest1_n46
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats Work
       Basic Stats Work:
       Column Stats Desc:
@@ -134,7 +158,7 @@ STAGE PLANS:
           Column Types: int, string
           Table: default.dest1_n46
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
