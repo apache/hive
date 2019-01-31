@@ -1,6 +1,6 @@
 --! qt:dataset:src1
 set hive.auto.convert.join = false;
-
+set hive.merge.nway.joins=true;
 -- SORT_QUERY_RESULTS
 
 --HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition

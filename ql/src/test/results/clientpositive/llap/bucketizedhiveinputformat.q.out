@@ -22,7 +22,8 @@ POSTHOOK: query: CREATE TABLE T2_n74(name STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2_n74
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: INSERT OVERWRITE TABLE T2_n74 SELECT * FROM (
 SELECT tmp1.name as name FROM (
   SELECT name, 'MMM' AS n FROM T1_n125) tmp1 
