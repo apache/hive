@@ -111,7 +111,7 @@ STAGE PLANS:
         Create View
           partition columns: key string
           columns: value string
-          expanded text: SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `default.partition_mv_1`
+          expanded text: SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`
           name: default.partition_mv_1
           original text: SELECT value, key FROM src_txn where key > 200 and key < 250
           rewrite enabled: true
@@ -256,7 +256,7 @@ Sort Columns:       	[]
 	 	 
 # Materialized View Information	 	 
 Original Query:     	SELECT value, key FROM src_txn where key > 200 and key < 250	 
-Expanded Query:     	SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `default.partition_mv_1`	 
+Expanded Query:     	SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
