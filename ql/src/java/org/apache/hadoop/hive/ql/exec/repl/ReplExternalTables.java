@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -38,7 +39,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
@@ -62,13 +62,21 @@ public final class ReplExternalTables {
 
   private ReplExternalTables(){}
 
-  public static String externalTableLocation(HiveConf hiveConf, String location) {
-    String currentPath = new Path(location).toUri().getPath();
+  public static String externalTableLocation(HiveConf hiveConf, String location) throws SemanticException {
     String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
-    URI basePath = new Path(baseDir).toUri();
-    String dataPath = currentPath.replaceFirst(Path.SEPARATOR, basePath.getPath() + Path.SEPARATOR);
-    Path dataLocation = new Path(basePath.getScheme(), basePath.getAuthority(), dataPath);
-    LOG.debug("incoming location: {} , new location: {}", location, dataLocation.toString());
+    Path basePath = new Path(baseDir);
+    Path currentPath = new Path(location);
+    String targetPathWithoutSchemeAndAuth = basePath.toUri().getPath() + currentPath.toUri().getPath();
+    Path dataLocation;
+    try {
+      dataLocation = PathBuilder.fullyQualifiedHDFSUri(
+              new Path(targetPathWithoutSchemeAndAuth),
+              basePath.getFileSystem(hiveConf)
+      );
+    } catch (IOException e) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
+    }
+    LOG.info("Incoming external table location: {} , new location: {}", location, dataLocation.toString());
     return dataLocation.toString();
   }
 
