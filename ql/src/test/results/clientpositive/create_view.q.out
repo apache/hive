@@ -175,7 +175,7 @@ STAGE PLANS:
       Create View Operator:
         Create View
           columns: valoo string
-          expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view0`
+          expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view0`
           name: default.view0
           original text: SELECT upper(value) FROM src WHERE key=86
 
@@ -380,7 +380,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 Original Query:     	SELECT upper(value) FROM src WHERE key=86	 
-Expanded Query:     	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view3`	 
+Expanded Query:     	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view3`	 
 PREHOOK: query: ALTER VIEW view3 SET TBLPROPERTIES ("biggest" = "loser")
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@view3
@@ -429,7 +429,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 Original Query:     	SELECT upper(value) FROM src WHERE key=86	 
-Expanded Query:     	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view3`	 
+Expanded Query:     	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view3`	 
 PREHOOK: query: CREATE TABLE table1_n4 (key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -772,7 +772,7 @@ Sort Columns:       	[]
 Original Query:     	SELECT test_translate('abc', 'a', 'b')	 
 	                    	FROM table1_n4      
 Expanded Query:     	SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 
-	                    	FROM `default`.`table1_n4`) `default.view8`
+	                    	FROM `default`.`table1_n4`) `view8`
 PREHOOK: query: SELECT * FROM view8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n4
@@ -847,7 +847,7 @@ Sort Columns:       	[]
 Original Query:     	SELECT test_max(length(value))	 
 	                    	FROM src            
 Expanded Query:     	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
-	                    	FROM `default`.`src`) `default.view9`
+	                    	FROM `default`.`src`) `view9`
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -922,7 +922,7 @@ Sort Columns:       	[]
 Original Query:     	SELECT test_max(length(value))	 
 	                    	FROM src            
 Expanded Query:     	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
-	                    	FROM `default`.`src`) `default.view9`
+	                    	FROM `default`.`src`) `view9`
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

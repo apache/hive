@@ -402,7 +402,7 @@ Original Query:     	SELECT key, value
 	                    	WHERE key=86        
 Expanded Query:     	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
 	                    	FROM `default`.`src`
-	                    	WHERE `src`.`key`=86) `default.vp3`
+	                    	WHERE `src`.`key`=86) `vp3`
 PREHOOK: query: ALTER VIEW vp3
 ADD PARTITION (v='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS

@@ -12636,7 +12636,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sb.append(" FROM (");
         sb.append(expandedText);
         sb.append(") ");
-        sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
+        sb.append(HiveUtils.unparseIdentifier(Utilities.getDbTableName(createVwDesc.getViewName())[1], conf));
         expandedText = sb.toString();
       }
     } else {
@@ -12670,7 +12670,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sb.append(" FROM (");
         sb.append(expandedText);
         sb.append(") ");
-        sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
+        sb.append(HiveUtils.unparseIdentifier(Utilities.getDbTableName(createVwDesc.getViewName())[1], conf));
         expandedText = sb.toString();
       }
 
