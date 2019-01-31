@@ -70,33 +70,35 @@ Stage-0
     limit:-1
     Stage-1
       Map 1 vectorized, llap
-      File Output Operator [FS_34]
-        Map Join Operator [MAPJOIN_33] (rows=2 width=4)
-          Conds:SEL_32._col0=RS_27._col0(Left Outer),SEL_32._col0=RS_30._col0(Inner),Output:["_col0","_col1","_col2"]
-        <-Map 2 [BROADCAST_EDGE] vectorized, llap
-          BROADCAST [RS_27]
-            PartitionCols:_col0
-            Select Operator [SEL_26] (rows=1 width=4)
-              Output:["_col0"]
-              Filter Operator [FIL_25] (rows=1 width=4)
-                predicate:id is not null
-                TableScan [TS_3] (rows=1 width=4)
-                  default@test_2_n2,t2,Tbl:COMPLETE,Col:NONE,Output:["id"]
+      File Output Operator [FS_38]
+        Map Join Operator [MAPJOIN_37] (rows=1 width=4)
+          Conds:MAPJOIN_36._col0=RS_33._col0(Inner),Output:["_col0","_col1","_col2"]
         <-Map 3 [BROADCAST_EDGE] vectorized, llap
-          BROADCAST [RS_30]
+          BROADCAST [RS_33]
             PartitionCols:_col0
-            Select Operator [SEL_29] (rows=1 width=4)
+            Select Operator [SEL_32] (rows=1 width=4)
               Output:["_col0"]
-              Filter Operator [FIL_28] (rows=1 width=4)
+              Filter Operator [FIL_31] (rows=1 width=4)
                 predicate:id is not null
                 TableScan [TS_6] (rows=1 width=4)
                   default@test_3_n0,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["id"]
-        <-Select Operator [SEL_32] (rows=1 width=4)
-            Output:["_col0"]
-            Filter Operator [FIL_31] (rows=1 width=4)
-              predicate:id is not null
-              TableScan [TS_0] (rows=1 width=4)
-                default@test_1_n2,t1,Tbl:COMPLETE,Col:COMPLETE,Output:["id"]
+        <-Map Join Operator [MAPJOIN_36] (rows=1 width=4)
+            Conds:SEL_35._col0=RS_30._col0(Left Outer),Output:["_col0","_col1"]
+          <-Map 2 [BROADCAST_EDGE] vectorized, llap
+            BROADCAST [RS_30]
+              PartitionCols:_col0
+              Select Operator [SEL_29] (rows=1 width=4)
+                Output:["_col0"]
+                Filter Operator [FIL_28] (rows=1 width=4)
+                  predicate:id is not null
+                  TableScan [TS_3] (rows=1 width=4)
+                    default@test_2_n2,t2,Tbl:COMPLETE,Col:NONE,Output:["id"]
+          <-Select Operator [SEL_35] (rows=1 width=4)
+              Output:["_col0"]
+              Filter Operator [FIL_34] (rows=1 width=4)
+                predicate:id is not null
+                TableScan [TS_0] (rows=1 width=4)
+                  default@test_1_n2,t1,Tbl:COMPLETE,Col:COMPLETE,Output:["id"]
 
 PREHOOK: query: SELECT t1.id, t2.id, t3.id
 FROM test_1_n2 t1

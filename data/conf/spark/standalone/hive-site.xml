@@ -159,6 +159,11 @@
 </property>
 
 <property>
+  <name>hive.merge.nway.joins</name>
+  <value>true</value>
+</property>
+
+<property>
   <name>hive.auto.convert.join</name>
   <value>false</value>
   <description>Whether Hive enable the optimization about converting common join into mapjoin based on the input file size</description>

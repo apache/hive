@@ -1068,12 +1068,13 @@ POSTHOOK: Input: default@t2_n85
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3, Stage-5
-  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-3 depends on stages: Stage-2, Stage-6
   Stage-4 is a root stage
-  Stage-5 depends on stages: Stage-4, Stage-6
-  Stage-6 is a root stage
-  Stage-0 depends on stages: Stage-2
+  Stage-5 is a root stage
+  Stage-6 depends on stages: Stage-5, Stage-7
+  Stage-7 is a root stage
+  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1127,6 +1128,32 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: int)
               Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: bigint), _col2 (type: bigint)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join 0 to 1
+          keys:
+            0 _col0 (type: int)
+            1 _col0 (type: int)
+          outputColumnNames: _col0, _col2, _col3
+          Statistics: Num rows: 2 Data size: 171 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: int)
+              Statistics: Num rows: 2 Data size: 171 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col2 (type: bigint), _col3 (type: bigint)
           TableScan
             Reduce Output Operator
               key expressions: _col2 (type: int)
@@ -1138,29 +1165,27 @@ STAGE PLANS:
         Join Operator
           condition map:
                Left Outer Join 0 to 1
-               Left Outer Join 0 to 2
           keys:
             0 _col0 (type: int)
-            1 _col0 (type: int)
-            2 _col2 (type: int)
+            1 _col2 (type: int)
           outputColumnNames: _col0, _col2, _col3, _col5
-          Statistics: Num rows: 4 Data size: 343 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (((_col3 < _col2) is not true or (_col2 = 0L) or _col2 is null or _col5 is not null or _col0 is null) and (_col0 is not null or (_col2 = 0L) or _col2 is null or _col5 is not null) and (_col5 is null or (_col2 = 0L) or _col2 is null)) (type: boolean)
-            Statistics: Num rows: 4 Data size: 343 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 4 Data size: 343 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 4 Data size: 343 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1197,7 +1222,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1235,7 +1260,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -1267,7 +1292,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce
       Map Operator Tree:
           TableScan

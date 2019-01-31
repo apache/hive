@@ -659,7 +659,8 @@ POSTHOOK: query: drop materialized view mv1_part_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_part_n0 partitioned on (deptno2) as
 select depts_n00.name, dependents_n00.name as name2, emps_n00.deptno, depts_n00.deptno as deptno2, dependents_n00.empid
 from depts_n00, dependents_n00, emps_n00
