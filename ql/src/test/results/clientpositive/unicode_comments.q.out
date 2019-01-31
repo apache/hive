@@ -110,7 +110,7 @@ PREHOOK: Input: unicode_comments_db@unicode_comments_view1
 POSTHOOK: query: show create table unicode_comments_view1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: unicode_comments_db@unicode_comments_view1
-CREATE VIEW `unicode_comments_view1` AS SELECT `col1` AS `col1` FROM (select `unicode_comments_tbl1`.`col1` from `unicode_comments_db`.`unicode_comments_tbl1`) `unicode_comments_db.unicode_comments_view1`
+CREATE VIEW `unicode_comments_view1` AS SELECT `col1` AS `col1` FROM (select `unicode_comments_tbl1`.`col1` from `unicode_comments_db`.`unicode_comments_tbl1`) `unicode_comments_view1`
 PREHOOK: query: describe formatted unicode_comments_view1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: unicode_comments_db@unicode_comments_view1
@@ -141,7 +141,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 Original Query:     	select col1 from unicode_comments_tbl1	 
-Expanded Query:     	SELECT `col1` AS `col1` FROM (select `unicode_comments_tbl1`.`col1` from `unicode_comments_db`.`unicode_comments_tbl1`) `unicode_comments_db.unicode_comments_view1`	 
+Expanded Query:     	SELECT `col1` AS `col1` FROM (select `unicode_comments_tbl1`.`col1` from `unicode_comments_db`.`unicode_comments_tbl1`) `unicode_comments_view1`	 
 PREHOOK: query: drop database unicode_comments_db cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:unicode_comments_db
