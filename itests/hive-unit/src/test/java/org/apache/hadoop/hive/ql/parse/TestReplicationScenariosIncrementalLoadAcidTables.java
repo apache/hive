@@ -81,6 +81,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
         put("hive.mapred.mode", "nonstrict");
         put("mapred.input.dir.recursive", "true");
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("hive.stats.autogather", "false");
     }};
 
     acidConfs.putAll(overrides);
@@ -91,6 +92,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
         put("hive.support.concurrency", "false");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
         put("hive.metastore.client.capability.check", "false");
+        put("hive.stats.autogather", "false");
     }};
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }

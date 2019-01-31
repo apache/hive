@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -391,6 +392,97 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       assertTrue(replica.miniDFSCluster.getFileSystem().exists(new Path(path)));
     }
 
+  }
+
+  @Test
+  public void bootstrapExternalTablesDuringIncrementalPhase() throws Throwable {
+    List<String> loadWithClause = externalTableBasePathWithClause();
+    List<String> dumpWithClause = Collections.singletonList(
+        "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
+    );
+
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("insert into table t1 values (2)")
+            .run("create external table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='us') values ('austin')")
+            .run("insert into table t2 partition(country='france') values ('paris')")
+            .dump(primaryDbName, null, dumpWithClause);
+
+    // the _external_tables_file info only should be created if external tables are to be replicated not otherwise
+    assertFalse(primary.miniDFSCluster.getFileSystem()
+            .exists(new Path(new Path(tuple.dumpLocation, primaryDbName.toLowerCase()), FILE_NAME)));
+
+    replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyFailure(new String[] {"t1" })
+            .run("show tables like 't2'")
+            .verifyFailure(new String[] {"t2" });
+
+    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
+                                   "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
+    tuple = primary.run("use " + primaryDbName)
+            .run("drop table t1")
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (10)")
+            .run("insert into table t3 values (20)")
+            .run("create table t4 as select * from t3")
+            .dump(primaryDbName, tuple.lastReplicationId, dumpWithClause);
+
+    // the _external_tables_file info should be created as external tables are to be replicated.
+    assertTrue(primary.miniDFSCluster.getFileSystem()
+            .exists(new Path(tuple.dumpLocation, FILE_NAME)));
+
+    // verify that the external table info is written correctly for incremental
+    assertExternalFileInfo(Arrays.asList("t2", "t3"),
+            new Path(tuple.dumpLocation, FILE_NAME));
+
+    // _bootstrap directory should be created as bootstrap enabled on external tables.
+    Path dumpPath = new Path(tuple.dumpLocation, INC_BOOTSTRAP_ROOT_DIR_NAME);
+    assertTrue(primary.miniDFSCluster.getFileSystem().exists(dumpPath));
+
+    // _bootstrap/<db_name>/t2
+    // _bootstrap/<db_name>/t3
+    Path dbPath = new Path(dumpPath, primaryDbName);
+    Path tblPath = new Path(dbPath, "t2");
+    assertTrue(primary.miniDFSCluster.getFileSystem().exists(tblPath));
+    tblPath = new Path(dbPath, "t3");
+    assertTrue(primary.miniDFSCluster.getFileSystem().exists(tblPath));
+
+    replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
+            .status(replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyFailure(new String[] {"t1" })
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("show tables like 't3'")
+            .verifyResult("t3")
+            .run("show tables like 't4'")
+            .verifyResult("t4");
+
+    // Drop source tables to see if target points to correct data or not after bootstrap load.
+    primary.run("use " + primaryDbName)
+            .run("drop table t2")
+            .run("drop table t3");
+
+    // Create table event for t4 should be applied along with bootstrapping of t2 and t3
+    replica.run("use " + replicatedDbName)
+            .run("select place from t2 where country = 'us'")
+            .verifyResult("austin")
+            .run("select place from t2 where country = 'france'")
+            .verifyResult("paris")
+            .run("select id from t3 order by id")
+            .verifyResults(Arrays.asList("10", "20"))
+            .run("select id from t4 order by id")
+            .verifyResults(Arrays.asList("10", "20"));
   }
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
