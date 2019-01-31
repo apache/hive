@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -56,11 +58,18 @@ import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMig
 
 public class ReplUtils {
 
+  public static final String LAST_REPL_ID_KEY = "hive.repl.last.repl.id";
   public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
 
   // write id allocated in the current execution context which will be passed through config to be used by different
   // tasks.
   public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
+
+  public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
+  public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
+
+  // Root directory for dumping bootstrapped tables along with incremental events dump.
+  public static final String INC_BOOTSTRAP_ROOT_DIR_NAME = "_bootstrap";
 
   // Migrating to transactional tables in bootstrap load phase.
   // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
@@ -166,5 +175,16 @@ public class ReplUtils {
       }
     }
     return taskList;
+  }
+
+  // Path filters to filter only events (directories) excluding "_bootstrap"
+  public static PathFilter getEventsDirectoryFilter(final FileSystem fs) {
+    return p -> {
+      try {
+        return fs.isDirectory(p) && !p.getName().equalsIgnoreCase(ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    };
   }
 }
