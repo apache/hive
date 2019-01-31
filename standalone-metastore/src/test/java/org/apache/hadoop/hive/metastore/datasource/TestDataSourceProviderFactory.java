@@ -46,12 +46,12 @@ public class TestDataSourceProviderFactory {
   @Test
   public void testNoDataSourceCreatedWithoutProps() throws SQLException {
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNull(dsp);
 
-    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, "dummy");
 
-    dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNull(dsp);
   }
 
@@ -62,7 +62,7 @@ public class TestDataSourceProviderFactory {
     conf.set(BoneCPDataSourceProvider.BONECP + ".firstProp", "value");
     conf.set(BoneCPDataSourceProvider.BONECP + ".secondProp", "value");
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);
@@ -75,7 +75,7 @@ public class TestDataSourceProviderFactory {
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
     conf.set(BoneCPDataSourceProvider.BONECP + ".initSQL", "select 1 from dual");
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);
@@ -89,7 +89,7 @@ public class TestDataSourceProviderFactory {
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
     conf.set(BoneCPDataSourceProvider.BONECP + ".acquireRetryDelayInMs", "599");
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);
@@ -103,7 +103,7 @@ public class TestDataSourceProviderFactory {
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
     conf.set(BoneCPDataSourceProvider.BONECP + ".disableJMX", "true");
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);
@@ -118,7 +118,7 @@ public class TestDataSourceProviderFactory {
     // This is needed to prevent the HikariDataSource from trying to connect to the DB
     conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);
@@ -132,7 +132,7 @@ public class TestDataSourceProviderFactory {
     conf.set(HikariCPDataSourceProvider.HIKARI + ".connectionInitSql", "select 1 from dual");
     conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);
@@ -147,7 +147,7 @@ public class TestDataSourceProviderFactory {
     conf.set(HikariCPDataSourceProvider.HIKARI + ".idleTimeout", "59999");
     conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);
@@ -162,7 +162,7 @@ public class TestDataSourceProviderFactory {
     conf.set(HikariCPDataSourceProvider.HIKARI + ".allowPoolSuspension", "false");
     conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
 
-    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
 
     DataSource ds = dsp.create(conf);

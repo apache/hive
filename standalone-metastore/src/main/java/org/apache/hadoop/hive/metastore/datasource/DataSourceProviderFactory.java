@@ -18,30 +18,34 @@
 package org.apache.hadoop.hive.metastore.datasource;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 /**
  * Create a DataSourceProvider for a connectionPool configured in a hadoop
  * Configuration object.
  */
 public abstract  class DataSourceProviderFactory {
-
-  private static final ImmutableList<DataSourceProvider> FACTORIES =
-      ImmutableList.<DataSourceProvider>builder().add(new HikariCPDataSourceProvider(), new BoneCPDataSourceProvider()).build();
+  private static final ImmutableList<DataSourceProvider> FACTORIES = ImmutableList.of(
+    new HikariCPDataSourceProvider(),
+    new BoneCPDataSourceProvider());
 
   /**
+   * The data source providers declare if they are supported or not based on the config.
+   * This function looks through all the data source providers and picks the first one which is
+   * supported. If no data source provider is found, returns a null.
+   *
    * @param hdpConfig hadoop configuration
-   * @return factory for the configured datanucleus.connectionPoolingType
+   * @return factory for the configured datanucleus.connectionPoolingType or null if no supported
+   *         data source providers are found.
    */
-  public static DataSourceProvider getDataSourceProvider(Configuration hdpConfig) {
-
-    for (DataSourceProvider factory : FACTORIES) {
-
-      if (factory.supports(hdpConfig)) {
-        return factory;
-      }
-    }
-    return null;
+  public static DataSourceProvider tryGetDataSourceProviderOrNull(Configuration hdpConfig) {
+    final String configuredPoolingType = MetastoreConf.getVar(hdpConfig,
+        MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE);
+    return Iterables.tryFind(FACTORIES, factory -> {
+      String poolingType = factory.getPoolingType();
+      return poolingType != null && poolingType.equalsIgnoreCase(configuredPoolingType);
+    }).orNull();
   }
-
 }

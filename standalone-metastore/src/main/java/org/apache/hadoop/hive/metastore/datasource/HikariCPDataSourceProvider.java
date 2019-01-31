@@ -17,16 +17,18 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
+import java.sql.SQLException;
+import java.util.Properties;
+import javax.sql.DataSource;
+
+import com.codahale.metrics.MetricRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
-import java.sql.SQLException;
-import java.util.Properties;
 
 /**
  * DataSourceProvider for the HikariCP connection pool.
@@ -35,7 +37,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   private static final Logger LOG = LoggerFactory.getLogger(HikariCPDataSourceProvider.class);
 
-  public static final String HIKARI = "hikari";
+  static final String HIKARI = "hikari";
   private static final String CONNECTION_TIMEOUT_PROPERTY= "hikari.connectionTimeout";
 
   @Override
@@ -64,7 +66,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setPassword(passwd);
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
-    return new HikariDataSource(config);
+
+    return new HikariDataSource(initMetrics(config));
   }
 
   @Override
@@ -74,16 +77,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   }
 
   @Override
-  public boolean supports(Configuration configuration) {
-    String poolingType = MetastoreConf.getVar(configuration,
-            MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
-    if (HIKARI.equals(poolingType)) {
-      int hikariPropsNr = DataSourceProvider.getPrefixedProperties(configuration, HIKARI).size();
-      LOG.debug("Found " + hikariPropsNr + " nr. of hikari specific configurations");
-      return hikariPropsNr > 0;
-    }
-    LOG.debug("Configuration requested " + poolingType + " pooling, HikariCpDSProvider exiting");
-    return false;
+  public String getPoolingType() {
+    return HIKARI;
   }
 
   private Properties replacePrefix(Properties props) {
@@ -91,5 +86,13 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     props.forEach((key,value) ->
         newProps.put(key.toString().replaceFirst(HIKARI + ".", ""), value));
     return newProps;
+  }
+
+  private static HikariConfig initMetrics(final HikariConfig config) {
+    final MetricRegistry registry = Metrics.getRegistry();
+    if (registry != null) {
+      config.setMetricRegistry(registry);
+    }
+    return config;
   }
 }
