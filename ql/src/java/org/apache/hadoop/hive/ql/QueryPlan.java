@@ -75,6 +75,7 @@ public class QueryPlan implements Serializable {
 
   private String cboInfo;
   private String queryString;
+  private String optimizedCBOPlan;
   private String optimizedQueryString;
 
   private ArrayList<Task<? extends Serializable>> rootTasks;
@@ -759,6 +760,14 @@ public class QueryPlan implements Serializable {
 
   public void setOptimizedQueryString(String optimizedQueryString) {
     this.optimizedQueryString = optimizedQueryString;
+  }
+
+  public String getOptimizedCBOPlan() {
+    return this.optimizedCBOPlan;
+  }
+
+  public void setOptimizedCBOPlan(String optimizedCBOPlan) {
+    this.optimizedCBOPlan = optimizedCBOPlan;
   }
 
   public org.apache.hadoop.hive.ql.plan.api.Query getQuery() {
