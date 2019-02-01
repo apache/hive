@@ -692,7 +692,8 @@ public class Driver implements IDriver {
       schema = getSchema(sem, conf);
       plan = new QueryPlan(queryStr, sem, queryDisplay.getQueryStartTime(), queryId,
           queryState.getHiveOperation(), schema);
-      // save the optimized sql for the explain
+      // save the optimized plan and sql for the explain
+      plan.setOptimizedCBOPlan(ctx.getCalcitePlan());
       plan.setOptimizedQueryString(ctx.getOptimizedSql());
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);

@@ -140,14 +140,19 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outJSONObject;
   }
 
-  public String outputCboPlan(String cboPlan, PrintStream out, boolean jsonOutput)
-      throws JSONException {
-    if (out != null) {
-      out.println("CBO PLAN:");
-      out.println(cboPlan);
+  public JSONObject getJSONCBOPlan(PrintStream out, ExplainWork work) throws Exception {
+    JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
+    boolean jsonOutput = work.isFormatted();
+    String cboPlan = work.getCboPlan();
+    if (cboPlan != null) {
+      if (jsonOutput) {
+        outJSONObject.put("CBOPlan", cboPlan);
+      } else {
+        out.println("CBO PLAN:");
+        out.println(cboPlan);
+      }
     }
-
-    return jsonOutput ? cboPlan : null;
+    return outJSONObject;
   }
 
   public JSONObject getJSONLogicalPlan(PrintStream out, ExplainWork work) throws Exception {
@@ -236,7 +241,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
-      boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo, String optimizedSQL) throws Exception {
+      boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo,
+      String optimizedSQL) throws Exception {
 
     // If the user asked for a formatted output, dump the json output
     // in the output stream
@@ -392,8 +398,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       out = new PrintStream(outS);
 
       if (work.isCbo()) {
-        if (work.getCboPlan() != null) {
-          outputCboPlan(work.getCboPlan(), out, work.isFormatted());
+        JSONObject jsonCBOPlan = getJSONCBOPlan(out, work);
+        if (work.isFormatted()) {
+          out.print(jsonCBOPlan);
         }
       } else if (work.isLogical()) {
         JSONObject jsonLogicalPlan = getJSONLogicalPlan(out, work);

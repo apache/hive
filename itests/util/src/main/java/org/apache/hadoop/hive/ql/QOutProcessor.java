@@ -287,6 +287,10 @@ public class QOutProcessor {
     ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("for Spark session.*?:"),
             "#SPARK_SESSION_ID#:"));
+
+    ppm.add(new PatternReplacementPair(Pattern.compile("rowcount = [0-9]+(\\.[0-9]+(E[0-9]+)?)?, cumulative cost = \\{.*\\}, id = [0-9]*"),
+        "rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###"));
+
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
   /* This list may be modified by specific cli drivers to mask strings that change on every test */

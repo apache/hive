@@ -77,12 +77,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setDependency(true);
       } else if (explainOptions == HiveParser.KW_CBO) {
         config.setCbo(true);
-        if (i + 1 < childCount) {
-          if (ast.getChild(i + 1).getType() == HiveParser.KW_EXTENDED) {
-            config.setCboExtended(true);
-            i++;
-          }
-        }
+      } else if (explainOptions == HiveParser.KW_COST) {
+        config.setCboCost(true);
+      } else if (explainOptions == HiveParser.KW_JOINCOST) {
+        config.setCboJoinCost(true);
       } else if (explainOptions == HiveParser.KW_LOGICAL) {
         config.setLogical(true);
       } else if (explainOptions == HiveParser.KW_AUTHORIZATION) {
