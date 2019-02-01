@@ -152,6 +152,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOpMaterializationValidator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -532,10 +533,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
             if (this.ctx.isExplainPlan()) {
+              // Enrich explain with information derived from CBO
               ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
               if (explainConfig.isCbo()) {
-                if (explainConfig.isCboExtended()) {
-                  // Include join cost
+                if (!explainConfig.isCboJoinCost()) {
+                  // Include cost as provided by Calcite
+                  newPlan.getCluster().invalidateMetadataQuery();
+                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(DefaultRelMetadataProvider.INSTANCE));
+                }
+                if (explainConfig.isFormatted()) {
+                  this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+                } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
                   this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
                 } else {
                   // Do not include join cost

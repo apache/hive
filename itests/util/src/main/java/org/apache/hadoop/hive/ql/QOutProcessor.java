@@ -274,6 +274,10 @@ public class QOutProcessor {
     ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9_]+"), "attempt_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
+
+    ppm.add(new PatternReplacementPair(Pattern.compile("rowcount = [0-9]+(\\.[0-9]+(E[0-9]+)?)?, cumulative cost = \\{.*\\}, id = [0-9]*"),
+        "rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###"));
+
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
