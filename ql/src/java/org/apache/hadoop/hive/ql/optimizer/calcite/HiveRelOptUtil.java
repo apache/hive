@@ -47,7 +47,6 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rel.metadata.RelColumnOrigin;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -66,7 +65,6 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -1034,4 +1032,19 @@ public class HiveRelOptUtil extends RelOptUtil {
     }
     return null;
   }
+
+  /**
+   * Converts a relational expression to a string, showing information that will aid
+   * to parse the string back.
+   */
+  public static String toJsonString(final RelNode rel) {
+    if (rel == null) {
+      return null;
+    }
+
+    final HiveRelWriterImpl planWriter = new HiveRelWriterImpl();
+    rel.explain(planWriter);
+    return planWriter.asString();
+  }
+
 }
