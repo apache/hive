@@ -159,13 +159,6 @@ public class LoadPartitions {
   }
 
   private TaskTracker forNewTable() throws Exception {
-    Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
-    // If table doesn't exist, allow creating a new one only if the database state is older than the update.
-    // This in-turn applicable for partitions creation as well.
-    if ((parentDb != null) && (!event.replicationSpec().allowReplacementInto(parentDb.getParameters()))) {
-      return tracker;
-    }
-
     Iterator<AddPartitionDesc> iterator = event.partitionDescriptions(tableDesc).iterator();
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       AddPartitionDesc currentPartitionDesc = iterator.next();

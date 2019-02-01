@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.FUNCTIONS_ROOT_DIR_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.FUNCTIONS_ROOT_DIR_NAME;
 
 class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
   private static Logger LOG = LoggerFactory.getLogger(DatabaseEventsIterator.class);
@@ -122,7 +122,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
         while (remoteIterator.hasNext()) {
           LocatedFileStatus next = remoteIterator.next();
           // we want to skip this file, this also means there cant be a table with name represented
-          // by constantReplExternalTables.FILE_NAME
+          // by constant ReplExternalTables.FILE_NAME
           if(next.getPath().toString().endsWith(ReplExternalTables.FILE_NAME)) {
             continue;
           }

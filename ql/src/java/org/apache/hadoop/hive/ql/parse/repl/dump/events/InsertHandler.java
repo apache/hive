@@ -54,7 +54,7 @@ class InsertHandler extends AbstractEventHandler {
       withinContext.replicationSpec.setNoop(true);
     }
 
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
       return;
     }
 

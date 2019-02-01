@@ -55,7 +55,7 @@ class UpdatePartColStatHandler extends AbstractEventHandler {
       return;
     }
 
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj),
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, new Table(tableObj), true,
                               withinContext.hiveConf)) {
       return;
     }

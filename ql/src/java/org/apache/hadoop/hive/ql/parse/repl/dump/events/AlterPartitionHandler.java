@@ -24,15 +24,13 @@ import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
-import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class AlterPartitionHandler extends AbstractEventHandler {
   private final org.apache.hadoop.hive.metastore.api.Partition after;
@@ -97,7 +95,7 @@ class AlterPartitionHandler extends AbstractEventHandler {
     }
 
     Table qlMdTable = new Table(tableObject);
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
       return;
     }
 

@@ -84,13 +84,14 @@ public final class ReplExternalTables {
     private static Logger LOG = LoggerFactory.getLogger(Writer.class);
     private final HiveConf hiveConf;
     private final Path writePath;
-    private final Boolean excludeExternalTables, dumpMetadataOnly;
+    private final boolean includeExternalTables;
+    private final boolean dumpMetadataOnly;
     private OutputStream writer;
 
     Writer(Path dbRoot, HiveConf hiveConf) throws IOException {
       this.hiveConf = hiveConf;
       writePath = new Path(dbRoot, FILE_NAME);
-      excludeExternalTables = !hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES);
+      includeExternalTables = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES);
       dumpMetadataOnly = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
       if (shouldWrite()) {
         this.writer = FileSystem.get(hiveConf).create(writePath);
@@ -98,7 +99,7 @@ public final class ReplExternalTables {
     }
 
     private boolean shouldWrite() {
-      return !dumpMetadataOnly && !excludeExternalTables;
+      return !dumpMetadataOnly && includeExternalTables;
     }
 
     /**

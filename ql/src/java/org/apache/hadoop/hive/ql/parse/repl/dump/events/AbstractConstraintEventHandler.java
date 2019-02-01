@@ -30,6 +30,7 @@ abstract class AbstractConstraintEventHandler extends AbstractEventHandler {
         event,
         withinContext.replicationSpec,
         withinContext.db,
+            true,
         withinContext.hiveConf
     );
   }

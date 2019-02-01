@@ -34,7 +34,7 @@ class UpdateTableColStatHandler extends AbstractEventHandler {
     LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), event.getMessage());
     UpdateTableColumnStatMessage utcsm = deserializer.getUpdateTableColumnStatMessage(event.getMessage());
     Table qlMdTable = new Table(utcsm.getTableObject());
-    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
       return;
     }
 
