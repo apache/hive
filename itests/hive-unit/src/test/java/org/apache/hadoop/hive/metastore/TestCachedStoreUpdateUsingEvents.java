@@ -1,6 +1,5 @@
 package org.apache.hadoop.hive.metastore.cache;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 import com.google.common.collect.Lists;
@@ -411,15 +410,15 @@ public class TestCachedStoreUpdateUsingEvents {
     hmsHandler.update_table_column_statistics_req(setTblColStat);
     validateTablePara(dbName, tblName);
 
-    ColumnStatisticsObj colStatsCache = sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME,
-            dbName, tblName, Lists.newArrayList(colName[0])).get(0);
-    Assert.assertEquals(colStatsCache.getColName(), colName[0]);
-    verifyStatDouble(colStatsCache, colName[0], highValue);
+    ColumnStatistics colStatsCache = sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME,
+            dbName, tblName, Lists.newArrayList(colName[0]), validWriteIds, true);
+    Assert.assertEquals(colStatsCache.getStatsObj().get(0).getColName(), colName[0]);
+    verifyStatDouble(colStatsCache.getStatsObj().get(0), colName[0], highValue);
 
     colStatsCache = sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME,
-            dbName, tblName, Lists.newArrayList(colName[1])).get(0);
-    Assert.assertEquals(colStatsCache.getColName(), colName[1]);
-    verifyStatString(colStatsCache, colName[1], avgColLen);
+            dbName, tblName, Lists.newArrayList(colName[1]), validWriteIds, true);
+    Assert.assertEquals(colStatsCache.getStatsObj().get(0).getColName(), colName[1]);
+    verifyStatString(colStatsCache.getStatsObj().get(0), colName[1], avgColLen);
   }
 
   private void updatePartColStats(String dbName, String tblName, boolean isTxnTable, String[] colName,
@@ -681,10 +680,10 @@ public class TestCachedStoreUpdateUsingEvents {
   private void deleteColStats(String dbName, String tblName, String[] colName) throws Throwable {
     boolean status = hmsHandler.delete_table_column_statistics(dbName, tblName, null);
     Assert.assertEquals(status, true);
-    Assert.assertEquals(sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME,
-            dbName, tblName, Lists.newArrayList(colName[0])).isEmpty(), true);
-    Assert.assertEquals(sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME,
-            dbName, tblName, Lists.newArrayList(colName[1])).isEmpty(), true);
+    Assert.assertEquals(sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME, dbName, tblName,
+            Lists.newArrayList(colName[0]),  null, true).getStatsObj().isEmpty(), true);
+    Assert.assertEquals(sharedCache.getTableColStatsFromCache(DEFAULT_CATALOG_NAME, dbName, tblName,
+            Lists.newArrayList(colName[1]), null, true).getStatsObj().isEmpty(), true);
     validateTablePara(dbName, tblName);
   }
 
@@ -695,7 +694,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     SharedCache.ColumStatsWithWriteId colStats = sharedCache.getPartitionColStatsFromCache(DEFAULT_CATALOG_NAME, dbName,
             tblName, CachedStore.partNameToVals(partName), colName[1], null);
-    Assert.assertEquals(colStats, null);
+    Assert.assertEquals(colStats.getColumnStatisticsObj(), null);
     validateTablePara(dbName, tblName);
   }
 
@@ -807,14 +806,10 @@ public class TestCachedStoreUpdateUsingEvents {
     verifyStat(statsListFromCache.get(0).getStatsObj(), colName, highValue, avgColLen);
     Assert.assertEquals(statsListFromCache.get(0).isIsStatsCompliant(), false);
 
-    boolean exceptionThrown = false;
-    try {
-      sharedCache.getPartitionColStatsFromCache(DEFAULT_CATALOG_NAME, dbName, tblName,
+    SharedCache.ColumStatsWithWriteId columStatsWithWriteId =
+            sharedCache.getPartitionColStatsFromCache(DEFAULT_CATALOG_NAME, dbName, tblName,
               CachedStore.partNameToVals(partName), colName[1], validWriteIds);
-    } catch (HiveMetaException e) {
-      exceptionThrown = true;
-    }
-    Assert.assertEquals(exceptionThrown, true);
+    Assert.assertEquals(columStatsWithWriteId, null);
     validatePartPara(dbName, tblName, partName);
   }
 
@@ -875,14 +870,10 @@ public class TestCachedStoreUpdateUsingEvents {
     verifyStat(statsListFromCache.get(0).getStatsObj(), colName, highValue, avgColLen);
     Assert.assertEquals(statsListFromCache.get(0).isIsStatsCompliant(), false);
 
-    boolean exceptionThrown = false;
-    try {
-      sharedCache.getPartitionColStatsFromCache(DEFAULT_CATALOG_NAME, dbName,
+    SharedCache.ColumStatsWithWriteId columStatsWithWriteId =
+            sharedCache.getPartitionColStatsFromCache(DEFAULT_CATALOG_NAME, dbName,
               tblName, CachedStore.partNameToVals(partName), colName[1], validWriteIds);
-    } catch (HiveMetaException e) {
-      exceptionThrown = true;
-    }
-    Assert.assertEquals(exceptionThrown, true);
+    Assert.assertEquals(columStatsWithWriteId, null);
     validatePartPara(dbName, tblName, partName);
   }
 

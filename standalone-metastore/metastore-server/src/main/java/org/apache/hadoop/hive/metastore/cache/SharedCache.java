@@ -470,7 +470,9 @@ public class SharedCache {
       }
     }
 
-    public List<ColumnStatisticsObj> getCachedTableColStats(List<String> colNames) {
+    public ColumnStatistics getCachedTableColStats(ColumnStatisticsDesc csd, List<String> colNames,
+                                                            String validWriteIds, boolean areTxnStatsSupported)
+            throws MetaException {
       List<ColumnStatisticsObj> colStatObjs = new ArrayList<ColumnStatisticsObj>();
       try {
         tableLock.readLock().lock();
@@ -480,10 +482,11 @@ public class SharedCache {
             colStatObjs.add(colStatObj);
           }
         }
+        return CachedStore.adjustColStatForGet(getTable().getParameters(), new ColumnStatistics(csd, colStatObjs),
+                getTable().getWriteId(), validWriteIds, areTxnStatsSupported);
       } finally {
         tableLock.readLock().unlock();
       }
-      return colStatObjs;
     }
 
     public void removeTableColStats(String colName) {
@@ -510,31 +513,27 @@ public class SharedCache {
       }
     }
 
-    public ColumStatsWithWriteId getPartitionColStats(List<String> partVal, String colName, String writeIdList)
-            throws HiveMetaException {
+    public ColumStatsWithWriteId getPartitionColStats(List<String> partVal, String colName, String writeIdList) {
       try {
         tableLock.readLock().lock();
         ColumnStatisticsObj statisticsObj =
                 partitionColStatsCache.get(CacheUtils.buildPartitonColStatsCacheKey(partVal, colName));
-        if (statisticsObj == null) {
-          return null;
+        if (statisticsObj == null || writeIdList == null) {
+          return new ColumStatsWithWriteId(-1, statisticsObj);
         }
         PartitionWrapper wrapper = partitionCache.get(CacheUtils.buildPartitionCacheKey(partVal));
         if (wrapper == null) {
+          LOG.debug("Partition: " + partVal + " is not present in the cache");
           return null;
         }
         long writeId = wrapper.getPartition().getWriteId();
-        if (writeIdList != null) {
-          ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(writeIdList);
-          // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
-          // that means it cannot possibly be a concurrent write. If it's not valid (we are not
-          // allowed to see it), that means it's either concurrent or aborted, same thing for us.
-          // In that case throw HiveMetaException which needs to be handled differently than returning  null.
-          if (!list4TheQuery.isWriteIdValid(wrapper.getPartition().getWriteId())) {
-            LOG.debug("Write id list " + writeIdList + " is not compatible with write id " + writeId);
-            throw new HiveMetaException("Write id list " + writeIdList + " is not compatible with write id " +
-                    writeId);
-          }
+        ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(writeIdList);
+        // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
+        // that means it cannot possibly be a concurrent write. If it's not valid (we are not
+        // allowed to see it), that means it's either concurrent or aborted, same thing for us.
+        if (!list4TheQuery.isWriteIdValid(writeId)) {
+          LOG.debug("Write id list " + writeIdList + " is not compatible with write id " + writeId);
+          return null;
         }
         return new ColumStatsWithWriteId(writeId, statisticsObj);
       } finally {
@@ -567,7 +566,7 @@ public class SharedCache {
             }
           }
           ColumnStatistics columnStatistics = new ColumnStatistics(csd, statObject);
-          if (writeIdList != null) {
+          if (writeIdList != null && TxnUtils.isTransactionalTable(getParameters())) {
             columnStatistics.setIsStatsCompliant(true);
             if (!txnStatSupported) {
               columnStatistics.setIsStatsCompliant(false);
@@ -768,7 +767,8 @@ public class SharedCache {
       try {
         tableLock.writeLock().lock();
         if (partNameToWriteId != null) {
-          for (List<String> partValues : partNameToWriteId.keySet()) {
+          for (Entry<List<String>, Long> partValuesWriteIdSet : partNameToWriteId.entrySet()) {
+            List<String> partValues = partValuesWriteIdSet.getKey();
             Partition partition = getPartition(partValues, sharedCache);
             if (partition == null) {
               LOG.info("Could not refresh the aggregate stat as partition " + partValues + " does not exist");
@@ -778,9 +778,9 @@ public class SharedCache {
             // for txn tables, if the write id is modified means the partition is updated post fetching of stats. So
             // skip updating the aggregate stats in the cache.
             long writeId = partition.getWriteId();
-            if (writeId != partNameToWriteId.get(partValues)) {
+            if (writeId != partValuesWriteIdSet.getValue()) {
               LOG.info("Could not refresh the aggregate stat as partition " + partValues + " has write id " +
-                      partNameToWriteId.get(partValues) + " instead of " + writeId);
+                      partValuesWriteIdSet.getValue() + " instead of " + writeId);
               return;
             }
           }
@@ -1457,19 +1457,19 @@ public class SharedCache {
     }
   }
 
-  public List<ColumnStatisticsObj> getTableColStatsFromCache(String catName, String dbName,
-      String tblName, List<String> colNames) {
-    List<ColumnStatisticsObj> colStatObjs = new ArrayList<>();
+  public ColumnStatistics getTableColStatsFromCache(String catName, String dbName,
+      String tblName, List<String> colNames, String validWriteIds, boolean areTxnStatsSupported) throws MetaException {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
-        colStatObjs = tblWrapper.getCachedTableColStats(colNames);
+        ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tblName);
+        return tblWrapper.getCachedTableColStats(csd, colNames, validWriteIds, areTxnStatsSupported);
       }
     } finally {
       cacheLock.readLock().unlock();
     }
-    return colStatObjs;
+    return null;
   }
 
   public void removeTableColStatsFromCache(String catName, String dbName, String tblName,
@@ -1751,7 +1751,7 @@ public class SharedCache {
   }
 
   public ColumStatsWithWriteId getPartitionColStatsFromCache(String catName, String dbName,
-      String tblName, List<String> partVal, String colName, String writeIdList) throws HiveMetaException {
+      String tblName, List<String> partVal, String colName, String writeIdList) {
     ColumStatsWithWriteId colStatObj = null;
     try {
       cacheLock.readLock().lock();

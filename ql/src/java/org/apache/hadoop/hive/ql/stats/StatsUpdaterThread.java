@@ -448,7 +448,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     // TODO: we should probably skip updating if writeId is from an active txn
     boolean isTxnValid = (writeIdString == null) || ObjectStore.isCurrentStatsValidForTheQuery(
-        params, statsWriteId , writeIdString, false);
+        params, statsWriteId, writeIdString, false);
     return getExistingStatsToUpdate(existingStats, params, isTxnValid);
   }
 
