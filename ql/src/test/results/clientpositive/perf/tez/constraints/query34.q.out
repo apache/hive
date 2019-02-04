@@ -153,7 +153,7 @@ Stage-0
                                         Select Operator [SEL_103] (rows=595 width=4)
                                           Output:["_col0"]
                                           Filter Operator [FIL_102] (rows=595 width=12)
-                                            predicate:((d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (2000, 2001, 2002))
+                                            predicate:(((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28)) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (2000, 2001, 2002))
                                             TableScan [TS_5] (rows=73049 width=12)
                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year","d_dom"]
                                     <-Map 4 [SIMPLE_EDGE] vectorized

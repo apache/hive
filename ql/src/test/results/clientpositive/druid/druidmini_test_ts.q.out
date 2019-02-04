@@ -406,15 +406,18 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: druid_table_alltypesorc
+          filterExpr: (vc BETWEEN TIMESTAMPLOCALTZ'2010-01-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'2011-01-01 00:00:00.0 US/Pacific' or vc BETWEEN TIMESTAMPLOCALTZ'2012-01-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'2013-01-01 00:00:00.0 US/Pacific') (type: boolean)
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp with local time zone
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["2010-01-01T08:00:00.000Z/2011-01-01T08:00:00.001Z","2012-01-01T08:00:00.000Z/2013-01-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_alltypesorc","intervals":["1900-01-01T00:00:00.000Z/2013-01-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
-          Select Operator
-            expressions: vc (type: timestamp with local time zone)
-            outputColumnNames: _col0
-            ListSink
+          Filter Operator
+            predicate: (vc BETWEEN TIMESTAMPLOCALTZ'2010-01-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'2011-01-01 00:00:00.0 US/Pacific' or vc BETWEEN TIMESTAMPLOCALTZ'2012-01-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'2013-01-01 00:00:00.0 US/Pacific') (type: boolean)
+            Select Operator
+              expressions: vc (type: timestamp with local time zone)
+              outputColumnNames: _col0
+              ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT `__time`
