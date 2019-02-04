@@ -269,7 +269,7 @@ public class HiveStatement implements java.sql.Statement {
     if (!status.isHasResultSet() && !stmtHandle.isHasResultSet()) {
       return false;
     }
-    resultSet =  new HiveQueryResultSet.Builder(this).setClient(client).setSessionHandle(sessHandle)
+    resultSet = new HiveQueryResultSet.Builder(this).setClient(client)
         .setStmtHandle(stmtHandle).setMaxRows(maxRows).setFetchSize(fetchSize)
         .setScrollable(isScrollableResultset)
         .build();
@@ -298,9 +298,10 @@ public class HiveStatement implements java.sql.Statement {
       return false;
     }
     resultSet =
-        new HiveQueryResultSet.Builder(this).setClient(client).setSessionHandle(sessHandle)
-            .setStmtHandle(stmtHandle).setMaxRows(maxRows).setFetchSize(fetchSize)
-            .setScrollable(isScrollableResultset).build();
+        new HiveQueryResultSet.Builder(this).setClient(client)
+            .setStmtHandle(stmtHandle).setMaxRows(maxRows)
+            .setFetchSize(fetchSize).setScrollable(isScrollableResultset)
+            .build();
     return true;
   }
 

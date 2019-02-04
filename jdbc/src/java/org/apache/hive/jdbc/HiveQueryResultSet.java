@@ -27,9 +27,9 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hive.service.cli.RowSet;
@@ -50,7 +50,6 @@ import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TPrimitiveTypeEntry;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.rpc.thrift.TRowSet;
-import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.hive.service.rpc.thrift.TTableSchema;
 import org.apache.hive.service.rpc.thrift.TTypeQualifierValue;
 import org.apache.hive.service.rpc.thrift.TTypeQualifiers;
@@ -67,7 +66,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle;
-  private TSessionHandle sessHandle;
   private int maxRows;
   private int fetchSize;
   private int rowsFetched = 0;
@@ -88,7 +86,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private final Statement statement;
     private TCLIService.Iface client = null;
     private TOperationHandle stmtHandle = null;
-    private TSessionHandle sessHandle  = null;
 
     /**
      * Sets the limit for the maximum number of rows that any ResultSet object produced by this
@@ -103,7 +100,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private int fetchSize = 50;
     private boolean emptyResultSet = false;
     private boolean isScrollable = false;
-    private ReentrantLock transportLock = null;
 
     public Builder(Statement statement) throws SQLException {
       this.statement = statement;
@@ -125,11 +121,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return this;
     }
 
-    public Builder setSessionHandle(TSessionHandle sessHandle) {
-      this.sessHandle = sessHandle;
-      return this;
-    }
-
     public Builder setMaxRows(int maxRows) {
       this.maxRows = maxRows;
       return this;
@@ -138,21 +129,15 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     public Builder setSchema(List<String> colNames, List<String> colTypes) {
       // no column attributes provided - create list of null attributes.
       List<JdbcColumnAttributes> colAttributes =
-          new ArrayList<JdbcColumnAttributes>();
-      for (int idx = 0; idx < colTypes.size(); ++idx) {
-        colAttributes.add(null);
-      }
+          Collections.nCopies(colTypes.size(), null);
       return setSchema(colNames, colTypes, colAttributes);
     }
 
     public Builder setSchema(List<String> colNames, List<String> colTypes,
         List<JdbcColumnAttributes> colAttributes) {
-      this.colNames = new ArrayList<String>();
-      this.colNames.addAll(colNames);
-      this.colTypes = new ArrayList<String>();
-      this.colTypes.addAll(colTypes);
-      this.colAttributes = new ArrayList<JdbcColumnAttributes>();
-      this.colAttributes.addAll(colAttributes);
+      this.colNames = new ArrayList<>(colNames);
+      this.colTypes = new ArrayList<>(colTypes);
+      this.colAttributes = new ArrayList<>(colAttributes);
       this.retrieveSchema = false;
       return this;
     }
@@ -172,11 +157,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return this;
     }
 
-    public Builder setTransportLock(ReentrantLock transportLock) {
-      this.transportLock = transportLock;
-      return this;
-    }
-
     public HiveQueryResultSet build() throws SQLException {
       return new HiveQueryResultSet(this);
     }
@@ -190,7 +170,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     this.statement = builder.statement;
     this.client = builder.client;
     this.stmtHandle = builder.stmtHandle;
-    this.sessHandle = builder.sessHandle;
     this.fetchSize = builder.fetchSize;
     columnNames = new ArrayList<String>();
     normalizedColumnNames = new ArrayList<String>();
@@ -202,10 +181,9 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       this.setSchema(builder.colNames, builder.colTypes, builder.colAttributes);
     }
     this.emptyResultSet = builder.emptyResultSet;
+    this.maxRows = builder.maxRows;
     if (builder.emptyResultSet) {
       this.maxRows = 0;
-    } else {
-      this.maxRows = builder.maxRows;
     }
     this.isScrollable = builder.isScrollable;
     this.protocol = builder.getProtocolVersion();
@@ -255,9 +233,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       metadataResp = client.GetResultSetMetadata(metadataReq);
       Utils.verifySuccess(metadataResp.getStatus());
 
-      StringBuilder namesSb = new StringBuilder();
-      StringBuilder typesSb = new StringBuilder();
-
       TTableSchema schema = metadataResp.getSchema();
       if (schema == null || !schema.isSetColumns()) {
         // TODO: should probably throw an exception here.
@@ -265,17 +240,12 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       }
       setSchema(new TableSchema(schema));
 
-      List<TColumnDesc> columns = schema.getColumns();
-      for (int pos = 0; pos < schema.getColumnsSize(); pos++) {
-        if (pos != 0) {
-          namesSb.append(",");
-          typesSb.append(",");
-        }
-        String columnName = columns.get(pos).getColumnName();
+      for (final TColumnDesc column : schema.getColumns()) {
+        String columnName = column.getColumnName();
         columnNames.add(columnName);
         normalizedColumnNames.add(columnName.toLowerCase());
         TPrimitiveTypeEntry primitiveTypeEntry =
-            columns.get(pos).getTypeDesc().getTypes().get(0).getPrimitiveEntry();
+            column.getTypeDesc().getTypes().get(0).getPrimitiveEntry();
         String columnTypeName = TYPE_NAMES.get(primitiveTypeEntry.getType());
         columnTypes.add(columnTypeName);
         columnAttributes.add(getColumnAttributes(primitiveTypeEntry));
@@ -283,7 +253,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     } catch (SQLException eS) {
       throw eS; // rethrow the SQLException as is
     } catch (Exception ex) {
-      ex.printStackTrace();
       throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
     }
   }
@@ -299,9 +268,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     columnTypes.addAll(colTypes);
     columnAttributes.addAll(colAttributes);
 
-    for (String colName : colNames) {
-      normalizedColumnNames.add(colName.toLowerCase());
-    }
+    colNames.forEach(i -> normalizedColumnNames.add(i.toLowerCase()));
   }
 
   @Override
@@ -317,7 +284,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     // Need reset during re-open when needed
     client = null;
     stmtHandle = null;
-    sessHandle = null;
     isClosed = true;
     operationStatus = null;
   }
@@ -383,17 +349,15 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         fetchedRowsItr = fetchedRows.iterator();
       }
 
-      if (fetchedRowsItr.hasNext()) {
-        row = fetchedRowsItr.next();
-      } else {
+      if (!fetchedRowsItr.hasNext()) {
         return false;
       }
 
+      row = fetchedRowsItr.next();
       rowsFetched++;
     } catch (SQLException eS) {
       throw eS;
     } catch (Exception ex) {
-      ex.printStackTrace();
       throw new SQLException("Error retrieving next row", ex);
     }
     // NOTE: fetchOne doesn't throw new SQLFeatureNotSupportedException("Method not supported").
@@ -423,9 +387,8 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     }
     if (isScrollable) {
       return ResultSet.TYPE_SCROLL_INSENSITIVE;
-    } else {
-      return ResultSet.TYPE_FORWARD_ONLY;
     }
+    return ResultSet.TYPE_FORWARD_ONLY;
   }
 
   @Override
