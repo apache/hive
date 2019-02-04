@@ -186,6 +186,7 @@ STAGE PLANS:
                 TableScan
                   alias: date_dim
 <<<<<<< HEAD
+<<<<<<< HEAD
                   filterExpr: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -196,6 +197,12 @@ STAGE PLANS:
                   Filter Operator
                     predicate: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_date_sk is not null and ((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28))) (type: boolean)
 >>>>>>> 18a5dcb95b... HIVE-21857: Sort conditions in a filter predicate to accelerate query processing (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+                  filterExpr: ((d_year) IN (2000, 2001, 2002) and ((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28)) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28)) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and (d_year) IN (2000, 2001, 2002) and d_date_sk is not null) (type: boolean)
+>>>>>>> c8eb03affa... HIVE-21143: Add rewrite rules to open/close Between operators (Zoltan Haindrich reviewed by Jesus Camacho Rodriguez)
                     Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int)

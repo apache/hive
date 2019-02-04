@@ -35,6 +35,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlBinaryOperator;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
@@ -368,6 +369,23 @@ public class RexNodeConverter {
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType);
       } else if (calciteOp == HiveToDateSqlOperator.INSTANCE) {
         childRexNodeLst = rewriteToDateChildren(childRexNodeLst);
+      } else if (calciteOp.getKind() == SqlKind.BETWEEN) {
+        assert childRexNodeLst.get(0).isAlwaysTrue() || childRexNodeLst.get(0).isAlwaysFalse();
+        boolean invert = childRexNodeLst.get(0).isAlwaysTrue();
+        SqlBinaryOperator cmpOp;
+        if (invert) {
+          calciteOp = SqlStdOperatorTable.OR;
+          cmpOp = SqlStdOperatorTable.GREATER_THAN;
+        } else {
+          calciteOp = SqlStdOperatorTable.AND;
+          cmpOp = SqlStdOperatorTable.LESS_THAN_OR_EQUAL;
+        }
+        RexNode op = childRexNodeLst.get(1);
+        RexNode rangeL = childRexNodeLst.get(2);
+        RexNode rangeH = childRexNodeLst.get(3);
+        childRexNodeLst.clear();
+        childRexNodeLst.add(cluster.getRexBuilder().makeCall(cmpOp, rangeL, op));
+        childRexNodeLst.add(cluster.getRexBuilder().makeCall(cmpOp, op, rangeH));
       }
       expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
     } else {

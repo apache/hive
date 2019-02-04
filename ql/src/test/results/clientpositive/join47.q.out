@@ -498,7 +498,7 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1, _col2, _col3
-          residual filter predicates: {((UDFToDouble(_col0) + UDFToDouble(_col2)) >= 100.0D)} {((UDFToDouble(_col0) + UDFToDouble(_col2)) <= 102.0D)}
+          residual filter predicates: {(UDFToDouble(_col0) + UDFToDouble(_col2)) BETWEEN 100.0D AND 102.0D}
           Statistics: Num rows: 1388 Data size: 26738 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
