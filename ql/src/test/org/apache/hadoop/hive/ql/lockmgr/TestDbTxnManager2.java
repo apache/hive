@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
+import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -1529,7 +1530,7 @@ public class TestDbTxnManager2 {
       3, TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where ctc_table='tab1' and ctc_partition is not null"));
   }
   /**
-   * Concurrent delete/detele of same partition - should pass
+   * Concurrent delete/delete of same partition - should NOT pass
    */
   @Test
   public void testWriteSetTracking11() throws Exception {
@@ -1584,18 +1585,27 @@ public class TestDbTxnManager2 {
       Collections.singletonList("p=two"));
     adp.setOperationType(DataOperationType.DELETE);
     txnHandler.addDynamicPartitions(adp);
-    txnMgr.commitTxn();//"select * from tab1" txn
-
-    Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString(conf, "select * from WRITE_SET"),
-      1, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET where ws_partition='p=two' and ws_operation_type='d' and ws_table='tab1' and ws_txnid=" + txnIdDelete));
-    Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString(conf, "select * from WRITE_SET"),
-      1, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET where ws_partition='p=two' and ws_operation_type='d' and ws_table='tab1' and ws_txnid=" + txnIdSelect));
-    Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString(conf, "select * from WRITE_SET"),
-      1, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET where ws_partition='p=two' and ws_operation_type='d' and ws_table='tab1' and ws_txnid=" + txnIdDelete));
-    Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString(conf, "select * from WRITE_SET"),
-      1, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET where ws_partition='p=two' and ws_operation_type='d' and ws_table='tab1' and ws_txnid=" + txnIdSelect));
+    LockException expectedException = null;
+    try {
+      txnMgr.commitTxn();//"select * from tab1" txn
+    }
+    catch(LockException ex) {
+      expectedException = ex;
+    }
+    Assert.assertNotNull("Didn't get expected d/d conflict", expectedException);
+    Assert.assertEquals("Transaction manager has aborted the transaction txnid:5.  " +
+        "Reason: Aborting [txnid:5,5] due to a write conflict on default/tab1/p=two " +
+        "committed by [txnid:4,5] d/d", expectedException.getMessage());
+    Assert.assertEquals("WRITE_SET mismatch: " +
+            TxnDbUtil.queryToString(conf, "select * from WRITE_SET"),
+      1, TxnDbUtil.countQueryAgent(conf,
+            "select count(*) from WRITE_SET where ws_partition='p=two' and ws_operation_type='d' and ws_table='tab1' and ws_txnid=" + txnIdDelete));
+    Assert.assertEquals("WRITE_SET mismatch: " +
+            TxnDbUtil.queryToString(conf, "select * from WRITE_SET"),
+      0, TxnDbUtil.countQueryAgent(conf,
+            "select count(*) from WRITE_SET where ws_partition='p=two' and ws_operation_type='d' and ws_table='tab1' and ws_txnid=" + txnIdSelect));
     Assert.assertEquals("COMPLETED_TXN_COMPONENTS mismatch: " + TxnDbUtil.queryToString(conf, "select * from COMPLETED_TXN_COMPONENTS"),
-      4, TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where ctc_table='tab1' and ctc_partition is not null"));
+      3, TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where ctc_table='tab1' and ctc_partition is not null"));
   }
   @Test
   public void testCompletedTxnComponents() throws Exception {
@@ -1706,8 +1716,8 @@ public class TestDbTxnManager2 {
       "(9,10,1,2),        (3,4,1,2), (11,12,1,3), (5,13,1,3), (7,8,2,2), (14,15,1,1)"));
     checkCmdOnDriver(driver.run("create table source2 (a int, b int, p int, q int)"));
     checkCmdOnDriver(driver.run("insert into source2 values " +
-  //cc ? -:U-(1/2)     D-(1/2)         cc ? U-(1/3):-             D-(2/2)       I-(1/1) - new part 2
-      "(9,100,1,2),      (3,4,1,2),               (5,13,1,3),       (7,8,2,2), (14,15,2,1)"));
+    //cc ? -:U-(1/2)     D-(1/2)         cc ? U-(1/3):-       D-(2/2)       I-(1/1) - new part 2
+      "(9,100,1,2),      (3,4,1,2),         (5,13,1,3),       (7,8,2,2), (14,15,2,1)"));
 
 
     checkCmdOnDriver(driver.compileAndRespond("merge into target t using source s on t.a=s.b " +
@@ -1729,7 +1739,7 @@ public class TestDbTxnManager2 {
     swapTxnManager(txnMgr2);
     checkCmdOnDriver(driver.compileAndRespond("merge into target t using source2 s on t.a=s.b " +
       "when matched and t.a=" + (cc ? 5 : 9) + " then update set b=s.b " + //if conflict updates p=1/q=3 else update p=1/q=2
-      "when matched and t.a in (3,7) then delete " + //deletes from p=1/q=2, p=2/q=2
+      "when matched and t.a in (" + (cc ? "3,7" : "11, 13")  + ") then delete " + //if cc deletes from p=1/q=2, p=2/q=2, else delete nothing
       "when not matched and t.a >= 8 then insert values(s.a, s.b, s.p, s.q)", true));//insert p=1/q=2, p=1/q=3 and new part 1/1
     long txnId2 = txnMgr2.getCurrentTxnId();
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T1", false);
@@ -1824,10 +1834,12 @@ public class TestDbTxnManager2 {
       Collections.singletonList(cc ? "p=1/q=3" : "p=1/p=2"));//update clause
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
-    adp = new AddDynamicPartitions(txnId2, writeId, "default", "target",
-      Arrays.asList("p=1/q=2","p=2/q=2"));//delete clause
-    adp.setOperationType(DataOperationType.DELETE);
-    txnHandler.addDynamicPartitions(adp);
+    if(cc) {
+      adp = new AddDynamicPartitions(txnId2, writeId, "default", "target",
+          Arrays.asList("p=1/q=2", "p=2/q=2"));//delete clause
+      adp.setOperationType(DataOperationType.DELETE);
+      txnHandler.addDynamicPartitions(adp);
+    }
     adp = new AddDynamicPartitions(txnId2, writeId, "default", "target",
       Arrays.asList("p=1/q=2","p=1/q=3","p=1/q=1"));//insert clause
     adp.setOperationType(DataOperationType.INSERT);
@@ -1841,7 +1853,7 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(
       "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
         TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"),
-      2,
+        (cc ? 2 : 0),
       TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where tc_txnid=" + txnId2 +
         " and tc_operation_type='d'"));
     Assert.assertEquals(
@@ -1860,9 +1872,18 @@ public class TestDbTxnManager2 {
     }
     if(cc) {
       Assert.assertNotNull("didn't get exception", expectedException);
-      Assert.assertEquals("Transaction manager has aborted the transaction txnid:11.  Reason: " +
-        "Aborting [txnid:11,11] due to a write conflict on default/target/p=1/q=3 " +
-        "committed by [txnid:10,11] u/u", expectedException.getMessage());
+      try {
+        Assert.assertEquals("Transaction manager has aborted the transaction txnid:11.  Reason: " +
+            "Aborting [txnid:11,11] due to a write conflict on default/target/p=1/q=3 " +
+            "committed by [txnid:10,11] u/u", expectedException.getMessage());
+      }
+      catch(ComparisonFailure ex) {
+        //the 2 txns have 2 conflicts between them so check for either failure since which one is
+        //reported (among the 2) is not deterministic
+        Assert.assertEquals("Transaction manager has aborted the transaction txnid:11.  Reason: " +
+            "Aborting [txnid:11,11] due to a write conflict on default/target/p=1/q=2 " +
+            "committed by [txnid:10,11] d/d", expectedException.getMessage());
+      }
       Assert.assertEquals(
         "COMPLETED_TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
           TxnDbUtil.queryToString(conf, "select * from COMPLETED_TXN_COMPONENTS"),
@@ -1879,7 +1900,7 @@ public class TestDbTxnManager2 {
       Assert.assertEquals(
         "COMPLETED_TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
           TxnDbUtil.queryToString(conf, "select * from COMPLETED_TXN_COMPONENTS"),
-        6,
+        4,
         TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where ctc_txnid=" + txnId2));
       Assert.assertEquals(
         "WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
@@ -1890,7 +1911,7 @@ public class TestDbTxnManager2 {
       Assert.assertEquals(
         "WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
           TxnDbUtil.queryToString(conf, "select * from WRITE_SET"),
-        2,
+        0,
         TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET where ws_txnid=" + txnId2 +
           " and ws_operation_type='d'"));
     }
