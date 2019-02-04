@@ -2754,6 +2754,11 @@ public class HiveConf extends Configuration {
     MERGE_CARDINALITY_VIOLATION_CHECK("hive.merge.cardinality.check", true,
       "Set to true to ensure that each SQL Merge statement ensures that for each row in the target\n" +
         "table there is at most 1 matching row in the source table per SQL Specification."),
+    MERGE_SPLIT_UPDATE("hive.merge.split.update", false,
+        "If true, SQL Merge statement will handle WHEN MATCHED UPDATE by splitting it into 2\n" +
+            "branches of a multi-insert, representing delete of existing row and an insert of\n" +
+            "the new version of the row.  Updating bucketing and partitioning columns should\n" +
+            "only be permitted if this is true."),
     OPTIMIZE_ACID_META_COLUMNS("hive.optimize.acid.meta.columns", true,
         "If true, don't decode Acid metadata columns from storage unless" +
         " they are needed."),
