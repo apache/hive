@@ -90,7 +90,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
@@ -1204,6 +1203,18 @@ public final class Utilities {
     }
   }
 
+  public static void moveSpecifiedFiles(FileSystem fs, Path dst, Set<Path> filesToMove)
+      throws IOException, HiveException {
+    if (!fs.exists(dst)) {
+      fs.mkdirs(dst);
+    }
+
+    for (Path path: filesToMove) {
+      FileStatus fsStatus = fs.getFileStatus(path);
+      Utilities.moveFile(fs, fsStatus, dst);
+    }
+  }
+
   private static void moveFile(FileSystem fs, FileStatus file, Path dst) throws IOException,
       HiveException {
     Path srcFilePath = file.getPath();
@@ -1463,6 +1474,19 @@ public final class Utilities {
     return snew.toString();
   }
 
+
+  public static boolean shouldAvoidRename(FileSinkDesc conf, Configuration hConf) {
+    // we are avoiding rename/move only if following conditions are met
+    //  * execution engine is tez
+    //  * query cache is disabled
+    //  * if it is select query
+    if (conf != null && conf.getIsQuery() && conf.getFilesToFetch() != null
+        && HiveConf.getVar(hConf, ConfVars.HIVE_EXECUTION_ENGINE).equalsIgnoreCase("tez")
+        && !HiveConf.getBoolVar(hConf, ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)){
+      return true;
+    }
+    return false;
+  }
   /**
    * returns null if path is not exist
    */
@@ -1476,42 +1500,31 @@ public final class Utilities {
   }
 
   public static void mvFileToFinalPath(Path specPath, Configuration hconf,
-      boolean success, Logger log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
-      Reporter reporter) throws IOException,
+                                       boolean success, Logger log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
+                                       Reporter reporter) throws IOException,
       HiveException {
 
-    //
-    // Runaway task attempts (which are unable to be killed by MR/YARN) can cause HIVE-17113,
-    // where they can write duplicate output files to tmpPath after de-duplicating the files,
-    // but before tmpPath is moved to specPath.
-    // Fixing this issue will be done differently for blobstore (e.g. S3)
-    // vs non-blobstore (local filesystem, HDFS) filesystems due to differences in
-    // implementation - a directory move in a blobstore effectively results in file-by-file
-    // moves for every file in a directory, while in HDFS/localFS a directory move is just a
-    // single filesystem operation.
-    // - For non-blobstore FS, do the following:
-    //   1) Rename tmpPath to a new directory name to prevent additional files
-    //      from being added by runaway processes.
-    //   2) Remove duplicates from the temp directory
-    //   3) Rename/move the temp directory to specPath
-    //
-    // - For blobstore FS, do the following:
-    //   1) Remove duplicates from tmpPath
-    //   2) Use moveSpecifiedFiles() to perform a file-by-file move of the de-duped files
-    //      to specPath. On blobstore FS, assuming n files in the directory, this results
-    //      in n file moves, compared to 2*n file moves with the previous solution
-    //      (each directory move would result in a file-by-file move of the files in the directory)
-    //
+    // There are following two paths this could could take based on the value of shouldAvoidRename
+    //  shouldAvoidRename indicate if tmpPath should be renamed/moved or now.
+    //    if false:
+    //      Skip renaming/moving the tmpPath
+    //      Deduplicate and keep a list of files
+    //      Pass on the list of files to conf (to be used later by fetch operator)
+    //    if true:
+    //      Rename tmpPath to a new directory name
+    //      Remove duplicates
+    //      Rename/move the new directory to specPath
+
     FileSystem fs = specPath.getFileSystem(hconf);
-    boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     if (success) {
-      if (!isBlobStorage && fs.exists(tmpPath)) {
+      if (!shouldAvoidRename(conf, hconf) && fs.exists(tmpPath)) {
         //   1) Rename tmpPath to a new directory name to prevent additional files
         //      from being added by runaway processes.
         Path tmpPathOriginal = tmpPath;
         tmpPath = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
+        LOG.debug("Moving/Renaming " + tmpPathOriginal + " to " + tmpPath);
         Utilities.rename(fs, tmpPathOriginal, tmpPath);
       }
 
@@ -1538,18 +1551,14 @@ public final class Utilities {
 
         // move to the file destination
         Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: {} to: {}", tmpPath, specPath);
-
-        perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
-        if (isBlobStorage) {
-          // HIVE-17113 - avoid copying files that may have been written to the temp dir by runaway tasks,
-          // by moving just the files we've tracked from removeTempOrDuplicateFiles().
-          Utilities.moveSpecifiedFiles(fs, tmpPath, specPath, filesKept);
+        if(shouldAvoidRename(conf, hconf)){
+          LOG.debug("Skipping rename/move files. Files to be kept are: " + filesKept.toString());
+          conf.getFilesToFetch().addAll(filesKept);
         } else {
-          // For non-blobstore case, can just move the directory - the initial directory rename
-          // at the start of this method should prevent files written by runaway tasks.
+          perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
           Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
+          perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
         }
-        perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
       }
     } else {
       Utilities.FILE_OP_LOGGER.trace("deleting tmpPath {}", tmpPath);

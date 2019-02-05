@@ -299,6 +299,13 @@ public class GenTezUtils {
 
     Set<Operator<?>> seen = new HashSet<Operator<?>>();
 
+    Set<Path> filesToFetch = null;
+    if(context.parseContext.getFetchTask() != null) {
+      // File sink operator keeps a reference to a list of files. This reference needs to be passed on
+      // to other file sink operators which could have been added by removal of Union Operator
+      filesToFetch = context.parseContext.getFetchTask().getWork().getFilesToFetch();
+    }
+
     while(!operators.isEmpty()) {
       Operator<?> current = operators.pop();
       seen.add(current);
@@ -325,6 +332,7 @@ public class GenTezUtils {
             + desc.getDirName() + "; parent " + path);
         desc.setLinkedFileSink(true);
         desc.setLinkedFileSinkDesc(linked);
+        desc.setFilesToFetch(filesToFetch);
       }
 
       if (current instanceof AppMasterEventOperator) {
