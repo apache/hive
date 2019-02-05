@@ -634,7 +634,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     } catch (CharacterCodingException e) {
       throw new IllegalArgumentException("Bad string encoding for " +
           OrcRecordUpdater.ACID_KEY_INDEX_NAME, e);
-    }
+    } 
     RecordIdentifier[] result = new RecordIdentifier[stripes.length];
     for(int i=0; i < stripes.length; ++i) {
       if (stripes[i].length() != 0) {
