@@ -25,6 +25,10 @@ If you want to switch serializer/deserializer classes you can use alter table.
 ```sql
 ALTER TABLE kafka_table SET TBLPROPERTIES ("kafka.serde.class"="org.apache.hadoop.hive.serde2.avro.AvroSerDe");
 ``` 
+
+If you use Confluent Avro serialzier/deserializer with schema registry you may want to remove 4 bytes from beginning that represents schema ID from registry. 
+It can be done with settings `"avro.serde.magic.bytes"="true"`. It's recommended to set `"avro.schema.url"="http://schemaregistry/SimpleDocument.avsc"`
+
 List of supported Serializer Deserializer:
 
 |Supported Serializer Deserializer|

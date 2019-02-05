@@ -1,0 +1,13 @@
+{
+  "type" : "record",
+  "name" : "SimpleRecord",
+  "namespace" : "org.apache.hadoop.hive.kafka",
+  "fields" : [ {
+    "name" : "id",
+    "type" : "string"
+  }, {
+    "name" : "name",
+    "type" : "string"
+  }
+  ]
+}

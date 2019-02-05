@@ -25,6 +25,7 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
@@ -130,10 +131,15 @@ import java.util.stream.Collectors;
       bytesConverter = new TextBytesConverter();
     } else if (delegateSerDe.getSerializedClass() == AvroGenericRecordWritable.class) {
       String schemaFromProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
+      String magicBitProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_MAGIC_BYTES
+
+                                                    .getPropName(), Boolean.FALSE.toString());
       Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
       Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
       LOG.debug("Building Avro Reader with schema {}", schemaFromProperty);
-      bytesConverter = new AvroBytesConverter(schema);
+      bytesConverter =
+          (Boolean.valueOf(magicBitProperty)) ?
+          new ConfluentAvroBytesConverter(schema) : new AvroBytesConverter(schema);
     } else {
       bytesConverter = new BytesWritableConverter();
     }
@@ -327,7 +333,7 @@ import java.util.stream.Collectors;
     K getWritable(byte[] value);
   }
 
-  private static class AvroBytesConverter implements BytesConverter<AvroGenericRecordWritable> {
+  static class AvroBytesConverter implements BytesConverter<AvroGenericRecordWritable> {
     private final Schema schema;
     private final DatumReader<GenericRecord> dataReader;
     private final GenericDatumWriter<GenericRecord> gdw = new GenericDatumWriter<>();
@@ -336,7 +342,7 @@ import java.util.stream.Collectors;
 
     AvroBytesConverter(Schema schema) {
       this.schema = schema;
-      dataReader = new SpecificDatumReader<>(this.schema);
+      this.dataReader = new SpecificDatumReader<>(this.schema);
     }
 
     @Override public byte[] getBytes(AvroGenericRecordWritable writable) {
@@ -354,10 +360,14 @@ import java.util.stream.Collectors;
       return valueBytes;
     }
 
+    Decoder getDecoder(byte[] value) {
+      return DecoderFactory.get().binaryDecoder(value, null);
+    }
+
     @Override public AvroGenericRecordWritable getWritable(byte[] value) {
       GenericRecord avroRecord = null;
       try {
-        avroRecord = dataReader.read(null, DecoderFactory.get().binaryDecoder(value, null));
+        avroRecord = dataReader.read(null, getDecoder(value));
       } catch (IOException e) {
         Throwables.propagate(new SerDeException(e));
       }
@@ -366,6 +376,20 @@ import java.util.stream.Collectors;
       avroGenericRecordWritable.setRecordReaderID(uid);
       avroGenericRecordWritable.setFileSchema(avroRecord.getSchema());
       return avroGenericRecordWritable;
+    }
+  }
+
+  static class ConfluentAvroBytesConverter extends AvroBytesConverter {
+    ConfluentAvroBytesConverter(Schema schema) {
+      super(schema);
+    }
+
+    @Override
+    Decoder getDecoder(byte[] value) {
+      /**
+       * Confluent 4 magic bytes that represents Schema ID as Integer. These bits are added before value bytes.
+       */
+      return DecoderFactory.get().binaryDecoder(value, 5, value.length - 5, null);
     }
   }
 
