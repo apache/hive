@@ -108,7 +108,7 @@ class Reflector {
     if (toType == String.class) {
       return new String(ob.toString());
     } else if (toType == Byte.class || toType == byte.class) {
-      return new Byte(ob.toString());
+      return Byte.valueOf(ob.toString());
     } else if (toType == Character.class || toType == char.class) {
       return new Character(ob.toString().charAt(0));
     } else if (toType == Short.class || toType == short.class) {

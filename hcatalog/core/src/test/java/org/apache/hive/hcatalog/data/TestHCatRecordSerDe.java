@@ -44,18 +44,18 @@ public class TestHCatRecordSerDe extends TestCase {
     Map<Properties, HCatRecord> data = new HashMap<Properties, HCatRecord>();
 
     List<Object> rlist = new ArrayList<Object>(11);
-    rlist.add(new Byte("123"));
-    rlist.add(new Short("456"));
-    rlist.add(new Integer(789));
-    rlist.add(new Long(1000L));
-    rlist.add(new Double(5.3D));
-    rlist.add(new Float(2.39F));
-    rlist.add(new String("hcat and hadoop"));
+    rlist.add(Byte.valueOf("123"));
+    rlist.add(Short.valueOf("456"));
+    rlist.add(Integer.valueOf(789));
+    rlist.add(Long.valueOf(1000L));
+    rlist.add(Double.valueOf(5.3D));
+    rlist.add(Float.valueOf(2.39F));
+    rlist.add("hcat and hadoop");
     rlist.add(null);
 
     List<Object> innerStruct = new ArrayList<Object>(2);
-    innerStruct.add(new String("abc"));
-    innerStruct.add(new String("def"));
+    innerStruct.add("abc");
+    innerStruct.add("def");
     rlist.add(innerStruct);
 
     List<Integer> innerList = new ArrayList<Integer>();
@@ -64,24 +64,24 @@ public class TestHCatRecordSerDe extends TestCase {
     rlist.add(innerList);
 
     Map<Short, String> map = new HashMap<Short, String>(3);
-    map.put(new Short("2"), "hcat is cool");
-    map.put(new Short("3"), "is it?");
-    map.put(new Short("4"), "or is it not?");
+    map.put(Short.valueOf("2"), "hcat is cool");
+    map.put(Short.valueOf("3"), "is it?");
+    map.put(Short.valueOf("4"), "or is it not?");
     rlist.add(map);
 
-    rlist.add(new Boolean(true));
+    rlist.add(Boolean.TRUE);
 
     List<Object> c1 = new ArrayList<Object>();
     List<Object> c1_1 = new ArrayList<Object>();
-    c1_1.add(new Integer(12));
+    c1_1.add(Integer.valueOf(12));
     List<Object> i2 = new ArrayList<Object>();
     List<Integer> ii1 = new ArrayList<Integer>();
-    ii1.add(new Integer(13));
-    ii1.add(new Integer(14));
+    ii1.add(Integer.valueOf(13));
+    ii1.add(Integer.valueOf(14));
     i2.add(ii1);
     Map<String, List<?>> ii2 = new HashMap<String, List<?>>();
     List<Integer> iii1 = new ArrayList<Integer>();
-    iii1.add(new Integer(15));
+    iii1.add(Integer.valueOf(15));
     ii2.put("phew", iii1);
     i2.add(ii2);
     c1_1.add(i2);
