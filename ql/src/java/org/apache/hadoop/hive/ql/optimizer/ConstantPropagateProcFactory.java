@@ -219,15 +219,15 @@ public final class ConstantPropagateProcFactory {
     // Convert integer related types because converters are not sufficient
     if (convObj instanceof Integer) {
       switch (priti.getPrimitiveCategory()) {
-        case BYTE:
-          convObj = new Byte((byte) (((Integer) convObj).intValue()));
-          break;
-        case SHORT:
-          convObj = new Short((short) ((Integer) convObj).intValue());
-          break;
-        case LONG:
-          convObj = new Long(((Integer) convObj).intValue());
-        default:
+      case BYTE:
+        convObj = Byte.valueOf((((Integer) convObj).byteValue()));
+        break;
+      case SHORT:
+        convObj = Short.valueOf(((Integer) convObj).shortValue());
+        break;
+      case LONG:
+        convObj = Long.valueOf(((Integer) convObj).intValue());
+      default:
       }
     }
     return new ExprNodeConstantDesc(ti, convObj);

@@ -119,7 +119,7 @@ public class TestGenericUDFDateSub extends TestCase {
 
     udf.initialize(arguments);
     DeferredObject valueObj1 = new DeferredJavaObject(new DateWritableV2(Date.of(109, 06, 20)));
-    DeferredObject valueObj2 = new DeferredJavaObject(new Byte("4"));
+    DeferredObject valueObj2 = new DeferredJavaObject(Byte.valueOf("4"));
     DeferredObject[] args = {valueObj1, valueObj2};
     DateWritableV2 output = (DateWritableV2) udf.evaluate(args);
 
