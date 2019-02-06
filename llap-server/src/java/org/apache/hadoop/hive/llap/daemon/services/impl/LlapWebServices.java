@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.llap.daemon.services.impl;
 
 import java.io.IOException;
@@ -22,7 +23,6 @@ import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 
-import javax.management.MalformedObjectNameException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
-import org.apache.hadoop.hive.llap.registry.impl.LlapZookeeperRegistryImpl;
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
@@ -58,8 +57,8 @@ public class LlapWebServices extends AbstractService {
   static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
   static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
 
-  static final String REGISTRY_ATTRIBUTE="llap.registry";
-  static final String PARENT_ATTRIBUTE="llap.parent";
+  static final String REGISTRY_ATTRIBUTE = "llap.registry";
+  static final String PARENT_ATTRIBUTE = "llap.parent";
 
   private int port;
   private HttpServer http;
@@ -100,12 +99,16 @@ public class LlapWebServices extends AbstractService {
     builder.setContextAttribute(REGISTRY_ATTRIBUTE, registry);
     builder.setContextAttribute(PARENT_ATTRIBUTE, parent);
 
+    // make conf available to the locking stats servlet
+    LlapLockingServlet.setConf(conf);
+
     try {
       this.http = builder.build();
       this.http.addServlet("status", "/status", LlapStatusServlet.class);
       this.http.addServlet("peers", "/peers", LlapPeerRegistryServlet.class);
       this.http.addServlet("iomem", "/iomem", LlapIoMemoryServlet.class);
       this.http.addServlet("system", "/system", SystemConfigurationServlet.class);
+      this.http.addServlet("locking", "/locking", LlapLockingServlet.class);
     } catch (IOException e) {
       LOG.warn("LLAP web service failed to come up", e);
     }
