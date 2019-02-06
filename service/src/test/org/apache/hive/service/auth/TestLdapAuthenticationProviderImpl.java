@@ -22,6 +22,7 @@ import java.util.Arrays;
 import javax.naming.NamingException;
 import javax.security.sasl.AuthenticationException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hive.service.auth.ldap.DirSearch;
 import org.apache.hive.service.auth.ldap.DirSearchFactory;
 import org.apache.hive.service.auth.ldap.LdapSearchFactory;
@@ -322,6 +323,118 @@ public class TestLdapAuthenticationProviderImpl {
     verify(search, times(2)).findGroupDn(anyString());
     verify(search, times(2)).isUserMemberOfGroup(anyString(), anyString());
     verify(search, atLeastOnce()).close();
+  }
+
+  @Test
+  public void testAuthenticateWithBindInCredentialFilePasses() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "testPassword";
+    String authFullUser = "cn=user1,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah";
+    String tmpDir = System.getProperty("build.dir");
+    String credentialsPath = "jceks://file" + tmpDir + "/test-classes/creds/test.jceks";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, credentialsPath);
+
+    System.out.println(tmpDir);
+
+    when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(bindUser), eq(bindPass));
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(authFullUser), eq(authPass));
+    verify(search, times(1)).findUserDn(eq(authUser));
+  }
+
+  @Test
+  public void testAuthenticateWithBindInMissingCredentialFilePasses() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah";
+    String tmpDir = System.getProperty("build.dir");
+    String credentialsPath = "jceks://file" + tmpDir + "/test-classes/creds/nonExistent.jceks";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, credentialsPath);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(authUser), eq(authPass));
+  }
+
+  @Test
+  public void testAuthenticateWithBindUserPasses() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "Blah";
+    String authFullUser = "cn=user1,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah2";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, bindPass);
+
+    when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(bindUser), eq(bindPass));
+    verify(factory, times(1)).getInstance(isA(HiveConf.class), eq(authFullUser), eq(authPass));
+    verify(search, times(1)).findUserDn(eq(authUser));
+  }
+
+  @Test
+  public void testAuthenticateWithBindUserFailsOnAuthentication() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "Blah";
+    String authFullUser = "cn=user1,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah2";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, bindPass);
+
+    thrown.expect(AuthenticationException.class);
+    when(factory.getInstance(any(HiveConf.class), eq(authFullUser), eq(authPass))).
+      thenThrow(AuthenticationException.class);
+    when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+  }
+
+  @Test
+  public void testAuthenticateWithBindUserFailsOnGettingDn() throws AuthenticationException, NamingException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "Blah";
+    String authFullUser = "cn=user1,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String authUser = "user1";
+    String authPass = "Blah2";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, bindPass);
+
+    thrown.expect(AuthenticationException.class);
+    when(search.findUserDn(eq(authUser))).thenThrow(NamingException.class);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
+  }
+
+  @Test
+  public void testAuthenticateWithBindUserFailsOnBinding() throws AuthenticationException {
+    String bindUser = "cn=BindUser,ou=Users,ou=branch1,dc=mycorp,dc=com";
+    String bindPass = "Blah";
+    String authUser = "user1";
+    String authPass = "Blah2";
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, bindUser);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, bindPass);
+
+    thrown.expect(AuthenticationException.class);
+    when(factory.getInstance(any(HiveConf.class), eq(bindUser), eq(bindPass))).thenThrow(AuthenticationException.class);
+
+    auth = new LdapAuthenticationProviderImpl(conf, factory);
+    auth.Authenticate(authUser, authPass);
   }
 
   private void expectAuthenticationExceptionForInvalidPassword() {
