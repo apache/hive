@@ -122,6 +122,13 @@
     </dependency>
   </dependencies>
 
+  <repositories>
+    <repository>
+      <id>confluent</id>
+      <url>http://packages.confluent.io/maven/</url>
+    </repository>
+  </repositories>
+
   <profiles>
     <profile>
       <id>dev-fast-build</id>
