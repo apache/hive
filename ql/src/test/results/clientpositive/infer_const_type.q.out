@@ -108,7 +108,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@infertypes
 #### A masked pattern was here ####
 127	32767	12345	-12345	906.0	-307.0	1234
-WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: EXPLAIN SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
@@ -139,10 +138,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
-            filterExpr: ((UDFToInteger(si) = 32768) or (UDFToDouble(ti) = 128.0D) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(bi) = 9.223372036854776E18D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToInteger(si) = 32768) or (UDFToDouble(ti) = 128.0D) or (UDFToDouble(i) = 2.147483648E9D) or (UDFToDouble(bi) = 9.223372036854776E18D)) (type: boolean)
+              predicate: false (type: boolean)
               Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
@@ -163,7 +161,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
@@ -208,10 +205,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
-            filterExpr: ((CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(ti) = 127.0D) or (UDFToDouble(i) = -100.0D)) (type: boolean)
+            filterExpr: ((ti = 127Y) or (i = -100) or (CAST( si AS decimal(5,0)) = 327)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(ti) = 127.0D) or (UDFToDouble(i) = -100.0D)) (type: boolean)
+              predicate: ((ti = 127Y) or (i = -100) or (CAST( si AS decimal(5,0)) = 327)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
@@ -271,10 +268,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: infertypes
-            filterExpr: ((UDFToDouble(ti) < 127.0D) and (UDFToDouble(i) > 100.0D) and (UDFToDouble(str) = 1.57D)) (type: boolean)
+            filterExpr: ((ti < 127Y) and (i > 100) and (UDFToDouble(str) = 1.57D)) (type: boolean)
             Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(ti) < 127.0D) and (UDFToDouble(i) > 100.0D) and (UDFToDouble(str) = 1.57D)) (type: boolean)
+              predicate: ((ti < 127Y) and (i > 100) and (UDFToDouble(str) = 1.57D)) (type: boolean)
               Statistics: Num rows: 1 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)

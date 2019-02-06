@@ -1363,7 +1363,8 @@ public class TypeCheckProcFactory {
       return valueDesc;
     }
 
-    private static ExprNodeDesc interpretNodeAs(PrimitiveTypeInfo colTypeInfo, ExprNodeDesc constChild) {
+    @VisibleForTesting
+    protected static ExprNodeDesc interpretNodeAs(PrimitiveTypeInfo colTypeInfo, ExprNodeDesc constChild) {
       if (constChild instanceof ExprNodeConstantDesc) {
         // Try to narrow type of constant
         Object constVal = ((ExprNodeConstantDesc) constChild).getValue();
@@ -1391,31 +1392,36 @@ public class TypeCheckProcFactory {
       return colTypeInfo;
     }
 
+    private static BigDecimal toBigDecimal(String val) {
+      if (!NumberUtils.isNumber(val)) {
+        throw new NumberFormatException("The given string is not a valid number: " + val);
+      }
+      return new BigDecimal(val.replaceAll("[dDfFlL]$", ""));
+    }
+
     private static Object interpretConstantAsPrimitive(PrimitiveTypeInfo colTypeInfo, Object constVal,
         TypeInfo constTypeInfo) {
       if (constVal instanceof Number || constVal instanceof String) {
         try {
           PrimitiveTypeEntry primitiveTypeEntry = colTypeInfo.getPrimitiveTypeEntry();
           if (PrimitiveObjectInspectorUtils.intTypeEntry.equals(primitiveTypeEntry)) {
-            return (new Integer(constVal.toString()));
+            return toBigDecimal(constVal.toString()).intValueExact();
           } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(primitiveTypeEntry)) {
-            return (new Long(constVal.toString()));
+            return toBigDecimal(constVal.toString()).longValueExact();
           } else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-            return (new Double(constVal.toString()));
+            return Double.valueOf(constVal.toString());
           } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-            return (new Float(constVal.toString()));
+            return Float.valueOf(constVal.toString());
           } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(primitiveTypeEntry)) {
-            return (new Byte(constVal.toString()));
+            return toBigDecimal(constVal.toString()).byteValueExact();
           } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {
-            return (new Short(constVal.toString()));
+            return toBigDecimal(constVal.toString()).shortValueExact();
           } else if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(primitiveTypeEntry)) {
             return HiveDecimal.create(constVal.toString());
           }
-        } catch (NumberFormatException nfe) {
+        } catch (NumberFormatException | ArithmeticException nfe) {
           LOG.trace("Failed to narrow type of constant", nfe);
-          if (!NumberUtils.isNumber(constVal.toString())) {
-            return null;
-          }
+          return null;
         }
       }
 
