@@ -1680,6 +1680,9 @@ public class Driver implements IDriver {
       /*It's imperative that {@code acquireLocks()} is called for all commands so that
       HiveTxnManager can transition its state machine correctly*/
       queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
+      final List<HiveLock> locks = ctx.getHiveLocks();
+      LOG.info("Operation {} obtained {} locks", plan.getOperation(),
+          ((locks == null) ? 0 : locks.size()));
       // This check is for controlling the correctness of the current state
       if (queryTxnMgr.recordSnapshot(plan) && !validTxnListsGenerated) {
         throw new IllegalStateException(
