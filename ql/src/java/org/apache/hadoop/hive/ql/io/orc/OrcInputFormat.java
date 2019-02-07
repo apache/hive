@@ -1206,7 +1206,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             context.conf.getBoolean("mapred.input.dir.recursive", false));
         List<HdfsFileStatusWithId> originals = new ArrayList<>();
         List<AcidBaseFileInfo> baseFiles = new ArrayList<>();
-        AcidUtils.findOriginals(fs, fs.getFileStatus(dir), originals, useFileIds, true, isRecursive);
+        AcidUtils.findOriginals(fs, dir, originals, useFileIds, true, isRecursive);
         for (HdfsFileStatusWithId fileId : originals) {
           baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.ORIGINAL_BASE));
         }

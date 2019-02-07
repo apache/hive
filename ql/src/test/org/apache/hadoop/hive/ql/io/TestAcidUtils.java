@@ -115,7 +115,7 @@ public class TestAcidUtils {
         AcidUtils.ParsedBase.parseBase(new Path("/tmp/base_000123")).getWriteId());
     assertEquals(0,
         AcidUtils.ParsedBase.parseBase(new Path("/tmp/base_000123")).getVisibilityTxnId());
-    Path dir = new Path("/tmp/tbl");
+    Path dir = new Path("mock:/tmp/");
     AcidOutputFormat.Options opts =
         AcidUtils.parseBaseOrDeltaBucketFilename(new Path(dir, "base_567/bucket_123"),
             conf);
@@ -202,12 +202,12 @@ public class TestAcidUtils {
         AcidUtils.getAcidState(new MockPath(fs,
             "mock:/tbl/part1"), conf, new ValidReaderWriteIdList("tbl:100:" + Long.MAX_VALUE + ":"));
     assertEquals(null, dir.getBaseDirectory());
-    List<FileStatus> obsolete = dir.getObsolete();
+    List<Path> obsolete = dir.getObsolete();
     assertEquals(2, obsolete.size());
     assertEquals("mock:/tbl/part1/delta_025_025",
-        obsolete.get(0).getPath().toString());
+        obsolete.get(0).toString());
     assertEquals("mock:/tbl/part1/delta_029_029",
-        obsolete.get(1).getPath().toString());
+        obsolete.get(1).toString());
     List<HdfsFileStatusWithId> result = dir.getOriginalFiles();
     assertEquals(5, result.size());
     assertEquals("mock:/tbl/part1/000000_0", result.get(0).getFileStatus().getPath().toString());
@@ -246,13 +246,13 @@ public class TestAcidUtils {
         AcidUtils.getAcidState(new MockPath(fs,
             "mock:/tbl/part1"), conf, new ValidReaderWriteIdList("tbl:100:" + Long.MAX_VALUE + ":"));
     assertEquals("mock:/tbl/part1/base_49", dir.getBaseDirectory().toString());
-    List<FileStatus> obsolete = dir.getObsolete();
+    List<Path> obsolete = dir.getObsolete();
     assertEquals(5, obsolete.size());
-    assertEquals("mock:/tbl/part1/base_10", obsolete.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/base_5", obsolete.get(1).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_025_030", obsolete.get(2).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_025_025", obsolete.get(3).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_029_029", obsolete.get(4).getPath().toString());
+    assertEquals("mock:/tbl/part1/base_10", obsolete.get(0).toString());
+    assertEquals("mock:/tbl/part1/base_5", obsolete.get(1).toString());
+    assertEquals("mock:/tbl/part1/delta_025_030", obsolete.get(2).toString());
+    assertEquals("mock:/tbl/part1/delta_025_025", obsolete.get(3).toString());
+    assertEquals("mock:/tbl/part1/delta_029_029", obsolete.get(4).toString());
     assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     assertEquals(1, deltas.size());
@@ -276,9 +276,9 @@ public class TestAcidUtils {
     AcidUtils.Directory dir =
         AcidUtils.getAcidState(part, conf, new ValidReaderWriteIdList("tbl:150:" + Long.MAX_VALUE + ":"));
     // Obsolete list should include the two original bucket files, and the old base dir
-    List<FileStatus> obsolete = dir.getObsolete();
+    List<Path> obsolete = dir.getObsolete();
     assertEquals(3, obsolete.size());
-    assertEquals("mock:/tbl/part1/base_5", obsolete.get(0).getPath().toString());
+    assertEquals("mock:/tbl/part1/base_5", obsolete.get(0).toString());
     assertEquals("mock:/tbl/part1/base_10", dir.getBaseDirectory().toString());
   }
 
@@ -299,10 +299,10 @@ public class TestAcidUtils {
     AcidUtils.Directory dir =
         AcidUtils.getAcidState(part, conf, new ValidReaderWriteIdList("tbl:100:" + Long.MAX_VALUE + ":"));
     assertEquals("mock:/tbl/part1/base_50", dir.getBaseDirectory().toString());
-    List<FileStatus> obsolete = dir.getObsolete();
+    List<Path> obsolete = dir.getObsolete();
     assertEquals(2, obsolete.size());
-    assertEquals("mock:/tbl/part1/delta_052_55", obsolete.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_0060_60", obsolete.get(1).getPath().toString());
+    assertEquals("mock:/tbl/part1/delta_052_55", obsolete.get(0).toString());
+    assertEquals("mock:/tbl/part1/delta_0060_60", obsolete.get(1).toString());
     List<AcidUtils.ParsedDelta> delts = dir.getCurrentDirectories();
     assertEquals(4, delts.size());
     assertEquals("mock:/tbl/part1/delta_40_60", delts.get(0).getPath().toString());
@@ -336,13 +336,13 @@ public class TestAcidUtils {
     AcidUtils.Directory dir
             = AcidUtils.getAcidState(part, conf, new ValidReaderWriteIdList("tbl:100:" + Long.MAX_VALUE + ":"));
     assertEquals("mock:/tbl/part1/base_50", dir.getBaseDirectory().toString());
-    List<FileStatus> obsolete = dir.getObsolete();
+    List<Path> obsolete = dir.getObsolete();
     assertEquals(5, obsolete.size());
-    assertEquals("mock:/tbl/part1/delta_052_55", obsolete.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_058_58", obsolete.get(1).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_0060_60_1", obsolete.get(2).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_0060_60_4", obsolete.get(3).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_0060_60_7", obsolete.get(4).getPath().toString());
+    assertEquals("mock:/tbl/part1/delta_052_55", obsolete.get(0).toString());
+    assertEquals("mock:/tbl/part1/delta_058_58", obsolete.get(1).toString());
+    assertEquals("mock:/tbl/part1/delta_0060_60_1", obsolete.get(2).toString());
+    assertEquals("mock:/tbl/part1/delta_0060_60_4", obsolete.get(3).toString());
+    assertEquals("mock:/tbl/part1/delta_0060_60_7", obsolete.get(4).toString());
     List<AcidUtils.ParsedDelta> delts = dir.getCurrentDirectories();
     assertEquals(5, delts.size());
     assertEquals("mock:/tbl/part1/delta_40_60", delts.get(0).getPath().toString());
@@ -451,15 +451,15 @@ public class TestAcidUtils {
         AcidUtils.getAcidState(new MockPath(fs,
             "mock:/tbl/part1"), conf, new ValidReaderWriteIdList("tbl:100:" + Long.MAX_VALUE + ":"));
     assertEquals("mock:/tbl/part1/base_49", dir.getBaseDirectory().toString());
-    List<FileStatus> obsolete = dir.getObsolete();
+    List<Path> obsolete = dir.getObsolete();
     assertEquals(7, obsolete.size());
-    assertEquals("mock:/tbl/part1/base_10", obsolete.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/base_5", obsolete.get(1).getPath().toString());
-    assertEquals("mock:/tbl/part1/delete_delta_025_030", obsolete.get(2).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_025_030", obsolete.get(3).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_025_025", obsolete.get(4).getPath().toString());
-    assertEquals("mock:/tbl/part1/delete_delta_029_029", obsolete.get(5).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_029_029", obsolete.get(6).getPath().toString());
+    assertEquals("mock:/tbl/part1/base_10", obsolete.get(0).toString());
+    assertEquals("mock:/tbl/part1/base_5", obsolete.get(1).toString());
+    assertEquals("mock:/tbl/part1/delete_delta_025_030", obsolete.get(2).toString());
+    assertEquals("mock:/tbl/part1/delta_025_030", obsolete.get(3).toString());
+    assertEquals("mock:/tbl/part1/delta_025_025", obsolete.get(4).toString());
+    assertEquals("mock:/tbl/part1/delete_delta_029_029", obsolete.get(5).toString());
+    assertEquals("mock:/tbl/part1/delta_029_029", obsolete.get(6).toString());
     assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     assertEquals(2, deltas.size());
@@ -490,11 +490,11 @@ public class TestAcidUtils {
     AcidUtils.Directory dir =
         AcidUtils.getAcidState(part, conf, new ValidReaderWriteIdList("tbl:100:" + Long.MAX_VALUE + ":"));
     assertEquals("mock:/tbl/part1/base_50", dir.getBaseDirectory().toString());
-    List<FileStatus> obsolete = dir.getObsolete();
+    List<Path> obsolete = dir.getObsolete();
     assertEquals(3, obsolete.size());
-    assertEquals("mock:/tbl/part1/delete_delta_052_55", obsolete.get(0).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_052_55", obsolete.get(1).getPath().toString());
-    assertEquals("mock:/tbl/part1/delta_0060_60", obsolete.get(2).getPath().toString());
+    assertEquals("mock:/tbl/part1/delete_delta_052_55", obsolete.get(0).toString());
+    assertEquals("mock:/tbl/part1/delta_052_55", obsolete.get(1).toString());
+    assertEquals("mock:/tbl/part1/delta_0060_60", obsolete.get(2).toString());
     List<AcidUtils.ParsedDelta> delts = dir.getCurrentDirectories();
     assertEquals(6, delts.size());
     assertEquals("mock:/tbl/part1/delete_delta_40_60", delts.get(0).getPath().toString());
@@ -520,9 +520,9 @@ public class TestAcidUtils {
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     AcidUtils.Directory dir =
         AcidUtils.getAcidState(part, conf, new ValidReaderWriteIdList("tbl:100:" + Long.MAX_VALUE + ":"));
-    List<FileStatus> obsolete = dir.getObsolete();
+    List<Path> obsolete = dir.getObsolete();
     assertEquals(1, obsolete.size());
-    assertEquals("mock:/tbl/part1/delete_delta_50_50", obsolete.get(0).getPath().toString());
+    assertEquals("mock:/tbl/part1/delete_delta_50_50", obsolete.get(0).toString());
     List<AcidUtils.ParsedDelta> delts = dir.getCurrentDirectories();
     assertEquals(1, delts.size());
     assertEquals("mock:/tbl/part1/delta_40_60", delts.get(0).getPath().toString());

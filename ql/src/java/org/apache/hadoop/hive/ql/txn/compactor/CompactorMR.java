@@ -339,13 +339,8 @@ public class CompactorMR {
   }
 
   /**
-   * 
-   * @param conf
-   * @param t
-   * @param p
    * @param sd (this is the resolved StorageDescriptor, i.e. resolved to table or partition)
    * @param writeIds (valid write ids used to filter rows while they're being read for compaction)
-   * @param ci
    * @throws IOException
    */
   private void runCrudCompaction(HiveConf hiveConf, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
@@ -497,8 +492,9 @@ public class CompactorMR {
    * We need each final bucket file soreted by original write id (ascending), bucket (ascending) and row id (ascending). 
    * (current write id will be the same as original write id). 
    * We will be achieving the ordering via a custom split grouper for compactor.
-   * See {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars.SPLIT_GROUPING_MODE} for the config description.
-   * See {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorGroups} for details on the mechanism.
+   * See {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars#SPLIT_GROUPING_MODE} for the config description.
+   * See {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[], Configuration)}
+   *  for details on the mechanism.
    */
   private String buildCrudMajorCompactionCreateTableQuery(String fullName, Table t, StorageDescriptor sd) {
     StringBuilder query = new StringBuilder("create temporary table ").append(fullName).append(" (");
@@ -547,7 +543,8 @@ public class CompactorMR {
   /**
    * Move and rename bucket files from the temp table (tmpTableName), to the new base path under the source table/ptn.
    * Since the temp table is a non-transactional table, it has file names in the "original" format.
-   * Also, due to split grouping in {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorGroups}, 
+   * Also, due to split grouping in
+   * {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[], Configuration)},
    * we will end up with one file per bucket.
    */
   private void commitCrudMajorCompaction(Table t, String from, String tmpTableName, String to, Configuration conf,
@@ -822,11 +819,7 @@ public class CompactorMR {
   // Remove the directories for aborted transactions only
   private void removeFilesForMmTable(HiveConf conf, Directory dir) throws IOException {
     // For MM table, we only want to delete delta dirs for aborted txns.
-    List<FileStatus> abortedDirs = dir.getAbortedDirectories();
-    List<Path> filesToDelete = new ArrayList<>(abortedDirs.size());
-    for (FileStatus stat : abortedDirs) {
-      filesToDelete.add(stat.getPath());
-    }
+    List<Path> filesToDelete = dir.getAbortedDirectories();
     if (filesToDelete.size() < 1) {
       return;
     }
