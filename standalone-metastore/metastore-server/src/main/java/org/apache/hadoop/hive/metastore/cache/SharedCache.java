@@ -256,6 +256,7 @@ public class SharedCache {
         tableLock.readLock().lock();
         PartitionWrapper wrapper = partitionCache.get(CacheUtils.buildPartitionCacheKey(partVals));
         if (wrapper == null) {
+          LOG.debug("Partition: " + partVals + " is not present in the cache.");
           return null;
         }
         part = CacheUtils.assemble(wrapper, sharedCache);
@@ -354,14 +355,16 @@ public class SharedCache {
       try {
         tableLock.writeLock().lock();
         PartitionWrapper partitionWrapper = partitionCache.get(CacheUtils.buildPartitionCacheKey(partVals));
-        if (partitionWrapper != null) {
-          Partition newPart = partitionWrapper.getPartition();
-          newPart.setParameters(parameters);
-          newPart.setWriteId(writeId);
-          removePartition(partVals, sharedCache);
-          cachePartition(newPart, sharedCache);
-          updatePartitionColStats(partVals, colStatsObjs);
+        if (partitionWrapper == null) {
+          LOG.info("Partition " + partVals + " is missing from cache. Cannot update the partition stats in cache.");
+          return;
         }
+        Partition newPart = partitionWrapper.getPartition();
+        newPart.setParameters(parameters);
+        newPart.setWriteId(writeId);
+        removePartition(partVals, sharedCache);
+        cachePartition(newPart, sharedCache);
+        updatePartitionColStats(partVals, colStatsObjs);
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -523,7 +526,7 @@ public class SharedCache {
         }
         PartitionWrapper wrapper = partitionCache.get(CacheUtils.buildPartitionCacheKey(partVal));
         if (wrapper == null) {
-          LOG.debug("Partition: " + partVal + " is not present in the cache");
+          LOG.info("Partition: " + partVal + " is not present in the cache. Cannot update stats in cache.");
           return null;
         }
         long writeId = wrapper.getPartition().getWriteId();
@@ -1347,17 +1350,19 @@ public class SharedCache {
       cacheLock.writeLock().lock();
       TableWrapper tblWrapper =
               tableCache.remove(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
-        Table newTable = tblWrapper.getTable();
-        newTable.setWriteId(writeId);
-        newTable.setParameters(newParams);
-        //tblWrapper.updateTableObj(newTable, this);
-        String newDbName = StringUtils.normalizeIdentifier(newTable.getDbName());
-        String newTblName = StringUtils.normalizeIdentifier(newTable.getTableName());
-        tableCache.put(CacheUtils.buildTableKey(catName, newDbName, newTblName), tblWrapper);
-        tblWrapper.updateTableColStats(colStatsObjs);
-        isTableCacheDirty.set(true);
+      if (tblWrapper == null) {
+        LOG.info("Table " + tblName + " is missing from cache. Cannot update table stats in cache");
+        return;
       }
+      Table newTable = tblWrapper.getTable();
+      newTable.setWriteId(writeId);
+      newTable.setParameters(newParams);
+      //tblWrapper.updateTableObj(newTable, this);
+      String newDbName = StringUtils.normalizeIdentifier(newTable.getDbName());
+      String newTblName = StringUtils.normalizeIdentifier(newTable.getTableName());
+      tableCache.put(CacheUtils.buildTableKey(catName, newDbName, newTblName), tblWrapper);
+      tblWrapper.updateTableColStats(colStatsObjs);
+      isTableCacheDirty.set(true);
     } finally {
       cacheLock.writeLock().unlock();
     }
@@ -1462,14 +1467,15 @@ public class SharedCache {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
-        ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tblName);
-        return tblWrapper.getCachedTableColStats(csd, colNames, validWriteIds, areTxnStatsSupported);
+      if (tblWrapper == null) {
+        LOG.info("Table " + tblName + " is missing from cache.");
+        return null;
       }
+      ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tblName);
+      return tblWrapper.getCachedTableColStats(csd, colNames, validWriteIds, areTxnStatsSupported);
     } finally {
       cacheLock.readLock().unlock();
     }
-    return null;
   }
 
   public void removeTableColStatsFromCache(String catName, String dbName, String tblName,
@@ -1479,6 +1485,8 @@ public class SharedCache {
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
         tblWrapper.removeTableColStats(colName);
+      } else {
+        LOG.info("Table " + tblName + " is missing from cache.");
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -1491,6 +1499,8 @@ public class SharedCache {
       TableWrapper tblWrapper = tableCache.get(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
         tblWrapper.removeAllTableColStats();
+      } else {
+        LOG.info("Table " + tblName + " is missing from cache.");
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -1505,6 +1515,8 @@ public class SharedCache {
           tableCache.get(CacheUtils.buildTableKey(catName, dbName, tableName));
       if (tblWrapper != null) {
         tblWrapper.updateTableColStats(colStatsForTable);
+      } else {
+        LOG.info("Table " + tableName + " is missing from cache.");
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -1519,6 +1531,8 @@ public class SharedCache {
           tableCache.get(CacheUtils.buildTableKey(catName, dbName, tableName));
       if (tblWrapper != null) {
         tblWrapper.refreshTableColStats(colStatsForTable);
+      } else {
+        LOG.info("Table " + tableName + " is missing from cache.");
       }
     } finally {
       cacheLock.readLock().unlock();
