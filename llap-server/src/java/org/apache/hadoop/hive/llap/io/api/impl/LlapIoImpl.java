@@ -64,7 +64,9 @@ import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
+import org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
@@ -72,6 +74,8 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.metrics2.MetricsSource;
+import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 
@@ -96,6 +100,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final ExecutorService executor;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
+  private MetricsSource fileDataLockMetrics;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
@@ -131,6 +136,15 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     }
     this.ioMetrics = LlapDaemonIOMetrics.create(displayName, sessionId, Ints.toArray(intervalList));
 
+    // create and register the locking metrics for FileData R/W locks
+    MetricsSystem ms = LlapMetricsSystem.instance();
+    fileDataLockMetrics =
+      ReadWriteLockMetrics.createLockMetricsSource("FileData");
+
+    ms.register("FileDataLockMetrics",
+                "Lock metrics for R/W locks around FileData instances",
+                fileDataLockMetrics);
+
     LOG.info("Started llap daemon metrics with displayName: {} sessionId: {}", displayName,
         sessionId);
 
@@ -165,7 +179,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       dataCache = cacheImpl;
       if (isEncodeEnabled) {
         SerDeLowLevelCacheImpl serdeCacheImpl = new SerDeLowLevelCacheImpl(
-            cacheMetrics, cachePolicyWrapper, allocator);
+            cacheMetrics, fileDataLockMetrics, cachePolicyWrapper, allocator);
         serdeCache = serdeCacheImpl;
         serdeCacheImpl.setConf(conf);
       }
@@ -218,7 +232,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     this.orcCvp = new OrcColumnVectorProducer(
         metadataCache, dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
-        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool) : null;
+        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics,
+        fileDataLockMetrics, tracePool) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();

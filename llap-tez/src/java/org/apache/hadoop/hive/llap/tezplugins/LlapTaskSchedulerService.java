@@ -179,19 +179,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
-  /// Shared singleton MetricsSource instance for all FileData locks
-  private static final MetricsSource LOCK_METRICS;
-
-  static {
-    // create and register the MetricsSource for lock metrics
-    MetricsSystem ms = LlapMetricsSystem.instance();
-    LOCK_METRICS =
-        ReadWriteLockMetrics.createLockMetricsSource("TaskScheduler");
-
-    ms.register("LLAPTaskSchedulerLockMetrics",
-                "Lock metrics for R/W locks LLAP task scheduler", LOCK_METRICS);
-  }
-
   // TODO: this is an ugly hack; see the same in LlapTaskCommunicator for discussion.
   //       This only lives for the duration of the service init.
   static LlapTaskSchedulerService instance = null;
@@ -242,6 +229,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   final DelayedTaskSchedulerCallable delayedTaskSchedulerCallable;
 
+  private final MetricsSource lockingMetrics;
   private final ReadWriteLock lock;
   private final Lock readLock;
   private final Lock writeLock;
@@ -338,9 +326,17 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           "Failed to parse user payload for " + LlapTaskSchedulerService.class.getSimpleName(), e);
     }
 
-    lock = ReadWriteLockMetrics.wrap(conf,
-                                     new ReentrantReadWriteLock(),
-                                    LOCK_METRICS);
+    // create and register the MetricsSource for lock metrics (for this singleton)
+    MetricsSystem ms = LlapMetricsSystem.instance();
+    lockingMetrics =
+        ReadWriteLockMetrics.createLockMetricsSource("TaskScheduler");
+
+    ms.register("LLAPTaskSchedulerLockMetrics",
+                "Lock metrics for R/W locks LLAP task scheduler",
+                lockingMetrics);
+
+    lock = ReadWriteLockMetrics.wrap(conf, new ReentrantReadWriteLock(),
+                                     lockingMetrics);
     readLock = lock.readLock();
     writeLock = lock.writeLock();
 

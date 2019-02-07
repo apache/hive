@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.llap.metrics;
 
-import avro.shaded.com.google.common.annotations.VisibleForTesting;
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import java.util.ArrayList;
@@ -31,9 +30,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.hadoop.conf.Configuration;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsInfo;
 import org.apache.hadoop.metrics2.MetricsSource;
@@ -56,7 +53,7 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
   /**
    * Helper class to compare two <code>LockMetricSource</code> instances.
    * This <code>Comparator</code> class can be used to sort a list of <code>
-   * LockMetricSource</code> instances in descending order by their total lock 
+   * LockMetricSource</code> instances in descending order by their total lock
    * wait time.
    */
   public static class MetricsComparator implements Comparator<MetricsSource> {
@@ -67,10 +64,10 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
         LockMetricSource lms1 = (LockMetricSource)o1;
         LockMetricSource lms2 = (LockMetricSource)o2;
 
-        long totalMs1 = (lms1.readLockWaitTimeTotal.value() / 1000000L)
-                        + (lms1.writeLockWaitTimeTotal.value() / 1000000L);
-        long totalMs2 = (lms2.readLockWaitTimeTotal.value() / 1000000L) 
-                        + (lms2.writeLockWaitTimeTotal.value() / 1000000L);
+        long totalMs1 = (lms1.readLockWaitTimeTotalNs.value() / 1000000L)
+                        + (lms1.writeLockWaitTimeTotalNs.value() / 1000000L);
+        long totalMs2 = (lms2.readLockWaitTimeTotalNs.value() / 1000000L)
+                        + (lms2.writeLockWaitTimeTotalNs.value() / 1000000L);
 
         // sort descending by total lock time
         if (totalMs1 < totalMs2) {
@@ -102,21 +99,16 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
    * @param metrics The target container for locking metrics
    * @see #createLockMetricsSource
    */
-  public static ReadWriteLock wrap(Configuration conf, ReadWriteLock lock, 
+  public static ReadWriteLock wrap(Configuration conf, ReadWriteLock lock,
                                    MetricsSource metrics) {
     Preconditions.checkNotNull(lock, "Caller has to provide valid input lock");
-    boolean needsWrap = false;
 
-    if (null != conf) {
-      needsWrap = 
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_COLLECT_LOCK_METRICS);
-    }
-
-    if (false == needsWrap) {
+    if (null == conf
+        || !HiveConf.getBoolVar(conf,HiveConf.ConfVars.LLAP_COLLECT_LOCK_METRICS)) {
       return lock;
     }
 
-    Preconditions.checkNotNull(metrics, 
+    Preconditions.checkNotNull(metrics,
         "Caller has to procide group specific metrics source");
     return new ReadWriteLockMetrics(lock, metrics);
   }
@@ -133,7 +125,7 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
    */
   public static MetricsSource createLockMetricsSource(String label) {
     Preconditions.checkNotNull(label);
-    Preconditions.checkArgument(!label.contains("\""), 
+    Preconditions.checkArgument(!label.contains("\""),
         "Label can't contain quote (\")");
     return new LockMetricSource(label);
   }
@@ -158,12 +150,12 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
   /// Enumeration of metric info names and descriptions
   @VisibleForTesting
   public enum LockMetricInfo implements MetricsInfo {
-    ReadLockWaitTimeTotal("The total wait time for read locks in nanoseconds"),
-    ReadLockWaitTimeMax("The maximum wait time for a read lock in nanoseconds"),
+    ReadLockWaitTimeTotalNs("The total wait time for read locks in nanoseconds"),
+    ReadLockWaitTimeMaxNs("The maximum wait time for a read lock in nanoseconds"),
     ReadLockCount("Total amount of read lock requests"),
-    WriteLockWaitTimeTotal(
+    WriteLockWaitTimeTotalNs(
         "The total wait time for write locks in nanoseconds"),
-    WriteLockWaitTimeMax(
+    WriteLockWaitTimeMaxNs(
         "The maximum wait time for a write lock in nanoseconds"),
     WriteLockCount("Total amount of write lock requests");
 
@@ -198,27 +190,27 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
 
     /// accumulated wait time for read locks
     @Metric
-    MutableCounterLong readLockWaitTimeTotal;  
+    MutableCounterLong readLockWaitTimeTotalNs;
 
     /// highest wait time for read locks
     @Metric
-    MutableCounterLong readLockWaitTimeMax;       
+    MutableCounterLong readLockWaitTimeMaxNs;
 
     /// total number of read lock calls
     @Metric
-    MutableCounterLong readLockCounts;            
+    MutableCounterLong readLockCounts;
 
     /// accumulated wait time for write locks
     @Metric
-    MutableCounterLong writeLockWaitTimeTotal;    
+    MutableCounterLong writeLockWaitTimeTotalNs;
 
     /// highest wait time for write locks
     @Metric
-    MutableCounterLong writeLockWaitTimeMax;      
+    MutableCounterLong writeLockWaitTimeMaxNs;
 
     /// total number of write lock calls
     @Metric
-    MutableCounterLong writeLockCounts;           
+    MutableCounterLong writeLockCounts;
 
     /**
      * Creates a new metrics collection instance.
@@ -231,16 +223,16 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
      */
     private LockMetricSource(String label) {
       lockLabel = label;
-      readLockWaitTimeTotal
-          = new MutableCounterLong(LockMetricInfo.ReadLockWaitTimeTotal, 0);
-      readLockWaitTimeMax
-          = new MutableCounterLong(LockMetricInfo.ReadLockWaitTimeMax, 0);
+      readLockWaitTimeTotalNs
+          = new MutableCounterLong(LockMetricInfo.ReadLockWaitTimeTotalNs, 0);
+      readLockWaitTimeMaxNs
+          = new MutableCounterLong(LockMetricInfo.ReadLockWaitTimeMaxNs, 0);
       readLockCounts
           = new MutableCounterLong(LockMetricInfo.ReadLockCount, 0);
-      writeLockWaitTimeTotal
-          = new MutableCounterLong(LockMetricInfo.WriteLockWaitTimeTotal, 0);
-      writeLockWaitTimeMax
-          = new MutableCounterLong(LockMetricInfo.WriteLockWaitTimeMax, 0);
+      writeLockWaitTimeTotalNs
+          = new MutableCounterLong(LockMetricInfo.WriteLockWaitTimeTotalNs, 0);
+      writeLockWaitTimeMaxNs
+          = new MutableCounterLong(LockMetricInfo.WriteLockWaitTimeMaxNs, 0);
       writeLockCounts
           = new MutableCounterLong(LockMetricInfo.WriteLockCount, 0);
 
@@ -253,16 +245,16 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
     public void getMetrics(MetricsCollector collector, boolean all) {
       collector.addRecord(this.lockLabel)
                .setContext("Locking")
-               .addCounter(LockMetricInfo.ReadLockWaitTimeTotal,
-                           readLockWaitTimeTotal.value())
-               .addCounter(LockMetricInfo.ReadLockWaitTimeMax,
-                           readLockWaitTimeMax.value())
+               .addCounter(LockMetricInfo.ReadLockWaitTimeTotalNs,
+                           readLockWaitTimeTotalNs.value())
+               .addCounter(LockMetricInfo.ReadLockWaitTimeMaxNs,
+                           readLockWaitTimeMaxNs.value())
                .addCounter(LockMetricInfo.ReadLockCount,
                            readLockCounts.value())
-               .addCounter(LockMetricInfo.WriteLockWaitTimeTotal,
-                           writeLockWaitTimeTotal.value())
-               .addCounter(LockMetricInfo.WriteLockWaitTimeMax,
-                           writeLockWaitTimeMax.value())
+               .addCounter(LockMetricInfo.WriteLockWaitTimeTotalNs,
+                           writeLockWaitTimeTotalNs.value())
+               .addCounter(LockMetricInfo.WriteLockWaitTimeMaxNs,
+                           writeLockWaitTimeMaxNs.value())
                .addCounter(LockMetricInfo.WriteLockCount,
                            writeLockCounts.value());
     }
@@ -274,15 +266,15 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
       long totalMillis = 0L;
 
       if (0 < readLockCounts.value()) {
-        avgRead = readLockWaitTimeTotal.value() / readLockCounts.value();
+        avgRead = readLockWaitTimeTotalNs.value() / readLockCounts.value();
       }
 
       if (0 < writeLockCounts.value()) {
-        avgWrite = writeLockWaitTimeTotal.value() / writeLockCounts.value();
+        avgWrite = writeLockWaitTimeTotalNs.value() / writeLockCounts.value();
       }
 
-      totalMillis = (readLockWaitTimeTotal.value() / 1000000L) 
-                    + (writeLockWaitTimeTotal.value() / 1000000L);
+      totalMillis = (readLockWaitTimeTotalNs.value() / 1000000L)
+                    + (writeLockWaitTimeTotalNs.value() / 1000000L);
 
       StringBuffer sb = new StringBuffer();
       sb.append("{ \"type\" : \"R/W Lock Stats\", \"label\" : \"");
@@ -294,13 +286,13 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
       sb.append(", \"avgWaitTimeNanos\" : ");
       sb.append(avgRead);
       sb.append(", \"maxWaitTimeNanos\" : ");
-      sb.append(readLockWaitTimeMax.value());
+      sb.append(readLockWaitTimeMaxNs.value());
       sb.append(" }, \"writeLock\" : { \"count\" : ");
       sb.append(writeLockCounts.value());
       sb.append(", \"avgWaitTimeNanos\" : ");
       sb.append(avgWrite);
       sb.append(", \"maxWaitTimeNanos\" : ");
-      sb.append(writeLockWaitTimeMax.value());
+      sb.append(writeLockWaitTimeMaxNs.value());
       sb.append(" } }");
 
       return sb.toString();
@@ -359,7 +351,7 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
     }
 
     @Override
-    public boolean tryLock(long time, TimeUnit unit) 
+    public boolean tryLock(long time, TimeUnit unit)
                    throws InterruptedException {
       long start = System.nanoTime();
       boolean ret = wrappedLock.tryLock(time, unit);
@@ -402,18 +394,18 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
    * originally only a standard R/W lock was used.
    *
    * @param lock The original R/W lock to wrap for monitoring
-   * @param metrics The target for lock monitoring 
+   * @param metrics The target for lock monitoring
    */
   private ReadWriteLockMetrics(ReadWriteLock lock, MetricsSource metrics) {
     Preconditions.checkNotNull(lock);
-    Preconditions.checkArgument(metrics instanceof LockMetricSource, 
+    Preconditions.checkArgument(metrics instanceof LockMetricSource,
         "Invalid MetricsSource");
 
     LockMetricSource lms = (LockMetricSource)metrics;
-    readLock = new LockWrapper(lock.readLock(), lms.readLockWaitTimeTotal,
-                               lms.readLockWaitTimeMax, lms.readLockCounts);
-    writeLock = new LockWrapper(lock.writeLock(), lms.writeLockWaitTimeTotal,
-                                lms.writeLockWaitTimeMax, lms.writeLockCounts);
+    readLock = new LockWrapper(lock.readLock(), lms.readLockWaitTimeTotalNs,
+                               lms.readLockWaitTimeMaxNs, lms.readLockCounts);
+    writeLock = new LockWrapper(lock.writeLock(), lms.writeLockWaitTimeTotalNs,
+                                lms.writeLockWaitTimeMaxNs, lms.writeLockCounts);
   }
 
   @Override

@@ -2708,7 +2708,7 @@ public class HiveConf extends Configuration {
     COMPACTOR_CRUD_QUERY_BASED("hive.compactor.crud.query.based", false,
         "Means Major compaction on full CRUD tables is done as a query, "
         + "and minor compaction will be disabled."),
-    SPLIT_GROUPING_MODE("hive.split.grouping.mode", "query", new StringSet("query", "compactor"), 
+    SPLIT_GROUPING_MODE("hive.split.grouping.mode", "query", new StringSet("query", "compactor"),
         "This is set to compactor from within the query based compactor. This enables the Tez SplitGrouper "
         + "to group splits based on their bucket number, so that all rows from different bucket files "
         + " for the same bucket number can end up in the same bucket file after the compaction."),
@@ -4373,10 +4373,6 @@ public class HiveConf extends Configuration {
         "logger used for llap-daemons."),
     LLAP_OUTPUT_FORMAT_ARROW("hive.llap.output.format.arrow", true,
       "Whether LLapOutputFormatService should output arrow batches"),
-    LLAP_COLLECT_LOCK_METRICS("hive.llap.lockmetrics.collect", false,
-        "Whether lock metrics (wait times, counts) are collected for LLAP "
-        + "related locks"),
-
     HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
       "Interval for validating triggers during execution of a query. Triggers defined in resource plan will get\n" +
@@ -4622,6 +4618,10 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_RESULTS_CACHE_MAX_ENTRY_SIZE("hive.query.results.cache.max.entry.size",
         (long) 10 * 1024 * 1024,
         "Maximum size in bytes that a single query result is allowed to use in the results cache directory"),
+
+    LLAP_COLLECT_LOCK_METRICS("hive.llap.lockmetrics.collect", false,
+        "Whether lock metrics (wait times, counts) are collected for LLAP "
+        + "related locks"),
 
     HIVE_NOTFICATION_EVENT_POLL_INTERVAL("hive.notification.event.poll.interval", "60s",
         new TimeValidator(TimeUnit.SECONDS),

@@ -21,11 +21,11 @@ package org.apache.hadoop.hive.llap.metrics;
 import static java.lang.Math.max;
 import static java.lang.System.nanoTime;
 import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.ReadLockCount;
-import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.ReadLockWaitTimeMax;
-import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.ReadLockWaitTimeTotal;
+import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.ReadLockWaitTimeMaxNs;
+import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.ReadLockWaitTimeTotalNs;
 import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.WriteLockCount;
-import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.WriteLockWaitTimeMax;
-import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.WriteLockWaitTimeTotal;
+import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.WriteLockWaitTimeMaxNs;
+import static org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics.LockMetricInfo.WriteLockWaitTimeTotalNs;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -326,7 +326,7 @@ public class TestReadWriteLockMetrics {
   private ReadWriteLockMetrics create(ReadWriteLock lock, MetricsSource ms) {
     Configuration dummyConf = new Configuration();
 
-    HiveConf.setBoolVar(dummyConf, 
+    HiveConf.setBoolVar(dummyConf,
         HiveConf.ConfVars.LLAP_COLLECT_LOCK_METRICS, true);
     return (ReadWriteLockMetrics)ReadWriteLockMetrics.wrap(dummyConf, lock, ms);
   }
@@ -368,34 +368,34 @@ public class TestReadWriteLockMetrics {
     // sanity check in read lock metrics
     assertNotEquals("Local thread should have lock time", lhR.getLockSum(), 0);
     assertNotEquals("Accounted lock time zero",
-                    rec.getMetrics().get(ReadLockWaitTimeTotal), 0);
+                    rec.getMetrics().get(ReadLockWaitTimeTotalNs), 0);
     assertTrue("Local measurement larger (overhead)",
-               rec.getMetrics().get(ReadLockWaitTimeTotal).longValue() 
+               rec.getMetrics().get(ReadLockWaitTimeTotalNs).longValue()
                                     < lhR.getLockSum());
 
-    assertNotEquals("Local thread should have max lock time", 
+    assertNotEquals("Local thread should have max lock time",
                     lhR.getLockMax(), 0);
     assertNotEquals("Accounted lock max time zero",
-                    rec.getMetrics().get(ReadLockWaitTimeMax), 0);
+                    rec.getMetrics().get(ReadLockWaitTimeMaxNs), 0);
 
     assertTrue("Local max larger (overhead)",
-               rec.getMetrics().get(ReadLockWaitTimeMax).longValue() 
+               rec.getMetrics().get(ReadLockWaitTimeMaxNs).longValue()
                                     < lhR.getLockMax());
 
     assertTrue("Max greater or equal to avergae lock time",
-               (rec.getMetrics().get(ReadLockWaitTimeTotal).longValue() 
-                / rec.getMetrics().get(ReadLockCount).longValue()) 
-                  <= rec.getMetrics().get(ReadLockWaitTimeMax).longValue());
+               (rec.getMetrics().get(ReadLockWaitTimeTotalNs).longValue()
+                / rec.getMetrics().get(ReadLockCount).longValue())
+                  <= rec.getMetrics().get(ReadLockWaitTimeMaxNs).longValue());
 
     assertTrue("Lock time less than 1% (no contention)",
-               rec.getMetrics().get(ReadLockWaitTimeTotal).longValue()
+               rec.getMetrics().get(ReadLockWaitTimeTotalNs).longValue()
                < toNano(execTime / 100L));
 
     // sanity check on write lock metrics (should be all zero)
     assertEquals("No writer lock activity expected (total)",
-                 rec.getMetrics().get(WriteLockWaitTimeTotal), 0L);
+                 rec.getMetrics().get(WriteLockWaitTimeTotalNs), 0L);
     assertEquals("No writer lock activity expected (max)",
-                 rec.getMetrics().get(WriteLockWaitTimeMax), 0L);
+                 rec.getMetrics().get(WriteLockWaitTimeMaxNs), 0L);
     assertEquals("No writer lock activity expected (count)",
                  rec.getMetrics().get(WriteLockCount), 0L);
   }
@@ -450,21 +450,21 @@ public class TestReadWriteLockMetrics {
 
     assertWithTolerance("Max read lock wait time close to write lock hold",
                         toNano(execTime / 2),
-                        rec.getMetrics().get(ReadLockWaitTimeMax).longValue());
+                        rec.getMetrics().get(ReadLockWaitTimeMaxNs).longValue());
 
     assertTrue("Total read lock wait time larger than max",
-               rec.getMetrics().get(ReadLockWaitTimeMax).longValue()
-               < rec.getMetrics().get(ReadLockWaitTimeTotal).longValue());
+               rec.getMetrics().get(ReadLockWaitTimeMaxNs).longValue()
+               < rec.getMetrics().get(ReadLockWaitTimeTotalNs).longValue());
 
     // sanity check for write locks
     assertEquals("Write lock count supposed to be one",
                  1, rec.getMetrics().get(WriteLockCount).longValue());
 
     assertTrue("Write lock wait time non zero",
-               0L < rec.getMetrics().get(WriteLockWaitTimeTotal).longValue());
+               0L < rec.getMetrics().get(WriteLockWaitTimeTotalNs).longValue());
     assertEquals("With one lock, total should me max",
-                 rec.getMetrics().get(WriteLockWaitTimeTotal),
-                 rec.getMetrics().get(WriteLockWaitTimeMax));
+                 rec.getMetrics().get(WriteLockWaitTimeTotalNs),
+                 rec.getMetrics().get(WriteLockWaitTimeMaxNs));
   }
 
   /**

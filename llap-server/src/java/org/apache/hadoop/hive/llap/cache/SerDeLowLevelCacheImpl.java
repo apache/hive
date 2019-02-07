@@ -61,17 +61,8 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
   private final long cleanupInterval;
   private final LlapDaemonCacheMetrics metrics;
 
-  /// Shared singleton MetricsSource instance for all FileData locks
-  private static final MetricsSource LOCK_METRICS;
-
-  static {
-    // create and register the MetricsSource for lock metrics
-    MetricsSystem ms = LlapMetricsSystem.instance();
-    ms.register("FileDataLockMetrics",
-                "Lock metrics for R/W locks around FileData instances",
-                LOCK_METRICS = 
-                    ReadWriteLockMetrics.createLockMetricsSource("FileData"));
-  }
+  /// stats about all FileData R/W locks
+  private final MetricsSource fileDataLockMetrics;
 
   public static final class LlapSerDeDataBuffer extends LlapAllocatorBuffer {
     public boolean isCached = false;
@@ -115,13 +106,13 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
     private final int colCount;
     private ArrayList<StripeData> stripes;
 
-    public FileData(Configuration conf, Object fileKey, int colCount) {
+    public FileData(Configuration conf, MetricsSource lockMetrics,
+                    Object fileKey, int colCount) {
       this.fileKey = fileKey;
       this.colCount = colCount;
 
-      rwLock = ReadWriteLockMetrics.wrap(conf, 
-                                         new ReentrantReadWriteLock(), 
-                                         LOCK_METRICS);
+      rwLock = ReadWriteLockMetrics.wrap(conf, new ReentrantReadWriteLock(),
+                                         lockMetrics);
     }
 
     public void toString(StringBuilder sb) {
@@ -181,7 +172,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
       this.rowCount = rowCount;
       this.data = encodings == null ? null : new LlapSerDeDataBuffer[encodings.length][][];
     }
- 
+
     @Override
     public String toString() {
       return toCoordinateString() + " with encodings [" + Arrays.toString(encodings)
@@ -258,7 +249,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
     sb.append("]");
     return sb.toString();
   }
-  
+
 
   public static String toString(LlapSerDeDataBuffer[][] data) {
     if (data == null) return "null";
@@ -280,11 +271,13 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
   }
 
   public SerDeLowLevelCacheImpl(
-      LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy, Allocator allocator) {
+      LlapDaemonCacheMetrics metrics, MetricsSource fileDataLockMetrics,
+      LowLevelCachePolicy cachePolicy, Allocator allocator) {
     this.cachePolicy = cachePolicy;
     this.allocator = allocator;
     this.cleanupInterval = DEFAULT_CLEANUP_INTERVAL;
     this.metrics = metrics;
+    this.fileDataLockMetrics = fileDataLockMetrics;
     LlapIoImpl.LOG.info("SerDe low-level level cache; cleanup interval {} sec", cleanupInterval);
   }
 
@@ -322,7 +315,8 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
           throw new IOException("Includes " + DebugUtils.toString(includes) + " for "
               + cached.colCount + " columns");
         }
-        FileData result = new FileData(conf, cached.fileKey, cached.colCount);
+        FileData result = new FileData(conf, fileDataLockMetrics,
+                                       cached.fileKey, cached.colCount);
         if (gotAllData != null) {
           gotAllData.value = true;
         }
@@ -653,7 +647,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
         }
         to.data[colIx] = fromColData;
       }
-    } 
+    }
   }
 
   @Override

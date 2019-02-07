@@ -83,6 +83,7 @@ import org.apache.hadoop.mapred.LineRecordReader;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SplitLocationInfo;
+import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hive.common.util.Ref;
@@ -141,6 +142,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final BufferUsageManager bufferManager;
   private final BufferObjectFactory bufferFactory;
   private final Configuration daemonConf;
+  private final MetricsSource lockingMetrics;
   private final FileSplit split;
   private List<Integer> columnIds;
   private final OrcEncodedDataConsumer consumer;
@@ -175,7 +177,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private List<VectorDeserializeOrcWriter> asyncWriters = new ArrayList<>();
 
   public SerDeEncodedDataReader(SerDeLowLevelCacheImpl cache,
-      BufferUsageManager bufferManager, Configuration daemonConf, FileSplit split,
+      BufferUsageManager bufferManager, Configuration daemonConf,
+      MetricsSource lockingMetrics, FileSplit split,
       List<Integer> columnIds, OrcEncodedDataConsumer consumer, JobConf jobConf, Reporter reporter,
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts)
@@ -191,6 +194,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     };
     this.parts = parts;
     this.daemonConf = new Configuration(daemonConf);
+    this.lockingMetrics = lockingMetrics;
+
     // Disable dictionary encoding for the writer.
     this.daemonConf.setDouble(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.name(), 0);
     this.split = split;
@@ -777,7 +782,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           throw new AssertionError("Caching data without an encoding at " + i + ": " + sd);
         }
       }
-      FileData fd = new FileData(daemonConf, fileKey, encodings.length);
+      FileData fd = new FileData(daemonConf, lockingMetrics, fileKey, encodings.length);
       fd.addStripe(sd);
       cache.putFileData(fd, Priority.NORMAL, counters, cacheTag);
     } else {
