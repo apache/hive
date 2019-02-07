@@ -1107,6 +1107,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           throw new IllegalStateException(delta + " is not delete delta and is not compacting.");
         }
         ReaderKey key = new ReaderKey();
+        //todo: only need to know isRawFormat if compacting for acid V2 and V2 should normally run
+        //in vectorized mode - i.e. this is not a significant perf overhead vs ParsedDeltaLight
         AcidUtils.ParsedDelta deltaDir = AcidUtils.parsedDelta(delta, delta.getFileSystem(conf));
         if(deltaDir.isRawFormat()) {
           assert !deltaDir.isDeleteDelta() : delta.toString();
@@ -1228,8 +1230,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
                 parent);
           }
           else {
-            AcidUtils.ParsedDelta pd = AcidUtils.parsedDelta(parent, AcidUtils.DELTA_PREFIX,
-              parent.getFileSystem(conf));
+            AcidUtils.ParsedDeltaLight pd = AcidUtils.ParsedDeltaLight.parse(parent);
             return new TransactionMetaData(pd.getMinWriteId(), parent, pd.getStatementId());
           }
         }
