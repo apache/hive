@@ -229,7 +229,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   final DelayedTaskSchedulerCallable delayedTaskSchedulerCallable;
 
-  private final MetricsSource lockingMetrics;
   private final ReadWriteLock lock;
   private final Lock readLock;
   private final Lock writeLock;
@@ -326,17 +325,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           "Failed to parse user payload for " + LlapTaskSchedulerService.class.getSimpleName(), e);
     }
 
-    // create and register the MetricsSource for lock metrics (for this singleton)
-    MetricsSystem ms = LlapMetricsSystem.instance();
-    lockingMetrics =
-        ReadWriteLockMetrics.createLockMetricsSource("TaskScheduler");
-
-    ms.register("LLAPTaskSchedulerLockMetrics",
-                "Lock metrics for R/W locks LLAP task scheduler",
-                lockingMetrics);
-
     lock = ReadWriteLockMetrics.wrap(conf, new ReentrantReadWriteLock(),
-                                     lockingMetrics);
+                                     getClass().getSimpleName());
     readLock = lock.readLock();
     writeLock = lock.writeLock();
 

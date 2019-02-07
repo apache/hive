@@ -100,7 +100,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final ExecutorService executor;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
-  private MetricsSource fileDataLockMetrics;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
@@ -138,12 +137,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     // create and register the locking metrics for FileData R/W locks
     MetricsSystem ms = LlapMetricsSystem.instance();
-    fileDataLockMetrics =
-      ReadWriteLockMetrics.createLockMetricsSource("FileData");
-
-    ms.register("FileDataLockMetrics",
-                "Lock metrics for R/W locks around FileData instances",
-                fileDataLockMetrics);
 
     LOG.info("Started llap daemon metrics with displayName: {} sessionId: {}", displayName,
         sessionId);
@@ -179,7 +172,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       dataCache = cacheImpl;
       if (isEncodeEnabled) {
         SerDeLowLevelCacheImpl serdeCacheImpl = new SerDeLowLevelCacheImpl(
-            cacheMetrics, fileDataLockMetrics, cachePolicyWrapper, allocator);
+            cacheMetrics, cachePolicyWrapper, allocator);
         serdeCache = serdeCacheImpl;
         serdeCacheImpl.setConf(conf);
       }
@@ -232,8 +225,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     this.orcCvp = new OrcColumnVectorProducer(
         metadataCache, dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
-        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics,
-        fileDataLockMetrics, tracePool) : null;
+        serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();

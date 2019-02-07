@@ -42,10 +42,7 @@ import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
-import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics;
-import org.apache.hadoop.metrics2.MetricsSource;
-import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.ColumnEncoding;
@@ -60,9 +57,6 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
   private final LowLevelCachePolicy cachePolicy;
   private final long cleanupInterval;
   private final LlapDaemonCacheMetrics metrics;
-
-  /// stats about all FileData R/W locks
-  private final MetricsSource fileDataLockMetrics;
 
   public static final class LlapSerDeDataBuffer extends LlapAllocatorBuffer {
     public boolean isCached = false;
@@ -106,13 +100,12 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
     private final int colCount;
     private ArrayList<StripeData> stripes;
 
-    public FileData(Configuration conf, MetricsSource lockMetrics,
-                    Object fileKey, int colCount) {
+    public FileData(Configuration conf, Object fileKey, int colCount) {
       this.fileKey = fileKey;
       this.colCount = colCount;
 
       rwLock = ReadWriteLockMetrics.wrap(conf, new ReentrantReadWriteLock(),
-                                         lockMetrics);
+                                         getClass().getSimpleName());
     }
 
     public void toString(StringBuilder sb) {
@@ -271,13 +264,11 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
   }
 
   public SerDeLowLevelCacheImpl(
-      LlapDaemonCacheMetrics metrics, MetricsSource fileDataLockMetrics,
-      LowLevelCachePolicy cachePolicy, Allocator allocator) {
+      LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy, Allocator allocator) {
     this.cachePolicy = cachePolicy;
     this.allocator = allocator;
     this.cleanupInterval = DEFAULT_CLEANUP_INTERVAL;
     this.metrics = metrics;
-    this.fileDataLockMetrics = fileDataLockMetrics;
     LlapIoImpl.LOG.info("SerDe low-level level cache; cleanup interval {} sec", cleanupInterval);
   }
 
@@ -315,8 +306,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
           throw new IOException("Includes " + DebugUtils.toString(includes) + " for "
               + cached.colCount + " columns");
         }
-        FileData result = new FileData(conf, fileDataLockMetrics,
-                                       cached.fileKey, cached.colCount);
+        FileData result = new FileData(conf, cached.fileKey, cached.colCount);
         if (gotAllData != null) {
           gotAllData.value = true;
         }

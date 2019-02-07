@@ -319,16 +319,17 @@ public class TestReadWriteLockMetrics {
    * The wrapping of lock instances is configuration dependent. This helper ensures that the
    * configuration creates wrapped lock instances.
    *
-   * @param lock The lock to wrap
-   * @param ms The metrics source, storing the lock measurements
+   * @param label Identifier for the lock metrics
    * @return The wrapped lock
    */
-  private ReadWriteLockMetrics create(ReadWriteLock lock, MetricsSource ms) {
+  private ReadWriteLockMetrics create(String label) {
     Configuration dummyConf = new Configuration();
+    ReadWriteLock rwl = new ReentrantReadWriteLock();
 
     HiveConf.setBoolVar(dummyConf,
         HiveConf.ConfVars.LLAP_COLLECT_LOCK_METRICS, true);
-    return (ReadWriteLockMetrics)ReadWriteLockMetrics.wrap(dummyConf, lock, ms);
+
+    return (ReadWriteLockMetrics)ReadWriteLockMetrics.wrap(dummyConf, rwl, label);
   }
 
   /**
@@ -339,9 +340,10 @@ public class TestReadWriteLockMetrics {
   @Test
   public void testWithoutContention() throws Exception {
     final long execTime = 100;
+    final String label = "testWithoutContention";
 
-    MetricsSource ms  = ReadWriteLockMetrics.createLockMetricsSource("test1");
-    ReadWriteLock rwl = create(new ReentrantReadWriteLock(), ms);
+    ReadWriteLock rwl = create(label);
+    MetricsSource ms  = ReadWriteLockMetrics.getLockMetricsSource(label);
     LockHolder    lhR = new LockHolder(rwl.readLock(), execTime);
 
     // wait for the thread to do its locks and waits (for 100ms)
@@ -356,7 +358,7 @@ public class TestReadWriteLockMetrics {
     MockMetricsCollector.MockRecord rec = result.get(0);
 
     // verify label and context (context is hard coded)
-    assertEquals("Invalid record label", "test1", rec.getLabel());
+    assertEquals("Invalid record label", label, rec.getLabel());
     assertEquals("Invalid record context", "Locking", rec.getContext());
 
     // we expect around exectome / thread loop time executions
@@ -411,10 +413,11 @@ public class TestReadWriteLockMetrics {
    */
   @Test
   public void testWithContention() throws Exception {
+    final String label = "testWithContention";
     final long execTime = 200;
 
-    MetricsSource ms  = ReadWriteLockMetrics.createLockMetricsSource("test1");
-    ReadWriteLock rwl = create(new ReentrantReadWriteLock(), ms);
+    ReadWriteLock rwl = create(label);
+    MetricsSource ms  = ReadWriteLockMetrics.getLockMetricsSource(label);
     LockHolder    lhR = new LockHolder(rwl.readLock(), execTime);
 
     // get a write lock for half of the execution time
@@ -468,17 +471,34 @@ public class TestReadWriteLockMetrics {
   }
 
   /**
+   * Testing the factory method to get metrics sources.
+   */
+  @Test
+  public void testGetMetricsSource() {
+    MetricsSource msA1 = ReadWriteLockMetrics.getLockMetricsSource("A");
+    MetricsSource msB1 = ReadWriteLockMetrics.getLockMetricsSource("B");
+    MetricsSource msA2 = ReadWriteLockMetrics.getLockMetricsSource("A");
+    MetricsSource msB2 = ReadWriteLockMetrics.getLockMetricsSource("B");
+
+    assertFalse(msA1 == null || msB1 == null || msA2 == null || msB2 == null);
+    assertTrue(msA1 == msA2);
+    assertTrue(msB1 == msB2);
+    assertFalse(msA1 == msB1);
+  }
+
+  /**
    * Testing the <code>wrap</code> function for different configuration
    * combinations.
    */
   @Test
   public void testWrap() throws Exception {
+    final String label = "testWrap";
+
     Configuration testConf = new Configuration();
-    MetricsSource ms = ReadWriteLockMetrics.createLockMetricsSource("testConf");
 
     // default = passthrough
     ReadWriteLock rwlDef =
-        ReadWriteLockMetrics.wrap(testConf, new ReentrantReadWriteLock(), ms);
+        ReadWriteLockMetrics.wrap(testConf, new ReentrantReadWriteLock(), label);
     assertTrue("Basic ReentrantReadWriteLock expected",
         rwlDef instanceof ReentrantReadWriteLock);
     assertFalse("Basic ReentrantReadWriteLock expected",
@@ -488,7 +508,7 @@ public class TestReadWriteLockMetrics {
     HiveConf.setBoolVar(testConf,
         HiveConf.ConfVars.LLAP_COLLECT_LOCK_METRICS, false);
     ReadWriteLock rwlBasic =
-        ReadWriteLockMetrics.wrap(testConf, new ReentrantReadWriteLock(), ms);
+        ReadWriteLockMetrics.wrap(testConf, new ReentrantReadWriteLock(), label);
     assertTrue("Basic ReentrantReadWriteLock expected",
                rwlBasic instanceof ReentrantReadWriteLock);
     assertFalse("Basic ReentrantReadWriteLock expected",
@@ -498,13 +518,13 @@ public class TestReadWriteLockMetrics {
     HiveConf.setBoolVar(testConf,
                         HiveConf.ConfVars.LLAP_COLLECT_LOCK_METRICS, true);
     ReadWriteLock rwlWrap =
-        ReadWriteLockMetrics.wrap(testConf, new ReentrantReadWriteLock(), ms);
+        ReadWriteLockMetrics.wrap(testConf, new ReentrantReadWriteLock(), label);
     assertTrue("Wrapped lock expected",
                rwlWrap instanceof ReadWriteLockMetrics);
 
     // null = passthrough
     ReadWriteLock rwlNoConf =
-        ReadWriteLockMetrics.wrap(null, new ReentrantReadWriteLock(), null);
+        ReadWriteLockMetrics.wrap(null, new ReentrantReadWriteLock(), label);
     assertTrue("Basic ReentrantReadWriteLock expected",
                rwlNoConf instanceof ReentrantReadWriteLock);
     assertFalse("Basic ReentrantReadWriteLock expected",

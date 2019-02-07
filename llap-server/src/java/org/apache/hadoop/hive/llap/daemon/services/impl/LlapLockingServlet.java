@@ -18,11 +18,6 @@
 
 package org.apache.hadoop.hive.llap.daemon.services.impl;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import java.io.PrintWriter;
 import java.util.List;
 
@@ -36,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hive.http.HttpServer;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,15 +114,13 @@ public class LlapLockingServlet extends HttpServlet {
         }
 
         // send string through JSON parser/builder to pretty print it.
-        JsonParser parser = new JsonParser();
-        JsonObject json   = parser.parse(result.toString()).getAsJsonObject();
-        Gson       gson   = new GsonBuilder().setPrettyPrinting().create();
+        ObjectMapper mapper = new ObjectMapper();
+        Object json = mapper.readValue(result.toString(), Object.class);
         try (PrintWriter w = response.getWriter()) {
-          w.println(gson.toJson(json));
+          w.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json));
         }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LOG.error("Exception while processing locking stats request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }

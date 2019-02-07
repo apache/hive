@@ -142,7 +142,6 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final BufferUsageManager bufferManager;
   private final BufferObjectFactory bufferFactory;
   private final Configuration daemonConf;
-  private final MetricsSource lockingMetrics;
   private final FileSplit split;
   private List<Integer> columnIds;
   private final OrcEncodedDataConsumer consumer;
@@ -177,8 +176,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private List<VectorDeserializeOrcWriter> asyncWriters = new ArrayList<>();
 
   public SerDeEncodedDataReader(SerDeLowLevelCacheImpl cache,
-      BufferUsageManager bufferManager, Configuration daemonConf,
-      MetricsSource lockingMetrics, FileSplit split,
+      BufferUsageManager bufferManager, Configuration daemonConf, FileSplit split,
       List<Integer> columnIds, OrcEncodedDataConsumer consumer, JobConf jobConf, Reporter reporter,
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts)
@@ -194,7 +192,6 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     };
     this.parts = parts;
     this.daemonConf = new Configuration(daemonConf);
-    this.lockingMetrics = lockingMetrics;
 
     // Disable dictionary encoding for the writer.
     this.daemonConf.setDouble(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.name(), 0);
@@ -782,7 +779,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           throw new AssertionError("Caching data without an encoding at " + i + ": " + sd);
         }
       }
-      FileData fd = new FileData(daemonConf, lockingMetrics, fileKey, encodings.length);
+      FileData fd = new FileData(daemonConf, fileKey, encodings.length);
       fd.addStripe(sd);
       cache.putFileData(fd, Priority.NORMAL, counters, cacheTag);
     } else {

@@ -65,20 +65,17 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
   private final Configuration conf;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
-  private final MetricsSource lockingMetrics;
   private final FixedSizedObjectPool<IoTrace> tracePool;
 
   public GenericColumnVectorProducer(SerDeLowLevelCacheImpl serdeCache,
       BufferUsageManager bufferManager, Configuration conf, LlapDaemonCacheMetrics cacheMetrics,
-      LlapDaemonIOMetrics ioMetrics, MetricsSource lockingMetrics,
-      FixedSizedObjectPool<IoTrace> tracePool) {
+      LlapDaemonIOMetrics ioMetrics, FixedSizedObjectPool<IoTrace> tracePool) {
     LlapIoImpl.LOG.info("Initializing ORC column vector producer");
     this.cache = serdeCache;
     this.bufferManager = bufferManager;
     this.conf = conf;
     this.cacheMetrics = cacheMetrics;
     this.ioMetrics = ioMetrics;
-    this.lockingMetrics = lockingMetrics;
     this.tracePool = tracePool;
   }
 
@@ -100,8 +97,8 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     // Note that we pass job config to the record reader, but use global config for LLAP IO.
     // TODO: add tracing to serde reader
     SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache, bufferManager, conf,
-        lockingMetrics, split, includes.getPhysicalColumnIds(), edc, job, reporter,
-        sourceInputFormat, sourceSerDe, counters, fm.getSchema(), parts);
+        split, includes.getPhysicalColumnIds(), edc, job, reporter, sourceInputFormat,
+        sourceSerDe, counters, fm.getSchema(), parts);
     edc.init(reader, reader, new IoTrace(0, false));
     return edc;
   }

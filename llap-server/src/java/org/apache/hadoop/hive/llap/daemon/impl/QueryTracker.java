@@ -82,7 +82,6 @@ public class QueryTracker extends AbstractService {
   private final String clusterId;
   private final long defaultDeleteDelaySeconds;
   private final boolean routeBasedLoggingEnabled;
-  private final MetricsSource lockingMetrics;
 
   // TODO At the moment there's no way of knowing whether a query is running or not.
   // A race is possible between dagComplete and registerFragment - where the registerFragment
@@ -137,15 +136,6 @@ public class QueryTracker extends AbstractService {
     } else {
       routeBasedLoggingEnabled = false;
     }
-
-    // QueryTracker is a singleton, so this creates the only instance of the
-    // corresponding lock R/W metrics source here.
-    MetricsSystem ms = LlapMetricsSystem.instance();
-    lockingMetrics =
-        ReadWriteLockMetrics.createLockMetricsSource("QueryTracker");
-
-    ms.register("QueryTrackerDAGLockMetrics",
-                "Lock metrics for QueryTracher DAG instances", lockingMetrics);
 
     LOG.info(
         "QueryTracker setup with numCleanerThreads={}, defaultCleanupDelay"
@@ -410,7 +400,7 @@ public class QueryTracker extends AbstractService {
       if (dagLock == null) {
         dagLock = ReadWriteLockMetrics.wrap(conf,
                                             new ReentrantReadWriteLock(),
-                                            lockingMetrics);
+                                            getClass().getSimpleName());
         dagSpecificLocks.put(queryIdentifier, dagLock);
       }
       return dagLock;

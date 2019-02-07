@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsInfo;
 import org.apache.hadoop.metrics2.MetricsSource;
+import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.lib.MutableCounterLong;
@@ -47,6 +49,10 @@ import org.apache.hadoop.metrics2.lib.MutableCounterLong;
  * </code> implementation.
  */
 public class ReadWriteLockMetrics implements ReadWriteLock {
+  /// Map of all known (by label) lock metrics sources.
+  private static final ConcurrentHashMap<String,LockMetricSource> metricsSources
+      = new ConcurrentHashMap<>();
+
   private LockWrapper readLock;         ///< wrapper around original read lock
   private LockWrapper writeLock;        ///< wrapper around original write lock
 
@@ -96,11 +102,10 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
    *
    * @param conf Configuration instance to check for LLAP conf options
    * @param lock The <code>ReadWriteLock</code> to wrap for monitoring
-   * @param metrics The target container for locking metrics
-   * @see #createLockMetricsSource
+   * @param label The label for the lock metrics
+   * @see #getLockMetricsSource
    */
-  public static ReadWriteLock wrap(Configuration conf, ReadWriteLock lock,
-                                   MetricsSource metrics) {
+  public static ReadWriteLock wrap(Configuration conf, ReadWriteLock lock, String label) {
     Preconditions.checkNotNull(lock, "Caller has to provide valid input lock");
 
     if (null == conf
@@ -108,43 +113,53 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
       return lock;
     }
 
-    Preconditions.checkNotNull(metrics,
-        "Caller has to procide group specific metrics source");
-    return new ReadWriteLockMetrics(lock, metrics);
+    return new ReadWriteLockMetrics(lock, getLockMetricsSource(label));
   }
 
   /**
-   * Factory method for new metric collections.
+   * Factory/lookup method for metric collections.
    * You can create and use a single <code>MetricsSource</code> collection for
    * multiple R/W locks. This makes sense if several locks belong to a single
    * group and you're then interested in the accumulated values for the whole
    * group, rather than the single lock instance. The passed in label is
-   * supposed to identify the group uniquely.
+   * supposed to identify the group uniquely. If there was a <code>MetricsSource
+   * </code> created with the same label before, the existing/previous instance
+   * is returned.
    *
    * @param label The group identifier for lock statistics
+   * @return The <code>MetricsSource</code> for a given label
    */
-  public static MetricsSource createLockMetricsSource(String label) {
+  @VisibleForTesting
+  public static MetricsSource getLockMetricsSource(String label) {
     Preconditions.checkNotNull(label);
-    Preconditions.checkArgument(!label.contains("\""),
-        "Label can't contain quote (\")");
-    return new LockMetricSource(label);
+    Preconditions.checkArgument(!label.contains("\""),"Label can't contain quote (\")");
+
+    MetricsSource existing = metricsSources.get(label);
+    if (null == existing) {
+      LockMetricSource newSource = new LockMetricSource(label);
+      existing = metricsSources.putIfAbsent(label,newSource);
+      if (null == existing) {
+        existing = newSource;
+
+        MetricsSystem ms = LlapMetricsSystem.instance();
+        ms.register("LockMetrics-" + label,
+                    "Read/Write locking metrics for LLAP",
+                    newSource);
+      }
+    }
+
+    return existing;
   }
 
   /**
    * Returns a list with all created <code>MetricsSource</code> instances for
    * the R/W lock metrics. The returned list contains the instances that were
-   * previously created via the <code>createLockMetricsSource</code> function.
+   * previously created via the <code>getLockMetricsSource</code> function.
    *
    * @return A list of all R/W lock based metrics sources
    */
   public static List<MetricsSource> getAllMetricsSources() {
-    ArrayList<MetricsSource> ret = null;
-
-    synchronized (LockMetricSource.allInstances) {
-      ret = new ArrayList<>(LockMetricSource.allInstances);
-    }
-
-    return ret;
+    return new ArrayList<>(metricsSources.values());
   }
 
   /// Enumeration of metric info names and descriptions
@@ -179,13 +194,11 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
   /**
    * Source of the accumulated lock times and counts.
    * Instances of this <code>MetricSource</code> can be created via the static
-   * factory method <code>createLockMetricsSource</code> and shared across
+   * factory method <code>getLockMetricsSource</code> and shared across
    * multiple instances of the outer <code>ReadWriteLockMetric</code> class.
    */
   @Metrics(about = "Lock Metrics", context = "locking")
   private static class LockMetricSource implements MetricsSource {
-    private static final ArrayList<MetricsSource> allInstances = new ArrayList<>();
-
     private final String lockLabel;   ///< identifier for the group of locks
 
     /// accumulated wait time for read locks
@@ -235,10 +248,6 @@ public class ReadWriteLockMetrics implements ReadWriteLock {
           = new MutableCounterLong(LockMetricInfo.WriteLockWaitTimeMaxNs, 0);
       writeLockCounts
           = new MutableCounterLong(LockMetricInfo.WriteLockCount, 0);
-
-      synchronized (allInstances) {
-        allInstances.add(this);
-      }
     }
 
     @Override
