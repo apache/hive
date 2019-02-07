@@ -3499,6 +3499,16 @@ public class HiveConf extends Configuration {
         "For example: (&(objectClass=group)(objectClass=top)(instanceType=4)(cn=Domain*)) \n" +
         "(&(objectClass=person)(|(sAMAccountName=admin)(|(memberOf=CN=Domain Admins,CN=Users,DC=domain,DC=com)" +
         "(memberOf=CN=Administrators,CN=Builtin,DC=domain,DC=com))))"),
+    HIVE_SERVER2_PLAIN_LDAP_BIND_USER("hive.server2.authentication.ldap.binddn", null,
+        "The user with which to bind to the LDAP server, and search for the full domain name " +
+        "of the user being authenticated.\n" +
+        "This should be the full domain name of the user, and should have search access across all " +
+        "users in the LDAP tree.\n" +
+        "If not specified, then the user being authenticated will be used as the bind user.\n" +
+        "For example: CN=bindUser,CN=Users,DC=subdomain,DC=domain,DC=com"),
+    HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD("hive.server2.authentication.ldap.bindpw", null,
+        "The password for the bind user, to be used to search for the full name of the user being authenticated.\n" +
+        "If the username is specified, this parameter must also be specified."),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
         "Custom authentication class. Used when property\n" +
         "'hive.server2.authentication' is set to 'CUSTOM'. Provided class\n" +

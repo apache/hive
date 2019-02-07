@@ -543,10 +543,10 @@ public class TestOrcRawRecordMerger {
     /*create delta_1_1_0/bucket0 with 1 row and close the file*/
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .inspector(inspector).bucket(BUCKET).writingBase(false).minimumWriteId(1)
-        .maximumWriteId(1).finalDestination(root);
-    Path delta1_1_0 = new Path(root, AcidUtils.deltaSubdir(
+        .maximumWriteId(2).finalDestination(root);
+    Path delta1_2_0 = new Path(root, AcidUtils.deltaSubdir(
         options.getMinimumWriteId(), options.getMaximumWriteId(), options.getStatementId()));
-    Path bucket0 = AcidUtils.createBucketFile(delta1_1_0, BUCKET);
+    Path bucket0 = AcidUtils.createBucketFile(delta1_2_0, BUCKET);
     Path bucket0SideFile = OrcAcidUtils.getSideFile(bucket0);
 
     RecordUpdater ru = of.getRecordUpdater(root, options);
