@@ -35,24 +35,22 @@ import java.util.Map;
 @InterfaceStability.Stable
 public class UpdateTableColumnStatEvent extends ListenerEvent {
   private ColumnStatistics colStats;
-  private String validWriteIds;
   private long writeId;
   private Map<String, String> parameters;
   private Table tableObj;
 
   /**
    * @param colStats Columns statistics Info.
+   * @param tableObj table object
    * @param parameters table parameters to be updated after stats are updated.
-   * @param validWriteIds valid write id list for the query.
-   * @param colStats writeId for the query.
+   * @param writeId writeId for the query.
    * @param handler handler that is firing the event
    */
   public UpdateTableColumnStatEvent(ColumnStatistics colStats, Table tableObj,
-                                    Map<String, String> parameters, String validWriteIds,
+                                    Map<String, String> parameters,
                                     long writeId, IHMSHandler handler) {
     super(true, handler);
     this.colStats = colStats;
-    this.validWriteIds = validWriteIds;
     this.writeId = writeId;
     this.parameters = parameters;
     this.tableObj = tableObj;
@@ -65,7 +63,6 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
   public UpdateTableColumnStatEvent(ColumnStatistics colStats, IHMSHandler handler) {
     super(true, handler);
     this.colStats = colStats;
-    this.validWriteIds = null;
     this.writeId = 0;
     this.parameters = null;
     this.tableObj = null;
@@ -73,10 +70,6 @@ public class UpdateTableColumnStatEvent extends ListenerEvent {
 
   public ColumnStatistics getColStats() {
     return colStats;
-  }
-
-  public String getValidWriteIds() {
-    return validWriteIds;
   }
 
   public long getWriteId() {
