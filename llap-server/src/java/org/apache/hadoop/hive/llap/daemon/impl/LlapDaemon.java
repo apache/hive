@@ -352,8 +352,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   private static void initializeLogging(final Configuration conf) {
     long start = System.currentTimeMillis();
-    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(
-        LlapConstants.LOG4j2_PROPERTIES_FILE);
+    String log4j2FileName = System.getenv(LlapConstants.LLAP_LOG4J2_PROPERTIES_FILE_NAME_ENV);
+    if (log4j2FileName == null || log4j2FileName.isEmpty()) {
+      log4j2FileName = LlapConstants.LOG4j2_PROPERTIES_FILE;
+    }
+    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(log4j2FileName);
     if (llap_l4j2 != null) {
       final boolean async = LogUtils.checkAndSetAsyncLogging(conf);
       // required for MDC based routing appender so that child threads can inherit the MDC context
