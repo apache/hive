@@ -8602,7 +8602,7 @@ public class ObjectStore implements RawStore, Configurable {
             // Make sure we set the flag to invalid regardless of the current value.
             StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
             LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
-                + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
+                    + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
           }
           mPartition.setWriteId(writeId);
         }
@@ -12534,7 +12534,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private boolean isCurrentStatsValidForTheQuery(MTable tbl, String queryValidWriteIdList,
       boolean isCompleteStatsWriter) throws MetaException {
-    return isCurrentStatsValidForTheQuery(conf, tbl.getParameters(), tbl.getWriteId(),
+    return isCurrentStatsValidForTheQuery(tbl.getParameters(), tbl.getWriteId(),
         queryValidWriteIdList, isCompleteStatsWriter);
   }
 
@@ -12555,19 +12555,19 @@ public class ObjectStore implements RawStore, Configurable {
   private boolean isCurrentStatsValidForTheQuery(MPartition part,
       String queryValidWriteIdList, boolean isCompleteStatsWriter)
       throws MetaException {
-    return isCurrentStatsValidForTheQuery(conf, part.getParameters(), part.getWriteId(),
+    return isCurrentStatsValidForTheQuery(part.getParameters(), part.getWriteId(),
         queryValidWriteIdList, isCompleteStatsWriter);
   }
 
   private boolean isCurrentStatsValidForTheQuery(Partition part, long partWriteId,
       String queryValidWriteIdList, boolean isCompleteStatsWriter)
       throws MetaException {
-    return isCurrentStatsValidForTheQuery(conf, part.getParameters(), partWriteId,
+    return isCurrentStatsValidForTheQuery(part.getParameters(), partWriteId,
         queryValidWriteIdList, isCompleteStatsWriter);
   }
 
   // TODO: move to somewhere else
-  public static boolean isCurrentStatsValidForTheQuery(Configuration conf,
+  public static boolean isCurrentStatsValidForTheQuery(
       Map<String, String> statsParams, long statsWriteId, String queryValidWriteIdList,
       boolean isCompleteStatsWriter) throws MetaException {
 

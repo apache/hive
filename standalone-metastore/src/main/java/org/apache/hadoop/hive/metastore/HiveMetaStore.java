@@ -3657,7 +3657,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                       // upstream as such a command doesn't make sense.
                       throw new MetaException("Duplicate partitions in the list: " + part);
                     }
-                    initializeAddedPartition(table, part, madeDir);
+                    initializeAddedPartition(table, part, madeDir, null);
                   } catch (MetaException e) {
                     throw new IOException(e.getMessage(), e);
                   }
@@ -3898,7 +3898,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                       // upstream as such a command doesn't make sense.
                       throw new MetaException("Duplicate partitions in the list: " + part);
                     }
-                    initializeAddedPartition(table, part, madeDir);
+                    initializeAddedPartition(table, part, madeDir, null);
                   } catch (MetaException e) {
                     throw new IOException(e.getMessage(), e);
                   }
@@ -4015,16 +4015,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return result;
     }
 
-    private void initializeAddedPartition(
-        final Table tbl, final Partition part, boolean madeDir) throws MetaException {
-      initializeAddedPartition(tbl, new PartitionSpecProxy.SimplePartitionWrapperIterator(part), madeDir);
+    private void initializeAddedPartition(final Table tbl, final Partition part, boolean madeDir,
+                                          EnvironmentContext environmentContext) throws MetaException {
+      initializeAddedPartition(tbl,
+              new PartitionSpecProxy.SimplePartitionWrapperIterator(part), madeDir, environmentContext);
     }
 
     private void initializeAddedPartition(
-        final Table tbl, final PartitionSpecProxy.PartitionIterator part, boolean madeDir) throws MetaException {
+        final Table tbl, final PartitionSpecProxy.PartitionIterator part, boolean madeDir,
+        EnvironmentContext environmentContext) throws MetaException {
       if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
-          !MetaStoreUtils.isView(tbl)) {
-        MetaStoreUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, null, true);
+              !MetaStoreUtils.isView(tbl)) {
+        MetaStoreUtils.updatePartitionStatsFast(part, tbl, wh, madeDir,
+                false, environmentContext, true);
       }
 
       // set create time
@@ -4076,7 +4079,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         assert shouldAdd; // start would throw if it already existed here
         boolean madeDir = createLocationForAddedPartition(tbl, part);
         try {
-          initializeAddedPartition(tbl, part, madeDir);
+          initializeAddedPartition(tbl, part, madeDir, envContext);
           success = ms.addPartition(part);
         } finally {
           if (!success && madeDir) {
@@ -6087,13 +6090,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.UPDATE_TABLE_COLUMN_STAT,
-                    new UpdateTableColumnStatEvent(colStats, tableObj, parameters, validWriteIds,
+                    new UpdateTableColumnStatEvent(colStats, tableObj, parameters,
                             writeId, this));
           }
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.UPDATE_TABLE_COLUMN_STAT,
-                    new UpdateTableColumnStatEvent(colStats, tableObj, parameters, validWriteIds,
+                    new UpdateTableColumnStatEvent(colStats, tableObj, parameters,
                             writeId,this));
           }
         }
@@ -6152,13 +6155,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventType.UPDATE_PARTITION_COLUMN_STAT,
                     new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                            tbl, validWriteIds, writeId, this));
+                            tbl, writeId, this));
           }
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                     EventType.UPDATE_PARTITION_COLUMN_STAT,
                     new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                            tbl, validWriteIds, writeId, this));
+                            tbl, writeId, this));
           }
         }
         committed = getMS().commitTransaction();

@@ -37,7 +37,7 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   private Long writeId, timestamp;
 
   @JsonProperty
-  private String validWriteIds, server, servicePrincipal, db;
+  private String server, servicePrincipal, db;
 
   @JsonProperty
   private String colStatsJson;
@@ -60,12 +60,11 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   public JSONUpdatePartitionColumnStatMessage(String server, String servicePrincipal, Long timestamp,
                                               ColumnStatistics colStats, List<String> partVals,
                                               Map<String, String> parameters,
-                                              Table tableObj, String validWriteIds, long writeId) {
+                                              Table tableObj, long writeId) {
     this.timestamp = timestamp;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.writeId = writeId;
-    this.validWriteIds = validWriteIds;
     this.db = colStats.getStatsDesc().getDbName();
     this.partVals = partVals;
     try {
@@ -104,11 +103,6 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
     } catch (Exception e) {
       throw new RuntimeException("failed to get the ColumnStatistics object ", e);
     }
-  }
-
-  @Override
-  public String getValidWriteIds() {
-    return validWriteIds;
   }
 
   @Override

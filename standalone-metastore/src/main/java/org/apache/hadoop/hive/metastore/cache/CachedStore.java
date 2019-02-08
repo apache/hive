@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
@@ -264,8 +265,8 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache;
   }
 
-  static private ColumnStatistics updateStatsForPart(RawStore rawStore, Table before, String catalogName,
-                                                     String dbName, String tableName, Partition part) throws Exception {
+  static private ColumnStatistics updateStatsForAlterPart(RawStore rawStore, Table before, String catalogName,
+                                          String dbName, String tableName, Partition part) throws Exception {
     ColumnStatistics colStats;
     List<String> deletedCols = new ArrayList<>();
     colStats = HiveAlterHandler.updateOrGetPartitionColumnStats(rawStore, catalogName, dbName, tableName,
@@ -274,32 +275,31 @@ public class CachedStore implements RawStore, Configurable {
       sharedCache.removePartitionColStatsFromCache(catalogName, dbName, tableName, part.getValues(), column);
     }
     if (colStats != null) {
-      sharedCache.updatePartitionColStatsInCache(catalogName, dbName, tableName, part.getValues(), colStats.getStatsObj());
+      sharedCache.alterPartitionAndStatsInCache(catalogName, dbName, tableName, part.getWriteId(),
+              part.getValues(), part.getParameters(), colStats.getStatsObj());
     }
     return colStats;
   }
 
-  static private void updateStatsForTable(RawStore rawStore, Table before, Table after, String catalogName,
+  static private void updateStatsForAlterTable(RawStore rawStore, Table tblBefore, Table tblAfter, String catalogName,
                                           String dbName, String tableName) throws Exception {
     ColumnStatistics colStats = null;
     List<String> deletedCols = new ArrayList<>();
-    if (before.isSetPartitionKeys()) {
+    if (tblBefore.isSetPartitionKeys()) {
       List<Partition> parts = sharedCache.listCachedPartitions(catalogName, dbName, tableName, -1);
       for (Partition part : parts) {
-        colStats = updateStatsForPart(rawStore, before, catalogName, dbName, tableName, part);
+        colStats = updateStatsForAlterPart(rawStore, tblBefore, catalogName, dbName, tableName, part);
       }
     }
 
-    boolean needUpdateAggrStat = false;
-    List<ColumnStatisticsObj> statisticsObjs = HiveAlterHandler.alterTableUpdateTableColumnStats(rawStore, before,
-            after,null, null, rawStore.getConf(), deletedCols);
+    List<ColumnStatisticsObj> statisticsObjs = HiveAlterHandler.alterTableUpdateTableColumnStats(rawStore, tblBefore,
+            tblAfter,null, null, rawStore.getConf(), deletedCols);
     if (colStats != null) {
-      sharedCache.updateTableColStatsInCache(catalogName, dbName, tableName, statisticsObjs);
-      needUpdateAggrStat = true;
+      sharedCache.alterTableAndStatsInCache(catalogName, dbName, tableName, tblAfter.getWriteId(),
+              statisticsObjs, tblAfter.getParameters());
     }
     for (String column : deletedCols) {
       sharedCache.removeTableColStatsFromCache(catalogName, dbName, tableName, column);
-      needUpdateAggrStat = true;
     }
   }
 
@@ -369,10 +369,8 @@ public class CachedStore implements RawStore, Configurable {
           sharedCache.alterPartitionInCache(catalogName, dbName, tableName,
                   alterPartitionMessage.getPtnObjBefore().getValues(), alterPartitionMessage.getPtnObjAfter());
           //TODO : Use the stat object stored in the alter table message to update the stats in cache.
-          if (updateStatsForPart(rawStore, alterPartitionMessage.getTableObj(),
-                  catalogName, dbName, tableName, alterPartitionMessage.getPtnObjAfter()) != null) {
-            CacheUpdateMasterWork.updateTableAggregatePartitionColStats(rawStore, catalogName, dbName, tableName);
-          }
+          updateStatsForAlterPart(rawStore, alterPartitionMessage.getTableObj(),
+                  catalogName, dbName, tableName, alterPartitionMessage.getPtnObjAfter());
           break;
         case MessageFactory.DROP_PARTITION_EVENT:
           DropPartitionMessage dropPartitionMessage = deserializer.getDropPartitionMessage(message);
@@ -389,7 +387,7 @@ public class CachedStore implements RawStore, Configurable {
           AlterTableMessage alterTableMessage = deserializer.getAlterTableMessage(message);
           sharedCache.alterTableInCache(catalogName, dbName, tableName, alterTableMessage.getTableObjAfter());
           //TODO : Use the stat object stored in the alter table message to update the stats in cache.
-          updateStatsForTable(rawStore, alterTableMessage.getTableObjBefore(), alterTableMessage.getTableObjAfter(),
+          updateStatsForAlterTable(rawStore, alterTableMessage.getTableObjBefore(), alterTableMessage.getTableObjAfter(),
                   catalogName, dbName, tableName);
           break;
         case MessageFactory.DROP_TABLE_EVENT:
@@ -428,8 +426,8 @@ public class CachedStore implements RawStore, Configurable {
           break;
         case MessageFactory.UPDATE_TBL_COL_STAT_EVENT:
           UpdateTableColumnStatMessage msg = deserializer.getUpdateTableColumnStatMessage(message);
-          updateTableColumnsStatsInternal(rawStore.getConf(), msg.getColumnStatistics(), msg.getParameters(),
-                  msg.getValidWriteIds(), msg.getWriteId());
+          sharedCache.alterTableAndStatsInCache(catalogName, dbName, tableName, msg.getWriteId(),
+                  msg.getColumnStatistics().getStatsObj(), msg.getParameters());
           break;
         case MessageFactory.DELETE_TBL_COL_STAT_EVENT:
           DeleteTableColumnStatMessage msgDel = deserializer.getDeleteTableColumnStatMessage(message);
@@ -437,7 +435,8 @@ public class CachedStore implements RawStore, Configurable {
           break;
         case MessageFactory.UPDATE_PART_COL_STAT_EVENT:
           UpdatePartitionColumnStatMessage msgPartUpdate = deserializer.getUpdatePartitionColumnStatMessage(message);
-          sharedCache.updatePartitionColStatsInCache(catalogName, dbName, tableName, msgPartUpdate.getPartVals(),
+          sharedCache.alterPartitionAndStatsInCache(catalogName, dbName, tableName, msgPartUpdate.getWriteId(),
+                  msgPartUpdate.getPartVals(), msgPartUpdate.getParameters(),
                   msgPartUpdate.getColumnStatistics().getStatsObj());
           break;
         case MessageFactory.DELETE_PART_COL_STAT_EVENT:
@@ -965,7 +964,7 @@ public class CachedStore implements RawStore, Configurable {
           sharedCache.refreshAggregateStatsInCache(StringUtils.normalizeIdentifier(catName),
               StringUtils.normalizeIdentifier(dbName),
               StringUtils.normalizeIdentifier(tblName), aggrStatsAllPartitions,
-              aggrStatsAllButDefaultPartition);
+              aggrStatsAllButDefaultPartition, null);
         }
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Updating CachedStore: unable to read aggregate column stats of table: " + tblName,
@@ -1004,7 +1003,12 @@ public class CachedStore implements RawStore, Configurable {
     // the event related to the current transactions are updated in the cache and thus we can support strong
     // consistency in case there is only one metastore.
     if (canUseEvents) {
-      triggerUpdateUsingEvent(rawStore);
+      try {
+        triggerUpdateUsingEvent(rawStore);
+      } catch (Exception e) {
+        //TODO : Not sure how to handle it as the commit is already done in the object store.
+        LOG.error("Failed to update cache", e);
+      }
     }
     return true;
   }
@@ -2037,8 +2041,7 @@ public class CachedStore implements RawStore, Configurable {
       Map<String, String> params, long statsWriteId, String validWriteIds) throws MetaException {
     if (!TxnUtils.isTransactionalTable(tableParams)) return params; // Not a txn table.
     if (areTxnStatsSupported && ((validWriteIds == null)
-        || ObjectStore.isCurrentStatsValidForTheQuery(
-            conf, params, statsWriteId, validWriteIds, false))) {
+        || ObjectStore.isCurrentStatsValidForTheQuery(params, statsWriteId, validWriteIds, false))) {
       // Valid stats are supported for txn tables, and either no verification was requested by the
       // caller, or the verification has succeeded.
       return params;
@@ -2051,14 +2054,14 @@ public class CachedStore implements RawStore, Configurable {
 
 
   // Note: ideally this should be above both CachedStore and ObjectStore.
-  private ColumnStatistics adjustColStatForGet(Map<String, String> tableParams,
-      Map<String, String> params, ColumnStatistics colStat, long statsWriteId,
-      String validWriteIds) throws MetaException {
+  public static ColumnStatistics adjustColStatForGet(Map<String, String> tableParams,
+                                               ColumnStatistics colStat, long statsWriteId,
+      String validWriteIds, boolean areTxnStatsSupported) throws MetaException {
     colStat.setIsStatsCompliant(true);
     if (!TxnUtils.isTransactionalTable(tableParams)) return colStat; // Not a txn table.
     if (areTxnStatsSupported && ((validWriteIds == null)
         || ObjectStore.isCurrentStatsValidForTheQuery(
-            conf, params, statsWriteId, validWriteIds, false))) {
+            tableParams, statsWriteId, validWriteIds, false))) {
       // Valid stats are supported for txn tables, and either no verification was requested by the
       // caller, or the verification has succeeded.
       return colStat;
@@ -2095,7 +2098,7 @@ public class CachedStore implements RawStore, Configurable {
         if (errorMsg != null) {
           throw new MetaException(errorMsg);
         }
-        if (!ObjectStore.isCurrentStatsValidForTheQuery(conf, newParams, table.getWriteId(),
+        if (!ObjectStore.isCurrentStatsValidForTheQuery(newParams, table.getWriteId(),
                 validWriteIds, true)) {
           // Make sure we set the flag to invalid regardless of the current value.
           StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
@@ -2148,11 +2151,14 @@ public class CachedStore implements RawStore, Configurable {
       return rawStore.getTableColumnStatistics(
           catName, dbName, tblName, colNames, validWriteIds);
     }
-    ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tblName);
-    List<ColumnStatisticsObj> colStatObjs =
-        sharedCache.getTableColStatsFromCache(catName, dbName, tblName, colNames);
-    return adjustColStatForGet(table.getParameters(), table.getParameters(),
-        new ColumnStatistics(csd, colStatObjs), table.getWriteId(), validWriteIds);
+    ColumnStatistics columnStatistics =
+        sharedCache.getTableColStatsFromCache(catName, dbName, tblName, colNames, validWriteIds, areTxnStatsSupported);
+    if (columnStatistics == null) {
+      LOG.info("Stat of Table {}.{} for column {} is not present in cache." +
+              "Getting from raw store", dbName, tblName, colNames);
+      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, validWriteIds);
+    }
+    return columnStatistics;
   }
 
   @Override
@@ -2205,10 +2211,17 @@ public class CachedStore implements RawStore, Configurable {
       String catName, String dbName, String tblName, List<String> partNames,
       List<String> colNames, String writeIdList)
       throws MetaException, NoSuchObjectException {
-    // TODO: why have updatePartitionColumnStatistics cache if this is a bypass?
-    // Note: when implemented, this needs to call adjustColStatForGet, like other get methods.
-    return rawStore.getPartitionColumnStatistics(
-        catName, dbName, tblName, partNames, colNames, writeIdList);
+
+    // If writeIdList is not null, that means stats are requested within a txn context. So set stats compliant to false,
+    // if areTxnStatsSupported is false or the write id which has updated the stats in not compatible with writeIdList.
+    // This is done within table lock as the number of partitions may be more than one and we need a consistent view
+    // for all the partitions.
+    List<ColumnStatistics> columnStatistics = sharedCache.getPartitionColStatsListFromCache(catName, dbName, tblName,
+            partNames, colNames, writeIdList, areTxnStatsSupported);
+    if (columnStatistics == null) {
+      return rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, writeIdList);
+    }
+    return columnStatistics;
   }
 
   @Override
@@ -2246,7 +2259,8 @@ public class CachedStore implements RawStore, Configurable {
     tblName = StringUtils.normalizeIdentifier(tblName);
     // TODO: we currently cannot do transactional checks for stats here
     //       (incl. due to lack of sync w.r.t. the below rawStore call).
-    if (!shouldCacheTable(catName, dbName, tblName) || writeIdList != null || canUseEvents) {
+    // In case the cache is updated using events, aggregate is calculated locally and thus can be read from cache.
+    if (!shouldCacheTable(catName, dbName, tblName) || (writeIdList != null && !canUseEvents)) {
       return rawStore.get_aggr_stats_for(
           catName, dbName, tblName, partNames, colNames, writeIdList);
     }
@@ -2258,45 +2272,68 @@ public class CachedStore implements RawStore, Configurable {
     }
 
     List<String> allPartNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
+    StatsType type = StatsType.PARTIAL;
     if (partNames.size() == allPartNames.size()) {
       colStats = sharedCache.getAggrStatsFromCache(catName, dbName, tblName, colNames, StatsType.ALL);
       if (colStats != null) {
         return new AggrStats(colStats, partNames.size());
       }
+      type = StatsType.ALL;
     } else if (partNames.size() == (allPartNames.size() - 1)) {
       String defaultPartitionName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
       if (!partNames.contains(defaultPartitionName)) {
-        colStats =
-            sharedCache.getAggrStatsFromCache(catName, dbName, tblName, colNames, StatsType.ALLBUTDEFAULT);
+        colStats = sharedCache.getAggrStatsFromCache(catName, dbName, tblName, colNames, StatsType.ALLBUTDEFAULT);
         if (colStats != null) {
           return new AggrStats(colStats, partNames.size());
         }
+        type = StatsType.ALLBUTDEFAULT;
       }
     }
+
     LOG.debug("Didn't find aggr stats in cache. Merging them. tblName= {}, parts= {}, cols= {}",
         tblName, partNames, colNames);
-    MergedColumnStatsForPartitions mergedColStats =
-        mergeColStatsForPartitions(catName, dbName, tblName, partNames, colNames, sharedCache);
+    MergedColumnStatsForPartitions mergedColStats = mergeColStatsForPartitions(catName, dbName, tblName,
+              partNames, colNames, sharedCache, type, writeIdList);
+    if (mergedColStats == null) {
+      LOG.info("Aggregate stats of partition " + catName + "." + dbName + "." + tblName + "." +
+              partNames + " for columns " + colNames + " is not present in cache. Getting it from raw store");
+      return rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, writeIdList);
+    }
     return new AggrStats(mergedColStats.getColStats(), mergedColStats.getPartsFound());
   }
 
   private MergedColumnStatsForPartitions mergeColStatsForPartitions(
       String catName, String dbName, String tblName, List<String> partNames, List<String> colNames,
-      SharedCache sharedCache) throws MetaException {
+      SharedCache sharedCache, StatsType type, String writeIdList) throws MetaException {
     final boolean useDensityFunctionForNDVEstimation =
         MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_NDV_DENSITY_FUNCTION);
     final double ndvTuner = MetastoreConf.getDoubleVar(getConf(), ConfVars.STATS_NDV_TUNER);
     Map<ColumnStatsAggregator, List<ColStatsObjWithSourceInfo>> colStatsMap = new HashMap<>();
-    boolean areAllPartsFound = true;
-    long partsFound = 0;
+    long partsFound = partNames.size();
+    Map<List<String>, Long> partNameToWriteId = writeIdList != null ? new HashMap<>() : null;
     for (String colName : colNames) {
       long partsFoundForColumn = 0;
       ColumnStatsAggregator colStatsAggregator = null;
       List<ColStatsObjWithSourceInfo> colStatsWithPartInfoList = new ArrayList<>();
       for (String partName : partNames) {
-        ColumnStatisticsObj colStatsForPart =
-            sharedCache.getPartitionColStatsFromCache(catName, dbName, tblName, partNameToVals(partName), colName);
-        if (colStatsForPart != null) {
+        List<String> partValue = partNameToVals(partName);
+        // There are three possible result from getPartitionColStatsFromCache.
+        // 1. The partition has valid stats and thus colStatsWriteId returned is valid non-null value
+        // 2. Partition stat is missing from cache and thus colStatsWriteId returned is non-null but colstat
+        //    info in it is null. In this case we just ignore the partition from aggregate calculation to keep
+        //    the behavior same as object store.
+        // 3. Partition is missing or its stat is updated by live(not yet committed) or aborted txn. In this case,
+        //    colStatsWriteId is null. Thus null is returned to keep the behavior same as object store.
+        SharedCache.ColumStatsWithWriteId colStatsWriteId = sharedCache.getPartitionColStatsFromCache(catName, dbName,
+                tblName, partValue, colName, writeIdList);
+        if (colStatsWriteId == null) {
+          return null;
+        }
+        if (colStatsWriteId.getColumnStatisticsObj() != null) {
+          ColumnStatisticsObj colStatsForPart = colStatsWriteId.getColumnStatisticsObj();
+          if (partNameToWriteId != null) {
+            partNameToWriteId.put(partValue, colStatsWriteId.getWriteId());
+          }
           ColStatsObjWithSourceInfo colStatsWithPartInfo =
               new ColStatsObjWithSourceInfo(colStatsForPart, catName, dbName, tblName, partName);
           colStatsWithPartInfoList.add(colStatsWithPartInfo);
@@ -2315,7 +2352,9 @@ public class CachedStore implements RawStore, Configurable {
       if (colStatsWithPartInfoList.size() > 0) {
         colStatsMap.put(colStatsAggregator, colStatsWithPartInfoList);
       }
-      if (partsFoundForColumn == partNames.size()) {
+      // set partsFound to the min(partsFoundForColumn) for all columns. partsFound is the number of partitions, for
+      // which stats for all columns are present in the cache.
+      if (partsFoundForColumn < partsFound) {
         partsFound = partsFoundForColumn;
       }
       if (colStatsMap.size() < 1) {
@@ -2326,8 +2365,23 @@ public class CachedStore implements RawStore, Configurable {
     }
     // Note that enableBitVector does not apply here because ColumnStatisticsObj
     // itself will tell whether bitvector is null or not and aggr logic can automatically apply.
-    return new MergedColumnStatsForPartitions(MetaStoreUtils.aggrPartitionStats(colStatsMap,
-        partNames, areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner), partsFound);
+    List<ColumnStatisticsObj> colAggrStats = MetaStoreUtils.aggrPartitionStats(colStatsMap,
+            partNames, partsFound == partNames.size(), useDensityFunctionForNDVEstimation, ndvTuner);
+
+    if (canUseEvents) {
+      if (type == StatsType.ALL) {
+        sharedCache.refreshAggregateStatsInCache(StringUtils.normalizeIdentifier(catName),
+                StringUtils.normalizeIdentifier(dbName),
+                StringUtils.normalizeIdentifier(tblName), new AggrStats(colAggrStats, partsFound),
+                null, partNameToWriteId);
+      } else if (type == StatsType.ALLBUTDEFAULT) {
+        sharedCache.refreshAggregateStatsInCache(StringUtils.normalizeIdentifier(catName),
+                StringUtils.normalizeIdentifier(dbName),
+                StringUtils.normalizeIdentifier(tblName), null,
+                new AggrStats(colAggrStats, partsFound), partNameToWriteId);
+      }
+    }
+    return new MergedColumnStatsForPartitions(colAggrStats, partsFound);
   }
 
   class MergedColumnStatsForPartitions {
