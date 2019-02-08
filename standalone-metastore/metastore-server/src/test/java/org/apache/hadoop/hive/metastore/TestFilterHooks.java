@@ -278,7 +278,7 @@ public class TestFilterHooks {
 
     testFilterForDb(true);
     testFilterForTables(true);
-    testFilterForPartition();
+    testFilterForPartition(true);
   }
 
   /**
@@ -321,7 +321,7 @@ public class TestFilterHooks {
 
     testFilterForDb(false);
     testFilterForTables(false);
-    testFilterForPartition();
+    testFilterForPartition(false);
   }
 
   protected void testFilterForDb(boolean filterAtServer) throws Exception {
@@ -360,7 +360,7 @@ public class TestFilterHooks {
     assertEquals(0, client.getTables(DBNAME1, TAB2).size());
   }
 
-  protected void testFilterForPartition() throws Exception {
+  protected void testFilterForPartition(boolean filterAtServer) throws Exception {
     try {
       assertNotNull(client.getPartition(DBNAME1, TAB2, "name=value1"));
       fail("getPartition() should fail with blocking mode");
@@ -368,11 +368,21 @@ public class TestFilterHooks {
       // Excepted
     }
 
-    try {
-      client.getPartitionsByNames(DBNAME1, TAB2,
-          Lists.newArrayList("name=value1")).size();
-    } catch (NoSuchObjectException e) {
-      // Excepted
+    if (filterAtServer) {
+      // at HMS server, the table of the partitions should be filtered out and result in
+      // NoSuchObjectException
+      try {
+        client.getPartitionsByNames(DBNAME1, TAB2,
+            Lists.newArrayList("name=value1")).size();
+        fail("getPartitionsByNames() should fail with blocking mode at server side");
+      } catch (NoSuchObjectException e) {
+        // Excepted
+      }
+    } else {
+      // at HMS client, we cannot filter the table of the partitions due to
+      // HIVE-21227: HIVE-20776 causes view access regression
+      assertEquals(0, client.getPartitionsByNames(DBNAME1, TAB2,
+          Lists.newArrayList("name=value1")).size());
     }
   }
 }
