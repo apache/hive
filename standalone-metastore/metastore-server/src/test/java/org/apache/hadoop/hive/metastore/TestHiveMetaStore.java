@@ -95,6 +95,7 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.junit.Test;
@@ -3325,22 +3326,23 @@ public abstract class TestHiveMetaStore {
     Warehouse wh = mock(Warehouse.class);
     //Execute initializeAddedPartition() and it should not trigger updatePartitionStatsFast() as DO_NOT_UPDATE_STATS is true
     HiveMetaStore.HMSHandler hms = new HiveMetaStore.HMSHandler("", conf, false);
-    Method m = hms.getClass().getDeclaredMethod("initializeAddedPartition", Table.class, Partition.class, boolean.class);
+    Method m = hms.getClass().getDeclaredMethod("initializeAddedPartition", Table.class, Partition.class,
+            boolean.class, EnvironmentContext.class);
     m.setAccessible(true);
     //Invoke initializeAddedPartition();
-    m.invoke(hms, tbl, part, false);
+    m.invoke(hms, tbl, part, false, null);
     verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
 
     //Remove tbl's DO_NOT_UPDATE_STATS & set STATS_AUTO_GATHER = false
     tbl.unsetParameters();
     MetastoreConf.setBoolVar(conf, ConfVars.STATS_AUTO_GATHER, false);
-    m.invoke(hms, tbl, part, false);
+    m.invoke(hms, tbl, part, false, null);
     verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
 
     //Set STATS_AUTO_GATHER = true and set tbl as a VIRTUAL_VIEW
     MetastoreConf.setBoolVar(conf, ConfVars.STATS_AUTO_GATHER, true);
     tbl.setTableType("VIRTUAL_VIEW");
-    m.invoke(hms, tbl, part, false);
+    m.invoke(hms, tbl, part, false, null);
     verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
   }
 }
