@@ -305,13 +305,18 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       for (int retryCount = 0; retryCount <= MAX_RETRIES; ++retryCount) {
         try {
           if (eventPerFile) {
-            LOG.debug("Event per file enabled. Closing proto event file: {}", writer.getPath());
             if (!maybeRolloverWriterForDay()) {
               writer = logger.getWriter(logFileName + "_" + ++logFileCount);
             }
-            writer.writeProto(event);
-            IOUtils.closeQuietly(writer);
-            writer = null;
+            if (writer != null) {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Event per file enabled. Closing proto event file: {} for event type: {}", writer.getPath(),
+                  event.getEventType());
+              }
+              writer.writeProto(event);
+              IOUtils.closeQuietly(writer);
+              writer = null;
+            }
           } else {
             maybeRolloverWriterForDay();
             writer.writeProto(event);
