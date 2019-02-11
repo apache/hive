@@ -131,17 +131,24 @@ import java.util.stream.Collectors;
       bytesConverter = new TextBytesConverter();
     } else if (delegateSerDe.getSerializedClass() == AvroGenericRecordWritable.class) {
       String schemaFromProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
-      String magicBitProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_MAGIC_BYTES
-
-                                                    .getPropName(), Boolean.FALSE.toString());
       Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
       Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
       LOG.debug("Building Avro Reader with schema {}", schemaFromProperty);
-      bytesConverter =
-          (Boolean.valueOf(magicBitProperty)) ?
-          new ConfluentAvroBytesConverter(schema) : new AvroBytesConverter(schema);
+      bytesConverter = getByteConverterForAvroDelegate(schema, tbl);
     } else {
       bytesConverter = new BytesWritableConverter();
+    }
+  }
+
+  BytesConverter getByteConverterForAvroDelegate(Schema schema, Properties tbl) {
+    String avroByteConverterType = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_TYPE
+                                                         .getPropName(), "none");
+    int avroSkipBytes = Integer.getInteger(tbl.getProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES
+                                                         .getPropName(), "5"));
+    switch ( avroByteConverterType ) {
+      case "confluent" : return new AvroSkipBytesConverter(schema, 5);
+      case "skip" : return new AvroSkipBytesConverter(schema, avroSkipBytes);
+      default : return new AvroBytesConverter(schema);
     }
   }
 
@@ -379,17 +386,23 @@ import java.util.stream.Collectors;
     }
   }
 
-  static class ConfluentAvroBytesConverter extends AvroBytesConverter {
-    ConfluentAvroBytesConverter(Schema schema) {
-      super(schema);
-    }
+    /**
+     * The converter reads bytes from kafka message and skip first @skipBytes from beginning.
+     *
+     * For example:
+     *       Confluent kafka producer add 5 magic bytes that represents Schema ID as Integer to the message.
+     */
+  static class AvroSkipBytesConverter extends AvroBytesConverter {
+      private final int skipBytes;
+
+      AvroSkipBytesConverter(Schema schema, int skipBytes) {
+        super(schema);
+        this.skipBytes = skipBytes;
+      }
 
     @Override
     Decoder getDecoder(byte[] value) {
-      /**
-       * Confluent 4 magic bytes that represents Schema ID as Integer. These bits are added before value bytes.
-       */
-      return DecoderFactory.get().binaryDecoder(value, 5, value.length - 5, null);
+      return DecoderFactory.get().binaryDecoder(value, this.skipBytes, value.length - this.skipBytes, null);
     }
   }
 

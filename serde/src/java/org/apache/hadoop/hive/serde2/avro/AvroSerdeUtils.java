@@ -68,7 +68,8 @@ public class AvroSerdeUtils {
     SCHEMA_NAME("avro.schema.name"),
     SCHEMA_DOC("avro.schema.doc"),
     AVRO_SERDE_SCHEMA("avro.serde.schema"),
-    AVRO_SERDE_MAGIC_BYTES("avro.serde.magic.bytes"),
+    AVRO_SERDE_TYPE("avro.serde.type"),
+    AVRO_SERDE_SKIP_BYTES("avro.serde.skip.bytes"),
     SCHEMA_RETRIEVER("avro.schema.retriever");
 
     private final String propName;
@@ -89,7 +90,6 @@ public class AvroSerdeUtils {
   @Deprecated public static final String SCHEMA_NAME = "avro.schema.name";
   @Deprecated public static final String SCHEMA_DOC = "avro.schema.doc";
   @Deprecated public static final String AVRO_SERDE_SCHEMA = AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName();
-  @Deprecated public static final String AVRO_SERDE_MAGIC_BIT = AvroTableProperties.AVRO_SERDE_MAGIC_BYTES.getPropName();
   @Deprecated public static final String SCHEMA_RETRIEVER = AvroTableProperties.SCHEMA_RETRIEVER.getPropName();
 
   public static final String SCHEMA_NONE = "none";

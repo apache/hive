@@ -12,7 +12,7 @@ import org.junit.Test;
 import java.util.Map;
 
 /**
- * Created by Milan Baran on 1/29/19 15:03.
+ * Test class for Hive Kafka Avro bytes converter.
  */
 public class AvroBytesConverterTest {
 
@@ -32,7 +32,7 @@ public class AvroBytesConverterTest {
     }
 
     /**
-     * Emulate - avro.serde.magic.bytes = false (Default)
+     * Emulate - avro.serde.type = none (Default)
      */
     @Test
     public void convertWithAvroBytesConverter() {
@@ -51,12 +51,12 @@ public class AvroBytesConverterTest {
 
 
     /**
-     * Emulate - avro.serde.magic.bytes = true
+     * Emulate - avro.serde.type = confluent
      */
     @Test
     public void convertWithConfluentAvroBytesConverter() {
         Schema schema = SimpleRecord.getClassSchema();
-        KafkaSerDe.ConfluentAvroBytesConverter conv = new KafkaSerDe.ConfluentAvroBytesConverter(schema);
+        KafkaSerDe.AvroSkipBytesConverter conv = new KafkaSerDe.AvroSkipBytesConverter(schema, 5);
         AvroGenericRecordWritable simpleRecord1Writable = conv.getWritable(simpleRecord1AsBytes);
 
         Assert.assertNotNull(simpleRecord1Writable);
