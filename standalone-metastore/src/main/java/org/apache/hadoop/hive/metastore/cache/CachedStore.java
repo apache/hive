@@ -1590,6 +1590,8 @@ public class CachedStore implements RawStore, Configurable {
       PrincipalPrivilegeSet privs = getPartitionPrivilegeSet(catName, dbName, tblName, partName,
           userName, groupNames);
       p.setPrivileges(privs);
+    } else {
+      throw new NoSuchObjectException("partition values=" + partVals.toString());
     }
     return p;
   }
