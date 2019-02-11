@@ -62,16 +62,16 @@ POSTHOOK: query: Select `__partition` , `__offset`,`__key`, `__time`, `page`, `u
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	key	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	key	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	key	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	3	key	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	4	key	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	5	key	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	6	key	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	7	key	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	8	key	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	9	key	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	0	key	2013-08-31 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	key	2013-08-31 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	key	2013-08-31 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	key	2013-08-31 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	key	2013-08-31 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	key	2013-09-01 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	key	2013-09-01 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	key	2013-09-01 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	key	2013-09-01 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	key	2013-09-01 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 PREHOOK: query: Select count(*) FROM kafka_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
@@ -93,16 +93,16 @@ from kafka_table where `__timestamp` > 1533960760123
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	0	2013-08-31 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	2013-08-31 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	2013-08-31 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	2013-08-31 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	2013-08-31 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	2013-09-01 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	2013-09-01 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	2013-09-01 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	2013-09-01 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	2013-09-01 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 PREHOOK: query: Select `__partition`, `__offset` ,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where `__timestamp` > 533960760123
@@ -115,16 +115,16 @@ from kafka_table where `__timestamp` > 533960760123
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	0	2013-08-31 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	2013-08-31 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	2013-08-31 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	2013-08-31 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	2013-08-31 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	2013-09-01 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	2013-09-01 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	2013-09-01 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	2013-09-01 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	2013-09-01 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 PREHOOK: query: Select `__partition`, `__offset`,`__time`, `page`, `user`, `language`, `country`,`continent`, `namespace`, `newPage` ,
 `unpatrolled` , `anonymous` , `robot` , added , deleted , delta
 from kafka_table where (`__offset` > 7 and `__partition` = 0 and `__offset` <9 ) OR
@@ -139,9 +139,9 @@ from kafka_table where (`__offset` > 7 and `__partition` = 0 and `__offset` <9 )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	1	2013-08-31 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	4	2013-08-31 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	8	2013-09-01 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
 PREHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` = 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
@@ -150,7 +150,7 @@ POSTHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `use
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-key	0	5	NULL	Gypsy Danger	nuclear
+key	0	5	2013-09-01 01:02:33	Gypsy Danger	nuclear
 PREHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` < 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
@@ -159,11 +159,11 @@ POSTHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `use
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-key	0	0	NULL	Gypsy Danger	nuclear
-key	0	1	NULL	Striker Eureka	speed
-key	0	2	NULL	Cherno Alpha	masterYi
-key	0	3	NULL	Crimson Typhoon	triplets
-key	0	4	NULL	Coyote Tango	stringer
+key	0	0	2013-08-31 01:02:33	Gypsy Danger	nuclear
+key	0	1	2013-08-31 03:32:45	Striker Eureka	speed
+key	0	2	2013-08-31 07:11:21	Cherno Alpha	masterYi
+key	0	3	2013-08-31 11:58:39	Crimson Typhoon	triplets
+key	0	4	2013-08-31 12:41:27	Coyote Tango	stringer
 PREHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `user` from kafka_table where `__offset` > 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table
@@ -172,10 +172,10 @@ POSTHOOK: query: Select `__key`,`__partition`, `__offset`,`__time`, `page`, `use
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-key	0	6	NULL	Striker Eureka	speed
-key	0	7	NULL	Cherno Alpha	masterYi
-key	0	8	NULL	Crimson Typhoon	triplets
-key	0	9	NULL	Coyote Tango	stringer
+key	0	6	2013-09-01 03:32:45	Striker Eureka	speed
+key	0	7	2013-09-01 07:11:21	Cherno Alpha	masterYi
+key	0	8	2013-09-01 11:58:39	Crimson Typhoon	triplets
+key	0	9	2013-09-01 12:41:27	Coyote Tango	stringer
 PREHOOK: query: Select `__partition`, `__offset`, `user` from kafka_table where
 `__timestamp` >  to_epoch_milli(CURRENT_TIMESTAMP - interval '1' HOURS)
 PREHOOK: type: QUERY
@@ -347,9 +347,9 @@ POSTHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	0	2013-08-31 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	2013-08-31 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	2013-08-31 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
 PREHOOK: query: From kafka_table ktable JOIN kafka_table_offsets offset_table
 on (ktable.`__partition` = offset_table.partition_id and ktable.`__offset` > offset_table.max_offset)
 insert into table orc_kafka_table select `__partition`, `__offset`, `__timestamp`,
@@ -422,16 +422,16 @@ POSTHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	0	2013-08-31 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	2013-08-31 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	2013-08-31 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	2013-08-31 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	2013-08-31 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	2013-09-01 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	2013-09-01 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	2013-09-01 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	2013-09-01 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	2013-09-01 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 PREHOOK: query: Drop table kafka_table_offsets
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@kafka_table_offsets
@@ -544,21 +544,22 @@ POSTHOOK: query: select `partition_id`, `row_offset`,`__time`, `page`, `user`, `
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_kafka_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	0	2013-08-31 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	2013-08-31 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	2013-08-31 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	2013-08-31 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	2013-08-31 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	2013-09-01 01:02:33	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	2013-09-01 03:32:45	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	2013-09-01 07:11:21	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	2013-09-01 11:58:39	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	2013-09-01 12:41:27	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 PREHOOK: query: CREATE EXTERNAL TABLE kafka_table_2
 (`__time` timestamp with local time zone , `page` string, `user` string, `language` string,
 `country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
 `anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint)
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+WITH SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd\'T\'HH:mm:ss\'Z\'")
 TBLPROPERTIES
 ("kafka.topic" = "test-topic",
 "kafka.bootstrap.servers"="localhost:9093")
@@ -570,6 +571,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE kafka_table_2
 `country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
 `anonymous` boolean, `robot` boolean, added int, deleted int, delta bigint)
 STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+WITH SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd\'T\'HH:mm:ss\'Z\'")
 TBLPROPERTIES
 ("kafka.topic" = "test-topic",
 "kafka.bootstrap.servers"="localhost:9093")
@@ -588,16 +590,16 @@ FROM kafka_table_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@kafka_table_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	0	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	1	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	2	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	3	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	4	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
-0	5	NULL	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
-0	6	NULL	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
-0	7	NULL	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
-0	8	NULL	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
-0	9	NULL	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	0	2013-08-30 18:02:33.0 US/Pacific	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	1	2013-08-30 20:32:45.0 US/Pacific	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	2	2013-08-31 00:11:21.0 US/Pacific	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	3	2013-08-31 04:58:39.0 US/Pacific	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	4	2013-08-31 05:41:27.0 US/Pacific	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
+0	5	2013-08-31 18:02:33.0 US/Pacific	Gypsy Danger	nuclear	en	United States	North America	article	true	true	false	false	57	200	-143
+0	6	2013-08-31 20:32:45.0 US/Pacific	Striker Eureka	speed	en	Australia	Australia	wikipedia	true	false	false	true	459	129	330
+0	7	2013-09-01 00:11:21.0 US/Pacific	Cherno Alpha	masterYi	ru	Russia	Asia	article	true	false	false	true	123	12	111
+0	8	2013-09-01 04:58:39.0 US/Pacific	Crimson Typhoon	triplets	zh	China	Asia	wikipedia	false	true	false	true	905	5	900
+0	9	2013-09-01 05:41:27.0 US/Pacific	Coyote Tango	stringer	ja	Japan	Asia	wikipedia	false	true	false	true	1	10	-9
 PREHOOK: query: Select count(*) FROM kafka_table_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@kafka_table_2
