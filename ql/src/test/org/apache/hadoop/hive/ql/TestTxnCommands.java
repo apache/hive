@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -460,6 +461,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, stats.size());
     msClient.close();
     hiveConf.setBoolean(MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED.getVarname(), false);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
     // Running the query with stats disabled will cause stats in metastore itself to become invalid.
     runStatementOnDriver(String.format("insert into %s (a) values (1)", tableName));
     hiveConf.setBoolean(MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED.getVarname(), true);

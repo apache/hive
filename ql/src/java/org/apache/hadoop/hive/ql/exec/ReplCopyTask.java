@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
@@ -73,8 +72,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     Path toPath = null;
 
     try {
-      Hive hiveDb = getHive();
-
       // Note: CopyWork supports copying multiple files, but ReplCopyWork doesn't.
       //       Not clear of ReplCopyWork should inherit from CopyWork.
       if (work.getFromPaths().length > 1 || work.getToPaths().length > 1) {
@@ -172,7 +169,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // its a replace (insert overwrite ) operation.
       if (work.getDeleteDestIfExist() && dstFs.exists(toPath)) {
         LOG.debug(" path " + toPath + " is cleaned before renaming");
-        hiveDb.cleanUpOneDirectoryForReplace(toPath, dstFs, HIDDEN_FILES_PATH_FILTER, conf, work.getNeedRecycle(),
+        getHive().cleanUpOneDirectoryForReplace(toPath, dstFs, HIDDEN_FILES_PATH_FILTER, conf, work.getNeedRecycle(),
                                                           work.getIsAutoPurge());
       }
 

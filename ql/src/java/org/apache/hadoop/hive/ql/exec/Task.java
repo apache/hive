@@ -184,7 +184,9 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected Hive getHive() {
     try {
-      return Hive.getWithFastCheck(conf);
+      // Hive.getWithFastCheck shouldn't be used here as it always re-opens metastore connection.
+      // The conf object in HMS client is always different from the one used here.
+      return Hive.get(conf);
     } catch (HiveException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new RuntimeException(e);
