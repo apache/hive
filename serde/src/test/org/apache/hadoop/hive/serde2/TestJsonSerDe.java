@@ -274,7 +274,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.LIST_COLUMN_TYPES,
         "timestamp with local time zone");
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS,
-        "yyyy-MM-dd'T'HH:mm:ss'Z");
+        "yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     final TimeZone localTz = TimeZone.getDefault();
     TimeZone.setDefault(TimeZone.getTimeZone("US/Pacific"));
