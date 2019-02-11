@@ -359,6 +359,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       throws Exception, MetaException, TException, NoSuchObjectException {
     hiveConf.setBoolean("hive.stats.autogather", true);
     hiveConf.setBoolean("hive.stats.column.autogather", true);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
     runStatementOnDriver("drop table if exists " + tableName);
     runStatementOnDriver(String.format("create table %s (a int) stored as orc " +
         "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
@@ -435,6 +437,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     String tableName = "mm_table";
     hiveConf.setBoolean("hive.stats.autogather", true);
     hiveConf.setBoolean("hive.stats.column.autogather", true);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
     runStatementOnDriver("drop table if exists " + tableName);
     runStatementOnDriver(String.format("create table %s (a int) stored as orc " +
         "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
@@ -1212,6 +1216,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   @Test
   public void testVersioning() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     int[][] data = {{1, 2}};
