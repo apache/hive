@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -801,6 +802,10 @@ public class SharedWorkOptimizer extends Transform {
     if (tsOp1.getConf().getRowLimit() != tsOp2.getConf().getRowLimit()) {
       return false;
     }
+    // If table properties do not match, we currently do not merge
+    if (!Objects.equals(tsOp1.getConf().getOpProps(), tsOp2.getConf().getOpProps())) {
+      return false;
+    }
     // If partitions do not match, we currently do not merge
     PrunedPartitionList prevTsOpPPList = pctx.getPrunedPartitions(tsOp1);
     PrunedPartitionList tsOpPPList = pctx.getPrunedPartitions(tsOp2);
@@ -1338,7 +1343,8 @@ public class SharedWorkOptimizer extends Transform {
           && StringUtils.equals(op1Conf.getFilterExprString(), op2Conf.getFilterExprString())
           && pctx.getPrunedPartitions(tsOp1).getPartitions().equals(
               pctx.getPrunedPartitions(tsOp2).getPartitions())
-          && op1Conf.getRowLimit() == op2Conf.getRowLimit()) {
+          && op1Conf.getRowLimit() == op2Conf.getRowLimit()
+          && Objects.equals(op1Conf.getOpProps(), op2Conf.getOpProps())) {
         return true;
       } else {
         return false;
