@@ -7957,6 +7957,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+
+    for (Operator<? extends OperatorDesc> parent : (List<Operator<? extends OperatorDesc>>)input.getParentOperators()) {
+      setWriteIdForSurrogateKeys(ltd, parent);
+    }
   }
 
   private WriteEntity generateTableWriteEntity(String dest, Table dest_tab,
