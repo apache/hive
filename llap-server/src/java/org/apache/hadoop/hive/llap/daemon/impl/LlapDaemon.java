@@ -534,8 +534,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
           new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
       int mngPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
-      int shufflePort = daemonConf
-          .getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
+      int shufflePort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
       int webPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_WEB_PORT);
 
       LlapDaemonInfo.initialize(appName, daemonConf);
