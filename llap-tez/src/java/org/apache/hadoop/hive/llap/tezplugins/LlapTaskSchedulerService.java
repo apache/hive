@@ -338,7 +338,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         serializedToken = jobIdForToken = null;
       }
       pluginEndpoint = new LlapPluginServerImpl(sm,
-          HiveConf.getIntVar(conf, ConfVars.LLAP_PLUGIN_RPC_NUM_HANDLERS), this);
+          HiveConf.getIntVar(conf, ConfVars.LLAP_PLUGIN_RPC_NUM_HANDLERS), this, HiveConf.getIntVar(conf, ConfVars.LLAP_PLUGIN_RPC_PORT));
     } else {
       serializedToken = jobIdForToken = null;
       pluginEndpoint = null;
