@@ -67,4 +67,19 @@ public class AvroBytesConverterTest {
         Assert.assertNotNull(simpleRecord1Deserialized);
         Assert.assertEquals(simpleRecord1, simpleRecord1Deserialized);
     }
+
+    @Test
+    public void enumParseTest() {
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.CONFLUENT, KafkaSerDe.BytesConverterType.fromString("confluent"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.CONFLUENT, KafkaSerDe.BytesConverterType.fromString("conFLuent"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.CONFLUENT, KafkaSerDe.BytesConverterType.fromString("Confluent"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.CONFLUENT, KafkaSerDe.BytesConverterType.fromString("CONFLUENT"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.SKIP, KafkaSerDe.BytesConverterType.fromString("skip"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.SKIP, KafkaSerDe.BytesConverterType.fromString("sKIp"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.SKIP, KafkaSerDe.BytesConverterType.fromString("SKIP"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.NONE, KafkaSerDe.BytesConverterType.fromString("SKIP1"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.NONE, KafkaSerDe.BytesConverterType.fromString("skipper"));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.NONE, KafkaSerDe.BytesConverterType.fromString(""));
+        Assert.assertEquals(KafkaSerDe.BytesConverterType.NONE, KafkaSerDe.BytesConverterType.fromString(null));
+    }
 }

@@ -140,15 +140,31 @@ import java.util.stream.Collectors;
     }
   }
 
+  enum BytesConverterType {
+    CONFLUENT,
+    SKIP,
+    NONE;
+
+    static BytesConverterType fromString(String value) {
+      try {
+        return BytesConverterType.valueOf(value.trim().toUpperCase());
+      } catch (Exception e){
+        return NONE;
+      }
+    }
+  }
+
   BytesConverter getByteConverterForAvroDelegate(Schema schema, Properties tbl) {
-    String avroByteConverterType = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_TYPE
-                                                         .getPropName(), "none");
+    String avroBytesConverterProperty = tbl.getProperty(AvroSerdeUtils
+                                                            .AvroTableProperties.AVRO_SERDE_TYPE
+                                                            .getPropName(), "none");
+    BytesConverterType avroByteConverterType = BytesConverterType.fromString(avroBytesConverterProperty);
     int avroSkipBytes = Integer.getInteger(tbl.getProperty(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SKIP_BYTES
                                                          .getPropName(), "5"));
     switch ( avroByteConverterType ) {
-      case "confluent" : return new AvroSkipBytesConverter(schema, 5);
-      case "skip" : return new AvroSkipBytesConverter(schema, avroSkipBytes);
-      default : return new AvroBytesConverter(schema);
+      case CONFLUENT: return new AvroSkipBytesConverter(schema, 5);
+      case SKIP: return new AvroSkipBytesConverter(schema, avroSkipBytes);
+      default: return new AvroBytesConverter(schema);
     }
   }
 
