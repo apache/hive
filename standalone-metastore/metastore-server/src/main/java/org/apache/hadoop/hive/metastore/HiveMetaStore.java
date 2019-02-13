@@ -4974,6 +4974,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           null, null);
     }
 
+    @Override
     public RenamePartitionResponse rename_partition_req(
         RenamePartitionRequest req) throws InvalidOperationException ,MetaException ,TException {
       rename_partition(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
@@ -9379,7 +9380,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             "This usage has been deprecated, consider using the new command "
                 + "line syntax (run with -h to see usage information)");
 
-        this.port = new Integer(args[0]);
+        this.port = Integer.parseInt(args[0]);
       }
 
       // notice that command line options take precedence over the

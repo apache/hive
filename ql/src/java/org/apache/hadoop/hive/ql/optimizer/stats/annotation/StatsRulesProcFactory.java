@@ -610,7 +610,7 @@ public class StatsRulesProcFactory {
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
           case serdeConstants.SMALLINT_TYPE_NAME: {
-            short value = new Short(boundValue);
+            short value = Short.parseShort(boundValue);
             short maxValue = range.maxValue.shortValue();
             short minValue = range.minValue.shortValue();
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
@@ -623,25 +623,25 @@ public class StatsRulesProcFactory {
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
           case serdeConstants.INT_TYPE_NAME: {
-            int value = new Integer(boundValue);
+            int value = Integer.parseInt(boundValue);
             int maxValue = range.maxValue.intValue();
             int minValue = range.minValue.intValue();
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
           case serdeConstants.BIGINT_TYPE_NAME: {
-            long value = new Long(boundValue);
+            long value = Long.parseLong(boundValue);
             long maxValue = range.maxValue.longValue();
             long minValue = range.minValue.longValue();
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
           case serdeConstants.FLOAT_TYPE_NAME: {
-            float value = new Float(boundValue);
+            float value = Float.parseFloat(boundValue);
             float maxValue = range.maxValue.floatValue();
             float minValue = range.minValue.floatValue();
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
           }
           case serdeConstants.DOUBLE_TYPE_NAME: {
-            double value = new Double(boundValue);
+            double value = Double.parseDouble(boundValue);
             double maxValue = range.maxValue.doubleValue();
             double minValue = range.minValue.doubleValue();
             return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
@@ -971,7 +971,7 @@ public class StatsRulesProcFactory {
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
-            short value = new Short(boundValue);
+            short value = Short.parseShort(boundValue);
             short maxValue = cs.getRange().maxValue.shortValue();
             short minValue = cs.getRange().minValue.shortValue();
             if (upperBound) {
@@ -996,7 +996,7 @@ public class StatsRulesProcFactory {
               DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(boundValue));
               value = writableVal.getDays();
             } else {
-              value = new Integer(boundValue);
+              value = Integer.parseInt(boundValue);
             }
             // Date is an integer internally
             int maxValue = cs.getRange().maxValue.intValue();
@@ -1017,7 +1017,7 @@ public class StatsRulesProcFactory {
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-            long value = new Long(boundValue);
+            long value = Long.parseLong(boundValue);
             long maxValue = cs.getRange().maxValue.longValue();
             long minValue = cs.getRange().minValue.longValue();
             if (upperBound) {
@@ -1036,7 +1036,7 @@ public class StatsRulesProcFactory {
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-            float value = new Float(boundValue);
+            float value = Float.parseFloat(boundValue);
             float maxValue = cs.getRange().maxValue.floatValue();
             float minValue = cs.getRange().minValue.floatValue();
             if (upperBound) {
@@ -1055,7 +1055,7 @@ public class StatsRulesProcFactory {
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-            double value = new Double(boundValue);
+            double value = Double.parseDouble(boundValue);
             double maxValue = cs.getRange().maxValue.doubleValue();
             double minValue = cs.getRange().minValue.doubleValue();
             if (upperBound) {

@@ -346,8 +346,7 @@ public class TestRCFile {
     Random rand = new Random();
     for (int recIdx = 0; recIdx < recCount; recIdx++) {
       for (int i = 0; i < record.length; i++) {
-        record[i] = new Integer(rand.nextInt()).toString()
-            .getBytes(StandardCharsets.UTF_8);
+        record[i] = String.valueOf(rand.nextInt()).getBytes(StandardCharsets.UTF_8);
       }
       for (int i = 0; i < record.length; i++) {
         BytesRefWritable cu = new BytesRefWritable(record[i], 0,

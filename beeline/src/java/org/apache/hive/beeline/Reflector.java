@@ -110,19 +110,19 @@ class Reflector {
     } else if (toType == Byte.class || toType == byte.class) {
       return Byte.valueOf(ob.toString());
     } else if (toType == Character.class || toType == char.class) {
-      return new Character(ob.toString().charAt(0));
+      return Character.valueOf(ob.toString().charAt(0));
     } else if (toType == Short.class || toType == short.class) {
-      return new Short(ob.toString());
+      return Short.valueOf(ob.toString());
     } else if (toType == Integer.class || toType == int.class) {
-      return new Integer(ob.toString());
+      return Integer.valueOf(ob.toString());
     } else if (toType == Long.class || toType == long.class) {
-      return new Long(ob.toString());
+      return Long.valueOf(ob.toString());
     } else if (toType == Double.class || toType == double.class) {
-      return new Double(ob.toString());
+      return Double.valueOf(ob.toString());
     } else if (toType == Float.class || toType == float.class) {
-      return new Float(ob.toString());
+      return Float.valueOf(ob.toString());
     } else if (toType == Boolean.class || toType == boolean.class) {
-      return new Boolean(ob.toString().equals("true")
+      return Boolean.valueOf(ob.toString().equals("true")
           || ob.toString().equals(true + "")
           || ob.toString().equals("1")
           || ob.toString().equals("on")

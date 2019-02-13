@@ -225,22 +225,22 @@ public class TestIncrementalObjectSizeEstimator {
   @Test
   public void testSimpleTypes() {
     JavaDataModel memModel = JavaDataModel.get();
-    int intSize = runEstimate(new Integer(0), memModel, null);
-    runEstimate(new String(""), memModel, "empty string");
-    runEstimate(new String("foobarzzzzzzzzzzzzzz"), memModel, null);
+    int intSize = runEstimate(Integer.valueOf(0), memModel, null);
+    runEstimate("", memModel, "empty string");
+    runEstimate("foobarzzzzzzzzzzzzzz", memModel, null);
     List<Object> list = new ArrayList<Object>(0);
     runEstimate(list, memModel, "empty ArrayList");
-    list.add(new String("zzz"));
+    list.add("zzz");
     runEstimate(list, memModel, "ArrayList - one string");
-    list.add(new Integer(5));
-    list.add(new Integer(6));
+    list.add(Integer.valueOf(5));
+    list.add(Integer.valueOf(6));
     int arrayListSize = runEstimate(list, memModel, "ArrayList - 3 elements");
     LinkedHashSet<Object> list2 = new LinkedHashSet<Object>(0);
     runEstimate(list2, memModel, "empty LinkedHashSet");
-    list2.add(new String("zzzz"));
+    list2.add("zzzz");
     runEstimate(list2, memModel, "LinkedHashSet - one string");
-    list2.add(new Integer(7));
-    list2.add(new Integer(4));
+    list2.add(Integer.valueOf(7));
+    list2.add(Integer.valueOf(4));
     int lhsSize = runEstimate(list2, memModel, "LinkedHashSet - 3 elements");
 
     Struct struct = new Struct();
