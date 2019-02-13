@@ -382,11 +382,7 @@ public class IncrementalLoadTasksBuilder {
     }
 
     // Link import tasks to the barrier task which will in-turn linked with repl state update tasks
-    for (Task<? extends Serializable> t : importTasks){
-      t.addDependentTask(barrierTask);
-      log.debug("Added {}:{} as a precursor of barrier task {}:{}",
-              t.getClass(), t.getId(), barrierTask.getClass(), barrierTask.getId());
-    }
+    DAGTraversal.traverse(importTasks, new AddDependencyToLeaves(barrierTask));
 
     // At least one task would have been added to update the repl state
     return tasks;
