@@ -147,7 +147,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     List<VertexManagerPluginContext.TaskWithLocationHint> scheduledTasks =
       new ArrayList<VertexManagerPluginContext.TaskWithLocationHint>(numTasks);
     for (int i = 0; i < numTasks; ++i) {
-      scheduledTasks.add(new VertexManagerPluginContext.TaskWithLocationHint(new Integer(i), null));
+      scheduledTasks.add(new VertexManagerPluginContext.TaskWithLocationHint(Integer.valueOf(i), null));
     }
     context.scheduleVertexTasks(scheduledTasks);
   }

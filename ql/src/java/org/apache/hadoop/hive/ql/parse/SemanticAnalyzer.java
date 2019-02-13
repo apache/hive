@@ -1761,11 +1761,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_LIMIT:
         if (ast.getChildCount() == 2) {
           qbp.setDestLimit(ctx_1.dest,
-              new Integer(ast.getChild(0).getText()),
-              new Integer(ast.getChild(1).getText()));
+              Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));
         } else {
-          qbp.setDestLimit(ctx_1.dest, new Integer(0),
-              new Integer(ast.getChild(0).getText()));
+          qbp.setDestLimit(ctx_1.dest, Integer.valueOf(0), Integer.valueOf(ast.getChild(0).getText()));
         }
         break;
 

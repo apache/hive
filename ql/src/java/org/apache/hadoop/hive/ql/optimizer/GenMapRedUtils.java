@@ -420,7 +420,7 @@ public final class GenMapRedUtils {
     childPlan.setReduceWork(rWork);
     rWork.setReducer(reducer);
     ReduceSinkDesc desc = cRS.getConf();
-    childPlan.getReduceWork().setNumReduceTasks(new Integer(desc.getNumReducers()));
+    childPlan.getReduceWork().setNumReduceTasks(Integer.valueOf(desc.getNumReducers()));
 
     opProcCtx.getOpTaskMap().put(reducer, childTask);
 

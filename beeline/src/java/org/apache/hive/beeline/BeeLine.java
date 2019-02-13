@@ -486,7 +486,7 @@ public class BeeLine implements Closeable {
     try {
       return MessageFormat.format(
           new ChoiceFormat(resourceBundle.getString(res)).format(param),
-          new Object[] {new Integer(param)});
+          new Object[] {Integer.valueOf(param)});
     } catch (Exception e) {
       return res + ": " + param;
     }
@@ -2176,7 +2176,7 @@ public class BeeLine implements Closeable {
         new Object[] {
             e.getMessage() == null ? "" : e.getMessage().trim(),
             e.getSQLState() == null ? "" : e.getSQLState().trim(),
-            new Integer(e.getErrorCode())}));
+            Integer.valueOf(e.getErrorCode())}));
 
     if (getOpts().getVerbose()) {
       e.printStackTrace(getErrorStream());

@@ -43,7 +43,7 @@ public class TestLazyHCatRecord {
     Assert.assertEquals(INT_CONST, ((Integer) r.get(0)).intValue());
     Assert.assertEquals(LONG_CONST, ((Long) r.get(1)).longValue());
     Assert.assertEquals(DOUBLE_CONST, ((Double) r.get(2)).doubleValue(), 0);
-    Assert.assertEquals(STRING_CONST, (String) r.get(3));
+    Assert.assertEquals(STRING_CONST, r.get(3));
   }
 
   @Test
@@ -55,7 +55,7 @@ public class TestLazyHCatRecord {
     Assert.assertEquals(INT_CONST, ((Integer) r.get("an_int", schema)).intValue());
     Assert.assertEquals(LONG_CONST, ((Long) r.get("a_long", schema)).longValue());
     Assert.assertEquals(DOUBLE_CONST, ((Double) r.get("a_double", schema)).doubleValue(), 0);
-    Assert.assertEquals(STRING_CONST, (String) r.get("a_string", schema));
+    Assert.assertEquals(STRING_CONST, r.get("a_string", schema));
   }
 
   @Test
@@ -65,7 +65,7 @@ public class TestLazyHCatRecord {
     Assert.assertEquals(INT_CONST, ((Integer) list.get(0)).intValue());
     Assert.assertEquals(LONG_CONST, ((Long) list.get(1)).longValue());
     Assert.assertEquals(DOUBLE_CONST, ((Double) list.get(2)).doubleValue(), 0);
-    Assert.assertEquals(STRING_CONST, (String) list.get(3));
+    Assert.assertEquals(STRING_CONST, list.get(3));
   }
 
   @Test
@@ -152,16 +152,16 @@ public class TestLazyHCatRecord {
     Assert.assertEquals(INT_CONST, ((Integer) r.get(0)).intValue());
     Assert.assertEquals(LONG_CONST, ((Long) r.get(1)).longValue());
     Assert.assertEquals(DOUBLE_CONST, ((Double) r.get(2)).doubleValue(), 0);
-    Assert.assertEquals(STRING_CONST, (String) r.get(3));
+    Assert.assertEquals(STRING_CONST, r.get(3));
     Assert.assertEquals("org.apache.hive.hcatalog.data.DefaultHCatRecord", r.getClass().getName());
   }
 
   private HCatRecord getHCatRecord() throws Exception {
     List<Object> rec_1 = new ArrayList<Object>(4);
-    rec_1.add( new Integer(INT_CONST));
-    rec_1.add( new Long(LONG_CONST));
-    rec_1.add( new Double(DOUBLE_CONST));
-    rec_1.add( new String(STRING_CONST));
+    rec_1.add(Integer.valueOf(INT_CONST));
+    rec_1.add(Long.valueOf(LONG_CONST));
+    rec_1.add(Double.valueOf(DOUBLE_CONST));
+    rec_1.add(STRING_CONST);
 
     return new DefaultHCatRecord(rec_1);
   }
