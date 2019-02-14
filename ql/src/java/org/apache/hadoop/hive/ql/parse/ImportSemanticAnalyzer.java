@@ -226,7 +226,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
    * parsedDbName parameter
    */
   public static boolean prepareImport(boolean isImportCmd,
-                                      boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet, boolean waitOnPrecursor,
+                                      boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet,
+                                      boolean waitOnPrecursor,
                                       String parsedLocation, String parsedTableName, String overrideDBName,
                                       LinkedHashMap<String, String> parsedPartSpec,
                                       String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x,
@@ -455,7 +456,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static ImportTableDesc getBaseCreateTableDescFromTable(String dbName,
-                                                                 org.apache.hadoop.hive.metastore.api.Table tblObj) throws Exception {
+                                                                 org.apache.hadoop.hive.metastore.api.Table tblObj)
+          throws Exception {
     Table table = new Table(tblObj);
     return new ImportTableDesc(dbName, table);
   }
@@ -567,7 +569,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static Task<? extends Serializable> alterTableTask(ImportTableDesc tableDesc,
-                                                             EximUtil.SemanticAnalyzerWrapperContext x, ReplicationSpec replicationSpec) {
+                                                             EximUtil.SemanticAnalyzerWrapperContext x,
+                                                             ReplicationSpec replicationSpec) {
     tableDesc.setReplaceMode(true);
     if ((replicationSpec != null) && (replicationSpec.isInReplicationScope())) {
       tableDesc.setReplicationSpec(replicationSpec);
@@ -593,7 +596,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static Task<?> addSinglePartition(ImportTableDesc tblDesc,
-                                            Table table, Warehouse wh, AddPartitionDesc addPartitionDesc, ReplicationSpec replicationSpec,
+                                            Table table, Warehouse wh, AddPartitionDesc addPartitionDesc,
+                                            ReplicationSpec replicationSpec,
                                             EximUtil.SemanticAnalyzerWrapperContext x, Long writeId, int stmtId)
           throws MetaException, IOException, HiveException {
     AddPartitionDesc.OnePartitionDesc partSpec = addPartitionDesc.getPartition(0);
@@ -716,12 +720,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * In REPL LOAD flow, the data copy is done separately for external tables using data locations
    * dumped in file {@link ReplExternalTables#FILE_NAME}. So, we can skip copying it here.
+   * In case of migrating from managed to external table, the data path won't be listed in this
+   * file and so need to copy data while applying the event.
    */
   private static boolean shouldSkipDataCopyInReplScope(ImportTableDesc tblDesc, ReplicationSpec replicationSpec) {
     return ((replicationSpec != null)
             && replicationSpec.isInReplicationScope()
             && tblDesc.isExternal()
-            && replicationSpec.isMigratingToExternalTable());
+            && !replicationSpec.isMigratingToExternalTable());
   }
 
   /**
