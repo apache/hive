@@ -1,2 +1,2 @@
 -- invalid expression
-create table tti(i int , j int CHECK i+j);
+create table tti(i int , j int CHECK (i+j));

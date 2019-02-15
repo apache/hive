@@ -1,19 +1,19 @@
-PREHOOK: query: CREATE TABLE table1_n0(i int CHECK -i > -10,
-    j int CHECK +j > 10,
-    ij boolean CHECK ij IS NOT NULL,
-    a int CHECK a BETWEEN i AND j,
-    bb float CHECK bb IN (23.4,56,4),
-    d bigint CHECK d > round(567.6) AND d < round(1000.4))
+PREHOOK: query: CREATE TABLE table1_n0(i int CHECK (-i > -10),
+    j int CHECK (+j > 10),
+    ij boolean CHECK (ij IS NOT NULL),
+    a int CHECK (a BETWEEN i AND j),
+    bb float CHECK (bb IN (23.4,56,4)),
+    d bigint CHECK (d > round(567.6) AND d < round(1000.4)))
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table1_n0
-POSTHOOK: query: CREATE TABLE table1_n0(i int CHECK -i > -10,
-    j int CHECK +j > 10,
-    ij boolean CHECK ij IS NOT NULL,
-    a int CHECK a BETWEEN i AND j,
-    bb float CHECK bb IN (23.4,56,4),
-    d bigint CHECK d > round(567.6) AND d < round(1000.4))
+POSTHOOK: query: CREATE TABLE table1_n0(i int CHECK (-i > -10),
+    j int CHECK (+j > 10),
+    ij boolean CHECK (ij IS NOT NULL),
+    a int CHECK (a BETWEEN i AND j),
+    bb float CHECK (bb IN (23.4,56,4)),
+    d bigint CHECK (d > round(567.6) AND d < round(1000.4)))
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -187,11 +187,11 @@ POSTHOOK: query: DROP TABLE table1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1_n0
 POSTHOOK: Output: default@table1_n0
-PREHOOK: query: CREATE TABLE table2_n0(i int CHECK i + NULL > 0)
+PREHOOK: query: CREATE TABLE table2_n0(i int CHECK (i + NULL > 0))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_n0
-POSTHOOK: query: CREATE TABLE table2_n0(i int CHECK i + NULL > 0)
+POSTHOOK: query: CREATE TABLE table2_n0(i int CHECK (i + NULL > 0))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_n0
@@ -328,11 +328,11 @@ POSTHOOK: query: CREATE FUNCTION test_udf2 AS 'org.apache.hadoop.hive.ql.udf.gen
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.test_udf2
-PREHOOK: query: CREATE TABLE tudf(v string CHECK test_udf2(v) <> 'vin')
+PREHOOK: query: CREATE TABLE tudf(v string CHECK (test_udf2(v) <> 'vin'))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tudf
-POSTHOOK: query: CREATE TABLE tudf(v string CHECK test_udf2(v) <> 'vin')
+POSTHOOK: query: CREATE TABLE tudf(v string CHECK (test_udf2(v) <> 'vin'))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tudf
@@ -406,11 +406,11 @@ POSTHOOK: query: Drop table tudf
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tudf
 POSTHOOK: Output: default@tudf
-PREHOOK: query: create table tmulti(url string NOT NULL ENABLE, userName string, numClicks int CHECK numClicks > 0, d date)
+PREHOOK: query: create table tmulti(url string NOT NULL ENABLE, userName string, numClicks int CHECK (numClicks > 0), d date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: create table tmulti(url string NOT NULL ENABLE, userName string, numClicks int CHECK numClicks > 0, d date)
+POSTHOOK: query: create table tmulti(url string NOT NULL ENABLE, userName string, numClicks int CHECK (numClicks > 0), d date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmulti
@@ -626,10 +626,10 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tmulti      	 
 Constraint Name:    	chk1                	 
-Column Name:null    	Check Value:(userName != NULL)	 
+Column Name:null    	Check Value:userName != NULL	 
 	 	 
 Constraint Name:    	chk2                	 
-Column Name:null    	Check Value:(numClicks <= 10000 AND userName != '')	 
+Column Name:null    	Check Value:numClicks <= 10000 AND userName != ''	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:numclicks	Check Value:numClicks > 0	 
@@ -729,11 +729,11 @@ POSTHOOK: query: Drop table tmulti
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmulti
 POSTHOOK: Output: default@tmulti
-PREHOOK: query: create table tcase(url string NOT NULL ENABLE, userName string, d date, numClicks int CHECK numclicks > 0)
+PREHOOK: query: create table tcase(url string NOT NULL ENABLE, userName string, d date, numClicks int CHECK (numclicks > 0))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tcase
-POSTHOOK: query: create table tcase(url string NOT NULL ENABLE, userName string, d date, numClicks int CHECK numclicks > 0)
+POSTHOOK: query: create table tcase(url string NOT NULL ENABLE, userName string, d date, numClicks int CHECK (numclicks > 0))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tcase
@@ -879,12 +879,12 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tcase
 POSTHOOK: Output: default@tcase
 PREHOOK: query: create table tcast(url string NOT NULL ENABLE, numClicks int,
-    price FLOAT CHECK cast(numClicks as FLOAT)*price > 10.00)
+    price FLOAT CHECK (cast(numClicks as FLOAT)*price > 10.00))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tcast
 POSTHOOK: query: create table tcast(url string NOT NULL ENABLE, numClicks int,
-    price FLOAT CHECK cast(numClicks as FLOAT)*price > 10.00)
+    price FLOAT CHECK (cast(numClicks as FLOAT)*price > 10.00))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tcast
@@ -1111,12 +1111,12 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tcast
 POSTHOOK: Output: default@tcast
 PREHOOK: query: create table texpr(i int DEFAULT 89, f float NOT NULL ENABLE, d decimal(4,1),
-    b boolean CHECK ((cast(d as float) + f) < cast(i as float) + (i*i)))
+    b boolean CHECK (((cast(d as float) + f) < cast(i as float) + (i*i))))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@texpr
 POSTHOOK: query: create table texpr(i int DEFAULT 89, f float NOT NULL ENABLE, d decimal(4,1),
-    b boolean CHECK ((cast(d as float) + f) < cast(i as float) + (i*i)))
+    b boolean CHECK (((cast(d as float) + f) < cast(i as float) + (i*i))))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@texpr
@@ -1269,14 +1269,14 @@ POSTHOOK: Input: default@texpr
 POSTHOOK: Output: default@texpr
 PREHOOK: query: create table acid_uami_n0(i int,
                  de decimal(5,2) constraint nn1 not null enforced,
-                 vc varchar(128) constraint ch2 CHECK de >= cast(i as decimal(5,2)) enforced)
+                 vc varchar(128) constraint ch2 CHECK (de >= cast(i as decimal(5,2))) enforced)
                  clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uami_n0
 POSTHOOK: query: create table acid_uami_n0(i int,
                  de decimal(5,2) constraint nn1 not null enforced,
-                 vc varchar(128) constraint ch2 CHECK de >= cast(i as decimal(5,2)) enforced)
+                 vc varchar(128) constraint ch2 CHECK (de >= cast(i as decimal(5,2))) enforced)
                  clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -2159,13 +2159,13 @@ POSTHOOK: query: DROP TABLE acid_uami_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid_uami_n0
 POSTHOOK: Output: default@acid_uami_n0
-PREHOOK: query: create table tmerge(key int CHECK key > 0 AND (key < 100 OR key = 5) enable, a1 string NOT NULL, value string)
+PREHOOK: query: create table tmerge(key int CHECK (key > 0 AND (key < 100 OR key = 5)) enable, a1 string NOT NULL, value string)
 clustered by (value) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmerge
-POSTHOOK: query: create table tmerge(key int CHECK key > 0 AND (key < 100 OR key = 5) enable, a1 string NOT NULL, value string)
+POSTHOOK: query: create table tmerge(key int CHECK (key > 0 AND (key < 100 OR key = 5)) enable, a1 string NOT NULL, value string)
 clustered by (value) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
 POSTHOOK: type: CREATETABLE
@@ -2902,13 +2902,13 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nonacid
 POSTHOOK: Output: default@nonacid
 PREHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE,
-    b bigint CONSTRAINT check1 CHECK b in(4,5) ENABLE)
+    b bigint CONSTRAINT check1 CHECK (b in(4,5)) ENABLE)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@numericDataType
 POSTHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE,
-    b bigint CONSTRAINT check1 CHECK b in(4,5) ENABLE)
+    b bigint CONSTRAINT check1 CHECK (b in(4,5)) ENABLE)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -3106,12 +3106,12 @@ POSTHOOK: query: DROP TABLE numericDataType
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@numericdatatype
 POSTHOOK: Output: default@numericdatatype
-PREHOOK: query: CREATE TABLE tcheck(a TINYINT, b bigint CONSTRAINT check1 CHECK b in(4,5) ENABLE)
+PREHOOK: query: CREATE TABLE tcheck(a TINYINT, b bigint CONSTRAINT check1 CHECK (b in(4,5)) ENABLE)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tcheck
-POSTHOOK: query: CREATE TABLE tcheck(a TINYINT, b bigint CONSTRAINT check1 CHECK b in(4,5) ENABLE)
+POSTHOOK: query: CREATE TABLE tcheck(a TINYINT, b bigint CONSTRAINT check1 CHECK (b in(4,5)) ENABLE)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -3341,12 +3341,12 @@ POSTHOOK: query: DROP TABLE tcheck
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tcheck
 POSTHOOK: Output: default@tcheck
-PREHOOK: query: create table part_mm(key int check key > 0 and key < 5000 enforced) partitioned by (key_mm int)
+PREHOOK: query: create table part_mm(key int check (key > 0 and key < 5000) enforced) partitioned by (key_mm int)
     stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_mm
-POSTHOOK: query: create table part_mm(key int check key > 0 and key < 5000 enforced) partitioned by (key_mm int)
+POSTHOOK: query: create table part_mm(key int check (key > 0 and key < 5000) enforced) partitioned by (key_mm int)
     stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -3481,11 +3481,11 @@ POSTHOOK: query: create table trely(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@trely
-PREHOOK: query: ALTER TABLE trely CHANGE i i int CHECK i>0 ENABLE NOVALIDATE RELY
+PREHOOK: query: ALTER TABLE trely CHANGE i i int CHECK (i>0) ENABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@trely
 PREHOOK: Output: default@trely
-POSTHOOK: query: ALTER TABLE trely CHANGE i i int CHECK i>0 ENABLE NOVALIDATE RELY
+POSTHOOK: query: ALTER TABLE trely CHANGE i i int CHECK (i>0) ENABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@trely
 POSTHOOK: Output: default@trely
@@ -3537,11 +3537,11 @@ POSTHOOK: query: DROP TABLE trely
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@trely
 POSTHOOK: Output: default@trely
-PREHOOK: query: create table tbl1_n1(a string, b int, CONSTRAINT check1 CHECK a != '' AND b > 4)
+PREHOOK: query: create table tbl1_n1(a string, b int, CONSTRAINT check1 CHECK (a != '' AND b > 4))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl1_n1
-POSTHOOK: query: create table tbl1_n1(a string, b int, CONSTRAINT check1 CHECK a != '' AND b > 4)
+POSTHOOK: query: create table tbl1_n1(a string, b int, CONSTRAINT check1 CHECK (a != '' AND b > 4))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl1_n1
@@ -3715,7 +3715,7 @@ Constraint Name:    	check1
 Column Name:null    	Check Value:a != '' AND b > 4	 
 	 	 
 Constraint Name:    	chk2                	 
-Column Name:null    	Check Value:(b < 100)	 
+Column Name:null    	Check Value:b < 100 	 
 	 	 
 PREHOOK: query: explain insert into tbl1_n1 values('a', 69)
 PREHOOK: type: QUERY
