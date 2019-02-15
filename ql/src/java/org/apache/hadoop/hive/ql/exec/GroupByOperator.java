@@ -466,10 +466,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     case DOUBLE:
       return javaSizePrimitiveType;
     case STRING:
-      keyPositionsSize.add(new Integer(pos));
+      keyPositionsSize.add(Integer.valueOf(pos));
       return javaObjectOverHead;
     case BINARY:
-      keyPositionsSize.add(new Integer(pos));
+      keyPositionsSize.add(Integer.valueOf(pos));
       return javaObjectOverHead;
     case TIMESTAMP:
     case TIMESTAMPLOCALTZ:

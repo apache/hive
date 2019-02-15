@@ -4165,6 +4165,8 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
       "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),
 
+    LLAP_PLUGIN_RPC_PORT("hive.llap.plugin.rpc.port", 0,
+      "Port to use for LLAP plugin rpc server"),
     LLAP_PLUGIN_RPC_NUM_HANDLERS("hive.llap.plugin.rpc.num.handlers", 1,
       "Number of RPC handlers for AM LLAP plugin endpoint."),
     LLAP_DAEMON_WORK_DIRS("hive.llap.daemon.work.dirs", "",
@@ -4338,6 +4340,8 @@ public class HiveConf extends Configuration {
       "Sleep duration (in milliseconds) to wait before retrying on error when obtaining a\n" +
       "connection to LLAP daemon from Tez AM.",
       "llap.task.communicator.connection.sleep-between-retries-millis"),
+    LLAP_TASK_UMBILICAL_SERVER_PORT("hive.llap.daemon.umbilical.port", 0,
+      "LLAP task umbilical server RPC port"),
     LLAP_DAEMON_WEB_PORT("hive.llap.daemon.web.port", 15002, "LLAP daemon web UI port.",
       "llap.daemon.service.port"),
     LLAP_DAEMON_WEB_SSL("hive.llap.daemon.web.ssl", false,

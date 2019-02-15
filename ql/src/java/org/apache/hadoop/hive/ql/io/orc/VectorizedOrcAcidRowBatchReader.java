@@ -390,7 +390,8 @@ public class VectorizedOrcAcidRowBatchReader
   private OrcRawRecordMerger.KeyInterval findMinMaxKeys(
       OrcSplit orcSplit, Configuration conf,
       Reader.Options deleteEventReaderOptions) throws IOException {
-    if(!HiveConf.getBoolVar(conf, ConfVars.FILTER_DELETE_EVENTS)) {
+    final boolean noDeleteDeltas = getDeleteDeltaDirsFromSplit(orcSplit).length == 0;
+    if(!HiveConf.getBoolVar(conf, ConfVars.FILTER_DELETE_EVENTS) || noDeleteDeltas) {
       LOG.debug("findMinMaxKeys() " + ConfVars.FILTER_DELETE_EVENTS + "=false");
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }

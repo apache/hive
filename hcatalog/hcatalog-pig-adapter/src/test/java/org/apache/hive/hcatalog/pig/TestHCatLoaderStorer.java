@@ -141,11 +141,11 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     // Ensure Pig can read data correctly.
     Iterator<Tuple> it = server.openIterator("data");
     Tuple t = it.next();
-    Assert.assertEquals(new Integer(Short.MIN_VALUE), t.get(0));
-    Assert.assertEquals(new Integer(Byte.MIN_VALUE), t.get(1));
+    Assert.assertEquals(Integer.valueOf(Short.MIN_VALUE), t.get(0));
+    Assert.assertEquals(Integer.valueOf(Byte.MIN_VALUE), t.get(1));
     t = it.next();
-    Assert.assertEquals(new Integer(Short.MAX_VALUE), t.get(0));
-    Assert.assertEquals(new Integer(Byte.MAX_VALUE), t.get(1));
+    Assert.assertEquals(Integer.valueOf(Short.MAX_VALUE), t.get(0));
+    Assert.assertEquals(Integer.valueOf(Byte.MAX_VALUE), t.get(1));
     Assert.assertFalse(it.hasNext());
 
     // Ensure Pig can write correctly to smallint/tinyint columns. This means values within the

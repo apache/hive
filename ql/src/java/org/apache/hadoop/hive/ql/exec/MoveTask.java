@@ -870,4 +870,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   public String getName() {
     return "MOVE";
   }
+
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
+  }
 }

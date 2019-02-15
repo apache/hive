@@ -12,6 +12,9 @@
   <artifactId>hive-standalone-metastore-server</artifactId>
   <name>Hive Metastore Server</name>
 
+  <properties>
+    <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -363,11 +366,6 @@
           </dependencies>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>${maven.checkstyle.plugin.version}</version>
-        </plugin>
-        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
@@ -428,15 +426,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
-          <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>com.github.os72</groupId>
