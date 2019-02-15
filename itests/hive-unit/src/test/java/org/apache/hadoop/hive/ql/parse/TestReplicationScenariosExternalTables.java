@@ -217,9 +217,10 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // Create base directory but use HDFS path without schema or authority details.
     // Hive should pick up the local cluster's HDFS schema/authority.
     externalTableBasePathWithClause();
-    List<String> loadWithClause = Collections.singletonList(
+    List<String> loadWithClause = Arrays.asList(
             "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + REPLICA_EXTERNAL_BASE + "'"
+                    + REPLICA_EXTERNAL_BASE + "'",
+            "'distcp.options.update'=''"
     );
 
     WarehouseInstance.Tuple bootstrapTuple = primary.run("use " + primaryDbName)
@@ -356,11 +357,32 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     WarehouseInstance.Tuple tuple = primary.dump("repl dump " + primaryDbName);
     replica.load(replicatedDbName, tuple.dumpLocation);
 
+    Path externalTableLocation =
+            new Path("/" + testName.getMethodName() + "/t1/");
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(externalTableLocation, new FsPermission("777"));
+
     tuple = primary.run("use " + primaryDbName)
-        .run("create external table t1 (place string) partitioned by (country string)")
+        .run("create external table t1 (place string) partitioned by (country string) row format "
+            + "delimited fields terminated by ',' location '" + externalTableLocation.toString()
+            + "'")
         .run("alter table t1 add partition(country='india')")
         .run("alter table t1 add partition(country='us')")
         .dump(primaryDbName, tuple.lastReplicationId);
+
+    assertExternalFileInfo(Collections.singletonList("t1"), new Path(tuple.dumpLocation, FILE_NAME));
+
+    // Add new data externally, to a partition, but under the partition level top directory
+    // Also, it is added after dumping the events but data should be seen at target after REPL LOAD.
+    Path partitionDir = new Path(externalTableLocation, "country=india");
+    try (FSDataOutputStream outputStream = fs.create(new Path(partitionDir, "file.txt"))) {
+      outputStream.write("pune\n".getBytes());
+      outputStream.write("mumbai\n".getBytes());
+    }
+
+    try (FSDataOutputStream outputStream = fs.create(new Path(partitionDir, "file1.txt"))) {
+      outputStream.write("bangalore\n".getBytes());
+    }
 
     List<String> loadWithClause = externalTableBasePathWithClause();
     replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
@@ -368,7 +390,29 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("show tables like 't1'")
         .verifyResult("t1")
         .run("show partitions t1")
-        .verifyResults(new String[] { "country=india", "country=us" });
+        .verifyResults(new String[] { "country=india", "country=us" })
+        .run("select place from t1 order by place")
+        .verifyResults(new String[] { "bangalore", "mumbai", "pune" });
+
+    // Delete one of the file and update another one.
+    fs.delete(new Path(partitionDir, "file.txt"), true);
+    fs.delete(new Path(partitionDir, "file1.txt"), true);
+    try (FSDataOutputStream outputStream = fs.create(new Path(partitionDir, "file1.txt"))) {
+      outputStream.write("chennai\n".getBytes());
+    }
+
+    // Repl load with zero events but external tables location info should present.
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    assertExternalFileInfo(Collections.singletonList("t1"), new Path(tuple.dumpLocation, FILE_NAME));
+
+    replica.load(replicatedDbName, tuple.dumpLocation, loadWithClause)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show partitions t1")
+            .verifyResults(new String[] { "country=india", "country=us" })
+            .run("select place from t1 order by place")
+            .verifyResults(new String[] { "chennai" });
 
     Hive hive = Hive.get(replica.getConf());
     Set<Partition> partitions =
@@ -388,7 +432,6 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     for (String path : paths) {
       assertTrue(replica.miniDFSCluster.getFileSystem().exists(new Path(path)));
     }
-
   }
 
   @Test
@@ -489,9 +532,10 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fileSystem.mkdirs(externalTableLocation);
 
     // this is required since the same filesystem is used in both source and target
-    return Collections.singletonList(
-        "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-            + externalTableLocation.toString() + "'"
+    return Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
+                    + externalTableLocation.toString() + "'",
+            "'distcp.options.pugpb'=''"
     );
   }
 
