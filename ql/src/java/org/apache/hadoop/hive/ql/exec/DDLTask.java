@@ -4712,6 +4712,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (existingTable != null){
         if (crtTbl.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())){
           crtTbl.setReplaceMode(true); // we replace existing table.
+          ReplicationSpec.setReplId(existingTable.getParameters(), tbl.getParameters());
         } else {
           LOG.debug("DDLTask: Create Table is skipped as table {} is newer than update",
                   crtTbl.getTableName());
