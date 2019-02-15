@@ -313,7 +313,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
     this.registry = new LlapRegistryService(true);
 
-    if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+    // disable web UI in test mode until a specific port was configured
+    if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)
+        && Integer.parseInt(ConfVars.LLAP_DAEMON_WEB_PORT.getDefaultValue()) == webPort) {
+      LOG.info("Web UI was disabled in test mode because hive.llap.daemon.web.port was not "
+               + "specified or has default value ({})", webPort);
       this.webServices = null;
     } else {
       this.webServices = new LlapWebServices(webPort, this, registry);
