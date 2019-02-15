@@ -32,7 +32,7 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestGenericUDTFGetSchema {
+public class TestGenericUDTFGetSQLSchema {
 
   private static SessionState sessionState;
 
@@ -85,9 +85,9 @@ public class TestGenericUDTFGetSchema {
 
   private void invokeUDTFAndTest(String query, String[] expected) throws HiveException {
 
-    GenericUDTFGetSchema genericUDTFGetSchema = new GenericUDTFGetSchema();
+    GenericUDTFGetSQLSchema genericUDTFGetSQLSchema = new GenericUDTFGetSQLSchema();
     List<String> actual = new ArrayList<>();
-    genericUDTFGetSchema.collector = input -> {
+    genericUDTFGetSQLSchema.collector = input -> {
       if (input != null) {
         Object[] udfOutput = (Object[]) input;
         actual.add(new String((byte[]) udfOutput[0]));
@@ -95,8 +95,8 @@ public class TestGenericUDTFGetSchema {
       }
     };
 
-    genericUDTFGetSchema.initialize(new ObjectInspector[]{javaStringObjectInspector});
-    genericUDTFGetSchema.process(new Object[]{query});
+    genericUDTFGetSQLSchema.initialize(new ObjectInspector[]{javaStringObjectInspector});
+    genericUDTFGetSQLSchema.process(new Object[]{query});
 
     assertEquals(expected.length, actual.size());
     assertTrue("Failed for query: " + query + ". Expected: " + Arrays.toString(expected)

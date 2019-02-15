@@ -43,16 +43,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * GenericUDTFGetSchema.
+ * GenericUDTFGetSQLSchema.
  */
-@Description(name = "get_schema", value = "_FUNC_(string) - "
+@Description(name = "get_sql_schema", value = "_FUNC_(string) - "
     + "Takes query as argument. Returns schema (column names and types) of the resultset " +
     " that would be generated when the query is executed. " +
-    "Can be invoked like: select get_schema(\"select * from some_table\")." +
+    "Can be invoked like: select get_sql_schema(\"select * from some_table\")." +
     "NOTE: This does not produce any output for DDL queries like show tables/databases/... and others.")
 @UDFType(deterministic = false)
-public class GenericUDTFGetSchema extends GenericUDTF {
-  private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFGetSchema.class);
+public class GenericUDTFGetSQLSchema extends GenericUDTF {
+  private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFGetSQLSchema.class);
 
   protected transient StringObjectInspector stringOI;
   protected transient JobConf jc;
@@ -85,20 +85,20 @@ public class GenericUDTFGetSchema extends GenericUDTF {
   public StructObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException {
 
-    LOG.debug("initializing GenericUDTFGetSchema");
+    LOG.debug("initializing GenericUDTFGetSQLSchema");
 
     if (SessionState.get() == null || SessionState.get().getConf() == null) {
-      throw new IllegalStateException("Cannot run get schema outside HS2");
+      throw new IllegalStateException("Cannot run GET_SQL_SCHEMA outside HS2");
     }
     LOG.debug("Initialized conf, jc and metastore connection");
 
     if (arguments.length != 1) {
       throw new UDFArgumentLengthException(
-          "The function GET_SCHEMA accepts 1 argument.");
+          "The function GET_SQL_SCHEMA accepts 1 argument.");
     } else if (!(arguments[0] instanceof StringObjectInspector)) {
       LOG.error("Got " + arguments[0].getTypeName() + " instead of string.");
       throw new UDFArgumentTypeException(0, "\""
-          + "string\" is expected at function GET_SCHEMA, " + "but \""
+          + "string\" is expected at function GET_SQL_SCHEMA, " + "but \""
           + arguments[0].getTypeName() + "\" is found");
     }
 
@@ -110,10 +110,14 @@ public class GenericUDTFGetSchema extends GenericUDTF {
     StructObjectInspector outputOI = ObjectInspectorFactory
         .getStandardStructObjectInspector(names, fieldOIs);
 
-    LOG.debug("done initializing GenericUDTFGetSchema");
+    LOG.debug("done initializing GenericUDTFGetSQLSchema");
     return outputOI;
   }
 
+  @Override
+  public String toString() {
+    return "get_sql_schema";
+  }
 
   @Override
   public void close() throws HiveException {
