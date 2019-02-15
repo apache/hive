@@ -10081,7 +10081,7 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(MNotificationLog.class, "eventTime < tooOld");
       query.declareParameters("java.lang.Integer tooOld");
 
-      int max_events = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CLEAN_MAX_EVENTS);
+      int max_events = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
       max_events = max_events > 0 ? max_events : Integer.MAX_VALUE;
       query.setRange(0, max_events);
 
