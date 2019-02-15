@@ -512,7 +512,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       tableNames.add(components[0]);
       assertTrue(components[1].length() > 0);
     }
-    assertTrue(expected.containsAll(tableNames));
+    assertTrue(tableNames.containsAll(expected));
     reader.close();
   }
 }
