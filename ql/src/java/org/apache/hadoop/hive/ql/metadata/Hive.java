@@ -2974,7 +2974,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             org.apache.hadoop.hive.metastore.api.Partition ptn =
                 getMSC().getPartition(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), p.getValues());
             if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn.getParameters())){
-              ReplicationSpec.setReplId(ptn.getParameters(), p.getParameters());
+              ReplicationSpec.copyLastReplId(ptn.getParameters(), p.getParameters());
               partsToAlter.add(p);
             } // else ptn already exists, but we do nothing with it.
           } catch (NoSuchObjectException nsoe){

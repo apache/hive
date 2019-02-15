@@ -420,7 +420,7 @@ public class ReplicationSpec {
     isMigratingToExternalTable = true;
   }
 
-  public static void setReplId(Map<String, String> srcParameter, Map<String, String> destParameter) {
+  public static void copyLastReplId(Map<String, String> srcParameter, Map<String, String> destParameter) {
     String lastReplId = srcParameter.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
     if (lastReplId != null) {
       destParameter.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastReplId);
