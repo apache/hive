@@ -35,9 +35,15 @@ POSTHOOK: Lineage: y.b SCRIPT []
 PREHOOK: query: explain vectorization expression
 select count(1) from x, y where a = b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@x
+PREHOOK: Input: default@y
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(1) from x, y where a = b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x
+POSTHOOK: Input: default@y
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

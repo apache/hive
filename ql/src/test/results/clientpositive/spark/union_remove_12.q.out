@@ -32,6 +32,8 @@ select a.key as key, cast(b.val as bigint) as `values`
 FROM inputTbl1_n21 a join inputTbl1_n21 b on a.key=b.key
 )c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n21
+PREHOOK: Output: default@outputtbl1_n29
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n29
 SELECT * FROM
@@ -42,6 +44,8 @@ select a.key as key, cast(b.val as bigint) as `values`
 FROM inputTbl1_n21 a join inputTbl1_n21 b on a.key=b.key
 )c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n21
+POSTHOOK: Output: default@outputtbl1_n29
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-1 depends on stages: Stage-7
@@ -67,7 +71,7 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string), val (type: string)
+                      expressions: key (type: string), UDFToLong(val) (type: bigint)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
@@ -124,7 +128,7 @@ STAGE PLANS:
                           1 Map 3
                         Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
-                          expressions: _col0 (type: string), UDFToLong(_col2) (type: bigint)
+                          expressions: _col0 (type: string), _col2 (type: bigint)
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator

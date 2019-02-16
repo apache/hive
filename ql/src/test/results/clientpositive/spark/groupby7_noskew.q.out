@@ -19,11 +19,17 @@ FROM SRC
 INSERT OVERWRITE TABLE DEST1_n101 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
 INSERT OVERWRITE TABLE DEST2_n28 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n101
+PREHOOK: Output: default@dest2_n28
 POSTHOOK: query: EXPLAIN
 FROM SRC
 INSERT OVERWRITE TABLE DEST1_n101 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
 INSERT OVERWRITE TABLE DEST2_n28 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n101
+POSTHOOK: Output: default@dest2_n28
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -64,7 +70,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), UDFToString(_col1) (type: string)
+                  expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -84,7 +90,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: UDFToInteger(_col0) (type: int), UDFToString(_col1) (type: string)
+                  expressions: UDFToInteger(_col0) (type: int), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

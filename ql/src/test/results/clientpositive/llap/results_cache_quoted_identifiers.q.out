@@ -31,9 +31,13 @@ POSTHOOK: Lineage: quoted1.int EXPRESSION [(src)src.FieldSchema(name:key, type:s
 PREHOOK: query: explain
 select max(`_c1`), max(`int`), max(`col 3`), max(`col``4`) from quoted1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@quoted1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select max(`_c1`), max(`int`), max(`col 3`), max(`col``4`) from quoted1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@quoted1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -101,9 +105,11 @@ test.comment="Cache should be used for this query"
 PREHOOK: query: explain
 select max(`_c1`), max(`int`), max(`col 3`), max(`col``4`) from quoted1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@quoted1
 POSTHOOK: query: explain
 select max(`_c1`), max(`int`), max(`col 3`), max(`col``4`) from quoted1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@quoted1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

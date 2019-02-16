@@ -79,7 +79,7 @@ public class TestSessionManagerMetrics {
     conf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
     MetricsFactory.init(conf);
 
-    sm = new SessionManager(null);
+    sm = new SessionManager(null, true);
     sm.init(conf);
 
     metrics = (CodahaleMetrics) MetricsFactory.getInstance();
@@ -280,6 +280,7 @@ public class TestSessionManagerMetrics {
       @Override
       public void run() {
         try {
+          Hive.set(session.getSessionHive());
           OperationHandle handle = session.getTables("catalog", "schema", "table", null);
           session.closeOperation(handle);
         } catch (Exception e) {
@@ -334,6 +335,7 @@ public class TestSessionManagerMetrics {
       @Override
       public void run() {
         try {
+          Hive.set(session.getSessionHive());
           OperationHandle handle = session.getTables("catalog", "schema", "table", null);
           session.closeOperation(handle);
         } catch (Exception e) {

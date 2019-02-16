@@ -1,0 +1,37 @@
+PREHOOK: query: explain create table if not exists authorization_explain (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_explain
+POSTHOOK: query: explain create table if not exists authorization_explain (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Create Table Operator:
+        Create Table
+          columns: key int, value string
+          if not exists: true
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: default.authorization_explain
+
+PREHOOK: query: create table if not exists authorization_explain (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_explain
+POSTHOOK: query: create table if not exists authorization_explain (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_explain
+PREHOOK: query: revoke Select on table authorization_explain from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@authorization_explain
+POSTHOOK: query: revoke Select on table authorization_explain from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@authorization_explain
+FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation QUERY [[SELECT] on Object [type=TABLE_OR_VIEW, name=default.authorization_explain]]

@@ -56,8 +56,6 @@ public class CheckConstraint implements Serializable {
   public CheckConstraint() {}
 
   public CheckConstraint(List<SQLCheckConstraint> checkConstraintsList) {
-    this.tableName = tableName;
-    this.databaseName = databaseName;
     checkConstraints = new TreeMap<String, List<CheckConstraintCol>>();
     checkExpressionList = new ArrayList<>();
     if (checkConstraintsList == null) {

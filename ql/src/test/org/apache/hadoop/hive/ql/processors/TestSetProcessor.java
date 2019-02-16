@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -55,9 +55,9 @@ public class TestSetProcessor {
   }
 
   @Before
-  public void setupTest() {
+  public void setupTest() throws Exception {
     baos = new ByteArrayOutputStream();
-    state.out = new PrintStream(baos);
+    state.out = new SessionStream(baos);
     processor = new SetProcessor();
   }
 

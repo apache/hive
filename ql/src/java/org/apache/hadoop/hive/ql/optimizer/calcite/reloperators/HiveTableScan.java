@@ -126,6 +126,16 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
         newRowtype, this.useQBIdInDigest, this.insideView);
   }
 
+  /**
+   * Copy TableScan operator with a new Row Schema. The new Row Schema can only
+   * be a subset of this TS schema. Copies underlying RelOptHiveTable object
+   * too.
+   */
+  public HiveTableScan copyIncludingTable(RelDataType newRowtype) {
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype), this.tblAlias, this.concatQbIDAlias,
+        newRowtype, this.useQBIdInDigest, this.insideView);
+  }
+
   @Override public RelWriter explainTerms(RelWriter pw) {
     if (this.useQBIdInDigest) {
       // TODO: Only the qualified name should be left here
@@ -255,9 +265,15 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
 
   // We need to include isInsideView inside digest to differentiate direct
   // tables and tables inside view. Otherwise, Calcite will treat them as the same.
+  // Also include partition list key to trigger cost evaluation even if an
+  // expression was already generated.
   public String computeDigest() {
-    String digest = super.computeDigest();
-    return digest + "[" + this.isInsideView() + "]";
+    String digest = super.computeDigest() + "[" + this.isInsideView() + "]";
+    String partitionListKey = ((RelOptHiveTable) table).getPartitionListKey();
+    if (partitionListKey != null) {
+      return digest + "[" + partitionListKey + "]";
+    }
+    return digest;
   }
 
 }

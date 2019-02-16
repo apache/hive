@@ -35,9 +35,13 @@ POSTHOOK: Output: default@acid_dot
 PREHOOK: query: explain vectorization detail
 select count(*) from acid_dot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_dot
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from acid_dot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_dot
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -132,6 +136,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
 #### A masked pattern was here ####
 12288
+PREHOOK: query: select count(*) from acid_dot where cint < -1070551679
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_dot
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid_dot where cint < -1070551679
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_dot
+#### A masked pattern was here ####
+8
 PREHOOK: query: delete from acid_dot where cint < -1070551679
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot
@@ -148,5 +161,5 @@ POSTHOOK: query: select count(*) from acid_dot
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
 #### A masked pattern was here ####
-12192
+12280
 #### A masked pattern was here ####

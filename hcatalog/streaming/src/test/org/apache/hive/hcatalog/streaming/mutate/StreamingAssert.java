@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -32,7 +34,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.AcidRecordReader;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -72,6 +76,7 @@ public class StreamingAssert {
   private IMetaStoreClient metaStoreClient;
   private Directory dir;
   private ValidWriteIdList writeIds;
+  private ValidTxnList validTxnList;
   private List<AcidUtils.ParsedDelta> currentDeltas;
   private long min;
   private long max;
@@ -83,7 +88,13 @@ public class StreamingAssert {
     this.table = table;
     this.partition = partition;
 
-    writeIds = metaStoreClient.getValidWriteIds(AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
+
+    validTxnList = metaStoreClient.getValidTxns();
+    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+    List<TableValidWriteIds> v = metaStoreClient.getValidWriteIds(Collections
+        .singletonList(TableName.getDbTable(table.getDbName(), table.getTableName())), validTxnList.writeToString());
+    writeIds = TxnCommonUtils.createValidReaderWriteIdList(v.get(0));
+
     partitionLocation = getPartitionLocation();
     dir = AcidUtils.getAcidState(partitionLocation, conf, writeIds);
     assertEquals(0, dir.getObsolete().size());
@@ -146,6 +157,7 @@ public class StreamingAssert {
     AcidUtils.setAcidOperationalProperties(job, true, null);
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIds.toString());
+    job.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     InputSplit[] splits = inputFormat.getSplits(job, 1);
     assertEquals(numSplitsExpected, splits.length);
 

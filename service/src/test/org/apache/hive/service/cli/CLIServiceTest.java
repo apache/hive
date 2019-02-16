@@ -240,6 +240,7 @@ public abstract class CLIServiceTest {
      * to give a runtime time error.
      * Also check that the sqlState and errorCode should be set
      */
+    // TODO: this is brittle.. anything that touches this path during compile will break this test
     queryString = "CREATE TABLE NON_EXISTING_TAB (ID STRING) location 'invalid://localhost:10000/a/b/c'";
     opStatus = runAsyncAndWait(sessionHandle, queryString, confOverlay, OperationState.ERROR, longPollingTimeout);
     // sqlState, errorCode should be set
@@ -535,7 +536,7 @@ public abstract class CLIServiceTest {
     long longPollingTimeDelta;
     OperationStatus opStatus = null;
     OperationState state = null;
-    int count = 0;    
+    int count = 0;
     long start = System.currentTimeMillis();
     while (true) {
       // Break if iteration times out

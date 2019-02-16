@@ -156,14 +156,10 @@ default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
-PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
-POSTHOOK: type: DROPDATABASE
-PREHOOK: query: CREATE DATABASE SYS
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:SYS
-POSTHOOK: query: CREATE DATABASE SYS
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:SYS
 PREHOOK: query: USE SYS
@@ -1932,35 +1928,21 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PART_COL_STATS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `VERSION` (
-  `VER_ID` BIGINT,
-  `SCHEMA_VERSION` string,
-  `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
-)
-PREHOOK: type: CREATETABLE
+PREHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '4.0.0' AS `SCHEMA_VERSION`,
+  'Hive release version 4.0.0' AS `VERSION_COMMENT`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: SYS@VERSION
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `VERSION` (
-  `VER_ID` BIGINT,
-  `SCHEMA_VERSION` string,
-  `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
-)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '4.0.0' AS `SCHEMA_VERSION`,
+  'Hive release version 4.0.0' AS `VERSION_COMMENT`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: SYS@VERSION
 POSTHOOK: Output: database:sys
-PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: sys@version
-POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: sys@version
-POSTHOOK: Lineage: version.schema_version SCRIPT []
-POSTHOOK: Lineage: version.ver_id SCRIPT []
-POSTHOOK: Lineage: version.version_comment SCRIPT []
+POSTHOOK: Lineage: VERSION.schema_version SIMPLE []
+POSTHOOK: Lineage: VERSION.ver_id SIMPLE []
+POSTHOOK: Lineage: VERSION.version_comment SIMPLE []
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
@@ -2143,7 +2125,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@KEY_CONSTRAINTS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE VIEW `TABLE_STATS_VIEW` AS
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
 SELECT
   `TBL_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2157,7 +2139,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@table_params
 PREHOOK: Output: SYS@TABLE_STATS_VIEW
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE VIEW `TABLE_STATS_VIEW` AS
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
 SELECT
   `TBL_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2178,7 +2160,7 @@ POSTHOOK: Lineage: TABLE_STATS_VIEW.raw_data_size EXPRESSION [(table_params)tabl
 POSTHOOK: Lineage: TABLE_STATS_VIEW.tbl_id SIMPLE [(table_params)table_params.FieldSchema(name:tbl_id, type:bigint, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_STATS_VIEW.total_size EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_STATS_VIEW.transient_last_ddl_time EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW `PARTITION_STATS_VIEW` AS
+PREHOOK: query: CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
 SELECT
   `PART_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2192,7 +2174,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@partition_params
 PREHOOK: Output: SYS@PARTITION_STATS_VIEW
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE VIEW `PARTITION_STATS_VIEW` AS
+POSTHOOK: query: CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
 SELECT
   `PART_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2215,6 +2197,7 @@ POSTHOOK: Lineage: PARTITION_STATS_VIEW.total_size EXPRESSION [(partition_params
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.transient_last_ddl_time EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
+  `NS` string,
   `STATUS` string,
   `QUERY_PARALLELISM` int,
   `DEFAULT_POOL_PATH` string
@@ -2225,6 +2208,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"STATUS\",
   \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
   \"WM_POOL\".\"PATH\"
@@ -2236,6 +2220,7 @@ PREHOOK: Output: SYS@WM_RESOURCEPLANS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
+  `NS` string,
   `STATUS` string,
   `QUERY_PARALLELISM` int,
   `DEFAULT_POOL_PATH` string
@@ -2246,6 +2231,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"STATUS\",
   \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
   \"WM_POOL\".\"PATH\"
@@ -2257,6 +2243,7 @@ POSTHOOK: Output: SYS@WM_RESOURCEPLANS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `NAME` string,
   `TRIGGER_EXPRESSION` string,
   `ACTION_EXPRESSION` string
@@ -2267,6 +2254,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   r.\"NAME\" AS RP_NAME,
+  case when r.\"NS\" is null then 'default' else r.\"NS\" end,
   t.\"NAME\" AS NAME,
   \"TRIGGER_EXPRESSION\",
   \"ACTION_EXPRESSION\"
@@ -2282,6 +2270,7 @@ PREHOOK: Output: SYS@WM_TRIGGERS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `NAME` string,
   `TRIGGER_EXPRESSION` string,
   `ACTION_EXPRESSION` string
@@ -2292,6 +2281,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   r.\"NAME\" AS RP_NAME,
+  case when r.\"NS\" is null then 'default' else r.\"NS\" end,
   t.\"NAME\" AS NAME,
   \"TRIGGER_EXPRESSION\",
   \"ACTION_EXPRESSION\"
@@ -2307,6 +2297,7 @@ POSTHOOK: Output: SYS@WM_TRIGGERS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
   `RP_NAME` string,
+  `NS` string,
   `PATH` string,
   `ALLOC_FRACTION` double,
   `QUERY_PARALLELISM` int,
@@ -2318,6 +2309,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\",
   \"WM_POOL\".\"ALLOC_FRACTION\",
   \"WM_POOL\".\"QUERY_PARALLELISM\",
@@ -2334,6 +2326,7 @@ PREHOOK: Output: SYS@WM_POOLS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS` (
   `RP_NAME` string,
+  `NS` string,
   `PATH` string,
   `ALLOC_FRACTION` double,
   `QUERY_PARALLELISM` int,
@@ -2345,6 +2338,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\",
   \"WM_POOL\".\"ALLOC_FRACTION\",
   \"WM_POOL\".\"QUERY_PARALLELISM\",
@@ -2361,6 +2355,7 @@ POSTHOOK: Output: SYS@WM_POOLS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `POOL_PATH` string,
   `TRIGGER_NAME` string
 )
@@ -2370,6 +2365,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\" AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_POOL_TO_TRIGGER\"
@@ -2379,6 +2375,7 @@ FROM \"WM_POOL_TO_TRIGGER\"
 UNION
 SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   '<unmanaged queries>' AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_TRIGGER\"
@@ -2391,6 +2388,7 @@ PREHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
   `RP_NAME` string,
+  `NS` string,
   `POOL_PATH` string,
   `TRIGGER_NAME` string
 )
@@ -2400,6 +2398,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"WM_POOL\".\"PATH\" AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_POOL_TO_TRIGGER\"
@@ -2409,6 +2408,7 @@ FROM \"WM_POOL_TO_TRIGGER\"
 UNION
 SELECT
   \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   '<unmanaged queries>' AS POOL_PATH,
   \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
 FROM \"WM_TRIGGER\"
@@ -2421,6 +2421,7 @@ POSTHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
   `RP_NAME` string,
+  `NS` string,
   `ENTITY_TYPE` string,
   `ENTITY_NAME` string,
   `POOL_PATH` string,
@@ -2432,6 +2433,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"ENTITY_TYPE\",
   \"ENTITY_NAME\",
   case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
@@ -2446,6 +2448,7 @@ PREHOOK: Output: SYS@WM_MAPPINGS
 PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `WM_MAPPINGS` (
   `RP_NAME` string,
+  `NS` string,
   `ENTITY_TYPE` string,
   `ENTITY_NAME` string,
   `POOL_PATH` string,
@@ -2457,6 +2460,7 @@ TBLPROPERTIES (
 "hive.sql.query" =
 "SELECT
   \"WM_RESOURCEPLAN\".\"NAME\",
+  case when \"WM_RESOURCEPLAN\".\"NS\" is null then 'default' else \"WM_RESOURCEPLAN\".\"NS\" end AS NS,
   \"ENTITY_TYPE\",
   \"ENTITY_NAME\",
   case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
@@ -2469,14 +2473,10 @@ LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_I
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
-PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
-PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
-POSTHOOK: type: DROPDATABASE
-PREHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
-POSTHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:INFORMATION_SCHEMA
 PREHOOK: query: USE INFORMATION_SCHEMA
@@ -2485,7 +2485,7 @@ PREHOOK: Input: database:information_schema
 POSTHOOK: query: USE INFORMATION_SCHEMA
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:information_schema
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
+PREHOOK: query: CREATE OR REPLACE VIEW `SCHEMATA`
 (
   `CATALOG_NAME`,
   `SCHEMA_NAME`,
@@ -2504,11 +2504,10 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND current_authorizer() = P.`AUTHORIZER`
@@ -2518,7 +2517,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
+POSTHOOK: query: CREATE OR REPLACE VIEW `SCHEMATA`
 (
   `CATALOG_NAME`,
   `SCHEMA_NAME`,
@@ -2537,11 +2536,10 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND current_authorizer() = P.`AUTHORIZER`
@@ -2558,7 +2556,7 @@ POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
 POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 #### A masked pattern was here ####
 POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLES`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2587,12 +2585,12 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
@@ -2600,7 +2598,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@TABLES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLES`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2629,12 +2627,12 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
@@ -2654,7 +2652,7 @@ POSTHOOK: Lineage: TABLES.table_type EXPRESSION [(tbls)t.FieldSchema(name:view_o
 POSTHOOK: Lineage: TABLES.user_defined_type_catalog EXPRESSION []
 POSTHOOK: Lineage: TABLES.user_defined_type_name EXPRESSION []
 POSTHOOK: Lineage: TABLES.user_defined_type_schema EXPRESSION []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -2675,25 +2673,22 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer()
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer())
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@TABLE_PRIVILEGES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -2714,18 +2709,15 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer()
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer())
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
@@ -2740,7 +2732,7 @@ POSTHOOK: Lineage: TABLE_PRIVILEGES.table_catalog SIMPLE []
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.with_hierarchy SIMPLE []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
+PREHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2879,21 +2871,16 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
@@ -2902,7 +2889,7 @@ PREHOOK: Input: sys@tbl_col_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
+POSTHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -3041,21 +3028,16 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
@@ -3111,7 +3093,7 @@ POSTHOOK: Lineage: COLUMNS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, ty
 POSTHOOK: Lineage: COLUMNS.udt_catalog EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.udt_name EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.udt_schema EXPRESSION []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
+PREHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -3132,20 +3114,16 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer())
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer()
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
@@ -3154,7 +3132,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -3175,20 +3153,16 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer())
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer()
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
@@ -3205,7 +3179,7 @@ POSTHOOK: Lineage: COLUMN_PRIVILEGES.privilege_type SIMPLE [(tbl_col_privs)p.Fie
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_catalog SIMPLE []
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
+PREHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -3230,14 +3204,11 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
@@ -3247,7 +3218,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@VIEWS
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
+POSTHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -3272,14 +3243,11 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())

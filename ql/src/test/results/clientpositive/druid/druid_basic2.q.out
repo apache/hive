@@ -236,7 +236,8 @@ STAGE PLANS:
                       tag: 0
                       value expressions: _col0 (type: string)
                       auto parallelism: true
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -325,7 +326,8 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     tag: 1
                     auto parallelism: true
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -396,6 +398,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_table_1_n2 [druid_table_1_n2]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Merge Join Operator
@@ -501,7 +504,8 @@ STAGE PLANS:
                       tag: 0
                       value expressions: _col0 (type: string)
                       auto parallelism: false
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -588,7 +592,8 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     tag: 1
                     auto parallelism: false
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -659,6 +664,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_table_1_n2 [druid_table_1_n2]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Merge Join Operator
@@ -730,7 +736,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames robot,floor_day,$f3,$f4,(tok_function tok_int (tok_table_or_col robot))
             druid.fieldTypes string,timestamp with local time zone,float,double,int
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"},{"type":"extraction","dimension":"__time","outputName":"floor_day","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":{"type":"period","period":"P1D","timeZone":"US/Pacific"},"timeZone":"US/Pacific","locale":"und"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"(tok_function tok_int (tok_table_or_col robot))","direction":"ascending","dimensionOrder":"numeric"},{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"(tok_function tok_int (tok_table_or_col robot))","expression":"CAST(\"robot\", 'LONG')"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"default","dimension":"language","outputName":"language","outputType":"STRING"},{"type":"extraction","dimension":"__time","outputName":"floor_day","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":{"type":"period","period":"P1D","timeZone":"US/Pacific"},"timeZone":"UTC","locale":"und"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"(tok_function tok_int (tok_table_or_col robot))","direction":"ascending","dimensionOrder":"numeric"},{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"delta"}],"postAggregations":[{"type":"expression","name":"(tok_function tok_int (tok_table_or_col robot))","expression":"CAST(\"robot\", 'LONG')"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           GatherStats: false
           Select Operator
@@ -795,7 +801,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames robot,floor_day
             druid.fieldTypes string,timestamp with local time zone
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"extraction","dimension":"__time","outputName":"floor_day","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":{"type":"period","period":"P1D","timeZone":"US/Pacific"},"timeZone":"US/Pacific","locale":"und"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[],"intervals":["1999-11-01T08:00:00.000Z/1999-11-10T08:00:00.001Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"extraction","dimension":"__time","outputName":"floor_day","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":{"type":"period","period":"P1D","timeZone":"US/Pacific"},"timeZone":"UTC","locale":"und"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[],"intervals":["1999-11-01T08:00:00.000Z/1999-11-10T08:00:00.001Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: robot (type: string), floor_day (type: timestamp with local time zone)
@@ -831,7 +837,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames extract,robot
             druid.fieldTypes timestamp with local time zone,string
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"US/Pacific"}},{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[],"intervals":["1999-11-01T08:00:00.000Z/1999-11-10T08:00:00.001Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"UTC"}},{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[],"intervals":["1999-11-01T08:00:00.000Z/1999-11-10T08:00:00.001Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: robot (type: string), extract (type: timestamp with local time zone)
@@ -867,7 +873,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames robot,floor_day
             druid.fieldTypes string,timestamp with local time zone
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"extraction","dimension":"__time","outputName":"floor_day","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":{"type":"period","period":"P1D","timeZone":"US/Pacific"},"timeZone":"US/Pacific","locale":"und"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[],"intervals":["1999-11-01T08:00:00.000Z/1999-11-10T08:00:00.001Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot","outputName":"robot","outputType":"STRING"},{"type":"extraction","dimension":"__time","outputName":"floor_day","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":{"type":"period","period":"P1D","timeZone":"US/Pacific"},"timeZone":"UTC","locale":"und"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[],"intervals":["1999-11-01T08:00:00.000Z/1999-11-10T08:00:00.001Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: robot (type: string), floor_day (type: timestamp with local time zone)
@@ -926,6 +932,8 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col3 (type: float), _col4 (type: double)
                         auto parallelism: true
+            Execution mode: llap
+            LLAP IO: no inputs
             Path -> Alias:
               hdfs://### HDFS PATH ### [druid_table_1_n2]
             Path -> Partition:
@@ -988,6 +996,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /druid_table_1_n2 [druid_table_1_n2]
         Reducer 2 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1011,6 +1020,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: string), _col1 (type: timestamp with local time zone), _col3 (type: double)
                     auto parallelism: false
         Reducer 3 
+            Execution mode: llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

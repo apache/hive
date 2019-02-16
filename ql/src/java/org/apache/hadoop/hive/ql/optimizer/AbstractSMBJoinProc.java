@@ -515,6 +515,9 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
       joinContext.getBigTablePosition(),
       false,
       false);
+    if (mapJoinOp == null) {
+      return null;
+    }
     // Remove the join operator from the query join context
     // Data structures coming from QBJoinTree
     mapJoinOp.getConf().setQBJoinTreeProps(joinOp.getConf());

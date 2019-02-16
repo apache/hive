@@ -540,11 +540,8 @@ import org.slf4j.LoggerFactory;
     if (isSetPassword()) {
       if (!first) sb.append(", ");
       sb.append("password:");
-      if (this.password == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.password);
-      }
+      // Password found and replaced by maven-replacer-plugin in hive-service-rpc.pom. Please update if this file changes.
+      sb.append("-");
       first = false;
     }
     if (isSetConfiguration()) {

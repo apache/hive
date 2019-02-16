@@ -7,6 +7,8 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * 
 from src b 
@@ -16,6 +18,8 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -212,6 +216,8 @@ where exists
   where b.VALUE = a.VALUE
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from src b
@@ -221,6 +227,8 @@ where exists
   where b.VALUE = a.VALUE
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -310,6 +318,8 @@ where exists
   where a.value > 'val_9'
   )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select *
 from src b
@@ -319,6 +329,8 @@ where exists
   where a.value > 'val_9'
   )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -954,8 +966,14 @@ POSTHOOK: Lineage: t_n12.i SCRIPT []
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t_n12 where exists (select count(*) from src where 1=2)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@t_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t_n12 where exists (select count(*) from src where 1=2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1100,9 +1118,13 @@ POSTHOOK: Input: default@tx1_n0
 PREHOOK: query: explain select count(*) as result,3 as expected from tx1_n0 u
     where exists (select * from tx1_n0 v where u.a=v.a and u.b <> v.b)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) as result,3 as expected from tx1_n0 u
     where exists (select * from tx1_n0 v where u.a=v.a and u.b <> v.b)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1254,8 +1276,14 @@ POSTHOOK: Lineage: t2_n41.i SCRIPT []
 POSTHOOK: Lineage: t2_n41.j SCRIPT []
 PREHOOK: query: explain select * from t1_n68 where t1_n68.i in (select t2_n41.i from t2_n41 where t2_n41.j <> t1_n68.j)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n68
+PREHOOK: Input: default@t2_n41
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n68 where t1_n68.i in (select t2_n41.i from t2_n41 where t2_n41.j <> t1_n68.j)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n68
+POSTHOOK: Input: default@t2_n41
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

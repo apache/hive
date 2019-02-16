@@ -1,7 +1,11 @@
 PREHOOK: query: EXPLAIN SELECT trunc(1234567891.1234567891,4), trunc(1234567891.1234567891,-4), trunc(1234567891.1234567891,0), trunc(1234567891.1234567891) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT trunc(1234567891.1234567891,4), trunc(1234567891.1234567891,-4), trunc(1234567891.1234567891,0), trunc(1234567891.1234567891) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -57,8 +61,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@sampletable
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -69,11 +77,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable
-          Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable
@@ -112,8 +120,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@sampletable1
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -124,11 +136,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable1
-          Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: float)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable1
@@ -167,8 +179,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@sampletable2
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -179,11 +195,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable2
-          Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable2
@@ -222,8 +238,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@sampletable3
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -234,11 +254,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable3
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable3
@@ -277,8 +297,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@sampletable4
 PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable4
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -289,11 +313,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable4
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable4

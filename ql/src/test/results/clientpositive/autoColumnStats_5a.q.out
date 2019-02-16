@@ -9,9 +9,13 @@ POSTHOOK: Output: default@partitioned1
 PREHOOK: query: explain extended 
 insert into table partitioned1 partition(part=1) values(1, 'original')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1@part=1
 POSTHOOK: query: explain extended 
 insert into table partitioned1 partition(part=1) values(1, 'original')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1@part=1
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -430,9 +434,13 @@ Storage Desc Params:
 PREHOOK: query: explain extended 
 insert into table partitioned1 partition(part=1) values(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1@part=1
 POSTHOOK: query: explain extended 
 insert into table partitioned1 partition(part=1) values(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1@part=1
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -812,8 +820,12 @@ POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SCRIPT []
 col1	col2
 PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1@part=1
 POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1@part=1
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

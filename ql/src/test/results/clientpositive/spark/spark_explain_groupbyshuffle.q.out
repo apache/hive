@@ -1,7 +1,11 @@
 PREHOOK: query: explain select key, count(value) from src group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select key, count(value) from src group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -60,8 +64,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select key, count(value) from src group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select key, count(value) from src group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

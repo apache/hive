@@ -88,6 +88,8 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
@@ -110,6 +112,8 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -124,9 +128,9 @@ STAGE PLANS:
             Statistics: Num rows: 2098 Data size: 16744 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((t = 10Y) and (si = 11S)) or ((t = 11Y) and (si = 12S)) or ((t = 12Y) and (si = 13S)) or ((t = 13Y) and (si = 14S)) or ((t = 14Y) and (si = 15S)) or ((t = 15Y) and (si = 16S)) or ((t = 16Y) and (si = 17S)) or ((t = 17Y) and (si = 18S)) or ((t = 1Y) and (si = 2S)) or ((t = 27Y) and (si = 28S)) or ((t = 2Y) and (si = 3S)) or ((t = 37Y) and (si = 38S)) or ((t = 3Y) and (si = 4S)) or ((t = 47Y) and (si = 48S)) or ((t = 4Y) and (si = 5S)) or ((t = 52Y) and (si = 53S)) or ((t = 5Y) and (si = 6S)) or ((t = 6Y) and (si = 7S)) or ((t = 7Y) and (si = 8S)) or ((t = 9Y) and (si = 10S))) (type: boolean)
-              Statistics: Num rows: 160 Data size: 1280 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 160 Data size: 1280 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -179,6 +183,8 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
@@ -201,6 +207,8 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

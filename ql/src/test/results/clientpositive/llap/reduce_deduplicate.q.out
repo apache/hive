@@ -10,10 +10,14 @@ PREHOOK: query: explain extended
 insert overwrite table bucket5_1
 select * from src cluster by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucket5_1
 POSTHOOK: query: explain extended
 insert overwrite table bucket5_1
 select * from src cluster by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucket5_1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -289,6 +293,8 @@ select s2.* from
 )s
 )s2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_tbl_2
+PREHOOK: Output: default@complex_tbl_1@ds=2010-03-29
 POSTHOOK: query: explain extended
 insert overwrite table complex_tbl_1 partition (ds='2010-03-29')
 select s2.* from
@@ -305,6 +311,8 @@ select s2.* from
 )s
 )s2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_tbl_2
+POSTHOOK: Output: default@complex_tbl_1@ds=2010-03-29
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

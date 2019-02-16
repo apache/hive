@@ -10,10 +10,20 @@ PREHOOK: query: explain
 FROM src JOIN srcpart ON src.key = srcpart.key AND srcpart.ds = '2008-04-08' and src.key > 100
 INSERT OVERWRITE TABLE dest1_n83 SELECT src.key, srcpart.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1_n83
 POSTHOOK: query: explain
 FROM src JOIN srcpart ON src.key = srcpart.key AND srcpart.ds = '2008-04-08' and src.key > 100
 INSERT OVERWRITE TABLE dest1_n83 SELECT src.key, srcpart.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1_n83
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -129,4 +139,4 @@ POSTHOOK: query: SELECT sum(hash(dest1_n83.c1,dest1_n83.c2)) FROM dest1_n83
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n83
 #### A masked pattern was here ####
-404554174174
+404540072956

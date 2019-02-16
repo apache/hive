@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -132,7 +133,8 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator
     int[] smallTableIndices;
     int smallTableIndicesSize;
     List<ExprNodeDesc> smallTableExprs = desc.getExprs().get(posSingleVectorMapJoinSmallTable);
-    if (desc.getValueIndices() != null && desc.getValueIndices().get(posSingleVectorMapJoinSmallTable) != null) {
+    if (desc.getValueIndices() != null &&
+        desc.getValueIndices().get(posSingleVectorMapJoinSmallTable) != null) {
       smallTableIndices = desc.getValueIndices().get(posSingleVectorMapJoinSmallTable);
       smallTableIndicesSize = smallTableIndices.length;
     } else {
@@ -141,7 +143,8 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator
     }
 
     List<Integer> smallTableRetainList = desc.getRetainList().get(posSingleVectorMapJoinSmallTable);
-    final int smallTableRetainSize = smallTableRetainList.size();
+    final int smallTableRetainSize =
+        (smallTableRetainList != null ? smallTableRetainList.size() : 0);
 
     int smallTableResultSize = 0;
     if (smallTableIndicesSize > 0) {
@@ -216,6 +219,7 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator
     return outputTypeInfos;
   }
 
+
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -234,7 +238,6 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator
    */
   @Override
   protected void internalForward(Object row, ObjectInspector outputOI) throws HiveException {
-    Object[] values = (Object[]) row;
     VectorAssignRow va = outputVectorAssignRowMap.get(outputOI);
     if (va == null) {
       va = new VectorAssignRow();
@@ -242,7 +245,11 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator
       outputVectorAssignRowMap.put(outputOI, va);
     }
 
-    va.assignRow(outputBatch, outputBatch.size, values);
+    if (row instanceof ArrayList) {
+      va.assignRow(outputBatch, outputBatch.size, (ArrayList<Object>) row);
+    } else {
+      va.assignRow(outputBatch, outputBatch.size, (Object[]) row);
+    }
 
     ++outputBatch.size;
     if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
@@ -251,7 +258,7 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator
   }
 
   private void flushOutput() throws HiveException {
-    forward(outputBatch, null, true);
+    vectorForward(outputBatch);
     outputBatch.reset();
   }
 
@@ -263,8 +270,10 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator
         tableContainer.dumpMetrics();
       }
     }
-    if (!aborted && 0 < outputBatch.size) {
-      flushOutput();
+    if (!aborted) {
+      if (outputBatch.size > 0) {
+        flushOutput();
+      }
     }
   }
 

@@ -35,9 +35,15 @@ POSTHOOK: Lineage: orc_table_2a.c SCRIPT []
 PREHOOK: query: explain vectorization detail
 select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1a
+PREHOOK: Input: default@orc_table_2a
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1a
+POSTHOOK: Input: default@orc_table_2a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -85,12 +91,14 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: []
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0]
+                            nonOuterSmallTableKeyMapping: [0]
+                            projectedOutput: 0:int
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 2
@@ -160,10 +168,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -203,9 +210,15 @@ POSTHOOK: Input: default@orc_table_2a
 PREHOOK: query: explain vectorization detail
 select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1a
+PREHOOK: Input: default@orc_table_2a
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1a
+POSTHOOK: Input: default@orc_table_2a
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -253,13 +266,15 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0]
-                            bigTableValueColumnNums: [0]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: [0]
+                            bigTableValueColumns: 0:int
                             className: VectorMapJoinLeftSemiLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0]
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 0:int
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 2
@@ -333,10 +348,9 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
-                              keyColumnNums: [0]
+                              keyColumns: 0:int
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: []
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -412,9 +426,15 @@ POSTHOOK: Lineage: orc_table_2b.v2 SCRIPT []
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -462,13 +482,15 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col1 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: []
                             className: VectorMapJoinInnerLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [3, 0]
-                            smallTableMapping: [3]
+                            nonOuterSmallTableKeyMapping: [0]
+                            projectedOutput: 3:string, 0:int
+                            smallTableValueMapping: 3:string
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1, _col2
                         input vertices:
                           1 Map 2
@@ -538,10 +560,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:string
                         Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
@@ -582,9 +604,15 @@ three	3
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -631,10 +659,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:string
                         Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
@@ -685,14 +713,16 @@ STAGE PLANS:
                           0 _col1 (type: int)
                           1 _col0 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0, 1]
-                            bigTableValueColumnNums: [0, 1]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: [0, 1]
+                            bigTableValueColumns: 0:int, 1:string
                             className: VectorMapJoinInnerLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [3, 0, 0, 1]
-                            smallTableMapping: [3]
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 3:string, 0:int, 0:int, 1:string
+                            smallTableValueMapping: 3:string
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
                           0 Map 1
@@ -745,9 +775,15 @@ three	3	3	THREE
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -781,13 +817,14 @@ STAGE PLANS:
                     predicate: (c > 2) (type: boolean)
                     Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: c (type: int), v2 (type: string)
-                      outputColumnNames: _col0, _col1
+                      expressions: c (type: int), v2 (type: string), (c * 5) (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [0, 1, 3]
+                          selectExpressions: LongColMultiplyLongScalar(col 0:int, val 5) -> 3:int
+                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -795,26 +832,27 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col1 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0, 1]
-                            bigTableValueColumnNums: [0, 1]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: [1, 3]
+                            bigTableValueColumns: 1:string, 3:int
                             className: VectorMapJoinInnerLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0, 1, 3, 0]
-                            smallTableMapping: [3]
-                        outputColumnNames: _col0, _col1, _col2, _col3
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 1:string, 3:int, 4:string, 5:int
+                            smallTableValueMapping: 4:string, 5:int
+                            hashTableImplementationType: OPTIMIZED
+                        outputColumnNames: _col1, _col2, _col3, _col5
                         input vertices:
                           1 Map 2
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
-                          expressions: _col2 (type: string), (_col3 * 2) (type: int), (_col0 * 5) (type: int), _col1 (type: string)
+                          expressions: _col3 (type: string), _col5 (type: int), _col2 (type: int), _col1 (type: string)
                           outputColumnNames: _col0, _col1, _col2, _col3
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumnNums: [3, 4, 5, 1]
-                              selectExpressions: LongColMultiplyLongScalar(col 0:int, val 2) -> 4:int, LongColMultiplyLongScalar(col 0:int, val 5) -> 5:int
+                              projectedOutputColumnNums: [4, 5, 3, 1]
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
@@ -842,7 +880,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: c:int, v2:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [string, bigint, bigint]
+                    scratchColumnTypeNames: [bigint, string, bigint]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -860,25 +898,26 @@ STAGE PLANS:
                     predicate: (a > 2) (type: boolean)
                     Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: v1 (type: string), a (type: int)
-                      outputColumnNames: _col0, _col1
+                      expressions: v1 (type: string), a (type: int), (a * 2) (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [0, 1, 3]
+                          selectExpressions: LongColMultiplyLongScalar(col 1:int, val 2) -> 3:int
+                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
-                        Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string)
+                            valueColumns: 0:string, 3:int
+                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col2 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -895,7 +934,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: v1:string, a:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
 
   Stage: Stage-0
     Fetch Operator
@@ -917,9 +956,15 @@ three	6	15	THREE
 PREHOOK: query: explain vectorization detail
 select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -967,14 +1012,16 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col1 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0, 1]
-                            bigTableValueColumnNums: [0, 1]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: [0, 1]
+                            bigTableValueColumns: 0:int, 1:string
                             className: VectorMapJoinInnerLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0, 1, 3]
-                            smallTableMapping: [3]
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 0:int, 1:string, 3:string
+                            smallTableValueMapping: 3:string
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
                           1 Map 2
@@ -1044,10 +1091,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:string
                         Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
@@ -1088,9 +1135,15 @@ three	THREE	3
 PREHOOK: query: explain vectorization detail
 select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1138,14 +1191,16 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col1 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0, 1]
-                            bigTableValueColumnNums: [1]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: [1]
+                            bigTableValueColumns: 1:string
                             className: VectorMapJoinInnerLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [1, 3, 0]
-                            smallTableMapping: [3]
+                            nonOuterSmallTableKeyMapping: [0]
+                            projectedOutput: 1:string, 3:string, 0:int
+                            smallTableValueMapping: 3:string
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1, _col2, _col3
                         input vertices:
                           1 Map 2
@@ -1215,10 +1270,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:string
                         Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
@@ -1259,9 +1314,15 @@ POSTHOOK: Input: default@orc_table_2b
 PREHOOK: query: explain vectorization detail
 select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1308,10 +1369,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:string
                         Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
@@ -1362,14 +1423,16 @@ STAGE PLANS:
                           0 _col1 (type: int)
                           1 _col0 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0, 1]
-                            bigTableValueColumnNums: [0, 1]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: [0, 1]
+                            bigTableValueColumns: 0:int, 1:string
                             className: VectorMapJoinInnerLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [3, 0, 1]
-                            smallTableMapping: [3]
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 3:string, 0:int, 1:string
+                            smallTableValueMapping: 3:string
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col2, _col3
                         input vertices:
                           0 Map 1
@@ -1430,9 +1493,15 @@ three	THREE	3
 PREHOOK: query: explain vectorization detail
 select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_table_1b
+PREHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_table_1b
+POSTHOOK: Input: default@orc_table_2b
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1479,10 +1548,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:string
                         Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
@@ -1533,14 +1602,16 @@ STAGE PLANS:
                           0 _col1 (type: int)
                           1 _col0 (type: int)
                         Map Join Vectorization:
-                            bigTableKeyColumnNums: [0]
-                            bigTableRetainedColumnNums: [0, 1]
-                            bigTableValueColumnNums: [1]
+                            bigTableKeyColumns: 0:int
+                            bigTableRetainColumnNums: [1]
+                            bigTableValueColumns: 1:string
                             className: VectorMapJoinInnerLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [3, 0, 1]
-                            smallTableMapping: [3]
+                            nonOuterSmallTableKeyMapping: [0]
+                            projectedOutput: 3:string, 0:int, 1:string
+                            smallTableValueMapping: 3:string
+                            hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Map 1

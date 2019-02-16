@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 --! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.llap.memory.oversubscription.max.executors.per.query=0;

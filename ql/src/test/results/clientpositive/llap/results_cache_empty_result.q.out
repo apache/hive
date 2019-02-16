@@ -1,9 +1,13 @@
 PREHOOK: query: explain
 select count(*), key from src a where key < 0 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*), key from src a where key < 0 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -78,9 +82,11 @@ test.comment="Cache should be used for this query"
 PREHOOK: query: explain
 select count(*), key from src a where key < 0 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select count(*), key from src a where key < 0 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -1,6 +1,5 @@
 -- SORT_QUERY_RESULTS
 
-set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
@@ -19,7 +18,6 @@ stored AS ORC
 TBLPROPERTIES("transactional"="true");
 insert into table source_table_001_n0
   values ('2010-10-10 00:00:00', 1, 1, 'env', 1, 1);
-analyze table source_table_001_n0 compute statistics for columns;
 
 CREATE MATERIALIZED VIEW source_table_001_mv_n0 AS
 SELECT
@@ -28,7 +26,6 @@ SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
 A.MY_ID,A.MY_DATE,A.MY_ID2,A.ENVIRONMENT
 from source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,A.MY_DATE;
-analyze table source_table_001_mv_n0 compute statistics for columns;
 
 explain
 select
@@ -46,7 +43,6 @@ SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
 A.MY_ID,FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
 from source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour);
-analyze table source_table_001_mv_n0 compute statistics for columns;
 
 explain
 select

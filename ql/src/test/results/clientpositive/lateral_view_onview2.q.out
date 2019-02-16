@@ -34,8 +34,14 @@ POSTHOOK: Lineage: lv_view.c3 SIMPLE [(lv_table_n1)lv_table_n1.FieldSchema(name:
 POSTHOOK: Lineage: lv_view.c4 SIMPLE [(lv_table_n1)lv_table_n1.FieldSchema(name:c4, type:char(1), comment:null), ]
 PREHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lv_table_n1
+PREHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lv_table_n1
+POSTHOOK: Input: default@lv_view
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

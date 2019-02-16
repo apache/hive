@@ -116,7 +116,9 @@ public class GenMRFileSink1 implements NodeProcessor {
     }
 
     FileSinkDesc fileSinkDesc = fsOp.getConf();
-    if (fileSinkDesc.isLinkedFileSink()) {
+    // There are linked file sink operators and child tasks are present
+    if (fileSinkDesc.isLinkedFileSink() && (currTask.getChildTasks() != null) &&
+        (currTask.getChildTasks().size() == 1)) {
       Map<FileSinkDesc, Task<? extends Serializable>> linkedFileDescTasks =
         ctx.getLinkedFileDescTasks();
       if (linkedFileDescTasks == null) {
@@ -124,12 +126,8 @@ public class GenMRFileSink1 implements NodeProcessor {
         ctx.setLinkedFileDescTasks(linkedFileDescTasks);
       }
 
-      // The child tasks may be null in case of a select
-      if ((currTask.getChildTasks() != null) &&
-        (currTask.getChildTasks().size() == 1)) {
-        for (FileSinkDesc fileDesc : fileSinkDesc.getLinkedFileSinkDesc()) {
-          linkedFileDescTasks.put(fileDesc, currTask.getChildTasks().get(0));
-        }
+      for (FileSinkDesc fileDesc : fileSinkDesc.getLinkedFileSinkDesc()) {
+        linkedFileDescTasks.put(fileDesc, currTask.getChildTasks().get(0));
       }
     }
 

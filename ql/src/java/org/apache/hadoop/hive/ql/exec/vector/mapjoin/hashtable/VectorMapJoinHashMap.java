@@ -30,5 +30,4 @@ public interface VectorMapJoinHashMap extends VectorMapJoinHashTable {
    * access spill information when the partition with the key is currently spilled.
    */
   VectorMapJoinHashMapResult createHashMapResult();
-
 }

@@ -21,7 +21,6 @@ package org.apache.hive.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -66,6 +65,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -281,21 +281,75 @@ public class TestJdbcWithMiniHS2 {
   }
 
   @Test
+  public void testParallelCompilation3() throws Exception {
+    Statement stmt = conTestDb.createStatement();
+    stmt.execute("set hive.driver.parallel.compilation=true");
+    stmt.execute("set hive.server2.async.exec.async.compile=true");
+    stmt.close();
+    Connection conn = getConnection(testDbName);
+    stmt = conn.createStatement();
+    stmt.execute("set hive.driver.parallel.compilation=true");
+    stmt.execute("set hive.server2.async.exec.async.compile=true");
+    stmt.close();
+    int poolSize = 100;
+    SynchronousQueue<Runnable> executorQueue1 = new SynchronousQueue<Runnable>();
+    ExecutorService workers1 =
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue1);
+    SynchronousQueue<Runnable> executorQueue2 = new SynchronousQueue<Runnable>();
+    ExecutorService workers2 =
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue2);
+    List<Future<Boolean>> list1 = startTasks(workers1, conTestDb, tableName, 10);
+    List<Future<Boolean>> list2 = startTasks(workers2, conn, tableName, 10);
+    finishTasks(list1, workers1);
+    finishTasks(list2, workers2);
+    conn.close();
+  }
+
+  @Test
+  public void testParallelCompilation4() throws Exception {
+    Statement stmt = conTestDb.createStatement();
+    stmt.execute("set hive.driver.parallel.compilation=true");
+    stmt.execute("set hive.server2.async.exec.async.compile=false");
+    stmt.close();
+    Connection conn = getConnection(testDbName);
+    stmt = conn.createStatement();
+    stmt.execute("set hive.driver.parallel.compilation=true");
+    stmt.execute("set hive.server2.async.exec.async.compile=false");
+    stmt.close();
+    int poolSize = 100;
+    SynchronousQueue<Runnable> executorQueue1 = new SynchronousQueue<Runnable>();
+    ExecutorService workers1 =
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue1);
+    SynchronousQueue<Runnable> executorQueue2 = new SynchronousQueue<Runnable>();
+    ExecutorService workers2 =
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue2);
+    List<Future<Boolean>> list1 = startTasks(workers1, conTestDb, tableName, 10);
+    List<Future<Boolean>> list2 = startTasks(workers2, conn, tableName, 10);
+    finishTasks(list1, workers1);
+    finishTasks(list2, workers2);
+    conn.close();
+  }
+
+  @Test
   public void testConcurrentStatements() throws Exception {
     startConcurrencyTest(conTestDb, tableName, 50);
   }
 
   private static void startConcurrencyTest(Connection conn, String tableName, int numTasks) {
     // Start concurrent testing
-    int POOL_SIZE = 100;
-    int TASK_COUNT = numTasks;
-
+    int poolSize = 100;
     SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
     ExecutorService workers =
-        new ThreadPoolExecutor(1, POOL_SIZE, 20, TimeUnit.SECONDS, executorQueue);
+        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue);
+    List<Future<Boolean>> list = startTasks(workers, conn, tableName, numTasks);
+    finishTasks(list, workers);
+  }
+
+  private static List<Future<Boolean>> startTasks(ExecutorService workers, Connection conn,
+      String tableName, int numTasks) {
     List<Future<Boolean>> list = new ArrayList<Future<Boolean>>();
     int i = 0;
-    while (i < TASK_COUNT) {
+    while (i < numTasks) {
       try {
         Future<Boolean> future = workers.submit(new JDBCTask(conn, i, tableName));
         list.add(future);
@@ -308,7 +362,10 @@ public class TestJdbcWithMiniHS2 {
         }
       }
     }
+    return list;
+  }
 
+  private static void finishTasks(List<Future<Boolean>> list, ExecutorService workers) {
     for (Future<Boolean> future : list) {
       try {
         Boolean result = future.get(30, TimeUnit.SECONDS);
@@ -1091,7 +1148,7 @@ public class TestJdbcWithMiniHS2 {
     NucleusContext nc = null;
     Map<String, ClassLoaderResolver> cMap;
     try {
-      pmf = ObjectStore.class.getDeclaredField("pmf");
+      pmf = PersistenceManagerProvider.class.getDeclaredField("pmf");
       if (pmf != null) {
         pmf.setAccessible(true);
         jdoPmf = (JDOPersistenceManagerFactory) pmf.get(null);
@@ -1420,71 +1477,6 @@ public class TestJdbcWithMiniHS2 {
     }
   }
 
-  /**
-   * Test CLI kill command of a query that is running.
-   * We spawn 2 threads - one running the query and
-   * the other attempting to cancel.
-   * We're using a dummy udf to simulate a query,
-   * that runs for a sufficiently long time.
-   * @throws Exception
-   */
-  @Test
-  public void testKillQuery() throws Exception {
-    Connection con = conTestDb;
-    Connection con2 = getConnection(testDbName);
-
-    String udfName = SleepMsUDF.class.getName();
-    Statement stmt1 = con.createStatement();
-    final Statement stmt2 = con2.createStatement();
-    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
-    stmt1.close();
-    final Statement stmt = con.createStatement();
-    final ExceptionHolder tExecuteHolder = new ExceptionHolder();
-    final ExceptionHolder tKillHolder = new ExceptionHolder();
-
-    // Thread executing the query
-    Thread tExecute = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          System.out.println("Executing query: ");
-          // The test table has 500 rows, so total query time should be ~ 500*500ms
-          stmt.executeQuery("select sleepMsUDF(t1.int_col, 100), t1.int_col, t2.int_col " +
-              "from " + tableName + " t1 join " + tableName + " t2 on t1.int_col = t2.int_col");
-          fail("Expecting SQLException");
-        } catch (SQLException e) {
-          tExecuteHolder.throwable = e;
-        }
-      }
-    });
-    // Thread killing the query
-    Thread tKill = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          Thread.sleep(2000);
-          String queryId = ((HiveStatement) stmt).getQueryId();
-          System.out.println("Killing query: " + queryId);
-
-          stmt2.execute("kill query '" + queryId + "'");
-          stmt2.close();
-        } catch (Exception e) {
-          tKillHolder.throwable = e;
-        }
-      }
-    });
-
-    tExecute.start();
-    tKill.start();
-    tExecute.join();
-    tKill.join();
-    stmt.close();
-    con2.close();
-
-    assertNotNull("tExecute", tExecuteHolder.throwable);
-    assertNull("tCancel", tKillHolder.throwable);
-  }
-
   private static class ExceptionHolder {
     Throwable throwable;
   }
@@ -1658,7 +1650,7 @@ public class TestJdbcWithMiniHS2 {
   /**
    * Get Detailed Table Information via jdbc
    */
-  private String getDetailedTableDescription(Statement stmt, String table) throws SQLException {
+  static String getDetailedTableDescription(Statement stmt, String table) throws SQLException {
     String extendedDescription = null;
     try (ResultSet rs = stmt.executeQuery("describe extended " + table)) {
       while (rs.next()) {

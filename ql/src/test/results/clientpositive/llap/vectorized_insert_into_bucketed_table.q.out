@@ -8,8 +8,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
 PREHOOK: query: explain vectorization detail insert overwrite table foo values(1),(2),(3),(4),(9)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@foo
 POSTHOOK: query: explain vectorization detail insert overwrite table foo values(1),(2),(3),(4),(9)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@foo
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

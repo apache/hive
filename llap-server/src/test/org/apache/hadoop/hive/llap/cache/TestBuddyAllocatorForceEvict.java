@@ -228,7 +228,7 @@ public class TestBuddyAllocatorForceEvict {
       cdlIn.await(); // Wait for all threads to be ready.
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
-    } 
+    }
     cdlOut.countDown(); // Release them at the same time.
     for (int i = 0; i < allocTasks.length; ++i) {
       try {
@@ -417,7 +417,7 @@ public class TestBuddyAllocatorForceEvict {
   public static BuddyAllocator create(int max, int arenas, int total, boolean isShortcut,
       boolean isBruteForceOnly) {
      BuddyAllocator result = new BuddyAllocator(false, false, 8, max, arenas, total, 0,
-         null, MM, METRICS, isBruteForceOnly ? "brute" : null);
+         null, MM, METRICS, isBruteForceOnly ? "brute" : null, true);
      if (!isShortcut) {
        result.disableDefragShortcutForTest();
      }

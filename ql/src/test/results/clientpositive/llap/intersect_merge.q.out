@@ -36,8 +36,14 @@ POSTHOOK: Lineage: b_n5.key SCRIPT []
 POSTHOOK: Lineage: b_n5.value SCRIPT []
 PREHOOK: query: explain select * from b_n5 intersect distinct select * from a_n7 intersect distinct select * from b_n5 intersect distinct select * from a_n7 intersect distinct select * from b_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n7
+PREHOOK: Input: default@b_n5
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from b_n5 intersect distinct select * from a_n7 intersect distinct select * from b_n5 intersect distinct select * from a_n7 intersect distinct select * from b_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n7
+POSTHOOK: Input: default@b_n5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -309,8 +315,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain (select * from b_n5 intersect distinct select * from a_n7) intersect distinct (select * from b_n5 intersect distinct select * from a_n7)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n7
+PREHOOK: Input: default@b_n5
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain (select * from b_n5 intersect distinct select * from a_n7) intersect distinct (select * from b_n5 intersect distinct select * from a_n7)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n7
+POSTHOOK: Input: default@b_n5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -537,8 +549,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect distinct (select * from b_n5 intersect distinct (select * from a_n7 intersect distinct select * from b_n5)))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n7
+PREHOOK: Input: default@b_n5
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect distinct (select * from b_n5 intersect distinct (select * from a_n7 intersect distinct select * from b_n5)))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n7
+POSTHOOK: Input: default@b_n5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -810,8 +828,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain (((select * from b_n5 intersect distinct select * from a_n7) intersect distinct select * from b_n5) intersect distinct select * from a_n7) intersect distinct select * from b_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n7
+PREHOOK: Input: default@b_n5
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain (((select * from b_n5 intersect distinct select * from a_n7) intersect distinct select * from b_n5) intersect distinct select * from a_n7) intersect distinct select * from b_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n7
+POSTHOOK: Input: default@b_n5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1083,8 +1107,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect distinct select * from b_n5) intersect distinct select * from a_n7 intersect distinct select * from b_n5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n7
+PREHOOK: Input: default@b_n5
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect distinct select * from b_n5) intersect distinct select * from a_n7 intersect distinct select * from b_n5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n7
+POSTHOOK: Input: default@b_n5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1356,8 +1386,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect all select * from b_n5)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n7
+PREHOOK: Input: default@b_n5
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect all select * from b_n5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n7
+POSTHOOK: Input: default@b_n5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1539,8 +1575,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from b_n5 intersect all (select * from a_n7 intersect all select * from b_n5)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n7
+PREHOOK: Input: default@b_n5
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from b_n5 intersect all (select * from a_n7 intersect all select * from b_n5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n7
+POSTHOOK: Input: default@b_n5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1729,8 +1771,14 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from b_n5 intersect all (select * from a_n7 intersect distinct select * from b_n5)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n7
+PREHOOK: Input: default@b_n5
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from b_n5 intersect all (select * from a_n7 intersect distinct select * from b_n5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n7
+POSTHOOK: Input: default@b_n5
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

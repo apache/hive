@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 
 /**
@@ -31,7 +32,8 @@ import org.apache.hadoop.io.LongWritable;
 public class GenericUDFEpochMilli extends GenericUDF {
 
   private transient final LongWritable result = new LongWritable();
-  private transient TimestampLocalTZObjectInspector oi;
+  private transient TimestampLocalTZObjectInspector tsWithLocalTzOi = null;
+  private transient TimestampObjectInspector tsOi = null;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -39,7 +41,11 @@ public class GenericUDFEpochMilli extends GenericUDF {
       throw new UDFArgumentLengthException(
           "The operator GenericUDFEpochMilli only accepts 1 argument.");
     }
-    oi = (TimestampLocalTZObjectInspector) arguments[0];
+    if (arguments[0] instanceof TimestampObjectInspector) {
+      tsOi = (TimestampObjectInspector) arguments[0];
+    } else {
+      tsWithLocalTzOi = (TimestampLocalTZObjectInspector) arguments[0];
+    }
     return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
   }
 
@@ -49,7 +55,10 @@ public class GenericUDFEpochMilli extends GenericUDF {
     if (a0 == null) {
       return null;
     }
-    result.set(oi.getPrimitiveJavaObject(a0).getZonedDateTime().toInstant().toEpochMilli());
+
+    result.set(tsOi == null ?
+        tsWithLocalTzOi.getPrimitiveJavaObject(a0).getZonedDateTime().toInstant().toEpochMilli() :
+        tsOi.getPrimitiveJavaObject(a0).toEpochMilli());
     return result;
   }
 

@@ -42,9 +42,15 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 PREHOOK: query: explain
 select key, count(1) from clustergroupby where ds='100' group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=100
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby where ds='100' group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=100
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -68,19 +74,24 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -170,9 +181,15 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.Field
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='101'  group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='101'  group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -196,19 +213,24 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -273,9 +295,15 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 PREHOOK: query: explain
 select length(key), count(1) from clustergroupby  where ds='101'  group by length(key) limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select length(key), count(1) from clustergroupby  where ds='101'  group by length(key) limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -298,19 +326,24 @@ STAGE PLANS:
                     expressions: length(key) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: _col0 (type: int)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -350,14 +383,20 @@ POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 1	10
-3	416
 2	74
+3	416
 PREHOOK: query: explain
 select abs(length(key)), count(1) from clustergroupby  where ds='101'  group by abs(length(key)) limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select abs(length(key)), count(1) from clustergroupby  where ds='101'  group by abs(length(key)) limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -380,19 +419,24 @@ STAGE PLANS:
                     expressions: abs(length(key)) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: _col0 (type: int)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 250 Data size: 3000 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -432,14 +476,20 @@ POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
 1	10
-3	416
 2	74
+3	416
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='101'  group by key,'a' order by key,'a' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='101'  group by key,'a' order by key,'a' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -463,19 +513,24 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -540,9 +595,15 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 PREHOOK: query: explain
 select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -566,19 +627,24 @@ STAGE PLANS:
                     expressions: value (type: string)
                     outputColumnNames: value
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: value (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: value (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -643,9 +709,17 @@ val_114	1
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=100
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=100
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -722,214 +796,112 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 104	4
 105	2
 11	2
+111	2
+12	4
+120	4
 126	2
 128	6
 129	4
+131	2
 133	2
 134	4
 136	2
 143	2
 149	4
+150	2
 152	4
 153	2
+156	2
 157	2
+160	2
 162	2
+163	2
 166	2
+167	6
+168	2
 169	8
+17	2
 170	2
 174	4
+175	4
 176	4
+180	2
 193	6
 196	2
+20	2
 201	2
+203	4
 205	4
 209	4
 213	4
 218	2
 221	4
 223	4
+226	2
 233	4
+237	4
 239	4
 24	4
 241	2
 242	4
 247	2
 248	2
+255	4
+256	4
 26	4
 263	2
 272	4
+274	2
 275	2
+277	8
+281	4
+282	4
 285	2
+286	2
+287	2
+289	2
+292	2
 296	2
 298	6
 302	2
 307	4
+308	2
+309	4
 310	2
+318	6
 323	2
 325	4
+327	6
+332	2
 333	4
 335	2
 338	2
+339	2
+34	2
+341	2
+348	10
+356	2
 360	2
 362	2
 367	4
+37	4
+374	2
 375	2
 377	2
+379	2
+382	4
 384	6
 392	2
 399	4
 401	10
 402	2
 403	6
+409	6
 413	4
 417	6
 419	2
 42	4
 427	2
-438	6
-44	2
-458	4
-459	4
-466	6
-469	10
-472	2
-475	2
-478	4
-479	2
-483	2
-489	8
-495	2
-496	2
-5	6
-57	2
-58	4
-64	2
-66	2
-69	2
-72	4
-76	4
-77	2
-9	2
-90	6
-0	6
-113	4
-114	2
-116	2
-118	4
-137	4
-138	8
-145	2
-146	4
-155	2
-158	2
-164	4
-165	4
-178	2
-181	2
-183	2
-186	2
-189	2
-190	2
-191	4
-194	2
-195	4
-199	6
-2	2
-207	4
-208	6
-214	2
-216	4
-222	2
-224	4
-229	4
-230	10
-238	4
-244	2
-258	2
-260	2
-262	2
-266	2
-27	2
-273	6
-28	2
-284	2
-288	4
-30	2
-315	2
-321	4
-33	2
-342	4
-35	6
-364	2
-365	2
-366	2
-368	2
-386	2
-389	2
-394	2
-396	6
-397	4
-4	2
-41	2
-414	4
-421	2
-444	2
-446	2
-448	2
-452	2
-454	6
-455	2
-460	2
-463	4
-482	2
-492	4
-493	2
-65	2
-78	2
-80	2
-97	4
-111	2
-12	4
-120	4
-131	2
-150	2
-156	2
-160	2
-163	2
-167	6
-168	2
-17	2
-175	4
-180	2
-20	2
-203	4
-226	2
-237	4
-255	4
-256	4
-274	2
-277	8
-281	4
-282	4
-286	2
-287	2
-289	2
-292	2
-308	2
-309	4
-318	6
-327	6
-332	2
-339	2
-34	2
-341	2
-348	10
-356	2
-37	4
-374	2
-379	2
-382	4
-409	6
 429	4
 43	2
 430	6
@@ -937,100 +909,210 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 432	2
 435	2
 437	2
+438	6
 439	4
+44	2
 443	2
 457	2
+458	4
+459	4
 462	4
+466	6
 467	2
+469	10
 470	2
+472	2
+475	2
+478	4
+479	2
 481	2
+483	2
 487	2
+489	8
 494	2
+495	2
+496	2
+5	6
 51	4
+57	2
+58	4
+64	2
+66	2
+69	2
 70	6
+72	4
 74	2
+76	4
+77	2
 82	2
 83	4
 84	4
+9	2
+90	6
+0	6
+113	4
+114	2
+116	2
+118	4
 119	6
 125	4
+137	4
+138	8
+145	2
+146	4
 15	4
+155	2
+158	2
+164	4
+165	4
 172	4
 177	2
+178	2
 179	4
 18	4
+181	2
+183	2
+186	2
 187	6
+189	2
 19	2
+190	2
+191	4
 192	2
+194	2
+195	4
 197	4
+199	6
+2	2
 200	4
 202	2
+207	4
+208	6
+214	2
+216	4
 217	4
 219	4
+222	2
+224	4
 228	2
+229	4
+230	10
 235	2
+238	4
+244	2
 249	2
 252	2
 257	2
+258	2
+260	2
+262	2
 265	4
+266	2
+27	2
+273	6
 278	4
+28	2
 280	4
 283	2
+284	2
+288	4
 291	2
+30	2
 305	2
 306	2
 311	6
+315	2
 316	6
 317	4
+321	4
 322	4
+33	2
 331	4
 336	2
+342	4
 344	4
 345	2
+35	6
 351	2
 353	4
+364	2
+365	2
+366	2
+368	2
 369	6
 373	2
 378	2
+386	2
+389	2
 393	2
+394	2
 395	4
+396	6
+397	4
+4	2
 400	2
 404	4
 406	8
 407	2
+41	2
 411	2
+414	4
 418	2
+421	2
 424	4
 436	2
+444	2
+446	2
+448	2
 449	2
+452	2
 453	2
+454	6
+455	2
+460	2
+463	4
 468	8
 47	2
 477	2
 480	6
+482	2
 484	2
 485	2
 490	2
 491	2
+492	4
+493	2
 497	2
 498	6
 53	2
 54	2
+65	2
 67	4
+78	2
 8	2
+80	2
 85	2
 86	2
 87	2
 92	2
 95	4
 96	2
+97	4
 98	4
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  group by key, 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=100
+PREHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  group by key, 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=100
+POSTHOOK: Input: default@clustergroupby@ds=101
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1141,9 +1223,15 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.Field
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='102'  group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='102'  group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1167,20 +1255,25 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      bucketGroup: true
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        bucketGroup: true
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1245,9 +1338,15 @@ POSTHOOK: Input: default@clustergroupby@ds=102
 PREHOOK: query: explain
 select value, count(1) from clustergroupby  where ds='102'  group by value order by value limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select value, count(1) from clustergroupby  where ds='102'  group by value order by value limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1271,19 +1370,24 @@ STAGE PLANS:
                     expressions: value (type: string)
                     outputColumnNames: value
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: +
                       keys: value (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: value (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1348,9 +1452,15 @@ val_114	1
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=102
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1449,9 +1559,15 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=103).value SIMPLE [(src)src.Field
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='103'  group by key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=103
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='103'  group by key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=103
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1475,20 +1591,25 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      bucketGroup: true
+                    Top N Key Operator
+                      sort order: +
                       keys: key (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        bucketGroup: true
+                        keys: key (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col1 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1553,9 +1674,15 @@ POSTHOOK: Input: default@clustergroupby@ds=103
 PREHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='103'  group by value, key order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Input: default@clustergroupby@ds=103
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, count(1) from clustergroupby  where ds='103'  group by value, key order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Input: default@clustergroupby@ds=103
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1579,19 +1706,24 @@ STAGE PLANS:
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
+                    Top N Key Operator
+                      sort order: ++
                       keys: key (type: string), value (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string), _col1 (type: string)
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 10
+                      Group By Operator
+                        aggregations: count()
+                        keys: key (type: string), value (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
-                        value expressions: _col2 (type: bigint)
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                          Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 

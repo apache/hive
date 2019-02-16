@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.log.Log4jQueryCompleteMarker;
 import org.apache.hadoop.hive.llap.log.LogHelpers;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceSta
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.tez.common.security.JobTokenIdentifier;
+import org.apache.tez.common.security.TokenCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -197,6 +199,21 @@ public class QueryTracker extends AbstractService {
 
       return queryInfo.registerFragment(
           vertexName, fragmentNumber, attemptNumber, vertex, fragmentIdString);
+    } finally {
+      dagLock.readLock().unlock();
+    }
+  }
+
+  public void registerDag(String applicationId, int dagId, String user,
+      Credentials credentials) {
+    Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
+
+    QueryIdentifier queryIdentifier = new QueryIdentifier(applicationId, dagId);
+    ReadWriteLock dagLock = getDagLock(queryIdentifier);
+    dagLock.readLock().lock();
+    try {
+      ShuffleHandler.get()
+          .registerDag(applicationId, dagId, jobToken, user, null);
     } finally {
       dagLock.readLock().unlock();
     }

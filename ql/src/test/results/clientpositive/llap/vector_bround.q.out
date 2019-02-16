@@ -47,9 +47,13 @@ POSTHOOK: Lineage: test_vector_bround.v1 EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select bround(v0), bround(v1, 1) from test_vector_bround
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector_bround
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select bround(v0), bround(v1, 1) from test_vector_bround
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector_bround
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -122,12 +126,12 @@ POSTHOOK: query: select bround(v0), bround(v1, 1) from test_vector_bround
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_vector_bround
 #### A masked pattern was here ####
-2.0	1.2
-4.0	1.4
 -2.0	-1.2
 -4.0	-1.4
 2.0	1.2
+2.0	1.2
 3.0	1.3
 3.0	1.3
+4.0	1.4
 4.0	1.4
 NULL	NULL

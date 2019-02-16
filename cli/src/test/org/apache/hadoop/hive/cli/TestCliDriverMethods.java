@@ -47,11 +47,13 @@ import junit.framework.TestCase;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Test;
 
@@ -109,10 +111,10 @@ public class TestCliDriverMethods extends TestCase {
 
     // Capture stdout and stderr
     ByteArrayOutputStream dataOut = new ByteArrayOutputStream();
-    PrintStream out = new PrintStream(dataOut);
+    SessionStream out = new SessionStream(dataOut);
     System.setOut(out);
     ByteArrayOutputStream dataErr = new ByteArrayOutputStream();
-    PrintStream err = new PrintStream(dataErr);
+    SessionStream err = new SessionStream(dataErr);
     System.setErr(err);
 
     CliSessionState ss = new CliSessionState(new HiveConf());
@@ -165,14 +167,16 @@ public class TestCliDriverMethods extends TestCase {
     IDriver proc = mock(IDriver.class);
 
     CommandProcessorResponse cpr = mock(CommandProcessorResponse.class);
+    QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(true).build();
     when(cpr.getResponseCode()).thenReturn(0);
     when(proc.run(anyString())).thenReturn(cpr);
+    when(proc.getQueryState()).thenReturn(queryState);
 
     // and then see what happens based on the provided schema
     when(proc.getSchema()).thenReturn(mockSchema);
 
     CliSessionState mockSS = mock(CliSessionState.class);
-    PrintStream mockOut = mock(PrintStream.class);
+    SessionStream mockOut = mock(SessionStream.class);
 
     mockSS.out = mockOut;
 
@@ -242,8 +246,8 @@ public class TestCliDriverMethods extends TestCase {
   public void testQuit() throws Exception {
 
     CliSessionState ss = new CliSessionState(new HiveConf());
-    ss.err = System.err;
-    ss.out = System.out;
+    ss.err = new SessionStream(System.err);
+    ss.out = new SessionStream(System.out);
 
     try {
       CliSessionState.start(ss);
@@ -273,7 +277,7 @@ public class TestCliDriverMethods extends TestCase {
     CliSessionState sessinState = new CliSessionState(new HiveConf());
     CliSessionState.start(sessinState);
     ByteArrayOutputStream data = new ByteArrayOutputStream();
-    sessinState.err = new PrintStream(data);
+    sessinState.err = new SessionStream(data);
     sessinState.database = "database";
     CliDriver driver = new CliDriver();
 
@@ -308,8 +312,8 @@ public class TestCliDriverMethods extends TestCase {
 
     ByteArrayOutputStream data = new ByteArrayOutputStream();
 
-    sessionState.err = new PrintStream(data);
-    sessionState.out = System.out;
+    sessionState.err = new SessionStream(data);
+    sessionState.out = new SessionStream(System.out);
     try {
       CliSessionState.start(sessionState);
       CliDriver cliDriver = new CliDriver();

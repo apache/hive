@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.thrift;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -336,12 +336,7 @@ public class TBinarySortableProtocol extends TProtocol implements
 
   @Override
   public void writeString(String str) throws TException {
-    byte[] dat;
-    try {
-      dat = str.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException uex) {
-      throw new TException("JVM DOES NOT SUPPORT UTF-8: ",uex);
-    }
+    byte[] dat = str.getBytes(StandardCharsets.UTF_8);
     writeTextBytes(dat, 0, dat.length);
   }
 
@@ -631,12 +626,7 @@ public class TBinarySortableProtocol extends TProtocol implements
       stringBytes[i] = bin[0];
       i++;
     }
-    try {
-      String r = new String(stringBytes, 0, i, "UTF-8");
-      return r;
-    } catch (UnsupportedEncodingException uex) {
-      throw new TException("JVM DOES NOT SUPPORT UTF-8: ",uex);
-    }
+    return new String(stringBytes, 0, i, StandardCharsets.UTF_8);
   }
 
   @Override

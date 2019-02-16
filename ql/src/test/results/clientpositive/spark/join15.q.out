@@ -1,9 +1,13 @@
 PREHOOK: query: EXPLAIN
 SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key) SORT BY src1.key, src1.value, src2.key, src2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key) SORT BY src1.key, src1.value, src2.key, src2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

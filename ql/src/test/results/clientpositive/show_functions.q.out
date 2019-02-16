@@ -26,6 +26,7 @@ add_months
 aes_decrypt
 aes_encrypt
 and
+approx_distinct
 array
 array_contains
 ascii
@@ -39,6 +40,8 @@ between
 bin
 bloom_filter
 bround
+bucket_number
+buildversion
 cardinality_violation
 case
 cbrt
@@ -130,6 +133,7 @@ isnottrue
 isnull
 istrue
 java_method
+json_read
 json_tuple
 lag
 last_day
@@ -196,6 +200,7 @@ pow
 power
 printf
 quarter
+quote
 radians
 rand
 rank
@@ -252,6 +257,7 @@ substr
 substring
 substring_index
 sum
+surrogate_key
 tan
 to_date
 to_epoch_milli
@@ -260,6 +266,7 @@ to_utc_timestamp
 translate
 trim
 trunc
+tumbling_window
 ucase
 udftoboolean
 udftobyte
@@ -268,12 +275,12 @@ udftofloat
 udftointeger
 udftolong
 udftoshort
-udftostring
 unbase64
 unhex
 unix_timestamp
 upper
 uuid
+validate_acid_sort_order
 var_pop
 var_samp
 variance
@@ -364,6 +371,7 @@ parse_url_tuple
 percentile
 posexplode
 positive
+quote
 regexp_replace
 regr_slope
 replace
@@ -396,6 +404,7 @@ date_format
 date_sub
 datediff
 to_date
+validate_acid_sort_order
 PREHOOK: query: SHOW FUNCTIONS '***'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '***'

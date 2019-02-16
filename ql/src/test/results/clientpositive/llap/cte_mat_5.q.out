@@ -47,12 +47,18 @@ select a.colnum
 from mydb.q1 as a join q1 as b
 on a.colnum=b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@q1
+PREHOOK: Input: mydb@q1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1 as (select * from src where key= '5')
 select a.colnum
 from mydb.q1 as a join q1 as b
 on a.colnum=b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@q1
+POSTHOOK: Input: mydb@q1
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in Stage-4
@@ -64,20 +70,20 @@ Stage-3
     Stage-4
       Reducer 3 llap
       File Output Operator [FS_18]
-        Merge Join Operator [MERGEJOIN_33] (rows=1 width=4)
-          Conds:RS_36.UDFToDouble(_col0)=RS_39.UDFToDouble(_col0)(Inner),Output:["_col0"]
+        Merge Join Operator [MERGEJOIN_33] (rows=1 width=13)
+          Conds:RS_36._col1=RS_39._col0(Inner),Output:["_col0"]
         <-Map 2 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_36]
-            PartitionCols:UDFToDouble(_col0)
-            Select Operator [SEL_35] (rows=1 width=4)
-              Output:["_col0"]
+            PartitionCols:_col1
+            Select Operator [SEL_35] (rows=1 width=12)
+              Output:["_col0","_col1"]
               Filter Operator [FIL_34] (rows=1 width=4)
                 predicate:colnum is not null
                 TableScan [TS_8] (rows=1 width=4)
                   mydb@q1,a,Tbl:COMPLETE,Col:COMPLETE,Output:["colnum"]
         <-Map 4 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_39]
-            PartitionCols:UDFToDouble(_col0)
+            PartitionCols:_col0
             Select Operator [SEL_38] (rows=1 width=184)
               Output:["_col0"]
               Filter Operator [FIL_37] (rows=1 width=184)

@@ -117,15 +117,9 @@ public class VectorUDAFCountMerge extends VectorAggregateExpression {
       }
     } else {
       if (inputVector.isRepeating) {
-        if (batch.selectedInUse) {
-          iterateHasNullsRepeatingSelectionWithAggregationSelection(
-              aggregationBufferSets, aggregateIndex,
-              vector[0], batchSize, batch.selected, inputVector.isNull);
-        } else {
-          iterateHasNullsRepeatingWithAggregationSelection(
-              aggregationBufferSets, aggregateIndex,
-              vector[0], batchSize, inputVector.isNull);
-        }
+        iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, aggregateIndex,
+            vector[0], batchSize, inputVector.isNull);
       } else {
         if (batch.selectedInUse) {
           iterateHasNullsSelectionWithAggregationSelection(
@@ -183,28 +177,6 @@ public class VectorUDAFCountMerge extends VectorAggregateExpression {
           i);
       myagg.value += values[i];
     }
-  }
-
-  private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-      VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregateIndex,
-      long value,
-      int batchSize,
-      int[] selection,
-      boolean[] isNull) {
-
-    if (isNull[0]) {
-      return;
-    }
-
-    for (int i=0; i < batchSize; ++i) {
-      Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
-          aggregateIndex,
-          i);
-      myagg.value += value;
-    }
-    
   }
 
   private void iterateHasNullsRepeatingWithAggregationSelection(

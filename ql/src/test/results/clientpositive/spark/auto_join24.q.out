@@ -21,9 +21,13 @@ POSTHOOK: Lineage: tst1_n2.key SIMPLE [(src)a.FieldSchema(name:key, type:string,
 PREHOOK: query: explain 
 SELECT sum(a.cnt)  FROM tst1_n2 a JOIN tst1_n2 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tst1_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 SELECT sum(a.cnt)  FROM tst1_n2 a JOIN tst1_n2 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst1_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

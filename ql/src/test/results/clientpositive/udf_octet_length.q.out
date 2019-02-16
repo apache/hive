@@ -23,8 +23,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n165
 PREHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1_n165 SELECT octet_length(src1.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest1_n165
 POSTHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1_n165 SELECT octet_length(src1.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest1_n165
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -41,14 +45,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src1
-            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: octet_length(value) (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -57,25 +61,25 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: int)
                 outputColumnNames: len
-                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: compute_stats(len, 'hll')
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -215,8 +219,12 @@ POSTHOOK: Output: default@dest1_n165
 POSTHOOK: Lineage: dest1_n165.name EXPRESSION []
 PREHOOK: query: EXPLAIN SELECT octet_length(dest1_n165.name) FROM dest1_n165
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n165
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT octet_length(dest1_n165.name) FROM dest1_n165
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n165
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -227,11 +235,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dest1_n165
-          Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: octet_length(name) (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT octet_length(dest1_n165.name) FROM dest1_n165

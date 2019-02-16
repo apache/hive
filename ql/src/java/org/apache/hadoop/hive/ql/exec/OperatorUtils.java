@@ -29,8 +29,13 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -437,6 +442,171 @@ public class OperatorUtils {
       }
       if (op.getChildOperators() != null) {
         queue.addAll(op.getChildOperators());
+      }
+    }
+    return null;
+  }
+
+  public static Set<Operator<?>>
+  findWorkOperatorsAndSemiJoinEdges(Operator<?> start,
+                                    final Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo,
+                                    Set<ReduceSinkOperator> semiJoinOps, Set<TerminalOperator<?>> terminalOps) {
+    Set<Operator<?>> found = new HashSet<>();
+    findWorkOperatorsAndSemiJoinEdges(start,
+            found, rsToSemiJoinBranchInfo, semiJoinOps, terminalOps);
+    return found;
+  }
+
+  private static void
+  findWorkOperatorsAndSemiJoinEdges(Operator<?> start, Set<Operator<?>> found,
+                                    final Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo,
+                                    Set<ReduceSinkOperator> semiJoinOps, Set<TerminalOperator<?>> terminalOps) {
+    found.add(start);
+
+    if (start.getParentOperators() != null) {
+      for (Operator<?> parent : start.getParentOperators()) {
+        if (parent instanceof ReduceSinkOperator) {
+          continue;
+        }
+        if (!found.contains(parent)) {
+          findWorkOperatorsAndSemiJoinEdges(parent, found, rsToSemiJoinBranchInfo, semiJoinOps, terminalOps);
+        }
+      }
+    }
+    if (start instanceof TerminalOperator) {
+      // This could be RS1 in semijoin edge which looks like,
+      // SEL->GBY1->RS1->GBY2->RS2
+      boolean semiJoin = false;
+      if (start.getChildOperators().size() == 1) {
+        Operator<?> gb2 = start.getChildOperators().get(0);
+        if (gb2 instanceof GroupByOperator && gb2.getChildOperators().size() == 1) {
+          Operator<?> rs2 = gb2.getChildOperators().get(0);
+          if (rs2 instanceof ReduceSinkOperator && (rsToSemiJoinBranchInfo.get(rs2) != null)) {
+            // Semijoin edge found. Add all the operators to the set
+            found.add(start);
+            found.add(gb2);
+            found.add(rs2);
+            semiJoinOps.add((ReduceSinkOperator)rs2);
+            semiJoin = true;
+          }
+        }
+      }
+      if (!semiJoin) {
+        terminalOps.add((TerminalOperator)start);
+      }
+      return;
+    }
+    if (start.getChildOperators() != null) {
+      for (Operator<?> child : start.getChildOperators()) {
+        if (!found.contains(child)) {
+          findWorkOperatorsAndSemiJoinEdges(child, found, rsToSemiJoinBranchInfo, semiJoinOps, terminalOps);
+        }
+      }
+    }
+    return;
+  }
+
+  private static List<ExprNodeDesc> backtrackAll(List<ExprNodeDesc> exprs, Operator<? extends  OperatorDesc> start,
+                                                 Operator<? extends OperatorDesc> terminal) {
+    List<ExprNodeDesc> backtrackedExprs = new ArrayList<>();
+    try {
+      for (ExprNodeDesc expr : exprs) {
+        ExprNodeDesc backtrackedExpr = ExprNodeDescUtils.backtrack(expr, start, terminal);
+        if(backtrackedExpr == null) {
+          return null;
+        }
+        backtrackedExprs.add(backtrackedExpr);
+
+      }
+    } catch (SemanticException e) {
+      return null;
+    }
+    return backtrackedExprs;
+  }
+
+  // set of expressions are considered compatible if following are true:
+  //  * they are both same size
+  //  * if the are column expressions their table alias is same as well (this is checked because otherwise
+  //      expressions coming out of multiple RS (e.g. children of JOIN) are ended up same
+  private static boolean areBacktrackedExprsCompatible(final List<ExprNodeDesc> orgexprs,
+                                                       final List<ExprNodeDesc> backtrackedExprs) {
+    if(backtrackedExprs == null || backtrackedExprs.size() != orgexprs.size()) {
+      return false;
+    }
+    for(int i=0; i<orgexprs.size(); i++) {
+      if(orgexprs.get(i) instanceof ExprNodeColumnDesc && backtrackedExprs.get(i) instanceof ExprNodeColumnDesc) {
+        ExprNodeColumnDesc orgColExpr = (ExprNodeColumnDesc)orgexprs.get(i);
+        ExprNodeColumnDesc backExpr = (ExprNodeColumnDesc)backtrackedExprs.get(i);
+        String orgTabAlias = orgColExpr.getTabAlias();
+        String backTabAlias = backExpr.getTabAlias();
+
+        if(orgTabAlias != null && backTabAlias != null && !orgTabAlias.equals(backTabAlias)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /***
+   * This method backtracks the given expressions to the source RS. Note that expressions could
+   * further be backtracked to e.g. table source, but we are interested in RS only because this
+   * is used to estimate number of rows for group by and estimation will be better at RS since all
+   * the filters etc will have already been applied
+   * @param start
+   * @param exprs
+   * @return null if RS is not found
+   */
+  public static Operator<? extends OperatorDesc> findSourceRS(Operator<?> start, List<ExprNodeDesc> exprs) {
+    Operator currRS = null; //keep track of the RS
+    if (start instanceof ReduceSinkOperator) {
+      currRS = start;
+    }
+
+    if (start instanceof UnionOperator) {
+      //Union keeps the schema same but can change the cardinality, therefore we don't want to backtrack further
+      // into Union
+      return currRS;
+    }
+
+    List<Operator<? extends OperatorDesc>> parents = start.getParentOperators();
+    if (parents == null | parents.isEmpty()) {
+      // reached end e.g. TS operator
+      return null;
+    }
+
+    Operator<? extends OperatorDesc> nextOp = null;
+    List<ExprNodeDesc> backtrackedExprs = null;
+    for (int i = 0; i < parents.size(); i++) {
+      backtrackedExprs = backtrackAll(exprs, start, parents.get(i));
+      if (areBacktrackedExprsCompatible(exprs, backtrackedExprs)) {
+        nextOp = parents.get(i);
+        break;
+      }
+    }
+    if (nextOp != null) {
+      Operator<? extends OperatorDesc> nextRS = findSourceRS(nextOp, backtrackedExprs);
+      if (nextRS != null) {
+        currRS = nextRS;
+      }
+    }
+    return currRS;
+  }
+
+  /***
+   * Given group by operator on reduce side, this tries to get to the group by on map side (partial/merge).
+   * @param reduceSideGbOp Make sure this is group by side reducer
+   * @return map side gb if any, else null
+   */
+  public static GroupByOperator findMapSideGb(final GroupByOperator reduceSideGbOp) {
+    Operator<? extends OperatorDesc> parentOp = reduceSideGbOp;
+    while(parentOp.getParentOperators() != null && parentOp.getParentOperators().size() > 0) {
+      if(parentOp.getParentOperators().size() > 1) {
+        return null;
+      }
+      parentOp = parentOp.getParentOperators().get(0);
+      if(parentOp instanceof GroupByOperator) {
+        return (GroupByOperator)parentOp;
       }
     }
     return null;

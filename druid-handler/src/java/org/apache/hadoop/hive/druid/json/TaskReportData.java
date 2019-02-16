@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,10 +31,11 @@ import javax.annotation.Nullable;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-public class TaskReportData
-{
-  public enum TaskType
-  {
+@SuppressWarnings("unused") public class TaskReportData {
+  /**
+   * Task type used by serializer but does not have any functionality as far i can tell.
+   */
+  @SuppressWarnings("unused") public enum TaskType {
     ACTIVE, PUBLISHING, UNKNOWN
   }
 
@@ -46,16 +47,13 @@ public class TaskReportData
   private final Map<Integer, Long> currentOffsets;
   private final Map<Integer, Long> lag;
 
-  public TaskReportData(
-      String id,
+  public TaskReportData(String id,
       @Nullable Map<Integer, Long> startingOffsets,
       @Nullable Map<Integer, Long> currentOffsets,
       DateTime startTime,
       Long remainingSeconds,
       TaskType type,
-      @Nullable Map<Integer, Long> lag
-  )
-  {
+      @Nullable Map<Integer, Long> lag) {
     this.id = id;
     this.startingOffsets = startingOffsets;
     this.currentOffsets = currentOffsets;
@@ -65,61 +63,40 @@ public class TaskReportData
     this.lag = lag;
   }
 
-  @JsonProperty
-  public String getId()
-  {
+  @JsonProperty public String getId() {
     return id;
   }
 
-  @JsonProperty
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  public Map<Integer, Long> getStartingOffsets()
-  {
+  @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public Map<Integer, Long> getStartingOffsets() {
     return startingOffsets;
   }
 
-  @JsonProperty
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  public Map<Integer, Long> getCurrentOffsets()
-  {
+  @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public Map<Integer, Long> getCurrentOffsets() {
     return currentOffsets;
   }
 
-  @JsonProperty
-  public DateTime getStartTime()
-  {
+  @JsonProperty public DateTime getStartTime() {
     return startTime;
   }
 
-  @JsonProperty
-  public Long getRemainingSeconds()
-  {
+  @JsonProperty public Long getRemainingSeconds() {
     return remainingSeconds;
   }
 
-  @JsonProperty
-  public TaskType getType()
-  {
+  @JsonProperty public TaskType getType() {
     return type;
   }
 
-  @JsonProperty
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  public Map<Integer, Long> getLag()
-  {
+  @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public Map<Integer, Long> getLag() {
     return lag;
   }
 
-  @Override
-  public String toString()
-  {
-    return "{" +
-           "id='" + id + '\'' +
-           (startingOffsets != null ? ", startingOffsets=" + startingOffsets : "") +
-           (currentOffsets != null ? ", currentOffsets=" + currentOffsets : "") +
-           ", startTime=" + startTime +
-           ", remainingSeconds=" + remainingSeconds +
-           (lag != null ? ", lag=" + lag : "") +
-           '}';
+  @Override public String toString() {
+    return "{" + "id='" + id + '\'' + (startingOffsets != null ? ", startingOffsets=" + startingOffsets : "") + (
+        currentOffsets != null ?
+            ", currentOffsets=" + currentOffsets :
+            "") + ", startTime=" + startTime + ", remainingSeconds=" + remainingSeconds + (lag != null ?
+        ", lag=" + lag :
+        "") + '}';
   }
 }

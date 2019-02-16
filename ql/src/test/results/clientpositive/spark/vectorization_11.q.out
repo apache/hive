@@ -13,6 +13,8 @@ WHERE  ((cstring2 = cstring1)
         OR ((ctimestamp1 IS NULL)
             AND (cstring1 LIKE '%a')))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cstring1,
        cboolean1,
@@ -28,6 +30,8 @@ WHERE  ((cstring2 = cstring1)
         OR ((ctimestamp1 IS NULL)
             AND (cstring1 LIKE '%a')))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -63,8 +67,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [6, 10, 5, 8, 13, 14, 15, 17, 16]
-                          selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 1:int)(children: col 1:smallint) -> 13:int, DoubleColSubtractDoubleScalar(col 5:double, val 9763215.5639) -> 14:double, DoubleColUnaryMinus(col 5:double) -> 15:double, DoubleColAddDoubleScalar(col 16:double, val 6981.0)(children: DoubleColUnaryMinus(col 5:double) -> 16:double) -> 17:double, DoubleColMultiplyDoubleScalar(col 5:double, val -5638.15) -> 16:double
+                          projectedOutputColumnNums: [6, 10, 5, 8, 13, 14, 15, 17, 18]
+                          selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 1:int)(children: col 1:smallint) -> 13:int, DoubleColSubtractDoubleScalar(col 5:double, val 9763215.5639) -> 14:double, DoubleColUnaryMinus(col 5:double) -> 15:double, DoubleColAddDoubleScalar(col 16:double, val 6981.0)(children: DoubleColUnaryMinus(col 5:double) -> 16:double) -> 17:double, DoubleColMultiplyDoubleScalar(col 5:double, val -5638.15) -> 18:double
                       Statistics: Num rows: 9216 Data size: 2180995 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -91,7 +95,7 @@ STAGE PLANS:
                     includeColumns: [1, 5, 6, 7, 8, 10]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, double, double, double, double]
+                    scratchColumnTypeNames: [bigint, double, double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator

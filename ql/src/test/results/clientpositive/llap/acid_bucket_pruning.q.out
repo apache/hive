@@ -27,9 +27,16 @@ POSTHOOK: Lineage: acidtbldefault.a SCRIPT []
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM acidTblDefault WHERE a = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbldefault
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM acidTblDefault WHERE a = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtbldefault
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+OPTIMIZED SQL: SELECT CAST(1 AS INTEGER) AS `$f0`
+FROM `default`.`acidtbldefault`
+WHERE `a` = 1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -45,22 +52,22 @@ STAGE PLANS:
                   alias: acidtbldefault
                   filterExpr: (a = 1) (type: boolean)
                   buckets included: [13,] of 16
-                  Statistics: Num rows: 9174 Data size: 34868 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 9174 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (a = 1) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: 1 (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
                         directory: hdfs://### HDFS PATH ###
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 5 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -88,6 +95,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true"}}
                     bucket_count 16
                     bucket_field_name a
                     bucketing_version 2
@@ -113,6 +121,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true"}}
                       bucket_count 16
                       bucket_field_name a
                       bucketing_version 2

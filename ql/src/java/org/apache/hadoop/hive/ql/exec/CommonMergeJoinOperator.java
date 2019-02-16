@@ -627,12 +627,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     if ((joinKeysObjectInspectors != null) && (joinKeysObjectInspectors[alias] != null)) {
       return JoinUtil.computeKeys(row, joinKeys[alias], joinKeysObjectInspectors[alias]);
     } else {
-      row =
-          ObjectInspectorUtils.copyToStandardObject(row, inputObjInspectors[alias],
-              ObjectInspectorCopyOption.WRITABLE);
-      StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[alias];
-      StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY.toString());
-      return (List<Object>) soi.getStructFieldData(row, sf);
+      final List<Object> key = new ArrayList<Object>(1);
+      ObjectInspectorUtils.partialCopyToStandardObject(key, row,
+          Utilities.ReduceField.KEY.position, 1, (StructObjectInspector) inputObjInspectors[alias],
+          ObjectInspectorCopyOption.WRITABLE);
+      return (List<Object>) key.get(0); // this is always 0, even if KEY.position is not 
     }
   }
 

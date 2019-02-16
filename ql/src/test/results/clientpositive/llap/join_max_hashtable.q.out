@@ -2,10 +2,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -81,10 +85,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -160,10 +168,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -230,6 +242,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -249,10 +262,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -318,6 +335,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -337,10 +355,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -407,6 +429,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -426,10 +449,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -495,6 +522,7 @@ STAGE PLANS:
                 input vertices:
                   1 Map 3
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
                 HybridGraceHashJoin: true
                 File Output Operator
                   compressed: false
@@ -514,10 +542,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -527,7 +559,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -543,26 +575,15 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        outputColumnNames: _col0, _col1
-                        input vertices:
-                          1 Map 2
-                        Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: y
@@ -582,6 +603,28 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 KEY.reducesinkkey0 (type: string)
+                  1 KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                input vertices:
+                  1 Map 3
+                Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
+                HybridGraceHashJoin: true
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -593,10 +636,14 @@ PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM src x JOIN src y ON (x.key = y.key AND x.value = y.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -606,7 +653,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -622,26 +669,14 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string), _col1 (type: string)
-                          1 _col0 (type: string), _col1 (type: string)
-                        outputColumnNames: _col0, _col1
-                        input vertices:
-                          1 Map 2
-                        Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: y
@@ -661,6 +696,28 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  1 KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                outputColumnNames: _col0, _col1
+                input vertices:
+                  1 Map 3
+                Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
+                HybridGraceHashJoin: true
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

@@ -2,7 +2,7 @@ PREHOOK: query: DROP TABLE hbase_src
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_src
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_src(key STRING,
+PREHOOK: query: CREATE EXTERNAL TABLE hbase_src(key STRING,
                        tinyint_col TINYINT,
                        smallint_col SMALLINT,
                        int_col INT,
@@ -10,10 +10,11 @@ PREHOOK: query: CREATE TABLE hbase_src(key STRING,
                        float_col FLOAT,
                        double_col DOUBLE,
                        string_col STRING)
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_src
-POSTHOOK: query: CREATE TABLE hbase_src(key STRING,
+POSTHOOK: query: CREATE EXTERNAL TABLE hbase_src(key STRING,
                        tinyint_col TINYINT,
                        smallint_col SMALLINT,
                        int_col INT,
@@ -21,6 +22,7 @@ POSTHOOK: query: CREATE TABLE hbase_src(key STRING,
                        float_col FLOAT,
                        double_col DOUBLE,
                        string_col STRING)
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_src
@@ -50,7 +52,7 @@ PREHOOK: query: DROP TABLE t_hbase_maps
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE t_hbase_maps
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
+PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_maps(key STRING,
                           tinyint_map_col MAP<TINYINT, TINYINT>,
                           smallint_map_col MAP<SMALLINT, SMALLINT>,
                           int_map_col MAP<INT, INT>,
@@ -61,11 +63,11 @@ PREHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
-TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps", "external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_maps
-POSTHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
+POSTHOOK: query: CREATE EXTERNAL TABLE t_hbase_maps(key STRING,
                           tinyint_map_col MAP<TINYINT, TINYINT>,
                           smallint_map_col MAP<SMALLINT, SMALLINT>,
                           int_map_col MAP<INT, INT>,
@@ -76,7 +78,7 @@ POSTHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
-TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps", "external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_maps
@@ -314,7 +316,7 @@ PREHOOK: query: DROP TABLE t_hbase_maps_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE t_hbase_maps_1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE t_hbase_maps_1(key STRING,
+PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_maps_1(key STRING,
                             tinyint_map_col MAP<TINYINT, TINYINT>,
                             smallint_map_col MAP<SMALLINT, SMALLINT>,
                             int_map_col MAP<INT, INT>,
@@ -325,11 +327,11 @@ PREHOOK: query: CREATE TABLE t_hbase_maps_1(key STRING,
                             boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#b:b,cf-smallint:#b:b,cf-int:#b:b,cf-bigint:#b:b,cf-float:#b:b,cf-double:#b:b,cf-string:#b:b,cf-boolean:#b:b")
-TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1", "external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_maps_1
-POSTHOOK: query: CREATE TABLE t_hbase_maps_1(key STRING,
+POSTHOOK: query: CREATE EXTERNAL TABLE t_hbase_maps_1(key STRING,
                             tinyint_map_col MAP<TINYINT, TINYINT>,
                             smallint_map_col MAP<SMALLINT, SMALLINT>,
                             int_map_col MAP<INT, INT>,
@@ -340,7 +342,7 @@ POSTHOOK: query: CREATE TABLE t_hbase_maps_1(key STRING,
                             boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#b:b,cf-smallint:#b:b,cf-int:#b:b,cf-bigint:#b:b,cf-float:#b:b,cf-double:#b:b,cf-string:#b:b,cf-boolean:#b:b")
-TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1", "external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_maps_1

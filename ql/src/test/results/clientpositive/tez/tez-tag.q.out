@@ -169,8 +169,20 @@ POSTHOOK: Output: default@tab2_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select count(*) from tab_n5 a join tab_part_n6 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab_n5
+PREHOOK: Input: default@tab_n5@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n6
+PREHOOK: Input: default@tab_part_n6@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(*) from tab_n5 a join tab_part_n6 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab_n5
+POSTHOOK: Input: default@tab_n5@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n6
+POSTHOOK: Input: default@tab_part_n6@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -244,8 +256,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 40
 PREHOOK: query: explain select count(*) from (select x.key as key, min(x.value) as value from tab2_n2 x group by x.key) a join (select x.key as key, min(x.value) as value from tab2_n2 x group by x.key) b on a.key = b.key join src1 c on a.value = c.value where c.key < 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@tab2_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select count(*) from (select x.key as key, min(x.value) as value from tab2_n2 x group by x.key) a join (select x.key as key, min(x.value) as value from tab2_n2 x group by x.key) b on a.key = b.key join src1 c on a.value = c.value where c.key < 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@tab2_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -266,12 +284,12 @@ Stage-0
             Group By Operator [GBY_25] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_41] (rows=1 width=8)
-                Conds:RS_21._col1=RS_22._col1(Inner)
+                Conds:RS_21._col1=RS_22._col0(Inner)
               <-Map 7 [SIMPLE_EDGE]
                 SHUFFLE [RS_22]
-                  PartitionCols:_col1
-                  Select Operator [SEL_17] (rows=8 width=175)
-                    Output:["_col1"]
+                  PartitionCols:_col0
+                  Select Operator [SEL_17] (rows=8 width=89)
+                    Output:["_col0"]
                     Filter Operator [FIL_38] (rows=8 width=175)
                       predicate:((UDFToDouble(key) < 0.0D) and value is not null)
                       TableScan [TS_15] (rows=25 width=175)

@@ -10,6 +10,8 @@ PREHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
  FROM 
   src a
@@ -22,6 +24,8 @@ POSTHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -390,6 +394,8 @@ PREHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
  FROM 
   src a
@@ -402,6 +408,8 @@ POSTHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

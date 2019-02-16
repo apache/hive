@@ -61,6 +61,7 @@ enum OperatorType {
   RCFILEMERGE,
   MERGEJOIN,
   SPARKPRUNINGSINK,
+  TOPNKEY,
 }
 
 struct Operator {

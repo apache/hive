@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.Reusable
 public class VectorMapJoinOptimizedMultiKeyHashMap
              extends VectorMapJoinOptimizedHashMap  {
 
-  // UNDONE: How to look for all NULLs in a multi-key?????  Let nulls through for now.
-
   public VectorMapJoinOptimizedMultiKeyHashMap(boolean isOuterJoin,
       MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter) {
     super(originalTableContainer, hashMapRowGetter);

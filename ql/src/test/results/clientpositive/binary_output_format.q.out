@@ -35,6 +35,8 @@ SELECT TRANSFORM(*)
     RECORDREADER 'org.apache.hadoop.hive.ql.exec.BinaryRecordReader'
 FROM src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n109
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1_n109
 SELECT TRANSFORM(*)
@@ -48,6 +50,8 @@ SELECT TRANSFORM(*)
     RECORDREADER 'org.apache.hadoop.hive.ql.exec.BinaryRecordReader'
 FROM src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n109
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -64,12 +68,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Transform Operator
                 command: cat
                 output info:
@@ -83,13 +87,13 @@ STAGE PLANS:
                       serialization.last.column.takes.rest true
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -121,16 +125,16 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: string)
                   outputColumnNames: mydata
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(mydata, 'hll')
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: -1
                       value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                       auto parallelism: false
@@ -193,13 +197,13 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat

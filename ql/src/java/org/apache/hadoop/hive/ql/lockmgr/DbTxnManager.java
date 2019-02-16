@@ -18,38 +18,31 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.hooks.Entity;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
@@ -249,7 +242,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       tableWriteIds.clear();
       isExplicitTransaction = false;
       startTransactionCount = 0;
-      LOG.debug("Opened " + JavaUtils.txnIdToString(txnId));
+      LOG.info("Opened " + JavaUtils.txnIdToString(txnId));
       ctx.setHeartbeater(startHeartbeat(delay));
       return txnId;
     } catch (TException e) {
@@ -380,28 +373,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     //todo: handle Insert Overwrite as well: HIVE-18154
     return false;
   }
-  private boolean needsLock(Entity entity) {
-    switch (entity.getType()) {
-    case TABLE:
-      return isLockableTable(entity.getTable());
-    case PARTITION:
-      return isLockableTable(entity.getPartition().getTable());
-    default:
-      return true;
-    }
-  }
-  private boolean isLockableTable(Table t) {
-    if(t.isTemporary()) {
-      return false;
-    }
-    switch (t.getTableType()) {
-    case MANAGED_TABLE:
-    case MATERIALIZED_VIEW:
-      return true;
-    default:
-      return false;
-    }
-  }
+
   /**
    * Normally client should call {@link #acquireLocks(org.apache.hadoop.hive.ql.QueryPlan, org.apache.hadoop.hive.ql.Context, String)}
    * @param isBlocking if false, the method will return immediately; thus the locks may be in LockState.WAITING
@@ -413,7 +385,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     // Make sure we've built the lock manager
     getLockManager();
     verifyState(plan);
-    boolean atLeastOneLock = false;
     queryId = plan.getQueryId();
     switch (plan.getOperation()) {
       case SET_AUTOCOMMIT:
@@ -428,193 +399,27 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     rqstBuilder.setTransactionId(txnId)
         .setUser(username);
 
-    // For each source to read, get a shared lock
-    for (ReadEntity input : plan.getInputs()) {
-      if (!input.needsLock() || input.isUpdateOrDelete() || !needsLock(input)) {
-        // We don't want to acquire read locks during update or delete as we'll be acquiring write
-        // locks instead. Also, there's no need to lock temp tables since they're session wide
-        continue;
-      }
-      LockComponentBuilder compBuilder = new LockComponentBuilder();
-      compBuilder.setShared();
-      compBuilder.setOperationType(DataOperationType.SELECT);
 
-      Table t = null;
-      switch (input.getType()) {
-        case DATABASE:
-          compBuilder.setDbName(input.getDatabase().getName());
-          break;
-
-        case TABLE:
-          t = input.getTable();
-          compBuilder.setDbName(t.getDbName());
-          compBuilder.setTableName(t.getTableName());
-          break;
-
-        case PARTITION:
-        case DUMMYPARTITION:
-          compBuilder.setPartitionName(input.getPartition().getName());
-          t = input.getPartition().getTable();
-          compBuilder.setDbName(t.getDbName());
-          compBuilder.setTableName(t.getTableName());
-          break;
-
-        default:
-          // This is a file or something we don't hold locks for.
-          continue;
-      }
-      if(t != null) {
-        compBuilder.setIsTransactional(AcidUtils.isTransactionalTable(t));
-      }
-      LockComponent comp = compBuilder.build();
-      LOG.debug("Adding lock component to lock request " + comp.toString());
-      rqstBuilder.addLockComponent(comp);
-      atLeastOneLock = true;
-    }
-
-    // For each source to write to, get the appropriate lock type.  If it's
-    // an OVERWRITE, we need to get an exclusive lock.  If it's an insert (no
-    // overwrite) than we need a shared.  If it's update or delete then we
-    // need a SEMI-SHARED.
-    for (WriteEntity output : plan.getOutputs()) {
-      LOG.debug("output is null " + (output == null));
-      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR ||
-          !needsLock(output)) {
-        // We don't lock files or directories. We also skip locking temp tables.
-        continue;
-      }
-      LockComponentBuilder compBuilder = new LockComponentBuilder();
-      Table t = null;
-      switch (output.getType()) {
-        case DATABASE:
-          compBuilder.setDbName(output.getDatabase().getName());
-          break;
-
-        case TABLE:
-        case DUMMYPARTITION:   // in case of dynamic partitioning lock the table
-          t = output.getTable();
-          compBuilder.setDbName(t.getDbName());
-          compBuilder.setTableName(t.getTableName());
-          break;
-
-        case PARTITION:
-          compBuilder.setPartitionName(output.getPartition().getName());
-          t = output.getPartition().getTable();
-          compBuilder.setDbName(t.getDbName());
-          compBuilder.setTableName(t.getTableName());
-          break;
-
-        default:
-          // This is a file or something we don't hold locks for.
-          continue;
-      }
-      switch (output.getWriteType()) {
-        /* base this on HiveOperation instead?  this and DDL_NO_LOCK is peppered all over the code...
-         Seems much cleaner if each stmt is identified as a particular HiveOperation (which I'd think
-         makes sense everywhere).  This however would be problematic for merge...*/
-      case DDL_EXCLUSIVE:
-        compBuilder.setExclusive();
-        compBuilder.setOperationType(DataOperationType.NO_TXN);
-        break;
-      case INSERT_OVERWRITE:
-        t = getTable(output);
-        if (AcidUtils.isTransactionalTable(t)) {
-          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)) {
-            compBuilder.setExclusive();
-          } else {
-            compBuilder.setSemiShared();
-          }
-          compBuilder.setOperationType(DataOperationType.UPDATE);
-        } else {
-          compBuilder.setExclusive();
-          compBuilder.setOperationType(DataOperationType.NO_TXN);
-        }
-        break;
-      case INSERT:
-        assert t != null;
-        if (AcidUtils.isTransactionalTable(t)) {
-          compBuilder.setShared();
-        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
-          final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
-              "Thought all the non native tables have an instance of storage handler"
-          );
-          LockType lockType = storageHandler.getLockType(output);
-          switch (lockType) {
-          case EXCLUSIVE:
-            compBuilder.setExclusive();
-            break;
-          case SHARED_READ:
-            compBuilder.setShared();
-            break;
-          case SHARED_WRITE:
-            compBuilder.setSemiShared();
-            break;
-          default:
-            throw new IllegalArgumentException(String
-                .format("Lock type [%s] for Database.Table [%s.%s] is unknown", lockType, t.getDbName(),
-                    t.getTableName()
-                ));
-          }
-
-        } else {
-          if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
-            compBuilder.setExclusive();
-          } else {  // this is backward compatible for non-ACID resources, w/o ACID semantics
-            compBuilder.setShared();
-          }
-        }
-        compBuilder.setOperationType(DataOperationType.INSERT);
-        break;
-      case DDL_SHARED:
-        compBuilder.setShared();
-        compBuilder.setOperationType(DataOperationType.NO_TXN);
-        break;
-
-      case UPDATE:
-        compBuilder.setSemiShared();
-        compBuilder.setOperationType(DataOperationType.UPDATE);
-        break;
-      case DELETE:
-        compBuilder.setSemiShared();
-        compBuilder.setOperationType(DataOperationType.DELETE);
-        break;
-
-      case DDL_NO_LOCK:
-        continue; // No lock required here
-
-      default:
-        throw new RuntimeException("Unknown write type " + output.getWriteType().toString());
-      }
-      if (t != null) {
-        compBuilder.setIsTransactional(AcidUtils.isTransactionalTable(t));
-      }
-
-      compBuilder.setIsDynamicPartitionWrite(output.isDynamicPartitionWrite());
-      LockComponent comp = compBuilder.build();
-      LOG.debug("Adding lock component to lock request " + comp.toString());
-      rqstBuilder.addLockComponent(comp);
-      atLeastOneLock = true;
-    }
-    //plan
     // Make sure we need locks.  It's possible there's nothing to lock in
     // this operation.
-    if (!atLeastOneLock) {
-      LOG.debug("No locks needed for queryId" + queryId);
+    if(plan.getInputs().isEmpty() && plan.getOutputs().isEmpty()) {
+      LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
+    List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(), conf);
+    //It's possible there's nothing to lock even if we have w/r entities.
+    if(lockComponents.isEmpty()) {
+      LOG.debug("No locks needed for queryId=" + queryId);
+      return null;
+    }
+    rqstBuilder.addLockComponents(lockComponents);
 
     List<HiveLock> locks = new ArrayList<HiveLock>(1);
     LockState lockState = lockMgr.lock(rqstBuilder.build(), queryId, isBlocking, locks);
     ctx.setHiveLocks(locks);
     return lockState;
   }
-  private static Table getTable(WriteEntity we) {
-    Table t = we.getTable();
-    if(t == null) {
-      throw new IllegalStateException("No table info for " + we);
-    }
-    return t;
-  }
+
   /**
    * @param delay time to delay for first heartbeat
    */
@@ -637,19 +442,44 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
+  private void clearLocksAndHB() throws LockException {
+    lockMgr.clearLocalLockRecords();
+    stopHeartbeat();
+  }
+
+  private void resetTxnInfo() {
+    txnId = 0;
+    stmtId = -1;
+    numStatements = 0;
+    tableWriteIds.clear();
+  }
+
   @Override
-  public void replCommitTxn(String replPolicy, long srcTxnId) throws LockException {
+  public void replCommitTxn(CommitTxnRequest rqst) throws LockException {
     try {
-      getMS().replCommitTxn(srcTxnId, replPolicy);
+      if (rqst.isSetReplLastIdInfo()) {
+        if (!isTxnOpen()) {
+          throw new RuntimeException("Attempt to commit before opening a transaction");
+        }
+        // For transaction started internally by repl load command, heartbeat needs to be stopped.
+        clearLocksAndHB();
+      }
+      getMS().replCommitTxn(rqst);
     } catch (NoSuchTxnException e) {
-      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(srcTxnId));
-      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(srcTxnId));
+      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(rqst.getTxnid()));
+      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(rqst.getTxnid()));
     } catch (TxnAbortedException e) {
-      LockException le = new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(srcTxnId), e.getMessage());
+      LockException le = new LockException(e, ErrorMsg.TXN_ABORTED,
+              JavaUtils.txnIdToString(rqst.getTxnid()), e.getMessage());
       LOG.error(le.getMessage());
       throw le;
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    } finally {
+      if (rqst.isSetReplLastIdInfo()) {
+        // For transaction started internally by repl load command, needs to clear the txn info.
+        resetTxnInfo();
+      }
     }
   }
 
@@ -659,8 +489,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new RuntimeException("Attempt to commit before opening a transaction");
     }
     try {
-      lockMgr.clearLocalLockRecords();
-      stopHeartbeat();
+      // do all new clear in clearLocksAndHB method to make sure that same code is there for replCommitTxn flow.
+      clearLocksAndHB();
       LOG.debug("Committing txn " + JavaUtils.txnIdToString(txnId));
       getMS().commitTxn(txnId);
     } catch (NoSuchTxnException e) {
@@ -674,10 +504,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
     } finally {
-      txnId = 0;
-      stmtId = -1;
-      numStatements = 0;
-      tableWriteIds.clear();
+      // do all new reset in resetTxnInfo method to make sure that same code is there for replCommitTxn flow.
+      resetTxnInfo();
     }
   }
   @Override
@@ -867,7 +695,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     assert isTxnOpen();
     assert validTxnList != null && !validTxnList.isEmpty();
     try {
-      return TxnUtils.createValidTxnWriteIdList(
+      return TxnCommonUtils.createValidTxnWriteIdList(
           txnId, getMS().getValidWriteIds(tableList, validTxnList));
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
@@ -976,21 +804,24 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   private synchronized void initHeartbeatExecutorService() {
-    if (heartbeatExecutorService != null && !heartbeatExecutorService.isShutdown()
-        && !heartbeatExecutorService.isTerminated()) {
-      return;
-    }
-    heartbeatExecutorService =
-        Executors.newScheduledThreadPool(
-          conf.getIntVar(HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE), new ThreadFactory() {
-          private final AtomicInteger threadCounter = new AtomicInteger();
+    synchronized (DbTxnManager.class) {
+      if (heartbeatExecutorService != null && !heartbeatExecutorService.isShutdown()
+          && !heartbeatExecutorService.isTerminated()) {
+        return;
+      }
+      heartbeatExecutorService =
+          Executors.newScheduledThreadPool(
+              conf.getIntVar(HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE),
+              new ThreadFactory() {
+                private final AtomicInteger threadCounter = new AtomicInteger();
 
-          @Override
-          public Thread newThread(Runnable r) {
-            return new HeartbeaterThread(r, "Heartbeater-" + threadCounter.getAndIncrement());
-          }
-        });
-    ((ScheduledThreadPoolExecutor) heartbeatExecutorService).setRemoveOnCancelPolicy(true);
+                @Override
+                public Thread newThread(Runnable r) {
+                  return new HeartbeaterThread(r, "Heartbeater-" + threadCounter.getAndIncrement());
+                }
+              });
+      ((ScheduledThreadPoolExecutor) heartbeatExecutorService).setRemoveOnCancelPolicy(true);
+    }
   }
 
   public static class HeartbeaterThread extends Thread {
@@ -1013,16 +844,38 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     assert isTxnOpen();
     return stmtId++;
   }
-
+  @Override
+  public int getCurrentStmtId() {
+    assert isTxnOpen();
+    return stmtId;
+  }
   @Override
   public long getTableWriteId(String dbName, String tableName) throws LockException {
     assert isTxnOpen();
+    return getTableWriteId(dbName, tableName, true);
+  }
+
+  @Override
+  public long getAllocatedTableWriteId(String dbName, String tableName) throws LockException {
+    assert isTxnOpen();
+    // Calls getTableWriteId() with allocateIfNotYet being false
+    // to return 0 if the dbName:tableName's writeId is yet allocated.
+    // This happens when the current context is before
+    // Driver.acquireLocks() is called.
+    return getTableWriteId(dbName, tableName, false);
+  }
+
+  private long getTableWriteId(
+      String dbName, String tableName, boolean allocateIfNotYet) throws LockException {
     String fullTableName = AcidUtils.getFullTableName(dbName, tableName);
     if (tableWriteIds.containsKey(fullTableName)) {
       return tableWriteIds.get(fullTableName);
+    } else if (!allocateIfNotYet) {
+      return 0;
     }
     try {
       long writeId = getMS().allocateTableWriteId(txnId, dbName, tableName);
+      LOG.debug("Allocated write ID {} for {}.{}", writeId, dbName, tableName);
       tableWriteIds.put(fullTableName, writeId);
       return writeId;
     } catch (TException e) {

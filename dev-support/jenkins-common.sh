@@ -31,12 +31,9 @@ get_branch_name() {
   local branch="$2"        # $2 is a default branch
 
   if [[ -n $PATCH_NAME ]]; then
-    # Test PATCH_NAME:
-    # HIVE-123.patch HIVE-123.1.patch HIVE-123-tez.patch HIVE-123.1-tez.patch
-    # HIVE-XXXX.patch, HIVE-XXXX.XX.patch  HIVE-XXXX.XX-branch.patch HIVE-XXXX-branch.patch
-    if [[ $PATCH_NAME =~ ^HIVE-[0-9]+(\.[0-9]+)?(-[A-Za-z0-9.-]+)?\.(patch|patch.\txt)$ ]]; then
+    if [[ $PATCH_NAME =~ ^HIVE-[0-9]+(\.[0-9]+)?([-\.][A-Za-z0-9.-]+)?\.(patch|patch.\txt)$ ]]; then
       if [[ -n "${BASH_REMATCH[2]}" ]]; then
-        branch=${BASH_REMATCH[2]#*-}
+        branch=${BASH_REMATCH[2]:1}
       fi
     elif [[ $PATCH_NAME =~ ^(HIVE-[0-9]+\.)?D[0-9]+(\.[0-9]+)?\.(patch|patch.\txt)$ ]]; then
       # It will assume the default branch
@@ -49,6 +46,34 @@ get_branch_name() {
 
   echo $branch
   return 0
+}
+
+# Used during development for testing get_branch_name
+_test_get_branch_name() {
+  do_test() {
+    local PATCH_NAME="$1"
+    local EXPECTED="$2"
+
+    local ACTUAL=$(get_branch_name $PATCH_NAME master)
+
+    [[ "$ACTUAL" == "$EXPECTED" ]] || echoerr "$PATCH_NAME failed ($ACTUAL != $EXPECTED)"
+  }
+
+  # Branch not spcified in patch name
+  do_test "HIVE-123.patch" "master"
+  do_test "HIVE-123.1.patch" "master"
+
+  # Branch name separated by '-'
+  do_test "HIVE-123-tez.patch" "tez"
+  do_test "HIVE-123.1-tez.patch" "tez"
+  do_test "HIVE-123-branch-2.patch" "branch-2"
+  do_test "HIVE-123.1-branch-2.patch" "branch-2"
+
+  # Branch name separated by '.'
+  do_test "HIVE-123.tez.patch" "tez"
+  do_test "HIVE-123.1.tez.patch" "tez"
+  do_test "HIVE-123.branch-2.patch" "branch-2"
+  do_test "HIVE-123.1.branch-2.patch" "branch-2"
 }
 
 # Gets the attachment identifier of a JIRA attachment file

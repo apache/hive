@@ -1,0 +1,9 @@
+PREHOOK: query: create table t1(c1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(c1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+FAILED: SemanticException Ambiguous column reference: t.c1

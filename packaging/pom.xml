@@ -54,7 +54,7 @@
                     <descriptor>src/main/assembly/bin.xml</descriptor>
                     <descriptor>src/main/assembly/src.xml</descriptor>
                   </descriptors>
-                  <tarLongFileMode>gnu</tarLongFileMode>
+                  <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>
               </execution>
             </executions>
@@ -215,6 +215,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>kafka-handler</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc-handler</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -280,11 +285,6 @@
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-server-extensions</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-upgrade-acid</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -4,6 +4,7 @@ POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: explain authorization kill query 'dummyqueryid'
 PREHOOK: type: KILL QUERY
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization kill query 'dummyqueryid'
 POSTHOOK: type: KILL QUERY
 INPUTS: 
@@ -20,6 +21,7 @@ POSTHOOK: query: kill query 'dummyqueryid'
 POSTHOOK: type: KILL QUERY
 PREHOOK: query: explain authorization kill query 'dummyqueryid'
 PREHOOK: type: KILL QUERY
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain authorization kill query 'dummyqueryid'
 POSTHOOK: type: KILL QUERY
 INPUTS: 

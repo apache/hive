@@ -82,7 +82,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
   ).getPath().replaceAll("\\\\", "/");
   protected static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   @Override
-  String getTestDataDir() {
+  protected String getTestDataDir() {
     return TEST_DATA_DIR;
   }
 
@@ -580,7 +580,17 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
     runStatementOnDriver("insert into " + TableExtended.MMTBL  + " values (5, 6)");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
-    // There should be 3 delta directories. The new one is the aborted one.
+    /**
+     * There should be 3 delta directories. The new one is the aborted one.
+     *
+     * target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1541637725613/warehouse/mmtbl/
+     ├── delta_0000001_0000001_0000
+     │   └── 000000_0
+     ├── delta_0000002_0000002_0000
+     │   └── 000000_0
+     └── delta_0000003_0000003_0000
+         └── 000000_0
+      */
     verifyDirAndResult(3);
 
     // Execute SELECT statement and verify the result set (should be two rows).
@@ -589,14 +599,11 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(expected), rs);
 
     // Run Cleaner.
-    // This run doesn't do anything for the above aborted transaction since
-    // the current compaction request entry in the compaction queue is updated
-    // to have highest_write_id when the worker is run before the aborted
-    // transaction. Specifically the id is 2 for the entry but the aborted
-    // transaction has 3 as writeId. This run does transition the entry
-    // "successful".
+    // delta_0000003_0000003_0000 produced by the aborted txn is removed even though it is
+    // above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID since all data in it is aborted
+    // This run does transition the entry "successful".
     runCleaner(hiveConf);
-    verifyDirAndResult(3);
+    verifyDirAndResult(2);
 
     // Execute SELECT and verify that aborted operation is not counted for MM table.
     rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
@@ -605,15 +612,10 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     // Run initiator to execute CompactionTxnHandler.cleanEmptyAbortedTxns()
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
             1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
-    Initiator i = new Initiator();
-    i.setThreadId((int)i.getId());
-    i.setConf(hiveConf);
-    AtomicBoolean stop = new AtomicBoolean(true);
-    i.init(stop, new AtomicBoolean());
-    i.run();
+    TestTxnCommands2.runInitiator(hiveConf);
     // This run of Initiator doesn't add any compaction_queue entry
     // since we only have one MM table with data - we don't compact MM tables.
-    verifyDirAndResult(3);
+    verifyDirAndResult(2);
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
             1, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
 
@@ -638,7 +640,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     runCleaner(hiveConf);
 
     // Run initiator to clean the row fro the aborted transaction from TXNS.
-    i.run();
+    TestTxnCommands2.runInitiator(hiveConf);
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXNS"),
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"),

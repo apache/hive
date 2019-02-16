@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -28,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class DynamicPartitionCtx implements Serializable {
@@ -54,7 +54,37 @@ public class DynamicPartitionCtx implements Serializable {
   public DynamicPartitionCtx() {
   }
 
-  public DynamicPartitionCtx(Table tbl, Map<String, String> partSpec, String defaultPartName,
+  /**
+   * This constructor is used for partitioned CTAS. Basically we pass the name of
+   * partitioned columns, which will all be dynamic partitions since the binding
+   * is done after executing the query in the CTAS.
+   */
+  public DynamicPartitionCtx(List<String> partColNames, String defaultPartName,
+      int maxParts) throws SemanticException {
+    this.partSpec = new LinkedHashMap<>();
+    this.spNames = new ArrayList<>();
+    this.dpNames = new ArrayList<>();
+    for (String colName : partColNames) {
+      this.partSpec.put(colName, null);
+      this.dpNames.add(colName);
+    }
+    this.numBuckets = 0;
+    this.maxPartsPerNode = maxParts;
+    this.defaultPartName = defaultPartName;
+
+    this.numDPCols = dpNames.size();
+    this.numSPCols = spNames.size();
+    this.spPath = null;
+    String confVal;
+    try {
+      confVal = Hive.get().getMetaConf(ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
+    this.whiteListPattern = confVal == null || confVal.isEmpty() ? null : Pattern.compile(confVal);
+  }
+
+  public DynamicPartitionCtx(Map<String, String> partSpec, String defaultPartName,
       int maxParts) throws SemanticException {
     this.partSpec = partSpec;
     this.spNames = new ArrayList<String>();

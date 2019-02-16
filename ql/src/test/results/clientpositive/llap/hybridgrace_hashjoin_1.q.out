@@ -15,6 +15,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -23,6 +25,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -138,6 +142,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -146,6 +152,8 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -260,6 +268,8 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -267,6 +277,8 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -301,7 +313,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 18464 Data size: 147712 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 13785 Data size: 110280 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -379,6 +391,8 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -386,6 +400,8 @@ select count(*) from
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -420,7 +436,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 18464 Data size: 147712 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 13785 Data size: 110280 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -498,6 +514,8 @@ select count(*) from
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -505,6 +523,8 @@ select count(*) from
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -609,6 +629,8 @@ select count(*) from
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
@@ -616,6 +638,8 @@ select count(*) from
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -752,6 +776,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parttbl
+PREHOOK: Input: default@parttbl@dt=2000-01-01
+PREHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select p1.value
@@ -759,6 +787,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parttbl
+POSTHOOK: Input: default@parttbl@dt=2000-01-01
+POSTHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -875,6 +907,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parttbl
+PREHOOK: Input: default@parttbl@dt=2000-01-01
+PREHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select p1.value
@@ -882,6 +918,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parttbl
+POSTHOOK: Input: default@parttbl@dt=2000-01-01
+POSTHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -999,6 +1039,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parttbl
+PREHOOK: Input: default@parttbl@dt=2000-01-01
+PREHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select p1.value
@@ -1006,6 +1050,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parttbl
+POSTHOOK: Input: default@parttbl@dt=2000-01-01
+POSTHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1128,6 +1176,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@parttbl
+PREHOOK: Input: default@parttbl@dt=2000-01-01
+PREHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from
 (select p1.value
@@ -1135,6 +1187,10 @@ select count(*) from
  inner join parttbl p2
  on p1.key = p2.key) t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parttbl
+POSTHOOK: Input: default@parttbl@dt=2000-01-01
+POSTHOOK: Input: default@parttbl@dt=2000-01-02
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1286,11 +1342,15 @@ PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1350,10 +1410,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col2
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
+                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col1 (type: decimal(23,14))
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -1491,11 +1551,15 @@ PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
   WHERE l.cint = 6981
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_mapjoin
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1555,10 +1619,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col2
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
+                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col1 (type: decimal(23,14))
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

@@ -26,10 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
@@ -37,24 +40,31 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.CollectorTestOperator;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.CountCollectorTestOperator;
+import org.apache.hadoop.hive.ql.exec.util.collectoroperator.RowCollectorTestOperator;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.RowCollectorTestOperatorBase;
+import org.apache.hadoop.hive.ql.exec.util.collectoroperator.RowVectorCollectorTestOperator;
 import org.apache.hadoop.hive.ql.exec.util.rowobjects.RowTestObjects;
+import org.apache.hadoop.hive.ql.exec.util.rowobjects.RowTestObjectsMultiSet;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnOutputMapping;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSourceMapping;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinBaseOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastTableContainer;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VerifyFastRow;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinInfo;
@@ -62,6 +72,7 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationT
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
+import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -90,44 +101,203 @@ public class MapJoinTestConfig {
     NATIVE_VECTOR_FAST
   }
 
+  public static boolean isVectorOutput(MapJoinTestImplementation mapJoinImplementation) {
+    return
+        (mapJoinImplementation != MapJoinTestImplementation.ROW_MODE_HASH_MAP &&
+         mapJoinImplementation != MapJoinTestImplementation.ROW_MODE_OPTIMIZED);
+  }
+
+  /*
+   * This test collector operator is for MapJoin row-mode.
+   */
+  public static class TestMultiSetCollectorOperator extends RowCollectorTestOperator {
+
+    private final RowTestObjectsMultiSet testRowMultiSet;
+
+    public TestMultiSetCollectorOperator(
+        ObjectInspector[] outputObjectInspectors,
+        RowTestObjectsMultiSet testRowMultiSet) {
+      super(outputObjectInspectors);
+      this.testRowMultiSet = testRowMultiSet;
+    }
+
+    public RowTestObjectsMultiSet getTestRowMultiSet() {
+      return testRowMultiSet;
+    }
+
+    public void nextTestRow(RowTestObjects testRow) {
+      testRowMultiSet.add(testRow, RowTestObjectsMultiSet.RowFlag.NONE);
+    }
+
+    @Override
+    public String getName() {
+      return TestMultiSetCollectorOperator.class.getSimpleName();
+    }
+  }
+
+  public static class TestMultiSetVectorCollectorOperator extends RowVectorCollectorTestOperator {
+
+    private final RowTestObjectsMultiSet testRowMultiSet;
+
+    public RowTestObjectsMultiSet getTestRowMultiSet() {
+      return testRowMultiSet;
+    }
+
+    public TestMultiSetVectorCollectorOperator(TypeInfo[] outputTypeInfos,
+        ObjectInspector[] outputObjectInspectors, RowTestObjectsMultiSet testRowMultiSet)
+            throws HiveException {
+      super(outputTypeInfos, outputObjectInspectors);
+      this.testRowMultiSet = testRowMultiSet;
+     }
+
+    public TestMultiSetVectorCollectorOperator(
+        int[] outputProjectionColumnNums,
+        TypeInfo[] outputTypeInfos,
+        ObjectInspector[] outputObjectInspectors,
+        RowTestObjectsMultiSet testRowMultiSet) throws HiveException {
+      super(outputProjectionColumnNums, outputTypeInfos, outputObjectInspectors);
+      this.testRowMultiSet = testRowMultiSet;
+    }
+
+    public void nextTestRow(RowTestObjects testRow) {
+      testRowMultiSet.add(testRow, RowTestObjectsMultiSet.RowFlag.NONE);
+    }
+
+    @Override
+    public String getName() {
+      return TestMultiSetVectorCollectorOperator.class.getSimpleName();
+    }
+  }
+
   public static MapJoinDesc createMapJoinDesc(MapJoinTestDescription testDesc) {
+    return createMapJoinDesc(testDesc, false);
+  }
+
+  public static MapJoinDesc createMapJoinDesc(MapJoinTestDescription testDesc,
+      boolean isFullOuterIntersect) {
 
     MapJoinDesc mapJoinDesc = new MapJoinDesc();
+
     mapJoinDesc.setPosBigTable(0);
-    List<ExprNodeDesc> keyExpr = new ArrayList<ExprNodeDesc>();
+
+    List<ExprNodeDesc> bigTableKeyExpr = new ArrayList<ExprNodeDesc>();
     for (int i = 0; i < testDesc.bigTableKeyColumnNums.length; i++) {
-      keyExpr.add(new ExprNodeColumnDesc(testDesc.bigTableKeyTypeInfos[i], testDesc.bigTableKeyColumnNames[i], "B", false));
+      bigTableKeyExpr.add(
+          new ExprNodeColumnDesc(
+              testDesc.bigTableKeyTypeInfos[i],
+              testDesc.bigTableKeyColumnNames[i], "B", false));
     }
 
     Map<Byte, List<ExprNodeDesc>> keyMap = new HashMap<Byte, List<ExprNodeDesc>>();
-    keyMap.put((byte)0, keyExpr);
+    keyMap.put((byte) 0, bigTableKeyExpr);
 
-    List<ExprNodeDesc> smallTableExpr = new ArrayList<ExprNodeDesc>();
-    for (int i = 0; i < testDesc.smallTableValueColumnNames.length; i++) {
-      smallTableExpr.add(new ExprNodeColumnDesc(testDesc.smallTableValueTypeInfos[i], testDesc.smallTableValueColumnNames[i], "S", false));
+    // Big Table expression includes all columns -- keys and extra (value) columns.
+    // UNDONE: Assumes all values retained...
+    List<ExprNodeDesc> bigTableExpr = new ArrayList<ExprNodeDesc>();
+    for (int i = 0; i < testDesc.bigTableColumnNames.length; i++) {
+      bigTableExpr.add(
+          new ExprNodeColumnDesc(
+              testDesc.bigTableTypeInfos[i],
+              testDesc.bigTableColumnNames[i], "B", false));
     }
-    keyMap.put((byte)1, smallTableExpr);
+
+    Map<Byte, List<ExprNodeDesc>> exprMap = new HashMap<Byte, List<ExprNodeDesc>>();
+    exprMap.put((byte) 0, bigTableExpr);
+
+    List<ExprNodeDesc> smallTableKeyExpr = new ArrayList<ExprNodeDesc>();
+
+     for (int i = 0; i < testDesc.smallTableKeyTypeInfos.length; i++) {
+      ExprNodeColumnDesc exprNodeColumnDesc =
+          new ExprNodeColumnDesc(
+              testDesc.smallTableKeyTypeInfos[i],
+              testDesc.smallTableKeyColumnNames[i], "S", false);
+      smallTableKeyExpr.add(exprNodeColumnDesc);
+    }
+
+    // Retained Small Table keys and values.
+    List<ExprNodeDesc> smallTableExpr = new ArrayList<ExprNodeDesc>();
+    final int smallTableRetainKeySize = testDesc.smallTableRetainKeyColumnNums.length;
+    for (int i = 0; i < smallTableRetainKeySize; i++) {
+      int smallTableKeyColumnNum = testDesc.smallTableRetainKeyColumnNums[i];
+      smallTableExpr.add(
+          new ExprNodeColumnDesc(
+              testDesc.smallTableTypeInfos[smallTableKeyColumnNum],
+              testDesc.smallTableColumnNames[smallTableKeyColumnNum], "S", false));
+    }
+
+    final int smallTableRetainValueSize = testDesc.smallTableRetainValueColumnNums.length;
+    for (int i = 0; i < smallTableRetainValueSize; i++) {
+      int smallTableValueColumnNum =
+          smallTableRetainKeySize + testDesc.smallTableRetainValueColumnNums[i];
+      smallTableExpr.add(
+          new ExprNodeColumnDesc(
+              testDesc.smallTableTypeInfos[smallTableValueColumnNum],
+              testDesc.smallTableColumnNames[smallTableValueColumnNum], "S", false));
+    }
+
+    keyMap.put((byte) 1, smallTableKeyExpr);
+    exprMap.put((byte) 1, smallTableExpr);
 
     mapJoinDesc.setKeys(keyMap);
-    mapJoinDesc.setExprs(keyMap);
+    mapJoinDesc.setExprs(exprMap);
 
     Byte[] order = new Byte[] {(byte) 0, (byte) 1};
     mapJoinDesc.setTagOrder(order);
-    mapJoinDesc.setNoOuterJoin(testDesc.vectorMapJoinVariation != VectorMapJoinVariation.OUTER);
+    mapJoinDesc.setNoOuterJoin(
+        testDesc.vectorMapJoinVariation != VectorMapJoinVariation.OUTER &&
+        testDesc.vectorMapJoinVariation != VectorMapJoinVariation.FULL_OUTER);
 
     Map<Byte, List<ExprNodeDesc>> filterMap = new HashMap<Byte, List<ExprNodeDesc>>();
     filterMap.put((byte) 0, new ArrayList<ExprNodeDesc>());  // None.
     mapJoinDesc.setFilters(filterMap);
 
     List<Integer> bigTableRetainColumnNumsList = intArrayToList(testDesc.bigTableRetainColumnNums);
-
-    // For now, just small table values...
-    List<Integer> smallTableRetainColumnNumsList = intArrayToList(testDesc.smallTableRetainValueColumnNums);
-
     Map<Byte, List<Integer>> retainListMap = new HashMap<Byte, List<Integer>>();
     retainListMap.put((byte) 0, bigTableRetainColumnNumsList);
-    retainListMap.put((byte) 1, smallTableRetainColumnNumsList);
+
+    // For now, just small table keys/values...
+    if (testDesc.smallTableRetainKeyColumnNums.length == 0) {
+
+      // Just the value columns numbers with retain.
+      List<Integer> smallTableValueRetainColumnNumsList =
+          intArrayToList(testDesc.smallTableRetainValueColumnNums);
+
+      retainListMap.put((byte) 1, smallTableValueRetainColumnNumsList);
+    } else {
+
+      // Both the key/value columns numbers.
+
+      // Zero and above numbers indicate a big table key is needed for
+      // small table result "area".
+
+      // Negative numbers indicate a column to be (deserialize) read from the small table's
+      // LazyBinary value row.
+
+      ArrayList<Integer> smallTableValueIndicesNumsList = new ArrayList<Integer>();;
+      for (int i = 0; i < testDesc.smallTableRetainKeyColumnNums.length; i++) {
+        smallTableValueIndicesNumsList.add(testDesc.smallTableRetainKeyColumnNums[i]);
+      }
+      for (int i = 0; i < testDesc.smallTableRetainValueColumnNums.length; i++) {
+        smallTableValueIndicesNumsList.add(-testDesc.smallTableRetainValueColumnNums[i] - 1);
+      }
+      int[] smallTableValueIndicesNums =
+          ArrayUtils.toPrimitive(smallTableValueIndicesNumsList.toArray(new Integer[0]));
+
+      Map<Byte, int[]> valueIndicesMap = new HashMap<Byte, int[]>();
+      valueIndicesMap.put((byte) 1, smallTableValueIndicesNums);
+      mapJoinDesc.setValueIndices(valueIndicesMap);
+    }
     mapJoinDesc.setRetainList(retainListMap);
+
+    switch (testDesc.mapJoinPlanVariation) {
+    case DYNAMIC_PARTITION_HASH_JOIN:
+      // FULL OUTER which behaves differently for dynamic partition hash join.
+      mapJoinDesc.setDynamicPartitionHashJoin(true);
+      break;
+    default:
+      throw new RuntimeException(
+          "Unexpected map join plan variation " + testDesc.mapJoinPlanVariation);
+    }
 
     int joinDescType;
     switch (testDesc.vectorMapJoinVariation) {
@@ -141,6 +311,9 @@ public class MapJoinTestConfig {
     case OUTER:
       joinDescType = JoinDesc.LEFT_OUTER_JOIN;
       break;
+    case FULL_OUTER:
+      joinDescType = JoinDesc.FULL_OUTER_JOIN;
+      break;
     default:
       throw new RuntimeException("unknown operator variation " + testDesc.vectorMapJoinVariation);
     }
@@ -149,12 +322,25 @@ public class MapJoinTestConfig {
     mapJoinDesc.setConds(conds);
 
     TableDesc keyTableDesc = PlanUtils.getMapJoinKeyTableDesc(testDesc.hiveConf, PlanUtils
-        .getFieldSchemasFromColumnList(keyExpr, ""));
+        .getFieldSchemasFromColumnList(smallTableKeyExpr, ""));
     mapJoinDesc.setKeyTblDesc(keyTableDesc);
 
+    // Small Table expression value columns.
+    List<ExprNodeDesc> smallTableValueExpr = new ArrayList<ExprNodeDesc>();
+
+    // All Small Table keys and values.
+    for (int i = 0; i < testDesc.smallTableValueColumnNames.length; i++) {
+      smallTableValueExpr.add(
+          new ExprNodeColumnDesc(
+              testDesc.smallTableValueTypeInfos[i],
+              testDesc.smallTableValueColumnNames[i], "S", false));
+    }
+
     TableDesc valueTableDesc = PlanUtils.getMapJoinValueTableDesc(
-        PlanUtils.getFieldSchemasFromColumnList(smallTableExpr, ""));
+        PlanUtils.getFieldSchemasFromColumnList(smallTableValueExpr, ""));
     ArrayList<TableDesc> valueTableDescsList = new ArrayList<TableDesc>();
+
+    // Big Table entry, then Small Table entry.
     valueTableDescsList.add(null);
     valueTableDescsList.add(valueTableDesc);
     mapJoinDesc.setValueTblDescs(valueTableDescsList);
@@ -180,6 +366,7 @@ public class MapJoinTestConfig {
       hashTableKind = HashTableKind.HASH_SET;
       break;
     case OUTER:
+    case FULL_OUTER:
       hashTableKind = HashTableKind.HASH_MAP;
       break;
     default:
@@ -190,9 +377,17 @@ public class MapJoinTestConfig {
     if (testDesc.bigTableKeyTypeInfos.length == 1) {
       switch (((PrimitiveTypeInfo) testDesc.bigTableKeyTypeInfos[0]).getPrimitiveCategory()) {
       case BOOLEAN:
+        hashTableKeyType = HashTableKeyType.BOOLEAN;
+        break;
       case BYTE:
+        hashTableKeyType = HashTableKeyType.BYTE;
+        break;
       case SHORT:
+        hashTableKeyType = HashTableKeyType.SHORT;
+        break;
       case INT:
+        hashTableKeyType = HashTableKeyType.INT;
+        break;
       case LONG:
         hashTableKeyType = HashTableKeyType.LONG;
         break;
@@ -216,49 +411,112 @@ public class MapJoinTestConfig {
 
     vectorDesc.setAllBigTableKeyExpressions(null);
 
-    vectorMapJoinInfo.setBigTableValueColumnMap(new int[0]);
-    vectorMapJoinInfo.setBigTableValueColumnNames(new String[0]);
-    vectorMapJoinInfo.setBigTableValueTypeInfos(new TypeInfo[0]);
+    vectorMapJoinInfo.setBigTableValueColumnMap(testDesc.bigTableColumnNums);
+    vectorMapJoinInfo.setBigTableValueColumnNames(testDesc.bigTableColumnNames);
+    vectorMapJoinInfo.setBigTableValueTypeInfos(testDesc.bigTableTypeInfos);
     vectorMapJoinInfo.setSlimmedBigTableValueExpressions(null);
 
     vectorDesc.setAllBigTableValueExpressions(null);
 
+    vectorMapJoinInfo.setBigTableFilterExpressions(new VectorExpression[0]);
+
+
+    /*
+     * Column mapping.
+     */
+    VectorColumnOutputMapping bigTableRetainMapping =
+        new VectorColumnOutputMapping("Big Table Retain Mapping");
+
+    VectorColumnOutputMapping nonOuterSmallTableKeyMapping =
+        new VectorColumnOutputMapping("Non Outer Small Table Key Key Mapping");
+
+    VectorColumnOutputMapping outerSmallTableKeyMapping =
+        new VectorColumnOutputMapping("Outer Small Table Key Mapping");
+
+    VectorColumnSourceMapping fullOuterSmallTableKeyMapping =
+        new VectorColumnSourceMapping("Full Outer Small Table Key Mapping");
+
     VectorColumnSourceMapping projectionMapping =
         new VectorColumnSourceMapping("Projection Mapping");
 
+    int nextOutputColumn = 0;
 
-    VectorColumnOutputMapping bigTableRetainedMapping =
-        new VectorColumnOutputMapping("Big Table Retained Mapping");
-    for (int i = 0; i < testDesc.bigTableTypeInfos.length; i++) {
-      bigTableRetainedMapping.add(i, i, testDesc.bigTableTypeInfos[i]);
-      projectionMapping.add(i, i, testDesc.bigTableKeyTypeInfos[i]);
+    final int bigTableRetainedSize = testDesc.bigTableRetainColumnNums.length;
+    for (int i = 0; i < bigTableRetainedSize; i++) {
+      final int batchColumnIndex = testDesc.bigTableRetainColumnNums[i];
+      TypeInfo typeInfo = testDesc.bigTableTypeInfos[i];
+      projectionMapping.add(
+          nextOutputColumn, batchColumnIndex, typeInfo);
+      // Collect columns we copy from the big table batch to the overflow batch.
+      if (!bigTableRetainMapping.containsOutputColumn(batchColumnIndex)) {
+
+        // Tolerate repeated use of a big table column.
+        bigTableRetainMapping.add(batchColumnIndex, batchColumnIndex, typeInfo);
+      }
+      nextOutputColumn++;
     }
 
-    VectorColumnOutputMapping bigTableOuterKeyMapping =
-        new VectorColumnOutputMapping("Big Table Outer Key Mapping");
+    boolean isOuterJoin =
+        (testDesc.vectorMapJoinVariation == VectorMapJoinVariation.OUTER ||
+         testDesc.vectorMapJoinVariation == VectorMapJoinVariation.FULL_OUTER);
+
+    int emulateScratchColumn = testDesc.bigTableTypeInfos.length;
+
+    VectorColumnOutputMapping smallTableKeyOutputMapping =
+        new VectorColumnOutputMapping("Small Table Key Output Mapping");
+    final int smallTableKeyRetainSize = testDesc.smallTableRetainKeyColumnNums.length;
+    for (int i = 0; i < testDesc.smallTableRetainKeyColumnNums.length; i++) {
+      final int smallTableKeyColumnNum = testDesc.smallTableRetainKeyColumnNums[i];
+      final int bigTableKeyColumnNum = testDesc.bigTableKeyColumnNums[smallTableKeyColumnNum];
+      TypeInfo keyTypeInfo = testDesc.smallTableKeyTypeInfos[smallTableKeyColumnNum];
+      if (!isOuterJoin) {
+        // Project the big table key into the small table result "area".
+        projectionMapping.add(nextOutputColumn, bigTableKeyColumnNum, keyTypeInfo);
+        if (!bigTableRetainMapping.containsOutputColumn(bigTableKeyColumnNum)) {
+          nonOuterSmallTableKeyMapping.add(bigTableKeyColumnNum, bigTableKeyColumnNum, keyTypeInfo);
+        }
+      } else {
+        outerSmallTableKeyMapping.add(bigTableKeyColumnNum, emulateScratchColumn, keyTypeInfo);
+        projectionMapping.add(nextOutputColumn, emulateScratchColumn, keyTypeInfo);
+
+        // For FULL OUTER MapJoin, we need to be able to deserialize a Small Table key
+        // into the output result.
+        fullOuterSmallTableKeyMapping.add(smallTableKeyColumnNum, emulateScratchColumn, keyTypeInfo);
+        emulateScratchColumn++;
+      }
+      nextOutputColumn++;
+    }
 
     // The order of the fields in the LazyBinary small table value must be used, so
     // we use the source ordering flavor for the mapping.
-    VectorColumnSourceMapping smallTableMapping =
-        new VectorColumnSourceMapping("Small Table Mapping");
-    int outputColumn = testDesc.bigTableTypeInfos.length;
+    VectorColumnSourceMapping smallTableValueMapping =
+        new VectorColumnSourceMapping("Small Table Value Mapping");
     for (int i = 0; i < testDesc.smallTableValueTypeInfos.length; i++) {
-      smallTableMapping.add(i, outputColumn, testDesc.smallTableValueTypeInfos[i]);
-      projectionMapping.add(outputColumn, outputColumn, testDesc.smallTableValueTypeInfos[i]);
-      outputColumn++;
+      smallTableValueMapping.add(i, emulateScratchColumn, testDesc.smallTableValueTypeInfos[i]);
+      projectionMapping.add(nextOutputColumn, emulateScratchColumn, testDesc.smallTableValueTypeInfos[i]);
+      emulateScratchColumn++;
+      nextOutputColumn++;
     }
 
     // Convert dynamic arrays and maps to simple arrays.
 
-    bigTableRetainedMapping.finalize();
+    bigTableRetainMapping.finalize();
+    vectorMapJoinInfo.setBigTableRetainColumnMap(bigTableRetainMapping.getOutputColumns());
+    vectorMapJoinInfo.setBigTableRetainTypeInfos(bigTableRetainMapping.getTypeInfos());
 
-    bigTableOuterKeyMapping.finalize();
+    nonOuterSmallTableKeyMapping.finalize();
+    vectorMapJoinInfo.setNonOuterSmallTableKeyColumnMap(nonOuterSmallTableKeyMapping.getOutputColumns());
+    vectorMapJoinInfo.setNonOuterSmallTableKeyTypeInfos(nonOuterSmallTableKeyMapping.getTypeInfos());
 
-    smallTableMapping.finalize();
+    outerSmallTableKeyMapping.finalize();
+    fullOuterSmallTableKeyMapping.finalize();
 
-    vectorMapJoinInfo.setBigTableRetainedMapping(bigTableRetainedMapping);
-    vectorMapJoinInfo.setBigTableOuterKeyMapping(bigTableOuterKeyMapping);
-    vectorMapJoinInfo.setSmallTableMapping(smallTableMapping);
+    vectorMapJoinInfo.setOuterSmallTableKeyMapping(outerSmallTableKeyMapping);
+    vectorMapJoinInfo.setFullOuterSmallTableKeyMapping(fullOuterSmallTableKeyMapping);
+
+    smallTableValueMapping.finalize();
+
+    vectorMapJoinInfo.setSmallTableValueMapping(smallTableValueMapping);
 
     projectionMapping.finalize();
 
@@ -267,7 +525,9 @@ public class MapJoinTestConfig {
 
     vectorMapJoinInfo.setProjectionMapping(projectionMapping);
 
-    assert projectionMapping.getCount() == testDesc.outputColumnNames.length;
+    if (projectionMapping.getCount() != testDesc.outputColumnNames.length) {
+      throw new RuntimeException();
+    };
 
     vectorDesc.setVectorMapJoinInfo(vectorMapJoinInfo);
 
@@ -306,6 +566,11 @@ public class MapJoinTestConfig {
             new VectorMapJoinOuterLongOperator(new CompilationOpContext(),
                 mapJoinDesc, vContext, vectorDesc);
         break;
+      case FULL_OUTER:
+        operator =
+            new VectorMapJoinFullOuterLongOperator(new CompilationOpContext(),
+                mapJoinDesc, vContext, vectorDesc);
+        break;
       default:
         throw new RuntimeException("unknown operator variation " + VectorMapJoinVariation);
       }
@@ -330,6 +595,10 @@ public class MapJoinTestConfig {
       case OUTER:
         operator =
             new VectorMapJoinOuterStringOperator(new CompilationOpContext(),
+                mapJoinDesc, vContext, vectorDesc);
+      case FULL_OUTER:
+        operator =
+            new VectorMapJoinFullOuterStringOperator(new CompilationOpContext(),
                 mapJoinDesc, vContext, vectorDesc);
         break;
       default:
@@ -358,6 +627,11 @@ public class MapJoinTestConfig {
             new VectorMapJoinOuterMultiKeyOperator(new CompilationOpContext(),
                 mapJoinDesc, vContext, vectorDesc);
         break;
+      case FULL_OUTER:
+        operator =
+            new VectorMapJoinFullOuterMultiKeyOperator(new CompilationOpContext(),
+                mapJoinDesc, vContext, vectorDesc);
+        break;
       default:
         throw new RuntimeException("unknown operator variation " + VectorMapJoinVariation);
       }
@@ -365,16 +639,31 @@ public class MapJoinTestConfig {
     default:
       throw new RuntimeException("Unknown hash table key type " + vectorDesc.getHashTableKeyType());
     }
+    System.out.println("*BENCHMARK* createNativeVectorMapJoinOperator " +
+        operator.getClass().getSimpleName());
     return operator;
   }
 
   public static VectorizationContext createVectorizationContext(MapJoinTestDescription testDesc)
       throws HiveException {
     VectorizationContext vContext =
-        new VectorizationContext("test", testDesc.bigTableColumnNamesList);
+        new VectorizationContext("test", testDesc.bigTableColumnNameList);
+
+    boolean isOuterJoin =
+        (testDesc.vectorMapJoinVariation == VectorMapJoinVariation.OUTER ||
+         testDesc.vectorMapJoinVariation == VectorMapJoinVariation.FULL_OUTER);
+
+    if (isOuterJoin) {
+
+      // We need physical columns.
+      for (int i = 0; i < testDesc.smallTableRetainKeyColumnNums.length; i++) {
+        final int smallTableKeyRetainColumnNum = testDesc.smallTableRetainKeyColumnNums[i];
+        vContext.allocateScratchColumn(testDesc.smallTableKeyTypeInfos[smallTableKeyRetainColumnNum]);
+      }
+    }
 
     // Create scratch columns to hold small table results.
-    for (int i = 0; i < testDesc.smallTableValueTypeInfos.length; i++) {
+    for (int i = 0; i < testDesc.smallTableRetainValueColumnNums.length; i++) {
       vContext.allocateScratchColumn(testDesc.smallTableValueTypeInfos[i]);
     }
     return vContext;
@@ -390,19 +679,19 @@ public class MapJoinTestConfig {
 
     final Byte smallTablePos = 1;
 
-    // UNDONE: Why do we need to specify BinarySortableSerDe explicitly here???
     TableDesc keyTableDesc = mapJoinDesc.getKeyTblDesc();
     AbstractSerDe keySerializer = (AbstractSerDe) ReflectionUtil.newInstance(
         BinarySortableSerDe.class, null);
     SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
     MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
 
-    TableDesc valueTableDesc;
+    final List<TableDesc> valueTableDescList;
     if (mapJoinDesc.getNoOuterJoin()) {
-      valueTableDesc = mapJoinDesc.getValueTblDescs().get(smallTablePos);
+      valueTableDescList = mapJoinDesc.getValueTblDescs();
     } else {
-      valueTableDesc = mapJoinDesc.getValueFilteredTblDescs().get(smallTablePos);
+      valueTableDescList = mapJoinDesc.getValueFilteredTblDescs();
     }
+    TableDesc valueTableDesc = valueTableDescList.get(smallTablePos);
     AbstractSerDe valueSerDe = (AbstractSerDe) ReflectionUtil.newInstance(
         valueTableDesc.getDeserializerClass(), null);
     SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
@@ -414,16 +703,19 @@ public class MapJoinTestConfig {
   }
 
   public static void connectOperators(
-      MapJoinTestDescription testDesc,
       Operator<? extends OperatorDesc> operator,
-      Operator<? extends OperatorDesc> testCollectorOperator) throws HiveException {
-    Operator<? extends OperatorDesc>[] parents = new Operator[] {operator};
-    testCollectorOperator.setParentOperators(Arrays.asList(parents));
-    Operator<? extends OperatorDesc>[] childOperators = new Operator[] {testCollectorOperator};
-    operator.setChildOperators(Arrays.asList(childOperators));
-    HiveConf.setBoolVar(testDesc.hiveConf,
-        HiveConf.ConfVars.HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD, true);
-    operator.initialize(testDesc.hiveConf, testDesc.inputObjectInspectors);
+      Operator<? extends OperatorDesc> childOperator) throws HiveException {
+
+    List<Operator<? extends OperatorDesc>> newParentOperators = newOperatorList();
+    newParentOperators.addAll(childOperator.getParentOperators());
+    newParentOperators.add(operator);
+    childOperator.setParentOperators(newParentOperators);
+
+    List<Operator<? extends OperatorDesc>> newChildOperators = newOperatorList();
+    newChildOperators.addAll(operator.getChildOperators());
+    newChildOperators.add(childOperator);
+    operator.setChildOperators(newChildOperators);
+
   }
 
   private static List<Integer> intArrayToList(int[] intArray) {
@@ -509,9 +801,25 @@ public class MapJoinTestConfig {
     mapJoinTableContainer.seal();
   }
 
-  public static MapJoinOperator createMapJoin(MapJoinTestDescription testDesc,
-      Operator<? extends OperatorDesc> collectorOperator, MapJoinTestData testData,
-      MapJoinDesc mapJoinDesc, boolean isVectorMapJoin, boolean isOriginalMapJoin)
+  public static class CreateMapJoinResult {
+    public final MapJoinOperator mapJoinOperator;
+    public final MapJoinTableContainer mapJoinTableContainer;
+    public final MapJoinTableContainerSerDe mapJoinTableContainerSerDe;
+
+    public CreateMapJoinResult(
+        MapJoinOperator mapJoinOperator,
+        MapJoinTableContainer mapJoinTableContainer,
+        MapJoinTableContainerSerDe mapJoinTableContainerSerDe) {
+      this.mapJoinOperator = mapJoinOperator;
+      this.mapJoinTableContainer = mapJoinTableContainer;
+      this.mapJoinTableContainerSerDe = mapJoinTableContainerSerDe;
+    }
+  }
+  public static CreateMapJoinResult createMapJoin(
+      MapJoinTestDescription testDesc,
+      MapJoinTestData testData,
+      MapJoinDesc mapJoinDesc, boolean isVectorMapJoin, boolean isOriginalMapJoin,
+      MapJoinTableContainer shareMapJoinTableContainer)
           throws SerDeException, IOException, HiveException {
 
     final Byte bigTablePos = 0;
@@ -539,11 +847,16 @@ public class MapJoinTestConfig {
       operator = new MapJoinOperator(new CompilationOpContext());
       operator.setConf(mapJoinDesc);
     } else {
-      VectorizationContext vContext = new VectorizationContext("test", testDesc.bigTableColumnNamesList);
+      VectorizationContext vContext =
+          new VectorizationContext("test", testDesc.bigTableColumnNameList);
+
+      /*
+      // UNDONE: Unclear this belonds in the input VectorizationContext...
       // Create scratch columns to hold small table results.
       for (int i = 0; i < testDesc.smallTableValueTypeInfos.length; i++) {
         vContext.allocateScratchColumn(testDesc.smallTableValueTypeInfos[i]);
       }
+      */
 
       // This is what the Vectorizer class does.
       VectorMapJoinDesc vectorMapJoinDesc = new VectorMapJoinDesc();
@@ -571,21 +884,20 @@ public class MapJoinTestConfig {
       }
     }
 
-    MapJoinTestConfig.connectOperators(testDesc, operator, collectorOperator);
+    HiveConf.setBoolVar(testDesc.hiveConf,
+        HiveConf.ConfVars.HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD, true);
 
-    operator.setTestMapJoinTableContainer(1, mapJoinTableContainer, mapJoinTableContainerSerDe);
-
-    return operator;
+    return new CreateMapJoinResult(operator, mapJoinTableContainer, mapJoinTableContainerSerDe);
   }
 
-  public static MapJoinOperator createNativeVectorMapJoin(MapJoinTestDescription testDesc,
-      Operator<? extends OperatorDesc> collectorOperator, MapJoinTestData testData,
-      MapJoinDesc mapJoinDesc, HashTableImplementationType hashTableImplementationType)
+  public static CreateMapJoinResult createNativeVectorMapJoin(
+      MapJoinTestDescription testDesc,
+      MapJoinTestData testData,
+      MapJoinDesc mapJoinDesc, HashTableImplementationType hashTableImplementationType,
+      MapJoinTableContainer shareMapJoinTableContainer)
           throws SerDeException, IOException, HiveException {
 
     VectorMapJoinDesc vectorDesc = MapJoinTestConfig.createVectorMapJoinDesc(testDesc);
-
-    // UNDONE
     mapJoinDesc.setVectorDesc(vectorDesc);
 
     vectorDesc.setHashTableImplementationType(hashTableImplementationType);
@@ -593,13 +905,14 @@ public class MapJoinTestConfig {
     VectorMapJoinInfo vectorMapJoinInfo = vectorDesc.getVectorMapJoinInfo();
 
     MapJoinTableContainer mapJoinTableContainer;
+    MapJoinTableContainerSerDe mapJoinTableContainerSerDe = null;
     switch (vectorDesc.getHashTableImplementationType()) {
     case OPTIMIZED:
       mapJoinTableContainer =
         new MapJoinBytesTableContainer(
             testDesc.hiveConf, null, testData.smallTableKeyHashMap.size(), 0);
 
-      MapJoinTableContainerSerDe mapJoinTableContainerSerDe =
+      mapJoinTableContainerSerDe =
           MapJoinTestConfig.createMapJoinTableContainerSerDe(mapJoinDesc);
 
       mapJoinTableContainer.setSerde(
@@ -615,7 +928,11 @@ public class MapJoinTestConfig {
       throw new RuntimeException("Unexpected hash table implementation type " + vectorDesc.getHashTableImplementationType());
     }
 
-    loadTableContainerData(testDesc, testData, mapJoinTableContainer);
+//    if (shareMapJoinTableContainer == null) {
+      loadTableContainerData(testDesc, testData, mapJoinTableContainer);
+//    } else {
+//      setTableContainerData(mapJoinTableContainer, shareMapJoinTableContainer);
+//    }
 
     VectorizationContext vContext = MapJoinTestConfig.createVectorizationContext(testDesc);
 
@@ -636,56 +953,295 @@ public class MapJoinTestConfig {
             vectorDesc,
             vContext);
 
-    MapJoinTestConfig.connectOperators(testDesc, operator, collectorOperator);
+    HiveConf.setBoolVar(testDesc.hiveConf,
+        HiveConf.ConfVars.HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD, true);
 
-    operator.setTestMapJoinTableContainer(1, mapJoinTableContainer, null);
-
-    return operator;
+    return new CreateMapJoinResult(operator, mapJoinTableContainer, mapJoinTableContainerSerDe);
   }
 
-  public static MapJoinOperator createMapJoinImplementation(MapJoinTestImplementation mapJoinImplementation,
+  public static CreateMapJoinResult createMapJoinImplementation(
+      MapJoinTestImplementation mapJoinImplementation,
       MapJoinTestDescription testDesc,
-      Operator<? extends OperatorDesc> testCollectorOperator, MapJoinTestData testData,
-      MapJoinDesc mapJoinDesc) throws SerDeException, IOException, HiveException {
+      MapJoinTestData testData,
+      MapJoinDesc mapJoinDesc)
+          throws SerDeException, IOException, HiveException {
+    return createMapJoinImplementation(
+        mapJoinImplementation, testDesc, testData, mapJoinDesc, null);
+  }
 
-    MapJoinOperator operator;
+  public static CreateMapJoinResult createMapJoinImplementation(
+      MapJoinTestImplementation mapJoinImplementation,
+      MapJoinTestDescription testDesc,
+      MapJoinTestData testData,
+      MapJoinDesc mapJoinDesc,
+      MapJoinTableContainer shareMapJoinTableContainer)
+          throws SerDeException, IOException, HiveException {
+
+    CreateMapJoinResult result;
     switch (mapJoinImplementation) {
     case ROW_MODE_HASH_MAP:
 
       // MapJoinOperator
-      operator = MapJoinTestConfig.createMapJoin(
-          testDesc, testCollectorOperator, testData, mapJoinDesc, /* isVectorMapJoin */ false,
-          /* isOriginalMapJoin */ true);
+      result = MapJoinTestConfig.createMapJoin(
+          testDesc, testData, mapJoinDesc, /* isVectorMapJoin */ false,
+          /* isOriginalMapJoin */ true,
+          shareMapJoinTableContainer);
       break;
 
     case ROW_MODE_OPTIMIZED:
 
       // MapJoinOperator
-      operator = MapJoinTestConfig.createMapJoin(
-          testDesc, testCollectorOperator, testData, mapJoinDesc, /* isVectorMapJoin */ false,
-          /* isOriginalMapJoin */ false);
+      result = MapJoinTestConfig.createMapJoin(
+          testDesc, testData, mapJoinDesc, /* isVectorMapJoin */ false,
+          /* isOriginalMapJoin */ false,
+          shareMapJoinTableContainer);
       break;
 
     case VECTOR_PASS_THROUGH:
 
       // VectorMapJoinOperator
-      operator = MapJoinTestConfig.createMapJoin(
-          testDesc, testCollectorOperator, testData, mapJoinDesc, /* isVectorMapJoin */ true,
-          /* n/a */ false);
+      result = MapJoinTestConfig.createMapJoin(
+          testDesc, testData, mapJoinDesc, /* isVectorMapJoin */ true,
+          /* n/a */ false,
+          shareMapJoinTableContainer);
       break;
 
     case NATIVE_VECTOR_OPTIMIZED:
-      operator = MapJoinTestConfig.createNativeVectorMapJoin(
-          testDesc, testCollectorOperator, testData, mapJoinDesc, HashTableImplementationType.OPTIMIZED);
+      result = MapJoinTestConfig.createNativeVectorMapJoin(
+          testDesc, testData, mapJoinDesc,
+          HashTableImplementationType.OPTIMIZED,
+          shareMapJoinTableContainer);
       break;
 
     case NATIVE_VECTOR_FAST:
-      operator = MapJoinTestConfig.createNativeVectorMapJoin(
-          testDesc, testCollectorOperator, testData, mapJoinDesc, HashTableImplementationType.FAST);
+      result = MapJoinTestConfig.createNativeVectorMapJoin(
+          testDesc, testData, mapJoinDesc,
+          HashTableImplementationType.FAST,
+          shareMapJoinTableContainer);
       break;
     default:
       throw new RuntimeException("Unexpected MapJoin Operator Implementation " + mapJoinImplementation);
     }
-    return operator;
+    return result;
+  }
+
+  private static Operator<SelectDesc> makeInterceptSelectOperator(
+      MapJoinOperator mapJoinOperator, int bigTableKeySize, int bigTableRetainSize,
+      String[] outputColumnNames, TypeInfo[] outputTypeInfos) {
+
+    MapJoinDesc mapJoinDesc = (MapJoinDesc) mapJoinOperator.getConf();
+
+    List<ExprNodeDesc> selectExprList = new ArrayList<ExprNodeDesc>();
+    List<String> selectOutputColumnNameList = new ArrayList<String>();
+    for (int i = 0; i < bigTableRetainSize; i++) {
+      String selectOutputColumnName = HiveConf.getColumnInternalName(i);
+      selectOutputColumnNameList.add(selectOutputColumnName);
+
+      TypeInfo outputTypeInfo = outputTypeInfos[i];
+      if (i < bigTableKeySize) {
+
+        // Big Table key.
+        ExprNodeColumnDesc keyColumnExpr =
+            new ExprNodeColumnDesc(
+                outputTypeInfo,
+                outputColumnNames[i], "test", false);
+        selectExprList.add(keyColumnExpr);
+      } else {
+
+        // For row-mode, substitute NULL constant for any non-key extra Big Table columns.
+        ExprNodeConstantDesc nullExtraColumnExpr =
+            new ExprNodeConstantDesc(
+                outputTypeInfo,
+                null);
+        nullExtraColumnExpr.setFoldedFromCol(outputColumnNames[i]);
+        selectExprList.add(nullExtraColumnExpr);
+      }
+    }
+
+    SelectDesc selectDesc = new SelectDesc(selectExprList, selectOutputColumnNameList);
+    Operator<SelectDesc> selectOperator =
+        OperatorFactory.get(new CompilationOpContext(), selectDesc);
+
+    return selectOperator;
+  }
+
+  private static Operator<SelectDesc> vectorizeInterceptSelectOperator(
+      MapJoinOperator mapJoinOperator, int bigTableKeySize, int bigTableRetainSize,
+      Operator<SelectDesc> selectOperator) throws HiveException{
+
+    MapJoinDesc mapJoinDesc = (MapJoinDesc) mapJoinOperator.getConf();
+
+    VectorizationContext vOutContext =
+        ((VectorizationContextRegion) mapJoinOperator).getOutputVectorizationContext();
+
+    SelectDesc selectDesc = (SelectDesc) selectOperator.getConf();
+    List<ExprNodeDesc> selectExprs = selectDesc.getColList();
+
+    VectorExpression[] selectVectorExpr = new VectorExpression[bigTableRetainSize];
+    for (int i = 0; i < bigTableRetainSize; i++) {
+
+      TypeInfo typeInfo = selectExprs.get(i).getTypeInfo();
+      if (i < bigTableKeySize) {
+
+        // Big Table key.
+        selectVectorExpr[i] = vOutContext.getVectorExpression(selectExprs.get(i));
+      } else {
+
+        // For vector-mode, for test purposes we substitute a NO-OP (we don't want to modify
+        // the batch).
+
+        // FULL OUTER INTERCEPT does not look at non-key columns.
+
+        NoOpExpression noOpExpression = new NoOpExpression(i);
+
+        noOpExpression.setInputTypeInfos(typeInfo);
+        noOpExpression.setInputDataTypePhysicalVariations(DataTypePhysicalVariation.NONE);
+
+        noOpExpression.setOutputTypeInfo(typeInfo);
+        noOpExpression.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+
+        selectVectorExpr[i] = noOpExpression;
+      }
+    }
+
+    System.out.println("*BENCHMARK* VectorSelectOperator selectVectorExpr " +
+        Arrays.toString(selectVectorExpr));
+
+    int[] projectedColumns =
+        ArrayUtils.toPrimitive(
+            vOutContext.getProjectedColumns().subList(0, bigTableRetainSize).
+                toArray(new Integer[0]));
+    System.out.println("*BENCHMARK* VectorSelectOperator projectedColumns " +
+        Arrays.toString(projectedColumns));
+
+    VectorSelectDesc vectorSelectDesc = new VectorSelectDesc();
+    vectorSelectDesc.setSelectExpressions(selectVectorExpr);
+    vectorSelectDesc.setProjectedOutputColumns(projectedColumns);
+
+    Operator<SelectDesc> vectorSelectOperator = OperatorFactory.getVectorOperator(
+        selectOperator.getCompilationOpContext(), selectDesc,
+        vOutContext, vectorSelectDesc);
+
+    return vectorSelectOperator;
+  }
+
+  public static CountCollectorTestOperator addFullOuterIntercept(
+      MapJoinTestImplementation mapJoinImplementation,
+      MapJoinTestDescription testDesc,
+      RowTestObjectsMultiSet outputTestRowMultiSet, MapJoinTestData testData,
+      MapJoinOperator mapJoinOperator, MapJoinTableContainer mapJoinTableContainer,
+      MapJoinTableContainerSerDe mapJoinTableContainerSerDe)
+          throws SerDeException, IOException, HiveException {
+
+    MapJoinDesc mapJoinDesc = (MapJoinDesc) mapJoinOperator.getConf();
+
+    // For FULL OUTER MapJoin, we require all Big Keys to be present in the output result.
+    // The first N output columns are the Big Table key columns.
+    Map<Byte, List<ExprNodeDesc>> keyMap = mapJoinDesc.getKeys();
+    List<ExprNodeDesc> bigTableKeyExprs = keyMap.get((byte) 0);
+    final int bigTableKeySize = bigTableKeyExprs.size();
+
+    Map<Byte, List<Integer>> retainMap = mapJoinDesc.getRetainList();
+    List<Integer> bigTableRetainList = retainMap.get((byte) 0);
+    final int bigTableRetainSize = bigTableRetainList.size();
+
+    List<String> outputColumnNameList = mapJoinDesc.getOutputColumnNames();
+    String[] mapJoinOutputColumnNames = outputColumnNameList.toArray(new String[0]);
+
+    // Use a utility method to get the MapJoin output TypeInfo.
+    TypeInfo[] mapJoinOutputTypeInfos = VectorMapJoinBaseOperator.getOutputTypeInfos(mapJoinDesc);
+
+    final boolean isVectorOutput = MapJoinTestConfig.isVectorOutput(mapJoinImplementation);
+
+    /*
+     * Always create a row-mode SelectOperator.  If we are vector-mode, next we will use its
+     * expressions and replace it with a VectorSelectOperator.
+     */
+    Operator<SelectDesc> selectOperator =
+        makeInterceptSelectOperator(
+            mapJoinOperator, bigTableKeySize, bigTableRetainSize,
+            mapJoinOutputColumnNames, mapJoinOutputTypeInfos);
+
+    List<String> selectOutputColumnNameList =
+        ((SelectDesc) selectOperator.getConf()).getOutputColumnNames();
+    String[] selectOutputColumnNames =
+        selectOutputColumnNameList.toArray(new String[0]);
+
+    if (isVectorOutput) {
+      selectOperator =
+          vectorizeInterceptSelectOperator(
+              mapJoinOperator, bigTableKeySize, bigTableRetainSize, selectOperator);
+    }
+
+    /*
+     * Create test description just for FULL OUTER INTERCEPT with different
+     */
+    MapJoinTestDescription interceptTestDesc =
+        new MapJoinTestDescription(
+            testDesc.hiveConf, testDesc.vectorMapJoinVariation,
+            selectOutputColumnNames,
+            Arrays.copyOf(mapJoinOutputTypeInfos, bigTableRetainSize),
+            testDesc.bigTableKeyColumnNums,
+            testDesc.smallTableValueTypeInfos,
+            testDesc.smallTableRetainKeyColumnNums,
+            testDesc.smallTableGenerationParameters,
+            testDesc.mapJoinPlanVariation);
+
+    MapJoinDesc intersectMapJoinDesc =
+        createMapJoinDesc(interceptTestDesc, /* isFullOuterIntersect */ true);
+
+    /*
+     * Create FULL OUTER INTERSECT MapJoin operator.
+     */
+    CreateMapJoinResult interceptCreateMapJoinResult =
+        createMapJoinImplementation(
+            mapJoinImplementation, interceptTestDesc, testData, intersectMapJoinDesc);
+    MapJoinOperator intersectMapJoinOperator =
+        interceptCreateMapJoinResult.mapJoinOperator;
+    MapJoinTableContainer intersectMapJoinTableContainer =
+        interceptCreateMapJoinResult.mapJoinTableContainer;
+    MapJoinTableContainerSerDe interceptMapJoinTableContainerSerDe =
+        interceptCreateMapJoinResult.mapJoinTableContainerSerDe;
+
+    connectOperators(mapJoinOperator, selectOperator);
+
+    connectOperators(selectOperator, intersectMapJoinOperator);
+
+    CountCollectorTestOperator interceptTestCollectorOperator;
+    if (!isVectorOutput) {
+      interceptTestCollectorOperator =
+          new TestMultiSetCollectorOperator(
+              interceptTestDesc.outputObjectInspectors, outputTestRowMultiSet);
+    } else {
+      VectorizationContext vContext =
+          ((VectorizationContextRegion) intersectMapJoinOperator).getOutputVectorizationContext();
+      int[] intersectProjectionColumns =
+          ArrayUtils.toPrimitive(vContext.getProjectedColumns().toArray(new Integer[0]));
+      interceptTestCollectorOperator =
+          new TestMultiSetVectorCollectorOperator(
+              intersectProjectionColumns,
+              interceptTestDesc.outputTypeInfos,
+              interceptTestDesc.outputObjectInspectors, outputTestRowMultiSet);
+    }
+
+    connectOperators(intersectMapJoinOperator, interceptTestCollectorOperator);
+
+    // Setup the FULL OUTER INTERSECT MapJoin's inputObjInspector to include the Small Table, etc.
+    intersectMapJoinOperator.setInputObjInspectors(interceptTestDesc.inputObjectInspectors);
+
+    // Now, invoke initializeOp methods from the root MapJoin operator.
+    mapJoinOperator.initialize(testDesc.hiveConf, testDesc.inputObjectInspectors);
+
+    // Fixup the mapJoinTables container references to our test data.
+    mapJoinOperator.setTestMapJoinTableContainer(
+        1, mapJoinTableContainer, mapJoinTableContainerSerDe);
+    intersectMapJoinOperator.setTestMapJoinTableContainer(
+        1, intersectMapJoinTableContainer, interceptMapJoinTableContainerSerDe);
+
+    return interceptTestCollectorOperator;
+  }
+
+  private static List<Operator<? extends OperatorDesc>> newOperatorList() {
+    return new ArrayList<Operator<? extends OperatorDesc>>();
   }
 }

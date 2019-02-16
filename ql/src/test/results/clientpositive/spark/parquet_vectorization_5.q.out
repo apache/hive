@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MAX(csmallint),
        (MAX(csmallint) * -75),
        COUNT(*),
@@ -18,7 +18,9 @@ WHERE  (((cboolean2 IS NOT NULL)
             AND ((ctimestamp2 IS NOT NULL)
                  AND (cstring2 LIKE 'a'))))
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT MAX(csmallint),
        (MAX(csmallint) * -75),
        COUNT(*),
@@ -38,6 +40,8 @@ WHERE  (((cboolean2 IS NOT NULL)
             AND ((ctimestamp2 IS NOT NULL)
                  AND (cstring2 LIKE 'a'))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -61,7 +65,6 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -93,10 +96,8 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0, 1, 2, 3, 4]
                           Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: tinyint)
             Execution mode: vectorized
@@ -109,27 +110,14 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [0, 1, 2, 5, 6, 7, 9, 11]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [double]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 5
-                    dataColumns: VALUE._col0:smallint, VALUE._col1:bigint, VALUE._col2:smallint, VALUE._col3:bigint, VALUE._col4:tinyint
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), count(VALUE._col1), min(VALUE._col2), sum(VALUE._col3), max(VALUE._col4)
@@ -149,8 +137,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 5, 1, 9, 6, 2, 10, 7, 3, 4, 11, 14]
-                      selectExpressions: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 5:int, DoubleColDivideDoubleColumn(col 7:double, col 8:double)(children: CastLongToDouble(col 6:int)(children: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 6:int) -> 7:double, CastLongToDouble(col 1:bigint) -> 8:double) -> 9:double, LongScalarMultiplyLongColumn(val 6981, col 0:int)(children: col 0:smallint) -> 6:int, LongColUnaryMinus(col 2:smallint) -> 10:smallint, DoubleScalarModuloDoubleColumn(val 197.0, col 12:double)(children: DoubleColDivideDoubleColumn(col 7:double, col 8:double)(children: CastLongToDouble(col 11:int)(children: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 11:int) -> 7:double, CastLongToDouble(col 1:bigint) -> 8:double) -> 12:double) -> 7:double, LongColUnaryMinus(col 4:tinyint) -> 11:tinyint, LongColAddLongColumn(col 13:tinyint, col 4:tinyint)(children: LongColUnaryMinus(col 4:tinyint) -> 13:tinyint) -> 14:tinyint
+                      projectedOutputColumnNums: [0, 5, 1, 9, 10, 2, 11, 16, 3, 4, 17, 19]
+                      selectExpressions: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 5:int, DoubleColDivideDoubleColumn(col 7:double, col 8:double)(children: CastLongToDouble(col 6:int)(children: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 6:int) -> 7:double, CastLongToDouble(col 1:bigint) -> 8:double) -> 9:double, LongScalarMultiplyLongColumn(val 6981, col 0:int)(children: col 0:smallint) -> 10:int, LongColUnaryMinus(col 2:smallint) -> 11:smallint, DoubleScalarModuloDoubleColumn(val 197.0, col 15:double)(children: DoubleColDivideDoubleColumn(col 13:double, col 14:double)(children: CastLongToDouble(col 12:int)(children: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 12:int) -> 13:double, CastLongToDouble(col 1:bigint) -> 14:double) -> 15:double) -> 16:double, LongColUnaryMinus(col 4:tinyint) -> 17:tinyint, LongColAddLongColumn(col 18:tinyint, col 4:tinyint)(children: LongColUnaryMinus(col 4:tinyint) -> 18:tinyint) -> 19:tinyint
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false

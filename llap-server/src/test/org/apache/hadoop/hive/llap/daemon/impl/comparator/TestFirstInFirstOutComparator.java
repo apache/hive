@@ -22,30 +22,29 @@ import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.cr
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import org.apache.hadoop.hive.llap.daemon.LlapDaemonTestUtils;
 import org.apache.hadoop.hive.llap.daemon.impl.EvictingPriorityBlockingQueue;
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService.TaskWrapper;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezVertexID;
 import org.junit.Test;
 
+import java.io.IOException;
+
 public class TestFirstInFirstOutComparator {
 
   private SubmitWorkRequestProto createRequest(int fragmentNumber, int numSelfAndUpstreamTasks, int dagStartTime,
-      int attemptStartTime) {
+      int attemptStartTime) throws IOException {
     // Same priority for all tasks.
     return createRequest(fragmentNumber, numSelfAndUpstreamTasks, 0, dagStartTime, attemptStartTime, 1);
   }
 
   private SubmitWorkRequestProto createRequest(int fragmentNumber, int numSelfAndUpstreamTasks,
       int numSelfAndUpstreamComplete, int dagStartTime,
-      int attemptStartTime, int withinDagPriority) {
+      int attemptStartTime, int withinDagPriority) throws IOException {
     return createRequest(fragmentNumber, numSelfAndUpstreamTasks, numSelfAndUpstreamComplete,
         dagStartTime, attemptStartTime, withinDagPriority, "MockDag");
   }
@@ -54,50 +53,18 @@ public class TestFirstInFirstOutComparator {
   private SubmitWorkRequestProto createRequest(int fragmentNumber, int numSelfAndUpstreamTasks,
       int numSelfAndUpstreamComplete, int dagStartTime,
       int attemptStartTime, int withinDagPriority,
-      String dagName) {
+      String dagName) throws IOException {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
-    return SubmitWorkRequestProto
-        .newBuilder()
-        .setAttemptNumber(0)
-        .setFragmentNumber(fragmentNumber)
-        .setWorkSpec(
-            VertexOrBinary.newBuilder().setVertex(
-                SignableVertexSpec
-                    .newBuilder()
-                    .setQueryIdentifier(
-                        QueryIdentifierProto.newBuilder()
-                            .setApplicationIdString(appId.toString())
-                            .setAppAttemptNumber(0)
-                            .setDagIndex(dagId.getId())
-                            .build())
-                    .setVertexIndex(vId.getId())
-                    .setDagName(dagName)
-                    .setHiveQueryId(dagName)
-                    .setVertexName("MockVertex")
-                    .setUser("MockUser")
-                    .setTokenIdentifier("MockToken_1")
-                    .setProcessorDescriptor(
-                        EntityDescriptorProto.newBuilder().setClassName("MockProcessor").build())
-                    .build()).build())
-        .setAmHost("localhost")
-        .setAmPort(12345)
-        .setContainerIdString("MockContainer_1")
-        .setFragmentRuntimeInfo(LlapDaemonProtocolProtos
-            .FragmentRuntimeInfo
-            .newBuilder()
-            .setDagStartTime(dagStartTime)
-            .setFirstAttemptStartTime(attemptStartTime)
-            .setNumSelfAndUpstreamTasks(numSelfAndUpstreamTasks)
-            .setNumSelfAndUpstreamCompletedTasks(numSelfAndUpstreamComplete)
-            .setWithinDagPriority(withinDagPriority)
-            .build())
-        .build();
+    return LlapDaemonTestUtils.buildSubmitProtoRequest(fragmentNumber, appId.toString(),
+        dagId.getId(), vId.getId(), dagName, dagStartTime, attemptStartTime,
+        numSelfAndUpstreamTasks, numSelfAndUpstreamComplete, withinDagPriority,
+        new Credentials());
   }
 
   @Test (timeout = 60000)
-  public void testWaitQueueComparator() throws InterruptedException {
+  public void testWaitQueueComparator() throws InterruptedException, IOException {
     TaskWrapper r1 = createTaskWrapper(createRequest(1, 2, 5, 100), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createRequest(2, 4, 4, 200), false, 100000);
     TaskWrapper r3 = createTaskWrapper(createRequest(3, 6, 3, 300), false, 1000000);
@@ -273,7 +240,7 @@ public class TestFirstInFirstOutComparator {
   }
   
   @Test(timeout = 60000)
-  public void testWaitQueueComparatorWithinDagPriority() throws InterruptedException {
+  public void testWaitQueueComparatorWithinDagPriority() throws InterruptedException, IOException {
     TaskWrapper r1 = createTaskWrapper(createRequest(1, 1, 0, 100, 100, 10), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createRequest(2, 1, 0, 100, 100, 1), false, 100000);
     TaskWrapper r3 = createTaskWrapper(createRequest(3, 1, 0, 100, 100, 5), false, 100000);
@@ -291,7 +258,7 @@ public class TestFirstInFirstOutComparator {
   }
 
   @Test(timeout = 60000)
-  public void testWaitQueueComparatorWithinSameDagPriority() throws InterruptedException {
+  public void testWaitQueueComparatorWithinSameDagPriority() throws InterruptedException, IOException {
     TaskWrapper r1 = createTaskWrapper(createRequest(1, 1, 0, 10, 100, 10), true, 100000);
     TaskWrapper r2 = createTaskWrapper(createRequest(2, 1, 0, 10, 100, 10), true, 100000);
     TaskWrapper r3 = createTaskWrapper(createRequest(3, 1, 0, 10, 100, 10), true, 100000);
@@ -309,7 +276,7 @@ public class TestFirstInFirstOutComparator {
   }
 
   @Test(timeout = 60000)
-  public void testWaitQueueComparatorParallelism() throws InterruptedException {
+  public void testWaitQueueComparatorParallelism() throws InterruptedException, IOException {
     TaskWrapper r1 = createTaskWrapper(createRequest(1, 10, 3, 100, 100, 1, "q1"), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createRequest(2, 10, 7, 100, 100, 1, "q2"), false, 100000);
     TaskWrapper r3 = createTaskWrapper(createRequest(3, 10, 5, 100, 100, 1, "q3"), false, 100000);

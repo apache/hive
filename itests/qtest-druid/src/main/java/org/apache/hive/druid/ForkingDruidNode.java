@@ -27,13 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class ForkingDruidNode extends DruidNode {
   private final static String DEFAULT_JAVA_CMD = "java";

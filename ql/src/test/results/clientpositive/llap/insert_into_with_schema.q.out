@@ -144,9 +144,9 @@ POSTHOOK: query: select * from target1 order by x,y,z
 POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@target1
 #### A masked pattern was here ####
-NULL	1	2
 1	2	NULL
 2	NULL	1
+NULL	1	2
 PREHOOK: query: select * from target2 order by x,y,z
 PREHOOK: type: QUERY
 PREHOOK: Input: x314@target2
@@ -155,8 +155,8 @@ POSTHOOK: query: select * from target2 order by x,y,z
 POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@target2
 #### A masked pattern was here ####
-NULL	1	2
 2	NULL	1
+NULL	1	2
 PREHOOK: query: create table source2(s1 int, s2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:x314

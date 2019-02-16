@@ -22,8 +22,10 @@ import com.google.common.primitives.Ints;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.EventUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.events.EventUtils;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
 import org.apache.thrift.TException;
@@ -42,6 +44,9 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Utility class to enable testing of Replv1 compatibility testing.
@@ -65,6 +70,8 @@ public class ReplicationV1CompatRule implements TestRule {
   private HiveConf hconf = null;
   private List<String> testsToSkip = null;
 
+  private Hive hiveDb;
+
   public ReplicationV1CompatRule(IMetaStoreClient metaStoreClient, HiveConf hconf){
     this(metaStoreClient, hconf, new ArrayList<String>());
   }
@@ -79,6 +86,7 @@ public class ReplicationV1CompatRule implements TestRule {
     };
     this.testsToSkip = testsToSkip;
     LOG.info("Replv1 backward compatibility tester initialized at " + testEventId.get());
+    this.hiveDb = mock(Hive.class);
   }
 
   private Long getCurrentNotificationId(){
@@ -137,16 +145,17 @@ public class ReplicationV1CompatRule implements TestRule {
             return true;
           }
         };
-    EventUtils.MSClientNotificationFetcher evFetcher =
-        new EventUtils.MSClientNotificationFetcher(metaStoreClient);
     try {
+      when(hiveDb.getMSC()).thenReturn(metaStoreClient);
+      EventUtils.MSClientNotificationFetcher evFetcher =
+              new EventUtils.MSClientNotificationFetcher(hiveDb);
       EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
-          evFetcher, testEventIdBefore,
-          Ints.checkedCast(testEventIdAfter - testEventIdBefore) + 1,
-          evFilter);
+              evFetcher, testEventIdBefore,
+              Ints.checkedCast(testEventIdAfter - testEventIdBefore) + 1,
+              evFilter);
       ReplicationTask.resetFactory(null);
-      assertTrue("We should have found some events",evIter.hasNext());
-      while (evIter.hasNext()){
+      assertTrue("We should have found some events", evIter.hasNext());
+      while (evIter.hasNext()) {
         eventCount++;
         NotificationEvent ev = evIter.next();
         // convert to HCatNotificationEvent, and then try to instantiate a ReplicationTask on it.
@@ -155,11 +164,11 @@ public class ReplicationV1CompatRule implements TestRule {
           if (rtask instanceof ErroredReplicationTask) {
             unhandledTasks.put(ev, ((ErroredReplicationTask) rtask).getCause());
           }
-        } catch (RuntimeException re){
+        } catch (RuntimeException re) {
           incompatibleTasks.put(ev, re);
         }
       }
-    } catch (IOException e) {
+    } catch (IOException | MetaException e) {
       assertNull("Got an exception when we shouldn't have - replv1 backward incompatibility issue:",e);
     }
 

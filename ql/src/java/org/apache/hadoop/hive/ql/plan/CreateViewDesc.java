@@ -24,9 +24,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -409,6 +411,11 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
         tbl.getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
       }
     }
+
+    // Sets the column state for the create view statement (false since it is a creation).
+    // Similar to logic in CreateTableDesc.
+    StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
+        StatsSetupConst.FALSE);
 
     return tbl;
   }

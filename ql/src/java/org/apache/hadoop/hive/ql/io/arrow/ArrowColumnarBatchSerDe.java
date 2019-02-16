@@ -104,7 +104,6 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
     this.conf = conf;
 
-    rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
 
     final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
@@ -134,8 +133,6 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
       fields.add(toField(columnNames.get(i), columnTypes.get(i)));
     }
 
-    serializer = new Serializer(this);
-    deserializer = new Deserializer(this);
   }
 
   private static Field toField(String name, TypeInfo typeInfo) {
@@ -198,7 +195,7 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
         for (int i = 0; i < structSize; i++) {
           structFields.add(toField(fieldNames.get(i), fieldTypeInfos.get(i)));
         }
-        return new Field(name, FieldType.nullable(MinorType.MAP.getType()), structFields);
+        return new Field(name, FieldType.nullable(MinorType.STRUCT.getType()), structFields);
       case UNION:
         final UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
         final List<TypeInfo> objectTypeInfos = unionTypeInfo.getAllUnionObjectTypeInfos();
@@ -257,6 +254,15 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
 
   @Override
   public ArrowWrapperWritable serialize(Object obj, ObjectInspector objInspector) {
+    if(serializer == null) {
+      try {
+        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
+        serializer = new Serializer(this);
+      } catch(Exception e) {
+        LOG.error("Unable to initialize serializer for ArrowColumnarBatchSerDe");
+        throw new RuntimeException(e);
+      }
+    }
     return serializer.serialize(obj, objInspector);
   }
 
@@ -267,6 +273,14 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
 
   @Override
   public Object deserialize(Writable writable) {
+    if(deserializer == null) {
+      try {
+        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
+        deserializer = new Deserializer(this);
+      } catch(Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
     return deserializer.deserialize(writable);
   }
 

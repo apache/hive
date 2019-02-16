@@ -19,6 +19,7 @@
 package org.apache.hive.spark.client;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.io.File;
@@ -49,7 +50,7 @@ public class SparkClientUtilities {
 
   public static final String HIVE_KRYO_REG_NAME = "org.apache.hive.spark.HiveKryoRegistrator";
   private static final String HIVE_KRYO_REG_JAR_NAME = "hive-kryo-registrator";
-
+  private static final ImmutableList<String> ERROR_KEYWORDS = ImmutableList.of("error", "exception");
   /**
    * Add new elements to the classpath.
    *
@@ -185,5 +186,9 @@ public class SparkClientUtilities {
           new URLClassLoader(new URL[]{jar.toURI().toURL()}, loader);
       Thread.currentThread().setContextClassLoader(newLoader);
     }
+  }
+
+  public static boolean containsErrorKeyword(String line) {
+    return ERROR_KEYWORDS.stream().anyMatch(x -> StringUtils.containsIgnoreCase(line, x));
   }
 }

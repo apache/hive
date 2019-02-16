@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Random;
@@ -331,15 +330,12 @@ public class TestVectorMathFunctions {
     inL.vector[1] = 255;
     inL.vector[2] = 0;
     inS.initBuffer();
-    try {
-      inS.setVal(0, "00".getBytes("UTF-8"), 0, 2);
-      inS.setVal(1, "3232".getBytes("UTF-8"), 0, 4);
-      byte[] bad = "bad data".getBytes("UTF-8");
-      inS.setVal(2, bad, 0, bad.length);
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-      Assert.assertTrue(false);
-    }
+
+    inS.setVal(0, "00".getBytes(StandardCharsets.UTF_8), 0, 2);
+    inS.setVal(1, "3232".getBytes(StandardCharsets.UTF_8), 0, 4);
+    byte[] bad = "bad data".getBytes(StandardCharsets.UTF_8);
+    inS.setVal(2, bad, 0, bad.length);
+
 
     batch.cols[0] = inS;
     batch.cols[1] = inL;

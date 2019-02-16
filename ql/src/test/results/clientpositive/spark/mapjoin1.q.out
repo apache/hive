@@ -24,9 +24,13 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND true limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND true limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -116,9 +120,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND b.key * 10 < '1000' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND b.key * 10 < '1000' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -141,7 +149,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 
-                        1 {((UDFToDouble(_col0) * 10.0D) < 1000.0D)}
+                        1 {_col2}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -158,15 +166,15 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: string), value (type: string), ((UDFToDouble(key) * 10.0D) < 1000.0D) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Right Outer Join 0 to 1
                       filter predicates:
                         0 
-                        1 {((UDFToDouble(_col0) * 10.0D) < 1000.0D)}
+                        1 {_col2}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -215,10 +223,14 @@ PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN
     (select key, named_struct('key', key, 'value', value) as kv from src) b on a.key=b.key AND b.kv.key > 200 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN
     (select key, named_struct('key', key, 'value', value) as kv from src) b on a.key=b.key AND b.kv.key > 200 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -241,7 +253,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col1.key) > 200.0D)}
+                        1 {_col2}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -258,15 +270,15 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), named_struct('key',key,'value',value) (type: struct<key:string,value:string>)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: string), named_struct('key',key,'value',value) (type: struct<key:string,value:string>), (UDFToDouble(named_struct('key',key,'value',value).key) > 200.0D) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Right Outer Join 0 to 1
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col1.key) > 200.0D)}
+                        1 {_col2}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -316,9 +328,13 @@ NULL	NULL	165	{"key":"165","value":"val_165"}
 PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND true limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND true limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -408,9 +424,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND b.key * 10 < '1000' limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN src b on a.key=b.key AND b.key * 10 < '1000' limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -433,7 +453,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 
-                        1 {((UDFToDouble(_col0) * 10.0D) < 1000.0D)}
+                        1 {_col2}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -450,15 +470,15 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: string), value (type: string), ((UDFToDouble(key) * 10.0D) < 1000.0D) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Right Outer Join 0 to 1
                       filter predicates:
                         0 
-                        1 {((UDFToDouble(_col0) * 10.0D) < 1000.0D)}
+                        1 {_col2}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -507,10 +527,14 @@ PREHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN
     (select key, named_struct('key', key, 'value', value) as kv from src) b on a.key=b.key AND b.kv.key > 200 limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ MAPJOIN(a) */ * FROM src a RIGHT OUTER JOIN
     (select key, named_struct('key', key, 'value', value) as kv from src) b on a.key=b.key AND b.kv.key > 200 limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -533,7 +557,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col1.key) > 200.0D)}
+                        1 {_col2}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -550,15 +574,15 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: key (type: string), named_struct('key',key,'value',value) (type: struct<key:string,value:string>)
-                    outputColumnNames: _col0, _col1
+                    expressions: key (type: string), named_struct('key',key,'value',value) (type: struct<key:string,value:string>), (UDFToDouble(named_struct('key',key,'value',value).key) > 200.0D) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Right Outer Join 0 to 1
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col1.key) > 200.0D)}
+                        1 {_col2}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)

@@ -738,7 +738,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   private int getSequenceNumber(String resPath, String path) {
     String tst = resPath.substring(path.length());
     try {
-      return (new Integer(tst)).intValue();
+      return Integer.parseInt(tst);
     } catch (Exception e) {
       return -1; // invalid number
     }

@@ -174,7 +174,7 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
     // Missing fields?
     if (!missingFieldWarned && lastFieldByteEnd > structByteEnd) {
       missingFieldWarned = true;
-      LOG.info("Missing fields! Expected " + fields.length + " fields but " +
+      LOG.warn("Missing fields! Expected " + fields.length + " fields but " +
               "only got " + fieldId + "! " +
           "Last field end " + lastFieldByteEnd + " and serialize buffer end " + structByteEnd + ". " +
           "Ignoring similar problems.");

@@ -31,6 +31,8 @@ FROM (
   SELECT key, 2 as `values`, '2' as ds from inputTbl1_n3
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n3
+PREHOOK: Output: default@outputtbl1_n4
 POSTHOOK: query: explain
 insert overwrite table outputTbl1_n4 partition (ds)
 SELECT *
@@ -40,6 +42,7 @@ FROM (
   SELECT key, 2 as `values`, '2' as ds from inputTbl1_n3
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -47,6 +50,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -62,16 +67,13 @@ STAGE PLANS:
                       expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), _col2 (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                            name: default.outputtbl1_n4
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: bigint)
             Execution mode: vectorized
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1_n3
@@ -84,15 +86,27 @@ STAGE PLANS:
                       expressions: _col0 (type: string), UDFToLong(_col1) (type: bigint), _col2 (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                            name: default.outputtbl1_n4
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: bigint)
             Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: bigint), KEY._col2 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                      name: default.outputtbl1_n4
 
   Stage: Stage-0
     Move Operator

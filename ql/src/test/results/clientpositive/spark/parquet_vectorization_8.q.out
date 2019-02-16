@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -23,7 +23,9 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -48,6 +50,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -67,17 +71,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: ((cstring2 is not null and (UDFToDouble(ctimestamp1) <= 10.0D) and (UDFToDouble(ctimestamp2) <> 16.0D)) or (cfloat < -6432) or (cboolean1 is not null and (cdouble = 988888.0D))) (type: boolean)
+                  filterExpr: ((cstring2 is not null and (UDFToDouble(ctimestamp1) <= 10.0D) and (UDFToDouble(ctimestamp2) <> 16.0D)) or (cfloat < -6432.0) or (cboolean1 is not null and (cdouble = 988888.0D))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 7:string), FilterDoubleColLessEqualDoubleScalar(col 13:double, val 10.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val 16.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double)), FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0)))
-                    predicate: ((cboolean1 is not null and (cdouble = 988888.0D)) or (cfloat < -6432) or (cstring2 is not null and (UDFToDouble(ctimestamp1) <= 10.0D) and (UDFToDouble(ctimestamp2) <> 16.0D))) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 7:string), FilterDoubleColLessEqualDoubleScalar(col 13:double, val 10.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 14:double, val 16.0)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double)), FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0)))
+                    predicate: ((cboolean1 is not null and (cdouble = 988888.0D)) or (cfloat < -6432.0) or (cstring2 is not null and (UDFToDouble(ctimestamp1) <= 10.0D) and (UDFToDouble(ctimestamp2) <> 16.0D))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15D - cdouble) (type: double), (cdouble * -257.0D) (type: double), (UDFToFloat(cint) + cfloat) (type: float), ((- cdouble) + UDFToDouble(cbigint)) (type: double), (- cdouble) (type: double), (-1.389 - cfloat) (type: float), (- cfloat) (type: float), ((-5638.15D - cdouble) + UDFToDouble((UDFToFloat(cint) + cfloat))) (type: double)
@@ -85,18 +88,16 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [8, 5, 10, 6, 4, 13, 14, 15, 17, 19, 16, 18, 20, 22]
-                          selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 15:double, DoubleColAddDoubleColumn(col 16:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 16:float) -> 17:float, DoubleColAddDoubleColumn(col 16:double, col 18:double)(children: DoubleColUnaryMinus(col 5:double) -> 16:double, CastLongToDouble(col 3:bigint) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 5:double) -> 16:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 18:float, DoubleColUnaryMinus(col 4:float) -> 20:float, DoubleColAddDoubleColumn(col 21:double, col 23:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 21:double, col 23:float) -> 22:double
+                          projectedOutputColumnNums: [8, 5, 10, 6, 4, 15, 16, 17, 19, 22, 23, 24, 25, 29]
+                          selectExpressions: DoubleColUnaryMinus(col 5:double) -> 15:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 16:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 17:double, DoubleColAddDoubleColumn(col 18:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 18:float) -> 19:float, DoubleColAddDoubleColumn(col 20:double, col 21:double)(children: DoubleColUnaryMinus(col 5:double) -> 20:double, CastLongToDouble(col 3:bigint) -> 21:double) -> 22:double, DoubleColUnaryMinus(col 5:double) -> 23:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 24:float, DoubleColUnaryMinus(col 4:float) -> 25:float, DoubleColAddDoubleColumn(col 26:double, col 28:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 26:double, DoubleColAddDoubleColumn(col 27:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 27:float) -> 28:float) -> 29:double
                       Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: float), _col13 (type: double)
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [8, 5, 10, 6, 4, 13, 14, 15, 17, 19, 16, 18, 20, 22]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
@@ -109,27 +110,14 @@ STAGE PLANS:
                 allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 12
-                    includeColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10]
-                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, double, double, double, double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaaaaaaaaaaa
-                reduceColumnSortOrder: ++++++++++++++
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 14
-                    dataColumns: KEY.reducesinkkey0:timestamp, KEY.reducesinkkey1:double, KEY.reducesinkkey2:boolean, KEY.reducesinkkey3:string, KEY.reducesinkkey4:float, KEY.reducesinkkey5:double, KEY.reducesinkkey6:double, KEY.reducesinkkey7:double, KEY.reducesinkkey8:float, KEY.reducesinkkey9:double, KEY.reducesinkkey10:double, KEY.reducesinkkey11:float, KEY.reducesinkkey12:float, KEY.reducesinkkey13:double
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: boolean), KEY.reducesinkkey3 (type: string), KEY.reducesinkkey4 (type: float), KEY.reducesinkkey5 (type: double), KEY.reducesinkkey6 (type: double), KEY.reducesinkkey7 (type: double), KEY.reducesinkkey8 (type: float), KEY.reducesinkkey9 (type: double), KEY.reducesinkkey5 (type: double), KEY.reducesinkkey11 (type: float), KEY.reducesinkkey12 (type: float), KEY.reducesinkkey13 (type: double)
@@ -259,6 +247,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ctimestamp1,
        cdouble,
@@ -284,6 +274,8 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -303,7 +295,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: ((cstring2 is not null and (UDFToDouble(ctimestamp1) <= 12.503D) and (UDFToDouble(ctimestamp2) <> 11.998D)) or (cfloat < -6432) or (cboolean1 is not null and (cdouble = 988888.0D))) (type: boolean)
+                  filterExpr: ((cstring2 is not null and (UDFToDouble(ctimestamp1) <= 12.503D) and (UDFToDouble(ctimestamp2) <> 11.998D)) or (cfloat < -6432.0) or (cboolean1 is not null and (cdouble = 988888.0D))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -311,8 +303,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 7:string), FilterDoubleColLessEqualDoubleScalar(col 13:double, val 12.503)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val 11.998)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double)), FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0)))
-                    predicate: ((cboolean1 is not null and (cdouble = 988888.0D)) or (cfloat < -6432) or (cstring2 is not null and (UDFToDouble(ctimestamp1) <= 12.503D) and (UDFToDouble(ctimestamp2) <> 11.998D))) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 7:string), FilterDoubleColLessEqualDoubleScalar(col 13:double, val 12.503)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 14:double, val 11.998)(children: CastTimestampToDouble(col 9:timestamp) -> 14:double)), FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0)))
+                    predicate: ((cboolean1 is not null and (cdouble = 988888.0D)) or (cfloat < -6432.0) or (cstring2 is not null and (UDFToDouble(ctimestamp1) <= 12.503D) and (UDFToDouble(ctimestamp2) <> 11.998D))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctimestamp1 (type: timestamp), cdouble (type: double), cboolean1 (type: boolean), cstring1 (type: string), cfloat (type: float), (- cdouble) (type: double), (-5638.15D - cdouble) (type: double), (cdouble * -257.0D) (type: double), (UDFToFloat(cint) + cfloat) (type: float), ((- cdouble) + UDFToDouble(cbigint)) (type: double), (- cdouble) (type: double), (-1.389 - cfloat) (type: float), (- cfloat) (type: float), ((-5638.15D - cdouble) + UDFToDouble((UDFToFloat(cint) + cfloat))) (type: double)
@@ -320,8 +312,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [8, 5, 10, 6, 4, 13, 14, 15, 17, 19, 16, 18, 20, 22]
-                          selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 15:double, DoubleColAddDoubleColumn(col 16:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 16:float) -> 17:float, DoubleColAddDoubleColumn(col 16:double, col 18:double)(children: DoubleColUnaryMinus(col 5:double) -> 16:double, CastLongToDouble(col 3:bigint) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 5:double) -> 16:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 18:float, DoubleColUnaryMinus(col 4:float) -> 20:float, DoubleColAddDoubleColumn(col 21:double, col 23:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 21:double, col 23:float) -> 22:double
+                          projectedOutputColumnNums: [8, 5, 10, 6, 4, 15, 16, 17, 19, 22, 23, 24, 25, 29]
+                          selectExpressions: DoubleColUnaryMinus(col 5:double) -> 15:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 16:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 17:double, DoubleColAddDoubleColumn(col 18:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 18:float) -> 19:float, DoubleColAddDoubleColumn(col 20:double, col 21:double)(children: DoubleColUnaryMinus(col 5:double) -> 20:double, CastLongToDouble(col 3:bigint) -> 21:double) -> 22:double, DoubleColUnaryMinus(col 5:double) -> 23:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 24:float, DoubleColUnaryMinus(col 4:float) -> 25:float, DoubleColAddDoubleColumn(col 26:double, col 28:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 26:double, DoubleColAddDoubleColumn(col 27:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 27:float) -> 28:float) -> 29:double
                       Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: float), _col13 (type: double)

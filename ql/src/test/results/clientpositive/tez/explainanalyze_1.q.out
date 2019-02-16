@@ -8,8 +8,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select * from src a union all select * from src b limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select * from src a union all select * from src b limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -48,8 +52,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -72,27 +80,44 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_n28
 PREHOOK: query: explain analyze create table t_n28 as select key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n28
 POSTHOOK: query: explain analyze create table t_n28 as select key from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n28
 Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
     Stage-4
       Create Table Operator:
         name:default.t_n28
-        Stage-2
-          Dependency Collection{}
-            Stage-1
-              Map 1
-              File Output Operator [FS_2]
-                table:{"name:":"default.t_n28"}
-                Select Operator [SEL_1] (rows=500/500 width=87)
-                  Output:["_col0"]
-                  TableScan [TS_0] (rows=500/500 width=87)
-                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
         Stage-0
           Move Operator
+            Stage-1
+              Reducer 2
+              File Output Operator [FS_11]
+                Group By Operator [GBY_9] (rows=1/1 width=440)
+                  Output:["_col0"],aggregations:["compute_stats(VALUE._col0, 'hll')"]
+                <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                  File Output Operator [FS_2]
+                    table:{"name:":"default.t_n28"}
+                    Select Operator [SEL_1] (rows=500/500 width=87)
+                      Output:["_col0"]
+                      TableScan [TS_0] (rows=500/500 width=87)
+                        default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                  PARTITION_ONLY_SHUFFLE [RS_8]
+                    Select Operator [SEL_7] (rows=500/500 width=87)
+                      Output:["col1"]
+                       Please refer to the previous Select Operator [SEL_1]
+        Stage-2
+          Dependency Collection{}
              Please refer to the previous Stage-1
 
 PREHOOK: query: create table t_n28 as select key from src
@@ -116,8 +141,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t_n28
 PREHOOK: query: explain analyze insert overwrite table t_n28 select key from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t_n28
 POSTHOOK: query: explain analyze insert overwrite table t_n28 select key from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t_n28
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -157,8 +186,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key from src limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -181,8 +214,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src where value < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key from src where value < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -205,8 +242,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src where key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key from src where key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Stage-0
@@ -238,8 +279,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key, count(key) from src group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select key, count(key) from src group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -280,8 +325,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.value where a.key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.value where a.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -298,7 +347,7 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_28] (rows=262/0 width=8)
+            Merge Join Operator [MERGEJOIN_28] (rows=166/0 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -329,8 +378,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.key where a.key > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.key where a.key > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -347,7 +400,7 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_28] (rows=262/1019 width=8)
+            Merge Join Operator [MERGEJOIN_28] (rows=166/1019 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -387,8 +440,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select * from src a union all select * from src b
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze select * from src a union all select * from src b
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -436,10 +493,14 @@ PREHOOK: query: EXPLAIN analyze
 SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN analyze 
 SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
 Vertex dependency in root stage
@@ -496,13 +557,19 @@ TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain analyze
 SELECT
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
 on a.key = b.key
 POSTHOOK: type: QUERY
-Plan not optimized by CBO.
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan not optimized by CBO because the statement uses scripts
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)

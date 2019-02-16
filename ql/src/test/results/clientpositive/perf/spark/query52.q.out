@@ -19,6 +19,10 @@ select  dt.d_year
  	,brand_id
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  dt.d_year
  	,item.i_brand_id brand_id
@@ -40,6 +44,10 @@ select  dt.d_year
  	,brand_id
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -137,11 +145,11 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col2, _col7, _col8
+                outputColumnNames: _col2, _col5, _col6
                 Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: sum(_col2)
-                  keys: _col7 (type: int), _col8 (type: string)
+                  keys: _col5 (type: int), _col6 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE

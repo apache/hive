@@ -70,8 +70,12 @@ POSTHOOK: Output: default@customer_address_n0
 #### A masked pattern was here ####
 PREHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_address_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_address_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -120,7 +124,7 @@ STAGE PLANS:
           keys:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
             mode: hash
@@ -164,8 +168,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_address_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_address_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

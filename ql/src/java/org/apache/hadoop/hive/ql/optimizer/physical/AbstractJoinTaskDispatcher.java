@@ -149,8 +149,7 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
       }
       return aliasTotalKnownInputSize;
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new SemanticException("Generate Map Join Task Error: " + e.getMessage());
+      throw new SemanticException("Generate Map Join Task Error: ", e);
     }
   }
 

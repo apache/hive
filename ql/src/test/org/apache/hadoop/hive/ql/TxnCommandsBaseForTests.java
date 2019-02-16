@@ -24,11 +24,14 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
+import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
+import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
@@ -49,7 +53,7 @@ public abstract class TxnCommandsBaseForTests {
   final static int BUCKET_COUNT = 2;
   @Rule
   public TestName testName = new TestName();
-  HiveConf hiveConf;
+  protected HiveConf hiveConf;
   Driver d;
   enum Table {
     ACIDTBL("acidTbl"),
@@ -96,6 +100,7 @@ public abstract class TxnCommandsBaseForTests {
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
     TxnDbUtil.setConfValues(hiveConf);
@@ -138,10 +143,10 @@ public abstract class TxnCommandsBaseForTests {
       FileUtils.deleteDirectory(new File(getTestDataDir()));
     }
   }
-  String getWarehouseDir() {
+  protected String getWarehouseDir() {
     return getTestDataDir() + "/warehouse";
   }
-  abstract String getTestDataDir();
+  protected abstract String getTestDataDir();
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
@@ -149,19 +154,44 @@ public abstract class TxnCommandsBaseForTests {
   List<String> stringifyValues(int[][] rowsIn) {
     return TestTxnCommands2.stringifyValues(rowsIn);
   }
-  String makeValuesClause(int[][] rows) {
+  protected String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
   }
-
-  void runWorker(HiveConf hiveConf) throws MetaException {
-    TestTxnCommands2.runWorker(hiveConf);
+  public static void runWorker(HiveConf hiveConf) throws Exception {
+    runCompactorThread(hiveConf, CompactorThreadType.WORKER);
+  }
+  public static void runCleaner(HiveConf hiveConf) throws Exception {
+    runCompactorThread(hiveConf, CompactorThreadType.CLEANER);
+  }
+  public static void runInitiator(HiveConf hiveConf) throws Exception {
+    runCompactorThread(hiveConf, CompactorThreadType.INITIATOR);
+  }
+  private enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
+  private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
+      throws Exception {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    CompactorThread t = null;
+    switch (type) {
+      case INITIATOR:
+        t = new Initiator();
+        break;
+      case WORKER:
+        t = new Worker();
+        break;
+      case CLEANER:
+        t = new Cleaner();
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown type: " + type);
+    }
+    t.setThreadId((int) t.getId());
+    t.setConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
   }
 
-  void runCleaner(HiveConf hiveConf) throws MetaException {
-    TestTxnCommands2.runCleaner(hiveConf);
-  }
-
-  List<String> runStatementOnDriver(String stmt) throws Exception {
+  protected List<String> runStatementOnDriver(String stmt) throws Exception {
     LOG.info("Running the query: " + stmt);
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {
@@ -196,7 +226,7 @@ public abstract class TxnCommandsBaseForTests {
   /**
    * Will assert that actual files match expected.
    * @param expectedFiles - suffixes of expected Paths.  Must be the same length
-   * @param rootPath - table or patition root where to start looking for actual files, recursively
+   * @param rootPath - table or partition root where to start looking for actual files, recursively
    */
   void assertExpectedFileSet(Set<String> expectedFiles, String rootPath) throws Exception {
     int suffixLength = 0;
@@ -225,9 +255,10 @@ public abstract class TxnCommandsBaseForTests {
         expected.length, rs.size());
     //verify data and layout
     for(int i = 0; i < expected.length; i++) {
-      Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i) + "; expected " + expected[i][0], rs.get(i).startsWith(expected[i][0]));
       if(checkFileName) {
-        Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
+        Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i),
+            rs.get(i).endsWith(expected[i][1]) || rs.get(i).matches(expected[i][1]));
       }
     }
   }
@@ -244,9 +275,19 @@ public abstract class TxnCommandsBaseForTests {
    * which will currently make the query non-vectorizable.  This means we can't check the file name
    * for vectorized version of the test.
    */
-  void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
+  protected void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
     List<String> rs = runStatementOnDriver(query);
     checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
     assertVectorized(isVectorized, query);
+  }
+  void dropTable(String[] tabs) throws Exception {
+    for(String tab : tabs) {
+      d.run("drop table if exists " + tab);
+    }
+  }
+  Driver swapDrivers(Driver otherDriver) {
+    Driver tmp = d;
+    d = otherDriver;
+    return tmp;
   }
 }

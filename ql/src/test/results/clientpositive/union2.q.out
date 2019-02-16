@@ -2,10 +2,14 @@ PREHOOK: query: explain
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                         select s2.key as key, s2.value as value from src s2) unionsrc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                         select s2.key as key, s2.value as value from src s2) unionsrc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -69,9 +69,17 @@ Found 1 items
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b
     SELECT key, value FROM orcfile_merge3a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orcfile_merge3a
+PREHOOK: Input: default@orcfile_merge3a@ds=1
+PREHOOK: Input: default@orcfile_merge3a@ds=2
+PREHOOK: Output: default@orcfile_merge3b
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE orcfile_merge3b
     SELECT key, value FROM orcfile_merge3a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcfile_merge3a
+POSTHOOK: Input: default@orcfile_merge3a@ds=1
+POSTHOOK: Input: default@orcfile_merge3a@ds=2
+POSTHOOK: Output: default@orcfile_merge3b
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

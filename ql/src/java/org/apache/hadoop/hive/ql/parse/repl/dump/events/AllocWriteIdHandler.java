@@ -18,19 +18,25 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class AllocWriteIdHandler extends AbstractEventHandler {
+class AllocWriteIdHandler extends AbstractEventHandler<AllocWriteIdMessage> {
   AllocWriteIdHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  AllocWriteIdMessage eventMessage(String stringRepresentation) {
+    return deserializer.getAllocWriteIdMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} ALLOC_WRITE_ID message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} ALLOC_WRITE_ID message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

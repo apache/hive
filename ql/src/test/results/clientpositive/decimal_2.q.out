@@ -100,7 +100,7 @@ POSTHOOK: query: select cast(t as string) from decimal_2_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-17.29
+17.290000000
 PREHOOK: query: insert overwrite table decimal_2_n1
   select cast('3404045.5044003' as decimal(18,9)) from src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -183,7 +183,7 @@ POSTHOOK: query: select cast(t as string) from decimal_2_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-3404045.5044003
+3404045.504400300
 PREHOOK: query: select cast(3.14 as decimal(4,2)) from decimal_2_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_2_n1

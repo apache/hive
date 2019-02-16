@@ -18,6 +18,8 @@ SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(1, 2, 3)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(3), hash(CAST('123456789012' AS BIGINT)),
@@ -26,6 +28,8 @@ SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(1, 2, 3)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

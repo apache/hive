@@ -33,8 +33,16 @@ POSTHOOK: Lineage: viewtest.a SIMPLE [(dependtest)dependtest.FieldSchema(name:a,
 POSTHOOK: Lineage: viewtest.b SIMPLE []
 PREHOOK: query: explain dependency select count(*) from viewtest
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dependtest
+PREHOOK: Input: default@dependtest@b=1
+PREHOOK: Input: default@viewtest
+#### A masked pattern was here ####
 POSTHOOK: query: explain dependency select count(*) from viewtest
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependtest
+POSTHOOK: Input: default@dependtest@b=1
+POSTHOOK: Input: default@viewtest
+#### A masked pattern was here ####
 {"input_tables":[{"tablename":"default@viewtest","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@dependtest","tabletype":"MANAGED_TABLE","tableParents":"[default@viewtest]"}],"input_partitions":[{"partitionName":"default@dependtest@b=1","partitionParents":"[default@viewtest]"}]}
 PREHOOK: query: drop view viewtest
 PREHOOK: type: DROPVIEW

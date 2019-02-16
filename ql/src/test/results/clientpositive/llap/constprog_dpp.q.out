@@ -30,6 +30,9 @@ union all
 select 2 as id from tb2 limit 1) b
 on a.id=b.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tb1
+PREHOOK: Input: default@tb2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select a.id from tb1 a
 left outer join
@@ -38,6 +41,9 @@ union all
 select 2 as id from tb2 limit 1) b
 on a.id=b.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tb1
+POSTHOOK: Input: default@tb2
+#### A masked pattern was here ####
 Plan optimized by CBO.
 
 Vertex dependency in root stage

@@ -18,9 +18,13 @@ POSTHOOK: Lineage: dest1_n60.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2) FROM dest1_n60
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n60
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2) FROM dest1_n60
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n60
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -55,6 +59,8 @@ SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
        CAST(128 AS INT), CAST(1.0 AS DOUBLE),
        CAST('128' AS STRING) FROM dest1_n60
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n60
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
        IF(TRUE, 0.1, 0.2), IF(FALSE, CAST(1 AS BIGINT), CAST(2 AS BIGINT)),
@@ -63,6 +69,8 @@ SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
        CAST(128 AS INT), CAST(1.0 AS DOUBLE),
        CAST('128' AS STRING) FROM dest1_n60
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n60
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

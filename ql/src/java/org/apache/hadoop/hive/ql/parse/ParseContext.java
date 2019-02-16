@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.Multimap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -137,6 +139,7 @@ public class ParseContext {
 
   private Map<String, List<SemiJoinHint>> semiJoinHints;
   private boolean disableMapJoin;
+  private Multimap<TerminalOperator<?>, ReduceSinkOperator> terminalOpToRSMap;
 
   public ParseContext() {
   }
@@ -713,5 +716,13 @@ public class ParseContext {
 
   public boolean getDisableMapJoin() {
     return disableMapJoin;
+  }
+
+  public void setTerminalOpToRSMap(Multimap<TerminalOperator<?>, ReduceSinkOperator> terminalOpToRSMap) {
+    this.terminalOpToRSMap = terminalOpToRSMap;
+  }
+
+  public Multimap<TerminalOperator<?>, ReduceSinkOperator> getTerminalOpToRSMap() {
+    return terminalOpToRSMap;
   }
 }

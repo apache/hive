@@ -67,11 +67,23 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=1
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -366,11 +378,21 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key and a.part = '2'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key and a.part = '2'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -631,11 +653,21 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -896,11 +928,21 @@ SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n8 a JOIN srcbucket_mapjoin_part_2_n18 b
 ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n8@part=2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n18@part=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

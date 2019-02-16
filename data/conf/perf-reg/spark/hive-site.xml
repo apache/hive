@@ -144,8 +144,13 @@
 
 <property>
   <name>hive.support.concurrency</name>
-  <value>false</value>
+  <value>true</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
+</property>
+
+<property>
+  <name>hive.txn.manager</name>
+  <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>
 </property>
 
 <property>
@@ -162,6 +167,12 @@
     Disabling this for tests so that minimr is not affected
   </description>
 </property>
+
+<property>
+  <name>hive.merge.nway.joins</name>
+  <value>true</value>
+</property>
+
 
 <property>
   <name>hive.auto.convert.join</name>
@@ -278,6 +289,12 @@
 <property>
   <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
   <value>99</value>
+</property>
+
+<!-- remove this after HIVE-18139 and HIVE-20573 -->
+<property>
+  <name>hive.stats.fetch.column.stats</name>
+  <value>false</value>
 </property>
 
 

@@ -56,12 +56,20 @@ from
 T1_n65 a join T2_n39 b on a.key = b.key 
 join T3_n14 c on a.val = c.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n65
+PREHOOK: Input: default@t2_n39
+PREHOOK: Input: default@t3_n14
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 select *
 from 
 T1_n65 a join T2_n39 b on a.key = b.key 
 join T3_n14 c on a.val = c.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n65
+POSTHOOK: Input: default@t2_n39
+POSTHOOK: Input: default@t3_n14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

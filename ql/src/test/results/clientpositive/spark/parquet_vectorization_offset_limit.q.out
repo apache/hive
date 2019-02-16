@@ -1,8 +1,12 @@
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 3,2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization SELECT cbigint, cdouble FROM alltypesparquet WHERE cbigint < cdouble and cint > 0 limit 3,2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -71,9 +75,13 @@ POSTHOOK: Input: default@alltypesparquet
 PREHOOK: query: explain vectorization expression
 select ctinyint,cdouble,csmallint from alltypesparquet where ctinyint is not null order by ctinyint,cdouble limit 10,3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select ctinyint,cdouble,csmallint from alltypesparquet where ctinyint is not null order by ctinyint,cdouble limit 10,3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

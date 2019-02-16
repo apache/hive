@@ -23,8 +23,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -54,6 +52,8 @@ import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.OutputCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -66,7 +66,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
 
   private static final long serialVersionUID = 1L;
   private static final String CLASS_NAME = VectorReduceSinkCommonOperator.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   /**
    * Information about our native vectorized reduce sink created by the Vectorizer class during

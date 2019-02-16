@@ -7,7 +7,6 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.merge.sparkfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
-set mapred.input.dir.recursive=true;
 
 -- SORT_QUERY_RESULTS
 -- This is to test the union->selectstar->filesink optimization

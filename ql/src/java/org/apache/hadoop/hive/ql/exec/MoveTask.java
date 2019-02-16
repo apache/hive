@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -139,7 +140,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
         deletePath = createTargetPath(targetPath, tgtFs);
       }
-      Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
+      //For acid table incremental replication, just copy the content of staging directory to destination.
+      //No need to clean it.
+      if (work.isNeedCleanTarget()) {
+        Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
+      }
       // Set isManaged to false as this is not load data operation for which it is needed.
       if (!Hive.moveFile(conf, sourcePath, targetPath, true, false, false)) {
         try {
@@ -264,6 +269,26 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     return false;
   }
 
+  // Whether statistics need to be reset as part of MoveTask execution.
+  private boolean resetStatisticsProps(Table table) {
+    if (hasFollowingStatsTask()) {
+      // If there's a follow-on stats task then the stats will be correct after load, so don't
+      // need to reset the statistics.
+      return false;
+    }
+
+    if (!work.getIsInReplicationScope()) {
+      // If the load is not happening during replication and there is not follow-on stats
+      // task, stats will be inaccurate after load and so need to be reset.
+      return true;
+    }
+
+    // If we are loading a table during replication, the stats will also be replicated
+    // and hence accurate if it's a non-transactional table. For transactional table we
+    // do not replicate stats yet.
+    return AcidUtils.isTransactionalTable(table.getParameters());
+  }
+
   private final static class TaskInformation {
     public List<BucketCol> bucketCols = null;
     public List<SortCol> sortCols = null;
@@ -318,6 +343,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
         }
       }
+
       // Multi-file load is for dynamic partitions when some partitions do not
       // need to merge and they can simply be moved to the target directory.
       // This is also used for MM table conversion.
@@ -328,6 +354,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         for (int i = 0; i <lmfd.getSourceDirs().size(); ++i) {
           Path srcPath = lmfd.getSourceDirs().get(i);
           Path destPath = lmfd.getTargetDirs().get(i);
+          if (destPath.equals(srcPath)) {
+            continue;
+          }
           String filePrefix = targetPrefixes == null ? null : targetPrefixes.get(i);
           FileSystem destFs = destPath.getFileSystem(conf);
           if (filePrefix == null) {
@@ -367,6 +396,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
+        // for transactional table if write id is not set during replication from a cluster with STRICT_MANAGED set
+        // to false then set it now.
+        if (tbd.getWriteId() <= 0 && AcidUtils.isTransactionalTable(table.getParameters())) {
+          String writeId = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
+          if (writeId == null) {
+            throw new HiveException("MoveTask : Write id is not set in the config by open txn task for migration");
+          }
+          tbd.setWriteId(Long.parseLong(writeId));
+          tbd.setStmtId(driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement());
+        }
+
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
             && !tbd.isMmTable(); //it seems that LoadTableDesc has Operation.INSERT only for CTAS...
 
@@ -378,9 +418,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             Utilities.FILE_OP_LOGGER.trace("loadTable called from " + tbd.getSourcePath()
               + " into " + tbd.getTable().getTableName());
           }
+
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
-              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, hasFollowingStatsTask(),
-              tbd.getWriteId(), tbd.getStmtId(), tbd.isInsertOverwrite());
+                  work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp,
+                  resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
+                  tbd.isInsertOverwrite());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
@@ -477,12 +519,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     db.loadPartition(tbd.getSourcePath(), db.getTable(tbd.getTable().getTableName()),
-        tbd.getPartitionSpec(), tbd.getLoadFileType(), tbd.getInheritTableSpecs(),
-        isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
-            !tbd.isMmTable(),
-         hasFollowingStatsTask(),
-        tbd.getWriteId(), tbd.getStmtId(), tbd.isInsertOverwrite());
+            tbd.getPartitionSpec(), tbd.getLoadFileType(), tbd.getInheritTableSpecs(),
+            tbd.getInheritLocation(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
+            work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
+                    !tbd.isMmTable(),
+            resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
+            tbd.isInsertOverwrite());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
     // See the comment inside updatePartitionBucketSortColumns.
@@ -527,7 +569,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             !tbd.isMmTable(),
         work.getLoadTableWork().getWriteId(),
         tbd.getStmtId(),
-        hasFollowingStatsTask(),
+        resetStatisticsProps(table),
         work.getLoadTableWork().getWriteType(),
         tbd.isInsertOverwrite());
 
@@ -793,7 +835,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     if (updateBucketCols || updateSortCols) {
-      db.alterPartition(table.getDbName(), table.getTableName(), partn, null);
+      db.alterPartition(table.getCatalogName(), table.getDbName(), table.getTableName(),
+          partn, null, true);
     }
   }
 
@@ -826,5 +869,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   @Override
   public String getName() {
     return "MOVE";
+  }
+
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
   }
 }

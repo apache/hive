@@ -91,8 +91,12 @@ POSTHOOK: Lineage: alltypes_orc_n4.ts1 SIMPLE [(alltypes_n4)alltypes_n4.FieldSch
 POSTHOOK: Lineage: alltypes_orc_n4.vc1 SIMPLE [(alltypes_n4)alltypes_n4.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 PREHOOK: query: explain select * from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -139,8 +143,12 @@ POSTHOOK: Output: default@alltypes_orc_n4
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -177,8 +185,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select bo1 from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select bo1 from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -215,8 +227,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select i1 as int1 from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select i1 as int1 from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -253,8 +269,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select s1 from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select s1 from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -291,8 +311,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select m1 from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select m1 from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -329,8 +353,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -367,8 +395,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select null from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select null from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -428,8 +460,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select 11 from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select 11 from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -489,8 +525,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select 11L from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select 11L from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -550,8 +590,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select 11.0 from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select 11.0 from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -611,8 +655,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select "hello" from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select "hello" from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -672,8 +720,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select cast("hello" as char(5)) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("hello" as char(5)) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -733,8 +785,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select cast("hello" as varchar(5)) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("hello" as varchar(5)) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -794,8 +850,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select unbase64("0xe23") from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select unbase64("0xe23") from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -814,25 +874,38 @@ STAGE PLANS:
                 TableScan
                   alias: alltypes_orc_n4
                   Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: D317B6 (type: binary)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [16]
+                        selectExpressions: ConstantVectorExpression(val ��) -> 16:binary
                     Statistics: Num rows: 2 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 2 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: SELECT operator: Unsupported constant type: binary, object class byte[]
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -842,8 +915,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -903,8 +980,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -964,8 +1045,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1025,8 +1110,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select cast("58.174" as DECIMAL) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select cast("58.174" as DECIMAL) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1086,8 +1175,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select array(1,2,3) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select array(1,2,3) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1147,8 +1240,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1208,8 +1305,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1269,8 +1370,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select CREATE_UNION(0, "hello") from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select CREATE_UNION(0, "hello") from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1330,8 +1435,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select count(*) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select count(*) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1348,8 +1457,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select count(1) from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select count(1) from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1366,8 +1479,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select *,11 from alltypes_orc_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select *,11 from alltypes_orc_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1427,8 +1544,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select i1 from (select i1 from alltypes_orc_n4 limit 10) temp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select i1 from (select i1 from alltypes_orc_n4 limit 10) temp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1493,8 +1614,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select i1 from (select i1,11 from alltypes_orc_n4 limit 10) temp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select i1 from (select i1,11 from alltypes_orc_n4 limit 10) temp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1559,8 +1684,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select i1,"hello" from (select i1,11 from alltypes_orc_n4 limit 10) temp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select i1,"hello" from (select i1,11 from alltypes_orc_n4 limit 10) temp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1669,8 +1798,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select x from (select i1,11.0 as x from alltypes_orc_n4 limit 10) temp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select x from (select i1,11.0 as x from alltypes_orc_n4 limit 10) temp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1768,8 +1901,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc_n4 limit 10) temp
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc_n4 limit 10) temp
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1878,8 +2015,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc_n4 limit 10) in1 limit 10) in2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc_n4 limit 10) in1 limit 10) in2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1977,8 +2118,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select bo1 from alltypes_orc_n4 where bo1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select bo1 from alltypes_orc_n4 where bo1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2044,8 +2189,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain vectorization expression select bo1 from alltypes_orc_n4 where !bo1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression select bo1 from alltypes_orc_n4 where !bo1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes_orc_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

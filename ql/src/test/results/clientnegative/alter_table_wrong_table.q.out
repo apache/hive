@@ -1,0 +1,13 @@
+PREHOOK: query: create database bad_rename2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:bad_rename2
+POSTHOOK: query: create database bad_rename2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:bad_rename2
+PREHOOK: query: use bad_rename2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:bad_rename2
+POSTHOOK: query: use bad_rename2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:bad_rename2
+FAILED: SemanticException [Error 10001]: Table not found bad_rename2.rename_not_exists

@@ -321,6 +321,14 @@ EXPLAIN SELECT count(*) FROM partitioned_table1 WHERE partitioned_table1.part_co
 SELECT regular_table1.col1 FROM regular_table1 JOIN partitioned_table2 ON
 regular_table1.col1 = partitioned_table2.part_col AND partitioned_table2.col > 3 AND regular_table1.col1 > 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_table1
+PREHOOK: Input: default@partitioned_table1@part_col=2
+PREHOOK: Input: default@partitioned_table1@part_col=3
+PREHOOK: Input: default@partitioned_table2
+PREHOOK: Input: default@partitioned_table2@part_col=2
+PREHOOK: Input: default@partitioned_table2@part_col=3
+PREHOOK: Input: default@regular_table1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: -- ensure the partitioned tables are treated as big tables
 
 
@@ -328,6 +336,14 @@ EXPLAIN SELECT count(*) FROM partitioned_table1 WHERE partitioned_table1.part_co
 SELECT regular_table1.col1 FROM regular_table1 JOIN partitioned_table2 ON
 regular_table1.col1 = partitioned_table2.part_col AND partitioned_table2.col > 3 AND regular_table1.col1 > 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_table1
+POSTHOOK: Input: default@partitioned_table1@part_col=2
+POSTHOOK: Input: default@partitioned_table1@part_col=3
+POSTHOOK: Input: default@partitioned_table2
+POSTHOOK: Input: default@partitioned_table2@part_col=2
+POSTHOOK: Input: default@partitioned_table2@part_col=3
+POSTHOOK: Input: default@regular_table1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-2 depends on stages: Stage-3
@@ -339,7 +355,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: regular_table1
@@ -355,7 +371,7 @@ STAGE PLANS:
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
-                          1 _col1 (type: int)
+                          1 _col0 (type: int)
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
@@ -366,7 +382,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 4 -> [part_col:int (part_col)]]
+                            Target Columns: [Map 1 -> [part_col:int (part_col)], Map 3 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
@@ -375,7 +391,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table2
@@ -386,39 +402,43 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: part_col (type: int)
-                      outputColumnNames: _col1
+                      outputColumnNames: _col0
                       Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
-                          1 _col1 (type: int)
-                        outputColumnNames: _col0
+                          1 _col0 (type: int)
+                        outputColumnNames: _col1
                         input vertices:
-                          0 Map 3
+                          1 Map 4
                         Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: int)
-                          mode: hash
+                        Select Operator
+                          expressions: _col1 (type: int)
                           outputColumnNames: _col0
                           Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                          Spark HashTable Sink Operator
-                            keys:
-                              0 _col0 (type: int)
-                              1 _col0 (type: int)
-                          Select Operator
-                            expressions: _col0 (type: int)
+                          Group By Operator
+                            keys: _col0 (type: int)
+                            mode: hash
                             outputColumnNames: _col0
                             Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                            Group By Operator
-                              keys: _col0 (type: int)
-                              mode: hash
+                            Spark HashTable Sink Operator
+                              keys:
+                                0 _col0 (type: int)
+                                1 _col0 (type: int)
+                            Select Operator
+                              expressions: _col0 (type: int)
                               outputColumnNames: _col0
                               Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                              Spark Partition Pruning Sink Operator
-                                Target Columns: [Map 1 -> [part_col:int (part_col)]]
+                              Group By Operator
+                                keys: _col0 (type: int)
+                                mode: hash
+                                outputColumnNames: _col0
                                 Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                                Spark Partition Pruning Sink Operator
+                                  Target Columns: [Map 1 -> [part_col:int (part_col)]]
+                                  Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
@@ -432,7 +452,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
-                  filterExpr: (part_col > 1) (type: boolean)
                   Statistics: Num rows: 12 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: part_col (type: int)
@@ -445,7 +464,7 @@ STAGE PLANS:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
                       input vertices:
-                        1 Map 4
+                        1 Map 3
                       Statistics: Num rows: 13 Data size: 13 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
@@ -516,10 +535,22 @@ PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, regular_table1 
 regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 =
 partitioned_table1.part_col AND rt1.col2 > 0 AND rt2.col2 > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_table1
+PREHOOK: Input: default@partitioned_table1@part_col=1
+PREHOOK: Input: default@partitioned_table1@part_col=2
+PREHOOK: Input: default@partitioned_table1@part_col=3
+PREHOOK: Input: default@regular_table1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, regular_table1 rt1,
 regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 =
 partitioned_table1.part_col AND rt1.col2 > 0 AND rt2.col2 > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_table1
+POSTHOOK: Input: default@partitioned_table1@part_col=1
+POSTHOOK: Input: default@partitioned_table1@part_col=2
+POSTHOOK: Input: default@partitioned_table1@part_col=3
+POSTHOOK: Input: default@regular_table1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -690,10 +721,30 @@ PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_tab
 , regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 = 
 partitioned_table2.part_col AND rt1.col2 > 0 AND rt2.col2 > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_table1
+PREHOOK: Input: default@partitioned_table1@part_col=1
+PREHOOK: Input: default@partitioned_table1@part_col=2
+PREHOOK: Input: default@partitioned_table1@part_col=3
+PREHOOK: Input: default@partitioned_table2
+PREHOOK: Input: default@partitioned_table2@part_col=1
+PREHOOK: Input: default@partitioned_table2@part_col=2
+PREHOOK: Input: default@partitioned_table2@part_col=3
+PREHOOK: Input: default@regular_table1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2, regular_table1 rt1 
 , regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 = 
 partitioned_table2.part_col AND rt1.col2 > 0 AND rt2.col2 > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_table1
+POSTHOOK: Input: default@partitioned_table1@part_col=1
+POSTHOOK: Input: default@partitioned_table1@part_col=2
+POSTHOOK: Input: default@partitioned_table1@part_col=3
+POSTHOOK: Input: default@partitioned_table2
+POSTHOOK: Input: default@partitioned_table2@part_col=1
+POSTHOOK: Input: default@partitioned_table2@part_col=2
+POSTHOOK: Input: default@partitioned_table2@part_col=3
+POSTHOOK: Input: default@regular_table1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -912,9 +963,21 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT count(*) FROM regular_table1, partitioned_table1 WHERE regular_table1.col1
 = partitioned_table1.part_col AND regular_table1.col2 BETWEEN 1 AND 3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_table1
+PREHOOK: Input: default@partitioned_table1@part_col=1
+PREHOOK: Input: default@partitioned_table1@part_col=2
+PREHOOK: Input: default@partitioned_table1@part_col=3
+PREHOOK: Input: default@regular_table1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM regular_table1, partitioned_table1 WHERE regular_table1.col1
 = partitioned_table1.part_col AND regular_table1.col2 BETWEEN 1 AND 3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_table1
+POSTHOOK: Input: default@partitioned_table1@part_col=1
+POSTHOOK: Input: default@partitioned_table1@part_col=2
+POSTHOOK: Input: default@partitioned_table1@part_col=3
+POSTHOOK: Input: default@regular_table1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -933,11 +996,11 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (col1 is not null and col2 BETWEEN 1 AND 3) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col1 (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
@@ -945,15 +1008,15 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           keys: _col0 (type: int)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target Columns: [Map 2 -> [part_col:int (part_col)]]
-                            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
 
@@ -1044,11 +1107,23 @@ regular_table1.col2 > 1), q2 AS (SELECT partitioned_table1.part_col AS col FROM
 partitioned_table1 WHERE partitioned_table1.col > 1) SELECT count(*) FROM q1 JOIN q2 ON
 q1.col = q2.col
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_table1
+PREHOOK: Input: default@partitioned_table1@part_col=1
+PREHOOK: Input: default@partitioned_table1@part_col=2
+PREHOOK: Input: default@partitioned_table1@part_col=3
+PREHOOK: Input: default@regular_table1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN WITH q1 AS (SELECT regular_table1.col1 AS col FROM regular_table1 WHERE
 regular_table1.col2 > 1), q2 AS (SELECT partitioned_table1.part_col AS col FROM
 partitioned_table1 WHERE partitioned_table1.col > 1) SELECT count(*) FROM q1 JOIN q2 ON
 q1.col = q2.col
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_table1
+POSTHOOK: Input: default@partitioned_table1@part_col=1
+POSTHOOK: Input: default@partitioned_table1@part_col=2
+POSTHOOK: Input: default@partitioned_table1@part_col=3
+POSTHOOK: Input: default@regular_table1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1193,9 +1268,27 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2 WHERE
 partitioned_table1.part_col = partitioned_table2.part_col AND partitioned_table2.col > 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_table1
+PREHOOK: Input: default@partitioned_table1@part_col=1
+PREHOOK: Input: default@partitioned_table1@part_col=2
+PREHOOK: Input: default@partitioned_table1@part_col=3
+PREHOOK: Input: default@partitioned_table2
+PREHOOK: Input: default@partitioned_table2@part_col=1
+PREHOOK: Input: default@partitioned_table2@part_col=2
+PREHOOK: Input: default@partitioned_table2@part_col=3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2 WHERE
 partitioned_table1.part_col = partitioned_table2.part_col AND partitioned_table2.col > 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_table1
+POSTHOOK: Input: default@partitioned_table1@part_col=1
+POSTHOOK: Input: default@partitioned_table1@part_col=2
+POSTHOOK: Input: default@partitioned_table1@part_col=3
+POSTHOOK: Input: default@partitioned_table2
+POSTHOOK: Input: default@partitioned_table2@part_col=1
+POSTHOOK: Input: default@partitioned_table2@part_col=2
+POSTHOOK: Input: default@partitioned_table2@part_col=3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1217,14 +1310,14 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: part_col (type: int)
-                      outputColumnNames: _col1
+                      outputColumnNames: _col0
                       Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
-                          1 _col1 (type: int)
+                          1 _col0 (type: int)
                       Select Operator
-                        expressions: _col1 (type: int)
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -1259,7 +1352,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 _col0 (type: int)
-                        1 _col1 (type: int)
+                        1 _col0 (type: int)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
@@ -1332,12 +1425,30 @@ EXPLAIN SELECT count(*) FROM partitioned_table4, partitioned_table5 WHERE
 partitioned_table4.part_col1 = partitioned_table5.part_col1 AND
 partitioned_table4.part_col2 = partitioned_table5.part_col2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_table4
+PREHOOK: Input: default@partitioned_table4@part_col1=1/part_col2=1
+PREHOOK: Input: default@partitioned_table4@part_col1=2/part_col2=2
+PREHOOK: Input: default@partitioned_table4@part_col1=3/part_col2=3
+PREHOOK: Input: default@partitioned_table5
+PREHOOK: Input: default@partitioned_table5@part_col1=1/part_col2=1
+PREHOOK: Input: default@partitioned_table5@part_col1=2/part_col2=2
+PREHOOK: Input: default@partitioned_table5@part_col1=3/part_col2=3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: -- set auto convert size to a higher value so map-joins are triggered for the partitioned tables
 
 EXPLAIN SELECT count(*) FROM partitioned_table4, partitioned_table5 WHERE
 partitioned_table4.part_col1 = partitioned_table5.part_col1 AND
 partitioned_table4.part_col2 = partitioned_table5.part_col2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_table4
+POSTHOOK: Input: default@partitioned_table4@part_col1=1/part_col2=1
+POSTHOOK: Input: default@partitioned_table4@part_col1=2/part_col2=2
+POSTHOOK: Input: default@partitioned_table4@part_col1=3/part_col2=3
+POSTHOOK: Input: default@partitioned_table5
+POSTHOOK: Input: default@partitioned_table5@part_col1=1/part_col2=1
+POSTHOOK: Input: default@partitioned_table5@part_col1=2/part_col2=2
+POSTHOOK: Input: default@partitioned_table5@part_col1=3/part_col2=3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1479,10 +1590,24 @@ PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1 JOIN regular_tab
 partitioned_table1.part_col = regular_table1.col1 JOIN regular_table2 ON
 regular_table1.col1 = regular_table2.col1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_table1
+PREHOOK: Input: default@partitioned_table1@part_col=1
+PREHOOK: Input: default@partitioned_table1@part_col=2
+PREHOOK: Input: default@partitioned_table1@part_col=3
+PREHOOK: Input: default@regular_table1
+PREHOOK: Input: default@regular_table2
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1 JOIN regular_table1 ON
 partitioned_table1.part_col = regular_table1.col1 JOIN regular_table2 ON
 regular_table1.col1 = regular_table2.col1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_table1
+POSTHOOK: Input: default@partitioned_table1@part_col=1
+POSTHOOK: Input: default@partitioned_table1@part_col=2
+POSTHOOK: Input: default@partitioned_table1@part_col=3
+POSTHOOK: Input: default@regular_table1
+POSTHOOK: Input: default@regular_table2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Text;
@@ -597,6 +598,18 @@ public final class VectorExpressionWriterFactory {
             "Failed to initialize VectorExpressionWriter for expr: %s",
             nodeDesc.getExprString()));
       }
+      return genVectorExpressionWritable(objectInspector);
+    }
+
+    /**
+     * Compiles the appropriate vector expression writer based on an expression info (ExprNodeDesc)
+     */
+    public static VectorExpressionWriter genVectorExpressionWritable(VectorExpression vecExpr)
+      throws HiveException {
+      TypeInfo outputTypeInfo = vecExpr.getOutputTypeInfo();
+      ObjectInspector objectInspector =
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+              outputTypeInfo);
       return genVectorExpressionWritable(objectInspector);
     }
 
@@ -1741,6 +1754,19 @@ public final class VectorExpressionWriterFactory {
     for(int i=0; i<writers.length; ++i) {
       ExprNodeDesc nodeDesc = nodesDesc.get(i);
       writers[i] = genVectorExpressionWritable(nodeDesc);
+    }
+    return writers;
+  }
+
+  /**
+   * Helper function to create an array of writers from a list of expression descriptors.
+   */
+  public static VectorExpressionWriter[] getExpressionWriters(VectorExpression[] vecExprs)
+      throws HiveException {
+    VectorExpressionWriter[] writers = new VectorExpressionWriter[vecExprs.length];
+    for(int i=0; i<writers.length; ++i) {
+      VectorExpression vecExpr = vecExprs[i];
+      writers[i] = genVectorExpressionWritable(vecExpr);
     }
     return writers;
   }

@@ -1,6 +1,6 @@
 DROP TABLE accumulo_index_test;
 
-CREATE TABLE accumulo_index_test (
+CREATE EXTERNAL TABLE accumulo_index_test (
    rowid string,
    active boolean,
    num_offices tinyint,
@@ -21,7 +21,8 @@ WITH SERDEPROPERTIES (
    "accumulo.table.name"="accumulo_index_test",
    "accumulo.indexed.columns"="*",
    "accumulo.indextable.name"="accumulo_index_idx"
- );
+ )
+TBLPROPERTIES ("external.table.purge" = "true");
 
 
 insert into accumulo_index_test values( "row1", true, 55, 107, 555555, 1223232332,

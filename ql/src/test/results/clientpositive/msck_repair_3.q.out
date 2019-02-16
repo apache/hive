@@ -28,6 +28,7 @@ PREHOOK: Output: default@repairtable_n3
 POSTHOOK: query: MSCK TABLE default.repairtable_n3
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n3
+Partitions not in metastore:	repairtable_n3:p1=c/p2=a
 PREHOOK: query: show partitions repairtable_n3
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n3
@@ -40,12 +41,15 @@ PREHOOK: Output: default@repairtable_n3
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n3
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n3
+Partitions not in metastore:	repairtable_n3:p1=c/p2=a
+#### A masked pattern was here ####
 PREHOOK: query: show partitions repairtable_n3
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repairtable_n3
 POSTHOOK: query: show partitions repairtable_n3
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n3
+p1=c/p2=a
 PREHOOK: query: MSCK TABLE repairtable_n3
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n3
@@ -58,6 +62,7 @@ PREHOOK: Input: default@repairtable_n3
 POSTHOOK: query: show partitions repairtable_n3
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repairtable_n3
+p1=c/p2=a
 PREHOOK: query: DROP TABLE default.repairtable_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable_n3

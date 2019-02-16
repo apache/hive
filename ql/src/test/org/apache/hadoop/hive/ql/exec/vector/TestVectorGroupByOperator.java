@@ -38,6 +38,8 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -216,7 +218,10 @@ public class TestVectorGroupByOperator {
     vectorDesc.setVecAggrDescs(
         new VectorAggregationDesc[] {
           new VectorAggregationDesc(
-              agg, new GenericUDAFCount.GenericUDAFCountEvaluator(), null, ColumnVector.Type.NONE, null,
+              agg.getGenericUDAFName(),
+              new GenericUDAFCount.GenericUDAFCountEvaluator(),
+              agg.getMode(),
+              null, ColumnVector.Type.NONE, null,
               TypeInfoFactory.longTypeInfo, ColumnVector.Type.LONG, VectorUDAFCountStar.class)});
 
     vectorDesc.setProcessingMode(VectorGroupByDesc.ProcessingMode.HASH);
@@ -285,6 +290,8 @@ public class TestVectorGroupByOperator {
     FakeCaptureVectorToRowOutputOperator out = FakeCaptureVectorToRowOutputOperator.addCaptureOutputChild(cCtx, vgo);
     vgo.initialize(hconf, null);
 
+    long expected = vgo.getMaxMemory();
+    assertEquals(expected, maxMemory);
     this.outputRowCount = 0;
     out.setOutputInspector(new FakeCaptureVectorToRowOutputOperator.OutputInspector() {
       @Override
@@ -339,6 +346,98 @@ public class TestVectorGroupByOperator {
     }
 
     assertTrue(0 < outputRowCount);
+  }
+
+  @Test
+  public void testMemoryPressureFlushLlap() throws HiveException {
+
+    try {
+      List<String> mapColumnNames = new ArrayList<String>();
+      mapColumnNames.add("Key");
+      mapColumnNames.add("Value");
+      VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
+
+      Pair<GroupByDesc, VectorGroupByDesc> pair = buildKeyGroupByDesc(ctx, "max",
+        "Value", TypeInfoFactory.longTypeInfo,
+        "Key", TypeInfoFactory.longTypeInfo);
+      GroupByDesc desc = pair.fst;
+      VectorGroupByDesc vectorDesc = pair.snd;
+
+      LlapProxy.setDaemon(true);
+
+      CompilationOpContext cCtx = new CompilationOpContext();
+
+      Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+      VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx, vectorDesc);
+
+      FakeCaptureVectorToRowOutputOperator out = FakeCaptureVectorToRowOutputOperator.addCaptureOutputChild(cCtx, vgo);
+      long maxMemory=512*1024*1024L;
+      vgo.getConf().setMaxMemoryAvailable(maxMemory);
+      float threshold = 100.0f*1024.0f/maxMemory;
+      desc.setMemoryThreshold(threshold);
+      vgo.initialize(hconf, null);
+
+      long got = vgo.getMaxMemory();
+      assertEquals(maxMemory, got);
+      this.outputRowCount = 0;
+      out.setOutputInspector(new FakeCaptureVectorToRowOutputOperator.OutputInspector() {
+        @Override
+        public void inspectRow(Object row, int tag) throws HiveException {
+          ++outputRowCount;
+        }
+      });
+
+      Iterable<Object> it = new Iterable<Object>() {
+        @Override
+        public Iterator<Object> iterator() {
+          return new Iterator<Object>() {
+            long value = 0;
+
+            @Override
+            public boolean hasNext() {
+              return true;
+            }
+
+            @Override
+            public Object next() {
+              return ++value;
+            }
+
+            @Override
+            public void remove() {
+            }
+          };
+        }
+      };
+
+      FakeVectorRowBatchFromObjectIterables data = new FakeVectorRowBatchFromObjectIterables(
+        100,
+        new String[]{"long", "long"},
+        it,
+        it);
+
+      // The 'it' data source will produce data w/o ever ending
+      // We want to see that memory pressure kicks in and some
+      // entries in the VGBY are flushed.
+      long countRowsProduced = 0;
+      for (VectorizedRowBatch unit : data) {
+        countRowsProduced += 100;
+        vgo.process(unit, 0);
+        if (0 < outputRowCount) {
+          break;
+        }
+        // Set an upper bound how much we're willing to push before it should flush
+        // we've set the memory treshold at 100kb, each key is distinct
+        // It should not go beyond 100k/16 (key+data)
+        assertTrue(countRowsProduced < 100 * 1024 / 16);
+      }
+
+      assertTrue(0 < outputRowCount);
+    } finally {
+      LlapProxy.setDaemon(false);
+    }
   }
 
   @Test
@@ -1555,7 +1654,7 @@ public class TestVectorGroupByOperator {
         "avg",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0.0);
   }
 
   @Test
@@ -1564,12 +1663,12 @@ public class TestVectorGroupByOperator {
         "avg",
         2,
         Arrays.asList(new Long[]{null}),
-        null);
+        0.0);
     testAggregateLongAggregate(
         "avg",
         2,
         Arrays.asList(new Long[]{null, null, null}),
-        null);
+        0.0);
     testAggregateLongAggregate(
         "avg",
         2,
@@ -1601,7 +1700,7 @@ public class TestVectorGroupByOperator {
         null,
         4096,
         1024,
-        null);
+        0.0);
   }
 
   @SuppressWarnings("unchecked")
@@ -1632,7 +1731,7 @@ public class TestVectorGroupByOperator {
         "variance",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0.0);
   }
 
   @Test
@@ -1650,12 +1749,12 @@ public class TestVectorGroupByOperator {
         "variance",
         2,
         Arrays.asList(new Long[]{null}),
-        null);
+        0.0);
     testAggregateLongAggregate(
         "variance",
         2,
         Arrays.asList(new Long[]{null, null, null}),
-        null);
+        0.0);
     testAggregateLongAggregate(
         "variance",
         2,
@@ -1680,7 +1779,7 @@ public class TestVectorGroupByOperator {
         null,
         4096,
         1024,
-        null);
+        0.0);
   }
 
   @Test
@@ -1708,7 +1807,7 @@ public class TestVectorGroupByOperator {
         "var_samp",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0.0);
   }
 
 
@@ -1737,7 +1836,7 @@ public class TestVectorGroupByOperator {
         "std",
         2,
         Arrays.asList(new Long[]{}),
-        null);
+        0.0);
   }
 
 
@@ -1758,7 +1857,7 @@ public class TestVectorGroupByOperator {
         null,
         4096,
         1024,
-        null);
+        0.0);
   }
 
 
@@ -2236,14 +2335,21 @@ public class TestVectorGroupByOperator {
 
         assertEquals (true, vals[0] instanceof LongWritable);
         LongWritable lw = (LongWritable) vals[0];
-        assertFalse (lw.get() == 0L);
 
         if (vals[1] instanceof DoubleWritable) {
           DoubleWritable dw = (DoubleWritable) vals[1];
-          assertEquals (key, expected, dw.get() / lw.get());
+          if (lw.get() != 0L) {
+            assertEquals (key, expected, dw.get() / lw.get());
+          } else {
+            assertEquals(key, expected, 0.0);
+          }
         } else if (vals[1] instanceof HiveDecimalWritable) {
           HiveDecimalWritable hdw = (HiveDecimalWritable) vals[1];
-          assertEquals (key, expected, hdw.getHiveDecimal().divide(HiveDecimal.create(lw.get())));
+          if (lw.get() != 0L) {
+            assertEquals (key, expected, hdw.getHiveDecimal().divide(HiveDecimal.create(lw.get())));
+          } else {
+            assertEquals(key, expected, HiveDecimal.ZERO);
+          }
         }
       }
     }
@@ -2271,10 +2377,14 @@ public class TestVectorGroupByOperator {
         assertEquals (true, vals[1] instanceof DoubleWritable);
         assertEquals (true, vals[2] instanceof DoubleWritable);
         LongWritable cnt = (LongWritable) vals[0];
-        DoubleWritable sum = (DoubleWritable) vals[1];
-        DoubleWritable var = (DoubleWritable) vals[2];
-        assertTrue (1 <= cnt.get());
-        validateVariance (key, (Double) expected, cnt.get(), sum.get(), var.get());
+        if (cnt.get() == 0) {
+          assertEquals(key, expected, 0.0);
+        } else {
+          DoubleWritable sum = (DoubleWritable) vals[1];
+          DoubleWritable var = (DoubleWritable) vals[2];
+          assertTrue (1 <= cnt.get());
+          validateVariance (key, (Double) expected, cnt.get(), sum.get(), var.get());
+        }
       }
     }
   }

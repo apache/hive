@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -90,10 +92,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentDate;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentUser;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -102,6 +100,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.security.alias.AbstractJavaKeyStoreProvider;
+import org.apache.hadoop.security.alias.CredentialProvider;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +119,7 @@ public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
   protected final QueryState queryState;
-  protected List<Task<?>> rootTasks;
+  protected List<Task<? extends Serializable>> rootTasks;
   protected FetchTask fetchTask;
   protected final Logger LOG;
   protected final LogHelper console;
@@ -184,6 +185,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public boolean skipAuthorization() {
     return false;
+  }
+
+  public String getCboInfo() {
+    return ctx.getCboInfo();
   }
 
   class RowFormatParams {
@@ -359,24 +364,36 @@ public abstract class BaseSemanticAnalyzer {
    * Get dequoted name from a table/column node.
    * @param tableOrColumnNode the table or column node
    * @return for table node, db.tab or tab. for column node column.
+   * @throws SemanticException
    */
-  public static String getUnescapedName(ASTNode tableOrColumnNode) {
+  public static String getUnescapedName(ASTNode tableOrColumnNode) throws SemanticException {
     return getUnescapedName(tableOrColumnNode, null);
   }
 
-  public static Map.Entry<String,String> getDbTableNamePair(ASTNode tableNameNode) {
-    assert(tableNameNode.getToken().getType() == HiveParser.TOK_TABNAME);
+  public static Map.Entry<String, String> getDbTableNamePair(ASTNode tableNameNode) throws SemanticException {
+
+    if (tableNameNode.getType() != HiveParser.TOK_TABNAME ||
+        (tableNameNode.getChildCount() != 1 && tableNameNode.getChildCount() != 2)) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME.getMsg(tableNameNode));
+    }
+
     if (tableNameNode.getChildCount() == 2) {
       String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
       String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
+      if (dbName.contains(".") || tableName.contains(".")) {
+        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tableNameNode));
+      }
       return Pair.of(dbName, tableName);
     } else {
       String tableName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+      if (tableName.contains(".")) {
+        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tableNameNode));
+      }
       return Pair.of(null,tableName);
     }
   }
 
-  public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) {
+  public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) throws SemanticException {
     int tokenType = tableOrColumnNode.getToken().getType();
     if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
@@ -405,9 +422,15 @@ public abstract class BaseSemanticAnalyzer {
     if (tabNameNode.getChildCount() == 2) {
       String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
       String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
+      if (dbName.contains(".") || tableName.contains(".")) {
+        throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tabNameNode));
+      }
       return new String[] {dbName, tableName};
     }
     String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+    if (tableName.contains(".")) {
+      throw new SemanticException(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(tabNameNode));
+    }
     return Utilities.getDbTableName(tableName);
   }
 
@@ -429,8 +452,9 @@ public abstract class BaseSemanticAnalyzer {
    * @param node the table node
    * @return the table name without schema qualification
    *         (i.e., if name is "db.table" or "table", returns "table")
+   * @throws SemanticException
    */
-  public static String getUnescapedUnqualifiedTableName(ASTNode node) {
+  public static String getUnescapedUnqualifiedTableName(ASTNode node) throws SemanticException {
     assert node.getChildCount() <= 2;
 
     if (node.getChildCount() == 2) {
@@ -667,15 +691,6 @@ public abstract class BaseSemanticAnalyzer {
     final String defaultValue;
 
     ConstraintInfo(String colName, String constraintName,
-        boolean enable, boolean validate, boolean rely) {
-      this.colName = colName;
-      this.constraintName = constraintName;
-      this.enable = enable;
-      this.validate = validate;
-      this.rely = rely;
-      this.defaultValue = null;
-    }
-    ConstraintInfo(String colName, String constraintName,
                    boolean enable, boolean validate, boolean rely, String defaultValue) {
       this.colName = colName;
       this.constraintName = constraintName;
@@ -816,25 +831,26 @@ public abstract class BaseSemanticAnalyzer {
     generateConstraintInfos(child, columnNames.build(), cstrInfos, null, null);
   }
 
-  private static boolean isDefaultValueAllowed(final ExprNodeDesc defaultValExpr) {
+  private static boolean isDefaultValueAllowed(ExprNodeDesc defaultValExpr) {
+    while (FunctionRegistry.isOpCast(defaultValExpr)) {
+      defaultValExpr = defaultValExpr.getChildren().get(0);
+    }
+
     if(defaultValExpr instanceof ExprNodeConstantDesc) {
       return true;
     }
-    else if(FunctionRegistry.isOpCast(defaultValExpr)) {
-      return isDefaultValueAllowed(defaultValExpr.getChildren().get(0));
-    }
-    else if(defaultValExpr instanceof ExprNodeGenericFuncDesc){
-      ExprNodeGenericFuncDesc defFunc = (ExprNodeGenericFuncDesc)defaultValExpr;
-      if(defFunc.getGenericUDF() instanceof GenericUDFOPNull
-          || defFunc.getGenericUDF() instanceof GenericUDFCurrentTimestamp
-          || defFunc.getGenericUDF() instanceof GenericUDFCurrentDate
-          || defFunc.getGenericUDF() instanceof GenericUDFCurrentUser){
-        return true;
+
+    if(defaultValExpr instanceof ExprNodeGenericFuncDesc){
+      for (ExprNodeDesc argument : defaultValExpr.getChildren()) {
+        if (!isDefaultValueAllowed(argument)) {
+          return false;
+        }
       }
+      return true;
     }
+
     return false;
   }
-
 
   // given an ast node this method recursively goes over checkExpr ast. If it finds a node of type TOK_SUBQUERY_EXPR
   // it throws an error.
@@ -914,7 +930,7 @@ public abstract class BaseSemanticAnalyzer {
       } catch(Exception e) {
         throw new SemanticException(
             ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid CHECK constraint expression: ")
-                + cc.getCheck_expression() + ". " + e.getMessage());
+                + cc.getCheck_expression() + ". " + e.getMessage(), e);
       }
     }
   }
@@ -998,10 +1014,10 @@ public abstract class BaseSemanticAnalyzer {
     // Default values
     String constraintName = null;
     //by default if user hasn't provided any optional constraint properties
-    // it will be considered ENABLE and NOVALIDATE and RELY=false
+    // it will be considered ENABLE and NOVALIDATE and RELY=true
     boolean enable = true;
     boolean validate = false;
-    boolean rely = false;
+    boolean rely = true;
     String checkOrDefaultValue = null;
     for (int i = 0; i < child.getChildCount(); i++) {
       ASTNode grandChild = (ASTNode) child.getChild(i);
@@ -1018,6 +1034,7 @@ public abstract class BaseSemanticAnalyzer {
         enable = false;
         // validate is false by default if we disable the constraint
         validate = false;
+        rely = false;
       } else if (type == HiveParser.TOK_VALIDATE) {
         validate = true;
       } else if (type == HiveParser.TOK_NOVALIDATE) {
@@ -1327,13 +1344,8 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) ast.getChild(i);
       if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
         child = (ASTNode) child.getChild(0);
-        if (child.getToken().getType() == HiveParser.TOK_NULLS_FIRST) {
-          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_ASC));
-        } else {
-          throw new SemanticException("create/alter table: "
-                  + "not supported NULLS LAST for ORDER BY in ASC order");
-        }
+        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+            HIVE_COLUMN_ORDER_ASC));
       } else {
         child = (ASTNode) child.getChild(0);
         if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {
@@ -1644,7 +1656,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public class AnalyzeRewriteContext {
+  public static class AnalyzeRewriteContext {
 
     private String tableName;
     private List<String> colName;
@@ -1831,18 +1843,9 @@ public abstract class BaseSemanticAnalyzer {
     return transactionalInQuery;
   }
 
-  /**
-   * Construct list bucketing context.
-   *
-   * @param skewedColNames
-   * @param skewedValues
-   * @param skewedColValueLocationMaps
-   * @param isStoredAsSubDirectories
-   * @return
-   */
   protected ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,
       List<List<String>> skewedValues, Map<List<String>, String> skewedColValueLocationMaps,
-      boolean isStoredAsSubDirectories, HiveConf conf) {
+      boolean isStoredAsSubDirectories) {
     ListBucketingCtx lbCtx = new ListBucketingCtx();
     lbCtx.setSkewedColNames(skewedColNames);
     lbCtx.setSkewedColValues(skewedValues);
@@ -2084,7 +2087,7 @@ public abstract class BaseSemanticAnalyzer {
     }
     String normalizedColSpec = originalColSpec;
     if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
-      normalizedColSpec = normalizeDateCol(colValue, originalColSpec);
+      normalizedColSpec = normalizeDateCol(colValue);
     }
     if (!normalizedColSpec.equals(originalColSpec)) {
       STATIC_LOG.warn("Normalizing partition spec - " + colName + " from "
@@ -2093,8 +2096,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  private static String normalizeDateCol(
-      Object colValue, String originalColSpec) throws SemanticException {
+  private static String normalizeDateCol(Object colValue) throws SemanticException {
     Date value;
     if (colValue instanceof DateWritableV2) {
       value = ((DateWritableV2) colValue).get(); // Time doesn't matter.
@@ -2143,10 +2145,6 @@ public abstract class BaseSemanticAnalyzer {
     } catch (Exception e) {
       throw new SemanticException(e);
     }
-  }
-
-  private Path tryQualifyPath(Path path) throws IOException {
-    return tryQualifyPath(path,conf);
   }
 
   public static Path tryQualifyPath(Path path, HiveConf conf) throws IOException {
@@ -2296,5 +2294,33 @@ public abstract class BaseSemanticAnalyzer {
 
   public DDLDescWithWriteId getAcidDdlDesc() {
     return null;
+  }
+
+  public WriteEntity getAcidAnalyzeTable() {
+    return null;
+  }
+
+  public void addPropertyReadEntry(Map<String, String> tblProps, Set<ReadEntity> inputs) throws SemanticException {
+    if (tblProps.containsKey(Constants.JDBC_KEYSTORE)) {
+      try {
+        String keystore = tblProps.get(Constants.JDBC_KEYSTORE);
+        Configuration conf = new Configuration();
+        conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, keystore);
+        boolean found = false;
+        for (CredentialProvider provider : CredentialProviderFactory.getProviders(conf)) {
+          if (provider instanceof AbstractJavaKeyStoreProvider) {
+            Path path = ((AbstractJavaKeyStoreProvider) provider).getPath();
+            inputs.add(toReadEntity(path));
+            found = true;
+          }
+        }
+        if (!found) {
+          throw new SemanticException("Cannot recognize keystore " + keystore + ", only JavaKeyStoreProvider is " +
+                  "supported");
+        }
+      } catch (IOException e) {
+        throw new SemanticException(e);
+      }
+    }
   }
 }

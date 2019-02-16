@@ -29,6 +29,12 @@ and ws1.ws_order_number in (select wr_order_number
 order by count(distinct ws_order_number)
 limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_address
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+PREHOOK: Input: default@web_site
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 with ws_wh as
 (select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
@@ -60,6 +66,12 @@ and ws1.ws_order_number in (select wr_order_number
 order by count(distinct ws_order_number)
 limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_address
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Input: default@web_site
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -255,12 +267,12 @@ STAGE PLANS:
                     Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: wr_order_number (type: int)
-                      outputColumnNames: _col0
+                      outputColumnNames: _col13
                       Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col13 (type: int)
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col13 (type: int)
                         Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 8 
@@ -351,11 +363,11 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col1
+                  1 _col13 (type: int)
+                outputColumnNames: _col14
                 Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: _col1 (type: int)
+                  keys: _col14 (type: int)
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE

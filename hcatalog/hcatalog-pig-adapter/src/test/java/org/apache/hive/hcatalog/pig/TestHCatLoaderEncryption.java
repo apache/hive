@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -184,7 +185,7 @@ public class TestHCatLoaderEncryption {
 
     driver = DriverFactory.newDriver(hiveConf);
 
-    SessionState.get().out = System.out;
+    SessionState.get().out = new SessionStream(System.out);
 
     createTable(BASIC_TABLE, "a int, b string");
     createTableInSpecifiedPath(ENCRYPTED_TABLE, "a int, b string",

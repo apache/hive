@@ -167,6 +167,8 @@ public class VectorRandomBatchSource {
       VectorRandomRowSource vectorRandomRowSource,
       Object[][] randomRows) {
 
+    final boolean allowNull = vectorRandomRowSource.getAllowNull();
+
     List<VectorBatchPattern> vectorBatchPatternList = new ArrayList<VectorBatchPattern>();
     final int rowCount = randomRows.length;
     int rowIndex = 0;
@@ -201,35 +203,38 @@ public class VectorRandomBatchSource {
        */
       while (true) {
 
-        // Repeated NULL permutations.
         long columnPermutation = 1;
-        while (true) {
-          if (columnPermutation > columnPermutationLimit) {
-            break;
-          }
-          final int maximumRowCount = Math.min(rowCount - rowIndex, VectorizedRowBatch.DEFAULT_SIZE);
-          if (maximumRowCount == 0) {
-            break;
-          }
-          int randomRowCount = 1 + random.nextInt(maximumRowCount);
-          final int rowLimit = rowIndex + randomRowCount;
+        if (allowNull) {
 
-          BitSet bitSet = BitSet.valueOf(new long[]{columnPermutation});
-
-          for (int columnNum = bitSet.nextSetBit(0);
-               columnNum >= 0;
-               columnNum = bitSet.nextSetBit(columnNum + 1)) {
-
-            // Repeated NULL fill down column.
-            for (int r = rowIndex; r < rowLimit; r++) {
-              randomRows[r][columnNum] = null;
+          // Repeated NULL permutations.
+          while (true) {
+            if (columnPermutation > columnPermutationLimit) {
+              break;
             }
+            final int maximumRowCount = Math.min(rowCount - rowIndex, VectorizedRowBatch.DEFAULT_SIZE);
+            if (maximumRowCount == 0) {
+              break;
+            }
+            int randomRowCount = 1 + random.nextInt(maximumRowCount);
+            final int rowLimit = rowIndex + randomRowCount;
+
+            BitSet bitSet = BitSet.valueOf(new long[]{columnPermutation});
+
+            for (int columnNum = bitSet.nextSetBit(0);
+                 columnNum >= 0;
+                 columnNum = bitSet.nextSetBit(columnNum + 1)) {
+
+              // Repeated NULL fill down column.
+              for (int r = rowIndex; r < rowLimit; r++) {
+                randomRows[r][columnNum] = null;
+              }
+            }
+            vectorBatchPatternList.add(
+                VectorBatchPattern.createRepeatedBatch(
+                    random, randomRowCount, bitSet, asSelected));
+            columnPermutation++;
+            rowIndex = rowLimit;
           }
-          vectorBatchPatternList.add(
-              VectorBatchPattern.createRepeatedBatch(
-                  random, randomRowCount, bitSet, asSelected));
-          columnPermutation++;
-          rowIndex = rowLimit;
         }
 
         // Repeated non-NULL permutations.

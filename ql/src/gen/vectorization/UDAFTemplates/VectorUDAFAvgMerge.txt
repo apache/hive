@@ -154,15 +154,9 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       } else {
         if (inputStructColVector.isRepeating) {
-          if (batch.selectedInUse) {
-            iterateHasNullsRepeatingSelectionWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              countVector[0], sumVector[0], batchSize, batch.selected, inputStructColVector.isNull);
-          } else {
-            iterateHasNullsRepeatingWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              countVector[0], sumVector[0], batchSize, inputStructColVector.isNull);
-          }
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, bufferIndex,
+            countVector[0], sumVector[0], batchSize, inputStructColVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
@@ -224,29 +218,6 @@ public class <ClassName> extends VectorAggregateExpression {
           i);
         myagg.merge(countVector[i], sumVector[i]);
       }
-    }
-
-    private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-      VectorAggregationBufferRow[] aggregationBufferSets,
-      int bufferIndex,
-      long count,
-      double sum,
-      int batchSize,
-      int[] selection,
-      boolean[] isNull) {
-
-      if (isNull[0]) {
-        return;
-      }
-
-      for (int i=0; i < batchSize; ++i) {
-        Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
-          bufferIndex,
-          i);
-        myagg.merge(count, sum);
-      }
-
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(

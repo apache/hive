@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.druid.serde;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import io.druid.query.Result;
-import io.druid.query.timeseries.TimeseriesQuery;
 import io.druid.query.timeseries.TimeseriesResultValue;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.io.NullWritable;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.io.IOException;
  * Record reader for results for Druid TimeseriesQuery.
  */
 public class DruidTimeseriesQueryRecordReader
-        extends DruidQueryRecordReader<TimeseriesQuery, Result<TimeseriesResultValue>> {
+        extends DruidQueryRecordReader<Result<TimeseriesResultValue>> {
 
   private static final TypeReference TYPE_REFERENCE = new TypeReference<Result<TimeseriesResultValue>>() {
   };
@@ -59,8 +59,8 @@ public class DruidTimeseriesQueryRecordReader
   @Override
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
-    value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+    DruidWritable value = new DruidWritable(false);
+    value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
         current.getTimestamp() == null ? null : current.getTimestamp().getMillis()
     );
     value.getValue().putAll(current.getValue().getBaseObject());
@@ -72,7 +72,7 @@ public class DruidTimeseriesQueryRecordReader
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+      value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
           current.getTimestamp() == null ? null : current.getTimestamp().getMillis()
       );
       value.getValue().putAll(current.getValue().getBaseObject());

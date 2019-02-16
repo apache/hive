@@ -51,9 +51,17 @@ POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).value SIMPLE [(src)src.FieldSc
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE rcfile_merge3b
     SELECT key, value FROM rcfile_merge3a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_merge3a
+PREHOOK: Input: default@rcfile_merge3a@ds=1
+PREHOOK: Input: default@rcfile_merge3a@ds=2
+PREHOOK: Output: default@rcfile_merge3b
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE rcfile_merge3b
     SELECT key, value FROM rcfile_merge3a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_merge3a
+POSTHOOK: Input: default@rcfile_merge3a@ds=1
+POSTHOOK: Input: default@rcfile_merge3a@ds=2
+POSTHOOK: Output: default@rcfile_merge3b
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

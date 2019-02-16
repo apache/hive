@@ -60,27 +60,21 @@ public class <ClassName> extends VectorAggregateExpression {
       transient private double mergeSum;
       transient private double mergeVariance;
 
-      /**
-      * Value is explicitly (re)initialized in reset()
-      */
-      transient private boolean isNull = true;
-
       public void merge(long partialCount, double partialSum, double partialVariance) {
 
-        if (isNull || mergeCount == 0) {
+        if (mergeCount == 0) {
 
           // Just copy the information since there is nothing so far.
           mergeCount = partialCount;
           mergeSum = partialSum;
           mergeVariance = partialVariance;
-          isNull = false;
           return;
         }
 
         if (partialCount > 0 && mergeCount > 0) {
 
           // Merge the two partials.
-          mergeVariance +=
+          mergeVariance =
               GenericUDAFVariance.calculateMerge(
                   partialCount, mergeCount, partialSum, mergeSum,
                   partialVariance, mergeVariance);
@@ -98,7 +92,6 @@ public class <ClassName> extends VectorAggregateExpression {
 
       @Override
       public void reset () {
-        isNull = true;
         mergeCount = 0L;
         mergeSum = 0;
         mergeVariance = 0;
@@ -127,7 +120,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void init() {
 #IF FINAL
-      String aggregateName = vecAggrDesc.getAggrDesc().getGenericUDAFName();
+      String aggregateName = vecAggrDesc.getAggregationName();
       varianceKind = VarianceKind.nameMap.get(aggregateName);
 #ENDIF FINAL
     }
@@ -183,15 +176,9 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       } else {
         if (inputStructColVector.isRepeating) {
-          if (batch.selectedInUse) {
-            iterateHasNullsRepeatingSelectionWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              countVector[0], sumVector[0], varianceVector[0], batchSize, batch.selected, inputStructColVector.isNull);
-          } else {
-            iterateHasNullsRepeatingWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              countVector[0], sumVector[0], varianceVector[0], batchSize, inputStructColVector.isNull);
-          }
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, bufferIndex,
+            countVector[0], sumVector[0], varianceVector[0], batchSize, inputStructColVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
@@ -256,30 +243,6 @@ public class <ClassName> extends VectorAggregateExpression {
           i);
         myagg.merge(countVector[i], sumVector[i], varianceVector[i]);
       }
-    }
-
-    private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-      VectorAggregationBufferRow[] aggregationBufferSets,
-      int bufferIndex,
-      long count,
-      double sum,
-      double variance,
-      int batchSize,
-      int[] selection,
-      boolean[] isNull) {
-
-      if (isNull[0]) {
-        return;
-      }
-
-      for (int i=0; i < batchSize; ++i) {
-        Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
-          bufferIndex,
-          i);
-        myagg.merge(count, sum, variance);
-      }
-
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -488,8 +451,6 @@ public class <ClassName> extends VectorAggregateExpression {
 #ENDIF FINAL
      */
 
-/*
-    There seems to be a Wrong Results bug in VectorUDAFVarFinal -- disabling vectorization for now...
     return
         GenericUDAFVariance.isVarianceFamilyName(name) &&
         inputColVectorType == ColumnVector.Type.STRUCT &&
@@ -501,8 +462,6 @@ public class <ClassName> extends VectorAggregateExpression {
         outputColVectorType == ColumnVector.Type.DOUBLE &&
         mode == Mode.FINAL;
 #ENDIF FINAL
-*/
-    return false;
   }
 
   @Override
@@ -513,11 +472,8 @@ public class <ClassName> extends VectorAggregateExpression {
     StructColumnVector outputColVector = (StructColumnVector) batch.cols[columnNum];
 
     Aggregation myagg = (Aggregation) agg;
-    if (myagg.isNull) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[batchIndex] = true;
-      return;
-    }
+
+    // For Variance Family, we do not mark NULL if all inputs were NULL.
     outputColVector.isNull[batchIndex] = false;
 
     ColumnVector[] fields = outputColVector.fields;

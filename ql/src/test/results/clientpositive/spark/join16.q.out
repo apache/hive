@@ -1,7 +1,11 @@
 PREHOOK: query: EXPLAIN SELECT subq.key, tab.value FROM (select a.key, a.value from src a where a.key > 10 ) subq JOIN src tab ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) where tab.value < 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT subq.key, tab.value FROM (select a.key, a.value from src a where a.key > 10 ) subq JOIN src tab ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) where tab.value < 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

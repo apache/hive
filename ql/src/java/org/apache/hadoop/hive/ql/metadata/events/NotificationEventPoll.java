@@ -26,15 +26,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.EventUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.parse.repl.dump.events.EventHandler;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -99,7 +96,7 @@ public class NotificationEventPoll {
     }
 
     EventUtils.MSClientNotificationFetcher evFetcher
-        = new EventUtils.MSClientNotificationFetcher(Hive.get().getMSC());
+        = new EventUtils.MSClientNotificationFetcher(Hive.get());
     lastCheckedEventId = evFetcher.getCurrentNotificationEventId();
     LOG.info("Initializing lastCheckedEventId to {}", lastCheckedEventId);
 
@@ -135,7 +132,7 @@ public class NotificationEventPoll {
         // Get any new notification events that have been since the last time we checked,
         // And pass them on to the event handlers.
         EventUtils.MSClientNotificationFetcher evFetcher
-            = new EventUtils.MSClientNotificationFetcher(Hive.get().getMSC());
+            = new EventUtils.MSClientNotificationFetcher(Hive.get());
         EventUtils.NotificationEventIterator evIter =
             new EventUtils.NotificationEventIterator(evFetcher, lastCheckedEventId, 0, "*", null);
 

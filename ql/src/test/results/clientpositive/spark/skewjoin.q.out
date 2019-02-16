@@ -74,10 +74,14 @@ PREHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1_n17 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest_j1_n17
 POSTHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1_n17 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest_j1_n17
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-4 depends on stages: Stage-1 , consists of Stage-5, Stage-0
@@ -241,12 +245,22 @@ FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
           JOIN T3_n30 c ON b.key = c.key
           JOIN T4_n17 d ON c.key = d.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
+PREHOOK: Input: default@t3_n30
+PREHOOK: Input: default@t4_n17
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a) */ *
 FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
           JOIN T3_n30 c ON b.key = c.key
           JOIN T4_n17 d ON c.key = d.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
+POSTHOOK: Input: default@t3_n30
+POSTHOOK: Input: default@t4_n17
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -377,12 +391,22 @@ FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
           JOIN T3_n30 c ON b.key = c.key
           JOIN T4_n17 d ON c.key = d.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
+PREHOOK: Input: default@t3_n30
+PREHOOK: Input: default@t4_n17
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
           JOIN T3_n30 c ON b.key = c.key
           JOIN T4_n17 d ON c.key = d.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
+POSTHOOK: Input: default@t3_n30
+POSTHOOK: Input: default@t4_n17
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -509,8 +533,14 @@ POSTHOOK: Input: default@t4_n17
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN FROM T1_n128 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@t1_n128
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FROM T1_n128 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t1_n128
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -611,6 +641,8 @@ JOIN
 ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -618,6 +650,8 @@ JOIN
 ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-4 depends on stages: Stage-1 , consists of Stage-5, Stage-2
@@ -798,6 +832,8 @@ JOIN
 ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -805,6 +841,8 @@ JOIN
 ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-4 depends on stages: Stage-1 , consists of Stage-5, Stage-2
@@ -989,6 +1027,8 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT sum(hash(src1.c1)), sum(hash(src2.c4)) 
 FROM
@@ -1000,6 +1040,8 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-7, Stage-2
@@ -1272,9 +1314,13 @@ POSTHOOK: Input: default@src
 PREHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1_n128 k LEFT OUTER JOIN T1_n128 v ON k.key+1=v.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n128
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1_n128 k LEFT OUTER JOIN T1_n128 v ON k.key+1=v.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n128
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

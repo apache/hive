@@ -18,13 +18,14 @@
 
 package org.apache.hadoop.hive.llap;
 
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.Semaphore;
+import org.apache.arrow.memory.BufferAllocator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ public class WritableByteChannelAdapter implements WritableByteChannel {
   private final Semaphore writeResources;
   private boolean closed = false;
   private final String id;
+  private BufferAllocator allocator;
 
   private ChannelFutureListener writeListener = new ChannelFutureListener() {
     @Override
@@ -82,12 +84,18 @@ public class WritableByteChannelAdapter implements WritableByteChannel {
     this.id = id;
   }
 
+  public void setAllocator(BufferAllocator allocator) {
+    this.allocator = allocator;
+  }
+
   @Override
   public int write(ByteBuffer src) throws IOException {
     int size = src.remaining();
     //Down the semaphore or block until available
     takeWriteResources(1);
-    chc.writeAndFlush(Unpooled.wrappedBuffer(src)).addListener(writeListener);
+    ByteBuf buf = allocator.buffer(size);
+    buf.writeBytes(src);
+    chc.writeAndFlush(buf).addListener(writeListener);
     return size;
   }
 

@@ -1,5 +1,6 @@
 PREHOOK: query: explain kill query 'query_1244656'
 PREHOOK: type: KILL QUERY
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain kill query 'query_1244656'
 POSTHOOK: type: KILL QUERY
 STAGE DEPENDENCIES:
@@ -13,6 +14,7 @@ STAGE PLANS:
 
 PREHOOK: query: explain kill query 'query_123456677' 'query_1238503495'
 PREHOOK: type: KILL QUERY
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: explain kill query 'query_123456677' 'query_1238503495'
 POSTHOOK: type: KILL QUERY
 STAGE DEPENDENCIES:

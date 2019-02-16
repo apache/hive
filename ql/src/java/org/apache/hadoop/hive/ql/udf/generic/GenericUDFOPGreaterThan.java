@@ -21,9 +21,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarGreaterLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -39,6 +36,11 @@ import org.apache.hadoop.io.Text;
   DoubleColGreaterLongScalar.class, DoubleColGreaterDoubleScalar.class,
   LongScalarGreaterLongColumn.class, LongScalarGreaterDoubleColumn.class,
   DoubleScalarGreaterLongColumn.class, DoubleScalarGreaterDoubleColumn.class,
+
+  DecimalColGreaterDecimalColumn.class, DecimalColGreaterDecimalScalar.class,
+  DecimalScalarGreaterDecimalColumn.class,
+  Decimal64ColGreaterDecimal64Column.class, Decimal64ColGreaterDecimal64Scalar.class,
+  Decimal64ScalarGreaterDecimal64Column.class,
 
   StringGroupColGreaterStringGroupColumn.class, FilterStringGroupColGreaterStringGroupColumn.class,
   StringGroupColGreaterStringScalar.class,

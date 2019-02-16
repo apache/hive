@@ -58,10 +58,6 @@ public class PartitionSerializer implements JsonWriter.Serializer {
                   ReplicationSpec.KEY.CURR_STATE_ID.toString(),
                   additionalPropertiesProvider.getCurrentReplicationState());
         }
-        if (isPartitionExternal()) {
-          // Replication destination will not be external
-          partition.putToParameters("EXTERNAL", "FALSE");
-        }
       }
       writer.jsonGenerator.writeString(serializer.toString(partition, UTF_8));
       writer.jsonGenerator.flush();

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
@@ -30,7 +31,15 @@ class DefaultHandler extends AbstractEventHandler {
   }
 
   @Override
+  EventMessage eventMessage(String stringRepresentation) {
+    return null;
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
+    // we specifically use the the message string from the original event since we dont know what type of message
+    // to convert this message to, this handler should not be called since with different message formats we need
+    // the ability to convert messages to a given message type.
     LOG.info("Dummy processing#{} message : {}", fromEventId(), event.getMessage());
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(event.getMessage());

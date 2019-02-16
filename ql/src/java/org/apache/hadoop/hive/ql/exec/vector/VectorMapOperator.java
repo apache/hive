@@ -92,7 +92,7 @@ public class VectorMapOperator extends AbstractMapOperator {
   /*
    * Overall information on this vectorized Map operation.
    */
-  private transient HashMap<String, VectorPartitionContext> fileToPartitionContextMap;
+  private transient HashMap<Path, VectorPartitionContext> fileToPartitionContextMap;
 
   private transient Operator<? extends OperatorDesc> oneRootOperator;
 
@@ -555,7 +555,7 @@ public class VectorMapOperator extends AbstractMapOperator {
      * The Vectorizer class enforces that there is only one TableScanOperator, so
      * we don't need the more complicated multiple root operator mapping that MapOperator has.
      */
-    fileToPartitionContextMap = new HashMap<String, VectorPartitionContext>();
+    fileToPartitionContextMap = new HashMap<>();
 
     // Temporary map so we only create one partition context entry.
     HashMap<PartitionDesc, VectorPartitionContext> partitionContextMap =
@@ -573,7 +573,7 @@ public class VectorMapOperator extends AbstractMapOperator {
         vectorPartitionContext = partitionContextMap.get(partDesc);
       }
 
-      fileToPartitionContextMap.put(path.toString(), vectorPartitionContext);
+      fileToPartitionContextMap.put(path, vectorPartitionContext);
     }
 
     // Create list of one.
@@ -593,7 +593,7 @@ public class VectorMapOperator extends AbstractMapOperator {
 
   public void initializeContexts() throws HiveException {
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
+    Path nominalPath = getNominalPath(fpath);
     setupPartitionContextVars(nominalPath);
   }
 
@@ -602,7 +602,7 @@ public class VectorMapOperator extends AbstractMapOperator {
   public void cleanUpInputFileChangedOp() throws HiveException {
     super.cleanUpInputFileChangedOp();
     Path fpath = getExecContext().getCurrentInputPath();
-    String nominalPath = getNominalPath(fpath);
+    Path nominalPath = getNominalPath(fpath);
 
     setupPartitionContextVars(nominalPath);
 
@@ -641,7 +641,7 @@ public class VectorMapOperator extends AbstractMapOperator {
   /*
    * Setup the context for reading from the next partition file.
    */
-  private void setupPartitionContextVars(String nominalPath) throws HiveException {
+  private void setupPartitionContextVars(Path nominalPath) throws HiveException {
 
     currentVectorPartContext = fileToPartitionContextMap.get(nominalPath);
     if (currentVectorPartContext == null) {

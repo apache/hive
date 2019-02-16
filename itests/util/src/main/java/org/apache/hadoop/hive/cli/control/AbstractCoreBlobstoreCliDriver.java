@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
+import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -57,10 +58,18 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
+
     try {
-      String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-          hiveConfDir, hadoopVer, initScript, cleanupScript, true);
+      qt = new QTestUtil(
+          QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withLlapIo(true)
+            .build());
 
       if (Strings.isNullOrEmpty(qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH))) {
         fail(String.format("%s must be set. Try setting in blobstore-conf.xml", HCONF_TEST_BLOBSTORE_PATH));
@@ -71,11 +80,12 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
       qt.newSession();
       qt.cleanUp();
       qt.createSources();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization",e);
+      throw new RuntimeException("Unexpected exception in static initialization", e);
     }
   }
 
@@ -84,6 +94,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
   public void setUp() {
     try {
       qt.newSession();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -98,6 +109,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     try {
       qt.clearTestSideEffects();
       qt.clearPostTestEffects();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -108,7 +120,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
+  public void shutdown() {
     try {
       qt.shutdown();
       if (System.getenv(QTestUtil.QTEST_LEAVE_FILES) == null) {
@@ -123,10 +135,10 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     }
   }
 
-  static String debugHint = "\nSee ./itests/hive-blobstore/target/tmp/log/hive.log, "
+  private static String debugHint = "\nSee ./itests/hive-blobstore/target/tmp/log/hive.log, "
       + "or check ./itests/hive-blobstore/target/surefire-reports/ for specific test cases logs.";
 
-  protected void runTestHelper(String tname, String fname, String fpath, boolean expectSuccess) throws Exception {
+  protected void runTestHelper(String tname, String fname, String fpath, boolean expectSuccess) {
     long startTime = System.currentTimeMillis();
     qt.getConf().set(HCONF_TEST_BLOBSTORE_PATH_UNIQUE, testBlobstorePathUnique);
     try {
@@ -134,10 +146,12 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
       qt.addFile(fpath);
       qt.cliInit(new File(fpath));
+
       int ecode = qt.executeClient(fname);
       if ((ecode == 0) ^ expectSuccess) {
         qt.failed(ecode, fname, debugHint);
       }
+
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
       if (result.getReturnCode() != 0) {
         String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?

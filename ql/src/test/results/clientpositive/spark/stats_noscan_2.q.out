@@ -49,6 +49,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	1                   
 	totalSize           	11                  
 #### A masked pattern was here ####
@@ -90,6 +91,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	1                   
 	numRows             	6                   
 	rawDataSize         	6                   
@@ -143,8 +145,12 @@ POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)s
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select count(*) from texternal where insertdate='2008-01-01'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@texternal
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from texternal where insertdate='2008-01-01'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@texternal
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -293,8 +299,14 @@ Storage Desc Params:
 #### A masked pattern was here ####
 PREHOOK: query: explain select count(*) from anaylyze_external where insertdate='2008-01-01'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@anaylyze_external
+PREHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from anaylyze_external where insertdate='2008-01-01'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@anaylyze_external
+POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.BasicStats.Factory;
@@ -261,6 +263,8 @@ public class StatsUtils {
       long nr = basicStats.getNumRows();
       List<ColStatistics> colStats = Lists.newArrayList();
 
+      long numErasureCodedFiles = getErasureCodedFiles(table);
+
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
         if(colStats == null) {
@@ -273,7 +277,7 @@ public class StatsUtils {
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
         ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
-      stats = new Statistics(nr, ds);
+      stats = new Statistics(nr, ds, numErasureCodedFiles);
       // infer if any column can be primary key based on column statistics
       inferAndSetPrimaryKey(stats.getNumRows(), colStats);
 
@@ -308,10 +312,14 @@ public class StatsUtils {
       long nr = bbs.getNumRows();
       long ds = bbs.getDataSize();
 
+      List<Long> erasureCodedFiles = getBasicStatForPartitions(table, partList.getNotDeniedPartns(),
+          StatsSetupConst.NUM_ERASURE_CODED_FILES);
+      long numErasureCodedFiles = getSumIgnoreNegatives(erasureCodedFiles);
+
       if (nr == 0) {
         nr=1;
       }
-      stats = new Statistics(nr, ds);
+      stats = new Statistics(nr, ds, numErasureCodedFiles);
       stats.setBasicStatsState(bbs.getState());
       if (nr > 0) {
         // FIXME: this promotion process should be removed later
@@ -379,7 +387,7 @@ public class StatsUtils {
         // skip the step to connect to the metastore.
         if (neededColsToRetrieve.size() > 0 && partNames.size() > 0) {
           aggrStats = Hive.get().getAggrColStatsFor(table.getDbName(), table.getTableName(),
-              neededColsToRetrieve, partNames);
+              neededColsToRetrieve, partNames, false);
         }
 
         boolean statsRetrieved = aggrStats != null &&
@@ -1019,7 +1027,7 @@ public class StatsUtils {
     List<ColStatistics> stats = null;
     try {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
-          dbName, tabName, colStatsToRetrieve);
+          dbName, tabName, colStatsToRetrieve, false);
       stats = convertColStats(colStat, tabName);
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
@@ -1656,6 +1664,14 @@ public class StatsUtils {
   }
 
   /**
+   * Get number of Erasure Coded files for a table
+   * @return count of EC files
+   */
+  public static long getErasureCodedFiles(Table table) {
+    return getBasicStatForTable(table, StatsSetupConst.NUM_ERASURE_CODED_FILES);
+  }
+
+  /**
    * Get basic stats of table
    * @param table
    *          - table
@@ -1782,7 +1798,7 @@ public class StatsUtils {
   }
 
   /**
-   * Get qualified column name from output key column names
+   * Get qualified column name from output key column names.
    * @param keyExprs
    *          - output key names
    * @return list of qualified names
@@ -1913,5 +1929,71 @@ public class StatsUtils {
       return false;
     }
     return StatsSetupConst.areColumnStatsUptoDate(params, colName);
+  }
+
+  /**
+   * Update the basic statistics of the statistics object based on the row number
+   * @param stats
+   *          - statistics to be updated
+   * @param newNumRows
+   *          - new number of rows
+   * @param useColStats
+   *          - use column statistics to compute data size
+   */
+  public static void updateStats(Statistics stats, long newNumRows,
+      boolean useColStats, Operator<? extends OperatorDesc> op) {
+    updateStats(stats, newNumRows, useColStats, op, Collections.EMPTY_SET);
+  }
+
+  public static void updateStats(Statistics stats, long newNumRows,
+      boolean useColStats, Operator<? extends OperatorDesc> op,
+      Set<String> affectedColumns) {
+
+    if (newNumRows < 0) {
+      LOG.debug("STATS-" + op.toString() + ": Overflow in number of rows. "
+          + newNumRows + " rows will be set to Long.MAX_VALUE");
+      newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
+    }
+    if (newNumRows == 0) {
+      LOG.debug("STATS-" + op.toString() + ": Equals 0 in number of rows. "
+          + newNumRows + " rows will be set to 1");
+      newNumRows = 1;
+    }
+
+    long oldRowCount = stats.getNumRows();
+    double ratio = (double) newNumRows / (double) oldRowCount;
+    stats.setNumRows(newNumRows);
+
+    if (useColStats) {
+      List<ColStatistics> colStats = stats.getColumnStats();
+      for (ColStatistics cs : colStats) {
+        long oldNumNulls = cs.getNumNulls();
+        long oldDV = cs.getCountDistint();
+        long newNumNulls = Math.round(ratio * oldNumNulls);
+        cs.setNumNulls(newNumNulls);
+        if (affectedColumns.contains(cs.getColumnName())) {
+          long newDV = oldDV;
+
+          // if ratio is greater than 1, then number of rows increases. This can happen
+          // when some operators like GROUPBY duplicates the input rows in which case
+          // number of distincts should not change. Update the distinct count only when
+          // the output number of rows is less than input number of rows.
+          if (ratio <= 1.0) {
+            newDV = (long) Math.ceil(ratio * oldDV);
+          }
+          cs.setCountDistint(newDV);
+          oldDV = newDV;
+        }
+        if (oldDV > newNumRows) {
+          cs.setCountDistint(newNumRows);
+        }
+      }
+      stats.setColumnStats(colStats);
+      long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
+    } else {
+      long newDataSize = (long) (ratio * stats.getDataSize());
+      stats.setDataSize(StatsUtils.getMaxIfOverflow(newDataSize));
+    }
   }
 }

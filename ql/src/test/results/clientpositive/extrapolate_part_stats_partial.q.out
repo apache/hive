@@ -129,8 +129,22 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain extended select state from loc_orc_1d_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select state from loc_orc_1d_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_1d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -253,7 +267,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 426
+              totalSize 425
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -299,7 +313,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 433
+              totalSize 432
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -336,8 +350,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_1d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -460,7 +488,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 426
+              totalSize 425
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -506,7 +534,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 433
+              totalSize 432
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -571,8 +599,22 @@ POSTHOOK: Output: default@loc_orc_1d_n1@year=2003
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select state from loc_orc_1d_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select state from loc_orc_1d_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_1d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -695,7 +737,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 426
+              totalSize 425
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -741,7 +783,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 433
+              totalSize 432
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -778,8 +820,22 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_1d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -902,7 +958,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 426
+              totalSize 425
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -948,7 +1004,7 @@ STAGE PLANS:
               serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 433
+              totalSize 432
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1067,8 +1123,36 @@ POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2002
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select state from loc_orc_2d_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_2d_n1
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2003
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2000
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2003
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2000
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2003
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select state from loc_orc_2d_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_2d_n1
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2003
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2000
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2003
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2000
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_2d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1607,8 +1691,36 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended select state,locid from loc_orc_2d_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_2d_n1
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2003
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2000
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2003
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2000
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2003
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select state,locid from loc_orc_2d_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_2d_n1
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2003
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2000
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2003
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2000
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_2d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

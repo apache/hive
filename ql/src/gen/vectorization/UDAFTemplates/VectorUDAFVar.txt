@@ -127,7 +127,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void init() {
 #IF COMPLETE
-      String aggregateName = vecAggrDesc.getAggrDesc().getGenericUDAFName();
+      String aggregateName = vecAggrDesc.getAggregationName();
       varianceKind = VarianceKind.nameMap.get(aggregateName);
 #ENDIF COMPLETE
     }
@@ -490,11 +490,8 @@ public class <ClassName> extends VectorAggregateExpression {
     StructColumnVector outputColVector = (StructColumnVector) batch.cols[columnNum];
 
     Aggregation myagg = (Aggregation) agg;
-    if (myagg.isNull) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[batchIndex] = true;
-      return;
-    }
+
+    // For Variance Family, we do not mark NULL if all inputs were NULL.
     outputColVector.isNull[batchIndex] = false;
 
     ColumnVector[] fields = outputColVector.fields;

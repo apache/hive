@@ -24,7 +24,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -253,7 +252,6 @@ public class TestHiveCli {
         "hive (invalidDB)>", os, null, ERRNO_OTHER, false);
   }
 
-  @Ignore("Broken tests -- HIVE-18806")
   @Test
   public void testNoErrorDB() {
     verifyCMD(null, "Error: Method not supported (state=,code=0)", errS, new String[] { "-e", "show tables;" },

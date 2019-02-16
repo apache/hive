@@ -84,7 +84,8 @@ public class ImportTableDesc {
                 null,
                 null,
             null,
-            null);
+            null,
+                table.getColStats());
         this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
         break;
       case VIEW:
@@ -357,6 +358,12 @@ public class ImportTableDesc {
         return createViewDesc.toTable(conf);
       default:
         return null;
+    }
+  }
+
+  public void setReplWriteId(Long replWriteId) {
+    if (this.createTblDesc != null) {
+      this.createTblDesc.setReplWriteId(replWriteId);
     }
   }
 }

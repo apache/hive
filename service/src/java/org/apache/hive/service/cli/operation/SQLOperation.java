@@ -20,8 +20,8 @@ package org.apache.hive.service.cli.operation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,8 +38,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -137,9 +138,12 @@ public class SQLOperation extends ExecuteStatementOperation {
   private void setupSessionIO(SessionState sessionState) {
     try {
       sessionState.in = null; // hive server's session input stream is not used
-      sessionState.out = new PrintStream(System.out, true, CharEncoding.UTF_8);
-      sessionState.info = new PrintStream(System.err, true, CharEncoding.UTF_8);
-      sessionState.err = new PrintStream(System.err, true, CharEncoding.UTF_8);
+      sessionState.out =
+          new SessionStream(System.out, true, StandardCharsets.UTF_8.name());
+      sessionState.info =
+          new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
+      sessionState.err =
+          new SessionStream(System.err, true, StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
         LOG.error("Error creating PrintStream", e);
         e.printStackTrace();
@@ -183,6 +187,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
 
       queryInfo.setQueryDisplay(driver.getQueryDisplay());
+      if (operationLog != null) {
+        queryInfo.setOperationLogLocation(operationLog.toString());
+      }
 
       // set the operation handle information in Driver, so that thrift API users
       // can use the operation handle they receive, to lookup query information in
@@ -198,7 +205,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       if (0 != response.getResponseCode()) {
         throw toSQLException("Error while compiling statement", response);
       }
-
+      if (queryState.getQueryTag() != null && queryState.getQueryId() != null) {
+        parentSession.updateQueryTag(queryState.getQueryId(), queryState.getQueryTag());
+      }
       setHasResultSet(driver.hasResultSet());
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
@@ -292,6 +301,11 @@ public class SQLOperation extends ExecuteStatementOperation {
     private BackgroundWork(UserGroupInformation currentUGI,
         Hive parentHive,
         SessionState parentSessionState, boolean asyncPrepare) {
+      // Note: parentHive can be shared by multiple threads and so it should be protected from any
+      // thread closing metastore connections when some other thread still accessing it. So, it is
+      // expected that allowClose flag in parentHive is set to false by caller and it will be caller's
+      // responsibility to close it explicitly with forceClose flag as true.
+      // Shall refer to sessionHive in HiveSessionImpl.java for the usage.
       this.currentUGI = currentUGI;
       this.parentHive = parentHive;
       this.parentSessionState = parentSessionState;
@@ -303,11 +317,14 @@ public class SQLOperation extends ExecuteStatementOperation {
       PrivilegedExceptionAction<Object> doAsAction = new PrivilegedExceptionAction<Object>() {
         @Override
         public Object run() throws HiveSQLException {
+          assert (!parentHive.allowClose());
           Hive.set(parentHive);
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(SessionState.getPerfLogger());
           LogUtils.registerLoggingContext(queryState.getConf());
+          ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
+
           try {
             if (asyncPrepare) {
               prepare(queryState);
@@ -319,6 +336,11 @@ public class SQLOperation extends ExecuteStatementOperation {
             LOG.error("Error running hive query: ", e);
           } finally {
             LogUtils.unregisterLoggingContext();
+
+            // If new hive object is created  by the child thread, then we need to close it as it might
+            // have created a hms connection. Call Hive.closeCurrent() that closes the HMS connection, causes
+            // HMS connection leaks otherwise.
+            Hive.closeCurrent();
           }
           return null;
         }
@@ -523,16 +545,12 @@ public class SQLOperation extends ExecuteStatementOperation {
     List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
 
     Object[] deserializedFields = new Object[fieldRefs.size()];
-    Object rowObj;
     ObjectInspector fieldOI;
 
     int protocol = getProtocolVersion().getValue();
     for (Object rowString : rows) {
-      try {
-        rowObj = serde.deserialize(new BytesWritable(((String)rowString).getBytes("UTF-8")));
-      } catch (UnsupportedEncodingException e) {
-        throw new SerDeException(e);
-      }
+      final Object rowObj = serde.deserialize(new BytesWritable(
+          ((String) rowString).getBytes(StandardCharsets.UTF_8)));
       for (int i = 0; i < fieldRefs.size(); i++) {
         StructField fieldRef = fieldRefs.get(i);
         fieldOI = fieldRef.getFieldObjectInspector();

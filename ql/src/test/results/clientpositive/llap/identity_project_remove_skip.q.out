@@ -7,6 +7,8 @@ from
   on (t2.key=t3.key )
   where t2.value='val_105' and t3.key='105'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select t2.* 
 from
@@ -16,6 +18,8 @@ from
   on (t2.key=t3.key )
   where t2.value='val_105' and t3.key='105'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

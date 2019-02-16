@@ -16,6 +16,8 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select 
   csmallint,
@@ -34,6 +36,8 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -51,7 +55,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((csmallint = 418S) or (csmallint = 12205S) or (csmallint = 10583S)) (type: boolean)
+                  filterExpr: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -60,8 +64,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1:smallint, val 418), FilterLongColEqualLongScalar(col 1:smallint, val 12205), FilterLongColEqualLongScalar(col 1:smallint, val 10583))
-                    predicate: ((csmallint = 10583S) or (csmallint = 12205S) or (csmallint = 418S)) (type: boolean)
+                        predicateExpression: FilterLongColumnInList(col 1:smallint, values [418, 12205, 10583])
+                    predicate: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE ('c') END (type: string), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE ('c') END (type: string)
@@ -69,8 +73,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 17, 21]
-                          selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 14:stringcol 16:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, ConstantVectorExpression(val a) -> 14:string, IfExprStringScalarStringScalar(col 15:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 15:boolean) -> 16:string) -> 17:string, IfExprColumnCondExpr(col 15:boolean, col 18:stringcol 20:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 15:boolean, ConstantVectorExpression(val a) -> 18:string, IfExprStringScalarStringScalar(col 19:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 19:boolean) -> 20:string) -> 21:string
+                          projectedOutputColumnNums: [1, 17, 22]
+                          selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 14:stringcol 16:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, ConstantVectorExpression(val a) -> 14:string, IfExprStringScalarStringScalar(col 15:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 15:boolean) -> 16:string) -> 17:string, IfExprColumnCondExpr(col 18:boolean, col 19:stringcol 21:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 18:boolean, ConstantVectorExpression(val a) -> 19:string, IfExprStringScalarStringScalar(col 20:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 20:boolean) -> 21:string) -> 22:string
                       Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -97,7 +101,7 @@ STAGE PLANS:
                     includeColumns: [1]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, string, bigint, string, string, string, bigint, string, string]
+                    scratchColumnTypeNames: [bigint, string, bigint, string, string, bigint, string, bigint, string, string]
 
   Stage: Stage-0
     Fetch Operator
@@ -165,6 +169,8 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select 
   csmallint,
@@ -183,6 +189,8 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -200,7 +208,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((csmallint = 418S) or (csmallint = 12205S) or (csmallint = 10583S)) (type: boolean)
+                  filterExpr: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -209,8 +217,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1:smallint, val 418), FilterLongColEqualLongScalar(col 1:smallint, val 12205), FilterLongColEqualLongScalar(col 1:smallint, val 10583))
-                    predicate: ((csmallint = 10583S) or (csmallint = 12205S) or (csmallint = 418S)) (type: boolean)
+                        predicateExpression: FilterLongColumnInList(col 1:smallint, values [418, 12205, 10583])
+                    predicate: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE (null) END (type: string), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN (null) ELSE ('c') END (type: string)
@@ -260,12 +268,16 @@ select
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -295,13 +307,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [13, 14]
-                        selectExpressions: IfExprLongScalarLongScalar(col 14:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 13:int, IfExprLongScalarLongScalar(col 15:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 14:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 14:int) -> 15:boolean) -> 14:int
+                        projectedOutputColumnNums: [15, 18]
+                        selectExpressions: IfExprLongScalarLongScalar(col 14:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 15:int, IfExprLongScalarLongScalar(col 17:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 16:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 16:int) -> 17:boolean) -> 18:int
                     Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col0), sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 13:int) -> bigint, VectorUDAFSumLong(col 14:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 15:int) -> bigint, VectorUDAFSumLong(col 18:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -314,10 +326,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1]
+                            valueColumns: 0:bigint, 1:bigint
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized
@@ -335,7 +346,7 @@ STAGE PLANS:
                     includeColumns: [2]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -402,12 +413,16 @@ select
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -437,13 +452,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [13, 14]
-                        selectExpressions: IfExprLongColumnLongScalar(col 14:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 13:int, IfExprLongColumnLongScalar(col 15:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 14:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 14:int) -> 15:boolean) -> 14:int
+                        projectedOutputColumnNums: [15, 18]
+                        selectExpressions: IfExprLongColumnLongScalar(col 14:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 15:int, IfExprLongColumnLongScalar(col 17:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 16:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 16:int) -> 17:boolean) -> 18:int
                     Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col0), sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 13:int) -> bigint, VectorUDAFSumLong(col 14:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 15:int) -> bigint, VectorUDAFSumLong(col 18:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -456,10 +471,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0, 1]
+                            valueColumns: 0:bigint, 1:bigint
                         Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized
@@ -477,7 +491,7 @@ STAGE PLANS:
                     includeColumns: [2]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -559,9 +573,13 @@ POSTHOOK: Lineage: test_1_n3.member SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -590,7 +608,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6]
-                        selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 7:decimal(11,0)col 8:decimal(11,0))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, ConvertDecimal64ToDecimal(col 4:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 4:decimal(11,0)/DECIMAL_64) -> 7:decimal(11,0), ConvertDecimal64ToDecimal(col 5:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 5:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)) -> 6:decimal(11,0)
+                        selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 7:decimal(11,0)col 8:decimal(11,0))(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 3:boolean, ConvertDecimal64ToDecimal(col 4:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 4:decimal(11,0)/DECIMAL_64) -> 7:decimal(11,0), ConvertDecimal64ToDecimal(col 5:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 5:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)) -> 6:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -610,7 +628,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -639,9 +657,13 @@ POSTHOOK: Input: default@test_1_n3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -669,8 +691,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [8]
-                        selectExpressions: VectorUDFAdaptor(CASE WHEN ((member = 1)) THEN (1) ELSE ((attr + 2)) END)(children: VectorUDFAdaptor((member = 1)) -> 6:boolean, ConvertDecimal64ToDecimal(col 7:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 7:decimal(11,0)/DECIMAL_64) -> 9:decimal(11,0)) -> 8:decimal(11,0)
+                        projectedOutputColumnNums: [9]
+                        selectExpressions: IfExprDecimalColumnColumn(col 6:boolean, col 7:decimal(11,0)col 10:decimal(11,0))(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 6:boolean, ConstantVectorExpression(val 1) -> 7:decimal(11,0), ConvertDecimal64ToDecimal(col 8:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 8:decimal(11,0)/DECIMAL_64) -> 10:decimal(11,0)) -> 9:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -690,14 +712,14 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
                     dataColumns: member:decimal(10,0)/DECIMAL_64, attr:decimal(10,0)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, decimal(1,0), decimal(11,0)/DECIMAL_64, bigint, decimal(11,0)/DECIMAL_64, decimal(11,0), decimal(11,0)]
+                    scratchColumnTypeNames: [bigint, decimal(11,0), decimal(11,0)/DECIMAL_64, bigint, decimal(11,0), decimal(11,0)/DECIMAL_64, decimal(11,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
@@ -719,9 +741,13 @@ POSTHOOK: Input: default@test_1_n3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -749,8 +775,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [8]
-                        selectExpressions: VectorUDFAdaptor(CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (2) END)(children: VectorUDFAdaptor((member = 1)) -> 6:boolean, ConvertDecimal64ToDecimal(col 7:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 7:decimal(11,0)/DECIMAL_64) -> 9:decimal(11,0)) -> 8:decimal(11,0)
+                        projectedOutputColumnNums: [9]
+                        selectExpressions: IfExprDecimalColumnColumn(col 6:boolean, col 10:decimal(11,0)col 8:decimal(11,0))(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 6:boolean, ConvertDecimal64ToDecimal(col 7:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 7:decimal(11,0)/DECIMAL_64) -> 10:decimal(11,0), ConstantVectorExpression(val 2) -> 8:decimal(11,0)) -> 9:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -770,14 +796,14 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
                     dataColumns: member:decimal(10,0)/DECIMAL_64, attr:decimal(10,0)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, decimal(11,0)/DECIMAL_64, decimal(1,0), bigint, decimal(11,0)/DECIMAL_64, decimal(11,0), decimal(11,0)]
+                    scratchColumnTypeNames: [bigint, decimal(11,0)/DECIMAL_64, decimal(11,0), bigint, decimal(11,0)/DECIMAL_64, decimal(11,0), decimal(11,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
@@ -817,9 +843,13 @@ POSTHOOK: Lineage: test_2_n3.member SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -897,9 +927,13 @@ POSTHOOK: Input: default@test_2_n3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -977,9 +1011,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1239,7 +1277,7 @@ where (case when cint % 2 = 0 then cint else 0 end) = cint) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-0
+4086
 PREHOOK: query: select count(*)
 from (
 select

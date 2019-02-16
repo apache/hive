@@ -1,3 +1,4 @@
+--! qt:dataset:src
 ADD FILE ../../data/scripts/error_script;
 
 EXPLAIN

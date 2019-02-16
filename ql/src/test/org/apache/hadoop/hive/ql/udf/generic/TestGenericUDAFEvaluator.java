@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
@@ -55,10 +56,10 @@ public class TestGenericUDAFEvaluator {
   @Test
   public void testGetPartitionWindowingEvaluatorWithoutInitCall() {
     BasePartitionEvaluator partition1Evaluator1 = udafEvaluator.getPartitionWindowingEvaluator(
-        winFrame, partition1, parameters, outputOI);
+        winFrame, partition1, parameters, outputOI, false);
 
     BasePartitionEvaluator partition1Evaluator2 = udafEvaluator.getPartitionWindowingEvaluator(
-        winFrame, partition1, parameters, outputOI);
+        winFrame, partition1, parameters, outputOI, false);
 
     Assert.assertEquals(partition1Evaluator1, partition1Evaluator2);
   }
@@ -66,12 +67,12 @@ public class TestGenericUDAFEvaluator {
   @Test
   public void testGetPartitionWindowingEvaluatorWithInitCall() throws HiveException {
     BasePartitionEvaluator partition1Evaluator1 = udafEvaluator.getPartitionWindowingEvaluator(
-        winFrame, partition1, parameters, outputOI);
+        winFrame, partition1, parameters, outputOI, false);
 
     udafEvaluator.init(GenericUDAFEvaluator.Mode.COMPLETE, null);
 
     BasePartitionEvaluator newPartitionEvaluator = udafEvaluator.getPartitionWindowingEvaluator(
-        winFrame, partition1, parameters, outputOI);
+        winFrame, partition1, parameters, outputOI, false);
 
     Assert.assertNotEquals(partition1Evaluator1, newPartitionEvaluator);
   }

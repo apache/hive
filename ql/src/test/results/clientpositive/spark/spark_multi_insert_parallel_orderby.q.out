@@ -17,9 +17,13 @@ POSTHOOK: Output: default@e2_n4
 PREHOOK: query: explain
 select key,value from src order by key limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select key,value from src order by key limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -95,12 +99,18 @@ INSERT OVERWRITE TABLE e1_n3
 INSERT OVERWRITE TABLE e2_n4
     SELECT key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n3
+PREHOOK: Output: default@e2_n4
 POSTHOOK: query: explain FROM (select key,value from src order by key limit 10) a
 INSERT OVERWRITE TABLE e1_n3
     SELECT key, value
 INSERT OVERWRITE TABLE e2_n4
     SELECT key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n3
+POSTHOOK: Output: default@e2_n4
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -253,12 +263,18 @@ INSERT OVERWRITE TABLE e1_n3
 INSERT OVERWRITE TABLE e2_n4
     select key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n3
+PREHOOK: Output: default@e2_n4
 POSTHOOK: query: explain FROM (select key,value from src order by key) a
 INSERT OVERWRITE TABLE e1_n3
     select key,value
 INSERT OVERWRITE TABLE e2_n4
     select key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n3
+POSTHOOK: Output: default@e2_n4
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -1373,12 +1389,18 @@ INSERT OVERWRITE TABLE e1_n3
 INSERT OVERWRITE TABLE e2_n4
     select key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n3
+PREHOOK: Output: default@e2_n4
 POSTHOOK: query: explain FROM (select key,value from src order by key) a
 INSERT OVERWRITE TABLE e1_n3
     select key,value limit 10
 INSERT OVERWRITE TABLE e2_n4
     select key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n3
+POSTHOOK: Output: default@e2_n4
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

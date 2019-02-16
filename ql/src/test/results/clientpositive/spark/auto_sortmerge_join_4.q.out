@@ -99,8 +99,27 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_big_n12@ds=2008-04-08
 PREHOOK: query: explain extended select count(*) FROM bucket_small_n12 a JOIN bucket_big_n12 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n12
+PREHOOK: Input: default@bucket_big_n12@ds=2008-04-08
+PREHOOK: Input: default@bucket_small_n12
+PREHOOK: Input: default@bucket_small_n12@ds=2008-04-08
+PREHOOK: Input: default@bucket_small_n12@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n12 a JOIN bucket_big_n12 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n12
+POSTHOOK: Input: default@bucket_big_n12@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small_n12
+POSTHOOK: Input: default@bucket_small_n12@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small_n12@ds=2008-04-09
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_small_n12`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_big_n12`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -260,8 +279,27 @@ POSTHOOK: Input: default@bucket_small_n12@ds=2008-04-09
 38
 PREHOOK: query: explain extended select count(*) FROM bucket_big_n12 a JOIN bucket_small_n12 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n12
+PREHOOK: Input: default@bucket_big_n12@ds=2008-04-08
+PREHOOK: Input: default@bucket_small_n12
+PREHOOK: Input: default@bucket_small_n12@ds=2008-04-08
+PREHOOK: Input: default@bucket_small_n12@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n12 a JOIN bucket_small_n12 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n12
+POSTHOOK: Input: default@bucket_big_n12@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small_n12
+POSTHOOK: Input: default@bucket_small_n12@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small_n12@ds=2008-04-09
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n12`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n12`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -421,8 +459,27 @@ POSTHOOK: Input: default@bucket_small_n12@ds=2008-04-09
 38
 PREHOOK: query: explain extended select count(*) FROM bucket_big_n12 a JOIN bucket_small_n12 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n12
+PREHOOK: Input: default@bucket_big_n12@ds=2008-04-08
+PREHOOK: Input: default@bucket_small_n12
+PREHOOK: Input: default@bucket_small_n12@ds=2008-04-08
+PREHOOK: Input: default@bucket_small_n12@ds=2008-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n12 a JOIN bucket_small_n12 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n12
+POSTHOOK: Input: default@bucket_big_n12@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small_n12
+POSTHOOK: Input: default@bucket_small_n12@ds=2008-04-08
+POSTHOOK: Input: default@bucket_small_n12@ds=2008-04-09
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n12`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n12`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

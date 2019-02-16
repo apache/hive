@@ -47,11 +47,11 @@ POSTHOOK: Output: default@temp1
 POSTHOOK: Lineage: temp1.age SIMPLE [(students)students.FieldSchema(name:age, type:int, comment:null), ]
 POSTHOOK: Lineage: temp1.gpa SIMPLE [(students)students.FieldSchema(name:gpa, type:double, comment:null), ]
 POSTHOOK: Lineage: temp1.name SIMPLE [(students)students.FieldSchema(name:name, type:string, comment:null), ]
-PREHOOK: query: select * from temp1 order by name limit 10
+PREHOOK: query: select * from temp1 order by name, age limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from temp1 order by name limit 10
+POSTHOOK: query: select * from temp1 order by name, age limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp1
 POSTHOOK: Output: hdfs://### HDFS PATH ###

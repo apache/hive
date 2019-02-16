@@ -85,7 +85,7 @@ public class TestLowLevelLrfuCachePolicy {
       listLock.unlock();
     }
     // Now try to evict with locked buffer still in the list.
-    mm.reserveMemory(1, false);
+    mm.reserveMemory(1, false, null);
     assertSame(buffer2, et.evicted.get(0));
     unlock(lrfu, buffer1);
   }
@@ -237,7 +237,7 @@ public class TestLowLevelLrfuCachePolicy {
     // Lock the lowest priority buffer; try to evict - we'll evict some other buffer.
     LlapDataBuffer locked = inserted.get(0);
     lock(lrfu, locked);
-    mm.reserveMemory(1, false);
+    mm.reserveMemory(1, false, null);
     LlapDataBuffer evicted = et.evicted.get(0);
     assertNotNull(evicted);
     assertTrue(evicted.isInvalid());
@@ -248,7 +248,7 @@ public class TestLowLevelLrfuCachePolicy {
   // Buffers in test are fakes not linked to cache; notify cache policy explicitly.
   public boolean cache(LowLevelCacheMemoryManager mm,
       LowLevelLrfuCachePolicy lrfu, EvictionTracker et, LlapDataBuffer buffer) {
-    if (mm != null && !mm.reserveMemory(1, false)) {
+    if (mm != null && !mm.reserveMemory(1, false, null)) {
       return false;
     }
     buffer.incRef();
@@ -337,7 +337,7 @@ public class TestLowLevelLrfuCachePolicy {
       lock(lrfu, buf);
     }
     assertEquals(heapSize, m.cacheUsed.get());
-    assertFalse(mm.reserveMemory(1, false));
+    assertFalse(mm.reserveMemory(1, false, null));
     if (!et.evicted.isEmpty()) {
       assertTrue("Got " + et.evicted.get(0), et.evicted.isEmpty());
     }
@@ -362,13 +362,13 @@ public class TestLowLevelLrfuCachePolicy {
     // Evict all blocks.
     et.evicted.clear();
     for (int i = 0; i < inserted.size(); ++i) {
-      assertTrue(mm.reserveMemory(1, false));
+      assertTrue(mm.reserveMemory(1, false, null));
       if (cacheUsed != null) {
         assertEquals(inserted.size(), cacheUsed.get());
       }
     }
     // The map should now be empty.
-    assertFalse(mm.reserveMemory(1, false));
+    assertFalse(mm.reserveMemory(1, false, null));
     if (cacheUsed != null) {
       assertEquals(inserted.size(), cacheUsed.get());
     }

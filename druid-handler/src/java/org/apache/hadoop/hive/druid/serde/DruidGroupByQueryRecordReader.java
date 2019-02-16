@@ -19,15 +19,11 @@ package org.apache.hadoop.hive.druid.serde;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.metamx.http.client.HttpClient;
 import io.druid.data.input.MapBasedRow;
 import io.druid.data.input.Row;
-import io.druid.query.groupby.GroupByQuery;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputSplit;
 
 import java.io.IOException;
 import java.util.Map;
@@ -35,22 +31,12 @@ import java.util.Map;
 /**
  * Record reader for results for Druid GroupByQuery.
  */
-public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<GroupByQuery, Row> {
-  private final static TypeReference<Row> TYPE_REFERENCE = new TypeReference<Row>() {
+public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<Row> {
+  private static final TypeReference<Row> TYPE_REFERENCE = new TypeReference<Row>() {
   };
 
   private MapBasedRow currentRow;
   private Map<String, Object> currentEvent;
-
-  @Override public void initialize(InputSplit split, Configuration conf) throws IOException {
-    super.initialize(split, conf);
-  }
-
-  @Override public void initialize(InputSplit split, Configuration conf, ObjectMapper mapper, ObjectMapper smileMapper,
-      HttpClient httpClient
-  ) throws IOException {
-    super.initialize(split, conf, mapper, smileMapper, httpClient);
-  }
 
   @Override protected JavaType getResultTypeDef() {
     return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
@@ -75,9 +61,9 @@ public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<GroupB
 
   @Override public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
-    DruidWritable value = new DruidWritable();
+    DruidWritable value = new DruidWritable(false);
     // 1) The timestamp column
-    value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+    value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
         currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()
     );
     // 2) The dimension columns
@@ -90,7 +76,7 @@ public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<GroupB
       // Update value
       value.getValue().clear();
       // 1) The timestamp column
-      value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+      value.getValue().put(DruidConstants.EVENT_TIMESTAMP_COLUMN,
           currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()
       );
       // 2) The dimension columns

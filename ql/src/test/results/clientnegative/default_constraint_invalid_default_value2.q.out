@@ -1,1 +1,0 @@
-FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Invalid Default value: repeat('s', 4). DEFAULT only allows constant or function expressions

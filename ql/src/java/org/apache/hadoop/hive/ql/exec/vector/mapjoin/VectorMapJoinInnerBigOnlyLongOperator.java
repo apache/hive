@@ -102,45 +102,36 @@ public class VectorMapJoinInnerBigOnlyLongOperator extends VectorMapJoinInnerBig
   //
 
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
+
+    /*
+     * Initialize Single-Column Long members for this specialized class.
+     */
+
+    singleJoinColumn = bigTableKeyColumnMap[0];
+  }
+
+  @Override
+  public void hashTableSetup() throws HiveException {
+    super.hashTableSetup();
+
+    /*
+     * Get our Single-Column Long hash multi-set information for this specialized class.
+     */
+
+    hashMultiSet = (VectorMapJoinLongHashMultiSet) vectorMapJoinHashTable;
+    useMinMax = hashMultiSet.useMinMax();
+    if (useMinMax) {
+      min = hashMultiSet.min();
+      max = hashMultiSet.max();
+    }
+  }
+
+  @Override
+  public void processBatch(VectorizedRowBatch batch) throws HiveException {
 
     try {
-      VectorizedRowBatch batch = (VectorizedRowBatch) row;
-
-      alias = (byte) tag;
-
-      if (needCommonSetup) {
-        // Our one time process method initialization.
-        commonSetup(batch);
-
-        /*
-         * Initialize Single-Column Long members for this specialized class.
-         */
-
-        singleJoinColumn = bigTableKeyColumnMap[0];
-
-        needCommonSetup = false;
-      }
-
-      if (needHashTableSetup) {
-        // Setup our hash table specialization.  It will be the first time the process
-        // method is called, or after a Hybrid Grace reload.
-
-        /*
-         * Get our Single-Column Long hash multi-set information for this specialized class.
-         */
-
-        hashMultiSet = (VectorMapJoinLongHashMultiSet) vectorMapJoinHashTable;
-        useMinMax = hashMultiSet.useMinMax();
-        if (useMinMax) {
-          min = hashMultiSet.min();
-          max = hashMultiSet.max();
-        }
-
-        needHashTableSetup = false;
-      }
-
-      batchCounter++;
 
       // Do the per-batch setup for an inner big-only join.
 
@@ -153,11 +144,7 @@ public class VectorMapJoinInnerBigOnlyLongOperator extends VectorMapJoinInnerBig
       }
 
       final int inputLogicalSize = batch.size;
-
       if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
-        }
         return;
       }
 

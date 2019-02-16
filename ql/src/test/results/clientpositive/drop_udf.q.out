@@ -7,9 +7,11 @@ POSTHOOK: Output: test_translate
 PREHOOK: query: EXPLAIN
 DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: test_translate
 POSTHOOK: query: EXPLAIN
 DROP TEMPORARY FUNCTION test_translate
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: test_translate
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

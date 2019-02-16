@@ -22,10 +22,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -233,13 +234,14 @@ public class SerializationUtilities {
       kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
       kryo.register(new java.util.ArrayList().subList(0,0).getClass(), new ArrayListSubListSerializer());
       kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
+      kryo.register(MapWork.class, new MapWorkSerializer(kryo, MapWork.class));
+      kryo.register(PartitionDesc.class, new PartitionDescSerializer(kryo, PartitionDesc.class));
 
       ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy())
           .setFallbackInstantiatorStrategy(
               new StdInstantiatorStrategy());
       removeField(kryo, AbstractOperatorDesc.class, "colExprMap");
       removeField(kryo, AbstractOperatorDesc.class, "statistics");
-      kryo.register(MapWork.class);
       kryo.register(ReduceWork.class);
       kryo.register(TableDesc.class);
       kryo.register(UnionOperator.class);
@@ -541,6 +543,54 @@ public class SerializationUtilities {
   }
 
   /**
+   * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link MapWork} objects in
+   * order to invoke any string interning code present in the "setter" methods. The fields in {@link
+   * MapWork} often store paths that contain duplicate strings, so interning them can decrease
+   * memory significantly.
+   */
+  private static class MapWorkSerializer extends FieldSerializer<MapWork> {
+
+    MapWorkSerializer(Kryo kryo, Class type) {
+      super(kryo, type);
+    }
+
+    @Override
+    public MapWork read(Kryo kryo, Input input, Class<MapWork> type) {
+      MapWork mapWork = super.read(kryo, input, type);
+      // The set methods in MapWork intern the any duplicate strings which is why we call them
+      // during de-serialization
+      mapWork.setPathToPartitionInfo(mapWork.getPathToPartitionInfo());
+      mapWork.setPathToAliases(mapWork.getPathToAliases());
+      return mapWork;
+    }
+  }
+
+  /**
+   * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link PartitionDesc} objects
+   * in order to invoke any string interning code present in the "setter" methods. {@link
+   * PartitionDesc} objects are usually stored by {@link MapWork} objects and contain duplicate info
+   * like input format class names, partition specs, etc.
+   */
+  private static class PartitionDescSerializer extends FieldSerializer<PartitionDesc> {
+
+    PartitionDescSerializer(Kryo kryo, Class type) {
+      super(kryo, type);
+    }
+
+    @Override
+    public PartitionDesc read(Kryo kryo, Input input, Class<PartitionDesc> type) {
+      PartitionDesc partitionDesc = super.read(kryo, input, type);
+      // The set methods in PartitionDesc intern the any duplicate strings which is why we call them
+      // during de-serialization
+      partitionDesc.setBaseFileName(partitionDesc.getBaseFileName());
+      partitionDesc.setPartSpec(partitionDesc.getPartSpec());
+      partitionDesc.setInputFileFormatClass(partitionDesc.getInputFileFormatClass());
+      partitionDesc.setOutputFileFormatClass(partitionDesc.getOutputFileFormatClass());
+      return partitionDesc;
+    }
+  }
+
+  /**
    * Serializes the plan.
    *
    * @param plan The plan, such as QueryPlan, MapredWork, etc.
@@ -668,28 +718,6 @@ public class SerializationUtilities {
     return result;
   }
 
-  public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots, int indexForTezUnion) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    CompilationOpContext ctx = roots.isEmpty() ? null : roots.get(0).getCompilationOpContext();
-    serializePlan(roots, baos, true);
-    @SuppressWarnings("unchecked")
-    List<Operator<?>> result =
-        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-            roots.getClass(), true);
-    // Restore the context.
-    LinkedList<Operator<?>> newOps = new LinkedList<>(result);
-    while (!newOps.isEmpty()) {
-      Operator<?> newOp = newOps.poll();
-      newOp.setIndexForTezUnion(indexForTezUnion);
-      newOp.setCompilationOpContext(ctx);
-      List<Operator<?>> children = newOp.getChildOperators();
-      if (children != null) {
-        newOps.addAll(children);
-      }
-    }
-    return result;
-  }
-
   /**
    * Clones using the powers of XML. Do not use unless necessary.
    * @param plan The plan.
@@ -750,20 +778,12 @@ public class SerializationUtilities {
   }
 
   public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
-    try {
-      return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)), "UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)),
+        StandardCharsets.UTF_8);
   }
 
   public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
-    byte[] bytes;
-    try {
-      bytes = Base64.decodeBase64(s.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
     return deserializeExpressionFromKryo(bytes);
   }
 
@@ -794,19 +814,14 @@ public class SerializationUtilities {
   }
 
   public static String serializeObject(Serializable expr) {
-    try {
-      return new String(Base64.encodeBase64(serializeObjectToKryo(expr)), "UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
+        StandardCharsets.UTF_8);
   }
 
-  public static <T extends Serializable> T deserializeObject(String s, Class<T> clazz) {
-    try {
-      return deserializeObjectFromKryo(Base64.decodeBase64(s.getBytes("UTF-8")), clazz);
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+  public static <T extends Serializable> T deserializeObject(String s,
+      Class<T> clazz) {
+    return deserializeObjectFromKryo(
+        Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8)), clazz);
   }
 
 }

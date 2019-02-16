@@ -21,10 +21,14 @@ import static org.junit.Assert.*;
 
 import java.nio.ByteBuffer;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapBufferOrBuffers;
@@ -75,8 +79,11 @@ public class TestOrcMetadataCache {
   }
 
   private static class DummyMemoryManager implements MemoryManager {
+    private int allocs;
+
     @Override
-    public void reserveMemory(long memoryToReserve) {
+    public void reserveMemory(long memoryToReserve, AtomicBoolean isStopped) {
+      ++allocs;
     }
 
     @Override
@@ -95,18 +102,18 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null);
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
     Object fileKey1 = new Object();
     Random rdm = new Random();
 
     ByteBuffer smallBuffer = ByteBuffer.allocate(MAX_ALLOC - 1);
     rdm.nextBytes(smallBuffer.array());
-    LlapBufferOrBuffers result = cache.putFileMetadata(fileKey1, smallBuffer);
+    LlapBufferOrBuffers result = cache.putFileMetadata(fileKey1, smallBuffer, null, null);
     cache.decRefBuffer(result);
     ByteBuffer cacheBuf = result.getSingleBuffer().getByteBufferDup();
     assertEquals(smallBuffer, cacheBuf);
-    result = cache.putFileMetadata(fileKey1, smallBuffer);
+    result = cache.putFileMetadata(fileKey1, smallBuffer, null, null);
     cache.decRefBuffer(result);
     cacheBuf = result.getSingleBuffer().getByteBufferDup();
     assertEquals(smallBuffer, cacheBuf);
@@ -120,7 +127,7 @@ public class TestOrcMetadataCache {
 
     ByteBuffer largeBuffer = ByteBuffer.allocate((int)(MAX_ALLOC * 2.5));
     rdm.nextBytes(largeBuffer.array());
-    result = cache.putFileMetadata(fileKey1, largeBuffer);
+    result = cache.putFileMetadata(fileKey1, largeBuffer, null, null);
     cache.decRefBuffer(result);
     assertNull(result.getSingleBuffer());
     assertEquals(largeBuffer, extractResultBbs(result));
@@ -156,19 +163,19 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null);
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
     Object fileKey1 = new Object();
 
     // Note: incomplete CBs are always an exact match.
-    cache.putIncompleteCbs(fileKey1, new DiskRange[] { new DiskRangeList(0, 3) }, 0);
+    cache.putIncompleteCbs(fileKey1, new DiskRange[] { new DiskRangeList(0, 3) }, 0, null);
     cp.verifyEquals(1);
     DiskRangeList result = cache.getIncompleteCbs(
         fileKey1, new DiskRangeList(0, 3), 0, gotAllData);
     assertTrue(gotAllData.value);
     verifyResult(result, INCOMPLETE, 0, 3);
-    cache.putIncompleteCbs(fileKey1, new DiskRange[] { new DiskRangeList(5, 6) }, 0);
+    cache.putIncompleteCbs(fileKey1, new DiskRange[] { new DiskRangeList(5, 6) }, 0, null);
     cp.verifyEquals(3);
     DiskRangeList ranges = new DiskRangeList(0, 3);
     ranges.insertAfter(new DiskRangeList(4, 6));

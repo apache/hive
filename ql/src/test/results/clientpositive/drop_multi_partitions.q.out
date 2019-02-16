@@ -44,8 +44,14 @@ b=1/c=2
 b=2/c=2
 PREHOOK: query: explain extended alter table dmp.mp_n0 drop partition (b='1')
 PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: dmp@mp_n0
+PREHOOK: Output: dmp@mp_n0@b=1/c=1
+PREHOOK: Output: dmp@mp_n0@b=1/c=2
 POSTHOOK: query: explain extended alter table dmp.mp_n0 drop partition (b='1')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: dmp@mp_n0
+POSTHOOK: Output: dmp@mp_n0@b=1/c=1
+POSTHOOK: Output: dmp@mp_n0@b=1/c=2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

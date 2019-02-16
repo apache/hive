@@ -38,6 +38,7 @@ import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateAddSqlOperator;
@@ -178,10 +179,11 @@ public class DruidSqlOperatorConverter {
           return null;
         }
         if (SqlTypeUtil.isDatetime(call.getOperands().get(0).getType())) {
+          final TimeZone tz = timezoneId(query, call.getOperands().get(0));
           return applyTimestampFormat(
-              DruidExpressions.applyTimestampFloor(arg, Period.days(1).toString(), "", timezoneId(query)), YYYY_MM_DD,
-              timezoneId(query)
-          );
+              DruidExpressions.applyTimestampFloor(arg, Period.days(1).toString(), "", tz),
+              YYYY_MM_DD,
+              tz);
         }
         return null;
       } else if (call.getOperands().size() == 2) {
@@ -207,9 +209,11 @@ public class DruidSqlOperatorConverter {
           //bail out can not infer unit
           return null;
         }
-        return applyTimestampFormat(DruidExpressions.applyTimestampFloor(arg, unit, "", timezoneId(query)), YYYY_MM_DD,
-            timezoneId(query)
-        );
+        final TimeZone tz = timezoneId(query, call.getOperands().get(0));
+        return applyTimestampFormat(
+            DruidExpressions.applyTimestampFloor(arg, unit, "", tz),
+            YYYY_MM_DD,
+            tz);
       }
       return null;
     }
@@ -235,7 +239,11 @@ public class DruidSqlOperatorConverter {
       if (arg == null) {
         return null;
       }
-      return DruidExpressions.applyTimestampFloor(arg, Period.days(1).toString(), "", timezoneId(query));
+      return DruidExpressions.applyTimestampFloor(
+          arg,
+          Period.days(1).toString(),
+          "",
+          timezoneId(query, call.getOperands().get(0)));
     }
   }
 
@@ -288,7 +296,7 @@ public class DruidSqlOperatorConverter {
           call.getOperands().size() == 1 ? DruidExpressions.stringLiteral(DEFAULT_TS_FORMAT) : DruidExpressions
               .toDruidExpression(call.getOperands().get(1), rowType, query);
       return DruidExpressions.functionCall("timestamp_format",
-          ImmutableList.of(numMillis, format, DruidExpressions.stringLiteral(timezoneId(query).getID()))
+          ImmutableList.of(numMillis, format, DruidExpressions.stringLiteral(TimeZone.getTimeZone("UTC").getID()))
       );
     }
   }
@@ -325,10 +333,13 @@ public class DruidSqlOperatorConverter {
       }
 
       final String steps = direction == -1 ? DruidQuery.format("-( %s )", arg1) : arg1;
-      return DruidExpressions.functionCall("timestamp_shift", ImmutableList
-          .of(arg0, DruidExpressions.stringLiteral("P1D"), steps,
-              DruidExpressions.stringLiteral(timezoneId(query).getID())
-          ));
+      return DruidExpressions.functionCall(
+          "timestamp_shift",
+          ImmutableList.of(
+              arg0,
+              DruidExpressions.stringLiteral("P1D"),
+              steps,
+              DruidExpressions.stringLiteral(timezoneId(query, call.getOperands().get(0)).getID())));
     }
   }
 
@@ -337,9 +348,11 @@ public class DruidSqlOperatorConverter {
    * @param query Druid Rel
    * @return time zone
    */
-  private static TimeZone timezoneId(final DruidQuery query) {
-    return TimeZone.getTimeZone(
-        query.getTopNode().getCluster().getPlanner().getContext().unwrap(CalciteConnectionConfig.class).timeZone());
+  private static TimeZone timezoneId(final DruidQuery query, final RexNode arg) {
+    return arg.getType().getSqlTypeName() == SqlTypeName.TIMESTAMP_WITH_LOCAL_TIME_ZONE
+        ? TimeZone.getTimeZone(
+        query.getTopNode().getCluster().getPlanner().getContext().unwrap(CalciteConnectionConfig.class).timeZone()) :
+        TimeZone.getTimeZone("UTC");
   }
 
   private static String applyTimestampFormat(String arg, String format, TimeZone timeZone) {

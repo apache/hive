@@ -1,9 +1,11 @@
 PREHOOK: query: EXPLAIN
 CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: test_max
 POSTHOOK: query: EXPLAIN
 CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: test_max
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -168,6 +168,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	12288               
@@ -189,57 +190,19 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: acid_ivot
-                  Statistics: Num rows: 12288 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 12288 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
@@ -376,6 +339,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	2                   
@@ -397,57 +361,19 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: acid_ivot
-                  Statistics: Num rows: 2 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 2 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
@@ -511,6 +437,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	4                   
@@ -532,57 +459,19 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: acid_ivot
-                  Statistics: Num rows: 4 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 4 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
@@ -642,6 +531,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	3                   
 	numRows             	12292               
@@ -663,57 +553,19 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: acid_ivot
-                  Statistics: Num rows: 12292 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 12292 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
@@ -813,8 +665,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from acid_ivot
 PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from acid_ivot
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_ivot
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -896,8 +752,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from sp where ds="2008-04-08" and hr="11"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sp
+PREHOOK: Input: default@sp@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from sp where ds="2008-04-08" and hr="11"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sp
+POSTHOOK: Input: default@sp@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1063,8 +925,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain select count(*) from sp where ds="2008-04-08" and hr="11"
 PREHOOK: type: QUERY
+PREHOOK: Input: default@sp
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from sp where ds="2008-04-08" and hr="11"
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sp
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

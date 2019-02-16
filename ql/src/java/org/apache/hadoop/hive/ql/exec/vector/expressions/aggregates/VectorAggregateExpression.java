@@ -84,7 +84,7 @@ public abstract class VectorAggregateExpression  implements Serializable {
     outputTypeInfo =  vecAggrDesc.getOutputTypeInfo();
     outputDataTypePhysicalVariation = vecAggrDesc.getOutputDataTypePhysicalVariation();
 
-    mode = vecAggrDesc.getAggrDesc().getMode();
+    mode = vecAggrDesc.getUdafEvaluatorMode();
   }
 
   public VectorExpression getInputExpression() {

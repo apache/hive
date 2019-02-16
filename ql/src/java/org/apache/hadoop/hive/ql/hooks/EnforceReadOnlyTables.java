@@ -40,11 +40,12 @@ public class EnforceReadOnlyTables implements ExecuteWithHookContext {
     Set<ReadEntity> inputs = hookContext.getInputs();
     Set<WriteEntity> outputs = hookContext.getOutputs();
     UserGroupInformation ugi = hookContext.getUgi();
-    this.run(ss,inputs,outputs,ugi);
+    boolean isExplain = hookContext.getQueryPlan().isExplain();
+    this.run(ss,inputs,outputs,ugi, isExplain);
   }
 
   public void run(SessionState sess, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, UserGroupInformation ugi)
+      Set<WriteEntity> outputs, UserGroupInformation ugi, boolean isExplain)
     throws Exception {
 
     // Don't enforce during test driver setup or shutdown.
@@ -59,7 +60,7 @@ public class EnforceReadOnlyTables implements ExecuteWithHookContext {
           (w.getTyp() == WriteEntity.Type.PARTITION)) {
         Table t = w.getTable();
         if (DEFAULT_DATABASE_NAME.equalsIgnoreCase(t.getDbName())
-            && readOnlyTables.contains(t.getTableName())) {
+            && readOnlyTables.contains(t.getTableName()) && !isExplain) {
           throw new RuntimeException ("Cannot overwrite read-only table: " + t.getTableName());
         }
       }

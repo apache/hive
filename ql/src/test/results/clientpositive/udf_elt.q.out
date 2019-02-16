@@ -27,6 +27,8 @@ SELECT elt(2, 'abc', 'defg'),
        elt(3, 'abc', 'defg')
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
@@ -41,6 +43,8 @@ SELECT elt(2, 'abc', 'defg'),
        elt(3, 'abc', 'defg')
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

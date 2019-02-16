@@ -5,7 +5,6 @@ set hive.optimize.union.remove=true;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
-set mapred.input.dir.recursive=true;
 
 -- SORT_QUERY_RESULTS
 

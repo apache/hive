@@ -444,6 +444,38 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
   }
 
+  public void init(int[] outputColumns, boolean[] columnsToInclude) throws HiveException {
+
+    Preconditions.checkState(
+        outputColumns.length == columnsToInclude.length);
+
+    final int columnCount = sourceTypeInfos.length;
+    allocateArrays(columnCount);
+
+    int includedCount = 0;
+    final int[] includedIndices = new int[columnCount];
+
+    for (int i = 0; i < columnCount; i++) {
+
+      if (!columnsToInclude[i]) {
+
+        // Field not included in query.
+
+      } else {
+
+        initTopLevelField(i, outputColumns[i], sourceTypeInfos[i], dataTypePhysicalVariations[i]);
+        includedIndices[includedCount++] = i;
+      }
+    }
+
+    // Optimizing for readField?
+    if (includedCount < columnCount && deserializeRead.isReadFieldSupported()) {
+      useReadField = true;
+      readFieldLogicalIndices = Arrays.copyOf(includedIndices, includedCount);
+    }
+
+  }
+
   /**
    * Initialize for converting the source data type that are going to be read with the
    * DeserializedRead interface passed to the constructor to the target data types desired in

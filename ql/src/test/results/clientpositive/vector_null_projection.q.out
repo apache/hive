@@ -35,9 +35,13 @@ POSTHOOK: Lineage: b_n4.s SCRIPT []
 PREHOOK: query: explain vectorization detail
 select NULL from a_n6
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select NULL from a_n6
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n6
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -110,9 +114,15 @@ NULL
 PREHOOK: query: explain vectorization expression
 select NULL as x from a_n6 union distinct select NULL as x from b_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n6
+PREHOOK: Input: default@b_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select NULL as x from a_n6 union distinct select NULL as x from b_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n6
+POSTHOOK: Input: default@b_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -135,14 +145,14 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: null (type: void)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: void)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: void)
+                      Map-reduce partition columns: _col0 (type: boolean)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b_n4
@@ -154,14 +164,14 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    keys: null (type: void)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: void)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: void)
+                      Map-reduce partition columns: _col0 (type: boolean)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
       Map Vectorization:
           enabled: false
@@ -172,7 +182,7 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: void)
+          keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

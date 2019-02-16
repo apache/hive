@@ -12,12 +12,18 @@ insert overwrite table tmptable_n5
                                         UNION  ALL  
                                             select s2.key as key, s2.value as value from src1 s2) unionsrc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@tmptable_n5
 POSTHOOK: query: explain 
 insert overwrite table tmptable_n5
   select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION  ALL  
                                             select s2.key as key, s2.value as value from src1 s2) unionsrc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@tmptable_n5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -93,7 +99,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'tst1' (type: string), UDFToString(_col0) (type: string)
+                  expressions: 'tst1' (type: string), CAST( _col0 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

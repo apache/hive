@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -44,6 +46,7 @@ import java.util.Set;
  * be used after usage.
  */
 public class HBaseMetaHook implements HiveMetaHook, Closeable {
+  private static final Logger LOG = LoggerFactory.getLogger(HBaseMetaHook.class);
   private Configuration hbaseConf;
   private Admin admin;
 
@@ -99,12 +102,15 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
   public void commitDropTable(Table tbl, boolean deleteData) throws MetaException {
     try {
       String tableName = getHBaseTableName(tbl);
-      boolean isExternal = MetaStoreUtils.isExternalTable(tbl);
-      if (deleteData && !isExternal) {
-        if (getHBaseAdmin().isTableEnabled(TableName.valueOf(tableName))) {
-          getHBaseAdmin().disableTable(TableName.valueOf(tableName));
+      boolean isPurge = !MetaStoreUtils.isExternalTable(tbl) || MetaStoreUtils.isExternalTablePurge(tbl);
+      if (deleteData && isPurge) {
+        LOG.info("Dropping with purge all the data for data source {}", tableName);
+        if (getHBaseAdmin().tableExists(TableName.valueOf(tableName))) {
+          if (getHBaseAdmin().isTableEnabled(TableName.valueOf(tableName))) {
+            getHBaseAdmin().disableTable(TableName.valueOf(tableName));
+          }
+          getHBaseAdmin().deleteTable(TableName.valueOf(tableName));
         }
-        getHBaseAdmin().deleteTable(TableName.valueOf(tableName));
       }
     } catch (IOException ie) {
       throw new MetaException(StringUtils.stringifyException(ie));
@@ -113,8 +119,6 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
 
   @Override
   public void preCreateTable(Table tbl) throws MetaException {
-    boolean isExternal = MetaStoreUtils.isExternalTable(tbl);
-
     // We'd like to move this to HiveMetaStore for any non-native table, but
     // first we need to support storing NULL for location on a table
     if (tbl.getSd().getLocation() != null) {
@@ -133,34 +137,24 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
       HTableDescriptor tableDesc;
 
       if (!getHBaseAdmin().tableExists(TableName.valueOf(tableName))) {
-        // if it is not an external table then create one
-        if (!isExternal) {
-          // Create the column descriptors
-          tableDesc = new HTableDescriptor(TableName.valueOf(tableName));
-          Set<String> uniqueColumnFamilies = new HashSet<String>();
+        // create table from Hive
+        // create the column descriptors
+        tableDesc = new HTableDescriptor(TableName.valueOf(tableName));
+        Set<String> uniqueColumnFamilies = new HashSet<String>();
 
-          for (ColumnMappings.ColumnMapping colMap : columnMappings) {
-            if (!colMap.hbaseRowKey && !colMap.hbaseTimestamp) {
-              uniqueColumnFamilies.add(colMap.familyName);
-            }
+        for (ColumnMappings.ColumnMapping colMap : columnMappings) {
+          if (!colMap.hbaseRowKey && !colMap.hbaseTimestamp) {
+            uniqueColumnFamilies.add(colMap.familyName);
           }
-
-          for (String columnFamily : uniqueColumnFamilies) {
-            tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes(columnFamily)));
-          }
-
-          getHBaseAdmin().createTable(tableDesc);
-        } else {
-          // an external table
-          throw new MetaException("HBase table " + tableName +
-              " doesn't exist while the table is declared as an external table.");
         }
 
+        for (String columnFamily : uniqueColumnFamilies) {
+          tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes(columnFamily)));
+        }
+
+        getHBaseAdmin().createTable(tableDesc);
       } else {
-        if (!isExternal) {
-          throw new MetaException("Table " + tableName + " already exists within HBase; "
-              + "use CREATE EXTERNAL TABLE instead to register it in Hive.");
-        }
+        // register table in Hive
         // make sure the schema mapping is right
         tableDesc = getHBaseAdmin().getTableDescriptor(TableName.valueOf(tableName));
 
@@ -190,10 +184,10 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
 
   @Override
   public void rollbackCreateTable(Table table) throws MetaException {
-    boolean isExternal = MetaStoreUtils.isExternalTable(table);
     String tableName = getHBaseTableName(table);
+    boolean isPurge = !MetaStoreUtils.isExternalTable(table) || MetaStoreUtils.isExternalTablePurge(table);
     try {
-      if (!isExternal && getHBaseAdmin().tableExists(TableName.valueOf(tableName))) {
+      if (isPurge && getHBaseAdmin().tableExists(TableName.valueOf(tableName))) {
         // we have created an HBase table, so we delete it to roll back;
         if (getHBaseAdmin().isTableEnabled(TableName.valueOf(tableName))) {
           getHBaseAdmin().disableTable(TableName.valueOf(tableName));

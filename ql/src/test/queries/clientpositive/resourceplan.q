@@ -10,7 +10,7 @@ set hive.cbo.enable=false;
 show grant user hive_test_user;
 
 -- Initialize the hive schema.
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql;
+source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
 
 -- SORT_QUERY_RESULTS
 
@@ -34,6 +34,11 @@ ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10;
 SHOW RESOURCE PLANS;
 SHOW RESOURCE PLAN plan_2;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
+
+-- Create plan with existing name, should fail
+CREATE RESOURCE PLAN plan_2;
+-- Create plan with existing name with IF NOT EXISTS
+CREATE RESOURCE PLAN IF NOT EXISTS plan_2;
 
 -- Should fail cannot set pool in create.
 CREATE RESOURCE PLAN plan_3 WITH QUERY_PARALLELISM=5, DEFAULT POOL = `all`;
@@ -139,6 +144,11 @@ DROP RESOURCE PLAN plan_2;
 DROP RESOURCE PLAN plan_3;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 
+-- Drop non existing resource plan, should fail
+DROP RESOURCE PLAN plan_99999;
+-- Drop non existing resource plan with IF EXISTS
+DROP RESOURCE PLAN IF EXISTS plan_99999;
+
 -- Use reserved keyword table as name.
 CREATE RESOURCE PLAN `table`;
 ALTER RESOURCE PLAN `table` SET QUERY_PARALLELISM = 1;
@@ -230,13 +240,13 @@ CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair';
 
 CREATE POOL plan_2.default.c2 WITH
-    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.7;
+    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.75;
 
 -- Cannot activate c1 + c2 = 1.0
 ALTER RESOURCE PLAN plan_2 VALIDATE;
 ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE;
 
-ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.5, QUERY_PARALLELISM = 1;
+ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1;
 ALTER POOL plan_2.default.c2 SET SCHEDULING_POLICY='fair';
 SELECT * FROM SYS.WM_POOLS;
 ALTER POOL plan_2.default.c2 UNSET SCHEDULING_POLICY;

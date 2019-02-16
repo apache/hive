@@ -58,9 +58,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 vector_date_1.dt1	vector_date_1.dt2
-NULL	NULL
 1999-12-31	2000-01-01
 2001-01-01	2001-06-01
+NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -75,6 +75,8 @@ select
   dt2 > dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -89,6 +91,8 @@ select
   dt2 > dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -104,7 +108,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_date_1
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -116,7 +120,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [0, 1, 3, 4, 5, 6, 7, 8, 9, 10]
                   selectExpressions: LongColEqualLongColumn(col 0:date, col 0:date) -> 3:boolean, LongColNotEqualLongColumn(col 0:date, col 1:date) -> 4:boolean, LongColLessEqualLongColumn(col 0:date, col 0:date) -> 5:boolean, LongColLessEqualLongColumn(col 0:date, col 1:date) -> 6:boolean, LongColLessLongColumn(col 0:date, col 1:date) -> 7:boolean, LongColGreaterEqualLongColumn(col 1:date, col 1:date) -> 8:boolean, LongColGreaterEqualLongColumn(col 1:date, col 0:date) -> 9:boolean, LongColGreaterLongColumn(col 1:date, col 0:date) -> 10:boolean
-              Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -125,7 +129,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col1 (type: date), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean)
       Execution mode: vectorized
       Map Vectorization:
@@ -151,10 +155,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: date), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-          Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -197,9 +201,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	dt2	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	2000-01-01	true	true	true	true	true	true	true	true
 2001-01-01	2001-06-01	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -214,6 +218,8 @@ select
   dt2 < dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2,
@@ -228,6 +234,8 @@ select
   dt2 < dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -243,7 +251,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_date_1
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -255,7 +263,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [0, 1, 3, 4, 5, 6, 7, 8, 9, 10]
                   selectExpressions: LongColNotEqualLongColumn(col 0:date, col 0:date) -> 3:boolean, LongColEqualLongColumn(col 0:date, col 1:date) -> 4:boolean, LongColLessLongColumn(col 0:date, col 0:date) -> 5:boolean, LongColGreaterEqualLongColumn(col 0:date, col 1:date) -> 6:boolean, LongColGreaterLongColumn(col 0:date, col 1:date) -> 7:boolean, LongColGreaterLongColumn(col 1:date, col 1:date) -> 8:boolean, LongColLessEqualLongColumn(col 1:date, col 0:date) -> 9:boolean, LongColLessLongColumn(col 1:date, col 0:date) -> 10:boolean
-              Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -264,7 +272,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col1 (type: date), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean)
       Execution mode: vectorized
       Map Vectorization:
@@ -290,10 +298,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: date), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-          Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -336,9 +344,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	dt2	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	2000-01-01	false	false	false	false	false	false	false	false
 2001-01-01	2001-06-01	false	false	false	false	false	false	false	false
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1,
@@ -353,6 +361,8 @@ select
   date '1970-01-01' < dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1,
@@ -367,6 +377,8 @@ select
   date '1970-01-01' < dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -382,7 +394,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_date_1
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -394,7 +406,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [0, 3, 4, 5, 6, 7]
                   selectExpressions: DateColNotEqualDateScalar(col 0:date, date 1970-01-01) -> 3:boolean, DateColGreaterEqualDateScalar(col 0:date, date 1970-01-01) -> 4:boolean, DateColGreaterDateScalar(col 0:date, date 1970-01-01) -> 5:boolean, DateColLessEqualDateScalar(col 0:date, date 2100-01-01) -> 6:boolean, DateColLessDateScalar(col 0:date, date 2100-01-01) -> 7:boolean
-              Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -403,7 +415,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean)
       Execution mode: vectorized
       Map Vectorization:
@@ -429,10 +441,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-          Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -475,9 +487,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	true	true	true	true	true	true	true	true
 2001-01-01	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1,
@@ -492,6 +504,8 @@ select
   date '1970-01-01' > dt1
 from vector_date_1 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1,
@@ -506,6 +520,8 @@ select
   date '1970-01-01' > dt1
 from vector_date_1 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -521,7 +537,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_date_1
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -533,7 +549,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [0, 3, 4, 5, 6, 7]
                   selectExpressions: DateColEqualDateScalar(col 0:date, date 1970-01-01) -> 3:boolean, DateColLessEqualDateScalar(col 0:date, date 1970-01-01) -> 4:boolean, DateColLessDateScalar(col 0:date, date 1970-01-01) -> 5:boolean, DateColGreaterEqualDateScalar(col 0:date, date 2100-01-01) -> 6:boolean, DateColGreaterDateScalar(col 0:date, date 2100-01-01) -> 7:boolean
-              Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -542,7 +558,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean)
       Execution mode: vectorized
       Map Vectorization:
@@ -568,10 +584,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-          Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -614,9 +630,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 dt1	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1999-12-31	false	false	false	false	false	false	false	false
 2001-01-01	false	false	false	false	false	false	false	false
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -630,6 +646,8 @@ where
   and dt2 >= dt1
 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -643,6 +661,8 @@ where
   and dt2 >= dt1
 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -659,7 +679,7 @@ STAGE PLANS:
           TableScan
             alias: vector_date_1
             filterExpr: ((dt1 = dt1) and (dt1 <> dt2) and (dt1 < dt2) and (dt1 <= dt2) and (dt2 > dt1) and (dt2 >= dt1)) (type: boolean)
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -669,7 +689,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 0:date, col 0:date), FilterLongColNotEqualLongColumn(col 0:date, col 1:date), FilterLongColLessLongColumn(col 0:date, col 1:date), FilterLongColLessEqualLongColumn(col 0:date, col 1:date), FilterLongColGreaterLongColumn(col 1:date, col 0:date), FilterLongColGreaterEqualLongColumn(col 1:date, col 0:date))
               predicate: ((dt1 < dt2) and (dt1 <= dt2) and (dt1 <> dt2) and (dt1 = dt1) and (dt2 > dt1) and (dt2 >= dt1)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: dt1 (type: date), dt2 (type: date)
                 outputColumnNames: _col0, _col1
@@ -677,7 +697,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1]
-                Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: date)
                   sort order: +
@@ -686,7 +706,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: date)
       Execution mode: vectorized
       Map Vectorization:
@@ -712,10 +732,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: date)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -773,6 +793,8 @@ where
   and date '1970-01-01' <= dt1
 order by dt1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select
   dt1, dt2
@@ -788,6 +810,8 @@ where
   and date '1970-01-01' <= dt1
 order by dt1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -804,7 +828,7 @@ STAGE PLANS:
           TableScan
             alias: vector_date_1
             filterExpr: ((dt1 = DATE'2001-01-01') and (dt1 <> DATE'1970-01-01')) (type: boolean)
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -814,7 +838,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterExprAndExpr(children: FilterDateColEqualDateScalar(col 0:date, val 11323), FilterDateColNotEqualDateScalar(col 0:date, val 0))
               predicate: ((dt1 <> DATE'1970-01-01') and (dt1 = DATE'2001-01-01')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: DATE'2001-01-01' (type: date), dt2 (type: date)
                 outputColumnNames: _col0, _col1
@@ -823,13 +847,13 @@ STAGE PLANS:
                     native: true
                     projectedOutputColumnNums: [3, 1]
                     selectExpressions: ConstantVectorExpression(val 11323) -> 3:date
-                Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 74 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -894,9 +918,13 @@ dt1	dt2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
 Explain
 PLAN VECTORIZATION:
   enabled: true
@@ -913,7 +941,7 @@ STAGE PLANS:
           TableScan
             alias: vector_date_1
             filterExpr: (dt1) IN (DATE'1970-01-01', DATE'2001-01-01') (type: boolean)
-            Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -923,7 +951,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterLongColumnInList(col 0:date, values [0, 11323])
               predicate: (dt1) IN (DATE'1970-01-01', DATE'2001-01-01') (type: boolean)
-              Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: dt1 (type: date)
                 outputColumnNames: _col0
@@ -931,13 +959,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

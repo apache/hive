@@ -92,7 +92,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         }
       }
       List<OrcProto.Type> types = OrcUtils.getOrcTypes(schema);
-      Reader.Options options = new Reader.Options().schema(schema);
+      Reader.Options options = new Reader.Options(conf).schema(schema);
 
       this.offset = fileSplit.getStart();
       this.length = fileSplit.getLength();

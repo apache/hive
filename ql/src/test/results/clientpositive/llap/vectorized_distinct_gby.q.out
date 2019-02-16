@@ -19,9 +19,13 @@ POSTHOOK: Lineage: dtest.b SIMPLE []
 PREHOOK: query: explain vectorization detail
 select sum(distinct a), count(distinct a) from dtest
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dtest
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(distinct a), count(distinct a) from dtest
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dtest
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -82,10 +86,9 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0, 1]
+                              valueColumns: 0:bigint, 1:bigint
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized, llap
@@ -162,9 +165,13 @@ POSTHOOK: Input: default@dtest
 PREHOOK: query: explain vectorization detail
 select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -216,10 +223,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 6105 Data size: 18232 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -291,10 +297,9 @@ STAGE PLANS:
                       sort order: 
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkEmptyKeyOperator
-                          keyColumnNums: []
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [0, 1, 2, 3]
+                          valueColumns: 0:bigint, 1:bigint, 2:double, 3:double
                       Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: double)
         Reducer 3 
@@ -331,8 +336,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 1, 5, 4]
-                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 4:double) -> 5:double, FuncPowerDoubleToDouble(col 6:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 6:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 4:double) -> 6:double) -> 4:double) -> 6:double) -> 4:double
+                      projectedOutputColumnNums: [0, 1, 5, 10]
+                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: CastLongToDouble(col 0:bigint) -> 4:double) -> 5:double, FuncPowerDoubleToDouble(col 9:double)(children: DoubleColDivideLongColumn(col 8:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 7:double)(children: DoubleColDivideLongColumn(col 6:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 6:double) -> 7:double) -> 8:double) -> 9:double) -> 10:double
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -359,4 +364,4 @@ POSTHOOK: query: select sum(distinct cint), count(distinct cint), avg(distinct c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--3482841611	6082	-572647.4204209142	6.153814687328981E8
+-3482841611	6082	-572647.4204209142	6.153814687328988E8

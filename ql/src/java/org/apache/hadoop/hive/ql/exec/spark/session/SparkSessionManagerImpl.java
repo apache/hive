@@ -18,18 +18,23 @@
 package org.apache.hadoop.hive.ql.exec.spark.session;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.hive.common.util.ShutdownHookManager;
+import com.google.common.collect.Sets;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.spark.client.SparkClientFactory;
 
 /**
@@ -41,8 +46,16 @@ import org.apache.hive.spark.client.SparkClientFactory;
 public class SparkSessionManagerImpl implements SparkSessionManager {
   private static final Logger LOG = LoggerFactory.getLogger(SparkSessionManagerImpl.class);
 
-  private Set<SparkSession> createdSessions = Collections.synchronizedSet(new HashSet<SparkSession>());
+  private final Set<SparkSession> createdSessions = Sets.newConcurrentHashSet();
+
+  /**
+   * A {@link Future} that tracks the status of the scheduled time out thread launched via the
+   * {@link #startTimeoutThread()} method.
+   */
+  private volatile Future<?> timeoutFuture;
+
   private volatile boolean inited = false;
+  private volatile HiveConf conf;
 
   private static SparkSessionManagerImpl instance;
 
@@ -79,9 +92,11 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
       synchronized (this) {
         if (!inited) {
           LOG.info("Setting up the session manager.");
-          Map<String, String> conf = HiveSparkClientFactory.initiateSparkConf(hiveConf, null);
+          conf = hiveConf;
+          startTimeoutThread();
+          Map<String, String> sparkConf = HiveSparkClientFactory.initiateSparkConf(hiveConf, null);
           try {
-            SparkClientFactory.initialize(conf);
+            SparkClientFactory.initialize(sparkConf, hiveConf);
             inited = true;
           } catch (IOException e) {
             throw new HiveException("Error initializing SparkClientFactory", e);
@@ -106,11 +121,12 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
       // Open the session if it is closed.
       if (!existingSession.isOpen() && doOpen) {
         existingSession.open(conf);
+        createdSessions.add(existingSession);
       }
       return existingSession;
     }
 
-    SparkSession sparkSession = new SparkSessionImpl();
+    SparkSession sparkSession = new SparkSessionImpl(SessionState.get().getNewSparkSessionId());
     if (doOpen) {
       sparkSession.open(conf);
     }
@@ -135,7 +151,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
     }
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug(String.format("Closing session (%s).", sparkSession.getSessionId()));
+      LOG.debug(String.format("Closing Spark session (%s).", sparkSession.getSessionId()));
     }
     sparkSession.close();
     createdSessions.remove(sparkSession);
@@ -144,15 +160,32 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
   @Override
   public void shutdown() {
     LOG.info("Closing the session manager.");
-    synchronized (createdSessions) {
-      Iterator<SparkSession> it = createdSessions.iterator();
-      while (it.hasNext()) {
-        SparkSession session = it.next();
-        session.close();
-      }
-      createdSessions.clear();
+    if (timeoutFuture != null) {
+      timeoutFuture.cancel(false);
     }
+    createdSessions.forEach(SparkSession::close);
+    createdSessions.clear();
     inited = false;
     SparkClientFactory.stop();
+  }
+
+  /**
+   * Starts a scheduled thread that periodically calls {@link SparkSession#triggerTimeout(long)}
+   * on each {@link SparkSession} managed by this class.
+   */
+  private void startTimeoutThread() {
+    long sessionTimeout = conf.getTimeVar(HiveConf.ConfVars.SPARK_SESSION_TIMEOUT,
+            TimeUnit.MILLISECONDS);
+    long sessionTimeoutPeriod = conf.getTimeVar(HiveConf.ConfVars.SPARK_SESSION_TIMEOUT_PERIOD,
+            TimeUnit.MILLISECONDS);
+    ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
+
+    // Schedules a thread that does the following: iterates through all the active SparkSessions
+    // and calls #triggerTimeout(long) on each one. If #triggerTimeout(long) returns true, then
+    // the SparkSession is removed from the set of active sessions managed by this class.
+    timeoutFuture = es.scheduleAtFixedRate(() -> createdSessions.stream()
+                    .filter(sparkSession -> sparkSession.triggerTimeout(sessionTimeout))
+                    .forEach(createdSessions::remove),
+            0, sessionTimeoutPeriod, TimeUnit.MILLISECONDS);
   }
 }

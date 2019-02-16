@@ -98,6 +98,18 @@ public class LlapProtocolServerImpl extends AbstractService
   }
 
   @Override
+  public LlapDaemonProtocolProtos.RegisterDagResponseProto registerDag(
+      RpcController controller,
+      LlapDaemonProtocolProtos.RegisterDagRequestProto request)
+      throws ServiceException {
+    try {
+      return containerRunner.registerDag(request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
+
+  @Override
   public SubmitWorkResponseProto submitWork(RpcController controller,
       SubmitWorkRequestProto request) throws ServiceException {
     try {

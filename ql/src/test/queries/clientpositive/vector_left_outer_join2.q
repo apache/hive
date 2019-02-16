@@ -1,3 +1,4 @@
+set hive.cli.print.header=true;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
@@ -20,14 +21,14 @@ INSERT INTO TABLE TJOIN2 SELECT * from TJOIN2STAGE;
 
 set hive.vectorized.execution.enabled=false;
 set hive.mapjoin.hybridgrace.hashtable=false;
-explain vectorization expression
+explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
 
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
 
 set hive.vectorized.execution.enabled=false;
 set hive.mapjoin.hybridgrace.hashtable=true;
-explain
+explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
 
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
@@ -36,7 +37,7 @@ select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left out
 set hive.vectorized.execution.enabled=true;
 set hive.mapjoin.hybridgrace.hashtable=false;
 SET hive.vectorized.execution.mapjoin.native.enabled=false;
-explain vectorization expression
+explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
 
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
@@ -44,7 +45,7 @@ select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left out
 set hive.vectorized.execution.enabled=true;
 set hive.mapjoin.hybridgrace.hashtable=true;
 SET hive.vectorized.execution.mapjoin.native.enabled=false;
-explain vectorization expression
+explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
 
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
@@ -52,7 +53,7 @@ select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left out
 set hive.vectorized.execution.enabled=true;
 set hive.mapjoin.hybridgrace.hashtable=false;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
-explain vectorization expression
+explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
 
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
@@ -60,7 +61,7 @@ select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left out
 set hive.vectorized.execution.enabled=true;
 set hive.mapjoin.hybridgrace.hashtable=true;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
-explain vectorization expression
+explain vectorization detail
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );
 
 select tjoin1.rnum, tjoin1.c1, tjoin1.c2, tjoin2.c2 as c2j2 from tjoin1 left outer join tjoin2 on ( tjoin1.c1 = tjoin2.c1 and tjoin1.c2 > 15 );

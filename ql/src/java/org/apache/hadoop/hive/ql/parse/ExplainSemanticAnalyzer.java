@@ -75,6 +75,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setExtended(true);
       } else if (explainOptions == HiveParser.KW_DEPENDENCY) {
         config.setDependency(true);
+      } else if (explainOptions == HiveParser.KW_CBO) {
+        config.setCbo(true);
+      } else if (explainOptions == HiveParser.KW_COST) {
+        config.setCboCost(true);
+      } else if (explainOptions == HiveParser.KW_JOINCOST) {
+        config.setCboJoinCost(true);
       } else if (explainOptions == HiveParser.KW_LOGICAL) {
         config.setLogical(true);
       } else if (explainOptions == HiveParser.KW_AUTHORIZATION) {
@@ -112,6 +118,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
             i++;
           }
         }
+      } else if (explainOptions == HiveParser.KW_LOCKS) {
+        config.setLocks(true);
+      } else if (explainOptions == HiveParser.KW_AST){
+        config.setAst(true);
+      } else if (explainOptions == HiveParser.KW_DEBUG) {
+        config.setDebug(true);
       } else {
         // UNDONE: UNKNOWN OPTION?
       }
@@ -162,6 +174,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
+    inputs = sem.getInputs();
+    outputs = sem.getOutputs();
 
     ctx.setResFile(ctx.getLocalTmpPath());
     List<Task<?>> tasks = sem.getAllRootTasks();
@@ -183,6 +197,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     config.setUserLevelExplain(!config.isExtended()
         && !config.isFormatted()
         && !config.isDependency()
+        && !config.isCbo()
         && !config.isLogical()
         && !config.isAuthorize()
         && (
@@ -204,9 +219,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         pCtx,
         tasks,
         fetchTask,
+        input,
         sem,
         config,
-        ctx.getCboInfo());
+        ctx.getCboInfo(),
+        ctx.getOptimizedSql(),
+        ctx.getCalcitePlan());
 
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));

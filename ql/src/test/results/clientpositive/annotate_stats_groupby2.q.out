@@ -38,8 +38,12 @@ POSTHOOK: Output: default@location
 #### A masked pattern was here ####
 PREHOOK: query: explain select state, country from location group by state, country
 PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state, country from location group by state, country
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -88,8 +92,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state, country from location group by state, country with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state, country from location group by state, country with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -139,8 +147,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state, country from location group by state, country
 PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state, country from location group by state, country
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -189,8 +201,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state, votes from location group by state, votes
 PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state, votes from location group by state, votes
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -239,8 +255,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state, country from location group by state, country with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state, country from location group by state, country with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -290,8 +310,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state, country from location group by state, country
 PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state, country from location group by state, country
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -340,8 +364,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select state, country from location group by state, country with cube
 PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
 POSTHOOK: query: explain select state, country from location group by state, country with cube
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

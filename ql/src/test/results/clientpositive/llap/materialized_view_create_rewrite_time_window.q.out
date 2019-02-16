@@ -28,16 +28,6 @@ POSTHOOK: Lineage: cmv_basetable_n3.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n3.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n3.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n3.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_n3 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_n3
-PREHOOK: Output: default@cmv_basetable_n3
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_n3 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_n3
-POSTHOOK: Output: default@cmv_basetable_n3
-#### A masked pattern was here ####
 PREHOOK: query: create table cmv_basetable_2_n1 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,34 +52,32 @@ POSTHOOK: Lineage: cmv_basetable_2_n1.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n1.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n1.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n1.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n1 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n1
-PREHOOK: Output: default@cmv_basetable_2_n1
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n1 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n1
-POSTHOOK: Output: default@cmv_basetable_2_n1
-#### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
+CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
   GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_basetable_2_n1
+PREHOOK: Input: default@cmv_basetable_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_mat_view_n3
 POSTHOOK: query: EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
+CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
   GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_basetable_2_n1
+POSTHOOK: Input: default@cmv_basetable_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_mat_view_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-4 depends on stages: Stage-2, Stage-0
+  Stage-4 depends on stages: Stage-0, Stage-2
   Stage-3 depends on stages: Stage-4
   Stage-5 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
@@ -99,8 +87,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -121,9 +110,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n1
@@ -142,7 +131,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -181,6 +170,34 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.cmv_mat_view_n3
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: decimal(10,2))
+                  outputColumnNames: col1, col2
+                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: compute_stats(col1, 'hll'), compute_stats(col2, 'hll')
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 1056 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 1056 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(10,2),max:decimal(10,2),countnulls:bigint,bitvector:binary>)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 1088 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 1088 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -190,7 +207,7 @@ STAGE PLANS:
         Create View
           columns: a int, c decimal(10,2)
           table properties:
-            rewriting.time.window 300s
+            rewriting.time.window 5min
           expanded text: SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
   FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
   WHERE `cmv_basetable_2_n1`.`c` > 10.0
@@ -204,6 +221,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: a, c
+          Column Types: int, decimal(10,2)
+          Table: default.cmv_mat_view_n3
 
   Stage: Stage-5
     Materialized View Work
@@ -214,7 +235,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
+PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
@@ -224,7 +245,7 @@ PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_n3
-POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='5min') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
@@ -251,12 +272,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
-	rewriting.time.window	300s                
+	rewriting.time.window	5min                
 	totalSize           	608                 
 #### A masked pattern was here ####
 	 	 
@@ -269,28 +290,35 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	No                  	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n1
+PREHOOK: Input: default@cmv_basetable_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n1
+POSTHOOK: Input: default@cmv_basetable_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -322,7 +350,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
@@ -343,7 +371,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -367,7 +395,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -424,22 +452,16 @@ POSTHOOK: Lineage: cmv_basetable_2_n1.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n1.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n1.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n1.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n1 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n1
-PREHOOK: Output: default@cmv_basetable_2_n1
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n1 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n1
-POSTHOOK: Output: default@cmv_basetable_2_n1
-#### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 ENABLE REWRITE
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@cmv_mat_view_n3
+PREHOOK: Output: default@cmv_mat_view_n3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 ENABLE REWRITE
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view_n3
+POSTHOOK: Output: default@cmv_mat_view_n3
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -475,12 +497,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
-	rewriting.time.window	300s                
+	rewriting.time.window	5min                
 	totalSize           	608                 
 #### A masked pattern was here ####
 	 	 
@@ -493,28 +515,37 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n1
+PREHOOK: Input: default@cmv_basetable_n3
+PREHOOK: Input: default@cmv_mat_view_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n1
+POSTHOOK: Input: default@cmv_basetable_n3
+POSTHOOK: Input: default@cmv_mat_view_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -556,9 +587,17 @@ POSTHOOK: Input: default@cmv_mat_view_n3
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n1
+PREHOOK: Input: default@cmv_basetable_n3
+PREHOOK: Input: default@cmv_mat_view_n3
+PREHOOK: Output: default@cmv_mat_view_n3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n3 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n1
+POSTHOOK: Input: default@cmv_basetable_n3
+POSTHOOK: Input: default@cmv_mat_view_n3
+POSTHOOK: Output: default@cmv_mat_view_n3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -596,7 +635,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
@@ -610,35 +649,35 @@ STAGE PLANS:
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2))
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 8 
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_n3
-                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: a (type: int), c (type: decimal(10,2))
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: int), _col1 (type: decimal(10,2))
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
-            Execution mode: llap
+                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -662,7 +701,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
@@ -673,12 +712,12 @@ STAGE PLANS:
                   keys: _col0 (type: int), _col1 (type: decimal(10,2))
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: decimal(10,2))
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
-                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -686,10 +725,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: decimal(10,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -698,15 +737,15 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: decimal(10,2))
                   outputColumnNames: a, c
-                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(a, 'hll'), compute_stats(c, 'hll')
                     mode: hash
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 1056 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 1056 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 1056 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 1056 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(10,2),max:decimal(10,2),countnulls:bigint,bitvector:binary>)
         Reducer 6 
             Execution mode: llap
@@ -715,10 +754,10 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1088 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 1088 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1088 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 1088 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -786,7 +825,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	348                 
-	rewriting.time.window	300s                
+	rewriting.time.window	5min                
 	totalSize           	628                 
 #### A masked pattern was here ####
 	 	 
@@ -799,28 +838,37 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c	 
 	                    	  FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
-View Expanded Text: 	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n1
+PREHOOK: Input: default@cmv_basetable_n3
+PREHOOK: Input: default@cmv_mat_view_n3
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n3.a
 FROM cmv_basetable_n3 join cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 WHERE cmv_basetable_2_n1.c > 10.10
 GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n1
+POSTHOOK: Input: default@cmv_basetable_n3
+POSTHOOK: Input: default@cmv_mat_view_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

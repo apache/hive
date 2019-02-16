@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public interface MemoryManager {
   void releaseMemory(long memUsage);
   void updateMaxSize(long maxSize);
-  void reserveMemory(long memoryToReserve);
+  void reserveMemory(long memoryToReserve, AtomicBoolean isStopped);
 }

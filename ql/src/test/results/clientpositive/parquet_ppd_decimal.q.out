@@ -588,11 +588,11 @@ apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl_n5 where d in ('0.9', 0.22, cast('11.22' as float)) sort by c
+PREHOOK: query: select * from newtypestbl_n5 where d in (0.9, 0.22, 11.22) sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl_n5 where d in ('0.9', 0.22, cast('11.22' as float)) sort by c
+POSTHOOK: query: select * from newtypestbl_n5 where d in (0.9, 0.22, 11.22) sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl_n5
 #### A masked pattern was here ####
@@ -606,11 +606,83 @@ hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl_n5 where d in ('0.9', 0.22, cast('11.22' as float)) sort by c
+PREHOOK: query: select * from newtypestbl_n5 where d in (0.9, 0.22, 11.22) sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl_n5 where d in ('0.9', 0.22, cast('11.22' as float)) sort by c
+POSTHOOK: query: select * from newtypestbl_n5 where d in (0.9, 0.22, 11.22) sort by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n5
+#### A masked pattern was here ####
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+PREHOOK: query: select * from newtypestbl_n5 where d in ('0.9', '0.22', '11.22') sort by c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n5 where d in ('0.9', '0.22', '11.22') sort by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n5
+#### A masked pattern was here ####
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+PREHOOK: query: select * from newtypestbl_n5 where d in ('0.9', '0.22', '11.22') sort by c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n5 where d in ('0.9', '0.22', '11.22') sort by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n5
+#### A masked pattern was here ####
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+PREHOOK: query: select * from newtypestbl_n5 where d in (cast('0.9' as float), cast('0.22' as float), cast('11.22' as float)) sort by c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n5 where d in (cast('0.9' as float), cast('0.22' as float), cast('11.22' as float)) sort by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@newtypestbl_n5
+#### A masked pattern was here ####
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+apple     	bee	0.220	1970-02-20
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+hello     	world	11.220	1970-02-27
+PREHOOK: query: select * from newtypestbl_n5 where d in (cast('0.9' as float), cast('0.22' as float), cast('11.22' as float)) sort by c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@newtypestbl_n5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from newtypestbl_n5 where d in (cast('0.9' as float), cast('0.22' as float), cast('11.22' as float)) sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl_n5
 #### A masked pattern was here ####

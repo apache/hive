@@ -86,6 +86,7 @@ if [ "$SERVICE" = "" ] ; then
 fi
 
 if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
+  CLIUSER=`whoami`
   SERVICE="beeline"
 fi
 
@@ -356,6 +357,7 @@ fi
 # include the log4j jar that is used for hive into the classpath
 CLASSPATH="${CLASSPATH}:${LOG_JAR_CLASSPATH}"
 export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${LOG_JAR_CLASSPATH}"
+export JVM_PID="$$"
 
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"

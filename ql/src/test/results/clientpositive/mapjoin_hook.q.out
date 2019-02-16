@@ -23,10 +23,10 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n171
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 1 HINTED_MAPJOIN_LOCAL: 1 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0
-RUN: Stage-6:MAPREDLOCAL
-RUN: Stage-5:MAPRED
+RUN: Stage-8:MAPREDLOCAL
+RUN: Stage-6:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-2:STATS
+RUN: Stage-3:STATS
 PREHOOK: query: FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1_n171 SELECT src1.key, src2.value 
 where (src1.ds = '2008-04-08' or src1.ds = '2008-04-09' )and (src1.hr = '12' or src1.hr = '11')

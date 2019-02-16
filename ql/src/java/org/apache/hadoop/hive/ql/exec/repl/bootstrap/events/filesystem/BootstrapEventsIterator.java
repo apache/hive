@@ -22,8 +22,8 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.BootstrapLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 
@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 /**
  * Replication layout is from the root directory of replication Dump is
  * db
+ *    _external_tables_info
  *    table1
  *        _metadata
  *        data
@@ -92,14 +93,9 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
                       + " does not correspond to REPL LOAD expecting to load to a singular destination point.");
     }
 
-    List<FileStatus> dbsToCreate = Arrays.stream(fileStatuses).filter(f -> {
-      Path metadataPath = new Path(f.getPath() + Path.SEPARATOR + EximUtil.METADATA_NAME);
-      try {
-        return fileSystem.exists(metadataPath);
-      } catch (IOException e) {
-        throw new RuntimeException("could not determine if exists : " + metadataPath.toString(), e);
-      }
-    }).collect(Collectors.toList());
+    List<FileStatus> dbsToCreate = Arrays.stream(fileStatuses).filter(
+        f -> !f.getPath().getName().equals(ReplUtils.CONSTRAINTS_ROOT_DIR_NAME)
+    ).collect(Collectors.toList());
     dbEventsIterator = dbsToCreate.stream().map(f -> {
       try {
         return new DatabaseEventsIterator(f.getPath(), hiveConf);
@@ -166,7 +162,7 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
 
       long numTables = getSubDirs(fs, dbDumpPath).length;
       long numFunctions = 0;
-      Path funcPath = new Path(dbDumpPath, ReplicationSemanticAnalyzer.FUNCTIONS_ROOT_DIR_NAME);
+      Path funcPath = new Path(dbDumpPath, ReplUtils.FUNCTIONS_ROOT_DIR_NAME);
       if (fs.exists(funcPath)) {
         numFunctions = getSubDirs(fs, funcPath).length;
       }

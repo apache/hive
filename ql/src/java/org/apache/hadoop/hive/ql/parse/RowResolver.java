@@ -50,6 +50,8 @@ public class RowResolver implements Serializable{
    */
   private final Map<String, String[]> altInvRslvMap;
   private  Map<String, ASTNode> expressionMap;
+  private LinkedHashMap<String, LinkedHashMap<String, String>> ambiguousColumns;
+  private boolean checkForAmbiguity;
 
   // TODO: Refactor this and do in a more object oriented manner
   private boolean isExprResolver;
@@ -65,6 +67,8 @@ public class RowResolver implements Serializable{
     altInvRslvMap = new HashMap<String, String[]>();
     expressionMap = new HashMap<String, ASTNode>();
     isExprResolver = false;
+    ambiguousColumns = new LinkedHashMap<String, LinkedHashMap<String, String>>();
+    checkForAmbiguity = false;
   }
 
   /**
@@ -110,6 +114,16 @@ public class RowResolver implements Serializable{
     }
   }
 
+  private void keepAmbiguousInfo(String col_alias, String tab_alias) {
+    // we keep track of duplicate <tab alias, col alias> so that get can check
+    // for ambiguity
+    LinkedHashMap<String, String> colAliases = ambiguousColumns.get(tab_alias);
+    if (colAliases == null) {
+      colAliases = new LinkedHashMap<String, String>();
+      ambiguousColumns.put(tab_alias, colAliases);
+    }
+    colAliases.put(col_alias, col_alias );
+  }
   public boolean addMappingOnly(String tab_alias, String col_alias, ColumnInfo colInfo) {
     if (tab_alias != null) {
       tab_alias = tab_alias.toLowerCase();
@@ -131,6 +145,7 @@ public class RowResolver implements Serializable{
     if (oldColInfo != null) {
       LOG.warn("Duplicate column info for " + tab_alias + "." + col_alias
           + " was overwritten in RowResolver map: " + oldColInfo + " by " + colInfo);
+      keepAmbiguousInfo(col_alias, tab_alias);
     }
 
     String[] qualifiedAlias = new String[2];
@@ -171,6 +186,12 @@ public class RowResolver implements Serializable{
    */
   public ColumnInfo get(String tab_alias, String col_alias) throws SemanticException {
     ColumnInfo ret = null;
+
+    if(!isExprResolver && isAmbiguousReference(tab_alias, col_alias)) {
+      String tableName = tab_alias != null? tab_alias:"" ;
+      String fullQualifiedName = tableName + "." + col_alias;
+      throw new SemanticException("Ambiguous column reference: " + fullQualifiedName);
+    }
 
     if (tab_alias != null) {
       tab_alias = tab_alias.toLowerCase();
@@ -414,6 +435,7 @@ public class RowResolver implements Serializable{
     if (internalName != null) {
       existing = get(tabAlias, internalName);
       if (existing == null) {
+        keepAmbiguousInfo(colAlias, tabAlias);
         put(tabAlias, internalName, newCI);
         return true;
       } else if (existing.isSameColumnForRR(newCI)) {
@@ -465,6 +487,8 @@ public class RowResolver implements Serializable{
     resolver.altInvRslvMap.putAll(altInvRslvMap);
     resolver.expressionMap.putAll(expressionMap);
     resolver.isExprResolver = isExprResolver;
+    resolver.ambiguousColumns.putAll(ambiguousColumns);
+    resolver.checkForAmbiguity = checkForAmbiguity;
     return resolver;
   }
 
@@ -479,4 +503,37 @@ public class RowResolver implements Serializable{
   public void setNamedJoinInfo(NamedJoinInfo namedJoinInfo) {
     this.namedJoinInfo = namedJoinInfo;
   }
+
+  private boolean isAmbiguousReference(String tableAlias, String colAlias) {
+
+    if(!getCheckForAmbiguity()) {
+      return false;
+    }
+    if(ambiguousColumns == null || ambiguousColumns.isEmpty()) {
+      return false;
+    }
+
+    if(tableAlias != null) {
+      LinkedHashMap<String, String> colAliases = ambiguousColumns.get(tableAlias.toLowerCase());
+      if(colAliases != null && colAliases.containsKey(colAlias.toLowerCase())) {
+        return true;
+      }
+    } else {
+      for (Map.Entry<String, LinkedHashMap<String, String>> ambigousColsEntry: ambiguousColumns.entrySet()) {
+        String rslvKey = ambigousColsEntry.getKey();
+        LinkedHashMap<String, String> cmap = ambigousColsEntry.getValue();
+        for (Map.Entry<String, String> cmapEnt : cmap.entrySet()) {
+          if (colAlias.equalsIgnoreCase(cmapEnt.getKey())) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  public void setCheckForAmbiguity(boolean check) { this.checkForAmbiguity = check;}
+
+  public boolean getCheckForAmbiguity() { return this.checkForAmbiguity ;}
 }
+

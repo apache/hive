@@ -10,6 +10,8 @@ JOIN
 (SELECT src.key as k, src.value as v from src) src3
 ON src_12.key = src3.k AND src3.k < 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT count(1)
 FROM
@@ -22,6 +24,8 @@ JOIN
 (SELECT src.key as k, src.value as v from src) src3
 ON src_12.key = src3.k AND src3.k < 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -161,9 +161,9 @@ POSTHOOK: Input: default@src_null_n1
 1	A
 2	A
 2	B
-NULL	NULL
 2	NULL
 3	NULL
+NULL	NULL
 PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b desc nulls last, a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_null_n1
@@ -175,9 +175,9 @@ POSTHOOK: Input: default@src_null_n1
 2	B
 1	A
 2	A
-NULL	NULL
 2	NULL
 3	NULL
+NULL	NULL
 PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a asc nulls last, b desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_null_n1

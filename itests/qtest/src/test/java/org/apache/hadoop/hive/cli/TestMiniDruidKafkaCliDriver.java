@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.cli;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
-
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -33,7 +31,8 @@ import java.io.File;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class TestMiniDruidKafkaCliDriver {
+public class TestMiniDruidKafkaCliDriver
+{
 
   static CliAdapter adapter = new CliConfigs.MiniDruidKafkaCliConfig().getCliAdapter();
 
@@ -56,7 +55,6 @@ public class TestMiniDruidKafkaCliDriver {
     this.qfile = qfile;
   }
 
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);

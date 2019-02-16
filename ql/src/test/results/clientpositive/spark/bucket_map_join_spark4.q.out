@@ -62,10 +62,28 @@ PREHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n0
+PREHOOK: Input: default@tbl2_n0
+PREHOOK: Input: default@tbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n0
+POSTHOOK: Input: default@tbl2_n0
+POSTHOOK: Input: default@tbl3
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t4`.`value` AS `value0`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`tbl1_n0`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `value`
+FROM `default`.`tbl3`
+WHERE `value` IS NOT NULL) AS `t2` ON `t0`.`value` = `t2`.`value`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`tbl2_n0`
+WHERE `key` IS NOT NULL) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -444,10 +462,28 @@ PREHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n0
+PREHOOK: Input: default@tbl2_n0
+PREHOOK: Input: default@tbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
 from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n0
+POSTHOOK: Input: default@tbl2_n0
+POSTHOOK: Input: default@tbl3
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t4`.`value` AS `value0`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`tbl1_n0`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `value`
+FROM `default`.`tbl3`
+WHERE `value` IS NOT NULL) AS `t2` ON `t0`.`value` = `t2`.`value`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`tbl2_n0`
+WHERE `key` IS NOT NULL) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

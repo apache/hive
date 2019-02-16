@@ -74,6 +74,7 @@ import org.slf4j.LoggerFactory;
  * each query should call clear() at end of use to remove temporary folders
  */
 public class Context {
+
   private boolean isHDFSCleanup;
   private Path resFile;
   private Path resDir;
@@ -103,6 +104,8 @@ public class Context {
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
   protected boolean cboSucceeded;
+  protected String optimizedSql;
+  protected String calcitePlan;
   protected String cmd = "";
   private TokenRewriteStream tokenRewriteStream;
   // Holds the qualified name to tokenRewriteStream for the views
@@ -197,7 +200,13 @@ public class Context {
     return getTokenRewriteStream().toString(n.getTokenStartIndex(), n.getTokenStopIndex() + 1).trim();
   }
   /**
-   * The suffix is always relative to a given ASTNode
+   * The suffix is always relative to a given ASTNode.
+   * We need this so that FileSinkOperatorS corresponding to different branches of a multi-insert
+   * statement which represents a SQL Merge statement get marked correctly with
+   * {@link org.apache.hadoop.hive.ql.io.AcidUtils.Operation}.  See usages
+   * of {@link #getDestNamePrefix(ASTNode, QB)} and
+   * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#updating(String)} and
+   * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#deleting(String)}.
    */
   public DestClausePrefix getDestNamePrefix(ASTNode curNode, QB queryBlock) {
     assert curNode != null : "must supply curNode";
@@ -252,7 +261,7 @@ public class Context {
       case DELETE:
         return DestClausePrefix.DELETE;
       case MERGE:
-      /* This is the structrue expected here
+      /* This is the structure expected here
         HiveParser.TOK_QUERY;
           HiveParser.TOK_FROM
           HiveParser.TOK_INSERT;
@@ -699,14 +708,13 @@ public class Context {
    */
   public Path getExternalTmpPath(Path path) {
     URI extURI = path.toUri();
-    if (extURI.getScheme().equals("viewfs")) {
+    if ("viewfs".equals(extURI.getScheme())) {
       // if we are on viewfs we don't want to use /tmp as tmp dir since rename from /tmp/..
       // to final /user/hive/warehouse/ will fail later, so instead pick tmp dir
       // on same namespace as tbl dir.
       return getExtTmpPathRelTo(path.getParent());
     }
-    return new Path(getExternalScratchDir(extURI), EXT_PREFIX +
-        nextPathId());
+    return new Path(getExternalScratchDir(extURI), EXT_PREFIX + nextPathId());
   }
 
   /**
@@ -1003,12 +1011,28 @@ public class Context {
     this.cboInfo = cboInfo;
   }
 
+  public String getOptimizedSql() {
+    return this.optimizedSql;
+  }
+
+  public void setOptimizedSql(String newSql) {
+    this.optimizedSql = newSql;
+  }
+
   public boolean isCboSucceeded() {
     return cboSucceeded;
   }
 
   public void setCboSucceeded(boolean cboSucceeded) {
     this.cboSucceeded = cboSucceeded;
+  }
+
+  public String getCalcitePlan() {
+    return this.calcitePlan;
+  }
+
+  public void setCalcitePlan(String calcitePlan) {
+    this.calcitePlan = calcitePlan;
   }
 
   public Table getMaterializedTable(String cteName) {

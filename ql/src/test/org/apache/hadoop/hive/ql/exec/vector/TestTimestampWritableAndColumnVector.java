@@ -35,8 +35,6 @@ public class TestTimestampWritableAndColumnVector {
 
   private static int TEST_COUNT = 5000;
 
-  private static int fake = 0;
-
   @Test
   public void testDouble() throws Exception {
 

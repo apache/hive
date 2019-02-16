@@ -37,7 +37,7 @@ public class TezDummyStoreOperator extends DummyStoreOperator {
     super(ctx);
   }
 
-  private boolean fetchDone = false;
+  private transient boolean fetchDone = false;
 
   /**
    * Unlike the MR counterpoint, on Tez we want processOp to forward
@@ -55,5 +55,11 @@ public class TezDummyStoreOperator extends DummyStoreOperator {
 
   public void setFetchDone(boolean fetchDone) {
     this.fetchDone = fetchDone;
+  }
+
+  @Override
+  public void closeOp(boolean abort) throws HiveException {
+    super.closeOp(abort);
+    fetchDone = false;
   }
 }

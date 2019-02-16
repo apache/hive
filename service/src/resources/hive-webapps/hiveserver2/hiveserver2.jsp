@@ -79,6 +79,7 @@ String remoteUser = request.getRemoteUser();
                 <li><a href="/conf">Hive Configuration</a></li>
                 <li><a href="/stacks">Stack Trace</a></li>
                 <li><a href="/llap.html">Llap Daemons</a></li>
+                <li><a href="/logconf.jsp">Configure logging</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

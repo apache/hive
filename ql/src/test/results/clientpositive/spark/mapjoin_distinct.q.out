@@ -4,12 +4,20 @@ JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -153,12 +161,20 @@ JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -288,12 +304,20 @@ JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -432,12 +456,20 @@ JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

@@ -178,8 +178,12 @@ POSTHOOK: Input: default@src
 NULL
 PREHOOK: query: explain select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -199,8 +203,12 @@ STAGE PLANS:
 
 PREHOOK: query: explain select cast("1970-12-31 15:59:58.174" as DATE) from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select cast("1970-12-31 15:59:58.174" as DATE) from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -245,6 +253,8 @@ SELECT ROUND(LN(3.0),12), LN(0.0), LN(-1), ROUND(LOG(3.0),12), LOG(0.0),
        POWER(CAST (2 AS DECIMAL), CAST (3 AS INT)), 
        POW(CAST (2 AS DECIMAL), CAST(3 AS INT)) FROM dest1_n127
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n127
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT ROUND(LN(3.0),12), LN(0.0), LN(-1), ROUND(LOG(3.0),12), LOG(0.0),
        LOG(-1), ROUND(LOG2(3.0),12), LOG2(0.0), LOG2(-1),
@@ -255,6 +265,8 @@ SELECT ROUND(LN(3.0),12), LN(0.0), LN(-1), ROUND(LOG(3.0),12), LOG(0.0),
        POWER(CAST (2 AS DECIMAL), CAST (3 AS INT)), 
        POW(CAST (2 AS DECIMAL), CAST(3 AS INT)) FROM dest1_n127
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n127
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

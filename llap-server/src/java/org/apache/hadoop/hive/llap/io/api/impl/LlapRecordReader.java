@@ -160,7 +160,6 @@ class LlapRecordReader
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
 
-    this.includes = new IncludesImpl(tableIncludedCols, isAcidScan, rbCtx, schema, job);
 
     int queueLimitBase = getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_BASE, job, daemonConf);
     int queueLimitMin =  getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_MIN, job, daemonConf);
@@ -184,6 +183,8 @@ class LlapRecordReader
       this.acidReader = new VectorizedOrcAcidRowBatchReader(
           (OrcSplit) split, jobConf, Reporter.NULL, null, rbCtx, true);
     }
+    this.includes = new IncludesImpl(tableIncludedCols, isAcidScan, rbCtx,
+        schema, job, isAcidScan && acidReader.includeAcidColumns());
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
@@ -289,68 +290,10 @@ class LlapRecordReader
     executor.submit(rp.getReadCallable());
   }
 
-  private boolean hasSchemaEvolutionStringFamilyTruncateIssue(SchemaEvolution evolution) {
-    return hasStringFamilyTruncateTypeIssue(evolution, evolution.getReaderSchema());
-  }
-
-  // We recurse through the types.
-  private boolean hasStringFamilyTruncateTypeIssue(SchemaEvolution evolution,
-      TypeDescription readerType) {
-    TypeDescription fileType = evolution.getFileType(readerType);
-    if (fileType == null) {
-      return false;
-    }
-    switch (fileType.getCategory()) {
-    case BOOLEAN:
-    case BYTE:
-    case SHORT:
-    case INT:
-    case LONG:
-    case DOUBLE:
-    case FLOAT:
-    case STRING:
-    case TIMESTAMP:
-    case BINARY:
-    case DATE:
-    case DECIMAL:
-      // We are only looking for the CHAR/VARCHAR truncate issue.
-      return false;
-    case CHAR:
-    case VARCHAR:
-      if (readerType.getCategory().equals(TypeDescription.Category.CHAR) ||
-          readerType.getCategory().equals(TypeDescription.Category.VARCHAR)) {
-        return (fileType.getMaxLength() > readerType.getMaxLength());
-      }
-      return false;
-    case UNION:
-    case MAP:
-    case LIST:
-    case STRUCT:
-      {
-        List<TypeDescription> readerChildren = readerType.getChildren();
-        final int childCount = readerChildren.size();
-        for (int i = 0; i < childCount; ++i) {
-          if (hasStringFamilyTruncateTypeIssue(evolution, readerChildren.get(i))) {
-            return true;
-          }
-        }
-      }
-      return false;
-    default:
-      throw new IllegalArgumentException("Unknown type " + fileType);
-    }
-  }
-
   private boolean checkOrcSchemaEvolution() {
     SchemaEvolution evolution = rp.getSchemaEvolution();
 
-    /*
-     * FUTURE: When SchemaEvolution.isOnlyImplicitConversion becomes available:
-     *  1) Replace the hasSchemaEvolutionStringFamilyTruncateIssue call with
-     *     !isOnlyImplicitConversion.
-     *  2) Delete hasSchemaEvolutionStringFamilyTruncateIssue code.
-     */
-    if (evolution.hasConversion() && hasSchemaEvolutionStringFamilyTruncateIssue(evolution)) {
+    if (evolution.hasConversion() && !evolution.isOnlyImplicitConversion()) {
 
       // We do not support data type conversion when reading encoded ORC data.
       return false;
@@ -395,23 +338,31 @@ class LlapRecordReader
       if (wasFirst) {
         firstReturnTime = counters.startTimeCounter();
       }
-      counters.incrTimeCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
+      counters.incrWallClockCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
     if (isAcidScan) {
-      vrb.selectedInUse = true;
+      vrb.selectedInUse = true;//why?
       if (isVectorized) {
         // TODO: relying everywhere on the magical constants and columns being together means ACID
         //       columns are going to be super hard to change in a backward compat manner. I can
         //       foresee someone cursing while refactoring all the magic for prefix schema changes.
+        /**
+         * Acid meta cols are always either all included or all excluded the
+         * the width of 'cvb' changes accordingly so 'acidColCount' and
+         * 'ixInVrb' need to be adjusted. See {@link IncludesImpl} comments.
+         */
         // Exclude the row column.
-        int acidColCount = OrcInputFormat.getRootColumn(false) - 1;
+        int acidColCount = acidReader.includeAcidColumns() ?
+            OrcInputFormat.getRootColumn(false) - 1 : 0;
         VectorizedRowBatch inputVrb = new VectorizedRowBatch(
-            acidColCount + 1 + vrb.getDataColumnCount() );
+            //so +1 is the OrcRecordUpdater.ROW?
+            acidColCount + 1 + vrb.getDataColumnCount());
         // By assumption, ACID columns are currently always in the beginning of the arrays.
         System.arraycopy(cvb.cols, 0, inputVrb.cols, 0, acidColCount);
         for (int ixInReadSet = acidColCount; ixInReadSet < cvb.cols.length; ++ixInReadSet) {
-          int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet);
+          int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet) -
+              (acidReader.includeAcidColumns() ? 0 : OrcRecordUpdater.ROW);
           // TODO: should we create the batch from vrbctx, and reuse the vectors, like below? Future work.
           inputVrb.cols[ixInVrb] = cvb.cols[ixInReadSet];
         }
@@ -434,7 +385,7 @@ class LlapRecordReader
         int ixInVrb = includes.getPhysicalColumnIds().get(ixInReadSet);
         cvb.swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
-      vrb.selectedInUse = false;
+      vrb.selectedInUse = false;//why?
       vrb.size = cvb.size;
     }
 
@@ -622,18 +573,36 @@ class LlapRecordReader
   /** This class encapsulates include-related logic for LLAP readers. It is not actually specific
    *  to LLAP IO but in LLAP IO in particular, I want to encapsulate all this mess for now until
    *  we have smth better like Schema Evolution v2. This can also hypothetically encapsulate
-   *  field pruning inside structs and stuff like that. */
+   *  field pruning inside structs and stuff like that.
+   *
+   *  There is some split brain issue between {@link SchemaEvolution} used in
+   *  non-LLAP path and  this class.  The file schema for acid tables looks
+   *  like  this and <op, owid, writerId, rowid, cwid, <f1, ... fn>> and
+   *  {@link SchemaEvolution#getFileIncluded()}  respects that.  So if fn=2,
+   *  the  type IDs are 0..8 and the fileIncluded[] has 9 bits that indicate
+   *  what is read.  So in particular, {@link org.apache.hadoop.hive.ql.io.orc.RecordReader}
+   *  produces ColumnVectorS are NULL in every row for each
+   *  fileIncluded[9]==false.  The fields corresponding to structs are always
+   *  included if any child of the struct has to be included.
+   *
+   *  LLAP only produces ColumnVectorS if they are needed so the width of
+   *  ColumnVectorBatch varies depending on what was projected.
+   *
+   *  See also {@link VectorizedOrcAcidRowBatchReader#includeAcidColumns()} and
+   *  {@link #next(NullWritable, VectorizedRowBatch)}*/
   private static class IncludesImpl implements SchemaEvolutionFactory, Includes {
     private List<Integer> readerLogicalColumnIds;
     private List<Integer> filePhysicalColumnIds;
     private Integer acidStructColumnId = null;
+    private final boolean includeAcidColumns;
 
     // For current schema evolution.
     private TypeDescription readerSchema;
     private JobConf jobConf;
 
     public IncludesImpl(List<Integer> tableIncludedCols, boolean isAcidScan,
-        VectorizedRowBatchCtx rbCtx, TypeDescription readerSchema, JobConf jobConf) {
+        VectorizedRowBatchCtx rbCtx, TypeDescription readerSchema,
+        JobConf jobConf, boolean includeAcidColumns) {
           // Note: columnIds below makes additional changes for ACID. Don't use this var directly.
       this.readerSchema = readerSchema;
       this.jobConf = jobConf;
@@ -662,14 +631,29 @@ class LlapRecordReader
           // We don't want to include the root struct in ACID case; it would cause the whole
           // struct to get read without projection.
           if (acidStructColumnId == i) continue;
+          if(!includeAcidColumns) {
+            /**
+             * if not including acid columns, we still want to number the
+             * physical columns as if acid columns are included becase
+             * {@link #generateFileIncludes(TypeDescription)} takes the file
+             * schema as input
+             * (eg <op, owid, writerId, rowid, cwid, <f1, ... fn>>)
+             */
+            continue;
+          }
           filePhysicalColumnIds.add(i);
         }
         for (int tableColumnId : readerLogicalColumnIds) {
+          //but make sure to generate correct ids in type tree in-order
+          //walk order
           filePhysicalColumnIds.add(rootCol + tableColumnId);
         }
+        /*ok, so if filePhysicalColumnIds include acid column ids, we end up
+         decoding the vectors*/
       }
  
       this.filePhysicalColumnIds = filePhysicalColumnIds;
+      this.includeAcidColumns = includeAcidColumns;
     }
 
     @Override
@@ -686,7 +670,8 @@ class LlapRecordReader
       // TODO: will this work correctly with ACID?
       boolean[] readerIncludes = OrcInputFormat.genIncludedColumns(
           readerSchema, readerLogicalColumnIds);
-      Reader.Options options = new Reader.Options(jobConf).include(readerIncludes);
+      Reader.Options options = new Reader.Options(jobConf)
+          .include(readerIncludes).includeAcidColumns(includeAcidColumns);
       return new SchemaEvolution(fileSchema, readerSchema, options);
     }
 

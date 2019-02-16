@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.Map;
+
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -32,7 +35,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * ('maxColLen'='4444','avgColLen'='44.4');
  */
 @Explain(displayName = "Column Stats Update Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ColumnStatsUpdateWork implements Serializable {
+public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
   private static final long serialVersionUID = 1L;
   private final String partName;
   private final Map<String, String> mapProp;
@@ -40,12 +43,14 @@ public class ColumnStatsUpdateWork implements Serializable {
   private final String tableName;
   private final String colName;
   private final String colType;
+  private final ColumnStatistics colStats;
+  private long writeId;
 
   public ColumnStatsUpdateWork(String partName,
       Map<String, String> mapProp,
       String dbName,
       String tableName,
-      String colName, 
+      String colName,
       String colType) {
     this.partName = partName;
     this.mapProp = mapProp;
@@ -53,6 +58,17 @@ public class ColumnStatsUpdateWork implements Serializable {
     this.tableName = tableName;
     this.colName = colName;
     this.colType = colType;
+    this.colStats = null;
+  }
+
+  public ColumnStatsUpdateWork(ColumnStatistics colStats) {
+    this.colStats = colStats;
+    this.partName = null;
+    this.mapProp = null;
+    this.dbName = null;
+    this.tableName = null;
+    this.colName = null;
+    this.colType = null;
   }
 
   @Override
@@ -82,5 +98,22 @@ public class ColumnStatsUpdateWork implements Serializable {
 
   public String getColType() {
     return colType;
+  }
+
+  public ColumnStatistics getColStats() { return colStats; }
+
+  @Override
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override
+  public String getFullTableName() {
+    return dbName + "." + tableName;
+  }
+
+  @Override
+  public boolean mayNeedWriteId() {
+    return true; // Checked at setup time; if this is called, the table is transactional.
   }
 }

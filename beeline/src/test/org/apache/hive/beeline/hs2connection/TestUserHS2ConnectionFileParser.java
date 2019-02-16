@@ -18,7 +18,9 @@
 package org.apache.hive.beeline.hs2connection;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.hive.beeline.hs2connection.BeelineHS2ConnectionFileParseException;
@@ -169,6 +171,20 @@ public class TestUserHS2ConnectionFileParser {
         new UserHS2ConnectionFileParser(testLocations);
     Assert.assertTrue("File location " + LOCATION_2 + " was not returned",
         LOCATION_2.equals(testHS2ConfigManager.getFileLocation()));
+  }
+
+  @Test
+  public void testConfigLocationPathInEtc() throws Exception {
+    UserHS2ConnectionFileParser testHS2ConfigManager =
+            new UserHS2ConnectionFileParser();
+    Field locations = testHS2ConfigManager.getClass().getDeclaredField("locations");
+    locations.setAccessible(true);
+    Collection<String> locs = (List<String>)locations.get(testHS2ConfigManager);
+    Assert.assertTrue(locs.contains(
+            UserHS2ConnectionFileParser.ETC_HIVE_CONF_LOCATION +
+            File.separator +
+            UserHS2ConnectionFileParser.DEFAULT_CONNECTION_CONFIG_FILE_NAME));
+
   }
 
   private String getParsedUrlFromConfigFile(String filename)

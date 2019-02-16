@@ -19,6 +19,8 @@ WHERE  ((ctinyint != 0)
               AND ((cstring2 LIKE '%a')
                    OR (cfloat <= -257))))))
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cboolean1,
        cfloat,
@@ -40,6 +42,8 @@ WHERE  ((ctinyint != 0)
               AND ((cstring2 LIKE '%a')
                    OR (cfloat <= -257))))))
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -57,7 +61,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((ctinyint <> 0Y) and (((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (cbigint is not null and ((cstring2 like '%a') or (cfloat <= -257))))) (type: boolean)
+                  filterExpr: ((ctinyint <> 0Y) and (((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (cbigint is not null and ((cstring2 like '%a') or (cfloat <= -257.0))))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -67,7 +71,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 10:boolean, val 0), FilterLongColGreaterEqualLongColumn(col 11:boolean, col 10:boolean)), FilterExprAndExpr(children: SelectColumnIsNotNull(col 3:bigint), FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 7:string, pattern %a), FilterDoubleColLessEqualDoubleScalar(col 4:float, val -257.0)))))
-                    predicate: ((((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (cbigint is not null and ((cstring2 like '%a') or (cfloat <= -257)))) and (ctinyint <> 0Y)) (type: boolean)
+                    predicate: ((((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (cbigint is not null and ((cstring2 like '%a') or (cfloat <= -257.0)))) and (ctinyint <> 0Y)) (type: boolean)
                     Statistics: Num rows: 11605 Data size: 2746359 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), cfloat (type: float), cstring1 (type: string), (988888 * UDFToInteger(csmallint)) (type: int), (- csmallint) (type: smallint), (- cfloat) (type: float), (-26.28D / UDFToDouble(cfloat)) (type: double), (cfloat * 359.0) (type: float), (cint % UDFToInteger(ctinyint)) (type: int), (- cdouble) (type: double), (UDFToInteger(ctinyint) - -75) (type: int), (762 * (cint % UDFToInteger(ctinyint))) (type: int)

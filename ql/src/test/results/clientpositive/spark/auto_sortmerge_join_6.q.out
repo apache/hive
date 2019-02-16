@@ -72,8 +72,16 @@ POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -215,8 +223,16 @@ POSTHOOK: Input: default@tbl2_n3
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src d on d.value = a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src d on d.value = a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -358,8 +374,16 @@ POSTHOOK: Input: default@tbl2_n3
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src h on h.value = a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src h on h.value = a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -501,8 +525,16 @@ POSTHOOK: Input: default@tbl2_n3
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -526,13 +558,13 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
+                      expressions: UDFToDouble(key) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 5 
@@ -545,13 +577,13 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
+                      expressions: key (type: int), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col1 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Map-reduce partition columns: _col1 (type: double)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized
@@ -580,8 +612,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(_col0) (type: double)
+                  0 _col0 (type: double)
+                  1 _col1 (type: double)
                 outputColumnNames: _col1
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -644,8 +676,16 @@ POSTHOOK: Input: default@tbl2_n3
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+PREHOOK: Input: default@tbl3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+POSTHOOK: Input: default@tbl3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -725,8 +765,16 @@ POSTHOOK: Input: default@tbl3_n0
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+PREHOOK: Input: default@tbl4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+POSTHOOK: Input: default@tbl4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -839,8 +887,16 @@ POSTHOOK: Input: default@tbl4
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -982,8 +1038,16 @@ POSTHOOK: Input: default@tbl2_n3
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1007,13 +1071,13 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
+                      expressions: UDFToDouble(key) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 5 
@@ -1026,13 +1090,13 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
+                      expressions: key (type: int), UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col1 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Map-reduce partition columns: _col1 (type: double)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: int)
             Execution mode: vectorized
@@ -1061,8 +1125,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(_col0) (type: double)
+                  0 _col0 (type: double)
+                  1 _col1 (type: double)
                 outputColumnNames: _col1
                 Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -1125,8 +1189,16 @@ POSTHOOK: Input: default@tbl2_n3
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+PREHOOK: Input: default@tbl3_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+POSTHOOK: Input: default@tbl3_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1206,8 +1278,16 @@ POSTHOOK: Input: default@tbl3_n0
 2654
 PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+PREHOOK: Input: default@tbl4
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+POSTHOOK: Input: default@tbl4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

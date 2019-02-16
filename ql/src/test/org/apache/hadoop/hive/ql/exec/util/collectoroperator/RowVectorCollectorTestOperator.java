@@ -39,6 +39,16 @@ public abstract class RowVectorCollectorTestOperator extends RowCollectorTestOpe
     vectorExtractRow.init(outputTypeInfos);
   }
 
+  public RowVectorCollectorTestOperator(
+      int[] outputProjectionColumnNums,
+      TypeInfo[] outputTypeInfos,
+      ObjectInspector[] outputObjectInspectors) throws HiveException {
+    super();
+    this.outputObjectInspectors = outputObjectInspectors;
+    vectorExtractRow = new VectorExtractRow();
+    vectorExtractRow.init(outputTypeInfos, outputProjectionColumnNums);
+  }
+
   @Override
   public void process(Object row, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) row;

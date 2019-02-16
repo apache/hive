@@ -62,9 +62,12 @@ public class TestGenericUDFRound extends BaseScalarUdfTest {
         PrimitiveObjectInspectorFactory.javaShortObjectInspector,
         PrimitiveObjectInspectorFactory.javaLongObjectInspector,
         PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(TypeInfoFactory.getDecimalTypeInfo(15, 5)));
-    db.addRow("one", 170, new Double("1.1"), new Float("32.1234"), new Byte("25"), new Short("1234"), 123456L, HiveDecimal.create("983.7235"));
-    db.addRow( "-234", null, null, new Float("0.347232"), new Byte("109"), new Short("551"), 923L, HiveDecimal.create("983723.005"));
-    db.addRow("454.45", 22345,  new Double("-23.00009"), new Float("-3.4"), new Byte("76"), new Short("2321"), 9232L, HiveDecimal.create("-932032.7"));
+    db.addRow("one", 170, Double.valueOf("1.1"), Float.valueOf("32.1234"), Byte.valueOf("25"), Short.valueOf("1234"),
+        123456L, HiveDecimal.create("983.7235"));
+    db.addRow("-234", null, null, Float.valueOf("0.347232"), Byte.valueOf("109"), Short.valueOf("551"), 923L,
+        HiveDecimal.create("983723.005"));
+    db.addRow("454.45", 22345, Double.valueOf("-23.00009"), Float.valueOf("-3.4"), Byte.valueOf("76"),
+        Short.valueOf("2321"), 9232L, HiveDecimal.create("-932032.7"));
     return db.createRows();
   }
 

@@ -96,7 +96,7 @@ public class TestHCatLoaderComplexSchema {
   }
 
   private void createTable(String tablename, String schema, String partitionedBy) throws Exception {
-    AbstractHCatLoaderTest.createTable(tablename, schema, partitionedBy, driver, storageFormat);
+    AbstractHCatLoaderTest.createTableDefaultDB(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
   private void createTable(String tablename, String schema) throws Exception {

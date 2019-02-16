@@ -53,7 +53,11 @@ public class GenericUDFOPAnd extends GenericUDF {
     }
     boi = new BooleanObjectInspector[arguments.length];
     for (int i = 0; i < arguments.length; i++) {
-      boi[i] = (BooleanObjectInspector) arguments[i];
+      if (!(arguments[i] instanceof BooleanObjectInspector)) {
+        boi[i] = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+      } else {
+        boi[i] = (BooleanObjectInspector) arguments[i];
+      }
     }
     return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
   }

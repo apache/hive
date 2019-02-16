@@ -1,5 +1,7 @@
 --! qt:dataset:src
+set hive.optimize.point.lookup.min=31;
 set hive.mapred.mode=nonstrict;
+
 drop table pcr_t1_n2;
 drop table pcr_t2_n0;
 drop table pcr_t3;

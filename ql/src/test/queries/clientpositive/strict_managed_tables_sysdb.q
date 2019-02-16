@@ -32,7 +32,7 @@ CREATE VIEW smt_sysdb_view
 
 show grant user hive_test_user;
 
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql;
+source ../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql;
 
 use sys;
 

@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.contrib.fileformat.base64;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
@@ -105,15 +105,11 @@ public class Base64TextOutputFormat<K extends WritableComparable, V extends Writ
 
     @Override
     public void configure(JobConf job) {
-      try {
-        String signatureString = job.get("base64.text.output.format.signature");
-        if (signatureString != null) {
-          signature = signatureString.getBytes("UTF-8");
-        } else {
-          signature = new byte[0];
-        }
-      } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
+      String signatureString = job.get("base64.text.output.format.signature");
+      if (signatureString != null) {
+        signature = signatureString.getBytes(StandardCharsets.UTF_8);
+      } else {
+        signature = new byte[0];
       }
     }
   }

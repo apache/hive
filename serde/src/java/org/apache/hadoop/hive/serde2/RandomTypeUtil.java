@@ -57,6 +57,35 @@ public class RandomTypeUtil {
     return bytes;
   }
 
+  public static String getRandUnicodeString(Random r) {
+    return getRandUnicodeString(r, r.nextInt(10));
+  }
+
+  // Skip lower ASCII to avoid punctuation that might mess up serialization, etc...
+  private static int MIN_RANDOM_CODEPOINT = 256;
+  private static int RANGE_RANDOM_CODEPOINT = Character.MAX_CODE_POINT + 1 - MIN_RANDOM_CODEPOINT;
+
+  public static String getRandUnicodeString(Random r, int length) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < length; i++) {
+      char ch;
+      while (true) {
+        int codePoint = MIN_RANDOM_CODEPOINT + r.nextInt(RANGE_RANDOM_CODEPOINT);
+        if (!Character.isDefined(codePoint) ||
+            Character.getType(codePoint) == Character.PRIVATE_USE) {
+          continue;
+        }
+        ch = (char) codePoint;
+        if (Character.isSurrogate(ch)) {
+          continue;
+        }
+        break;
+      }
+      sb.append(ch);
+    }
+    return sb.toString();
+  }
+
   private static final String DECIMAL_CHARS = "0123456789";
 
   public static HiveDecimal getRandHiveDecimal(Random r) {

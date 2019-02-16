@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -58,7 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A class to initiate compactions.  This will run in a separate thread.
  * It's critical that there exactly 1 of these in a given warehouse.
  */
-public class Initiator extends CompactorThread {
+public class Initiator extends MetaStoreCompactorThread {
   static final private String CLASS_NAME = Initiator.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
@@ -94,6 +96,12 @@ public class Initiator extends CompactorThread {
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
           for (CompactionInfo ci : potentials) {
+            // Disable minor compaction for query based compactor
+            if (!ci.isMajorCompaction() && HiveConf.getBoolVar(conf, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
+              LOG.debug("Not compacting: " + ci.getFullPartitionName()
+                  + ", as query based compaction currently does not " + "support minor compactions.");
+              continue;
+            }
             LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
             try {
               Table t = resolveTable(ci);
@@ -143,13 +151,15 @@ public class Initiator extends CompactorThread {
                     ", assuming it has been dropped and moving on.");
                 continue;
               }
-
-              // Compaction doesn't work under a transaction and hence pass null for validTxnList
+              ValidTxnList validTxnList = TxnCommonUtils
+                  .createValidReadTxnList(txnHandler.getOpenTxns(), 0);
+              conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
               // The response will have one entry per table and hence we get only one ValidWriteIdList
               String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
               GetValidWriteIdsRequest rqst
-                      = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
-              ValidWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
+                      = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
+              rqst.setValidTxnList(validTxnList.writeToString());
+              final ValidWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
                       txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
 
               StorageDescriptor sd = resolveStorageDescriptor(t, p);
@@ -198,7 +208,7 @@ public class Initiator extends CompactorThread {
   }
 
   @Override
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
     super.init(stop, looped);
     checkInterval =
         conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;

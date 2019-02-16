@@ -16,6 +16,10 @@ select  s_store_name, s_store_id,
  order by s_store_name, s_store_id,sun_sales,mon_sales,tue_sales,wed_sales,thu_sales,fri_sales,sat_sales
  limit 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select  s_store_name, s_store_id,
         sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
@@ -34,6 +38,10 @@ select  s_store_name, s_store_id,
  order by s_store_name, s_store_id,sun_sales,mon_sales,tue_sales,wed_sales,thu_sales,fri_sales,sat_sales
  limit 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -103,15 +111,15 @@ STAGE PLANS:
                     predicate: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: d_date_sk (type: int), d_day_name (type: string)
-                      outputColumnNames: _col0, _col2
+                      expressions: d_date_sk (type: int), (d_day_name = 'Sunday') (type: boolean), (d_day_name = 'Monday') (type: boolean), (d_day_name = 'Tuesday') (type: boolean), (d_day_name = 'Wednesday') (type: boolean), (d_day_name = 'Thursday') (type: boolean), (d_day_name = 'Friday') (type: boolean), (d_day_name = 'Saturday') (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                       Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col2 (type: string)
+                        value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean)
             Execution mode: vectorized
         Reducer 2 
             Local Work:
@@ -123,7 +131,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col1, _col2, _col5
+                outputColumnNames: _col1, _col2, _col4, _col5, _col6, _col7, _col8, _col9, _col10
                 Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
@@ -131,12 +139,12 @@ STAGE PLANS:
                   keys:
                     0 _col1 (type: int)
                     1 _col0 (type: int)
-                  outputColumnNames: _col2, _col5, _col7, _col8
+                  outputColumnNames: _col2, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12, _col13
                   input vertices:
                     1 Map 6
                   Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col8 (type: string), _col7 (type: string), CASE WHEN ((_col5 = 'Sunday')) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN ((_col5 = 'Monday')) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN ((_col5 = 'Tuesday')) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN ((_col5 = 'Wednesday')) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN ((_col5 = 'Thursday')) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN ((_col5 = 'Friday')) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN ((_col5 = 'Saturday')) THEN (_col2) ELSE (null) END (type: decimal(7,2))
+                    expressions: _col13 (type: string), _col12 (type: string), CASE WHEN (_col4) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN (_col5) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN (_col6) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN (_col7) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN (_col8) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN (_col9) THEN (_col2) ELSE (null) END (type: decimal(7,2)), CASE WHEN (_col10) THEN (_col2) ELSE (null) END (type: decimal(7,2))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator

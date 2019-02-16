@@ -657,7 +657,7 @@ public class TestVectorGenericDateExpressions {
     } else if (colType == PrimitiveCategory.TIMESTAMP) {
       udf = new VectorUDFDateTimestamp(0, 1);
     } else {
-      udf = new VectorUDFDateLong(0, 1);
+      throw new RuntimeException("Unexpected column type " + colType);
     }
 
     udf.setInputTypeInfos(new TypeInfo[] {primitiveCategoryToTypeInfo(colType)});
@@ -684,6 +684,9 @@ public class TestVectorGenericDateExpressions {
   @Test
   public void testDate() throws HiveException {
     for (PrimitiveCategory colType : dateTimestampStringTypes) {
+      if (colType == PrimitiveCategory.DATE) {
+        continue;
+      }
       LongColumnVector date = newRandomLongColumnVector(10000, size);
       LongColumnVector output = new LongColumnVector(size);
 
@@ -722,7 +725,7 @@ public class TestVectorGenericDateExpressions {
     } else if (colType == PrimitiveCategory.TIMESTAMP) {
       udf = new CastTimestampToDate(0, 1);
     } else {
-      udf = new CastLongToDate(0, 1);
+      throw new RuntimeException("Unexpected column type " + colType);
     }
     udf.setInputTypeInfos(new TypeInfo[] {primitiveCategoryToTypeInfo(colType)});
     udf.transientInit();

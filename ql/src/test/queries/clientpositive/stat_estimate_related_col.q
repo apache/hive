@@ -1,3 +1,6 @@
+-- disable cbo because calcite can see thru these test cases; the goal here is to test the annotation processing
+set hive.cbo.enable=false;
+ 
 set hive.explain.user=true;
 set hive.strict.checks.cartesian.product=false;
 set hive.stats.fetch.column.stats=true;

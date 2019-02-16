@@ -327,7 +327,7 @@ public class Var {
       return Type.BIGINT;
     }
     else if (type.equalsIgnoreCase("CHAR") || type.equalsIgnoreCase("VARCHAR") || type.equalsIgnoreCase("VARCHAR2") || 
-             type.equalsIgnoreCase("STRING") || type.equalsIgnoreCase("XML")) {
+             type.equalsIgnoreCase("STRING") || type.equalsIgnoreCase("XML") || type.equalsIgnoreCase("CHARACTER")) {
       return Type.STRING;
     }
     else if (type.equalsIgnoreCase("DEC") || type.equalsIgnoreCase("DECIMAL") || type.equalsIgnoreCase("NUMERIC") ||

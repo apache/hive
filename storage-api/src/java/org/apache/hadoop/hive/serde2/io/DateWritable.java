@@ -38,7 +38,6 @@ import org.apache.hadoop.io.WritableUtils;
  *    YYYY-MM-DD
  *
  */
-@Deprecated
 public class DateWritable implements WritableComparable<DateWritable> {
 
   private static final long MILLIS_PER_DAY = TimeUnit.DAYS.toMillis(1);

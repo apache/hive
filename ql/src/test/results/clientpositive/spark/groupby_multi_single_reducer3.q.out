@@ -25,6 +25,9 @@ select key, count(*)
 where src.value in ('val_400', 'val_500') AND key in (400, 450)
 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
 POSTHOOK: query: explain
 from src
 insert overwrite table e1_n1
@@ -36,6 +39,9 @@ select key, count(*)
 where src.value in ('val_400', 'val_500') AND key in (400, 450)
 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -54,58 +60,59 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (((value) IN ('val_400', 'val_500') and (key) IN (400, 450)) or ((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200))) (type: boolean)
+                  filterExpr: ((((value = 'val_400') or (value = 'val_500')) and ((key = 400) or (key = 450))) or (((value = 'val_100') or (value = 'val_200') or (value = 'val_300')) and ((key = 100) or (key = 150) or (key = 200)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200)) or ((value) IN ('val_400', 'val_500') and (key) IN (400, 450))) (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    predicate: ((((value = 'val_100') or (value = 'val_200') or (value = 'val_300')) and ((key = 100) or (key = 150) or (key = 200))) or (((value = 'val_400') or (value = 'val_500')) and ((key = 400) or (key = 450)))) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Forward
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((KEY._col0) IN (100, 150, 200) and (VALUE._col0) IN ('val_100', 'val_200', 'val_300')) (type: boolean)
-                  Statistics: Num rows: 63 Data size: 669 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (((KEY._col0 = 100) or (KEY._col0 = 150) or (KEY._col0 = 200)) and ((VALUE._col0 = 'val_100') or (VALUE._col0 = 'val_200') or (VALUE._col0 = 'val_300'))) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e1_n1
                 Filter Operator
-                  predicate: ((KEY._col0) IN (400, 450) and (VALUE._col0) IN ('val_400', 'val_500')) (type: boolean)
-                  Statistics: Num rows: 63 Data size: 669 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (((KEY._col0 = 400) or (KEY._col0 = 450)) and ((VALUE._col0 = 'val_400') or (VALUE._col0 = 'val_500'))) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -200,6 +207,9 @@ select value, count(*)
 where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
 group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
 POSTHOOK: query: explain
 from src
 insert overwrite table e1_n1
@@ -211,6 +221,9 @@ select value, count(*)
 where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
 group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -376,6 +389,9 @@ select key, count(*)
 where src.value in ('val_400', 'val_500') AND key in (400, 450)
 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
 POSTHOOK: query: explain
 from src
 insert overwrite table e1_n1
@@ -387,6 +403,9 @@ select key, count(*)
 where src.value in ('val_400', 'val_500') AND key in (400, 450)
 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -407,55 +426,56 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((value) IN ('val_100', 'val_200', 'val_300') and (key) IN (100, 150, 200)) or ((value) IN ('val_400', 'val_500') and (key) IN (400, 450))) (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    predicate: ((((value = 'val_100') or (value = 'val_200') or (value = 'val_300')) and ((key = 100) or (key = 150) or (key = 200))) or (((value = 'val_400') or (value = 'val_500')) and ((key = 400) or (key = 450)))) (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Forward
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((KEY._col0) IN (100, 150, 200) and (VALUE._col0) IN ('val_100', 'val_200', 'val_300')) (type: boolean)
-                  Statistics: Num rows: 63 Data size: 669 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (((KEY._col0 = 100) or (KEY._col0 = 150) or (KEY._col0 = 200)) and ((VALUE._col0 = 'val_100') or (VALUE._col0 = 'val_200') or (VALUE._col0 = 'val_300'))) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e1_n1
                 Filter Operator
-                  predicate: ((KEY._col0) IN (400, 450) and (VALUE._col0) IN ('val_400', 'val_500')) (type: boolean)
-                  Statistics: Num rows: 63 Data size: 669 Basic stats: COMPLETE Column stats: NONE
+                  predicate: (((KEY._col0 = 400) or (KEY._col0 = 450)) and ((VALUE._col0 = 'val_400') or (VALUE._col0 = 'val_500'))) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     keys: KEY._col0 (type: string)
                     mode: complete
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 31 Data size: 329 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -550,6 +570,9 @@ select value, count(*)
 where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
 group by value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1_n1
+PREHOOK: Output: default@e2_n2
 POSTHOOK: query: explain
 from src
 insert overwrite table e1_n1
@@ -561,6 +584,9 @@ select value, count(*)
 where src.key + src.key = 400 or src.key - 100 = 500 AND VALUE IS NOT NULL
 group by value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1_n1
+POSTHOOK: Output: default@e2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

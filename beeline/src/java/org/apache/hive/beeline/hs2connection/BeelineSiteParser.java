@@ -63,7 +63,7 @@ public class BeelineSiteParser implements HS2ConnectionFileParser {
       locations
           .add(System.getenv("HIVE_CONF_DIR") + File.separator + DEFAULT_BEELINE_SITE_FILE_NAME);
     }
-    locations.add(ETC_HIVE_CONF_LOCATION + DEFAULT_BEELINE_SITE_FILE_NAME);
+    locations.add(ETC_HIVE_CONF_LOCATION + File.separator + DEFAULT_BEELINE_SITE_FILE_NAME);
   }
 
   @VisibleForTesting

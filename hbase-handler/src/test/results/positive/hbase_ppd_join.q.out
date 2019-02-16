@@ -14,17 +14,19 @@ PREHOOK: query: drop view if exists hive1_view_data_hbase2
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists hive1_view_data_hbase2
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: CREATE TABLE hive1_tbl_data_hbase1 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
+PREHOOK: query: CREATE EXTERNAL TABLE hive1_tbl_data_hbase1 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
 WITH SERDEPROPERTIES("hbase.columns.mapping" = "default:COLUMID,default:COLUMN_FN,default:COLUMN_LN,default:EMAIL,default:COL_UPDATED_DATE,:key" 
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hive1_tbl_data_hbase1
-POSTHOOK: query: CREATE TABLE hive1_tbl_data_hbase1 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
+POSTHOOK: query: CREATE EXTERNAL TABLE hive1_tbl_data_hbase1 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
 WITH SERDEPROPERTIES("hbase.columns.mapping" = "default:COLUMID,default:COLUMN_FN,default:COLUMN_LN,default:EMAIL,default:COL_UPDATED_DATE,:key" 
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive1_tbl_data_hbase1
@@ -64,17 +66,19 @@ POSTHOOK: query: insert into table hive1_tbl_data_hbase1 select '00001','john','
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hive1_tbl_data_hbase1
-PREHOOK: query: CREATE TABLE hive1_tbl_data_hbase2 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
+PREHOOK: query: CREATE EXTERNAL TABLE hive1_tbl_data_hbase2 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
 WITH SERDEPROPERTIES("hbase.columns.mapping" = "default:COLUMID,default:COLUMN_FN,default:COLUMN_LN,default:EMAIL,default:COL_UPDATED_DATE,:key" 
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hive1_tbl_data_hbase2
-POSTHOOK: query: CREATE TABLE hive1_tbl_data_hbase2 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
+POSTHOOK: query: CREATE EXTERNAL TABLE hive1_tbl_data_hbase2 (COLUMID string,COLUMN_FN string,COLUMN_LN string,EMAIL string,COL_UPDATED_DATE timestamp, PK_COLUM string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
 WITH SERDEPROPERTIES("hbase.columns.mapping" = "default:COLUMID,default:COLUMN_FN,default:COLUMN_LN,default:EMAIL,default:COL_UPDATED_DATE,:key" 
 )
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive1_tbl_data_hbase2

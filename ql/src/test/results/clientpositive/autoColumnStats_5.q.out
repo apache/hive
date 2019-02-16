@@ -8,8 +8,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned1_n1
 PREHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=1
 POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=1
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -258,8 +262,12 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: explain insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=2
 POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=2
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -466,8 +474,12 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partitioned1_n1@part=1
 POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partitioned1_n1@part=1
 Explain
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
