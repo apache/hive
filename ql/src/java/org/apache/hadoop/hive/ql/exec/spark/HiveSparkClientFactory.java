@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.spark.client.SparkClientUtilities;
+import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -62,8 +63,9 @@ public class HiveSparkClientFactory {
   @VisibleForTesting
   public static final String SPARK_CLONE_CONFIGURATION = "spark.hadoop.cloneConf";
 
-  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf, String sessionId) throws Exception {
-    Map<String, String> sparkConf = initiateSparkConf(hiveconf, sessionId);
+  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf, String sparkSessionId,
+                                                      String hiveSessionId) throws Exception {
+    Map<String, String> sparkConf = initiateSparkConf(hiveconf, hiveSessionId);
 
     // Submit spark job through local spark context while spark master is local mode, otherwise submit
     // spark job through remote spark context.
@@ -72,11 +74,11 @@ public class HiveSparkClientFactory {
       // With local spark context, all user sessions share the same spark context.
       return LocalHiveSparkClient.getInstance(generateSparkConf(sparkConf), hiveconf);
     } else {
-      return new RemoteHiveSparkClient(hiveconf, sparkConf, sessionId);
+      return new RemoteHiveSparkClient(hiveconf, sparkConf, sparkSessionId);
     }
   }
 
-  public static Map<String, String> initiateSparkConf(HiveConf hiveConf, String sessionId) {
+  public static Map<String, String> initiateSparkConf(HiveConf hiveConf, String hiveSessionId) {
     Map<String, String> sparkConf = new HashMap<String, String>();
     HBaseConfiguration.addHbaseResources(hiveConf);
 
@@ -84,9 +86,9 @@ public class HiveSparkClientFactory {
     sparkConf.put("spark.master", SPARK_DEFAULT_MASTER);
     final String appNameKey = "spark.app.name";
     String appName = hiveConf.get(appNameKey);
-    final String sessionIdString = " (sessionId = " + sessionId + ")";
+    final String sessionIdString = " (hiveSessionId = " + hiveSessionId + ")";
     if (appName == null) {
-      if (sessionId == null) {
+      if (hiveSessionId == null) {
         appName = SPARK_DEFAULT_APP_NAME;
       } else {
         appName = SPARK_DEFAULT_APP_NAME + sessionIdString;
@@ -197,7 +199,12 @@ public class HiveSparkClientFactory {
         LOG.debug(String.format(
           "Pass Oozie configuration (%s -> %s).", propertyName, LogUtils.maskIfPassword(propertyName,value)));
       }
-
+      if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
+        String value = RpcConfiguration.getValue(hiveConf, propertyName);
+        sparkConf.put(propertyName, value);
+        LOG.debug(String.format("load RPC property from hive configuration (%s -> %s).", propertyName,
+            LogUtils.maskIfPassword(propertyName, value)));
+      }
     }
 
     final boolean optShuffleSerDe = hiveConf.getBoolVar(

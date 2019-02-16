@@ -219,7 +219,7 @@ public class GenTezUtils {
     roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
-    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots, indexForTezUnion);
+    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map
@@ -274,6 +274,15 @@ public class GenTezUtils {
               SemiJoinBranchInfo newSJInfo = new SemiJoinBranchInfo(
                       (TableScanOperator) newRoot, sjInfo.getIsHint());
               rsToSemiJoinBranchInfo.put(rs, newSJInfo);
+            }
+          }
+          // This TableScanOperator could also be part of other events in eventOperatorSet.
+          for(AppMasterEventOperator event: context.eventOperatorSet) {
+            if(event.getConf() instanceof DynamicPruningEventDesc) {
+              TableScanOperator ts = ((DynamicPruningEventDesc) event.getConf()).getTableScan();
+              if(ts.equals(orig)){
+                ((DynamicPruningEventDesc) event.getConf()).setTableScan((TableScanOperator) newRoot);
+              }
             }
           }
         }
@@ -490,7 +499,7 @@ public class GenTezUtils {
    * Remove an operator branch. When we see a fork, we know it's time to do the removal.
    * @param event the leaf node of which branch to be removed
    */
-  public static void removeBranch(Operator<?> event) {
+  public static Operator<?> removeBranch(Operator<?> event) {
     Operator<?> child = event;
     Operator<?> curr = event;
 
@@ -500,6 +509,8 @@ public class GenTezUtils {
     }
 
     curr.removeChild(child);
+
+    return child;
   }
 
   public static EdgeType determineEdgeType(BaseWork preceedingWork, BaseWork followingWork, ReduceSinkOperator reduceSinkOperator) {
@@ -767,6 +778,15 @@ public class GenTezUtils {
       this.parent = parent;
       this.grandParent = grandParent;
       this.generator = generator;
+    }
+
+    public ExprNodeDesc getKeyCol() {
+      ExprNodeDesc keyCol = desc.getTarget();
+      if (keyCol != null) {
+        return keyCol;
+      }
+
+      return generator.getConf().getKeyCols().get(desc.getKeyIndex());
     }
   }
 

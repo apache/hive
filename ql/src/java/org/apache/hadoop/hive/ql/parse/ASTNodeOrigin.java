@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.common.StringInternUtils;
+
 /**
  * ASTNodeOrigin contains contextual information about the object from whose
  * definition a particular ASTNode originated. For example, suppose a view v is
@@ -46,7 +48,7 @@ public class ASTNodeOrigin {
       String objectDefinition, String usageAlias, ASTNode usageNode) {
     this.objectType = objectType;
     this.objectName = objectName;
-    this.objectDefinition = objectDefinition;
+    this.objectDefinition = StringInternUtils.internIfNotNull(objectDefinition);
     this.usageAlias = usageAlias;
     this.usageNode = usageNode;
   }

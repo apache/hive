@@ -1,0 +1,506 @@
+PREHOOK: query: explain cbo
+select   
+         w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+        ,ship_carriers
+        ,year
+ 	,sum(jan_sales) as jan_sales
+ 	,sum(feb_sales) as feb_sales
+ 	,sum(mar_sales) as mar_sales
+ 	,sum(apr_sales) as apr_sales
+ 	,sum(may_sales) as may_sales
+ 	,sum(jun_sales) as jun_sales
+ 	,sum(jul_sales) as jul_sales
+ 	,sum(aug_sales) as aug_sales
+ 	,sum(sep_sales) as sep_sales
+ 	,sum(oct_sales) as oct_sales
+ 	,sum(nov_sales) as nov_sales
+ 	,sum(dec_sales) as dec_sales
+ 	,sum(jan_sales/w_warehouse_sq_ft) as jan_sales_per_sq_foot
+ 	,sum(feb_sales/w_warehouse_sq_ft) as feb_sales_per_sq_foot
+ 	,sum(mar_sales/w_warehouse_sq_ft) as mar_sales_per_sq_foot
+ 	,sum(apr_sales/w_warehouse_sq_ft) as apr_sales_per_sq_foot
+ 	,sum(may_sales/w_warehouse_sq_ft) as may_sales_per_sq_foot
+ 	,sum(jun_sales/w_warehouse_sq_ft) as jun_sales_per_sq_foot
+ 	,sum(jul_sales/w_warehouse_sq_ft) as jul_sales_per_sq_foot
+ 	,sum(aug_sales/w_warehouse_sq_ft) as aug_sales_per_sq_foot
+ 	,sum(sep_sales/w_warehouse_sq_ft) as sep_sales_per_sq_foot
+ 	,sum(oct_sales/w_warehouse_sq_ft) as oct_sales_per_sq_foot
+ 	,sum(nov_sales/w_warehouse_sq_ft) as nov_sales_per_sq_foot
+ 	,sum(dec_sales/w_warehouse_sq_ft) as dec_sales_per_sq_foot
+ 	,sum(jan_net) as jan_net
+ 	,sum(feb_net) as feb_net
+ 	,sum(mar_net) as mar_net
+ 	,sum(apr_net) as apr_net
+ 	,sum(may_net) as may_net
+ 	,sum(jun_net) as jun_net
+ 	,sum(jul_net) as jul_net
+ 	,sum(aug_net) as aug_net
+ 	,sum(sep_net) as sep_net
+ 	,sum(oct_net) as oct_net
+ 	,sum(nov_net) as nov_net
+ 	,sum(dec_net) as dec_net
+ from (
+    (select 
+ 	w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
+       ,d_year as year
+ 	,sum(case when d_moy = 1 
+ 		then ws_sales_price* ws_quantity else 0 end) as jan_sales
+ 	,sum(case when d_moy = 2 
+ 		then ws_sales_price* ws_quantity else 0 end) as feb_sales
+ 	,sum(case when d_moy = 3 
+ 		then ws_sales_price* ws_quantity else 0 end) as mar_sales
+ 	,sum(case when d_moy = 4 
+ 		then ws_sales_price* ws_quantity else 0 end) as apr_sales
+ 	,sum(case when d_moy = 5 
+ 		then ws_sales_price* ws_quantity else 0 end) as may_sales
+ 	,sum(case when d_moy = 6 
+ 		then ws_sales_price* ws_quantity else 0 end) as jun_sales
+ 	,sum(case when d_moy = 7 
+ 		then ws_sales_price* ws_quantity else 0 end) as jul_sales
+ 	,sum(case when d_moy = 8 
+ 		then ws_sales_price* ws_quantity else 0 end) as aug_sales
+ 	,sum(case when d_moy = 9 
+ 		then ws_sales_price* ws_quantity else 0 end) as sep_sales
+ 	,sum(case when d_moy = 10 
+ 		then ws_sales_price* ws_quantity else 0 end) as oct_sales
+ 	,sum(case when d_moy = 11
+ 		then ws_sales_price* ws_quantity else 0 end) as nov_sales
+ 	,sum(case when d_moy = 12
+ 		then ws_sales_price* ws_quantity else 0 end) as dec_sales
+ 	,sum(case when d_moy = 1 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jan_net
+ 	,sum(case when d_moy = 2
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as feb_net
+ 	,sum(case when d_moy = 3 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as mar_net
+ 	,sum(case when d_moy = 4 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as apr_net
+ 	,sum(case when d_moy = 5 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as may_net
+ 	,sum(case when d_moy = 6 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jun_net
+ 	,sum(case when d_moy = 7 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jul_net
+ 	,sum(case when d_moy = 8 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as aug_net
+ 	,sum(case when d_moy = 9 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as sep_net
+ 	,sum(case when d_moy = 10 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as oct_net
+ 	,sum(case when d_moy = 11
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as nov_net
+ 	,sum(case when d_moy = 12
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as dec_net
+     from
+          web_sales
+         ,warehouse
+         ,date_dim
+         ,time_dim
+ 	  ,ship_mode
+     where
+            ws_warehouse_sk =  w_warehouse_sk
+        and ws_sold_date_sk = d_date_sk
+        and ws_sold_time_sk = t_time_sk
+ 	and ws_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2002
+ 	and t_time between 49530 and 49530+28800 
+ 	and sm_carrier in ('DIAMOND','AIRBORNE')
+     group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+       ,d_year
+ 	)
+ union all
+    (select 
+ 	w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
+       ,d_year as year
+ 	,sum(case when d_moy = 1 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jan_sales
+ 	,sum(case when d_moy = 2 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as feb_sales
+ 	,sum(case when d_moy = 3 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as mar_sales
+ 	,sum(case when d_moy = 4 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as apr_sales
+ 	,sum(case when d_moy = 5 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as may_sales
+ 	,sum(case when d_moy = 6 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jun_sales
+ 	,sum(case when d_moy = 7 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jul_sales
+ 	,sum(case when d_moy = 8 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as aug_sales
+ 	,sum(case when d_moy = 9 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as sep_sales
+ 	,sum(case when d_moy = 10 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as oct_sales
+ 	,sum(case when d_moy = 11
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as nov_sales
+ 	,sum(case when d_moy = 12
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as dec_sales
+ 	,sum(case when d_moy = 1 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jan_net
+ 	,sum(case when d_moy = 2 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as feb_net
+ 	,sum(case when d_moy = 3 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as mar_net
+ 	,sum(case when d_moy = 4 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as apr_net
+ 	,sum(case when d_moy = 5 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as may_net
+ 	,sum(case when d_moy = 6 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jun_net
+ 	,sum(case when d_moy = 7 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jul_net
+ 	,sum(case when d_moy = 8 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as aug_net
+ 	,sum(case when d_moy = 9 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as sep_net
+ 	,sum(case when d_moy = 10 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as oct_net
+ 	,sum(case when d_moy = 11
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as nov_net
+ 	,sum(case when d_moy = 12
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as dec_net
+     from
+          catalog_sales
+         ,warehouse
+         ,date_dim
+         ,time_dim
+ 	 ,ship_mode
+     where
+            cs_warehouse_sk =  w_warehouse_sk
+        and cs_sold_date_sk = d_date_sk
+        and cs_sold_time_sk = t_time_sk
+ 	and cs_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2002
+ 	and t_time between 49530 AND 49530+28800 
+ 	and sm_carrier in ('DIAMOND','AIRBORNE')
+     group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+       ,d_year
+     ) 
+ ) x
+ group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,ship_carriers
+       ,year
+ order by w_warehouse_name
+ limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@ship_mode
+PREHOOK: Input: default@time_dim
+PREHOOK: Input: default@warehouse
+PREHOOK: Input: default@web_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select   
+         w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+        ,ship_carriers
+        ,year
+ 	,sum(jan_sales) as jan_sales
+ 	,sum(feb_sales) as feb_sales
+ 	,sum(mar_sales) as mar_sales
+ 	,sum(apr_sales) as apr_sales
+ 	,sum(may_sales) as may_sales
+ 	,sum(jun_sales) as jun_sales
+ 	,sum(jul_sales) as jul_sales
+ 	,sum(aug_sales) as aug_sales
+ 	,sum(sep_sales) as sep_sales
+ 	,sum(oct_sales) as oct_sales
+ 	,sum(nov_sales) as nov_sales
+ 	,sum(dec_sales) as dec_sales
+ 	,sum(jan_sales/w_warehouse_sq_ft) as jan_sales_per_sq_foot
+ 	,sum(feb_sales/w_warehouse_sq_ft) as feb_sales_per_sq_foot
+ 	,sum(mar_sales/w_warehouse_sq_ft) as mar_sales_per_sq_foot
+ 	,sum(apr_sales/w_warehouse_sq_ft) as apr_sales_per_sq_foot
+ 	,sum(may_sales/w_warehouse_sq_ft) as may_sales_per_sq_foot
+ 	,sum(jun_sales/w_warehouse_sq_ft) as jun_sales_per_sq_foot
+ 	,sum(jul_sales/w_warehouse_sq_ft) as jul_sales_per_sq_foot
+ 	,sum(aug_sales/w_warehouse_sq_ft) as aug_sales_per_sq_foot
+ 	,sum(sep_sales/w_warehouse_sq_ft) as sep_sales_per_sq_foot
+ 	,sum(oct_sales/w_warehouse_sq_ft) as oct_sales_per_sq_foot
+ 	,sum(nov_sales/w_warehouse_sq_ft) as nov_sales_per_sq_foot
+ 	,sum(dec_sales/w_warehouse_sq_ft) as dec_sales_per_sq_foot
+ 	,sum(jan_net) as jan_net
+ 	,sum(feb_net) as feb_net
+ 	,sum(mar_net) as mar_net
+ 	,sum(apr_net) as apr_net
+ 	,sum(may_net) as may_net
+ 	,sum(jun_net) as jun_net
+ 	,sum(jul_net) as jul_net
+ 	,sum(aug_net) as aug_net
+ 	,sum(sep_net) as sep_net
+ 	,sum(oct_net) as oct_net
+ 	,sum(nov_net) as nov_net
+ 	,sum(dec_net) as dec_net
+ from (
+    (select 
+ 	w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
+       ,d_year as year
+ 	,sum(case when d_moy = 1 
+ 		then ws_sales_price* ws_quantity else 0 end) as jan_sales
+ 	,sum(case when d_moy = 2 
+ 		then ws_sales_price* ws_quantity else 0 end) as feb_sales
+ 	,sum(case when d_moy = 3 
+ 		then ws_sales_price* ws_quantity else 0 end) as mar_sales
+ 	,sum(case when d_moy = 4 
+ 		then ws_sales_price* ws_quantity else 0 end) as apr_sales
+ 	,sum(case when d_moy = 5 
+ 		then ws_sales_price* ws_quantity else 0 end) as may_sales
+ 	,sum(case when d_moy = 6 
+ 		then ws_sales_price* ws_quantity else 0 end) as jun_sales
+ 	,sum(case when d_moy = 7 
+ 		then ws_sales_price* ws_quantity else 0 end) as jul_sales
+ 	,sum(case when d_moy = 8 
+ 		then ws_sales_price* ws_quantity else 0 end) as aug_sales
+ 	,sum(case when d_moy = 9 
+ 		then ws_sales_price* ws_quantity else 0 end) as sep_sales
+ 	,sum(case when d_moy = 10 
+ 		then ws_sales_price* ws_quantity else 0 end) as oct_sales
+ 	,sum(case when d_moy = 11
+ 		then ws_sales_price* ws_quantity else 0 end) as nov_sales
+ 	,sum(case when d_moy = 12
+ 		then ws_sales_price* ws_quantity else 0 end) as dec_sales
+ 	,sum(case when d_moy = 1 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jan_net
+ 	,sum(case when d_moy = 2
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as feb_net
+ 	,sum(case when d_moy = 3 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as mar_net
+ 	,sum(case when d_moy = 4 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as apr_net
+ 	,sum(case when d_moy = 5 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as may_net
+ 	,sum(case when d_moy = 6 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jun_net
+ 	,sum(case when d_moy = 7 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as jul_net
+ 	,sum(case when d_moy = 8 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as aug_net
+ 	,sum(case when d_moy = 9 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as sep_net
+ 	,sum(case when d_moy = 10 
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as oct_net
+ 	,sum(case when d_moy = 11
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as nov_net
+ 	,sum(case when d_moy = 12
+ 		then ws_net_paid_inc_tax * ws_quantity else 0 end) as dec_net
+     from
+          web_sales
+         ,warehouse
+         ,date_dim
+         ,time_dim
+ 	  ,ship_mode
+     where
+            ws_warehouse_sk =  w_warehouse_sk
+        and ws_sold_date_sk = d_date_sk
+        and ws_sold_time_sk = t_time_sk
+ 	and ws_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2002
+ 	and t_time between 49530 and 49530+28800 
+ 	and sm_carrier in ('DIAMOND','AIRBORNE')
+     group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+       ,d_year
+ 	)
+ union all
+    (select 
+ 	w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,'DIAMOND' || ',' || 'AIRBORNE' as ship_carriers
+       ,d_year as year
+ 	,sum(case when d_moy = 1 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jan_sales
+ 	,sum(case when d_moy = 2 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as feb_sales
+ 	,sum(case when d_moy = 3 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as mar_sales
+ 	,sum(case when d_moy = 4 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as apr_sales
+ 	,sum(case when d_moy = 5 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as may_sales
+ 	,sum(case when d_moy = 6 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jun_sales
+ 	,sum(case when d_moy = 7 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as jul_sales
+ 	,sum(case when d_moy = 8 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as aug_sales
+ 	,sum(case when d_moy = 9 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as sep_sales
+ 	,sum(case when d_moy = 10 
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as oct_sales
+ 	,sum(case when d_moy = 11
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as nov_sales
+ 	,sum(case when d_moy = 12
+ 		then cs_ext_sales_price* cs_quantity else 0 end) as dec_sales
+ 	,sum(case when d_moy = 1 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jan_net
+ 	,sum(case when d_moy = 2 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as feb_net
+ 	,sum(case when d_moy = 3 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as mar_net
+ 	,sum(case when d_moy = 4 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as apr_net
+ 	,sum(case when d_moy = 5 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as may_net
+ 	,sum(case when d_moy = 6 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jun_net
+ 	,sum(case when d_moy = 7 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as jul_net
+ 	,sum(case when d_moy = 8 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as aug_net
+ 	,sum(case when d_moy = 9 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as sep_net
+ 	,sum(case when d_moy = 10 
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as oct_net
+ 	,sum(case when d_moy = 11
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as nov_net
+ 	,sum(case when d_moy = 12
+ 		then cs_net_paid_inc_ship_tax * cs_quantity else 0 end) as dec_net
+     from
+          catalog_sales
+         ,warehouse
+         ,date_dim
+         ,time_dim
+ 	 ,ship_mode
+     where
+            cs_warehouse_sk =  w_warehouse_sk
+        and cs_sold_date_sk = d_date_sk
+        and cs_sold_time_sk = t_time_sk
+ 	and cs_ship_mode_sk = sm_ship_mode_sk
+        and d_year = 2002
+ 	and t_time between 49530 AND 49530+28800 
+ 	and sm_carrier in ('DIAMOND','AIRBORNE')
+     group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+       ,d_year
+     ) 
+ ) x
+ group by 
+        w_warehouse_name
+ 	,w_warehouse_sq_ft
+ 	,w_city
+ 	,w_county
+ 	,w_state
+ 	,w_country
+ 	,ship_carriers
+       ,year
+ order by w_warehouse_name
+ limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@ship_mode
+POSTHOOK: Input: default@time_dim
+POSTHOOK: Input: default@warehouse
+POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(w_warehouse_name=[$0], w_warehouse_sq_ft=[$1], w_city=[$2], w_county=[$3], w_state=[$4], w_country=[$5], ship_carriers=[CAST(_UTF-16LE'DIAMOND,AIRBORNE'):VARCHAR(2147483647) CHARACTER SET "UTF-16LE" COLLATE "ISO-8859-1$en_US$primary"], year=[CAST(2002):INTEGER], jan_sales=[$6], feb_sales=[$7], mar_sales=[$8], apr_sales=[$9], may_sales=[$10], jun_sales=[$11], jul_sales=[$12], aug_sales=[$13], sep_sales=[$14], oct_sales=[$15], nov_sales=[$16], dec_sales=[$17], jan_sales_per_sq_foot=[$18], feb_sales_per_sq_foot=[$19], mar_sales_per_sq_foot=[$20], apr_sales_per_sq_foot=[$21], may_sales_per_sq_foot=[$22], jun_sales_per_sq_foot=[$23], jul_sales_per_sq_foot=[$24], aug_sales_per_sq_foot=[$25], sep_sales_per_sq_foot=[$26], oct_sales_per_sq_foot=[$27], nov_sales_per_sq_foot=[$28], dec_sales_per_sq_foot=[$29], jan_net=[$30], feb_net=[$31], mar_net=[$32], apr_net=[$33], may_net=[$34], jun_net=[$35], jul_net=[$36], aug_net=[$37], sep_net=[$38], oct_net=[$39], nov_net=[$40], dec_net=[$41])
+  HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
+    HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8], $f9=[$9], $f10=[$10], $f11=[$11], $f12=[$12], $f13=[$13], $f14=[$14], $f15=[$15], $f16=[$16], $f17=[$17], $f18=[$18], $f19=[$19], $f20=[$20], $f21=[$21], $f22=[$22], $f23=[$23], $f24=[$24], $f25=[$25], $f26=[$26], $f27=[$27], $f28=[$28], $f29=[$29], $f30=[$30], $f31=[$31], $f32=[$32], $f33=[$33], $f34=[$34], $f35=[$35], $f36=[$36], $f37=[$37], $f38=[$38], $f39=[$39], $f40=[$40], $f41=[$41])
+      HiveAggregate(group=[{0, 1, 2, 3, 4, 5}], agg#0=[sum($6)], agg#1=[sum($7)], agg#2=[sum($8)], agg#3=[sum($9)], agg#4=[sum($10)], agg#5=[sum($11)], agg#6=[sum($12)], agg#7=[sum($13)], agg#8=[sum($14)], agg#9=[sum($15)], agg#10=[sum($16)], agg#11=[sum($17)], agg#12=[sum($18)], agg#13=[sum($19)], agg#14=[sum($20)], agg#15=[sum($21)], agg#16=[sum($22)], agg#17=[sum($23)], agg#18=[sum($24)], agg#19=[sum($25)], agg#20=[sum($26)], agg#21=[sum($27)], agg#22=[sum($28)], agg#23=[sum($29)], agg#24=[sum($30)], agg#25=[sum($31)], agg#26=[sum($32)], agg#27=[sum($33)], agg#28=[sum($34)], agg#29=[sum($35)], agg#30=[sum($36)], agg#31=[sum($37)], agg#32=[sum($38)], agg#33=[sum($39)], agg#34=[sum($40)], agg#35=[sum($41)])
+        HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f8=[$6], $f9=[$7], $f10=[$8], $f11=[$9], $f12=[$10], $f13=[$11], $f14=[$12], $f15=[$13], $f16=[$14], $f17=[$15], $f18=[$16], $f19=[$17], $f20=[/($6, CAST($1):DECIMAL(10, 0))], $f21=[/($7, CAST($1):DECIMAL(10, 0))], $f22=[/($8, CAST($1):DECIMAL(10, 0))], $f23=[/($9, CAST($1):DECIMAL(10, 0))], $f24=[/($10, CAST($1):DECIMAL(10, 0))], $f25=[/($11, CAST($1):DECIMAL(10, 0))], $f26=[/($12, CAST($1):DECIMAL(10, 0))], $f27=[/($13, CAST($1):DECIMAL(10, 0))], $f28=[/($14, CAST($1):DECIMAL(10, 0))], $f29=[/($15, CAST($1):DECIMAL(10, 0))], $f30=[/($16, CAST($1):DECIMAL(10, 0))], $f31=[/($17, CAST($1):DECIMAL(10, 0))], $f32=[$18], $f33=[$19], $f34=[$20], $f35=[$21], $f36=[$22], $f37=[$23], $f38=[$24], $f39=[$25], $f40=[$26], $f41=[$27], $f42=[$28], $f43=[$29])
+          HiveUnion(all=[true])
+            HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8], $f9=[$9], $f10=[$10], $f11=[$11], $f12=[$12], $f13=[$13], $f14=[$14], $f15=[$15], $f16=[$16], $f17=[$17], $f18=[$18], $f19=[$19], $f20=[$20], $f21=[$21], $f22=[$22], $f23=[$23], $f24=[$24], $f25=[$25], $f26=[$26], $f27=[$27], $f28=[$28], $f29=[$29])
+              HiveAggregate(group=[{0, 1, 2, 3, 4, 5}], agg#0=[sum($6)], agg#1=[sum($7)], agg#2=[sum($8)], agg#3=[sum($9)], agg#4=[sum($10)], agg#5=[sum($11)], agg#6=[sum($12)], agg#7=[sum($13)], agg#8=[sum($14)], agg#9=[sum($15)], agg#10=[sum($16)], agg#11=[sum($17)], agg#12=[sum($18)], agg#13=[sum($19)], agg#14=[sum($20)], agg#15=[sum($21)], agg#16=[sum($22)], agg#17=[sum($23)], agg#18=[sum($24)], agg#19=[sum($25)], agg#20=[sum($26)], agg#21=[sum($27)], agg#22=[sum($28)], agg#23=[sum($29)])
+                HiveProject($f0=[$1], $f1=[$2], $f2=[$3], $f3=[$4], $f4=[$5], $f5=[$6], $f7=[CASE($15, $11, 0)], $f8=[CASE($16, $11, 0)], $f9=[CASE($17, $11, 0)], $f10=[CASE($18, $11, 0)], $f11=[CASE($19, $11, 0)], $f12=[CASE($20, $11, 0)], $f13=[CASE($21, $11, 0)], $f14=[CASE($22, $11, 0)], $f15=[CASE($23, $11, 0)], $f16=[CASE($24, $11, 0)], $f17=[CASE($25, $11, 0)], $f18=[CASE($26, $11, 0)], $f19=[CASE($15, $12, 0)], $f20=[CASE($16, $12, 0)], $f21=[CASE($17, $12, 0)], $f22=[CASE($18, $12, 0)], $f23=[CASE($19, $12, 0)], $f24=[CASE($20, $12, 0)], $f25=[CASE($21, $12, 0)], $f26=[CASE($22, $12, 0)], $f27=[CASE($23, $12, 0)], $f28=[CASE($24, $12, 0)], $f29=[CASE($25, $12, 0)], $f30=[CASE($26, $12, 0)])
+                  HiveJoin(condition=[=($10, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(w_warehouse_sk=[$0], w_warehouse_name=[$2], w_warehouse_sq_ft=[$3], w_city=[$8], w_county=[$9], w_state=[$10], w_country=[$12])
+                      HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+                    HiveJoin(condition=[=($2, $20)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($1, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(ws_sold_date_sk=[$0], ws_sold_time_sk=[$1], ws_ship_mode_sk=[$14], ws_warehouse_sk=[$15], *=[*($21, CAST($18):DECIMAL(10, 0))], *5=[*($30, CAST($18):DECIMAL(10, 0))])
+                            HiveFilter(condition=[AND(IS NOT NULL($15), IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($14))])
+                              HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+                          HiveProject(t_time_sk=[$0])
+                            HiveFilter(condition=[BETWEEN(false, $2, 49530, 78330)])
+                              HiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+                        HiveProject(d_date_sk=[$0], ==[=($8, 1)], =2=[=($8, 2)], =3=[=($8, 3)], =4=[=($8, 4)], =5=[=($8, 5)], =6=[=($8, 6)], =7=[=($8, 7)], =8=[=($8, 8)], =9=[=($8, 9)], =10=[=($8, 10)], =11=[=($8, 11)], =12=[=($8, 12)])
+                          HiveFilter(condition=[=($6, 2002)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                      HiveProject(sm_ship_mode_sk=[$0])
+                        HiveFilter(condition=[IN($4, _UTF-16LE'DIAMOND', _UTF-16LE'AIRBORNE')])
+                          HiveTableScan(table=[[default, ship_mode]], table:alias=[ship_mode])
+            HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8], $f9=[$9], $f10=[$10], $f11=[$11], $f12=[$12], $f13=[$13], $f14=[$14], $f15=[$15], $f16=[$16], $f17=[$17], $f18=[$18], $f19=[$19], $f20=[$20], $f21=[$21], $f22=[$22], $f23=[$23], $f24=[$24], $f25=[$25], $f26=[$26], $f27=[$27], $f28=[$28], $f29=[$29])
+              HiveAggregate(group=[{0, 1, 2, 3, 4, 5}], agg#0=[sum($6)], agg#1=[sum($7)], agg#2=[sum($8)], agg#3=[sum($9)], agg#4=[sum($10)], agg#5=[sum($11)], agg#6=[sum($12)], agg#7=[sum($13)], agg#8=[sum($14)], agg#9=[sum($15)], agg#10=[sum($16)], agg#11=[sum($17)], agg#12=[sum($18)], agg#13=[sum($19)], agg#14=[sum($20)], agg#15=[sum($21)], agg#16=[sum($22)], agg#17=[sum($23)], agg#18=[sum($24)], agg#19=[sum($25)], agg#20=[sum($26)], agg#21=[sum($27)], agg#22=[sum($28)], agg#23=[sum($29)])
+                HiveProject($f0=[$22], $f1=[$23], $f2=[$24], $f3=[$25], $f4=[$26], $f5=[$27], $f7=[CASE($8, $4, 0)], $f8=[CASE($9, $4, 0)], $f9=[CASE($10, $4, 0)], $f10=[CASE($11, $4, 0)], $f11=[CASE($12, $4, 0)], $f12=[CASE($13, $4, 0)], $f13=[CASE($14, $4, 0)], $f14=[CASE($15, $4, 0)], $f15=[CASE($16, $4, 0)], $f16=[CASE($17, $4, 0)], $f17=[CASE($18, $4, 0)], $f18=[CASE($19, $4, 0)], $f19=[CASE($8, $5, 0)], $f20=[CASE($9, $5, 0)], $f21=[CASE($10, $5, 0)], $f22=[CASE($11, $5, 0)], $f23=[CASE($12, $5, 0)], $f24=[CASE($13, $5, 0)], $f25=[CASE($14, $5, 0)], $f26=[CASE($15, $5, 0)], $f27=[CASE($16, $5, 0)], $f28=[CASE($17, $5, 0)], $f29=[CASE($18, $5, 0)], $f30=[CASE($19, $5, 0)])
+                  HiveJoin(condition=[=($3, $21)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveJoin(condition=[=($2, $20)], joinType=[inner], algorithm=[none], cost=[not available])
+                      HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])
+                        HiveJoin(condition=[=($1, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+                          HiveProject(cs_sold_date_sk=[$0], cs_sold_time_sk=[$1], cs_ship_mode_sk=[$13], cs_warehouse_sk=[$14], *=[*($23, CAST($18):DECIMAL(10, 0))], *5=[*($32, CAST($18):DECIMAL(10, 0))])
+                            HiveFilter(condition=[AND(IS NOT NULL($14), IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($13))])
+                              HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
+                          HiveProject(t_time_sk=[$0])
+                            HiveFilter(condition=[BETWEEN(false, $2, 49530, 78330)])
+                              HiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
+                        HiveProject(d_date_sk=[$0], ==[=($8, 1)], =2=[=($8, 2)], =3=[=($8, 3)], =4=[=($8, 4)], =5=[=($8, 5)], =6=[=($8, 6)], =7=[=($8, 7)], =8=[=($8, 8)], =9=[=($8, 9)], =10=[=($8, 10)], =11=[=($8, 11)], =12=[=($8, 12)])
+                          HiveFilter(condition=[=($6, 2002)])
+                            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                      HiveProject(sm_ship_mode_sk=[$0])
+                        HiveFilter(condition=[IN($4, _UTF-16LE'DIAMOND', _UTF-16LE'AIRBORNE')])
+                          HiveTableScan(table=[[default, ship_mode]], table:alias=[ship_mode])
+                    HiveProject(w_warehouse_sk=[$0], w_warehouse_name=[$2], w_warehouse_sq_ft=[$3], w_city=[$8], w_county=[$9], w_state=[$10], w_country=[$12])
+                      HiveTableScan(table=[[default, warehouse]], table:alias=[warehouse])
+

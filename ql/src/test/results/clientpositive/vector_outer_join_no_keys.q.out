@@ -27,9 +27,15 @@ Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Stage-2:MAPRED' is a cross pr
 PREHOOK: query: explain vectorization detail
 select count(*) from bar right outer join foo
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select count(*) from bar right outer join foo
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -176,11 +182,17 @@ PREHOOK: query: -- = 2
 explain vectorization detail
 select count(*) from bar, foo
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
 POSTHOOK: query: -- = 2
 
 explain vectorization detail
 select count(*) from bar, foo
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

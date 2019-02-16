@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -52,16 +52,16 @@ public class ConstraintsSerializer implements JsonWriter.Serializer {
     String pksString, fksString, uksString, nnsString;
     pksString = fksString = uksString = nnsString = "";
     if (pks != null) {
-      pksString = MessageFactory.getInstance().buildAddPrimaryKeyMessage(pks).toString();
+      pksString = MessageBuilder.getInstance().buildAddPrimaryKeyMessage(pks).toString();
     }
     if (fks != null) {
-      fksString = MessageFactory.getInstance().buildAddForeignKeyMessage(fks).toString();
+      fksString = MessageBuilder.getInstance().buildAddForeignKeyMessage(fks).toString();
     }
     if (uks != null) {
-      uksString = MessageFactory.getInstance().buildAddUniqueConstraintMessage(uks).toString();
+      uksString = MessageBuilder.getInstance().buildAddUniqueConstraintMessage(uks).toString();
     }
     if (nns != null) {
-      nnsString = MessageFactory.getInstance().buildAddNotNullConstraintMessage(nns).toString();
+      nnsString = MessageBuilder.getInstance().buildAddNotNullConstraintMessage(nns).toString();
     }
     writer.jsonGenerator.writeStringField("pks", pksString);
     writer.jsonGenerator.writeStringField("uks", uksString);

@@ -46,7 +46,7 @@ public class TestMTQueries extends BaseTestQueries {
       util.getConf().set("hive.stats.dbclass", "fs");
       util.getConf().set("hive.mapred.mode", "nonstrict");
       util.getConf().set("hive.stats.column.autogather", "false");
-      util.newSession(true);
+      util.newSession();
     }
     boolean success = QTestUtil.queryListRunnerMultiThreaded(qfiles, qts);
     if (!success) {

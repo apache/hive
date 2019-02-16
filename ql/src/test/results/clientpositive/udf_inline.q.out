@@ -11,6 +11,8 @@ PREHOOK: query: explain SELECT inline(
   )
 )  as (id, text) FROM SRC limit 2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain SELECT inline( 
   ARRAY(
     STRUCT (1,'dude!'),
@@ -19,6 +21,8 @@ POSTHOOK: query: explain SELECT inline(
   )
 )  as (id, text) FROM SRC limit 2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

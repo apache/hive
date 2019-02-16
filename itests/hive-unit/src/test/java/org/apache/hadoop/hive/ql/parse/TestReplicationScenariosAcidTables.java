@@ -17,29 +17,30 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.Utils;
+
 import org.junit.rules.TestName;
-import org.junit.rules.TestRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,50 +48,77 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Map;
+
+import static org.junit.Assert.assertTrue;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables
  */
 public class TestReplicationScenariosAcidTables {
+
   @Rule
   public final TestName testName = new TestName();
 
-  @Rule
-  public TestRule replV1BackwardCompat;
-
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
-  private static WarehouseInstance primary, replica, replicaNonAcid;
-  private String primaryDbName, replicatedDbName;
-  private static HiveConf conf;
+  static WarehouseInstance primary;
+  private static WarehouseInstance replica, replicaNonAcid;
+  static HiveConf conf;
+  private String primaryDbName, replicatedDbName, primaryDbNameExtra;
+  private enum OperationType {
+    REPL_TEST_ACID_INSERT, REPL_TEST_ACID_INSERT_SELECT, REPL_TEST_ACID_CTAS,
+    REPL_TEST_ACID_INSERT_OVERWRITE, REPL_TEST_ACID_INSERT_IMPORT, REPL_TEST_ACID_INSERT_LOADLOCAL,
+    REPL_TEST_ACID_INSERT_UNION
+  }
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    conf = new HiveConf(TestReplicationScenariosAcidTables.class);
+    HashMap<String, String> overrides = new HashMap<>();
+    overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
+        GzipJSONMessageEncoder.class.getCanonicalName());
+
+    internalBeforeClassSetup(overrides, TestReplicationScenariosAcidTables.class);
+  }
+
+  static void internalBeforeClassSetup(Map<String, String> overrides,
+      Class clazz) throws Exception {
+
+    conf = new HiveConf(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-           new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
-        put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-        put("hive.support.concurrency", "true");
-        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-        put("hive.repl.dump.include.acid.tables", "true");
-        put("hive.metastore.client.capability.check", "false");
-        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+    HashMap<String, String> acidEnableConf = new HashMap<String, String>() {{
+      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put("hive.support.concurrency", "true");
+      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+      put("hive.metastore.client.capability.check", "false");
+      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+      put("hive.exec.dynamic.partition.mode", "nonstrict");
+      put("hive.strict.checks.bucketing", "false");
+      put("hive.mapred.mode", "nonstrict");
+      put("mapred.input.dir.recursive", "true");
+      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
     }};
-    primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
-    replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
+
+    acidEnableConf.putAll(overrides);
+
+    primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
+    replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
     HashMap<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "false");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-        put("hive.repl.dump.include.acid.tables", "true");
         put("hive.metastore.client.capability.check", "false");
     }};
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
@@ -104,10 +132,12 @@ public class TestReplicationScenariosAcidTables {
 
   @Before
   public void setup() throws Throwable {
-    replV1BackwardCompat = primary.getReplivationV1CompatRule(new ArrayList<>());
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    primaryDbNameExtra = primaryDbName+"_extra";
+    primary.run("create database " + primaryDbNameExtra + " WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')");
   }
 
@@ -116,12 +146,11 @@ public class TestReplicationScenariosAcidTables {
     primary.run("drop database if exists " + primaryDbName + " cascade");
     replica.run("drop database if exists " + replicatedDbName + " cascade");
     replicaNonAcid.run("drop database if exists " + replicatedDbName + " cascade");
+    primary.run("drop database if exists " + primaryDbName + "_extra cascade");
   }
 
-  @Test
-  public void testAcidTablesBootstrap() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = primary
-            .run("use " + primaryDbName)
+  private WarehouseInstance.Tuple prepareDataAndDump(String primaryDbName, String fromReplId) throws Throwable {
+    return primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("insert into t1 values(1)")
@@ -142,14 +171,15 @@ public class TestReplicationScenariosAcidTables {
             .run("insert into t5 values(1111), (2222)")
             .run("alter table t5 set tblproperties (\"transactional\"=\"true\")")
             .run("insert into t5 values(3333)")
-            .dump(primaryDbName, null);
+            .dump(primaryDbName, fromReplId);
+  }
 
-    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
-            .run("use " + replicatedDbName)
+  private void verifyLoadExecution(String replicatedDbName, String lastReplId) throws Throwable {
+    replica.run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[] {"t1", "t2", "t3", "t4", "t5"})
             .run("repl status " + replicatedDbName)
-            .verifyResult(bootstrapDump.lastReplicationId)
+            .verifyResult(lastReplId)
             .run("select id from t1 order by id")
             .verifyResults(new String[]{"1", "2"})
             .run("select country from t2 order by country")
@@ -160,6 +190,32 @@ public class TestReplicationScenariosAcidTables {
             .verifyResults(new String[] {"111", "222"})
             .run("select id from t5 order by id")
             .verifyResults(new String[] {"1111", "2222", "3333"});
+  }
+
+  @Test
+  public void testAcidTablesBootstrap() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation);
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testAcidTablesMoveOptimizationBootStrap() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation,
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testAcidTablesMoveOptimizationIncremental() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation,
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
+    WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName, bootstrapDump.lastReplicationId);
+    replica.load(replicatedDbName, incrDump.dumpLocation,
+            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
+    verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId);
   }
 
   @Test
@@ -270,6 +326,156 @@ public class TestReplicationScenariosAcidTables {
   }
 
   @Test
+  public void testAcidTablesBootstrapWithConcurrentWrites() throws Throwable {
+    HiveConf primaryConf = primary.getConf();
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)");
+
+    // Perform concurrent write on the acid table t1 when bootstrap dump in progress. Bootstrap
+    // won't see the written data but the subsequent incremental repl should see it.
+    BehaviourInjection<CallerArguments, Boolean> callerInjectedBehavior
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        if (injectionPathCalled) {
+          nonInjectedPathCalled = true;
+        } else {
+          // Insert another row to t1 from another txn when bootstrap dump in progress.
+          injectionPathCalled = true;
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              LOG.info("Entered new thread");
+              IDriver driver = DriverFactory.newDriver(primaryConf);
+              SessionState.start(new CliSessionState(primaryConf));
+              CommandProcessorResponse ret = driver.run("insert into " + primaryDbName + ".t1 values(2)");
+              boolean success = (ret.getException() == null);
+              assertTrue(success);
+              LOG.info("Exit new thread success - {}", success, ret.getException());
+            }
+          });
+          t.start();
+          LOG.info("Created new thread {}", t.getName());
+          try {
+            t.join();
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return true;
+      }
+    };
+
+    InjectableBehaviourObjectStore.setCallerVerifier(callerInjectedBehavior);
+    WarehouseInstance.Tuple bootstrapDump = null;
+    try {
+      bootstrapDump = primary.dump(primaryDbName, null);
+      callerInjectedBehavior.assertInjectionsPerformed(true, true);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    // Bootstrap dump has taken snapshot before concurrent tread performed write. So, it won't see data "2".
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("select id from t1 order by id")
+            .verifyResults(new String[]{"1" });
+
+    // Incremental should include the concurrent write of data "2" from another txn.
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, bootstrapDump.lastReplicationId);
+    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("select id from t1 order by id")
+            .verifyResults(new String[]{"1", "2" });
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithConcurrentDropTable() throws Throwable {
+    HiveConf primaryConf = primary.getConf();
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)");
+
+    // Perform concurrent write + drop on the acid table t1 when bootstrap dump in progress. Bootstrap
+    // won't dump the table but the subsequent incremental repl with new table with same name should be seen.
+    BehaviourInjection<CallerArguments, Boolean> callerInjectedBehavior
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        if (injectionPathCalled) {
+          nonInjectedPathCalled = true;
+        } else {
+          // Insert another row to t1 and drop the table from another txn when bootstrap dump in progress.
+          injectionPathCalled = true;
+          Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              LOG.info("Entered new thread");
+              IDriver driver = DriverFactory.newDriver(primaryConf);
+              SessionState.start(new CliSessionState(primaryConf));
+              CommandProcessorResponse ret = driver.run("insert into " + primaryDbName + ".t1 values(2)");
+              boolean success = (ret.getException() == null);
+              assertTrue(success);
+              ret = driver.run("drop table " + primaryDbName + ".t1");
+              success = (ret.getException() == null);
+              assertTrue(success);
+              LOG.info("Exit new thread success - {}", success, ret.getException());
+            }
+          });
+          t.start();
+          LOG.info("Created new thread {}", t.getName());
+          try {
+            t.join();
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return true;
+      }
+    };
+
+    InjectableBehaviourObjectStore.setCallerVerifier(callerInjectedBehavior);
+    WarehouseInstance.Tuple bootstrapDump = null;
+    try {
+      bootstrapDump = primary.dump(primaryDbName, null);
+      callerInjectedBehavior.assertInjectionsPerformed(true, true);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    }
+
+    // Bootstrap dump has taken latest list of tables and hence won't see table t1 as it is dropped.
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("show tables")
+            .verifyResult(null);
+
+    // Create another ACID table with same name and insert a row. It should be properly replicated.
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(100)")
+            .dump(primaryDbName, bootstrapDump.lastReplicationId);
+
+    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("select id from t1 order by id")
+            .verifyResult("100");
+  }
+
+  @Test
   public void testOpenTxnEvent() throws Throwable {
     String tableName = testName.getMethodName();
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
@@ -277,7 +483,6 @@ public class TestReplicationScenariosAcidTables {
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    // create table will start and coomit the transaction
     primary.run("use " + primaryDbName)
            .run("CREATE TABLE " + tableName +
             " (key int, value int) PARTITIONED BY (load_date date) " +
@@ -290,6 +495,11 @@ public class TestReplicationScenariosAcidTables {
 
     WarehouseInstance.Tuple incrementalDump =
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+
+    long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 22);
+
+    // Test load
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId);
@@ -481,5 +691,74 @@ public class TestReplicationScenariosAcidTables {
 
     primary.run("DROP TABLE " + dbName + ".normal");
     primary.run("drop database " + dbName);
+  }
+
+  @Test
+  public void testMultiDBTxn() throws Throwable {
+    String tableName = testName.getMethodName();
+    String dbName1 = tableName + "_db1";
+    String dbName2 = tableName + "_db2";
+    String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
+    String tableProperty = "'transactional'='true'";
+    String txnStrStart = "START TRANSACTION";
+    String txnStrCommit = "COMMIT";
+
+    WarehouseInstance.Tuple incrementalDump;
+    primary.run("alter database default set dbproperties ('repl.source.for' = '1, 2, 3')");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump("`*`", null);
+
+    primary.run("use " + primaryDbName)
+          .run("create database " + dbName1 + " WITH DBPROPERTIES ( '" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
+          .run("create database " + dbName2 + " WITH DBPROPERTIES ( '" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
+          .run("CREATE TABLE " + dbName1 + "." + tableName + " (key int, value int) PARTITIONED BY (load_date date) " +
+                  "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+          .run("use " + dbName1)
+          .run("SHOW TABLES LIKE '" + tableName + "'")
+          .verifyResult(tableName)
+          .run("CREATE TABLE " + dbName2 + "." + tableName + " (key int, value int) PARTITIONED BY (load_date date) " +
+                  "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+          .run("use " + dbName2)
+          .run("SHOW TABLES LIKE '" + tableName + "'")
+          .verifyResult(tableName)
+          .run(txnStrStart)
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-02') VALUES (5, 5)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-01') VALUES (1, 1)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-01') VALUES (2, 2)")
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-01') VALUES (2, 2)")
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-02') VALUES (3, 3)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-02') VALUES (3, 3)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-03') VALUES (4, 4)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-02') VALUES (5, 5)")
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-01') VALUES (1, 1)")
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-03') VALUES (4, 4)")
+          .run("select key from " + dbName2 + "." + tableName + " order by key")
+          .verifyResults(resultArray)
+          .run("select key from " + dbName1 + "." + tableName + " order by key")
+          .verifyResults(resultArray)
+          .run(txnStrCommit);
+
+    incrementalDump = primary.dump("`*`", bootStrapDump.lastReplicationId);
+
+    // Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
+    // we are not able to create multiple embedded derby instances for two different MetaStore instances.
+    primary.run("drop database " + primaryDbName + " cascade");
+    primary.run("drop database " + dbName1 + " cascade");
+    primary.run("drop database " + dbName2 + " cascade");
+    //End of additional steps
+
+    replica.loadWithoutExplain("", bootStrapDump.dumpLocation)
+            .run("REPL STATUS default")
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    replica.loadWithoutExplain("", incrementalDump.dumpLocation)
+          .run("REPL STATUS " + dbName1)
+          .run("select key from " + dbName1 + "." + tableName + " order by key")
+          .verifyResults(resultArray)
+          .run("select key from " + dbName2 + "." + tableName + " order by key")
+          .verifyResults(resultArray);
+
+    replica.run("drop database " + primaryDbName + " cascade");
+    replica.run("drop database " + dbName1 + " cascade");
+    replica.run("drop database " + dbName2 + " cascade");
   }
 }

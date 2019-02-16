@@ -136,12 +136,11 @@ public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
       // create a new setop whose children are the filters created above
       SetOp newSetOp = setOp.copy(setOp.getTraitSet(), newSetOpInputs);
       call.transformTo(newSetOp);
-    } else if (newSetOpInputs.size() == 1) {
-      call.transformTo(newSetOpInputs.get(0));
     } else {
-      // we have to keep at least a branch before we support empty values() in
-      // hive
-      call.transformTo(lastInput);
+      // We have to keep at least a branch before we support empty values() in Hive
+      RelNode result = newSetOpInputs.size() == 1 ? newSetOpInputs.get(0) : lastInput;
+      call.transformTo(
+          relBuilder.push(result).convert(filterRel.getRowType(), false).build());
     }
   }
 }

@@ -1,0 +1,9 @@
+PREHOOK: query: create table fallbackauthload(c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@fallbackauthload
+POSTHOOK: query: create table fallbackauthload(c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@fallbackauthload
+FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation LOAD [ADMIN]

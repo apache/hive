@@ -62,6 +62,8 @@ t6.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL'
 ) t66
 ON (t66.subject=t55.object)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@triples
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT t11.subject, t22.object , t33.subject , t55.object, t66.object
 FROM
@@ -118,6 +120,8 @@ t6.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL'
 ) t66
 ON (t66.subject=t55.object)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@triples
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -33,11 +33,15 @@ SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_n1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test_n1 WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_n1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -71,7 +75,7 @@ STAGE PLANS:
                     predicate: ((cdecimal1 < 12345.5678) and (cdecimal1 > 0) and (cdecimal2 <> 0) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                     Statistics: Num rows: 455 Data size: 100294 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: (cdecimal1 + cdecimal2) (type: decimal(25,14)), (cdecimal1 - (2 * cdecimal2)) (type: decimal(26,14)), ((cdecimal1 + 2.34) / cdecimal2) (type: decimal(38,13)), (cdecimal1 * (cdecimal2 / 3.4)) (type: decimal(38,17)), (cdecimal1 % 10) (type: decimal(12,10)), UDFToInteger(cdecimal1) (type: int), UDFToShort(cdecimal2) (type: smallint), UDFToByte(cdecimal2) (type: tinyint), UDFToLong(cdecimal1) (type: bigint), UDFToBoolean(cdecimal1) (type: boolean), UDFToDouble(cdecimal2) (type: double), UDFToFloat(cdecimal1) (type: float), UDFToString(cdecimal2) (type: string), CAST( cdecimal1 AS TIMESTAMP) (type: timestamp)
+                      expressions: (cdecimal1 + cdecimal2) (type: decimal(25,14)), (cdecimal1 - (2 * cdecimal2)) (type: decimal(26,14)), ((cdecimal1 + 2.34) / cdecimal2) (type: decimal(38,13)), (cdecimal1 * (cdecimal2 / 3.4)) (type: decimal(38,17)), (cdecimal1 % 10) (type: decimal(12,10)), UDFToInteger(cdecimal1) (type: int), UDFToShort(cdecimal2) (type: smallint), UDFToByte(cdecimal2) (type: tinyint), UDFToLong(cdecimal1) (type: bigint), UDFToBoolean(cdecimal1) (type: boolean), UDFToDouble(cdecimal2) (type: double), UDFToFloat(cdecimal1) (type: float), CAST( cdecimal2 AS STRING) (type: string), CAST( cdecimal1 AS TIMESTAMP) (type: timestamp)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
                       Select Vectorization:
                           className: VectorSelectOperator
@@ -84,10 +88,9 @@ STAGE PLANS:
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [4, 6, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                            keyColumns: 4:decimal(25,14), 6:decimal(26,14), 8:decimal(38,13), 10:decimal(38,17), 11:decimal(12,10), 12:int, 13:smallint, 14:tinyint, 15:bigint, 16:boolean, 17:double, 18:float, 19:string, 20:timestamp
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 455 Data size: 100294 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
@@ -112,7 +115,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaaaaaaaaaaa
+                reduceColumnNullOrder: zzzzzzzzzzzzzz
                 reduceColumnSortOrder: ++++++++++++++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -166,16 +169,16 @@ LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_test_n1
 #### A masked pattern was here ####
-1836.44199584197700	-1166.02723492725400	0.8372697814834	245972.55810810255804469	5.6189189189	835	1000	NULL	835	true	1000.823076923077	835.6189	1000.823076923077	1970-01-01 00:13:55.618918918
-1856.13222453224620	-1178.52931392929240	0.8372449787014	251275.44324324968747899	4.5783783784	844	1011	NULL	844	true	1011.5538461538462	844.57837	1011.5538461538462	1970-01-01 00:14:04.578378378
-1858.75758835761550	-1180.19625779623100	0.8372417113669	251986.76756757564861519	5.7729729730	845	1012	NULL	845	true	1012.9846153846155	845.77295	1012.9846153846155	1970-01-01 00:14:05.772972973
-1862.69563409566930	-1182.69667359663860	0.8372368276345	253055.63918919969667286	7.5648648649	847	1015	NULL	847	true	1015.1307692307693	847.5649	1015.1307692307693	1970-01-01 00:14:07.564864864
-1883.69854469852330	-1196.03222453224660	0.8372111259286	258794.49324323677116559	7.1216216216	857	1026	NULL	857	true	1026.5769230769233	857.12164	1026.5769230769233	1970-01-01 00:14:17.121621621
-1886.32390852389240	-1197.69916839918480	0.8372079534582	259516.37432431944456816	8.3162162162	858	1028	NULL	858	true	1028.0076923076924	858.3162	1028.0076923076924	1970-01-01 00:14:18.316216216
-1887.63659043657700	-1198.53264033265400	0.8372063705322	259877.69189188782259834	8.9135135135	858	1028	NULL	858	true	1028.723076923077	858.9135	1028.723076923077	1970-01-01 00:14:18.913513513
-1895.51268191268460	-1203.53347193346920	0.8371969190171	262050.87567567649292835	2.4972972973	862	1033	NULL	862	true	1033.0153846153846	862.4973	1033.0153846153846	1970-01-01 00:14:22.497297297
-1909.95218295221550	-1212.70166320163100	0.8371797936946	266058.54729730725574014	9.0675675676	869	1040	NULL	869	true	1040.8846153846155	869.06757	1040.8846153846155	1970-01-01 00:14:29.067567567
-1913.89022869026920	-1215.20207900203840	0.8371751679996	267156.82702703945592392	0.8594594595	870	1043	NULL	870	true	1043.0307692307692	870.85944	1043.0307692307692	1970-01-01 00:14:30.859459459
+1836.44199584197700	-1166.02723492725400	0.8372697814834	245972.55810810255804469	5.6189189189	835	1000	NULL	835	true	1000.823076923077	835.6189	1000.82307692307700	1970-01-01 00:13:55.618918918
+1856.13222453224620	-1178.52931392929240	0.8372449787014	251275.44324324968747899	4.5783783784	844	1011	NULL	844	true	1011.5538461538462	844.57837	1011.55384615384620	1970-01-01 00:14:04.578378378
+1858.75758835761550	-1180.19625779623100	0.8372417113669	251986.76756757564861519	5.7729729730	845	1012	NULL	845	true	1012.9846153846155	845.77295	1012.98461538461550	1970-01-01 00:14:05.772972973
+1862.69563409566930	-1182.69667359663860	0.8372368276345	253055.63918919969667286	7.5648648649	847	1015	NULL	847	true	1015.1307692307693	847.5649	1015.13076923076930	1970-01-01 00:14:07.564864864
+1883.69854469852330	-1196.03222453224660	0.8372111259286	258794.49324323677116559	7.1216216216	857	1026	NULL	857	true	1026.5769230769233	857.12164	1026.57692307692330	1970-01-01 00:14:17.121621621
+1886.32390852389240	-1197.69916839918480	0.8372079534582	259516.37432431944456816	8.3162162162	858	1028	NULL	858	true	1028.0076923076924	858.3162	1028.00769230769240	1970-01-01 00:14:18.316216216
+1887.63659043657700	-1198.53264033265400	0.8372063705322	259877.69189188782259834	8.9135135135	858	1028	NULL	858	true	1028.723076923077	858.9135	1028.72307692307700	1970-01-01 00:14:18.913513513
+1895.51268191268460	-1203.53347193346920	0.8371969190171	262050.87567567649292835	2.4972972973	862	1033	NULL	862	true	1033.0153846153846	862.4973	1033.01538461538460	1970-01-01 00:14:22.497297297
+1909.95218295221550	-1212.70166320163100	0.8371797936946	266058.54729730725574014	9.0675675676	869	1040	NULL	869	true	1040.8846153846155	869.06757	1040.88461538461550	1970-01-01 00:14:29.067567567
+1913.89022869026920	-1215.20207900203840	0.8371751679996	267156.82702703945592392	0.8594594595	870	1043	NULL	870	true	1043.0307692307692	870.85944	1043.03076923076920	1970-01-01 00:14:30.859459459
 PREHOOK: query: SELECT SUM(HASH(*))
 FROM (SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test_n1 WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
@@ -188,7 +191,7 @@ ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_test_n1
 #### A masked pattern was here ####
--1300490595129
+1506342314829
 PREHOOK: query: CREATE TABLE decimal_test_small_n0 STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(10,3)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(7,2)) AS cdecimal2 FROM alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -207,11 +210,15 @@ SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14
 LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_small_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test_small_n0 WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
 ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14
 LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_small_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -245,23 +252,22 @@ STAGE PLANS:
                     predicate: ((cdecimal1 < 12345.5678) and (cdecimal1 > 0) and (cdecimal2 <> 0) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                     Statistics: Num rows: 455 Data size: 100294 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: (cdecimal1 + cdecimal2) (type: decimal(11,3)), (cdecimal1 - (2 * cdecimal2)) (type: decimal(11,3)), ((cdecimal1 + 2.34) / cdecimal2) (type: decimal(21,11)), (cdecimal1 * (cdecimal2 / 3.4)) (type: decimal(23,9)), (cdecimal1 % 10) (type: decimal(5,3)), UDFToInteger(cdecimal1) (type: int), UDFToShort(cdecimal2) (type: smallint), UDFToByte(cdecimal2) (type: tinyint), UDFToLong(cdecimal1) (type: bigint), UDFToBoolean(cdecimal1) (type: boolean), UDFToDouble(cdecimal2) (type: double), UDFToFloat(cdecimal1) (type: float), UDFToString(cdecimal2) (type: string), CAST( cdecimal1 AS TIMESTAMP) (type: timestamp)
+                      expressions: (cdecimal1 + cdecimal2) (type: decimal(11,3)), (cdecimal1 - (2 * cdecimal2)) (type: decimal(11,3)), ((cdecimal1 + 2.34) / cdecimal2) (type: decimal(21,11)), (cdecimal1 * (cdecimal2 / 3.4)) (type: decimal(23,9)), (cdecimal1 % 10) (type: decimal(5,3)), UDFToInteger(cdecimal1) (type: int), UDFToShort(cdecimal2) (type: smallint), UDFToByte(cdecimal2) (type: tinyint), UDFToLong(cdecimal1) (type: bigint), UDFToBoolean(cdecimal1) (type: boolean), UDFToDouble(cdecimal2) (type: double), UDFToFloat(cdecimal1) (type: float), CAST( cdecimal2 AS STRING) (type: string), CAST( cdecimal1 AS TIMESTAMP) (type: timestamp)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [6, 8, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
-                          selectExpressions: DecimalColAddDecimalColumn(col 4:decimal(10,3), col 5:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3), ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)) -> 6:decimal(11,3), DecimalColSubtractDecimalColumn(col 4:decimal(10,3), col 7:decimal(9,2))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3), DecimalScalarMultiplyDecimalColumn(val 2, col 5:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)) -> 7:decimal(9,2)) -> 8:decimal(11,3), DecimalColDivideDecimalColumn(col 23:decimal(11,3), col 5:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 9:decimal(11,3)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,3)/DECIMAL_64, decimal64Val 2340, decimalVal 2.34) -> 9:decimal(11,3)/DECIMAL_64) -> 23:decimal(11,3), ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)) -> 10:decimal(21,11), DecimalColMultiplyDecimalColumn(col 4:decimal(10,3), col 11:decimal(12,6))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3), DecimalColDivideDecimalScalar(col 5:decimal(7,2), val 3.4)(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)) -> 11:decimal(12,6)) -> 12:decimal(23,9), DecimalColModuloDecimalScalar(col 4:decimal(10,3), val 10)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3)) -> 13:decimal(5,3), CastDecimalToLong(col 4:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3)) -> 14:int, CastDecimalToLong(col 5:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)) -> 15:smallint, CastDecimalToLong(col 5:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)) -> 16:tinyint, CastDecimalToLong(col 4:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3)) -> 17:bigint, CastDecimalToBoolean(col 4:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3)) -> 18:boolean, CastDecimalToDouble(col 5:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)) -> 19:double, CastDecimalToFloat(col 4:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3)) -> 20:float, CastDecimalToString(col 5:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2)) -> 21:string, CastDecimalToTimestamp(col 4:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 4:decimal(10,3)) -> 22:timestamp
+                          projectedOutputColumnNums: [7, 11, 14, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
+                          selectExpressions: DecimalColAddDecimalColumn(col 5:decimal(10,3), col 6:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 5:decimal(10,3), ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 6:decimal(7,2)) -> 7:decimal(11,3), DecimalColSubtractDecimalColumn(col 8:decimal(10,3), col 10:decimal(9,2))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 8:decimal(10,3), DecimalScalarMultiplyDecimalColumn(val 2, col 9:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 9:decimal(7,2)) -> 10:decimal(9,2)) -> 11:decimal(11,3), DecimalColDivideDecimalColumn(col 39:decimal(11,3), col 13:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 12:decimal(11,3)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,3)/DECIMAL_64, decimal64Val 2340, decimalVal 2.34) -> 12:decimal(11,3)/DECIMAL_64) -> 39:decimal(11,3), ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 13:decimal(7,2)) -> 14:decimal(21,11), DecimalColMultiplyDecimalColumn(col 15:decimal(10,3), col 17:decimal(12,6))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 15:decimal(10,3), DecimalColDivideDecimalScalar(col 16:decimal(7,2), val 3.4)(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 16:decimal(7,2)) -> 17:decimal(12,6)) -> 18:decimal(23,9), DecimalColModuloDecimalScalar(col 19:decimal(10,3), val 10)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 19:decimal(10,3)) -> 20:decimal(5,3), CastDecimalToLong(col 21:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 21:decimal(10,3)) -> 22:int, CastDecimalToLong(col 23:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 23:decimal(7,2)) -> 24:smallint, CastDecimalToLong(col 25:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 25:decimal(7,2)) -> 26:tinyint, CastDecimalToLong(col 27:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 27:decimal(10,3)) -> 28:bigint, CastDecimalToBoolean(col 29:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 29:decimal(10,3)) -> 30:boolean, CastDecimalToDouble(col 31:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 31:decimal(7,2)) -> 32:double, CastDecimalToFloat(col 33:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 33:decimal(10,3)) -> 34:float, CastDecimalToString(col 35:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 2:decimal(7,2)/DECIMAL_64) -> 35:decimal(7,2)) -> 36:string, CastDecimalToTimestamp(col 37:decimal(10,3))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 37:decimal(10,3)) -> 38:timestamp
                       Statistics: Num rows: 455 Data size: 100294 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(11,3)), _col1 (type: decimal(11,3)), _col2 (type: decimal(21,11)), _col3 (type: decimal(23,9)), _col4 (type: decimal(5,3)), _col5 (type: int), _col6 (type: smallint), _col7 (type: tinyint), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: double), _col11 (type: float), _col12 (type: string), _col13 (type: timestamp)
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [6, 8, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                            keyColumns: 7:decimal(11,3), 11:decimal(11,3), 14:decimal(21,11), 18:decimal(23,9), 20:decimal(5,3), 22:int, 24:smallint, 26:tinyint, 28:bigint, 30:boolean, 32:double, 34:float, 36:string, 38:timestamp
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 455 Data size: 100294 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
@@ -280,13 +286,13 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: cdouble:double, cdecimal1:decimal(10,3)/DECIMAL_64, cdecimal2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(10,3), decimal(7,2), decimal(11,3), decimal(9,2), decimal(11,3), decimal(11,3)/DECIMAL_64, decimal(21,11), decimal(12,6), decimal(23,9), decimal(5,3), bigint, bigint, bigint, bigint, bigint, double, double, string, timestamp, decimal(11,3)]
+                    scratchColumnTypeNames: [decimal(10,3), decimal(10,3), decimal(7,2), decimal(11,3), decimal(10,3), decimal(7,2), decimal(9,2), decimal(11,3), decimal(11,3)/DECIMAL_64, decimal(7,2), decimal(21,11), decimal(10,3), decimal(7,2), decimal(12,6), decimal(23,9), decimal(10,3), decimal(5,3), decimal(10,3), bigint, decimal(7,2), bigint, decimal(7,2), bigint, decimal(10,3), bigint, decimal(10,3), bigint, decimal(7,2), double, decimal(10,3), double, decimal(7,2), string, decimal(10,3), timestamp, decimal(11,3)]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaaaaaaaaaaa
+                reduceColumnNullOrder: zzzzzzzzzzzzzz
                 reduceColumnSortOrder: ++++++++++++++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -362,4 +368,4 @@ ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_test_small_n0
 #### A masked pattern was here ####
-1273824888155
+787712777374

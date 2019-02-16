@@ -42,9 +42,25 @@ public class VectorMapJoinFastLongHashMultiSet
 
   public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashMultiSet.class);
 
+  private long fullOuterNullKeyValueCount;
+
   @Override
   public VectorMapJoinHashMultiSetResult createHashMultiSetResult() {
     return new VectorMapJoinFastHashMultiSet.HashMultiSetResult();
+  }
+
+  @Override
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+      throws HiveException, IOException {
+
+    if (!adaptPutRow(currentKey, currentValue)) {
+
+      // Ignore NULL keys, except for FULL OUTER.
+      if (isFullOuter) {
+        fullOuterNullKeyValueCount++;
+      }
+
+    }
   }
 
   /*
@@ -80,12 +96,19 @@ public class VectorMapJoinFastLongHashMultiSet
     optimizedHashMultiSetResult.forget();
 
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
-    long count = findReadSlot(key, hashCode);
+    int pairIndex = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
-    if (count == -1) {
+    if (pairIndex == -1) {
       joinResult = JoinUtil.JoinResult.NOMATCH;
     } else {
-      optimizedHashMultiSetResult.set(count);
+      /*
+       * NOTE: Support for trackMatched not needed yet for Set.
+
+      if (matchTracker != null) {
+        matchTracker.trackMatch(pairIndex / 2);
+      }
+      */
+      optimizedHashMultiSetResult.set(slotPairs[pairIndex]);
       joinResult = JoinUtil.JoinResult.MATCH;
     }
 
@@ -95,10 +118,15 @@ public class VectorMapJoinFastLongHashMultiSet
   }
 
   public VectorMapJoinFastLongHashMultiSet(
-      boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
+      boolean isFullOuter,
+      boolean minMaxEnabled,
+      HashTableKeyType hashTableKeyType,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(minMaxEnabled, isOuterJoin, hashTableKeyType,
+    super(
+        isFullOuter,
+        minMaxEnabled, hashTableKeyType,
         initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    fullOuterNullKeyValueCount = 0;
   }
 
   @Override

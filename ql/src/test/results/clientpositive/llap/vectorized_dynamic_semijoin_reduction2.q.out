@@ -92,8 +92,14 @@ POSTHOOK: Output: default@dsrv2_small
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint = b.partkey_bigint)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint = b.partkey_bigint)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -228,8 +234,14 @@ POSTHOOK: Input: default@dsrv2_small
 20
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -262,7 +274,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 9:decimal(10,1))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1)), FilterExprAndExpr(children: FilterDecimalColumnBetweenDynamicValue(col 9:decimal(10,1), left 0, right 0)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1)), VectorInBloomFilterColDynamicValue(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1))))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:decimal(10,1)/DECIMAL_64), FilterExprAndExpr(children: FilterDecimalColumnBetweenDynamicValue(col 9:decimal(10,1), left 0, right 0)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1)), VectorInBloomFilterColDynamicValue(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 10:decimal(10,1))))
                     predicate: ((partkey_decimal BETWEEN DynamicValue(RS_7_b_partkey_decimal_min) AND DynamicValue(RS_7_b_partkey_decimal_max) and in_bloom_filter(partkey_decimal, DynamicValue(RS_7_b_partkey_decimal_bloom_filter))) and partkey_decimal is not null) (type: boolean)
                     Statistics: Num rows: 100 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -279,10 +291,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(10,1))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:decimal(10,1)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 100 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -300,7 +311,7 @@ STAGE PLANS:
                     includeColumns: [1]
                     dataColumns: partkey_bigint:bigint, partkey_decimal:decimal(10,1)/DECIMAL_64, partkey_double:double, shipdate_date:date, shipdate_ts:timestamp, shipdate_string:string, shipdate_char:char(10), shipdate_varchar:varchar(10)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(10,1)]
+                    scratchColumnTypeNames: [decimal(10,1), decimal(10,1)]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -314,7 +325,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 9:decimal(10,1))(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1))
+                        predicateExpression: SelectColumnIsNotNull(col 1:decimal(10,1)/DECIMAL_64)
                     predicate: partkey_decimal is not null (type: boolean)
                     Statistics: Num rows: 20 Data size: 2240 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -331,10 +342,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(10,1))
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [1]
+                            keyColumns: 1:decimal(10,1)
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 20 Data size: 2240 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: decimal(10,1))
@@ -360,10 +370,9 @@ STAGE PLANS:
                             sort order: 
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkEmptyKeyOperator
-                                keyColumnNums: []
                                 native: true
                                 nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                valueColumnNums: [0, 1, 2]
+                                valueColumns: 0:decimal(10,1), 1:decimal(10,1), 2:binary
                             Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: decimal(10,1)), _col1 (type: decimal(10,1)), _col2 (type: binary)
             Execution mode: vectorized, llap
@@ -402,6 +411,9 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -472,10 +484,9 @@ STAGE PLANS:
                   sort order: 
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkEmptyKeyOperator
-                      keyColumnNums: []
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [0, 1, 2]
+                      valueColumns: 0:decimal(10,1), 1:decimal(10,1), 2:binary
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: decimal(10,1)), _col1 (type: decimal(10,1)), _col2 (type: binary)
 
@@ -498,8 +509,14 @@ POSTHOOK: Input: default@dsrv2_small
 20
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_double = b.partkey_double)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_double = b.partkey_double)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -634,8 +651,14 @@ POSTHOOK: Input: default@dsrv2_small
 20
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_date = b.shipdate_date)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_date = b.shipdate_date)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -770,8 +793,14 @@ POSTHOOK: Input: default@dsrv2_small
 23
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_ts = b.shipdate_ts)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_ts = b.shipdate_ts)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -906,8 +935,14 @@ POSTHOOK: Input: default@dsrv2_small
 23
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_string = b.shipdate_string)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_string = b.shipdate_string)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1042,8 +1077,14 @@ POSTHOOK: Input: default@dsrv2_small
 23
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_char = b.shipdate_char)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_char = b.shipdate_char)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1178,8 +1219,14 @@ POSTHOOK: Input: default@dsrv2_small
 23
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_varchar = b.shipdate_varchar)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@dsrv2_big
+PREHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_varchar = b.shipdate_varchar)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Input: default@dsrv2_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

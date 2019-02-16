@@ -1,5 +1,5 @@
 -- Test MAPJOIN with filters in the ON condition
-
+set hive.merge.nway.joins=true;
 DROP TABLE src_a_data;
 CREATE TABLE src_a_data (
     key int,

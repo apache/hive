@@ -15,6 +15,8 @@ FROM (
   CLUSTER BY id
 ) a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 SELECT *
 FROM (
@@ -32,6 +34,8 @@ FROM (
   CLUSTER BY id
 ) a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

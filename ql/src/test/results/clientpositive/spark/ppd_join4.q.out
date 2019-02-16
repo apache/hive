@@ -37,6 +37,8 @@ from
 join test_tbl t3 on (t2.id=t3.id )
 where t2.name='c' and t3.id='a'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select t2.* 
 from
@@ -44,6 +46,8 @@ from
 join test_tbl t3 on (t2.id=t3.id )
 where t2.name='c' and t3.id='a'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

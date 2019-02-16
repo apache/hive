@@ -61,9 +61,13 @@ POSTHOOK: Lineage: decimal_udf_n0.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -178,9 +182,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -295,9 +303,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -325,8 +337,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DoubleColAddDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColAddDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 6:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -354,7 +366,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(20,10), value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -412,9 +424,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -529,9 +545,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -646,9 +666,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -763,9 +787,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -793,8 +821,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DoubleColSubtractDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColSubtractDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 6:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -822,7 +850,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(20,10), value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -880,9 +908,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -997,9 +1029,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1114,9 +1150,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1222,9 +1262,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1339,9 +1383,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1369,8 +1417,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DoubleColMultiplyDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColMultiplyDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 6:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1398,7 +1446,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(20,10), value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -1456,9 +1504,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1573,9 +1625,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1690,9 +1746,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1810,9 +1870,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1920,9 +1984,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1958,8 +2026,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4]
-                          selectExpressions: DoubleColDivideDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
+                          projectedOutputColumnNums: [6]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 6:double
                       Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1987,7 +2055,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(20,10), value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double]
+                    scratchColumnTypeNames: [double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -2030,9 +2098,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2060,8 +2132,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 4:double)(children: DoubleColDivideDoubleScalar(col 3:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double) -> 3:double
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 4:double)(children: DoubleColDivideDoubleScalar(col 3:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double) -> 5:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -2089,7 +2161,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: key:decimal(20,10), value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double]
+                    scratchColumnTypeNames: [double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -2147,9 +2219,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2264,9 +2340,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2320,10 +2400,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1, 2]
+                            valueColumns: 1:decimal(30,10), 2:bigint
                         Statistics: Num rows: 18 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint)
             Execution mode: vectorized, llap
@@ -2379,18 +2459,18 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 4, 6, 1]
-                      selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(30,10), col 3:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 4:decimal(38,18), DecimalColDivideDecimalColumn(col 5:decimal(24,14), col 3:decimal(19,0))(children: CastDecimalToDecimal(col 1:decimal(30,10)) -> 5:decimal(24,14), CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 6:decimal(38,28)
+                      projectedOutputColumnNums: [0, 4, 7, 1]
+                      selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(30,10), col 3:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 4:decimal(38,18), DecimalColDivideDecimalColumn(col 5:decimal(24,14), col 6:decimal(19,0))(children: CastDecimalToDecimal(col 1:decimal(30,10)) -> 5:decimal(24,14), CastLongToDecimal(col 2:bigint) -> 6:decimal(19,0)) -> 7:decimal(38,28)
                   Statistics: Num rows: 17 Data size: 5780 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [4, 6, 1]
+                        valueColumns: 4:decimal(38,18), 7:decimal(38,28), 1:decimal(30,10)
                     Statistics: Num rows: 17 Data size: 5780 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: decimal(38,18)), _col2 (type: decimal(38,28)), _col3 (type: decimal(30,10))
         Reducer 3 
@@ -2398,7 +2478,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2463,9 +2543,13 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2580,9 +2664,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2651,8 +2739,12 @@ NULL
 NULL
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2737,9 +2829,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2854,9 +2950,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2971,9 +3071,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3088,9 +3192,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3205,9 +3313,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3261,10 +3373,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1, 2, 3]
+                            valueColumns: 1:double, 2:double, 3:bigint
                         Statistics: Num rows: 18 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -3320,8 +3432,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 4, 6]
-                      selectExpressions: FuncPowerDoubleToDouble(col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 4:double) -> 5:double) -> 4:double) -> 5:double) -> 4:double, DoubleColDivideLongColumn(col 5:double, col 3:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 6:double)(children: DoubleColDivideLongColumn(col 5:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 5:double) -> 6:double) -> 5:double) -> 6:double
+                      projectedOutputColumnNums: [0, 8, 12]
+                      selectExpressions: FuncPowerDoubleToDouble(col 7:double)(children: DoubleColDivideLongColumn(col 6:double, col 3:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 4:double) -> 5:double) -> 6:double) -> 7:double) -> 8:double, DoubleColDivideLongColumn(col 11:double, col 3:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 10:double)(children: DoubleColDivideLongColumn(col 9:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 9:double) -> 10:double) -> 11:double) -> 12:double
                   Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -3369,9 +3481,13 @@ NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3425,10 +3541,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1, 2, 3]
+                            valueColumns: 1:double, 2:double, 3:bigint
                         Statistics: Num rows: 18 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -3484,8 +3600,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 4, 9]
-                      selectExpressions: FuncPowerDoubleToDouble(col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 8:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 4:double) -> 5:double) -> 4:double, IfExprNullCondExpr(col 6:boolean, null, col 7:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 6:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 7:bigint) -> 8:bigint) -> 5:double) -> 4:double, DoubleColDivideLongColumn(col 5:double, col 11:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 9:double)(children: DoubleColDivideLongColumn(col 5:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 5:double) -> 9:double) -> 5:double, IfExprNullCondExpr(col 8:boolean, null, col 10:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 8:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 10:bigint) -> 11:bigint) -> 9:double
+                      projectedOutputColumnNums: [0, 11, 18]
+                      selectExpressions: FuncPowerDoubleToDouble(col 10:double)(children: DoubleColDivideLongColumn(col 6:double, col 9:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 4:double) -> 5:double) -> 6:double, IfExprNullCondExpr(col 7:boolean, null, col 8:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 7:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 8:bigint) -> 9:bigint) -> 10:double) -> 11:double, DoubleColDivideLongColumn(col 14:double, col 17:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 13:double)(children: DoubleColDivideLongColumn(col 12:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 12:double) -> 13:double) -> 14:double, IfExprNullCondExpr(col 15:boolean, null, col 16:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 15:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 16:bigint) -> 17:bigint) -> 18:double
                   Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -3533,9 +3649,13 @@ NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3617,9 +3737,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3668,10 +3792,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:decimal(20,10)
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized, llap
@@ -3748,9 +3871,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3799,10 +3926,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:decimal(20,10)
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized, llap
@@ -3879,9 +4005,13 @@ POSTHOOK: Input: default@decimal_udf_n0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -3930,10 +4060,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:bigint
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
@@ -4042,9 +4171,13 @@ POSTHOOK: Lineage: decimal_udf_txt_small.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4159,9 +4292,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4276,9 +4413,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4306,8 +4447,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 5:double
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4335,7 +4476,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), double, double, double]
+                    scratchColumnTypeNames: [decimal(15,3), double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -4393,9 +4534,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4510,9 +4655,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4627,9 +4776,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4744,9 +4897,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4774,8 +4931,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DoubleColSubtractDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 5:double
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DoubleColSubtractDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4803,7 +4960,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), double, double, double]
+                    scratchColumnTypeNames: [decimal(15,3), double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -4861,9 +5018,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -4978,9 +5139,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5095,9 +5260,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5203,9 +5372,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5320,9 +5493,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5350,8 +5527,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 5:double
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5379,7 +5556,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), double, double, double]
+                    scratchColumnTypeNames: [decimal(15,3), double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -5437,9 +5614,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5554,9 +5735,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / 0 FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5671,9 +5856,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5791,9 +5980,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_txt_small WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / value FROM DECIMAL_UDF_txt_small WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5901,9 +6094,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -5939,8 +6136,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5]
-                          selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 5:double
+                          projectedOutputColumnNums: [7]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -5968,7 +6165,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), double, double, double]
+                    scratchColumnTypeNames: [decimal(15,3), double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -6011,9 +6208,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6041,8 +6242,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 5:double)(children: DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double) -> 5:double) -> 4:double
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 5:double)(children: DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double) -> 5:double) -> 6:double
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -6070,7 +6271,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), double, double]
+                    scratchColumnTypeNames: [decimal(15,3), double, double, double]
 
   Stage: Stage-0
     Fetch Operator
@@ -6128,9 +6329,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6245,9 +6450,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6301,10 +6510,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1, 2]
+                            valueColumns: 1:decimal(25,3), 2:bigint
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: decimal(25,3)), _col2 (type: bigint)
             Execution mode: vectorized, llap
@@ -6360,18 +6569,18 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 4, 6, 1]
-                      selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(25,3), col 3:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 4:decimal(38,16), DecimalColDivideDecimalColumn(col 5:decimal(19,7), col 3:decimal(19,0))(children: CastDecimalToDecimal(col 1:decimal(25,3)) -> 5:decimal(19,7), CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 6:decimal(38,26)
+                      projectedOutputColumnNums: [0, 4, 7, 1]
+                      selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(25,3), col 3:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 3:decimal(19,0)) -> 4:decimal(38,16), DecimalColDivideDecimalColumn(col 5:decimal(19,7), col 6:decimal(19,0))(children: CastDecimalToDecimal(col 1:decimal(25,3)) -> 5:decimal(19,7), CastLongToDecimal(col 2:bigint) -> 6:decimal(19,0)) -> 7:decimal(38,26)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0]
+                        keyColumns: 0:int
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [4, 6, 1]
+                        valueColumns: 4:decimal(38,16), 7:decimal(38,26), 1:decimal(25,3)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: decimal(38,16)), _col2 (type: decimal(38,26)), _col3 (type: decimal(25,3))
         Reducer 3 
@@ -6379,7 +6588,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -6444,9 +6653,13 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6561,9 +6774,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6632,8 +6849,12 @@ NULL
 NULL
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6718,9 +6939,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6835,9 +7060,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -6952,9 +7181,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7069,9 +7302,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7186,9 +7423,13 @@ NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7219,13 +7460,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 0, 4, 7]
-                        selectExpressions: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColMultiplyDoubleColumn(col 5:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 5:double, CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 6:double) -> 7:double
+                        projectedOutputColumnNums: [1, 0, 4, 9]
+                        selectExpressions: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColMultiplyDoubleColumn(col 6:double, col 8:double)(children: CastDecimalToDouble(col 5:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 5:decimal(15,3)) -> 6:double, CastDecimalToDouble(col 7:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 7:decimal(15,3)) -> 8:double) -> 9:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col3), sum(_col2), count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDouble(col 7:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 0:decimal(15,3)/DECIMAL_64) -> bigint
+                          aggregators: VectorUDAFSumDouble(col 9:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 0:decimal(15,3)/DECIMAL_64) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:int
@@ -7242,10 +7483,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1, 2, 3]
+                            valueColumns: 1:double, 2:double, 3:bigint
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -7264,7 +7505,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), double, double, double, double]
+                    scratchColumnTypeNames: [decimal(15,3), double, decimal(15,3), double, decimal(15,3), double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -7301,8 +7542,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 4, 6]
-                      selectExpressions: FuncPowerDoubleToDouble(col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 4:double) -> 5:double) -> 4:double) -> 5:double) -> 4:double, DoubleColDivideLongColumn(col 5:double, col 3:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 6:double)(children: DoubleColDivideLongColumn(col 5:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 5:double) -> 6:double) -> 5:double) -> 6:double
+                      projectedOutputColumnNums: [0, 8, 12]
+                      selectExpressions: FuncPowerDoubleToDouble(col 7:double)(children: DoubleColDivideLongColumn(col 6:double, col 3:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 4:double) -> 5:double) -> 6:double) -> 7:double) -> 8:double, DoubleColDivideLongColumn(col 11:double, col 3:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 10:double)(children: DoubleColDivideLongColumn(col 9:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 9:double) -> 10:double) -> 11:double) -> 12:double
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -7350,9 +7591,13 @@ NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7383,13 +7628,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 0, 4, 7]
-                        selectExpressions: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColMultiplyDoubleColumn(col 5:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 5:double, CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 6:double) -> 7:double
+                        projectedOutputColumnNums: [1, 0, 4, 9]
+                        selectExpressions: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColMultiplyDoubleColumn(col 6:double, col 8:double)(children: CastDecimalToDouble(col 5:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 5:decimal(15,3)) -> 6:double, CastDecimalToDouble(col 7:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 7:decimal(15,3)) -> 8:double) -> 9:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col3), sum(_col2), count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDouble(col 7:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 0:decimal(15,3)/DECIMAL_64) -> bigint
+                          aggregators: VectorUDAFSumDouble(col 9:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 0:decimal(15,3)/DECIMAL_64) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:int
@@ -7406,10 +7651,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1, 2, 3]
+                            valueColumns: 1:double, 2:double, 3:bigint
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
             Execution mode: vectorized, llap
@@ -7428,7 +7673,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:decimal(15,3)/DECIMAL_64, value:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(15,3), double, double, double, double]
+                    scratchColumnTypeNames: [decimal(15,3), double, decimal(15,3), double, decimal(15,3), double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -7465,8 +7710,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 4, 9]
-                      selectExpressions: FuncPowerDoubleToDouble(col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 8:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 4:double) -> 5:double) -> 4:double, IfExprNullCondExpr(col 6:boolean, null, col 7:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 6:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 7:bigint) -> 8:bigint) -> 5:double) -> 4:double, DoubleColDivideLongColumn(col 5:double, col 11:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 9:double)(children: DoubleColDivideLongColumn(col 5:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 5:double) -> 9:double) -> 5:double, IfExprNullCondExpr(col 8:boolean, null, col 10:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 8:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 10:bigint) -> 11:bigint) -> 9:double
+                      projectedOutputColumnNums: [0, 11, 18]
+                      selectExpressions: FuncPowerDoubleToDouble(col 10:double)(children: DoubleColDivideLongColumn(col 6:double, col 9:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 5:double)(children: DoubleColDivideLongColumn(col 4:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 4:double) -> 5:double) -> 6:double, IfExprNullCondExpr(col 7:boolean, null, col 8:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 7:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 8:bigint) -> 9:bigint) -> 10:double) -> 11:double, DoubleColDivideLongColumn(col 14:double, col 17:bigint)(children: DoubleColSubtractDoubleColumn(col 1:double, col 13:double)(children: DoubleColDivideLongColumn(col 12:double, col 3:bigint)(children: DoubleColMultiplyDoubleColumn(col 2:double, col 2:double) -> 12:double) -> 13:double) -> 14:double, IfExprNullCondExpr(col 15:boolean, null, col 16:bigint)(children: LongColEqualLongScalar(col 3:bigint, val 1) -> 15:boolean, LongColSubtractLongScalar(col 3:bigint, val 1) -> 16:bigint) -> 17:bigint) -> 18:double
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -7514,9 +7759,13 @@ NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7598,9 +7847,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7649,10 +7902,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:decimal(15,3)
                         Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(15,3))
             Execution mode: vectorized, llap
@@ -7729,9 +7981,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MAX(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7780,10 +8036,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:decimal(15,3)
                         Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(15,3))
             Execution mode: vectorized, llap
@@ -7860,9 +8115,13 @@ POSTHOOK: Input: default@decimal_udf_txt_small
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT COUNT(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf_txt_small
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -7911,10 +8170,9 @@ STAGE PLANS:
                         sort order: 
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
-                            keyColumnNums: []
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [0]
+                            valueColumns: 0:bigint
                         Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap

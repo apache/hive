@@ -47,6 +47,12 @@ PREHOOK: query: EXPLAIN select *
  where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart2
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select *
  from srcpart
  join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
@@ -54,6 +60,12 @@ POSTHOOK: query: EXPLAIN select *
  where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart2
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -172,6 +184,12 @@ PREHOOK: query: EXPLAIN select *
  where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart2
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select *
  from srcpart
  join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
@@ -179,6 +197,12 @@ POSTHOOK: query: EXPLAIN select *
  where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart2
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -339,6 +363,12 @@ PREHOOK: query: EXPLAIN select *
  where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart2
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select *
  from srcpart
  join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
@@ -346,6 +376,12 @@ POSTHOOK: query: EXPLAIN select *
  where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart2
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

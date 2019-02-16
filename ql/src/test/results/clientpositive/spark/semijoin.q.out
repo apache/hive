@@ -122,8 +122,14 @@ POSTHOOK: Input: default@t4_n5
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -226,8 +232,14 @@ POSTHOOK: Input: default@t2_n33
 8	val_8
 PREHOOK: query: explain select * from t2_n33 a left semi join t1_n55 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t2_n33 a left semi join t1_n55 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -332,8 +344,14 @@ POSTHOOK: Input: default@t2_n33
 8	val_4
 PREHOOK: query: explain select * from t1_n55 a left semi join t4_n5 b on b.key=a.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t4_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t4_n5 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t4_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -430,8 +448,14 @@ POSTHOOK: Input: default@t4_n5
 #### A masked pattern was here ####
 PREHOOK: query: explain select a.value from t1_n55 a left semi join t3_n12 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join t3_n12 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -543,8 +567,14 @@ val_8
 val_9
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -644,8 +674,14 @@ POSTHOOK: Input: default@t2_n33
 0	val_0
 PREHOOK: query: explain select a.value from t1_n55 a left semi join (select key from t3_n12 where key > 5) b on a.key = b.key sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join (select key from t3_n12 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -749,8 +785,14 @@ val_8
 val_9
 PREHOOK: query: explain select a.value from t1_n55 a left semi join (select key , value from t2_n33 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.value from t1_n55 a left semi join (select key , value from t2_n33 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -851,8 +893,14 @@ POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from t2_n33 a left semi join (select key , value from t1_n55 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t2_n33 a left semi join (select key , value from t1_n55 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -954,8 +1002,14 @@ POSTHOOK: Input: default@t2_n33
 8	val_4
 PREHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1073,8 +1127,14 @@ POSTHOOK: Input: default@t3_n12
 9
 PREHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = 2*b.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a left semi join t2_n33 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1175,8 +1235,16 @@ POSTHOOK: Input: default@t2_n33
 8	val_8
 PREHOOK: query: explain select * from t1_n55 a join t2_n33 b on a.key = b.key left semi join t3_n12 c on b.key = c.key sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t1_n55 a join t2_n33 b on a.key = b.key left semi join t3_n12 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1311,8 +1379,14 @@ POSTHOOK: Input: default@t3_n12
 8	val_8	8	val_4
 PREHOOK: query: explain select * from t3_n12 a left semi join t1_n55 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from t3_n12 a left semi join t1_n55 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1422,8 +1496,16 @@ POSTHOOK: Input: default@t3_n12
 9	val_9
 PREHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key left semi join t2_n33 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key left semi join t2_n33 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1567,8 +1649,16 @@ POSTHOOK: Input: default@t3_n12
 8
 PREHOOK: query: explain select a.key from t3_n12 a left outer join t1_n55 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left outer join t1_n55 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1696,8 +1786,16 @@ POSTHOOK: Input: default@t3_n12
 8
 PREHOOK: query: explain select a.key from t1_n55 a right outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a right outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1828,8 +1926,16 @@ NULL
 NULL
 PREHOOK: query: explain select a.key from t1_n55 a full outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t1_n55 a full outer join t3_n12 b on a.key = b.key left semi join t2_n33 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1885,7 +1991,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                      Left Semi Join 1 to 2
                 keys:
                   0 key (type: int)
@@ -1960,8 +2066,16 @@ NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2092,8 +2206,16 @@ POSTHOOK: Input: default@t3_n12
 8
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key right outer join t1_n55 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key right outer join t1_n55 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2226,8 +2348,16 @@ NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key full outer join t2_n33 c on a.key = c.key sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t1_n55 b on a.key = b.key full outer join t2_n33 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2284,7 +2414,7 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Outer Join 0 to 2
+                     Full Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -2371,8 +2501,16 @@ NULL
 NULL
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.value = c.value sort by a.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.key = b.key left outer join t1_n55 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2533,8 +2671,14 @@ POSTHOOK: Input: default@t3_n12
 8
 PREHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.value = b.value where a.key > 100
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n33
+PREHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 POSTHOOK: query: explain select a.key from t3_n12 a left semi join t2_n33 b on a.value = b.value where a.key > 100
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n33
+POSTHOOK: Input: default@t3_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2627,10 +2771,14 @@ PREHOOK: query: explain select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2773,3 +2921,55 @@ POSTHOOK: query: select key, value from src outr left semi join
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+PREHOOK: query: explain cbo select pp.p_partkey from (select distinct p_name from part) p join part pp on pp.p_name = p.p_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select pp.p_partkey from (select distinct p_name from part) p join part pp on pp.p_name = p.p_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p_partkey=[$0])
+  HiveSemiJoin(condition=[=($1, $3)], joinType=[inner])
+    HiveProject(p_partkey=[$0], p_name=[$1])
+      HiveFilter(condition=[IS NOT NULL($1)])
+        HiveTableScan(table=[[default, part]], table:alias=[pp])
+    HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8], BLOCK__OFFSET__INSIDE__FILE=[$9], INPUT__FILE__NAME=[$10], ROW__ID=[$11])
+      HiveFilter(condition=[IS NOT NULL($1)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
+
+PREHOOK: query: select pp.p_partkey from (select distinct p_name from part) p join part pp on pp.p_name = p.p_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select pp.p_partkey from (select distinct p_name from part) p join part pp on pp.p_name = p.p_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+105685
+110592
+112398
+121152
+121152
+132666
+144293
+146985
+15103
+155733
+17273
+17927
+191709
+192697
+195606
+33357
+40982
+42669
+45261
+48427
+49671
+65667
+78486
+85768
+86428
+90681

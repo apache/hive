@@ -41,6 +41,10 @@ import org.apache.hadoop.hive.ql.parse.repl.load.message.OpenTxnHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CommitTxnHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AbortTxnHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AllocWriteIdHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.UpdateTableColStatHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.DeleteTableColStatHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.UpdatePartColStatHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.DeletePartColStatHandler;
 
 public enum DumpType {
 
@@ -210,6 +214,30 @@ public enum DumpType {
     @Override
     public MessageHandler handler() {
       return new AllocWriteIdHandler();
+    }
+  },
+  EVENT_UPDATE_TABLE_COL_STAT("EVENT_UPDATE_TABLE_COL_STAT") {
+    @Override
+    public MessageHandler handler() {
+      return new UpdateTableColStatHandler();
+    }
+  },
+  EVENT_DELETE_TABLE_COL_STAT("EVENT_DELETE_TABLE_COL_STAT") {
+    @Override
+    public MessageHandler handler() {
+      return new DeleteTableColStatHandler();
+    }
+  },
+  EVENT_UPDATE_PART_COL_STAT("EVENT_UPDATE_PART_COL_STAT") {
+    @Override
+    public MessageHandler handler() {
+      return new UpdatePartColStatHandler();
+    }
+  },
+  EVENT_DELETE_PART_COL_STAT("EVENT_DELETE_PART_COL_STAT") {
+    @Override
+    public MessageHandler handler() {
+      return new DeletePartColStatHandler();
     }
   };
 

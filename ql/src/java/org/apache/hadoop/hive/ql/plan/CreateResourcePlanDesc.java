@@ -28,17 +28,20 @@ public class CreateResourcePlanDesc extends DDLDesc implements Serializable {
 
   private WMResourcePlan resourcePlan;
   private String copyFromName;
+  private boolean ifNotExists;
 
   // For serialization only.
   public CreateResourcePlanDesc() {
   }
 
-  public CreateResourcePlanDesc(String planName, Integer queryParallelism, String copyFromName) {
+  public CreateResourcePlanDesc(String planName, Integer queryParallelism, String copyFromName,
+      boolean ifNotExists) {
     resourcePlan = new WMResourcePlan(planName);
     if (queryParallelism != null) {
       resourcePlan.setQueryParallelism(queryParallelism);
     }
     this.copyFromName = copyFromName;
+    this.ifNotExists = ifNotExists;
   }
 
   @Explain(displayName="resourcePlan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -49,5 +52,11 @@ public class CreateResourcePlanDesc extends DDLDesc implements Serializable {
   @Explain(displayName="Copy from", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getCopyFromName() {
     return copyFromName;
+  }
+
+  @Explain(displayName="If not exists", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+      displayOnlyOnTrue = true)
+  public boolean getIfNotExists() {
+    return ifNotExists;
   }
 }

@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.StringGenerationOption;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.TestVectorTimestampExtract.TimestampExtractTestMode;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -104,8 +104,6 @@ public class TestVectorStringUnary {
       doTests(random, typeName, "trim");
 
       doTests(random, typeName, "initcap");
-
-      doTests(random, typeName, "hex");
     }
 
     doTests(random, typeName, "lower");
@@ -135,7 +133,7 @@ public class TestVectorStringUnary {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
     ExprNodeDesc col1Expr;
     StringGenerationOption stringGenerationOption =
         new StringGenerationOption(true, true);
@@ -151,7 +149,8 @@ public class TestVectorStringUnary {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
@@ -341,17 +340,29 @@ public class TestVectorStringUnary {
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
 
+    if (stringUnaryTestMode == StringUnaryTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+          " stringUnaryTestMode " + stringUnaryTestMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
     VectorExtractRow resultVectorExtractRow = new VectorExtractRow();
     resultVectorExtractRow.init(new TypeInfo[] { targetTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " targetTypeInfo " + targetTypeInfo.toString() +
         " stringUnaryTestMode " + stringUnaryTestMode +
         " vectorExpression " + vectorExpression.getClass().getSimpleName());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;

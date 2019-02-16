@@ -6,17 +6,19 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.druid.io;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.DimensionsSpec;
 import io.druid.data.input.impl.InputRowParser;
@@ -37,12 +39,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.druid.conf.DruidConstants;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
@@ -64,9 +68,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritable> {
+/**
+ * Druid Output format class used to write data as Native Druid Segment.
+ */
+public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWritable> {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(DruidOutputFormat.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DruidOutputFormat.class);
 
   @Override
   public FileSinkOperator.RecordWriter getHiveRecordWriter(
@@ -89,7 +96,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     final String dataSource = tableProperties.getProperty(Constants.DRUID_DATA_SOURCE) == null
         ? jc.get(Constants.DRUID_DATA_SOURCE)
         : tableProperties.getProperty(Constants.DRUID_DATA_SOURCE);
-    final String segmentDirectory = jc.get(Constants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY);
+    final String segmentDirectory = jc.get(DruidConstants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY);
 
     final GranularitySpec granularitySpec = DruidStorageHandlerUtils.getGranularitySpec(jc, tableProperties);
 
@@ -103,17 +110,17 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
               ));
     }
     ArrayList<String> columnNames = Lists.newArrayList(columnNameProperty.split(","));
-    if (!columnNames.contains(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
-      throw new IllegalStateException("Timestamp column (' " + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN +
+    if (!columnNames.contains(DruidConstants.DEFAULT_TIMESTAMP_COLUMN)) {
+      throw new IllegalStateException("Timestamp column (' " + DruidConstants.DEFAULT_TIMESTAMP_COLUMN +
               "') not specified in create table; list of columns is : " +
               tableProperties.getProperty(serdeConstants.LIST_COLUMNS));
     }
     ArrayList<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
     Pair<List<DimensionSchema>, AggregatorFactory[]> dimensionsAndAggregates = DruidStorageHandlerUtils
-        .getDimensionsAndAggregates(jc, columnNames, columnTypes);
+        .getDimensionsAndAggregates(columnNames, columnTypes);
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
-            new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
+            new TimestampSpec(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
             new DimensionsSpec(dimensionsAndAggregates.lhs, Lists
                 .newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
                     Constants.DRUID_SHARD_KEY_COL_NAME
@@ -121,8 +128,10 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             )
     ));
 
-    Map<String, Object> inputParser = DruidStorageHandlerUtils.JSON_MAPPER
-            .convertValue(inputRowParser, Map.class);
+    Map<String, Object>
+        inputParser =
+        DruidStorageHandlerUtils.JSON_MAPPER.convertValue(inputRowParser, new TypeReference<Map<String, Object>>() {
+        });
 
     final DataSchema dataSchema = new DataSchema(
             Preconditions.checkNotNull(dataSource, "Data source name is null"),
@@ -133,8 +142,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             DruidStorageHandlerUtils.JSON_MAPPER
     );
 
-    final String workingPath = jc.get(Constants.DRUID_JOB_WORKING_DIRECTORY);
-    final String version = jc.get(Constants.DRUID_SEGMENT_VERSION);
+    final String workingPath = jc.get(DruidConstants.DRUID_JOB_WORKING_DIRECTORY);
+    final String version = jc.get(DruidConstants.DRUID_SEGMENT_VERSION);
     String basePersistDirectory = HiveConf
             .getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
     if (Strings.isNullOrEmpty(basePersistDirectory)) {
@@ -170,7 +179,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
   }
 
   @Override
-  public RecordWriter<K, DruidWritable> getRecordWriter(
+  public RecordWriter<NullWritable, DruidWritable> getRecordWriter(
           FileSystem ignored, JobConf job, String name, Progressable progress
   ) throws IOException {
     throw new UnsupportedOperationException("please implement me !");

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.util;
 
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 
 import java.io.Serializable;
@@ -37,6 +38,10 @@ public class DAGTraversal {
         // skip processing has to be done first before continuing
         if (function.skipProcessing(task)) {
           continue;
+        }
+        // Add list tasks from conditional tasks
+        if (task instanceof ConditionalTask) {
+          children.addAll(((ConditionalTask) task).getListTasks());
         }
         if (task.getDependentTasks() != null) {
           children.addAll(task.getDependentTasks());

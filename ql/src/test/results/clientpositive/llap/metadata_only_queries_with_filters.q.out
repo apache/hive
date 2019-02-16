@@ -153,9 +153,13 @@ POSTHOOK: Output: default@stats_tbl_part_n0@dt=2014
 PREHOOK: query: explain 
 select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt = 2010
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_tbl_part_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt = 2010
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_tbl_part_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -178,9 +182,13 @@ POSTHOOK: Input: default@stats_tbl_part_n0
 PREHOOK: query: explain 
 select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt > 2010
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_tbl_part_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain 
 select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt > 2010
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_tbl_part_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

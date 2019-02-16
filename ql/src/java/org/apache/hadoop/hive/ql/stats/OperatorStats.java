@@ -23,6 +23,11 @@ import com.google.common.base.Objects;
  * Holds information an operator's statistics.
  */
 public final class OperatorStats {
+
+  /** Marker class to help with plan elements which will collect invalid statistics */
+  public static class IncorrectRuntimeStatsMarker {
+  }
+
   private String operatorId;
   private long outputRecords;
 
@@ -67,4 +72,6 @@ public final class OperatorStats {
     return Objects.equal(operatorId, o.operatorId) &&
         Objects.equal(outputRecords, o.outputRecords);
   }
+
+
 }

@@ -124,9 +124,13 @@ POSTHOOK: Lineage: nested_tbl_2.s6 EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION
 SELECT a FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT a FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -186,9 +190,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f1 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f1 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -259,9 +267,13 @@ false
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f1, s1.f2 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f1, s1.f2 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -332,9 +344,13 @@ false	foo
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -405,9 +421,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -478,9 +498,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -551,9 +575,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -632,9 +660,13 @@ foo
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -670,8 +702,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [10]
-                          selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 1:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 10:double
+                          projectedOutputColumnNums: [11]
+                          selectExpressions: VectorUDFStructField(col 10:struct<f4:int,f5:double>, col 1:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 10:struct<f4:int,f5:double>) -> 11:double
                       Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -713,9 +745,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -742,7 +778,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 8:string, val foo)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 1:int) -> 8:string), FilterLongColGreaterLongScalar(col 11:int, val 1)(children: VectorUDFAdaptor(size(s2.f8.f10))(children: VectorUDFStructField(col 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 1:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 10:array<int>) -> 11:int), SelectColumnIsTrue(col 11:boolean)(children: VectorUDFAdaptor(s2.f8.f11['key1'])(children: VectorUDFStructField(col 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 2:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 12:map<string,boolean>) -> 11:boolean))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 8:string, val foo)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 1:int) -> 8:string), FilterLongColGreaterLongScalar(col 11:int, val 1)(children: VectorUDFAdaptor(size(s2.f8.f10))(children: VectorUDFStructField(col 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 1:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 10:array<int>) -> 11:int), SelectColumnIsTrue(col 14:boolean)(children: VectorUDFAdaptor(s2.f8.f11['key1'])(children: VectorUDFStructField(col 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 2:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 13:map<string,boolean>) -> 14:boolean))
                     predicate: ((s1.f2 = 'foo') and (size(s2.f8.f10) > 1) and s2.f8.f11['key1']) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -751,8 +787,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9]
-                          selectExpressions: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>
+                          projectedOutputColumnNums: [15]
+                          selectExpressions: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 15:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>
                       Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -796,11 +832,15 @@ SELECT col1, col2 FROM nested_tbl_1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT col1, col2 FROM nested_tbl_1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -955,9 +995,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1028,9 +1072,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1061,13 +1109,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [9, 10]
-                        selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 1:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 9:double, VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 10:int
+                        projectedOutputColumnNums: [9, 11]
+                        selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 1:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 9:double, VectorUDFStructField(col 10:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 10:struct<f4:int,f5:double>) -> 11:int
                     Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 10:int) -> bigint
+                          aggregators: VectorUDAFCount(col 11:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 9:double
@@ -1151,9 +1199,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1240,9 +1292,13 @@ POSTHOOK: Input: default@nested_tbl_1
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1358,12 +1414,18 @@ FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5, t2.s2.f8
 FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1437,7 +1499,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 9:boolean, val 0)(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean), SelectColumnIsNotNull(col 9:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 9:int))
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 9:boolean, val 0)(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean), SelectColumnIsNotNull(col 10:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 10:int))
                     predicate: ((s2.f8.f9 = false) and s1.f6 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1492,6 +1554,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1522,12 +1587,16 @@ FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5, t2.s2.f8
 FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1638,6 +1707,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1665,11 +1737,15 @@ SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1707,8 +1783,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 9]
-                          selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 9:int
+                          projectedOutputColumnNums: [1, 11]
+                          selectExpressions: VectorUDFStructField(col 10:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 10:struct<f4:int,f5:double>) -> 11:int
                       Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int), true (type: boolean)
@@ -1716,7 +1792,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int), true (type: boolean)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyExpressions: ConstantVectorExpression(val 1) -> 10:boolean
+                            keyExpressions: ConstantVectorExpression(val 1) -> 9:boolean
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
@@ -1745,7 +1821,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 10:boolean)(children: VectorUDFAdaptor((s2.f8.f9 and s1.f6 is not null and s2.f8.f9 is not null))(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean, IsNotNull(col 10:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 10:int) -> 11:boolean, IsNotNull(col 10:boolean)(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 10:boolean) -> 12:boolean) -> 10:boolean)
+                        predicateExpression: SelectColumnIsTrue(col 15:boolean)(children: VectorUDFAdaptor((s2.f8.f9 and s1.f6 is not null and s2.f8.f9 is not null))(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 9:boolean, IsNotNull(col 10:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 10:int) -> 11:boolean, IsNotNull(col 13:boolean)(children: VectorUDFStructField(col 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 12:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 13:boolean) -> 14:boolean) -> 15:boolean)
                     predicate: (s1.f6 is not null and s2.f8.f9 and s2.f8.f9 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1754,14 +1830,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 12]
-                          selectExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 9:int, LongColEqualLongScalar(col 11:boolean, val 1)(children: VectorUDFStructField(col 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 11:boolean) -> 12:boolean
+                          projectedOutputColumnNums: [16, 19]
+                          selectExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 16:int, LongColEqualLongScalar(col 18:boolean, val 1)(children: VectorUDFStructField(col 17:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 17:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 18:boolean) -> 19:boolean
                       Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: col 9:int, col 12:boolean
+                            keyExpressions: col 16:int, col 19:boolean
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
@@ -1811,6 +1887,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1837,11 +1916,15 @@ SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f1 <> t2.s2.f8.f9
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f1 <> t2.s2.f8.f9
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1949,6 +2032,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -1975,11 +2061,15 @@ SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT t1.s1.f3.f5
 FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2017,8 +2107,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 9]
-                          selectExpressions: VectorUDFStructField(col 8:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 8:struct<f4:int,f5:double>) -> 9:int
+                          projectedOutputColumnNums: [1, 11]
+                          selectExpressions: VectorUDFStructField(col 10:struct<f4:int,f5:double>, col 0:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 2:int) -> 10:struct<f4:int,f5:double>) -> 11:int
                       Statistics: Num rows: 1 Data size: 316 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
@@ -2063,8 +2153,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 8]
-                          selectExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 8:int
+                          projectedOutputColumnNums: [2, 9]
+                          selectExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 9:int
                       Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
@@ -2110,6 +2200,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -2172,11 +2265,15 @@ SELECT count(s1.f6), s3.f12[0].f14
 FROM nested_tbl_1
 GROUP BY s3.f12[0].f14
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s3.f12[0].f14
 FROM nested_tbl_1
 GROUP BY s3.f12[0].f14
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2311,11 +2408,15 @@ SELECT count(s1.f6), s4['key1'].f15
 FROM nested_tbl_1
 GROUP BY s4['key1'].f15
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s4['key1'].f15
 FROM nested_tbl_1
 GROUP BY s4['key1'].f15
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2450,11 +2551,15 @@ SELECT count(s1.f6), s5.f16[0].f18.f19
 FROM nested_tbl_1
 GROUP BY s5.f16[0].f18.f19
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s5.f16[0].f18.f19
 FROM nested_tbl_1
 GROUP BY s5.f16[0].f18.f19
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2589,11 +2694,15 @@ SELECT count(s1.f6), s5.f16.f18.f19
 FROM nested_tbl_1
 GROUP BY s5.f16.f18.f19
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s5.f16.f18.f19
 FROM nested_tbl_1
 GROUP BY s5.f16.f18.f19
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2690,11 +2799,15 @@ SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
 FROM nested_tbl_1
 GROUP BY s6['key1'].f20[0].f21.f22
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
 FROM nested_tbl_1
 GROUP BY s6['key1'].f20[0].f21.f22
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -2829,11 +2942,15 @@ SELECT count(s1.f6), s6['key1'].f20.f21.f22
 FROM nested_tbl_1
 GROUP BY s6['key1'].f20.f21.f22
 PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(s1.f6), s6['key1'].f20.f21.f22
 FROM nested_tbl_1
 GROUP BY s6['key1'].f20.f21.f22
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

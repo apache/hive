@@ -60,6 +60,22 @@ set hive.auto.convert.join.noconditionaltask.size=20000;
 set hive.exec.reducers.bytes.per.reducer=20000;
 set hive.stats.fetch.column.stats=false;
 -- Try with dynamically partitioned hashjoin
+
+-- hashjoin with filter
+explain select
+  *
+from alltypesorc a left outer join alltypesorc b on a.cint = b.cint and a.csmallint != a.cint
+where
+  a.cint between 1000000 and 3000000
+order by a.cint;
+
+select
+  *
+from alltypesorc a left outer join alltypesorc b on a.cint = b.cint and a.csmallint != a.cint
+where
+  a.cint between 1000000 and 3000000
+order by a.cint;
+
 explain
 select
   *

@@ -17,9 +17,13 @@ POSTHOOK: Output: default@t1_n91
 PREHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n91 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n91
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n91 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n91
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -102,9 +106,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1_n91 GROUP BY key with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n91
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1_n91 GROUP BY key with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n91
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -180,9 +188,13 @@ NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n91 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n91
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, val, count(1) FROM T1_n91 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n91
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -280,9 +292,13 @@ NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1_n91 GROUP BY key with rollup
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n91
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT key, count(distinct val) FROM T1_n91 GROUP BY key with rollup
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n91
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -391,11 +407,17 @@ FROM T1_n91
 INSERT OVERWRITE TABLE T2_n56 SELECT key, val, count(1) group by key, val with rollup
 INSERT OVERWRITE TABLE T3_n20 SELECT key, val, sum(1) group by rollup(key, val)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n91
+PREHOOK: Output: default@t2_n56
+PREHOOK: Output: default@t3_n20
 POSTHOOK: query: EXPLAIN
 FROM T1_n91
 INSERT OVERWRITE TABLE T2_n56 SELECT key, val, count(1) group by key, val with rollup
 INSERT OVERWRITE TABLE T3_n20 SELECT key, val, sum(1) group by rollup(key, val)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n91
+POSTHOOK: Output: default@t2_n56
+POSTHOOK: Output: default@t3_n20
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

@@ -75,7 +75,7 @@ POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).b SIMPLE []
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 PREHOOK: type: QUERY
 PREHOOK: Input: default@schema_evolution_data_2_n3
@@ -89,7 +89,7 @@ POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE []
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1
@@ -246,7 +246,7 @@ POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).b SIMPLE []
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 PREHOOK: type: QUERY
 PREHOOK: Input: default@schema_evolution_data_2_n3
@@ -260,7 +260,7 @@ POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE []
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: select part,a,b,c,d from partitioned_delete_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_delete_1
@@ -411,7 +411,7 @@ POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).b SIMPLE []
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 PREHOOK: type: QUERY
 PREHOOK: Input: default@schema_evolution_data_2_n3
@@ -425,7 +425,7 @@ POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE []
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	_c2	int1	string1
+insert_num	int1	_c2	int1_1	string1
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_delete_2

@@ -44,7 +44,11 @@ public class ReplicationSpec {
   private boolean isLazy = false; // lazy mode => we only list files, and expect that the eventual copy will pull data in.
   private boolean isReplace = true; // default is that the import mode is insert overwrite
   private String validWriteIdList = null; // WriteIds snapshot for replicating ACID/MM tables.
+  //TxnIds snapshot
+  private String validTxnList = null;
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
+  private boolean isMigratingToTxnTable = false;
+  private boolean isMigratingToExternalTable = false;
 
   // Key definitions related to replication
   public enum KEY {
@@ -54,7 +58,8 @@ public class ReplicationSpec {
     NOOP("repl.noop"),
     LAZY("repl.lazy"),
     IS_REPLACE("repl.is.replace"),
-    VALID_WRITEID_LIST("repl.valid.writeid.list")
+    VALID_WRITEID_LIST("repl.valid.writeid.list"),
+    VALID_TXN_LIST("repl.valid.txnid.list")
     ;
     private final String keyName;
 
@@ -143,6 +148,7 @@ public class ReplicationSpec {
     this.isLazy = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.LAZY.toString()));
     this.isReplace = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.IS_REPLACE.toString()));
     this.validWriteIdList = keyFetcher.apply(ReplicationSpec.KEY.VALID_WRITEID_LIST.toString());
+    this.validTxnList = keyFetcher.apply(KEY.VALID_TXN_LIST.toString());
   }
 
   /**
@@ -342,6 +348,15 @@ public class ReplicationSpec {
     this.validWriteIdList = validWriteIdList;
   }
 
+  public String getValidTxnList() {
+    return validTxnList;
+  }
+
+  public void setValidTxnList(String validTxnList) {
+    this.validTxnList = validTxnList;
+  }
+
+
   /**
    * @return whether the current replication dumped object related to ACID/Mm table
    */
@@ -372,6 +387,8 @@ public class ReplicationSpec {
         return String.valueOf(isReplace());
       case VALID_WRITEID_LIST:
         return getValidWriteIdList();
+      case VALID_TXN_LIST:
+        return getValidTxnList();
     }
     return null;
   }
@@ -386,5 +403,20 @@ public class ReplicationSpec {
     } else {
       return SCOPE.NO_REPL;
     }
+  }
+
+  public boolean isMigratingToTxnTable() {
+    return isMigratingToTxnTable;
+  }
+  public void setMigratingToTxnTable() {
+    isMigratingToTxnTable = true;
+  }
+
+  public boolean isMigratingToExternalTable() {
+    return isMigratingToExternalTable;
+  }
+
+  public void setMigratingToExternalTable() {
+    isMigratingToExternalTable = true;
   }
 }

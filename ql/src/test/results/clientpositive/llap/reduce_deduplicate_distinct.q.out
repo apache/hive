@@ -21,10 +21,14 @@ PREHOOK: query: explain select id,count(distinct key),count(distinct name)
 from count_distinct_test
 group by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@count_distinct_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select id,count(distinct key),count(distinct name)
 from count_distinct_test
 group by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@count_distinct_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -99,10 +103,14 @@ PREHOOK: query: explain select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@count_distinct_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@count_distinct_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -196,10 +204,14 @@ PREHOOK: query: explain select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@count_distinct_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@count_distinct_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -293,10 +305,14 @@ PREHOOK: query: explain select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@count_distinct_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@count_distinct_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -390,10 +406,14 @@ PREHOOK: query: explain select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@count_distinct_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@count_distinct_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

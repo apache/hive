@@ -9,6 +9,8 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
@@ -20,6 +22,8 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -81,13 +85,13 @@ STAGE PLANS:
                     predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: string)
+                      expressions: UDFToDouble(key) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(_col0) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Reducer 2 
@@ -113,7 +117,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
-                  1 UDFToDouble(_col0) (type: double)
+                  1 _col0 (type: double)
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 200 Data size: 2132 Basic stats: COMPLETE Column stats: NONE
                 Select Operator

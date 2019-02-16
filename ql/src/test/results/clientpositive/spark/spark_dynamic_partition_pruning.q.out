@@ -36,8 +36,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
 PREHOOK: query: EXPLAIN create table srcpart_date_n4 as select ds as ds, ds as `date` from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_date_n4
 POSTHOOK: query: EXPLAIN create table srcpart_date_n4 as select ds as ds, ds as `date` from srcpart group by ds
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcpart_date_n4
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -193,8 +207,22 @@ POSTHOOK: Lineage: srcpart_double_hour_n1.hour SIMPLE [(srcpart)srcpart.FieldSch
 POSTHOOK: Lineage: srcpart_double_hour_n1.hr EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -331,8 +359,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -447,8 +489,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (day(srcpart.ds) = day(srcpart_date_n4.ds)) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (day(srcpart.ds) = day(srcpart_date_n4.ds)) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -463,17 +519,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -496,33 +552,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                      key expressions: _col0 (type: int)
                       sort order: +
-                      Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                      Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        key expressions: _col0 (type: int)
                         sort order: +
-                        Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -530,8 +587,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 day(CAST( _col0 AS DATE)) (type: int)
-                  1 day(CAST( _col0 AS DATE)) (type: int)
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -584,8 +641,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (day(srcpart.ds) = day(srcpart_date_n4.ds)) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (day(srcpart.ds) = day(srcpart_date_n4.ds)) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -602,33 +673,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                      key expressions: _col0 (type: int)
                       sort order: +
-                      Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                      Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        key expressions: _col0 (type: int)
                         sort order: +
-                        Map-reduce partition columns: day(CAST( _col0 AS DATE)) (type: int)
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -636,8 +708,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 day(CAST( _col0 AS DATE)) (type: int)
-                  1 day(CAST( _col0 AS DATE)) (type: int)
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -690,8 +762,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date_n4.ds) as string), "0") as bigint)) + 10) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date_n4.ds) as string), "0") as bigint)) + 10) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -706,17 +792,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(CAST( ds AS DATE))), '0'))) + 10)) is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(CAST( ds AS DATE))), '0'))) + 10)) is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: abs(((- UDFToLong(concat(UDFToString(day(CAST( _col0 AS DATE))), '0'))) + 10)) (type: bigint)
+                        expressions: _col0 (type: bigint)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -725,7 +811,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [ds:string (abs(((- UDFToLong(concat(UDFToString(day(CAST( ds AS DATE))), '0'))) + 10)))]]
+                            Target Columns: [Map 1 -> [ds:string (abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)))]]
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
@@ -739,37 +825,37 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: abs(((- UDFToLong(concat(UDFToString(day(CAST( ds AS DATE))), '0'))) + 10)) is not null (type: boolean)
+                  filterExpr: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: abs(((- UDFToLong(concat(UDFToString(day(CAST( ds AS DATE))), '0'))) + 10)) is not null (type: boolean)
+                    predicate: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: abs(((- UDFToLong(concat(UDFToString(day(CAST( _col0 AS DATE))), '0'))) + 10)) (type: bigint)
+                        key expressions: _col0 (type: bigint)
                         sort order: +
-                        Map-reduce partition columns: abs(((- UDFToLong(concat(UDFToString(day(CAST( _col0 AS DATE))), '0'))) + 10)) (type: bigint)
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(CAST( ds AS DATE))), '0'))) + 10)) is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(CAST( ds AS DATE))), '0'))) + 10)) is not null) (type: boolean)
+                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: abs(((- UDFToLong(concat(CAST( day(CAST( ds AS DATE)) AS STRING), '0'))) + 10)) (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: abs(((- UDFToLong(concat(UDFToString(day(CAST( _col0 AS DATE))), '0'))) + 10)) (type: bigint)
+                        key expressions: _col0 (type: bigint)
                         sort order: +
-                        Map-reduce partition columns: abs(((- UDFToLong(concat(UDFToString(day(CAST( _col0 AS DATE))), '0'))) + 10)) (type: bigint)
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -777,8 +863,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 abs(((- UDFToLong(concat(UDFToString(day(CAST( _col0 AS DATE))), '0'))) + 10)) (type: bigint)
-                  1 abs(((- UDFToLong(concat(UDFToString(day(CAST( _col0 AS DATE))), '0'))) + 10)) (type: bigint)
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -831,8 +917,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date_n4.ds) as decimal) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date_n4.ds) as decimal) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -847,17 +947,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        expressions: _col0 (type: decimal(10,0))
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -880,33 +980,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: CAST( UDFToShort(day(CAST( ds AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
+                      key expressions: _col0 (type: decimal(10,0))
                       sort order: +
-                      Map-reduce partition columns: CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
+                      Map-reduce partition columns: _col0 (type: decimal(10,0))
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: CAST( day(CAST( ds AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        key expressions: _col0 (type: decimal(10,0))
                         sort order: +
-                        Map-reduce partition columns: CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                        Map-reduce partition columns: _col0 (type: decimal(10,0))
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -914,8 +1015,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 CAST( UDFToShort(day(CAST( _col0 AS DATE))) AS decimal(10,0)) (type: decimal(10,0))
-                  1 CAST( day(CAST( _col0 AS DATE)) AS decimal(10,0)) (type: decimal(10,0))
+                  0 _col0 (type: decimal(10,0))
+                  1 _col0 (type: decimal(10,0))
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -969,9 +1070,25 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr)
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Input: default@srcpart_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr)
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Input: default@srcpart_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1172,9 +1289,25 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Input: default@srcpart_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Input: default@srcpart_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1328,8 +1461,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour_n1 on (srcpart.ds = srcpart_date_hour_n1.ds and srcpart.hr = srcpart_date_hour_n1.hr) where srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour_n1 on (srcpart.ds = srcpart_date_hour_n1.ds and srcpart.hr = srcpart_date_hour_n1.hr) where srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1351,7 +1498,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
@@ -1366,7 +1513,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -1410,12 +1557,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -1424,7 +1571,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1477,8 +1624,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour_n1 on (srcpart.ds = srcpart_date_hour_n1.ds and srcpart.hr = srcpart_date_hour_n1.hr) where srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour_n1 on (srcpart.ds = srcpart_date_hour_n1.ds and srcpart.hr = srcpart_date_hour_n1.hr) where srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1517,12 +1678,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -1531,7 +1692,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1593,8 +1754,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1731,8 +1906,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1847,8 +2036,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr = cast(srcpart_double_hour_n1.hr/2 as int)) where srcpart_double_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr = cast(srcpart_double_hour_n1.hr/2 as int)) where srcpart_double_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1869,11 +2072,11 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        expressions: _col0 (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -1899,13 +2102,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToDouble(_col0) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -1917,13 +2120,13 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -1931,8 +2134,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                  0 _col0 (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -1985,8 +2188,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr*2 = srcpart_double_hour_n1.hr) where srcpart_double_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr*2 = srcpart_double_hour_n1.hr) where srcpart_double_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -2037,13 +2254,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2069,7 +2286,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                  0 _col0 (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -2123,8 +2340,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr = cast(srcpart_double_hour_n1.hr/2 as int)) where srcpart_double_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr = cast(srcpart_double_hour_n1.hr/2 as int)) where srcpart_double_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2144,13 +2375,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToDouble(_col0) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2162,13 +2393,13 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        key expressions: _col0 (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -2176,8 +2407,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                  0 _col0 (type: double)
+                  1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2230,8 +2461,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr*2 = srcpart_double_hour_n1.hr) where srcpart_double_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr*2 = srcpart_double_hour_n1.hr) where srcpart_double_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2251,13 +2496,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      key expressions: _col0 (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2283,7 +2528,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                  0 _col0 (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -2346,8 +2591,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour_n1.hr as string)) where srcpart_double_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour_n1.hr as string)) where srcpart_double_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -2368,11 +2627,11 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: CAST( hr AS STRING) (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToString(_col0) (type: string)
+                        expressions: _col0 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -2381,7 +2640,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 1 -> [hr:string (UDFToString((UDFToDouble(hr) * 2.0D)))]]
+                            Target Columns: [Map 1 -> [hr:string (CAST( (UDFToDouble(hr) * 2.0D) AS STRING))]]
                             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
@@ -2398,13 +2657,13 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
+                      key expressions: _col0 (type: string)
                       sort order: +
-                      Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Map 4 
             Map Operator Tree:
@@ -2416,13 +2675,13 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: CAST( hr AS STRING) (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToString(_col0) (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: UDFToString(_col0) (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -2430,8 +2689,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
-                  1 UDFToString(_col0) (type: string)
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2494,8 +2753,16 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2529,14 +2796,14 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: '2008-04-08' (type: string)
+                      keys: true (type: boolean)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string)
+                        key expressions: _col0 (type: boolean)
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -2573,7 +2840,7 @@ STAGE PLANS:
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: string)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -2615,8 +2882,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN select count(*) from srcpart, srcpart_date_hour_n1 where (srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11) and (srcpart.ds = srcpart_date_hour_n1.ds or srcpart.hr = srcpart_date_hour_n1.hr)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart, srcpart_date_hour_n1 where (srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11) and (srcpart.ds = srcpart_date_hour_n1.ds or srcpart.hr = srcpart_date_hour_n1.hr)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2653,12 +2934,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col2 (type: string)
+                        value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -2667,10 +2948,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col4
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 2000 Data size: 77248 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col0 = _col2) or (_col1 = _col4)) (type: boolean)
+                  predicate: ((_col0 = _col2) or (_col1 = _col3)) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 77248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     Statistics: Num rows: 2000 Data size: 77248 Basic stats: COMPLETE Column stats: NONE
@@ -2726,8 +3007,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1500
 PREHOOK: query: EXPLAIN select count(*) from srcpart, srcpart_date_hour_n1 where srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11 and srcpart.ds = srcpart_date_hour_n1.ds and srcpart.hr = srcpart_date_hour_n1.hr
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart, srcpart_date_hour_n1 where srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11 and srcpart.ds = srcpart_date_hour_n1.ds and srcpart.hr = srcpart_date_hour_n1.hr
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -2749,7 +3044,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
@@ -2764,7 +3059,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -2808,12 +3103,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string), _col2 (type: string)
+                        key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col2 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -2822,7 +3117,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
-                  1 _col0 (type: string), _col2 (type: string)
+                  1 _col0 (type: string), _col1 (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -2875,8 +3170,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart left join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart left join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -2994,8 +3303,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n4 left join srcpart on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n4 left join srcpart on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -3112,8 +3435,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -3231,9 +3568,21 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Input: default@srcpart_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Input: default@srcpart_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -3430,9 +3779,17 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Input: default@srcpart_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Input: default@srcpart_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3447,43 +3804,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_hour_n1
-                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: hr (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  filterExpr: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  Filter Operator
-                    predicate: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        value expressions: _col0 (type: string)
-        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
@@ -3501,6 +3821,43 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_hour_n1
+                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -3508,23 +3865,23 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string)
-                  1 _col1 (type: string)
-                outputColumnNames: _col1
-                Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                  1 _col0 (type: string)
+                outputColumnNames: _col2
+                Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col2 (type: string)
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                  Map-reduce partition columns: _col2 (type: string)
+                  Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: string)
+                  0 _col2 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 25 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -3572,8 +3929,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -3836,8 +4205,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000
 PREHOOK: query: EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -4103,8 +4484,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2008-04-09
 PREHOOK: query: EXPLAIN select ds from (select distinct(ds) as ds from srcpart union all select distinct(ds) as ds from srcpart) s where s.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select ds from (select distinct(ds) as ds from srcpart union all select distinct(ds) as ds from srcpart) s where s.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -4368,8 +4761,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2008-04-09
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -4499,8 +4906,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (day(srcpart.ds) = day(srcpart_date_n4.ds)) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (day(srcpart.ds) = day(srcpart_date_n4.ds)) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -4515,21 +4936,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
-                  filterExpr: (date = '2008-04-08') (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string)
+                      expressions: day(CAST( ds AS DATE)) (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 day(CAST( _col0 AS DATE)) (type: int)
-                          1 day(CAST( _col0 AS DATE)) (type: int)
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
                       Select Operator
-                        expressions: day(CAST( _col0 AS DATE)) (type: int)
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -4553,17 +4974,18 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string)
+                    expressions: day(CAST( ds AS DATE)) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 day(CAST( _col0 AS DATE)) (type: int)
-                        1 day(CAST( _col0 AS DATE)) (type: int)
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -4621,9 +5043,25 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Input: default@srcpart_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Input: default@srcpart_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -4797,8 +5235,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour_n1 on (srcpart.ds = srcpart_date_hour_n1.ds and srcpart.hr = srcpart_date_hour_n1.hr) where srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour_n1 on (srcpart.ds = srcpart_date_hour_n1.ds and srcpart.hr = srcpart_date_hour_n1.hr) where srcpart_date_hour_n1.`date` = '2008-04-08' and srcpart_date_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -4820,12 +5272,12 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: string), _col1 (type: string)
-                          1 _col0 (type: string), _col2 (type: string)
+                          1 _col0 (type: string), _col1 (type: string)
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
@@ -4839,7 +5291,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col2 (type: string)
+                        expressions: _col1 (type: string)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -4873,7 +5325,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 _col0 (type: string), _col1 (type: string)
-                        1 _col0 (type: string), _col2 (type: string)
+                        1 _col0 (type: string), _col1 (type: string)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -4939,8 +5391,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -5061,8 +5527,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr = cast(srcpart_double_hour_n1.hr/2 as int)) where srcpart_double_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr = cast(srcpart_double_hour_n1.hr/2 as int)) where srcpart_double_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -5083,15 +5563,15 @@ STAGE PLANS:
                     predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: hr (type: double)
+                      expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 UDFToDouble(_col0) (type: double)
-                          1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                          0 _col0 (type: double)
+                          1 _col0 (type: double)
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        expressions: _col0 (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -5118,15 +5598,15 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
+                        0 _col0 (type: double)
+                        1 _col0 (type: double)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
@@ -5183,8 +5663,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr*2 = srcpart_double_hour_n1.hr) where srcpart_double_hour_n1.hour = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_double_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour_n1 on (srcpart.hr*2 = srcpart_double_hour_n1.hr) where srcpart_double_hour_n1.hour = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_double_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -5210,7 +5704,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                          0 _col0 (type: double)
                           1 _col0 (type: double)
                       Select Operator
                         expressions: _col0 (type: double)
@@ -5240,14 +5734,14 @@ STAGE PLANS:
                   filterExpr: hr is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: hr (type: string)
+                    expressions: (UDFToDouble(hr) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 (UDFToDouble(_col0) * 2.0D) (type: double)
+                        0 _col0 (type: double)
                         1 _col0 (type: double)
                       input vertices:
                         1 Map 3
@@ -5315,8 +5809,16 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -5338,21 +5840,21 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: '2008-04-08' (type: string)
+                      keys: true (type: boolean)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string)
+                        key expressions: _col0 (type: boolean)
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: string)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -5443,8 +5945,22 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: EXPLAIN select count(*) from srcpart left join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart left join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -5546,8 +6062,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n4 left join srcpart on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n4 left join srcpart on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -5636,8 +6166,22 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) where srcpart_date_n4.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -5727,9 +6271,21 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Input: default@srcpart_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart_hour_n1.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Input: default@srcpart_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -5891,21 +6447,28 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart_date_n4
+PREHOOK: Input: default@srcpart_hour_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n4 on (srcpart.ds = srcpart_date_n4.ds) join srcpart_hour_n1 on (srcpart.hr = srcpart_hour_n1.hr) 
 where srcpart_date_n4.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart_date_n4
+POSTHOOK: Input: default@srcpart_hour_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-3
+  Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -5921,15 +6484,10 @@ STAGE PLANS:
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: string)
-                          1 _col1 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
-
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour_n1
@@ -5942,30 +6500,20 @@ STAGE PLANS:
                       expressions: hr (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
+                      Spark HashTable Sink Operator
                         keys:
-                          0 _col0 (type: string)
-                          1 _col1 (type: string)
-                        outputColumnNames: _col1
-                        input vertices:
-                          1 Map 2
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
-                        Spark HashTable Sink Operator
-                          keys:
-                            0 _col1 (type: string)
-                            1 _col0 (type: string)
+                          0 _col2 (type: string)
+                          1 _col0 (type: string)
             Local Work:
               Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n4
@@ -5982,23 +6530,33 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col1 (type: string)
+                          0 _col0 (type: string)
                           1 _col0 (type: string)
+                        outputColumnNames: _col2
                         input vertices:
-                          0 Map 1
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
+                          1 Map 3
+                        Statistics: Num rows: 1 Data size: 23 Basic stats: PARTIAL Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col2 (type: string)
+                            1 _col0 (type: string)
+                          input vertices:
+                            1 Map 4
+                          Statistics: Num rows: 1 Data size: 25 Basic stats: PARTIAL Column stats: NONE
+                          Group By Operator
+                            aggregations: count()
+                            mode: hash
+                            outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                            Reduce Output Operator
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                              value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
-        Reducer 4 
+        Reducer 2 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -6036,8 +6594,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -6338,8 +6908,22 @@ POSTHOOK: Lineage: srcpart_parquet PARTITION(ds=2008-04-09,hr=12).key EXPRESSION
 POSTHOOK: Lineage: srcpart_parquet PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN select count(*) from srcpart_parquet join srcpart_date_hour_n1 on (srcpart_parquet.ds = srcpart_date_hour_n1.ds and srcpart_parquet.hr = srcpart_date_hour_n1.hr) where srcpart_date_hour_n1.hour = 11 and (srcpart_date_hour_n1.`date` = '2008-04-08' or srcpart_date_hour_n1.`date` = '2008-04-09')
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_hour_n1
+PREHOOK: Input: default@srcpart_parquet
+PREHOOK: Input: default@srcpart_parquet@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_parquet@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_parquet@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_parquet@ds=2008-04-09/hr=12
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_parquet join srcpart_date_hour_n1 on (srcpart_parquet.ds = srcpart_date_hour_n1.ds and srcpart_parquet.hr = srcpart_date_hour_n1.hr) where srcpart_date_hour_n1.hour = 11 and (srcpart_date_hour_n1.`date` = '2008-04-08' or srcpart_date_hour_n1.`date` = '2008-04-09')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_hour_n1
+POSTHOOK: Input: default@srcpart_parquet
+POSTHOOK: Input: default@srcpart_parquet@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_parquet@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_parquet@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_parquet@ds=2008-04-09/hr=12
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -6354,19 +6938,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour_n1
-                  filterExpr: (((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date) IN ('2008-04-08', '2008-04-09') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date) IN ('2008-04-08', '2008-04-09') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
+                      expressions: ds (type: string), UDFToDouble(hr) (type: double)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col0 (type: string), UDFToDouble(_col1) (type: double)
-                          1 _col0 (type: string), UDFToDouble(_col2) (type: double)
+                          0 _col0 (type: string), _col1 (type: double)
+                          1 _col0 (type: string), _col1 (type: double)
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
@@ -6380,7 +6964,7 @@ STAGE PLANS:
                             Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(_col2) (type: double)
+                        expressions: _col1 (type: double)
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 54 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -6406,15 +6990,15 @@ STAGE PLANS:
                   alias: srcpart_parquet
                   Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ds (type: string), hr (type: int)
+                    expressions: ds (type: string), UDFToDouble(hr) (type: double)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2000 Data size: 4000 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 _col0 (type: string), UDFToDouble(_col1) (type: double)
-                        1 _col0 (type: string), UDFToDouble(_col2) (type: double)
+                        0 _col0 (type: string), _col1 (type: double)
+                        1 _col0 (type: string), _col1 (type: double)
                       input vertices:
                         1 Map 3
                       Statistics: Num rows: 2200 Data size: 4400 Basic stats: COMPLETE Column stats: NONE

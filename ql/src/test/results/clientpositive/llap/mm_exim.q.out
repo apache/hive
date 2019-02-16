@@ -386,6 +386,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
 	numPartitions       	3                   
@@ -642,6 +643,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	discover.partitions 	true                
 	numFiles            	3                   
 	numRows             	6                   
 	rawDataSize         	37                  

@@ -28,8 +28,16 @@ select ds, hr, key, value from srcpart_acid where value like '%updated' order by
 insert into srcpart_acid PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003');
 select ds, hr, key, value from srcpart_acid where cast(key as integer) > 1000 order by ds, hr, cast(key as integer);
 
+describe formatted srcpart_acid;
+describe formatted srcpart_acid key;
+
 analyze table srcpart_acid PARTITION(ds, hr) compute statistics;
 analyze table srcpart_acid PARTITION(ds, hr) compute statistics for columns;
+
+-- make sure the stats stay the same after analyze (insert and update above also update stats)
+describe formatted srcpart_acid;
+describe formatted srcpart_acid key;
+
 explain delete from srcpart_acid where key in( '1001', '213', '43');
 --delete some rows from initial load, some that were updated and some that were inserted
 delete from srcpart_acid where key in( '1001', '213', '43');

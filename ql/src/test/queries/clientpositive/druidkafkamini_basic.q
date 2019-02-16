@@ -1,5 +1,5 @@
-SET hive.vectorized.execution.enabled=false;
-CREATE TABLE druid_kafka_test(`__time` timestamp, page string, `user` string, language string, added int, deleted int)
+SET hive.vectorized.execution.enabled=true ;
+CREATE EXTERNAL TABLE druid_kafka_test(`__time` timestamp, page string, `user` string, language string, added int, deleted int)
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
         "druid.segment.granularity" = "MONTH",
@@ -71,5 +71,59 @@ JOIN
 FROM druid_kafka_test) b
   ON a.shortname = b.language
 ) order by b.`user`;
+
+
+EXPLAIN
+SELECT language, -1 * (a + b) AS c
+FROM (
+  SELECT (sum(added)-sum(deleted)) / (count(*) * 3) AS a, sum(deleted) AS b, language
+  FROM druid_kafka_test
+  GROUP BY language) subq
+ORDER BY c DESC;
+
+EXPLAIN
+SELECT language, `user`, sum(added) - sum(deleted) AS a
+FROM druid_kafka_test
+WHERE extract (week from `__time`) IN (10,11)
+GROUP BY language, `user`;
+
+EXPLAIN
+SELECT language, sum(deleted) / count(*) AS a
+FROM druid_kafka_test
+GROUP BY language
+ORDER BY a DESC;
+
+EXPLAIN
+SELECT language, sum(added) / sum(deleted) AS a,
+       CASE WHEN sum(deleted)=0 THEN 1.0 ELSE sum(deleted) END AS b
+FROM druid_kafka_test
+GROUP BY language
+ORDER BY a DESC;
+
+EXPLAIN
+SELECT language, a, a - b as c
+FROM (
+  SELECT language, sum(added) + 100 AS a, sum(deleted) AS b
+  FROM druid_kafka_test
+  GROUP BY language) subq
+ORDER BY a DESC;
+
+EXPLAIN
+SELECT language, `user`, "A"
+FROM (
+  SELECT sum(added) - sum(deleted) AS a, language, `user`
+  FROM druid_kafka_test
+  GROUP BY language, `user` ) subq
+ORDER BY "A"
+LIMIT 5;
+
+EXPLAIN
+SELECT language, `user`, "A"
+FROM (
+  SELECT language, sum(added) + sum(deleted) AS a, `user`
+  FROM druid_kafka_test
+  GROUP BY language, `user`) subq
+ORDER BY `user`, language
+LIMIT 5;
 
 DROP TABLE druid_kafka_test;

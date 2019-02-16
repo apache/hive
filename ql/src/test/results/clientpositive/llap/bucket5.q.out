@@ -19,11 +19,17 @@ FROM src
 INSERT OVERWRITE TABLE bucketed_table SELECT key, value
 INSERT OVERWRITE TABLE unbucketed_table SELECT key, value cluster by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@bucketed_table
+PREHOOK: Output: default@unbucketed_table
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM src
 INSERT OVERWRITE TABLE bucketed_table SELECT key, value
 INSERT OVERWRITE TABLE unbucketed_table SELECT key, value cluster by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@bucketed_table
+POSTHOOK: Output: default@unbucketed_table
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2, Stage-7, Stage-6, Stage-9

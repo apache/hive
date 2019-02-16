@@ -69,12 +69,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key, value   	 
+Original Query:     	SELECT key, value   	 
 	                    	FROM src            
 	                    	WHERE key=86        
-View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
+Expanded Query:     	SELECT `src`.`key`, `src`.`value`	 
 	                    	FROM `default`.`src`
 	                    	WHERE `src`.`key`=86
-View Rewrite Enabled:	No                  	 
 FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has partitions
  The following view has partition, it could not be replaced: default.testViewPart

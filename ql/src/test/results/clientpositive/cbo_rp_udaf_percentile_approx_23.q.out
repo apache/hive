@@ -497,9 +497,13 @@ POSTHOOK: Input: default@t12_n1
 PREHOOK: query: explain
 select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -510,29 +514,29 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: bucket_n1
-            Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: CASE WHEN ((key < 100.0D)) THEN (NaND) ELSE (key) END (type: double)
               outputColumnNames: $f0
-              Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: percentile_approx($f0, 0.5)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: array<double>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: percentile_approx(VALUE._col0)
           mode: mergepartial
           outputColumnNames: $f0
-          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -556,9 +560,13 @@ true
 PREHOOK: query: explain
 select percentile_approx(key, 0.5) from bucket_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select percentile_approx(key, 0.5) from bucket_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -569,29 +577,29 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: bucket_n1
-            Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: double)
               outputColumnNames: $f0
-              Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: percentile_approx($f0, 0.5)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: array<double>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: percentile_approx(VALUE._col0)
           mode: mergepartial
           outputColumnNames: $f0
-          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

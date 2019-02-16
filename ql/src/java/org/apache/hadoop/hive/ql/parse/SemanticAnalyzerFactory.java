@@ -216,8 +216,8 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_LOAD:
         return new LoadSemanticAnalyzer(queryState);
       case HiveParser.TOK_EXPORT:
-        if (UpdateDeleteSemanticAnalyzer.isAcidExport(tree)) {
-          return new UpdateDeleteSemanticAnalyzer(queryState);
+        if (AcidExportSemanticAnalyzer.isAcidExport(tree)) {
+          return new AcidExportSemanticAnalyzer(queryState);
         }
         return new ExportSemanticAnalyzer(queryState);
       case HiveParser.TOK_IMPORT:
@@ -368,8 +368,10 @@ public final class SemanticAnalyzerFactory {
 
       case HiveParser.TOK_UPDATE_TABLE:
       case HiveParser.TOK_DELETE_FROM:
-      case HiveParser.TOK_MERGE:
         return new UpdateDeleteSemanticAnalyzer(queryState);
+
+      case HiveParser.TOK_MERGE:
+        return new MergeSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_START_TRANSACTION:
       case HiveParser.TOK_COMMIT:

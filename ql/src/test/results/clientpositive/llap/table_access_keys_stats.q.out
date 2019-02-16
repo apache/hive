@@ -496,7 +496,7 @@ Keys:val
 13.0	1
 17.0	1
 46.0	1
-Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: SELECT *
 FROM
 (
@@ -519,7 +519,7 @@ PREHOOK: Input: default@t1_n13
 PREHOOK: Input: default@t2_n8
 PREHOOK: Input: default@t3_n4
 #### A masked pattern was here ####
-Operator:JOIN_11
+Operator:JOIN_8
 Table:default@t2_n8
 Keys:key
 Table:default@t1_n13

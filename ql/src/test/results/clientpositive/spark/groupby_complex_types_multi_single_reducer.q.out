@@ -19,11 +19,17 @@ FROM SRC
 INSERT OVERWRITE TABLE DEST1_n47 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
 INSERT OVERWRITE TABLE DEST2_n8 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n47
+PREHOOK: Output: default@dest2_n8
 POSTHOOK: query: EXPLAIN
 FROM SRC
 INSERT OVERWRITE TABLE DEST1_n47 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
 INSERT OVERWRITE TABLE DEST2_n8 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n47
+POSTHOOK: Output: default@dest2_n8
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

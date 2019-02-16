@@ -200,6 +200,8 @@ public interface HiveSession extends HiveSessionBase {
 
   void cancelOperation(OperationHandle opHandle) throws HiveSQLException;
 
+  void updateQueryTag(String queryId, String queryTag) throws HiveSQLException;
+
   void closeOperation(OperationHandle opHandle) throws HiveSQLException;
 
   TableSchema getResultSetMetadata(OperationHandle opHandle)

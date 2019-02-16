@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import java.io.DataOutputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -66,6 +68,12 @@ public interface MetaDataFormatter {
    * Show a list of tables.
    */
   public void showTables(DataOutputStream out, Set<String> tables)
+      throws HiveException;
+
+  /**
+   * Show a list of materialized views.
+   */
+  public void showMaterializedViews(DataOutputStream out, List<Table> materializedViews)
       throws HiveException;
 
   /**

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.NoViableAltException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
@@ -40,7 +41,7 @@ import org.apache.hadoop.hive.ql.Context;
  */
 public class ParseDriver {
 
-  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.parse.ParseDriver");
+  private static final Logger LOG = LoggerFactory.getLogger(ParseDriver.class);
 
   /**
    * ANTLRNoCaseStringStream.
@@ -147,15 +148,35 @@ public class ParseDriver {
     }
 
     @Override
-    public Object dupNode(Object t) {
+    public Token createToken(int tokenType, String text) {
+      if (tokenType == HiveParser.TOK_SETCOLREF) {
+        // ParseUtils.processSetColsNode() can change type of TOK_SETCOLREF nodes later
+        return new CommonToken(tokenType, text);
+      } else {
+        return new ImmutableCommonToken(tokenType, text);
+      }
+    }
 
+    @Override
+    public Object dupNode(Object t) {
       return create(((CommonTree)t).token);
-    };
+    }
+
+    @Override
+    public Object dupTree(Object t, Object parent) {
+      // Overriden to copy start index / end index, that is needed through optimization,
+      // e.g., for masking/filtering
+      ASTNode astNode = (ASTNode) t;
+      ASTNode astNodeCopy = (ASTNode) super.dupTree(t, parent);
+      astNodeCopy.setTokenStartIndex(astNode.getTokenStartIndex());
+      astNodeCopy.setTokenStopIndex(astNode.getTokenStopIndex());
+      return astNodeCopy;
+    }
 
     @Override
     public Object errorNode(TokenStream input, Token start, Token stop, RecognitionException e) {
       return new ASTErrorNode(input, start, stop, e);
-    };
+    }
   };
 
   public ASTNode parse(String command) throws ParseException {
@@ -208,7 +229,6 @@ public class ParseDriver {
     try {
       r = parser.statement();
     } catch (RecognitionException e) {
-      e.printStackTrace();
       throw new ParseException(parser.errors);
     }
 
@@ -229,7 +249,7 @@ public class ParseDriver {
    * Parse a string as a query hint.
    */
   public ASTNode parseHint(String command) throws ParseException {
-    LOG.info("Parsing hint: " + command);
+    LOG.debug("Parsing hint: {}", command);
 
     HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
@@ -239,12 +259,11 @@ public class ParseDriver {
     try {
       r = parser.hint();
     } catch (RecognitionException e) {
-      e.printStackTrace();
       throw new ParseException(parser.errors);
     }
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
-      LOG.info("Parse Completed");
+      LOG.debug("Parse Completed");
     } else if (lexer.getErrors().size() != 0) {
       throw new ParseException(lexer.getErrors());
     } else {
@@ -265,9 +284,7 @@ public class ParseDriver {
    * translation process.
    */
   public ASTNode parseSelect(String command, Context ctx) throws ParseException {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Parsing command: " + command);
-    }
+    LOG.debug("Parsing command: {}", command);
 
     HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
@@ -280,7 +297,6 @@ public class ParseDriver {
     try {
       r = parser.selectClause();
     } catch (RecognitionException e) {
-      e.printStackTrace();
       throw new ParseException(parser.errors);
     }
 
@@ -295,7 +311,7 @@ public class ParseDriver {
     return r.getTree();
   }
   public ASTNode parseExpression(String command) throws ParseException {
-    LOG.info("Parsing expression: " + command);
+    LOG.debug("Parsing expression: {}", command);
 
     HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
@@ -305,12 +321,11 @@ public class ParseDriver {
     try {
       r = parser.expression();
     } catch (RecognitionException e) {
-      e.printStackTrace();
       throw new ParseException(parser.errors);
     }
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
-      LOG.info("Parse Completed");
+      LOG.debug("Parse Completed");
     } else if (lexer.getErrors().size() != 0) {
       throw new ParseException(lexer.getErrors());
     } else {
@@ -329,7 +344,6 @@ public class ParseDriver {
     try {
       r = parser.gResourcePlanParser.triggerExpressionStandalone();
     } catch (RecognitionException e) {
-      e.printStackTrace();
       throw new ParseException(parser.errors);
     }
     if (lexer.getErrors().size() != 0) {
@@ -350,7 +364,6 @@ public class ParseDriver {
     try {
       r = parser.gResourcePlanParser.triggerActionExpressionStandalone();
     } catch (RecognitionException e) {
-      e.printStackTrace();
       throw new ParseException(parser.errors);
     }
     if (lexer.getErrors().size() != 0) {

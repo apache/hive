@@ -19,7 +19,6 @@
 package org.apache.hive.service.cli.thrift;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
@@ -53,6 +52,7 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
+import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.thrift.TProcessor;
@@ -207,7 +207,11 @@ public class ThriftHttpServlet extends TServlet {
       super.doPost(request, response);
     }
     catch (HttpAuthenticationException e) {
-      LOG.error("Error: ", e);
+      // Ignore HttpEmptyAuthenticationException, it is normal for knox
+      // to send a request with empty header
+      if (!(e instanceof HttpEmptyAuthenticationException)) {
+        LOG.error("Error: ", e);
+      }
       // Send a 401 to the client
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       if(isKerberosAuthMode(authType)) {
@@ -292,9 +296,8 @@ public class ThriftHttpServlet extends TServlet {
    * returns the client name associated with the session. Else, it returns null.
    * @param request The HTTP Servlet Request send by the client
    * @return Client Username if the request has valid HS2 cookie, else returns null
-   * @throws UnsupportedEncodingException
    */
-  private String validateCookie(HttpServletRequest request) throws UnsupportedEncodingException {
+  private String validateCookie(HttpServletRequest request) {
     // Find all the valid cookies associated with the request.
     Cookie[] cookies = request.getCookies();
 
@@ -314,9 +317,8 @@ public class ThriftHttpServlet extends TServlet {
    * Generate a server side cookie given the cookie value as the input.
    * @param str Input string token.
    * @return The generated cookie.
-   * @throws UnsupportedEncodingException
    */
-  private Cookie createCookie(String str) throws UnsupportedEncodingException {
+  private Cookie createCookie(String str) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Cookie name = " + AUTH_COOKIE + " value = " + str);
     }
@@ -404,6 +406,9 @@ public class ThriftHttpServlet extends TServlet {
     try {
       return serviceUGI.doAs(new HttpKerberosServerAction(request, serviceUGI));
     } catch (Exception e) {
+      if (e.getCause() instanceof HttpEmptyAuthenticationException) {
+        throw (HttpEmptyAuthenticationException)e.getCause();
+      }
       LOG.error("Failed to authenticate with hive/_HOST kerberos principal");
       throw new HttpAuthenticationException(e);
     }
@@ -546,7 +551,7 @@ public class ThriftHttpServlet extends TServlet {
     String authHeader = request.getHeader(HttpAuthUtils.AUTHORIZATION);
     // Each http request must have an Authorization header
     if (authHeader == null || authHeader.isEmpty()) {
-      throw new HttpAuthenticationException("Authorization header received " +
+      throw new HttpEmptyAuthenticationException("Authorization header received " +
           "from the client is empty.");
     }
 

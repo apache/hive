@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
@@ -46,10 +43,6 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
  */
 public abstract class VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorBase.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   protected final WindowFrameDef windowFrameDef;
   private final VectorExpression inputVecExpr;
   protected final int inputColumnNum;
@@ -72,6 +65,13 @@ public abstract class VectorPTFEvaluatorBase {
     this.outputColumnNum = outputColumnNum;
   }
 
+  public VectorPTFEvaluatorBase(WindowFrameDef windowFrameDef, int outputColumnNum) {
+    this.windowFrameDef = windowFrameDef;
+    inputVecExpr = null;
+    inputColumnNum = -1;
+    this.outputColumnNum = outputColumnNum;
+  }
+
   // Evaluate the aggregation input argument expression.
   public void evaluateInputExpr(VectorizedRowBatch batch) throws HiveException {
     if (inputVecExpr != null) {
@@ -80,13 +80,18 @@ public abstract class VectorPTFEvaluatorBase {
   }
 
   // Evaluate the aggregation over one of the group's batches.
-  public abstract void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) throws HiveException;
+  public abstract void evaluateGroupBatch(VectorizedRowBatch batch)
+      throws HiveException;
+
+  // Do any work necessary after the last batch for a group has been processed.  Necessary
+  // for both streaming and non-streaming evaluators..
+  public void doLastBatchWork() {
+    // By default, do nothing.
+  }
 
   // Returns true if the aggregation result will be streamed.
-  public boolean streamsResult() {
-    // Assume it is not streamjng by default.
-    return false;
-  }
+  // Otherwise, we must evaluate whole group before producing a result.
+  public abstract boolean streamsResult();
 
   public int getOutputColumnNum() {
     return outputColumnNum;
@@ -95,7 +100,7 @@ public abstract class VectorPTFEvaluatorBase {
   // After processing all the group's batches with evaluateGroupBatch, is the non-streaming
   // aggregation result null?
   public boolean isGroupResultNull() {
-    return false;
+    throw new RuntimeException("Not implemented");
   }
 
   // What is the ColumnVector type of the aggregation result?

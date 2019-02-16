@@ -60,6 +60,10 @@ on (a.ds = '1' and b.ds = '2' and
     a.postid = b.postid and
     a.type = b.type)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_smb_bucket_10
+PREHOOK: Input: default@tmp_smb_bucket_10@ds=1
+PREHOOK: Input: default@tmp_smb_bucket_10@ds=2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+mapjoin(a)*/ * from tmp_smb_bucket_10 a join tmp_smb_bucket_10 b 
 on (a.ds = '1' and b.ds = '2' and
@@ -68,6 +72,10 @@ on (a.ds = '1' and b.ds = '2' and
     a.postid = b.postid and
     a.type = b.type)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_smb_bucket_10
+POSTHOOK: Input: default@tmp_smb_bucket_10@ds=1
+POSTHOOK: Input: default@tmp_smb_bucket_10@ds=2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

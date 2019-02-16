@@ -120,6 +120,9 @@ public class SparkCompiler extends TaskCompiler {
     // Annotation OP tree with statistics
     runStatsAnnotation(procCtx);
 
+    // Run Dynamic Partitioning sort Optimization.
+    runDynPartitionSortOptimizations(procCtx);
+
     // Set reducer parallelism
     runSetReducerParallelism(procCtx);
 
@@ -334,6 +337,13 @@ public class SparkCompiler extends TaskCompiler {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
     ogw.startWalking(topNodes, null);
+  }
+
+  private void runDynPartitionSortOptimizations(OptimizeSparkProcContext procCtx) throws SemanticException {
+    // run Sorted dynamic partition optimization
+    HiveConf hConf = procCtx.getConf();
+    ParseContext parseContext = procCtx.getParseContext();
+    runDynPartitionSortOptimizations(parseContext, hConf);
   }
 
   /**

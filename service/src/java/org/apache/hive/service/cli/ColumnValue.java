@@ -19,14 +19,14 @@
 package org.apache.hive.service.cli;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.rpc.thrift.TBoolValue;

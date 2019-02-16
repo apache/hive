@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 --create table union38_test1 
 
 create table union38_test1( name String, id int, address String); 

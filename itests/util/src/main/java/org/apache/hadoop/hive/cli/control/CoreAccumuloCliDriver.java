@@ -34,7 +34,6 @@ import org.junit.BeforeClass;
 public class CoreAccumuloCliDriver extends CliAdapter {
 
   private AccumuloQTestUtil qt;
-  private static AccumuloTestSetup setup;
 
   public CoreAccumuloCliDriver(AbstractCliConfig cliConfig) {
     super(cliConfig);
@@ -43,35 +42,32 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   @Override
   @BeforeClass
   public void beforeClass() {
-    setup = new AccumuloTestSetup();
-
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
     try {
       qt = new AccumuloQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-          setup, initScript, cleanupScript);
+          new AccumuloTestSetup(), initScript, cleanupScript);
 
       // do a one time initialization
       qt.newSession();
       qt.cleanUp();
       qt.createSources();
+
     } catch (Exception e) {
-      throw new RuntimeException("Unexpected exception in setUp",e);
+      throw new RuntimeException("Unexpected exception in setUp", e);
     }
   }
 
   @Override
   @AfterClass
-  public void shutdown() throws Exception {
-    setup.tearDown();
-
+  public void shutdown() {
     try {
       qt.shutdown();
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Unexpected exception in tearDown",e);
+
+    } catch (Exception e) {
+      throw new RuntimeException("Unexpected exception in tearDown", e);
     }
   }
 
@@ -80,6 +76,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   public void setUp() {
     try {
       qt.newSession();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -94,6 +91,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
     try {
       qt.clearPostTestEffects();
       qt.clearTestSideEffects();
+
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -101,15 +99,16 @@ public class CoreAccumuloCliDriver extends CliAdapter {
       fail("Unexpected exception in tearDown");
     }
   }
+
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
+  public void runTest(String tname, String fname, String fpath) {
     long startTime = System.currentTimeMillis();
     try {
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-
       qt.cliInit(new File(fpath));
+
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         qt.failed(ecode, fname, null);

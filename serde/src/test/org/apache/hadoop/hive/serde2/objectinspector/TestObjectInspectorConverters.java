@@ -246,9 +246,53 @@ public class TestObjectInspectorConverters extends TestCase {
       textConverter = ObjectInspectorConverters.getConverter(
           PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      assertEquals("TextConverter", new Text("100.001"), textConverter
+      assertEquals("TextConverter", new Text("100.001000000000000000"), textConverter
 	  .convert(HiveDecimal.create("100.001")));
       assertEquals("TextConverter", null, textConverter.convert(null));
+
+      // Varchar
+      PrimitiveTypeInfo varchar5TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
+      PrimitiveTypeInfo varchar30TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(30)");
+      PrimitiveObjectInspector varchar5OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar5TI);
+      PrimitiveObjectInspector varchar30OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar30TI);
+      // Value should be truncated to varchar length 5
+      varcharConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          varchar5OI);
+      assertEquals("VarcharConverter", "100.0",
+          varcharConverter.convert(HiveDecimal.create("100.001")).toString());
+
+      varcharConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          varchar30OI);
+      assertEquals("VarcharConverter", "100.001000000000000000",
+          varcharConverter.convert(HiveDecimal.create("100.001")).toString());
+
+      // Char
+      PrimitiveTypeInfo char5TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
+      PrimitiveTypeInfo char30TI =
+          (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("char(30)");
+      PrimitiveObjectInspector char5OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(char5TI);
+      PrimitiveObjectInspector char30OI =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(char30TI);
+      // Value should be truncated to char length 5
+      charConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          char5OI);
+      assertEquals("CharConverter", "100.0",
+          charConverter.convert(HiveDecimal.create("100.001")).toString());
+      // Char value should be have space padding to full char length
+      charConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+          char30OI);
+      assertEquals("CharConverter", "100.001000000000000000        ",
+          charConverter.convert(HiveDecimal.create("100.001")).toString());
 
       // Binary
       Converter baConverter = ObjectInspectorConverters.getConverter(

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -54,8 +55,15 @@ public class HiveWrapper {
     return new Tuple<>(functionForSpec, () -> db.getDatabase(dbName));
   }
 
-  public Tuple<Table> table(final String tableName) throws HiveException {
-    return new Tuple<>(functionForSpec, () -> db.getTable(dbName, tableName));
+  public Tuple<Table> table(final String tableName, HiveConf conf) throws HiveException {
+    // Column statistics won't be accurate if we are dumping only metadata
+    boolean getColStats = !conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY);
+    return new Tuple<>(functionForSpec, () -> db.getTable(dbName, tableName, true, false,
+            getColStats));
+  }
+
+  public Tuple<Table> table(final Table tblObj) throws HiveException {
+    return new Tuple<>(functionForSpec, () -> tblObj);
   }
 
   public static class Tuple<T> {

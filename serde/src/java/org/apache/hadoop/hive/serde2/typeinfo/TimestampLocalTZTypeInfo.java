@@ -73,19 +73,21 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
 
   @Override
   public String toString() {
-    return getQualifiedName();
+    return getQualifiedName(timeZone);
   }
 
   @Override
   public String getQualifiedName() {
-    return getQualifiedName(timeZone);
+    return getQualifiedName(null);
   }
 
   public static String getQualifiedName(ZoneId timeZone) {
     StringBuilder sb = new StringBuilder(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
-    sb.append("('");
-    sb.append(timeZone);
-    sb.append("')");
+    if (timeZone != null) {
+      sb.append("('");
+      sb.append(timeZone);
+      sb.append("')");
+    }
     return sb.toString();
   }
 

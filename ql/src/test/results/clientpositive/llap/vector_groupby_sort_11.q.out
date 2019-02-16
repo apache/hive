@@ -23,9 +23,15 @@ POSTHOOK: Lineage: t1_n137 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key) from T1_n137
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key) from T1_n137
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -86,10 +92,9 @@ STAGE PLANS:
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
-                              keyColumnNums: []
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumnNums: [0]
+                              valueColumns: 0:bigint
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
@@ -169,9 +174,15 @@ POSTHOOK: Input: default@t1_n137@ds=1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -258,9 +269,15 @@ POSTHOOK: Input: default@t1_n137@ds=1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -358,9 +375,15 @@ POSTHOOK: Input: default@t1_n137@ds=1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -454,9 +477,15 @@ POSTHOOK: Input: default@t1_n137@ds=1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key+key) from T1_n137
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key+key) from T1_n137
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -509,10 +538,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:double
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -576,10 +604,9 @@ STAGE PLANS:
                     sort order: 
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkEmptyKeyOperator
-                        keyColumnNums: []
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [0]
+                        valueColumns: 0:bigint
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
@@ -641,9 +668,15 @@ POSTHOOK: Input: default@t1_n137@ds=1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct 1) from T1_n137
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct 1) from T1_n137
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -679,24 +712,23 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: ConstantVectorExpression(val 1) -> 4:int
+                          keyExpressions: ConstantVectorExpression(val 1) -> 4:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
-                      keys: 1 (type: int)
+                      keys: true (type: boolean)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col0 (type: boolean)
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col0 (type: boolean)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumnNums: [0]
+                            keyColumns: 0:boolean
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: []
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -728,7 +760,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: KEY._col0:int
+                    dataColumns: KEY._col0:boolean
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -736,11 +768,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumnNums: []
-                keys: KEY._col0 (type: int)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -766,10 +798,9 @@ STAGE PLANS:
                       sort order: 
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkEmptyKeyOperator
-                          keyColumnNums: []
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [0]
+                          valueColumns: 0:bigint
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
         Reducer 3 
@@ -831,9 +862,15 @@ POSTHOOK: Input: default@t1_n137@ds=1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key) from T1_n137
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select count(distinct key) from T1_n137
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -873,10 +910,9 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkStringOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -928,10 +964,9 @@ STAGE PLANS:
                   sort order: 
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkEmptyKeyOperator
-                      keyColumnNums: []
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      valueColumnNums: [0]
+                      valueColumns: 0:string
                   Statistics: Num rows: 6 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string)
         Reducer 3 

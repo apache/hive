@@ -122,14 +122,14 @@ public class <ClassName> extends VectorExpression {
           int i = sel[j];
           scratchIntervalYearMonth1.set((int) vector1[i]);
           dtm.<OperatorMethod>(
-              scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(i), outputColVector.getScratchTimestamp());
+              scratchIntervalYearMonth1, value2, outputColVector.getScratchTimestamp());
           outputColVector.setFromScratchTimestamp(i);
         }
       } else {
         for(int i = 0; i != n; i++) {
           scratchIntervalYearMonth1.set((int) vector1[i]);
           dtm.<OperatorMethod>(
-              scratchIntervalYearMonth1, inputColVector2.asScratchTimestamp(i), outputColVector.getScratchTimestamp());
+              scratchIntervalYearMonth1, value2, outputColVector.getScratchTimestamp());
           outputColVector.setFromScratchTimestamp(i);
         }
       }

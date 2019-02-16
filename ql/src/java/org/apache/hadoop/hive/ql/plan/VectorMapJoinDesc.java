@@ -85,11 +85,11 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   }
 
   public static enum VectorMapJoinVariation {
-    NONE,
-    INNER_BIG_ONLY,
     INNER,
+    INNER_BIG_ONLY,
     LEFT_SEMI,
-    OUTER
+    OUTER,
+    FULL_OUTER
   }
 
   private HashTableImplementationType hashTableImplementationType;
@@ -107,7 +107,7 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     hashTableImplementationType = HashTableImplementationType.NONE;
     hashTableKind = HashTableKind.NONE;
     hashTableKeyType = HashTableKeyType.NONE;
-    vectorMapJoinVariation = VectorMapJoinVariation.NONE;
+    vectorMapJoinVariation = null;
     minMaxEnabled = false;
 
     allBigTableKeyExpressions = null;
@@ -204,8 +204,11 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   private boolean isHybridHashJoin;
   private boolean supportsKeyTypes;
   private List<String> notSupportedKeyTypes;
+  private boolean supportsValueTypes;
+  private List<String> notSupportedValueTypes;
   private boolean smallTableExprVectorizes;
   private boolean outerJoinHasNoKeys;
+  boolean isFullOuter;
 
   public void setUseOptimizedTable(boolean useOptimizedTable) {
     this.useOptimizedTable = useOptimizedTable;
@@ -249,6 +252,18 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   public List<String> getNotSupportedKeyTypes() {
     return notSupportedKeyTypes;
   }
+  public void setSupportsValueTypes(boolean supportsValueTypes) {
+    this.supportsValueTypes = supportsValueTypes;
+  }
+  public boolean getSupportsValueTypes() {
+    return supportsValueTypes;
+  }
+  public void setNotSupportedValueTypes(List<String> notSupportedValueTypes) {
+    this.notSupportedValueTypes = notSupportedValueTypes;
+  }
+  public List<String> getNotSupportedValueTypes() {
+    return notSupportedValueTypes;
+  }
   public void setSmallTableExprVectorizes(boolean smallTableExprVectorizes) {
     this.smallTableExprVectorizes = smallTableExprVectorizes;
   }
@@ -274,5 +289,10 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   public boolean getIsHybridHashJoin() {
     return isHybridHashJoin;
   }
-
+  public void setIsFullOuter(boolean isFullOuter) {
+    this.isFullOuter = isFullOuter;
+  }
+  public boolean getIsFullOuter() {
+    return isFullOuter;
+  }
 }

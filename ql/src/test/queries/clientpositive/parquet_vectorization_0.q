@@ -10,7 +10,7 @@ set hive.fetch.task.conversion=none;
 -- SORT_QUERY_RESULTS
 
 -- Use ORDER BY clauses to generate 2 stages.
-EXPLAIN VECTORIZATION DETAIL
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
        COUNT(ctinyint),
@@ -25,7 +25,7 @@ SELECT MIN(ctinyint) as c1,
 FROM   alltypesparquet
 ORDER BY c1;
 
-EXPLAIN VECTORIZATION DETAIL
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(ctinyint) as c1
 FROM   alltypesparquet
 ORDER BY c1;
@@ -59,7 +59,7 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1;
 
-EXPLAIN VECTORIZATION DETAIL
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(cbigint) as c1,
        MAX(cbigint),
        COUNT(cbigint),
@@ -74,7 +74,7 @@ SELECT MIN(cbigint) as c1,
 FROM   alltypesparquet
 ORDER BY c1;
 
-EXPLAIN VECTORIZATION DETAIL
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cbigint) as c1
 FROM   alltypesparquet
 ORDER BY c1;
@@ -108,7 +108,7 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1;
 
-EXPLAIN VECTORIZATION DETAIL
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(cfloat) as c1,
        MAX(cfloat),
        COUNT(cfloat),
@@ -123,7 +123,7 @@ SELECT MIN(cfloat) as c1,
 FROM   alltypesparquet
 ORDER BY c1;
 
-EXPLAIN VECTORIZATION DETAIL
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT SUM(cfloat) as c1
 FROM   alltypesparquet
 ORDER BY c1;
@@ -157,7 +157,7 @@ SELECT
 FROM alltypesparquet
 ORDER BY c1;
 
-EXPLAIN VECTORIZATION DETAIL
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),
        (-6432 + AVG(cbigint)),

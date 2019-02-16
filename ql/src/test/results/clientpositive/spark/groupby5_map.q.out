@@ -9,9 +9,13 @@ POSTHOOK: Output: default@dest1_n75
 PREHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest1_n75 SELECT sum(src.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n75
 POSTHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest1_n75 SELECT sum(src.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n75
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

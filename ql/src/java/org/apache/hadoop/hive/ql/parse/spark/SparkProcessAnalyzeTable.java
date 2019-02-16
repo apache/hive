@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
+import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.base.Preconditions;
@@ -96,8 +98,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
       Preconditions.checkArgument(alias != null, "AssertionError: expected alias to be not null");
 
       SparkWork sparkWork = context.currentTask.getWork();
-      if (OrcInputFormat.class.isAssignableFrom(inputFormat) ||
-          MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
+      if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)) {
         // For ORC & Parquet, all the following statements are the same
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;

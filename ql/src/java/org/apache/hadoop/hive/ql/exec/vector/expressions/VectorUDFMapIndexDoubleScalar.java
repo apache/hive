@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
@@ -29,13 +28,15 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
  */
 public class VectorUDFMapIndexDoubleScalar extends VectorUDFMapIndexBaseScalar {
 
-  private HiveDecimal key;
+  private static final long serialVersionUID = 1L;
+
+  private double key;
 
   public VectorUDFMapIndexDoubleScalar() {
     super();
   }
 
-  public VectorUDFMapIndexDoubleScalar(int mapColumnNum, HiveDecimal key, int outputColumnNum) {
+  public VectorUDFMapIndexDoubleScalar(int mapColumnNum, double key, int outputColumnNum) {
     super(mapColumnNum, outputColumnNum);
     this.key = key;
   }
@@ -53,24 +54,23 @@ public class VectorUDFMapIndexDoubleScalar extends VectorUDFMapIndexBaseScalar {
         .setNumArguments(2)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.MAP,
-            VectorExpressionDescriptor.ArgumentType.DECIMAL)
+            VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
 
   @Override
-  protected Object getKeyByIndex(ColumnVector cv, int index) {
-    return ((DoubleColumnVector) cv).vector[index];
+  public int findScalarInMap(MapColumnVector mapColumnVector, int mapBatchIndex) {
+    final int offset = (int) mapColumnVector.offsets[mapBatchIndex];
+    final int count = (int) mapColumnVector.lengths[mapBatchIndex];
+    double[] keys = ((DoubleColumnVector) mapColumnVector.keys).vector;
+    for (int i = 0; i < count; i++) {
+      if (key == keys[offset + i]) {
+        return offset + i;
+      }
+    }
+    return -1;
   }
 
-  @Override
-  public Object getCurrentKey(int index) {
-    return key;
-  }
-
-  @Override
-  protected boolean compareKeyInternal(Object columnKey, Object otherKey) {
-    return otherKey.equals(((HiveDecimal) columnKey).doubleValue());
-  }
 }

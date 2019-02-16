@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
@@ -70,6 +71,7 @@ import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.ipc.CallerContext;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -78,6 +80,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.WebHCatJTShim23;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
+import org.apache.hadoop.mapreduce.FileSystemCounter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobID;
@@ -479,6 +482,21 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return new MiniSparkShim(conf, numberOfTaskTrackers, nameNode, numDir);
   }
 
+  @Override
+  public void setHadoopCallerContext(String callerContext) {
+    CallerContext.setCurrent(new CallerContext.Builder(callerContext).build());
+  }
+
+  @Override
+  public void setHadoopQueryContext(String queryId) {
+    setHadoopCallerContext("hive_queryId_" + queryId);
+  }
+
+  @Override
+  public void setHadoopSessionContext(String sessionId) {
+    setHadoopCallerContext("hive_sessionId_" + sessionId);
+  }
+
   /**
    * Shim for MiniSparkOnYARNCluster
    */
@@ -739,6 +757,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     @Override
     public Long getFileId() {
+      if (fileId == HdfsConstants.GRANDFATHER_INODE_ID) {
+        return null;
+      }
       return fileId;
     }
   }
@@ -1043,7 +1064,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
-
   public static class StoragePolicyShim implements HadoopShims.StoragePolicyShim {
 
     private final DistributedFileSystem dfs;
@@ -1090,19 +1110,29 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   private static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
   List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) {
+    // -update and -delete are mandatory options for directory copy to work.
+    // -pbx is default preserve options if user doesn't pass any.
     List<String> params = new ArrayList<String>();
+    boolean needToAddPreserveOption = true;
     for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
       String distCpOption = entry.getKey();
       String distCpVal = entry.getValue();
+      if (distCpOption.startsWith("p")) {
+        needToAddPreserveOption = false;
+      }
       params.add("-" + distCpOption);
       if ((distCpVal != null) && (!distCpVal.isEmpty())){
         params.add(distCpVal);
       }
     }
-    if (params.size() == 0){
-      // if no entries were added via conf, we initiate our defaults
-      params.add("-update");
+    if (needToAddPreserveOption) {
       params.add("-pbx");
+    }
+    if (!params.contains("-update")) {
+      params.add("-update");
+    }
+    if (!params.contains("-delete")) {
+      params.add("-delete");
     }
     for (Path src : srcPaths) {
       params.add(src.toString());
@@ -1130,10 +1160,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
        DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
-        .withSyncFolder(true)
-        .withCRC(true)
-        .preserve(FileAttribute.BLOCKSIZE)
-        .build();
+               .withSyncFolder(true)
+               .withDeleteMissing(true)
+               .preserve(FileAttribute.BLOCKSIZE)
+               .preserve(FileAttribute.XATTR)
+               .build();
 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
@@ -1603,6 +1634,21 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
       hdfsAdmin.disableErasureCodingPolicy(ecPolicyName);
+    }
+
+    /**
+     * @return true if if the runtime MR stat for Erasure Coding is available.
+     */
+    @Override
+    public boolean isMapReduceStatAvailable() {
+      // Look for FileSystemCounter.BYTES_READ_EC, this is present in hadoop 3.2
+      Field field = null;
+      try {
+        field = FileSystemCounter.class.getField("BYTES_READ_EC");
+      } catch (NoSuchFieldException e) {
+        // This version of Hadoop does not support EC stats for MR
+      }
+      return (field != null);
     }
   }
 }

@@ -18,22 +18,27 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-
+import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class DropTableHandler extends AbstractEventHandler {
+
+class DropTableHandler extends AbstractEventHandler<DropTableMessage> {
 
   DropTableHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  DropTableMessage eventMessage(String stringRepresentation) {
+    return deserializer.getDropTableMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} DROP_TABLE message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} DROP_TABLE message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

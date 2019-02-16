@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -93,6 +95,10 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
       // create map and fetch operators
       MapWork mrwork = Utilities.getMapWork(job);
+      for (PartitionDesc part : mrwork.getAliasToPartnInfo().values()) {
+        TableDesc tableDesc = part.getTableDesc();
+        Utilities.copyJobSecretToTableProperties(tableDesc);
+      }
 
       CompilationOpContext runtimeCtx = new CompilationOpContext();
       if (mrwork.getVectorMode()) {

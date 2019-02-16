@@ -14,24 +14,7 @@
 package org.apache.hive.benchmark.vectorization;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarGreaterEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarLessEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarLessLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarNotEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.runner.Runner;

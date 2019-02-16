@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
 // Multi-Key hash table import.
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
@@ -69,17 +68,17 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
   //---------------------------------------------------------------------------
 
   // The hash map for this specialized class.
-  private transient VectorMapJoinBytesHashMap hashMap;
+  protected transient VectorMapJoinBytesHashMap hashMap;
 
   //---------------------------------------------------------------------------
   // Multi-Key specific members.
   //
 
   // Object that can take a set of columns in row in a vectorized row batch and serialized it.
-  private transient VectorSerializeRow keyVectorSerializeWrite;
+  protected transient VectorSerializeRow keyVectorSerializeWrite;
 
   // The BinarySortable serialization of the current key.
-  private transient Output currentKeyOutput;
+  protected transient Output currentKeyOutput;
 
   // The BinarySortable serialization of the saved key for a possible series of equal keys.
   private transient Output saveKeyOutput;
@@ -107,54 +106,39 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
   //
 
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
+
+    /*
+     * Initialize Multi-Key members for this specialized class.
+     */
+
+    keyVectorSerializeWrite = new VectorSerializeRow(
+                    new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
+    keyVectorSerializeWrite.init(bigTableKeyTypeInfos, bigTableKeyColumnMap);
+
+    currentKeyOutput = new Output();
+    saveKeyOutput = new Output();
+  }
+
+  @Override
+  public void hashTableSetup() throws HiveException {
+    super.hashTableSetup();
+
+    /*
+     * Get our Multi-Key hash map information for this specialized class.
+     */
+
+    hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+
+  }
+
+  @Override
+  public void processBatch(VectorizedRowBatch batch) throws HiveException {
 
     try {
-      VectorizedRowBatch batch = (VectorizedRowBatch) row;
-
-      alias = (byte) tag;
-
-      if (needCommonSetup) {
-        // Our one time process method initialization.
-        commonSetup(batch);
-
-        /*
-         * Initialize Multi-Key members for this specialized class.
-         */
-
-        keyVectorSerializeWrite = new VectorSerializeRow(
-                        new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
-        keyVectorSerializeWrite.init(bigTableKeyTypeInfos, bigTableKeyColumnMap);
-
-        currentKeyOutput = new Output();
-        saveKeyOutput = new Output();
-
-        needCommonSetup = false;
-      }
-
-      if (needHashTableSetup) {
-        // Setup our hash table specialization.  It will be the first time the process
-        // method is called, or after a Hybrid Grace reload.
-
-        /*
-         * Get our Multi-Key hash map information for this specialized class.
-         */
-
-        hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
-
-        needHashTableSetup = false;
-      }
-
-      batchCounter++;
 
       final int inputLogicalSize = batch.size;
-
-      if (inputLogicalSize == 0) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
-        }
-        return;
-      }
 
       // Do the per-batch setup for an outer join.
 
@@ -165,9 +149,6 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
       // later.
       boolean inputSelectedInUse = batch.selectedInUse;
       if (inputSelectedInUse) {
-        // if (!verifyMonotonicallyIncreasing(batch.selected, batch.size)) {
-        //   throw new HiveException("batch.selected is not in sort order and unique");
-        // }
         System.arraycopy(batch.selected, 0, inputSelected, 0, inputLogicalSize);
       }
 
@@ -179,19 +160,6 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
           ve.evaluate(batch);
         }
         someRowsFilteredOut = (batch.size != inputLogicalSize);
-        if (LOG.isDebugEnabled()) {
-          if (batch.selectedInUse) {
-            if (inputSelectedInUse) {
-              LOG.debug(CLASS_NAME +
-                  " inputSelected " + intArrayToRangesString(inputSelected, inputLogicalSize) +
-                  " filtered batch.selected " + intArrayToRangesString(batch.selected, batch.size));
-            } else {
-              LOG.debug(CLASS_NAME +
-                " inputLogicalSize " + inputLogicalSize +
-                " filtered batch.selected " + intArrayToRangesString(batch.selected, batch.size));
-            }
-          }
-        }
       }
 
       // Perform any key expressions.  Results will go into scratch columns.
@@ -259,16 +227,13 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
           keyVectorSerializeWrite.serializeWrite(batch, 0);
           byte[] keyBytes = currentKeyOutput.getData();
           int keyLength = currentKeyOutput.getLength();
-          joinResult = hashMap.lookup(keyBytes, 0, keyLength, hashMapResults[0]);
+          joinResult = hashMap.lookup(keyBytes, 0, keyLength, hashMapResults[0], matchTracker);
         }
 
         /*
          * Common repeated join result processing.
          */
 
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
-        }
         finishOuterRepeated(batch, joinResult, hashMapResults[0], someRowsFilteredOut,
             inputSelectedInUse, inputLogicalSize);
       } else {
@@ -276,10 +241,6 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
         /*
          * NOT Repeating.
          */
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
-        }
 
         int selected[] = batch.selected;
         boolean selectedInUse = batch.selectedInUse;
@@ -305,8 +266,6 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
         for (int logical = 0; logical < batch.size; logical++) {
           int batchIndex = (selectedInUse ? selected[logical] : logical);
 
-          // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, taskName + ", " + getOperatorId() + " candidate " + CLASS_NAME + " batch");
-
           /*
            * Multi-Key outer null detection.
            */
@@ -325,7 +284,6 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
 
             atLeastOneNonMatch = true;
 
-            // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " NULL");
           } else {
 
             /*
@@ -375,7 +333,9 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
 
               byte[] keyBytes = saveKeyOutput.getData();
               int keyLength = saveKeyOutput.getLength();
-              saveJoinResult = hashMap.lookup(keyBytes, 0, keyLength, hashMapResults[hashMapResultCount]);
+              saveJoinResult = hashMap.lookup(keyBytes, 0, keyLength,
+                  hashMapResults[hashMapResultCount], matchTracker);
+
 
               /*
                * Common outer join result processing.
@@ -388,7 +348,6 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
                 equalKeySeriesIsSingleValue[equalKeySeriesCount] = hashMapResults[hashMapResultCount].isSingleRow();
                 equalKeySeriesDuplicateCounts[equalKeySeriesCount] = 1;
                 allMatchs[allMatchCount++] = batchIndex;
-                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH isSingleValue " + equalKeySeriesIsSingleValue[equalKeySeriesCount] + " currentKey " + currentKey);
                 break;
 
               case SPILL:
@@ -399,11 +358,9 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
 
               case NOMATCH:
                 atLeastOneNonMatch = true;
-                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " NOMATCH" + " currentKey " + currentKey);
                 break;
               }
             } else {
-              // LOG.debug(CLASS_NAME + " logical " + logical + " batchIndex " + batchIndex + " Key Continues " + saveKey + " " + saveJoinResult.name());
 
               // Series of equal keys.
 
@@ -411,7 +368,6 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
               case MATCH:
                 equalKeySeriesDuplicateCounts[equalKeySeriesCount]++;
                 allMatchs[allMatchCount++] = batchIndex;
-                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH duplicate");
                 break;
 
               case SPILL:
@@ -421,13 +377,9 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
                 break;
 
               case NOMATCH:
-                // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " NOMATCH duplicate");
                 break;
               }
             }
-            // if (!verifyMonotonicallyIncreasing(allMatchs, allMatchCount)) {
-            //   throw new HiveException("allMatchs is not in sort order and unique");
-            // }
           }
         }
 
@@ -469,7 +421,9 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
       }
 
       if (batch.size > 0) {
-        // Forward any remaining selected rows.
+
+        // Forward any rows in the Big Table batch that had results added (they will be selected).
+        // NOTE: Other result rows may have been generated in the overflowBatch.
         forwardBigTableBatch(batch);
       }
 

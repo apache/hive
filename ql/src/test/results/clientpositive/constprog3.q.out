@@ -20,11 +20,17 @@ select table1.id, table1.val, table1.val1
 from table1 inner join table3
 on table1.dimid = table3.id and table3.id = 1 where table1.dimid <> 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select table1.id, table1.val, table1.val1
 from table1 inner join table3
 on table1.dimid = table3.id and table3.id = 1 where table1.dimid <> 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -35,17 +41,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table1
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: false (type: boolean)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: id (type: int), val (type: int), val1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
           TableScan
             alias: table3
@@ -66,10 +72,10 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 13 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 13 Basic stats: PARTIAL Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

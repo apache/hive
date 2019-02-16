@@ -45,6 +45,8 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
@@ -56,6 +58,8 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -94,7 +98,7 @@ STAGE PLANS:
                         input alias: ptf_1
                         arguments: 'LATE.LATE+', 'LATE', (_col5 > 15.0), 'origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath'
                         name: matchpath
-                        order by: _col2 ASC NULLS FIRST, _col3 ASC NULLS FIRST, _col4 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST, _col3 ASC NULLS LAST, _col4 ASC NULLS LAST
                         output shape: tpath: int
                         partition by: _col6
                         raw input shape:
@@ -169,6 +173,8 @@ from matchpath(on
    )
 where fl_num = 1142
 PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
@@ -180,6 +186,8 @@ from matchpath(on
    )
 where fl_num = 1142
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -218,7 +226,7 @@ STAGE PLANS:
                         input alias: ptf_1
                         arguments: 'LATE.LATE+', 'LATE', (_col5 > 15.0), 'origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath'
                         name: matchpath
-                        order by: _col6 ASC NULLS FIRST, _col2 ASC NULLS FIRST, _col3 ASC NULLS FIRST, _col4 ASC NULLS FIRST
+                        order by: _col6 ASC NULLS LAST, _col2 ASC NULLS LAST, _col3 ASC NULLS LAST, _col4 ASC NULLS LAST
                         output shape: tpath: int
                         partition by: 0
                         raw input shape:
@@ -284,6 +292,8 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
 PREHOOK: type: QUERY
+PREHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
@@ -294,6 +304,8 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@flights_tiny_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -340,7 +352,7 @@ STAGE PLANS:
                         input alias: ptf_1
                         arguments: 'LATE.LATE+', 'LATE', (_col5 > 15.0), 'origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath'
                         name: matchpath
-                        order by: _col6 ASC NULLS FIRST, _col2 ASC NULLS FIRST, _col3 ASC NULLS FIRST, _col4 ASC NULLS FIRST
+                        order by: _col6 ASC NULLS LAST, _col2 ASC NULLS LAST, _col3 ASC NULLS LAST, _col4 ASC NULLS LAST
                         output shape: tpath: int
                         partition by: 0
                         raw input shape:

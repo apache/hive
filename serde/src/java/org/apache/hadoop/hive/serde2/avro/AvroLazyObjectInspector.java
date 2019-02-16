@@ -386,7 +386,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
    * Convert the given object to a lazy object using the given {@link ObjectInspector}
    *
    * @param obj Object to be converted to a {@link LazyObject}
-   * @param oi ObjectInspector used for the conversion
+   * @param objectInspector ObjectInspector used for the conversion
    * @return the created {@link LazyObject lazy object}
    * */
   private Object toLazyListObject(Object obj, ObjectInspector objectInspector) {
@@ -414,7 +414,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
    * Convert the given object to a lazy object using the given {@link ObjectInspector}
    *
    * @param obj Object to be converted to a {@link LazyObject}
-   * @param oi ObjectInspector used for the conversion
+   * @param objectInspector ObjectInspector used for the conversion
    * @return the created {@link LazyObject lazy object}
    * */
   @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -451,7 +451,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
    * Convert the given object to a lazy object using the given {@link ObjectInspector}
    *
    * @param obj Object to be converted to a {@link LazyObject}
-   * @param oi ObjectInspector used for the conversion
+   * @param objectInspector ObjectInspector used for the conversion
    * @return the created {@link LazyObject lazy object}
    * */
   private Object toLazyUnionObject(Object obj, ObjectInspector objectInspector) {

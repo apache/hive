@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -28,7 +29,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class AlterTableHandler extends AbstractEventHandler {
+class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
   private final org.apache.hadoop.hive.metastore.api.Table before;
   private final org.apache.hadoop.hive.metastore.api.Table after;
   private final boolean isTruncateOp;
@@ -59,11 +60,15 @@ class AlterTableHandler extends AbstractEventHandler {
 
   AlterTableHandler(NotificationEvent event) throws Exception {
     super(event);
-    AlterTableMessage atm = deserializer.getAlterTableMessage(event.getMessage());
-    before = atm.getTableObjBefore();
-    after = atm.getTableObjAfter();
-    isTruncateOp = atm.getIsTruncateOp();
+    before = eventMessage.getTableObjBefore();
+    after = eventMessage.getTableObjAfter();
+    isTruncateOp = eventMessage.getIsTruncateOp();
     scenario = scenarioType(before, after);
+  }
+
+  @Override
+  AlterTableMessage eventMessage(String stringRepresentation) {
+    return deserializer.getAlterTableMessage(stringRepresentation);
   }
 
   private Scenario scenarioType(org.apache.hadoop.hive.metastore.api.Table before,
@@ -78,11 +83,11 @@ class AlterTableHandler extends AbstractEventHandler {
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} ALTER_TABLE message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} ALTER_TABLE message : {}", fromEventId(), eventMessageAsJSON);
 
     Table qlMdTableBefore = new Table(before);
     if (!Utils
-        .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore, withinContext.hiveConf)) {
+        .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore, true, withinContext.hiveConf)) {
       return;
     }
 
@@ -90,6 +95,14 @@ class AlterTableHandler extends AbstractEventHandler {
       withinContext.replicationSpec.setIsMetadataOnly(true);
       Table qlMdTableAfter = new Table(after);
       Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
+
+      // If we are not dumping metadata about a table, we shouldn't be dumping basic statistics
+      // as well, since that won't be accurate. So reset them to what they would look like for an
+      // empty table.
+      if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+        qlMdTableAfter.setStatsStateLikeNewTable();
+      }
+
       EximUtil.createExportDump(
           metaDataPath.getFileSystem(withinContext.hiveConf),
           metaDataPath,
@@ -100,7 +113,7 @@ class AlterTableHandler extends AbstractEventHandler {
     }
  
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

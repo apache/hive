@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
@@ -291,15 +292,32 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors, waitQueueSize,
-        enablePreemption, localDirs, this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
-        amReporter, executorClassLoader, daemonId, fsUgiFactory, socketFactory);
+
+    QueryTracker queryTracker = new QueryTracker(daemonConf, localDirs,
+        daemonId.getClusterString());
+
+    String waitQueueSchedulerClassName = HiveConf.getVar(
+        daemonConf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
+
+    Scheduler<TaskRunnerCallable> executorService = new TaskExecutorService(numExecutors, waitQueueSize,
+        waitQueueSchedulerClassName, enablePreemption, executorClassLoader, metrics, null);
+
+    addIfService(queryTracker);
+    addIfService(executorService);
+
+    this.containerRunner = new ContainerRunnerImpl(daemonConf, numExecutors,
+        this.shufflePort, srvAddress, executorMemoryPerInstance, metrics,
+        amReporter, queryTracker, executorService, daemonId, fsUgiFactory, socketFactory);
     addIfService(containerRunner);
 
     // Not adding the registry as a service, since we need to control when it is initialized - conf used to pickup properties.
     this.registry = new LlapRegistryService(true);
 
-    if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+    // disable web UI in test mode until a specific port was configured
+    if (HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.HIVE_IN_TEST)
+        && Integer.parseInt(ConfVars.LLAP_DAEMON_WEB_PORT.getDefaultValue()) == webPort) {
+      LOG.info("Web UI was disabled in test mode because hive.llap.daemon.web.port was not "
+               + "specified or has default value ({})", webPort);
       this.webServices = null;
     } else {
       this.webServices = new LlapWebServices(webPort, this, registry);
@@ -338,8 +356,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   private static void initializeLogging(final Configuration conf) {
     long start = System.currentTimeMillis();
-    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(
-        LlapConstants.LOG4j2_PROPERTIES_FILE);
+    String log4j2FileName = System.getenv(LlapConstants.LLAP_LOG4J2_PROPERTIES_FILE_NAME_ENV);
+    if (log4j2FileName == null || log4j2FileName.isEmpty()) {
+      log4j2FileName = LlapConstants.LOG4j2_PROPERTIES_FILE;
+    }
+    URL llap_l4j2 = LlapDaemon.class.getClassLoader().getResource(log4j2FileName);
     if (llap_l4j2 != null) {
       final boolean async = LogUtils.checkAndSetAsyncLogging(conf);
       // required for MDC based routing appender so that child threads can inherit the MDC context
@@ -517,8 +538,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
           new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
       int mngPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
-      int shufflePort = daemonConf
-          .getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
+      int shufflePort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
       int webPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_WEB_PORT);
 
       LlapDaemonInfo.initialize(appName, daemonConf);
@@ -549,6 +569,13 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       }
       System.exit(-1);
     }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.RegisterDagResponseProto registerDag(
+      LlapDaemonProtocolProtos.RegisterDagRequestProto request)
+      throws IOException {
+    return containerRunner.registerDag(request);
   }
 
   @Override

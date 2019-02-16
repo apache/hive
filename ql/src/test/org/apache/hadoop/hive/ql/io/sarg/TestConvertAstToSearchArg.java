@@ -24,7 +24,7 @@ import static junit.framework.Assert.assertTrue;
 
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -63,12 +63,7 @@ public class TestConvertAstToSearchArg {
   }
 
   private ExprNodeGenericFuncDesc getFuncDesc(String xmlSerialized) {
-    byte[] bytes;
-    try {
-      bytes = xmlSerialized.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException ex) {
-      throw new RuntimeException("UTF-8 support required", ex);
-    }
+    byte[] bytes = xmlSerialized.getBytes(StandardCharsets.UTF_8);
 
     ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
     XMLDecoder decoder = new XMLDecoder(bais, null, null);

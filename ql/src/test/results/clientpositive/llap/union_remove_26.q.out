@@ -127,6 +127,10 @@ PREHOOK: query: explain
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
@@ -134,6 +138,10 @@ POSTHOOK: query: explain
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -300,6 +308,10 @@ PREHOOK: query: explain
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
@@ -307,6 +319,10 @@ POSTHOOK: query: explain
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -347,6 +363,10 @@ PREHOOK: query: explain
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6 group by key
   UNION ALL
@@ -354,6 +374,10 @@ POSTHOOK: query: explain
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -522,6 +546,10 @@ PREHOOK: query: explain
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
@@ -529,6 +557,10 @@ POSTHOOK: query: explain
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -685,6 +717,10 @@ PREHOOK: query: explain
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n6
+PREHOOK: Input: default@inputtbl2
+PREHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 POSTHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6
   UNION ALL
@@ -692,6 +728,10 @@ POSTHOOK: query: explain
   UNION ALL
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n6
+POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Input: default@inputtbl3
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

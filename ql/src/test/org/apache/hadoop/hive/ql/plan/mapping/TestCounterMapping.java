@@ -32,11 +32,12 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -145,9 +146,55 @@ public class TestCounterMapping {
     FilterOperator filter2 = filters2.get(0);
 
     assertEquals("original check", 7, filter1.getStatistics().getNumRows());
-    assertEquals("optimized check", 6, filter2.getStatistics().getNumRows());
+    assertEquals("optimized check", 1, filter2.getStatistics().getNumRows());
 
   }
+
+  @Test
+  public void testInConversion() throws ParseException {
+    String query =
+        "explain select sum(id_uv) from tu where u in (1,2) group by u";
+
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    conf.setIntVar(ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN, 10);
+    IDriver driver = createDriver();
+
+    PlanMapper pm = getMapperForQuery(driver, query);
+    List<FilterOperator> fos = pm.getAll(FilterOperator.class);
+    OpTreeSignature filterSig = pm.lookup(OpTreeSignature.class, fos.get(0));
+    Object pred = filterSig.getSig().getSigMap().get("getPredicateString");
+
+    assertEquals("((u = 1) or (u = 2)) (type: boolean)", pred);
+
+  }
+
+  @Test
+  public void testBreakupAnd() throws ParseException {
+    String query =
+        "explain select sum(id_uv) from tu where u=1  and (u=2 or u=1) group by u";
+
+    IDriver driver = createDriver();
+    PlanMapper pm = getMapperForQuery(driver, query);
+    List<FilterOperator> fos = pm.getAll(FilterOperator.class);
+    OpTreeSignature filterSig = pm.lookup(OpTreeSignature.class, fos.get(0));
+    Object pred = filterSig.getSig().getSigMap().get("getPredicateString");
+    assertEquals("(u = 1) (type: boolean)", pred);
+  }
+
+  @Test
+  public void testBreakupAnd2() throws ParseException {
+    String query =
+        "explain select sum(id_uv) from tu where u in (1,2,3) and u=2 and u=2 and 2=u group by u";
+
+    IDriver driver = createDriver();
+    PlanMapper pm = getMapperForQuery(driver, query);
+    List<FilterOperator> fos = pm.getAll(FilterOperator.class);
+    OpTreeSignature filterSig = pm.lookup(OpTreeSignature.class, fos.get(0));
+    Object pred = filterSig.getSig().getSigMap().get("getPredicateString");
+    assertEquals("(u = 2) (type: boolean)", pred);
+
+  }
+
 
   @Test
   @Ignore("needs HiveFilter mapping")

@@ -9,9 +9,13 @@ POSTHOOK: Output: default@a_n5
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.key=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.key=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -134,9 +138,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.key=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.key=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -255,9 +263,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.key=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.key=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -372,9 +384,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.key=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.key=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -489,9 +505,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -640,9 +660,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -787,9 +811,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) full outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) full outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -895,7 +923,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                 keys:
                   0 _col3 (type: string)
                   1 _col0 (type: string)
@@ -911,7 +939,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -934,9 +962,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1081,9 +1113,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1205,7 +1241,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -1228,9 +1264,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1375,9 +1415,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1499,7 +1543,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -1522,9 +1566,13 @@ STAGE PLANS:
 PREHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (c.key=d.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (c.key=d.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n5
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

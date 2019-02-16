@@ -26,8 +26,8 @@ POSTHOOK: query: msck repair table table_external
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@table_external
 Partitions not in metastore:	table_external:day=¢Bar
-Repair: Cannot add partition table_external:day=Foo due to invalid characters in the name
 #### A masked pattern was here ####
+Repair: Cannot add partition table_external:day=Foo due to invalid characters in the name
 Found 2 items
 drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###Foo
 drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###¢Bar

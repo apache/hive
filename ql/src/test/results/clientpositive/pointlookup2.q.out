@@ -92,12 +92,24 @@ from pcr_t1_n2
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds
 from pcr_t1_n2
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-08' AND `key` = 1 OR `ds` = '2000-04-09' AND `key` = 2
+ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -109,21 +121,21 @@ STAGE PLANS:
           TableScan
             alias: pcr_t1_n2
             filterExpr: (((ds = '2000-04-08') and (key = 1)) or ((ds = '2000-04-09') and (key = 2))) (type: boolean)
-            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (((ds = '2000-04-08') and (key = 1)) or ((ds = '2000-04-09') and (key = 2))) (type: boolean)
-              Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6 Data size: 1668 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string), ds (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 1668 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
-                  Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1668 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   auto parallelism: false
       Execution mode: vectorized
@@ -234,13 +246,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 6 Data size: 1668 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 6 Data size: 1668 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -270,12 +282,27 @@ from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
+FROM (SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`) AS `t3`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -288,44 +315,44 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 0
                   value expressions: _col1 (type: string)
                   auto parallelism: false
           TableScan
             alias: t2
             filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
@@ -390,30 +417,26 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          outputColumnNames: _col0, _col1, _col3, _col4
-          Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  properties:
-                    column.name.delimiter ,
-                    columns _col0,_col1,_col2,_col3
-                    columns.types int,string,int,string
-                    escape.delim \
-                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            NumFilesPerFileSink: 1
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  column.name.delimiter ,
+                  columns _col0,_col1,_col2,_col3
+                  columns.types int,string,int,string
+                  escape.delim \
+                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -422,9 +445,9 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: int)
-              null sort order: a
+              null sort order: z
               sort order: +
-              Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
@@ -461,13 +484,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), '2000-04-08' (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string), '2000-04-08' (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 30 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 30 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -497,12 +520,29 @@ from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
+FROM (SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`) AS `t3`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -515,44 +555,44 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 0
                   value expressions: _col1 (type: string)
                   auto parallelism: false
           TableScan
             alias: t2
             filterExpr: ((ds = '2000-04-09') and key is not null) (type: boolean)
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
@@ -666,30 +706,26 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          outputColumnNames: _col0, _col1, _col3, _col4
-          Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  properties:
-                    column.name.delimiter ,
-                    columns _col0,_col1,_col2,_col3
-                    columns.types int,string,int,string
-                    escape.delim \
-                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            NumFilesPerFileSink: 1
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  column.name.delimiter ,
+                  columns _col0,_col1,_col2,_col3
+                  columns.types int,string,int,string
+                  escape.delim \
+                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -698,9 +734,9 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: int)
-              null sort order: a
+              null sort order: z
               sort order: +
-              Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
@@ -737,13 +773,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), '2000-04-08' (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string), '2000-04-09' (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 30 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 30 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -774,12 +810,22 @@ from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+PREHOOK: Input: default@pcr_t2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -792,38 +838,38 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: ((ds = '2000-04-08') or (ds = '2000-04-09')) (type: boolean)
-            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: key (type: int), value (type: string), ds (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              expressions: key (type: int), value (type: string), ds (type: string), (ds = '2000-04-08') (type: boolean), (ds = '2000-04-09') (type: boolean)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4
+              Statistics: Num rows: 40 Data size: 11440 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 null sort order: 
                 sort order: 
-                Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40 Data size: 11440 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
-                value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
                 auto parallelism: false
           TableScan
             alias: t2
             filterExpr: ((key = 1) or (key = 2)) (type: boolean)
-            Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((key = 1) or (key = 2)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: ds (type: string), key (type: int), value (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                expressions: ds (type: string), key (type: int), value (type: string), (key = 1) (type: boolean), (key = 2) (type: boolean)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 195 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 195 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
-                  value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
                   auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -984,30 +1030,34 @@ STAGE PLANS:
           keys:
             0 
             1 
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 40 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+          Statistics: Num rows: 40 Data size: 19240 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             isSamplingPred: false
-            predicate: (((_col2 = '2000-04-08') and (_col4 = 1)) or ((_col2 = '2000-04-09') and (_col4 = 2))) (type: boolean)
-            Statistics: Num rows: 20 Data size: 540 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
+            predicate: ((_col3 and _col8) or (_col4 and _col9)) (type: boolean)
+            Statistics: Num rows: 20 Data size: 9620 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col6 (type: int), _col7 (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  properties:
-                    column.name.delimiter ,
-                    columns _col0,_col1,_col2,_col3,_col4,_col5
-                    columns.types int,string,string,string,int,string
-                    escape.delim \
-                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+                NumFilesPerFileSink: 1
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    properties:
+                      column.name.delimiter ,
+                      columns _col0,_col1,_col2,_col3,_col4,_col5
+                      columns.types int,string,string,string,int,string
+                      escape.delim \
+                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                TotalFiles: 1
+                GatherStats: false
+                MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -1016,9 +1066,9 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col4 (type: int), _col5 (type: string), _col2 (type: string)
-              null sort order: aaa
+              null sort order: zzz
               sort order: +++
-              Statistics: Num rows: 20 Data size: 540 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
               auto parallelism: false
@@ -1055,13 +1105,13 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 20 Data size: 540 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 20 Data size: 540 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1092,12 +1142,24 @@ from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-10
+PREHOOK: Input: default@pcr_t2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-10
+POSTHOOK: Input: default@pcr_t2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1110,42 +1172,42 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: ((key = 1) or (key = 2)) (type: boolean)
-            Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 60 Data size: 16680 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((key = 1) or (key = 2)) (type: boolean)
-              Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 2780 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
-                expressions: key (type: int), value (type: string), ds (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+                expressions: key (type: int), value (type: string), ds (type: string), (key = 1) (type: boolean), (key = 2) (type: boolean)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 10 Data size: 2860 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2860 Basic stats: COMPLETE Column stats: PARTIAL
                   tag: 0
-                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
+                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
                   auto parallelism: false
           TableScan
             alias: t2
             filterExpr: ((ds = '2000-04-08') or (ds = '2000-04-09')) (type: boolean)
-            Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: ((ds = '2000-04-08') or (ds = '2000-04-09')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: ds (type: string), key (type: int), value (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                expressions: ds (type: string), key (type: int), value (type: string), (ds = '2000-04-08') (type: boolean), (ds = '2000-04-09') (type: boolean)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 195 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 195 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
-                  value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                  value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
                   auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -1355,30 +1417,34 @@ STAGE PLANS:
           keys:
             0 
             1 
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 60 Data size: 1620 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+          Statistics: Num rows: 10 Data size: 4810 Basic stats: COMPLETE Column stats: PARTIAL
           Filter Operator
             isSamplingPred: false
-            predicate: (((_col3 = '2000-04-08') and (_col0 = 1)) or ((_col3 = '2000-04-09') and (_col0 = 2))) (type: boolean)
-            Statistics: Num rows: 30 Data size: 810 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
+            predicate: ((_col8 and _col3) or (_col9 and _col4)) (type: boolean)
+            Statistics: Num rows: 4 Data size: 1924 Basic stats: COMPLETE Column stats: PARTIAL
+            Select Operator
+              expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col5 (type: string), _col6 (type: int), _col7 (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Statistics: Num rows: 4 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  properties:
-                    column.name.delimiter ,
-                    columns _col0,_col1,_col2,_col3,_col4,_col5
-                    columns.types int,string,string,string,int,string
-                    escape.delim \
-                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+                NumFilesPerFileSink: 1
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    properties:
+                      column.name.delimiter ,
+                      columns _col0,_col1,_col2,_col3,_col4,_col5
+                      columns.types int,string,string,string,int,string
+                      escape.delim \
+                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                TotalFiles: 1
+                GatherStats: false
+                MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -1387,9 +1453,9 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
-              null sort order: aaa
+              null sort order: zzz
               sort order: +++
-              Statistics: Num rows: 30 Data size: 810 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
               tag: -1
               value expressions: _col2 (type: string), _col4 (type: int), _col5 (type: string)
               auto parallelism: false
@@ -1426,13 +1492,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 30 Data size: 810 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 30 Data size: 810 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1640,12 +1706,20 @@ from pcr_t1_n2
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select key, value, ds
 from pcr_t1_n2
 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2)
 order by key, value, ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1657,21 +1731,21 @@ STAGE PLANS:
           TableScan
             alias: pcr_t1_n2
             filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
-            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 5560 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string), ds (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 5560 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
-                  null sort order: aaa
+                  null sort order: zzz
                   sort order: +++
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 5560 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   auto parallelism: false
       Execution mode: vectorized
@@ -1782,13 +1856,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 20 Data size: 5560 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 5560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1818,12 +1892,27 @@ from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08'
 order by t1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
+FROM (SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`) AS `t3`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1836,44 +1925,44 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 0
                   value expressions: _col1 (type: string)
                   auto parallelism: false
           TableScan
             alias: t2
             filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
@@ -1938,30 +2027,26 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          outputColumnNames: _col0, _col1, _col3, _col4
-          Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  properties:
-                    column.name.delimiter ,
-                    columns _col0,_col1,_col2,_col3
-                    columns.types int,string,int,string
-                    escape.delim \
-                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            NumFilesPerFileSink: 1
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  column.name.delimiter ,
+                  columns _col0,_col1,_col2,_col3
+                  columns.types int,string,int,string
+                  escape.delim \
+                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -1970,9 +2055,9 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: int)
-              null sort order: a
+              null sort order: z
               sort order: +
-              Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
@@ -2009,13 +2094,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), '2000-04-08' (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string), '2000-04-08' (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 30 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 30 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2045,12 +2130,29 @@ from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n2 t1 join pcr_t1_n2 t2
 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09'
 order by t1.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
+FROM (SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`pcr_t1_n2`
+WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`) AS `t3`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2063,44 +2165,44 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 0
                   value expressions: _col1 (type: string)
                   auto parallelism: false
           TableScan
             alias: t2
             filterExpr: ((ds = '2000-04-09') and key is not null) (type: boolean)
-            Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: _col1 (type: string)
                   auto parallelism: false
@@ -2214,30 +2316,26 @@ STAGE PLANS:
           keys:
             0 _col0 (type: int)
             1 _col0 (type: int)
-          outputColumnNames: _col0, _col1, _col3, _col4
-          Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
 #### A masked pattern was here ####
-              NumFilesPerFileSink: 1
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  properties:
-                    column.name.delimiter ,
-                    columns _col0,_col1,_col2,_col3
-                    columns.types int,string,int,string
-                    escape.delim \
-                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-              TotalFiles: 1
-              GatherStats: false
-              MultiFileSpray: false
+            NumFilesPerFileSink: 1
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  column.name.delimiter ,
+                  columns _col0,_col1,_col2,_col3
+                  columns.types int,string,int,string
+                  escape.delim \
+                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -2246,9 +2344,9 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: int)
-              null sort order: a
+              null sort order: z
               sort order: +
-              Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 30 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
@@ -2285,13 +2383,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), '2000-04-08' (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string), '2000-04-09' (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 30 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 30 Data size: 11280 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2322,12 +2420,22 @@ from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+PREHOOK: Input: default@pcr_t2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t1.ds='2000-04-08' and t2.key=1) or (t1.ds='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2340,36 +2448,36 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: (ds) IN ('2000-04-08', '2000-04-09') (type: boolean)
-            Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
               expressions: key (type: int), value (type: string), ds (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 null sort order: 
                 sort order: 
-                Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
                 tag: 0
                 value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                 auto parallelism: false
           TableScan
             alias: t2
             filterExpr: (key) IN (1, 2) (type: boolean)
-            Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (key) IN (1, 2) (type: boolean)
-              Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ds (type: string), key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   auto parallelism: false
@@ -2533,11 +2641,11 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 40 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 40 Data size: 18600 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             isSamplingPred: false
             predicate: (struct(_col2,_col4)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) (type: boolean)
-            Statistics: Num rows: 10 Data size: 270 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 40 Data size: 18600 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2564,9 +2672,9 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col4 (type: int), _col5 (type: string), _col2 (type: string)
-              null sort order: aaa
+              null sort order: zzz
               sort order: +++
-              Statistics: Num rows: 10 Data size: 270 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 40 Data size: 18600 Basic stats: COMPLETE Column stats: COMPLETE
               tag: -1
               value expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
               auto parallelism: false
@@ -2603,13 +2711,13 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col2 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 10 Data size: 270 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 40 Data size: 18600 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 10 Data size: 270 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 40 Data size: 18600 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2640,12 +2748,24 @@ from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
 PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1_n2
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+PREHOOK: Input: default@pcr_t1_n2@ds=2000-04-10
+PREHOOK: Input: default@pcr_t2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select *
 from pcr_t1_n2 t1 join pcr_t2_n0 t2
 where (t2.ds='2000-04-08' and t1.key=1) or (t2.ds='2000-04-09' and t1.key=2)
 order by t1.key, t1.value, t2.ds
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1_n2
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
+POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-10
+POSTHOOK: Input: default@pcr_t2_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2658,40 +2778,40 @@ STAGE PLANS:
           TableScan
             alias: t1
             filterExpr: (key) IN (1, 2) (type: boolean)
-            Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 60 Data size: 16680 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (key) IN (1, 2) (type: boolean)
-              Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 9 Data size: 2502 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: key (type: int), value (type: string), ds (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 9 Data size: 2502 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 9 Data size: 2502 Basic stats: COMPLETE Column stats: PARTIAL
                   tag: 0
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                   auto parallelism: false
           TableScan
             alias: t2
             filterExpr: (ds) IN ('2000-04-08', '2000-04-09') (type: boolean)
-            Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (ds) IN ('2000-04-08', '2000-04-09') (type: boolean)
-              Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ds (type: string), key (type: int), value (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 187 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                   auto parallelism: false
@@ -2904,11 +3024,11 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 30 Data size: 810 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 9 Data size: 4185 Basic stats: COMPLETE Column stats: PARTIAL
           Filter Operator
             isSamplingPred: false
             predicate: (struct(_col0,_col3)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
-            Statistics: Num rows: 8 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 9 Data size: 4185 Basic stats: COMPLETE Column stats: PARTIAL
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2935,9 +3055,9 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
-              null sort order: aaa
+              null sort order: zzz
               sort order: +++
-              Statistics: Num rows: 8 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 9 Data size: 4185 Basic stats: COMPLETE Column stats: PARTIAL
               tag: -1
               value expressions: _col2 (type: string), _col4 (type: int), _col5 (type: string)
               auto parallelism: false
@@ -2974,13 +3094,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 8 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 9 Data size: 4185 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 8 Data size: 216 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 9 Data size: 4185 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat

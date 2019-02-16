@@ -63,9 +63,15 @@ POSTHOOK: Lineage: test_table4_n0.value SIMPLE [(src)src.FieldSchema(name:value,
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ * FROM test_table1_n12 a JOIN test_table2_n12 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n12
+PREHOOK: Input: default@test_table2_n12
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ * FROM test_table1_n12 a JOIN test_table2_n12 b ON a.key = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n12
+POSTHOOK: Input: default@test_table2_n12
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -104,7 +110,7 @@ STAGE PLANS:
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
@@ -232,9 +238,15 @@ POSTHOOK: Input: default@test_table2_n12
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ * FROM test_table3_n6 a JOIN test_table4_n0 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3_n6
+PREHOOK: Input: default@test_table4_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ * FROM test_table3_n6 a JOIN test_table4_n0 b ON a.key = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3_n6
+POSTHOOK: Input: default@test_table4_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -356,7 +368,7 @@ STAGE PLANS:
                         Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
-                          null sort order: a
+                          null sort order: z
                           sort order: +
                           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                           tag: -1

@@ -1,0 +1,135 @@
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 06:03:00' as timestamp), interval '5' MINUTES )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 06:03:00' as timestamp), interval '5' MINUTES )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 06:00:00
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 06:05:10' as timestamp), interval '5' HOUR)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 06:05:10' as timestamp), interval '5' HOUR)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 02:00:00
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:04:59' as timestamp), interval '2' SECOND )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:04:59' as timestamp), interval '2' SECOND )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:04:58
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:00' as timestamp), interval '2' SECOND )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:00' as timestamp), interval '2' SECOND )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:00
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:01' as timestamp), interval '2' SECOND )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:01' as timestamp), interval '2' SECOND )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:00
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:02' as timestamp), interval '2' SECOND )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:02' as timestamp), interval '2' SECOND )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:02
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:03' as timestamp), interval '2' SECOND )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:03' as timestamp), interval '2' SECOND )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:02
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:09' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:09' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:07
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:10' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:10' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:10
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:11' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:11' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:10
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:12' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:12' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:10
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:13' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:13' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:13
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:14' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 00:05:14' as timestamp), interval '3' SECOND ,cast ('2020-03-01 00:05:10' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 00:05:13
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 06:05:10' as timestamp), interval '5' HOUR, cast ('2020-03-01 01:05:10' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 06:05:10' as timestamp), interval '5' HOUR, cast ('2020-03-01 01:05:10' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 06:05:10
+PREHOOK: query: SELECT tumbling_window(cast ('2020-03-01 06:05:10' as timestamp), interval '5' HOUR, cast ('2020-03-01 02:05:10' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tumbling_window(cast ('2020-03-01 06:05:10' as timestamp), interval '5' HOUR, cast ('2020-03-01 02:05:10' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2020-03-01 02:05:10

@@ -48,9 +48,15 @@ POSTHOOK: Input: default@t1_mm@ds=1
 PREHOOK: query: explain
 select count(distinct key) from T1_mm
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_mm
+PREHOOK: Input: default@t1_mm@ds=1
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(distinct key) from T1_mm
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_mm
+POSTHOOK: Input: default@t1_mm@ds=1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

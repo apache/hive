@@ -80,8 +80,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_nostats
 PREHOOK: query: explain select count(1) from part_nostats,supplier_nostats,lineitem_nostats where p_partkey = l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_nostats
+PREHOOK: Input: default@part_nostats
+PREHOOK: Input: default@supplier_nostats
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from part_nostats,supplier_nostats,lineitem_nostats where p_partkey = l_partkey and s_suppkey = l_suppkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_nostats
+POSTHOOK: Input: default@part_nostats
+POSTHOOK: Input: default@supplier_nostats
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -216,8 +224,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(1) from part_nostats,supplier_nostats,lineitem_nostats where p_partkey = l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem_nostats
+PREHOOK: Input: default@part_nostats
+PREHOOK: Input: default@supplier_nostats
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from part_nostats,supplier_nostats,lineitem_nostats where p_partkey = l_partkey and s_suppkey = l_suppkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem_nostats
+POSTHOOK: Input: default@part_nostats
+POSTHOOK: Input: default@supplier_nostats
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -416,8 +432,28 @@ POSTHOOK: Output: default@employee_part_n1
 POSTHOOK: Output: default@employee_part_n1@employeesalary=3000.0/country=UK
 PREHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_part_n1
+PREHOOK: Input: default@employee_part_n1@employeesalary=2000.0/country=UK
+PREHOOK: Input: default@employee_part_n1@employeesalary=2000.0/country=USA
+PREHOOK: Input: default@employee_part_n1@employeesalary=3000.0/country=UK
+PREHOOK: Input: default@employee_part_n1@employeesalary=3000.0/country=USA
+PREHOOK: Input: default@employee_part_n1@employeesalary=3500.0/country=UK
+PREHOOK: Input: default@employee_part_n1@employeesalary=4000.0/country=USA
+PREHOOK: Input: default@lineitem_nostats
+PREHOOK: Input: default@supplier_nostats
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_part_n1
+POSTHOOK: Input: default@employee_part_n1@employeesalary=2000.0/country=UK
+POSTHOOK: Input: default@employee_part_n1@employeesalary=2000.0/country=USA
+POSTHOOK: Input: default@employee_part_n1@employeesalary=3000.0/country=UK
+POSTHOOK: Input: default@employee_part_n1@employeesalary=3000.0/country=USA
+POSTHOOK: Input: default@employee_part_n1@employeesalary=3500.0/country=UK
+POSTHOOK: Input: default@employee_part_n1@employeesalary=4000.0/country=USA
+POSTHOOK: Input: default@lineitem_nostats
+POSTHOOK: Input: default@supplier_nostats
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -552,8 +588,28 @@ STAGE PLANS:
 
 PREHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
+PREHOOK: Input: default@employee_part_n1
+PREHOOK: Input: default@employee_part_n1@employeesalary=2000.0/country=UK
+PREHOOK: Input: default@employee_part_n1@employeesalary=2000.0/country=USA
+PREHOOK: Input: default@employee_part_n1@employeesalary=3000.0/country=UK
+PREHOOK: Input: default@employee_part_n1@employeesalary=3000.0/country=USA
+PREHOOK: Input: default@employee_part_n1@employeesalary=3500.0/country=UK
+PREHOOK: Input: default@employee_part_n1@employeesalary=4000.0/country=USA
+PREHOOK: Input: default@lineitem_nostats
+PREHOOK: Input: default@supplier_nostats
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee_part_n1
+POSTHOOK: Input: default@employee_part_n1@employeesalary=2000.0/country=UK
+POSTHOOK: Input: default@employee_part_n1@employeesalary=2000.0/country=USA
+POSTHOOK: Input: default@employee_part_n1@employeesalary=3000.0/country=UK
+POSTHOOK: Input: default@employee_part_n1@employeesalary=3000.0/country=USA
+POSTHOOK: Input: default@employee_part_n1@employeesalary=3500.0/country=UK
+POSTHOOK: Input: default@employee_part_n1@employeesalary=4000.0/country=USA
+POSTHOOK: Input: default@lineitem_nostats
+POSTHOOK: Input: default@supplier_nostats
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

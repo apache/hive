@@ -230,6 +230,22 @@ public class DateTimeMath {
     return dtResult;
   }
 
+  /**
+   * Perform date + int operation .
+   * @param dt the date
+   * @param interval the int (days)
+   * @return the resulting date
+   */
+  public Date add(Date dt, int interval) {
+    if (dt == null) {
+      return null;
+    }
+
+    Date dtResult = new Date();
+    dtResult.setTimeInDays(dt.toEpochDay() + interval);
+    return dtResult;
+  }
+
   @Deprecated
   public java.sql.Date add(HiveIntervalYearMonth interval, java.sql.Date dt) {
     if (dt == null || interval == null) {
@@ -471,7 +487,7 @@ public class DateTimeMath {
 
     HiveIntervalDayTime result = new HiveIntervalDayTime();
     add(left, right, result);
- 
+
     return result;
   }
 

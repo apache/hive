@@ -35,9 +35,13 @@ POSTHOOK: Lineage: b_n4.s SCRIPT []
 PREHOOK: query: explain vectorization detail
 select NULL from a_n6
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n6
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
 select NULL from a_n6
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n6
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -114,9 +118,15 @@ NULL
 PREHOOK: query: explain vectorization expression
 select NULL as x from a_n6 union distinct select NULL as x from b_n4
 PREHOOK: type: QUERY
+PREHOOK: Input: default@a_n6
+PREHOOK: Input: default@b_n4
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select NULL as x from a_n6 union distinct select NULL as x from b_n4
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_n6
+POSTHOOK: Input: default@b_n4
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -140,74 +150,138 @@ STAGE PLANS:
                 TableScan
                   alias: a_n6
                   Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: null (type: void)
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: ConstantVectorExpression(val 1) -> 2:boolean
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: true (type: boolean)
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: void)
+                          key expressions: _col0 (type: boolean)
                           sort order: +
-                          Map-reduce partition columns: _col0 (type: void)
+                          Map-reduce partition columns: _col0 (type: boolean)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b_n4
                   Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        keys: null (type: void)
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: ConstantVectorExpression(val 1) -> 2:boolean
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: true (type: boolean)
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col0 (type: void)
+                          key expressions: _col0 (type: boolean)
                           sort order: +
-                          Map-reduce partition columns: _col0 (type: void)
+                          Map-reduce partition columns: _col0 (type: boolean)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: void)
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:boolean
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: null (type: void)
                   outputColumnNames: _col0
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1]
+                      selectExpressions: ConstantVectorExpression(val null) -> 1:void
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat

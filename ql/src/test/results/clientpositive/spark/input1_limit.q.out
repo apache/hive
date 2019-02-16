@@ -19,11 +19,17 @@ FROM src
 INSERT OVERWRITE TABLE dest1_n12 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
 INSERT OVERWRITE TABLE dest2_n2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n12
+PREHOOK: Output: default@dest2_n2
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n12 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
 INSERT OVERWRITE TABLE dest2_n2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n12
+POSTHOOK: Output: default@dest2_n2
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

@@ -28,16 +28,6 @@ POSTHOOK: Lineage: cmv_basetable_n6.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n6.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n6.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n6.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_n6 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_n6
-PREHOOK: Output: default@cmv_basetable_n6
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_n6 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_n6
-POSTHOOK: Output: default@cmv_basetable_n6
-#### A masked pattern was here ####
 PREHOOK: query: create table cmv_basetable_2_n3 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,16 +52,6 @@ POSTHOOK: Lineage: cmv_basetable_2_n3.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n3 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n3
-PREHOOK: Output: default@cmv_basetable_2_n3
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n3 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n3
-POSTHOOK: Output: default@cmv_basetable_2_n3
-#### A masked pattern was here ####
 PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n6
   TBLPROPERTIES ('transactional'='true') AS
   SELECT cmv_basetable_n6.a, cmv_basetable_2_n3.c
@@ -92,16 +72,6 @@ POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n6
-PREHOOK: query: analyze table cmv_mat_view_n6 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_mat_view_n6
-PREHOOK: Output: default@cmv_mat_view_n6
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_mat_view_n6 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_mat_view_n6
-POSTHOOK: Output: default@cmv_mat_view_n6
-#### A masked pattern was here ####
 PREHOOK: query: insert into cmv_basetable_2_n3 values
  (3, 'charlie', 15.8, 1)
 PREHOOK: type: QUERY
@@ -116,26 +86,22 @@ POSTHOOK: Lineage: cmv_basetable_2_n3.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2_n3.d SCRIPT []
-PREHOOK: query: analyze table cmv_basetable_2_n3 compute statistics for columns
-PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@cmv_basetable_2_n3
-PREHOOK: Output: default@cmv_basetable_2_n3
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table cmv_basetable_2_n3 compute statistics for columns
-POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@cmv_basetable_2_n3
-POSTHOOK: Output: default@cmv_basetable_2_n3
-#### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -235,9 +201,15 @@ POSTHOOK: Input: default@cmv_basetable_n6
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+PREHOOK: Output: default@cmv_mat_view_n6
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+POSTHOOK: Output: default@cmv_mat_view_n6
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -286,12 +258,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2))
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -402,11 +374,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	5                   
-	rawDataSize         	348                 
-	totalSize           	1071                
+	rawDataSize         	0                   
+	totalSize           	1498                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -420,24 +393,33 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 	 	 
-# View Information	 	 
-View Original Text: 	SELECT cmv_basetable_n6.a, cmv_basetable_2_n3.c	 
+# Materialized View Information	 	 
+Original Query:     	SELECT cmv_basetable_n6.a, cmv_basetable_2_n3.c	 
 	                    	  FROM cmv_basetable_n6 JOIN cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 	                    	  WHERE cmv_basetable_2_n3.c > 10.0
-View Expanded Text: 	SELECT `cmv_basetable_n6`.`a`, `cmv_basetable_2_n3`.`c`	 
+Expanded Query:     	SELECT `cmv_basetable_n6`.`a`, `cmv_basetable_2_n3`.`c`	 
 	                    	  FROM `default`.`cmv_basetable_n6` JOIN `default`.`cmv_basetable_2_n3` ON (`cmv_basetable_n6`.`a` = `cmv_basetable_2_n3`.`a`)
 	                    	  WHERE `cmv_basetable_2_n3`.`c` > 10.0
-View Rewrite Enabled:	Yes                 	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+PREHOOK: Input: default@cmv_mat_view_n6
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+POSTHOOK: Input: default@cmv_mat_view_n6
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -488,9 +470,15 @@ POSTHOOK: Output: default@cmv_basetable_2_n3
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+PREHOOK: Output: default@cmv_mat_view_n6
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+POSTHOOK: Output: default@cmv_mat_view_n6
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -643,11 +631,19 @@ SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+PREHOOK: Input: default@cmv_mat_view_n6
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+POSTHOOK: Input: default@cmv_mat_view_n6
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -699,9 +695,15 @@ POSTHOOK: Output: default@cmv_basetable_2_n3
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+PREHOOK: Output: default@cmv_mat_view_n6
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+POSTHOOK: Output: default@cmv_mat_view_n6
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -854,11 +856,19 @@ SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+PREHOOK: Input: default@cmv_mat_view_n6
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+POSTHOOK: Input: default@cmv_mat_view_n6
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -914,9 +924,15 @@ POSTHOOK: Lineage: cmv_basetable_2_n3.d SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+PREHOOK: Output: default@cmv_mat_view_n6
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+POSTHOOK: Output: default@cmv_mat_view_n6
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -965,12 +981,12 @@ STAGE PLANS:
                     Select Operator
                       expressions: a (type: int), c (type: decimal(10,2))
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(10,2))
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -1069,11 +1085,19 @@ SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2_n3
+PREHOOK: Input: default@cmv_basetable_n6
+PREHOOK: Input: default@cmv_mat_view_n6
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2_n3
+POSTHOOK: Input: default@cmv_basetable_n6
+POSTHOOK: Input: default@cmv_mat_view_n6
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

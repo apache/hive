@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,7 +184,9 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected Hive getHive() {
     try {
-      return Hive.getWithFastCheck(conf);
+      // Hive.getWithFastCheck shouldn't be used here as it always re-opens metastore connection.
+      // The conf object in HMS client is always different from the one used here.
+      return Hive.get(conf);
     } catch (HiveException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new RuntimeException(e);
@@ -201,6 +204,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
       this.setStarted();
       if (hiveHistory != null) {
         hiveHistory.logPlanProgress(queryPlan);
+      }
+
+      if (conf != null) {
+        LOG.debug("Task getting executed using mapred tag : " + conf.get(MRJobConfig.JOB_TAGS));
       }
       int retval = execute(driverContext);
       this.setDone();
@@ -426,6 +433,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void setConf(HiveConf conf) {
     this.conf = conf;
+  }
+
+  public HiveConf getConf() {
+    return this.conf;
   }
 
   public void setWork(T work) {

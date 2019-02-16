@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -37,7 +38,13 @@ import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -59,8 +66,10 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.Assert;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 import junit.framework.TestCase;
 
@@ -76,20 +85,21 @@ public class TestHive extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
-    hiveConf
-    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+    hm = setUpImpl(hiveConf);
+  }
+
+  private static Hive setUpImpl(HiveConf hiveConf) throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     // enable trash so it can be tested
     hiveConf.setFloat("fs.trash.checkpoint.interval", 30);  // FS_TRASH_CHECKPOINT_INTERVAL_KEY (hadoop-2)
     hiveConf.setFloat("fs.trash.interval", 30);             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     SessionState.start(hiveConf);
     try {
-      hm = Hive.get(hiveConf);
+      return Hive.get(hiveConf);
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
-      System.err
-          .println("Unable to initialize Hive Metastore using configuration: \n "
-          + hiveConf);
+      System.err.println("Unable to initialize Hive Metastore using configuration: \n" + hiveConf);
       throw e;
     }
   }
@@ -307,6 +317,9 @@ public class TestHive extends TestCase {
       tbl.getTTable().setPrivilegesIsSet(false);
 
       ft = hm.getTable(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+      Assert.assertTrue(ft.getTTable().isSetId());
+      ft.getTTable().unsetId();
+
       assertNotNull("Unable to fetch table", ft);
       ft.checkValidity(hiveConf);
       assertEquals("Table names didn't match for table: " + tableName, tbl
@@ -324,6 +337,14 @@ public class TestHive extends TestCase {
       tbl.setCreateTime(ft.getTTable().getCreateTime());
       tbl.getParameters().put(hive_metastoreConstants.DDL_TIME,
           ft.getParameters().get(hive_metastoreConstants.DDL_TIME));
+      // Txn stuff set by metastore
+      if (tbl.getTTable().isSetWriteId() != ft.getTTable().isSetWriteId()) {
+        // No need to compare this field.
+        ft.getTTable().setWriteId(0);
+        tbl.getTTable().setWriteId(0);
+      }
+
+      tbl.getTTable().unsetId();
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
           + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));
       assertEquals("SerializationLib is not set correctly", tbl
@@ -409,6 +430,52 @@ public class TestHive extends TestCase {
       System.err.println("testGetAndDropTables() failed");
       throw e;
     }
+  }
+
+  public void testWmNamespaceHandling() throws Throwable {
+    HiveConf hiveConf = new HiveConf(this.getClass());
+    Hive hm = setUpImpl(hiveConf);
+    // TODO: threadlocals... Why is all this Hive client stuff like that?!!
+    final AtomicReference<Hive> hm2r = new AtomicReference<>();
+    Thread pointlessThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        HiveConf hiveConf2 = new HiveConf(this.getClass());
+        hiveConf2.setVar(ConfVars.HIVE_SERVER2_WM_NAMESPACE, "hm2");
+        try {
+          hm2r.set(setUpImpl(hiveConf2));
+        } catch (Exception e) {
+          System.err.println(StringUtils.stringifyException(e));
+        }
+      }
+    });
+    pointlessThread.start();
+    pointlessThread.join();
+    Hive hm2 = hm2r.get();
+    assertNotNull(hm2);
+
+    hm.createResourcePlan(new WMResourcePlan("hm"), null, false);
+    assertEquals(1, hm.getAllResourcePlans().size());
+    assertEquals(0, hm2.getAllResourcePlans().size());
+    hm2.createResourcePlan(new WMResourcePlan("hm"), null, false);
+    WMNullableResourcePlan changes = new WMNullableResourcePlan();
+    changes.setStatus(WMResourcePlanStatus.ACTIVE);
+    hm.alterResourcePlan("hm", changes, true, false, false);
+    // We should not be able to modify the active plan.
+    WMPool pool = new WMPool("hm", "foo");
+    pool.setAllocFraction(0);
+    pool.setQueryParallelism(1);
+    try {
+      hm.createWMPool(pool);
+      fail("Expected exception");
+    } catch (HiveException e) {
+    }
+    // But we should still be able to modify the other plan.
+    pool.unsetNs(); // The call to create sets the namespace.
+    hm2.createWMPool(pool);
+    // Make the 2nd plan active in a different namespace.
+    changes.unsetNs();
+    hm2.alterResourcePlan("hm", changes, true, false, false);
   }
 
   public void testDropTableTrash() throws Throwable {
@@ -593,7 +660,7 @@ public class TestHive extends TestCase {
 
       Table table = createPartitionedTable(dbName, tableName);
       table.getParameters().put("auto.purge", "true");
-      hm.alterTable(tableName, table, null);
+      hm.alterTable(tableName, table, false, null, true);
 
       Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
           .put("ds", "20141216")

@@ -19,9 +19,13 @@ POSTHOOK: Lineage: tx_n0.f SCRIPT []
 PREHOOK: query: explain vectorization expression
 select assert_true(1 > a) from tx_n0 group by a
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tx_n0
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select assert_true(1 > a) from tx_n0 group by a
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

@@ -21,9 +21,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarNotEqualLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -38,6 +35,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
   DoubleColNotEqualLongScalar.class, DoubleColNotEqualDoubleScalar.class,
   LongScalarNotEqualLongColumn.class, LongScalarNotEqualDoubleColumn.class,
   DoubleScalarNotEqualLongColumn.class, DoubleScalarNotEqualDoubleColumn.class,
+
+  DecimalColNotEqualDecimalColumn.class, DecimalColNotEqualDecimalScalar.class,
+  DecimalScalarNotEqualDecimalColumn.class,
+  Decimal64ColNotEqualDecimal64Column.class, Decimal64ColNotEqualDecimal64Scalar.class,
+  Decimal64ScalarNotEqualDecimal64Column.class,
 
   StringGroupColNotEqualStringGroupColumn.class, FilterStringGroupColNotEqualStringGroupColumn.class,
   StringGroupColNotEqualStringScalar.class,

@@ -99,8 +99,20 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-09
 PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n14
+PREHOOK: Input: default@bucket_big_n14@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n14@ds=2008-04-09
+PREHOOK: Input: default@bucket_small_n14
+PREHOOK: Input: default@bucket_small_n14@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n14
+POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-09
+POSTHOOK: Input: default@bucket_small_n14
+POSTHOOK: Input: default@bucket_small_n14@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -167,12 +179,12 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 56 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 56 Data size: 37620 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 56 Data size: 27500 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 54 Data size: 36276 Basic stats: PARTIAL Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -192,12 +204,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -205,7 +217,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 264 Data size: 127864 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 250 Data size: 165502 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -383,8 +395,20 @@ POSTHOOK: Input: default@bucket_small_n14@ds=2008-04-08
 928
 PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n14
+PREHOOK: Input: default@bucket_big_n14@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n14@ds=2008-04-09
+PREHOOK: Input: default@bucket_small_n14
+PREHOOK: Input: default@bucket_small_n14@ds=2008-04-08
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n14
+POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-09
+POSTHOOK: Input: default@bucket_small_n14
+POSTHOOK: Input: default@bucket_small_n14@ds=2008-04-08
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -396,12 +420,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 240 Data size: 158376 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 240 Data size: 116240 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 228 Data size: 150457 Basic stats: PARTIAL Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

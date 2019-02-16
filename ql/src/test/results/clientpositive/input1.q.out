@@ -9,9 +9,11 @@ POSTHOOK: Output: default@TEST1_n6
 PREHOOK: query: EXPLAIN
 DESCRIBE TEST1_n6
 PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test1_n6
 POSTHOOK: query: EXPLAIN
 DESCRIBE TEST1_n6
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test1_n6
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

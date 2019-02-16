@@ -8,7 +8,7 @@ EXPLAIN CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1;
 CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1;
 
 DESCRIBE foo;
-DESCRIBE bar;
+DESCRIBE FORMATTED bar;
 
 explain select * from foo order by key limit 10;
 select * from foo order by key limit 10;

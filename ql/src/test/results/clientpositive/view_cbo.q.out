@@ -3,11 +3,15 @@ select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -19,22 +23,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: value (type: string), key (type: string), (UDFToDouble(key) + 1.0D) (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: sum(_col2), count(_col2)
                 keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1500 Data size: 15936 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 750 Data size: 151500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                   sort order: +++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  Statistics: Num rows: 1500 Data size: 15936 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 750 Data size: 151500 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col3 (type: double), _col4 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -43,12 +47,12 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col3, _col4
-          Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 750 Data size: 151500 Basic stats: COMPLETE Column stats: COMPLETE
           pruneGroupingSetId: true
           Select Operator
             expressions: _col1 (type: string), _col0 (type: string), (_col3 / _col4) (type: double)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 750 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -63,7 +67,7 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: string), _col1 (type: string)
               sort order: ++
-              Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 750 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
               TopN Hash Memory Usage: 0.1
               value expressions: _col2 (type: double)
       Execution mode: vectorized
@@ -71,13 +75,13 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 750 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 20
-            Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 20 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 20 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -136,11 +140,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	with q1 as ( select key from src where key = '5')	 
+Original Query:     	with q1 as ( select key from src where key = '5')	 
 	                    	select * from q1    
-View Expanded Text: 	with q1 as ( select `src`.`key` from `default`.`src` where `src`.`key` = '5')	 
+Expanded Query:     	with q1 as ( select `src`.`key` from `default`.`src` where `src`.`key` = '5')	 
 	                    	select `q1`.`key` from q1
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v_n13
@@ -206,7 +209,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select b.key, count(*) as c	 
+Original Query:     	select b.key, count(*) as c	 
 	                    	from src b          
 	                    	group by b.key      
 	                    	having exists       
@@ -214,7 +217,7 @@ View Original Text: 	select b.key, count(*) as c
 	                    	  from src a        
 	                    	  where a.key = b.key and a.value > 'val_9'
 	                    	  )                 
-View Expanded Text: 	select `b`.`key`, count(*) as `c`	 
+Expanded Query:     	select `b`.`key`, count(*) as `c`	 
 	                    	from `default`.`src` `b`
 	                    	group by `b`.`key`  
 	                    	having exists       
@@ -222,7 +225,6 @@ View Expanded Text: 	select `b`.`key`, count(*) as `c`
 	                    	  from `default`.`src` `a`
 	                    	  where `a`.`key` = b.key and `a`.`value` > 'val_9'
 	                    	  )                 
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v_n13
@@ -286,21 +288,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select *            	 
+Original Query:     	select *            	 
 	                    	from src b          
 	                    	where not exists    
 	                    	  (select distinct a.key
 	                    	  from src a        
 	                    	  where b.value = a.value and a.value > 'val_2'
 	                    	  )                 
-View Expanded Text: 	select `b`.`key`, `b`.`value`	 
+Expanded Query:     	select `b`.`key`, `b`.`value`	 
 	                    	from `default`.`src` `b`
 	                    	where not exists    
 	                    	  (select distinct `a`.`key`
 	                    	  from `default`.`src` `a`
 	                    	  where `b`.`value` = `a`.`value` and `a`.`value` > 'val_2'
 	                    	  )                 
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v_n13
@@ -348,9 +349,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select a.key from src a join src b on a.key=b.key	 
-View Expanded Text: 	select `a`.`key` from `default`.`src` `a` join `default`.`src` `b` on `a`.`key`=`b`.`key`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select a.key from src a join src b on a.key=b.key	 
+Expanded Query:     	select `a`.`key` from `default`.`src` `a` join `default`.`src` `b` on `a`.`key`=`b`.`key`	 
 PREHOOK: query: CREATE VIEW view15_n0 AS
 SELECT key,COUNT(value) AS value_count
 FROM src
@@ -398,13 +398,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT key,COUNT(value) AS value_count	 
+Original Query:     	SELECT key,COUNT(value) AS value_count	 
 	                    	FROM src            
 	                    	GROUP BY key        
-View Expanded Text: 	SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 
+Expanded Query:     	SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 
 	                    	FROM `default`.`src`
 	                    	GROUP BY `src`.`key`
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: CREATE VIEW view16_n0 AS
 SELECT DISTINCT value
 FROM src
@@ -448,11 +447,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	SELECT DISTINCT value	 
+Original Query:     	SELECT DISTINCT value	 
 	                    	FROM src            
-View Expanded Text: 	SELECT DISTINCT `src`.`value`	 
+Expanded Query:     	SELECT DISTINCT `src`.`value`	 
 	                    	FROM `default`.`src`
-View Rewrite Enabled:	No                  	 
 PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v_n13
@@ -500,9 +498,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select key from src 	 
-View Expanded Text: 	select `src`.`key` from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select key from src 	 
+Expanded Query:     	select `src`.`key` from `default`.`src`	 
 PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v_n13
@@ -552,9 +549,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from src   	 
-View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from src   	 
+Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src`	 
 PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v_n13
@@ -604,9 +600,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from src intersect select * from src	 
-View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src` intersect select `src`.`key`, `src`.`value` from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from src intersect select * from src	 
+Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src` intersect select `src`.`key`, `src`.`value` from `default`.`src`	 
 PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v_n13
@@ -656,13 +651,18 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from src except select * from src	 
-View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src` except select `src`.`key`, `src`.`value` from `default`.`src`	 
-View Rewrite Enabled:	No                  	 
+Original Query:     	select * from src except select * from src	 
+Expanded Query:     	select `src`.`key`, `src`.`value` from `default`.`src` except select `src`.`key`, `src`.`value` from `default`.`src`	 
 PREHOOK: query: explain select * from v_n13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v_n13
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from v_n13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v_n13
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
@@ -677,22 +677,22 @@ STAGE PLANS:
             alias: src
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 keys: key (type: string), value (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -701,11 +701,11 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), 2L (type: bigint), _col2 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -718,41 +718,41 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Union
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 97000 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint), (_col2 * _col3) (type: bigint)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 97000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col2), sum(_col3)
                   keys: _col0 (type: string), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint), _col3 (type: bigint)
           TableScan
             Union
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 97000 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint), (_col2 * _col3) (type: bigint)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 97000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col2), sum(_col3)
                   keys: _col0 (type: string), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint), _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
@@ -760,17 +760,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (((_col2 * 2) = _col3) and (_col2 > 0L)) (type: boolean)
-            Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 41 Data size: 7954 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 41 Data size: 7298 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 41 Data size: 7298 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -783,22 +783,22 @@ STAGE PLANS:
             alias: src
             properties:
               insideView TRUE
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
               outputColumnNames: key, value
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 keys: key (type: string), value (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -807,11 +807,11 @@ STAGE PLANS:
           keys: KEY._col0 (type: string), KEY._col1 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string), 1L (type: bigint), _col2 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:

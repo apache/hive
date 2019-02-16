@@ -11,6 +11,8 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select a.key, b.k2, b.k3
 from src a
 join (
@@ -24,6 +26,17 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -311,6 +324,8 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select a.key, b.k2, b.k3
 from src a
 join (
@@ -324,6 +339,17 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -611,6 +637,8 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select a.key, b.k2, b.k3
 from src a
 join (
@@ -624,6 +652,17 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -909,6 +948,8 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended select a.key, b.k2, b.k3
 from src a
 join (
@@ -922,6 +963,17 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

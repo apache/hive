@@ -104,9 +104,13 @@ POSTHOOK: Lineage: vectortab2korc_n3.ts2 SIMPLE [(vectortab2k_n3)vectortab2k_n3.
 PREHOOK: query: explain vectorization expression
 select distinct s, t from vectortab2korc_n3
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select distinct s, t from vectortab2korc_n3
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

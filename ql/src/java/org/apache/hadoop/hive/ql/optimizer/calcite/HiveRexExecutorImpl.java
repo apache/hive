@@ -28,7 +28,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.slf4j.Logger;
@@ -63,7 +62,7 @@ public class HiveRexExecutorImpl extends RexExecutorImpl {
         if (constant != null) {
           try {
             // convert constant back to RexNode
-            reducedValues.add(rexNodeConverter.convert((ExprNodeConstantDesc) constant));
+            reducedValues.add(rexNodeConverter.convert(constant));
           } catch (Exception e) {
             LOG.warn(e.getMessage());
             reducedValues.add(rexNode);

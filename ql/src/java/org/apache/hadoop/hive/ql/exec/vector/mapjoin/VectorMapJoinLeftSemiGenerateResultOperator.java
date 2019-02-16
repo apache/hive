@@ -89,21 +89,21 @@ public abstract class VectorMapJoinLeftSemiGenerateResultOperator
   /*
    * Setup our left semi join specific members.
    */
-  protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
-    super.commonSetup(batch);
+  protected void commonSetup() throws HiveException {
+    super.commonSetup();
 
     // Semi join specific.
     VectorMapJoinHashSet baseHashSet = (VectorMapJoinHashSet) vectorMapJoinHashTable;
 
-    hashSetResults = new VectorMapJoinHashSetResult[batch.DEFAULT_SIZE];
+    hashSetResults = new VectorMapJoinHashSetResult[VectorizedRowBatch.DEFAULT_SIZE];
     for (int i = 0; i < hashSetResults.length; i++) {
       hashSetResults[i] = baseHashSet.createHashSetResult();
     }
 
-    allMatchs = new int[batch.DEFAULT_SIZE];
+    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    spills = new int[batch.DEFAULT_SIZE];
-    spillHashMapResultIndices = new int[batch.DEFAULT_SIZE];
+    spills = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    spillHashMapResultIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
   }
 
   //-----------------------------------------------------------------------------------------------

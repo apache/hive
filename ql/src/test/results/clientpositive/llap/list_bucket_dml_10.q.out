@@ -18,10 +18,16 @@ PREHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

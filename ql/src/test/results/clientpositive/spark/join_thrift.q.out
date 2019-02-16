@@ -20,12 +20,16 @@ FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT s1.aint, s2.lintstring
 FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

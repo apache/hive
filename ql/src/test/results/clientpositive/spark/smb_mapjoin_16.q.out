@@ -35,9 +35,15 @@ POSTHOOK: Lineage: test_table2_n9.value SIMPLE [(src)src.FieldSchema(name:value,
 PREHOOK: query: EXPLAIN
 SELECT /*+mapjoin(b)*/ count(*) FROM test_table1_n9 a JOIN test_table2_n9 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n9
+PREHOOK: Input: default@test_table2_n9
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT /*+mapjoin(b)*/ count(*) FROM test_table1_n9 a JOIN test_table2_n9 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n9
+POSTHOOK: Input: default@test_table2_n9
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

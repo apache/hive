@@ -37,14 +37,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -62,8 +60,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.EventUtils;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -213,9 +210,9 @@ public final class QueryResultsCache {
     }
 
     public String toString() {
-      return "CacheEntry query: [" + getQueryInfo().getLookupInfo().getQueryText()
-          + "], status: " + status + ", location: " + cachedResultsPath
-          + ", size: " + size;
+      return String.format("CacheEntry#%s query: [ %s ], status: %s, location: %s, size: %d",
+          System.identityHashCode(this), getQueryInfo().getLookupInfo().getQueryText(), status,
+          cachedResultsPath, size);
     }
 
     public boolean addReader() {
@@ -297,7 +294,7 @@ public final class QueryResultsCache {
      *         false if the status changes from PENDING to INVALID
      */
     public boolean waitForValidStatus() {
-      LOG.info("Waiting on pending cacheEntry");
+      LOG.info("Waiting on pending cacheEntry: {}", this);
       long timeout = 1000;
 
       long startTime = System.nanoTime();
@@ -794,7 +791,16 @@ public final class QueryResultsCache {
     String dirName = UUID.randomUUID().toString();
     Path cachedResultsPath = new Path(cacheDirPath, dirName);
     FileSystem fs = cachedResultsPath.getFileSystem(conf);
-    fs.rename(queryResultsPath, cachedResultsPath);
+    try {
+      boolean resultsMoved = Hive.moveFile(conf, queryResultsPath, cachedResultsPath, false, false, false);
+      if (!resultsMoved) {
+        throw new IOException("Failed to move " + queryResultsPath + " to " + cachedResultsPath);
+      }
+    } catch (IOException err) {
+      throw err;
+    } catch (Exception err) {
+      throw new IOException("Error moving " + queryResultsPath + " to " + cachedResultsPath, err);
+    }
     return cachedResultsPath;
   }
 
@@ -991,12 +997,12 @@ public final class QueryResultsCache {
       String tableName;
 
       switch (event.getEventType()) {
-      case MessageFactory.ADD_PARTITION_EVENT:
-      case MessageFactory.ALTER_PARTITION_EVENT:
-      case MessageFactory.DROP_PARTITION_EVENT:
-      case MessageFactory.ALTER_TABLE_EVENT:
-      case MessageFactory.DROP_TABLE_EVENT:
-      case MessageFactory.INSERT_EVENT:
+      case MessageBuilder.ADD_PARTITION_EVENT:
+      case MessageBuilder.ALTER_PARTITION_EVENT:
+      case MessageBuilder.DROP_PARTITION_EVENT:
+      case MessageBuilder.ALTER_TABLE_EVENT:
+      case MessageBuilder.DROP_TABLE_EVENT:
+      case MessageBuilder.INSERT_EVENT:
         dbName = event.getDbName();
         tableName = event.getTableName();
         break;

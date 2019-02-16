@@ -36,8 +36,9 @@ import java.util.regex.Pattern;
 public class FilterLongColumnInList extends VectorExpression implements ILongInExpr {
 
   private static final long serialVersionUID = 1L;
-  private final int inputCol;
-  private long[] inListValues;
+
+  protected final int inputCol;
+  protected long[] inListValues;
 
   // Transient members initialized by transientInit method.
 

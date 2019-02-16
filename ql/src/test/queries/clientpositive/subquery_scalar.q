@@ -252,12 +252,44 @@ drop table t_n11;
 drop table tempty_n0;
 
 -- following queries shouldn't have a join with sq_count_check
-set hive.optimize.remove.sq_count_check = true;
 explain select key, count(*) from src group by key having count(*) >
     (select count(*) from src s1 group by 4);
 
 explain select key, count(*) from src group by key having count(*) >
     (select count(*) from src s1 where s1.key = '90' group by s1.key );
 
-set hive.optimize.remove.sq_count_check = false;
+
+CREATE TABLE `store_sales`(
+  `ss_sold_date_sk` int,
+  `ss_quantity` int,
+  `ss_list_price` decimal(7,2));
+
+CREATE TABLE `date_dim`(
+  `d_date_sk` int,
+  `d_year` int);
+
+explain cbo with avg_sales as
+ (select avg(quantity*list_price) average_sales
+  from (select ss_quantity quantity
+             ,ss_list_price list_price
+       from store_sales
+           ,date_dim
+       where ss_sold_date_sk = d_date_sk
+         and d_year between 1999 and 2001 ) x)
+select * from store_sales where ss_list_price > (select average_sales from avg_sales);
+
+-- this one should have sq_count_check branch because it contains windowing function
+explain cbo with avg_sales as
+ (select avg(quantity*list_price) over( partition by list_price) average_sales
+  from (select ss_quantity quantity
+             ,ss_list_price list_price
+       from store_sales
+           ,date_dim
+       where ss_sold_date_sk = d_date_sk
+         and d_year between 1999 and 2001 ) x)
+select * from store_sales where ss_list_price > (select average_sales from avg_sales);
+
+
+DROP TABLE store_sales;
+DROP TABLE date_dim;
 

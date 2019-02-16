@@ -22,12 +22,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -62,6 +68,8 @@ public class OperationManager extends AbstractService {
       new ConcurrentHashMap<OperationHandle, Operation>();
   private final ConcurrentHashMap<String, Operation> queryIdOperation =
       new ConcurrentHashMap<String, Operation>();
+  private final SetMultimap<String, String> queryTagToIdMap =
+          Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
   //Following fields for displaying queries on WebUI
   private Object webuiLock = new Object();
@@ -190,7 +198,8 @@ public class OperationManager extends AbstractService {
   }
 
   private void addOperation(Operation operation) {
-    LOG.info("Adding operation: " + operation.getHandle());
+    LOG.info("Adding operation: {} {}", operation.getHandle(),
+        operation.getParentSession().getSessionHandle());
     queryIdOperation.put(getQueryId(operation), operation);
     handleToOperation.put(operation.getHandle(), operation);
     if (operation instanceof SQLOperation) {
@@ -201,11 +210,27 @@ public class OperationManager extends AbstractService {
     }
   }
 
+  public void updateQueryTag(String queryId, String queryTag) {
+    Operation operation = queryIdOperation.get(queryId);
+    if (operation != null) {
+      queryTagToIdMap.put(queryTag, queryId);
+      return;
+    }
+    LOG.info("Query id is missing during query tag updation");
+  }
+
   private Operation removeOperation(OperationHandle opHandle) {
     Operation operation = handleToOperation.remove(opHandle);
+    if (operation == null) {
+      throw new RuntimeException("Operation does not exist: " + opHandle);
+    }
     String queryId = getQueryId(operation);
     queryIdOperation.remove(queryId);
-    LOG.info("Removed queryId: {} corresponding to operation: {}", queryId, opHandle);
+    String queryTag = operation.getQueryTag();
+    if (queryTag != null) {
+      queryTagToIdMap.remove(queryTag, queryId);
+    }
+    LOG.info("Removed queryId: {} corresponding to operation: {} with tag: {}", queryId, opHandle, queryTag);
     if (operation instanceof SQLOperation) {
       removeSafeQueryInfo(opHandle);
     }
@@ -285,9 +310,6 @@ public class OperationManager extends AbstractService {
   public void closeOperation(OperationHandle opHandle) throws HiveSQLException {
     LOG.info("Closing operation: " + opHandle);
     Operation operation = removeOperation(opHandle);
-    if (operation == null) {
-      throw new HiveSQLException("Operation does not exist: " + opHandle);
-    }
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
       try {
@@ -421,5 +443,16 @@ public class OperationManager extends AbstractService {
 
   public Operation getOperationByQueryId(String queryId) {
     return queryIdOperation.get(queryId);
+  }
+
+  public Set<Operation> getOperationsByQueryTag(String queryTag) {
+    Set<String> queryIds = queryTagToIdMap.get(queryTag);
+    Set<Operation> result = new HashSet<Operation>();
+    for (String queryId : queryIds) {
+      if (queryId != null && getOperationByQueryId(queryId) != null) {
+        result.add(getOperationByQueryId(queryId));
+      }
+    }
+    return result;
   }
 }

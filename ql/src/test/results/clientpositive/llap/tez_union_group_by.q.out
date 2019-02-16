@@ -111,6 +111,11 @@ GROUP BY x_n3.u
 ON n.u = o.u 
 WHERE n.u <> 0 AND n.ft <= '2014-09-02'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@v_n15
+PREHOOK: Input: default@x_n3
+PREHOOK: Input: default@y_n1
+PREHOOK: Input: default@z_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN 
 SELECT o.u, n.u
 FROM 
@@ -138,6 +143,11 @@ GROUP BY x_n3.u
 ON n.u = o.u 
 WHERE n.u <> 0 AND n.ft <= '2014-09-02'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@v_n15
+POSTHOOK: Input: default@x_n3
+POSTHOOK: Input: default@y_n1
+POSTHOOK: Input: default@z_n0
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -30,6 +30,9 @@ union all
 select 2 as id from tb2_n0 limit 1) b
 on a.id=b.id
 PREHOOK: type: QUERY
+PREHOOK: Input: default@tb1_n0
+PREHOOK: Input: default@tb2_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
 select a.id from tb1_n0 a
 left outer join
@@ -38,6 +41,9 @@ union all
 select 2 as id from tb2_n0 limit 1) b
 on a.id=b.id
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tb1_n0
+POSTHOOK: Input: default@tb2_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

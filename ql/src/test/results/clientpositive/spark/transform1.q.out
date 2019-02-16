@@ -9,9 +9,15 @@ POSTHOOK: Output: default@transform1_t1
 PREHOOK: query: EXPLAIN
 SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@transform1_t1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@transform1_t1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -83,9 +89,15 @@ POSTHOOK: Lineage: transform1_t2.col EXPRESSION []
 PREHOOK: query: EXPLAIN
 SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@transform1_t2
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: cat
+POSTHOOK: Input: default@transform1_t2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

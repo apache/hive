@@ -98,8 +98,8 @@ public class TestDbTxnManager {
   public void testSingleReadPartition() throws Exception {
     addPartitionInput(newTable(true));
     QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
-    txnMgr.openTxn(ctx, null);
-    txnMgr.acquireLocks(qp, ctx, null);
+    txnMgr.openTxn(ctx, "fred");
+    txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,

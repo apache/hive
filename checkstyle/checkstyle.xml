@@ -163,8 +163,12 @@
       <property name="max" value="120"/>
       <property name="ignorePattern" value="^ *\* *[^ ]+$"/>
     </module>
+    <module name="ParameterNumber">
+      <property name="id" value="maxParameterNumber"/>
+      <property name="max" value="20"/>
+      <property name="tokens" value="METHOD_DEF"/>
+    </module>
     <module name="MethodLength"/>
-    <module name="ParameterNumber"/>
     
     
     <!-- Checks for whitespace                               -->

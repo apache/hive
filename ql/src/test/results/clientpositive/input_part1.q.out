@@ -10,10 +10,19 @@ PREHOOK: query: EXPLAIN EXTENDED
 FROM srcpart
 INSERT OVERWRITE TABLE dest1_n45 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1_n45
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM srcpart
 INSERT OVERWRITE TABLE dest1_n45 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1_n45
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('12' AS STRING) AS `hr`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcpart`
+WHERE `key` < 100 AND `ds` = '2008-04-08' AND `hr` = '12'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -31,22 +40,22 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr: ((UDFToDouble(key) < 100.0D) and (ds = '2008-04-08') and (hr = '12')) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), value (type: string), '12' (type: string), '2008-04-08' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 45650 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 45650 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -77,16 +86,16 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                   outputColumnNames: key, value, hr, ds
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 45650 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll'), compute_stats(hr, 'hll'), compute_stats(ds, 'hll')
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 1 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 1744 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 1744 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 1744 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: -1
                       value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                       auto parallelism: false
@@ -150,13 +159,13 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat

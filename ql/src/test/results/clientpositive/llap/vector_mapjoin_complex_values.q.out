@@ -1,0 +1,355 @@
+PREHOOK: query: create table census(
+ssn int,
+name string,
+city string,
+email string) 
+row format delimited 
+fields terminated by ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@census
+POSTHOOK: query: create table census(
+ssn int,
+name string,
+city string,
+email string) 
+row format delimited 
+fields terminated by ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@census
+PREHOOK: query: insert into census values(100,"raj","san jose","email")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@census
+POSTHOOK: query: insert into census values(100,"raj","san jose","email")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@census
+POSTHOOK: Lineage: census.city SCRIPT []
+POSTHOOK: Lineage: census.email SCRIPT []
+POSTHOOK: Lineage: census.name SCRIPT []
+POSTHOOK: Lineage: census.ssn SCRIPT []
+col1	col2	col3	col4
+PREHOOK: query: create table census_clus(
+ssn int,
+name string,
+city string,
+email string) 
+clustered by (ssn) into 4 buckets  stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@census_clus
+POSTHOOK: query: create table census_clus(
+ssn int,
+name string,
+city string,
+email string) 
+clustered by (ssn) into 4 buckets  stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@census_clus
+PREHOOK: query: insert into  table census_clus select *  from census
+PREHOOK: type: QUERY
+PREHOOK: Input: default@census
+PREHOOK: Output: default@census_clus
+POSTHOOK: query: insert into  table census_clus select *  from census
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@census
+POSTHOOK: Output: default@census_clus
+POSTHOOK: Lineage: census_clus.city SIMPLE [(census)census.FieldSchema(name:city, type:string, comment:null), ]
+POSTHOOK: Lineage: census_clus.email SIMPLE [(census)census.FieldSchema(name:email, type:string, comment:null), ]
+POSTHOOK: Lineage: census_clus.name SIMPLE [(census)census.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: census_clus.ssn SIMPLE [(census)census.FieldSchema(name:ssn, type:int, comment:null), ]
+census.ssn	census.name	census.city	census.email
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+UPDATE census_clus SET name = 'updated name' where ssn=100 and   EXISTS (select distinct ssn from census where ssn=census_clus.ssn)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@census
+PREHOOK: Input: default@census_clus
+PREHOOK: Output: default@census_clus
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+UPDATE census_clus SET name = 'updated name' where ssn=100 and   EXISTS (select distinct ssn from census where ssn=census_clus.ssn)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@census
+POSTHOOK: Input: default@census_clus
+POSTHOOK: Output: default@census_clus
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Reducer 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: census_clus
+                  filterExpr: (ssn = 100) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 185 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ssn:int, 1:name:string, 2:city:string, 3:email:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColEqualLongScalar(col 0:int, val 100)
+                    predicate: (ssn = 100) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 185 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Left Semi Join 0 to 1
+                      keys:
+                        0 100 (type: int)
+                        1 100 (type: int)
+                      Map Join Vectorization:
+                          bigTableKeyExpressions: ConstantVectorExpression(val 100) -> 5:int
+                          bigTableValueExpressions: col 2:string, col 3:string, col 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                          className: VectorMapJoinOperator
+                          native: false
+                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                          nativeConditionsNotMet: Supports Value Types [STRUCT] IS false
+                      outputColumnNames: _col2, _col3, _col6
+                      input vertices:
+                        1 Reducer 4
+                      Statistics: Num rows: 1 Data size: 257 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col6 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col3 (type: string)
+                        outputColumnNames: _col0, _col3, _col4
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [2, 0, 1]
+                        Statistics: Num rows: 1 Data size: 357 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                          sort order: +
+                          Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumns: 2:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumns: 3:int
+                              valueColumns: 0:string, 1:string
+                          Statistics: Num rows: 1 Data size: 357 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col3 (type: string), _col4 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0, 2, 3]
+                    dataColumns: ssn:int, name:string, city:string, email:string
+                    neededVirtualColumns: [ROWID]
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: census
+                  filterExpr: (ssn = 100) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ssn:int, 1:name:string, 2:city:string, 3:email:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColEqualLongScalar(col 0:int, val 100)
+                    predicate: (ssn = 100) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: ConstantVectorExpression(val 100) -> 5:int
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: 100 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: 100 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: 100 (type: int)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              keyColumns: 1:int
+                              keyExpressions: ConstantVectorExpression(val 100) -> 1:int
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0]
+                    dataColumns: ssn:int, name:string, city:string, email:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: z
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col1:string, VALUE._col2:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, string]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 100 (type: int), 'updated name' (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 3, 4, 1, 2]
+                    selectExpressions: ConstantVectorExpression(val 100) -> 3:int, ConstantVectorExpression(val updated name) -> 4:string
+                Statistics: Num rows: 1 Data size: 357 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 357 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.census_clus
+                  Write Type: UPDATE
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: KEY._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint]
+            Reduce Operator Tree:
+              Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: ConstantVectorExpression(val 100) -> 1:int, ConstantVectorExpression(val 100) -> 2:int
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                keys: 100 (type: int), 100 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: []
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    Group By Vectorization:
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        keyExpressions: ConstantVectorExpression(val 100) -> 2:int
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: []
+                    keys: 100 (type: int)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 100 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: 100 (type: int)
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkLongOperator
+                          keyColumns: 1:int
+                          keyExpressions: ConstantVectorExpression(val 100) -> 1:int
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.census_clus
+          Write Type: UPDATE
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: UPDATE census_clus SET name = 'updated name' where ssn=100 and   EXISTS (select distinct ssn from census where ssn=census_clus.ssn)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@census
+PREHOOK: Input: default@census_clus
+PREHOOK: Output: default@census_clus
+POSTHOOK: query: UPDATE census_clus SET name = 'updated name' where ssn=100 and   EXISTS (select distinct ssn from census where ssn=census_clus.ssn)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@census
+POSTHOOK: Input: default@census_clus
+POSTHOOK: Output: default@census_clus
+row__id	ssn	_c2	city	email

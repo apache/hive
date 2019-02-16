@@ -76,8 +76,11 @@ POSTHOOK: Input: default@table1@key=505
 5	505
 PREHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
 POSTHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -104,11 +107,10 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col1 (type: string), '_bucket_number' (type: string)
+                    key expressions: _col1 (type: string), _bucket_number (type: string)
                     null sort order: aa
                     sort order: ++
                     Map-reduce partition columns: _col1 (type: string)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
                     value expressions: _col0 (type: int)
                     auto parallelism: false
@@ -156,16 +158,15 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: int), KEY._col1 (type: string), KEY.'_bucket_number' (type: string)
-          outputColumnNames: _col0, _col1, '_bucket_number'
-          Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
+          expressions: VALUE._col0 (type: int), KEY._col1 (type: string), KEY._bucket_number (type: string)
+          outputColumnNames: _col0, _col1, _bucket_number
           File Output Operator
             compressed: false
             GlobalTableId: 1
             directory: ### BLOBSTORE_STAGING_PATH ###
             Dp Sort State: PARTITION_BUCKET_SORTED
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -339,13 +340,13 @@ POSTHOOK: Input: default@table2@country=MEX/state=SON
 POSTHOOK: Input: default@table2@country=USA/state=CA
 POSTHOOK: Input: default@table2@country=USA/state=TX
 #### A masked pattern was here ####
-Peter Mo	87	MEX	SON
-Mirna Cage	37	USA	CA
-Mark Cage	38	USA	CA
+Bill Rose	52	USA	TX
 Jane Doe	22	USA	CA
 John Doe	23	USA	CA
 Maria Full	50	USA	TX
-Bill Rose	52	USA	TX
+Mark Cage	38	USA	CA
+Mirna Cage	37	USA	CA
+Peter Mo	87	MEX	SON
 PREHOOK: query: DROP TABLE table2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2

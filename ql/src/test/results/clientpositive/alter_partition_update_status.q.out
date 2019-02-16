@@ -52,8 +52,12 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE src_stat_part_one PARTITION(partitionId=1) UPDATE STATISTICS for column key SET ('numDVs'='11','avgColLen'='2.2')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@src_stat_part_one
+PREHOOK: Output: default@src_stat_part_one@partitionid=1
 POSTHOOK: query: ALTER TABLE src_stat_part_one PARTITION(partitionId=1) UPDATE STATISTICS for column key SET ('numDVs'='11','avgColLen'='2.2')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@src_stat_part_one
+POSTHOOK: Output: default@src_stat_part_one@partitionid=1
 PREHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_one
@@ -126,8 +130,12 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='30','maxColLen'='40')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@src_stat_part_two
+PREHOOK: Output: default@src_stat_part_two@px=1/py=a
 POSTHOOK: query: ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='30','maxColLen'='40')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@src_stat_part_two
+POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
 PREHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_two
@@ -160,8 +168,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:dummydb
 PREHOOK: query: ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='40','maxColLen'='50')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@src_stat_part_two
+PREHOOK: Output: default@src_stat_part_two@px=1/py=a
 POSTHOOK: query: ALTER TABLE default.src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='40','maxColLen'='50')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@src_stat_part_two
+POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
 PREHOOK: query: describe formatted default.src_stat_part_two PARTITION(px=1, py='a') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part_two

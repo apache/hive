@@ -17,8 +17,12 @@ POSTHOOK: Output: default@t_n34
 POSTHOOK: Lineage: t_n34.a SCRIPT []
 PREHOOK: query: explain select count(*) from t_n34 group by ()
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n34
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from t_n34 group by ()
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n34
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -25,6 +25,10 @@ FROM (
 LEFT OUTER JOIN src b
 ON d.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@test_union_lateral_view
 POSTHOOK: query: EXPLAIN 
 INSERT OVERWRITE TABLE test_union_lateral_view
 SELECT b.key, d.arr_ele, d.value
@@ -44,6 +48,10 @@ FROM (
 LEFT OUTER JOIN src b
 ON d.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@test_union_lateral_view
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

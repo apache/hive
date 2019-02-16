@@ -104,9 +104,13 @@ POSTHOOK: Lineage: vectortab2korc_n8.ts2 SIMPLE [(vectortab2k_n9)vectortab2k_n9.
 PREHOOK: query: explain vectorization expression
 select s, t, max(b) from vectortab2korc_n8 group by s, t
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc_n8
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select s, t, max(b) from vectortab2korc_n8 group by s, t
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc_n8
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

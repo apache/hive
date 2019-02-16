@@ -31,6 +31,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -57,6 +58,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return predicate.accept(this);
   }
 
+  @Override
   public Double visitCall(RexCall call) {
     if (!deep) {
       return 1.0;
@@ -138,17 +140,18 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * NDV of "f1(x, y, z) != f2(p, q, r)" ->
    * "(maxNDV(x,y,z,p,q,r) - 1)/maxNDV(x,y,z,p,q,r)".
    * <p>
-   * 
+   *
    * @param call
    * @return
    */
   private Double computeNotEqualitySelectivity(RexCall call) {
     double tmpNDV = getMaxNDV(call);
 
-    if (tmpNDV > 1)
-      return (tmpNDV - (double) 1) / tmpNDV;
-    else
+    if (tmpNDV > 1) {
+      return (tmpNDV - 1) / tmpNDV;
+    } else {
       return 1.0;
+    }
   }
 
   /**
@@ -156,7 +159,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * <p>
    * Note that >, >=, <, <=, = ... are considered generic functions and uses
    * this method to find their selectivity.
-   * 
+   *
    * @param call
    * @return
    */
@@ -171,7 +174,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * <p>
    * Note we compute m1. m2.. by applying selectivity of the disjunctive element
    * on the cardinality from child.
-   * 
+   *
    * @param call
    * @return
    */
@@ -196,8 +199,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       selectivity *= tmpSelectivity;
     }
 
-    if (selectivity < 0.0)
+    if (selectivity < 0.0) {
       selectivity = 0.0;
+    }
 
     return (1 - selectivity);
   }
@@ -205,7 +209,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   /**
    * Selectivity of conjunctive predicate -> (selectivity of conjunctive
    * element1) * (selectivity of conjunctive element2)...
-   * 
+   *
    * @param call
    * @return
    */
@@ -226,9 +230,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   /**
    * Given a RexCall & TableScan find max no of nulls. Currently it picks the
    * col with max no of nulls.
-   * 
+   *
    * TODO: improve this
-   * 
+   *
    * @param call
    * @param t
    * @return
@@ -258,16 +262,18 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       if (op instanceof RexInputRef) {
         tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, mq,
             ((RexInputRef) op).getIndex());
-        if (tmpNDV > maxNDV)
+        if (tmpNDV > maxNDV) {
           maxNDV = tmpNDV;
+        }
       } else {
         irv = new InputReferencedVisitor();
         irv.apply(op);
         for (Integer childProjIndx : irv.inputPosReferenced) {
           tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel,
               mq, childProjIndx);
-          if (tmpNDV > maxNDV)
+          if (tmpNDV > maxNDV) {
             maxNDV = tmpNDV;
+          }
         }
       }
     }
@@ -304,8 +310,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return op;
   }
 
+  @Override
   public Double visitLiteral(RexLiteral literal) {
-    if (literal.isAlwaysFalse()) {
+    if (literal.isAlwaysFalse() || RexUtil.isNull(literal)) {
       return 0.0;
     } else if (literal.isAlwaysTrue()) {
       return 1.0;

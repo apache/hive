@@ -43,6 +43,7 @@ public class HiveChar extends HiveBaseChar
   /**
    * Set char value, padding or truncating the value to the size of len parameter.
    */
+  @Override
   public void setValue(String val, int len) {
     super.setValue(HiveBaseChar.getPaddedValue(val, len), -1);
   }
@@ -59,15 +60,18 @@ public class HiveChar extends HiveBaseChar
     return value;
   }
 
+  @Override
   public int getCharacterLength() {
     String strippedValue = getStrippedValue();
     return strippedValue.codePointCount(0, strippedValue.length());
   }
 
+  @Override
   public String toString() {
     return getPaddedValue();
   }
 
+  @Override
   public int compareTo(HiveChar rhs) {
     if (rhs == this) {
       return 0;
@@ -75,6 +79,7 @@ public class HiveChar extends HiveBaseChar
     return this.getStrippedValue().compareTo(rhs.getStrippedValue());
   }
 
+  @Override
   public boolean equals(Object rhs) {
     if (rhs == this) {
       return true;
@@ -85,7 +90,9 @@ public class HiveChar extends HiveBaseChar
     return this.getStrippedValue().equals(((HiveChar) rhs).getStrippedValue());
   }
 
+  @Override
   public int hashCode() {
     return getStrippedValue().hashCode();
   }
+
 }

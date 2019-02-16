@@ -21,6 +21,9 @@ INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
 INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
   SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n137@ds=111
+PREHOOK: Output: default@dest2_n36@ds=111
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
@@ -28,6 +31,9 @@ INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
 INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
   SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n137@ds=111
+POSTHOOK: Output: default@dest2_n36@ds=111
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2

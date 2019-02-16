@@ -322,8 +322,7 @@ public class ASTConverter {
       RexNode offsetExpr = hiveSortLimit.getOffsetExpr();
       RexNode fetchExpr = hiveSortLimit.getFetchExpr();
       if (fetchExpr != null) {
-        Object offset = (offsetExpr == null) ?
-            new Integer(0) : ((RexLiteral) offsetExpr).getValue2();
+        Object offset = (offsetExpr == null) ? Integer.valueOf(0) : ((RexLiteral) offsetExpr).getValue2();
         Object fetch = ((RexLiteral) fetchExpr).getValue2();
         hiveAST.limit = ASTBuilder.limit(offset, fetch);
       }
@@ -765,7 +764,7 @@ public class ASTConverter {
     }
 
     Schema(DruidQuery dq) {
-      HiveTableScan hts = (HiveTableScan) ((DruidQuery)dq).getTableScan();
+      HiveTableScan hts = (HiveTableScan) dq.getTableScan();
       String tabName = hts.getTableAlias();
       for (RelDataTypeField field : dq.getRowType().getFieldList()) {
         add(new ColumnInfo(tabName, field.getName()));

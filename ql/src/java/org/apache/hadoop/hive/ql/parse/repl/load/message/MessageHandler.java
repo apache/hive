@@ -46,8 +46,8 @@ public interface MessageHandler {
   UpdatedMetaDataTracker getUpdatedMetadata();
 
   class Context {
-    public String dbName;
-    public final String tableName, location;
+    public String location;
+    public final String tableName, dbName;
     public final Task<? extends Serializable> precursor;
     public DumpMetaData dmd;
     final HiveConf hiveConf;
@@ -89,6 +89,10 @@ public interface MessageHandler {
       return StringUtils.isEmpty(dbName);
     }
 
+    /**
+     * not sure why we have this, this should always be read from the _metadata file via the
+     * {@link org.apache.hadoop.hive.ql.parse.repl.load.MetadataJson#readReplicationSpec}
+     */
     ReplicationSpec eventOnlyReplicationSpec() throws SemanticException {
       String eventId = dmd.getEventTo().toString();
       return new ReplicationSpec(eventId, eventId);
@@ -100,6 +104,10 @@ public interface MessageHandler {
 
     public HiveTxnManager getTxnMgr() {
       return nestedContext.getHiveTxnManager();
+    }
+
+    public void setLocation(String location) {
+      this.location = location;
     }
   }
 }

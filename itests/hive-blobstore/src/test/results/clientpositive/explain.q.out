@@ -33,8 +33,12 @@ POSTHOOK: Input: default@blobstore_table
 1234
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE blobstore_table SELECT count(1) FROM blobstore_table
 PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_table
+PREHOOK: Output: default@blobstore_table
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE blobstore_table SELECT count(1) FROM blobstore_table
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_table
+POSTHOOK: Output: default@blobstore_table
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

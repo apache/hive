@@ -1,0 +1,1 @@
+array<struct<t0:timestamp,attributes:struct<accepts credit cards:boolean,by appointment only:boolean,good for groups:int>,business_id:string,categories:array<string>,hours:map<string,struct<close:string,open:string>>,name:string,neighborhoods:array<string>,open:boolean,review_count:int,type:string>>

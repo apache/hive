@@ -43,7 +43,6 @@ POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:foo
 t1_n40
-v1_n3
 PREHOOK: query: describe T1_n40
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: foo@t1_n40

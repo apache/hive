@@ -35,7 +35,7 @@ import org.junit.Test;
  * ,BOOLEAN,BOTH,BY,CONSTRAINT
  * ,CREATE,CUBE,CURRENT_DATE,CURRENT_TIMESTAMP,CURSOR,
  * DATE,DECIMAL,DELETE,DESCRIBE
- * ,DOUBLE,DROP,EXISTS,EXTERNAL,FALSE,FETCH,FLOAT,FOR
+ * ,DOUBLE,DROP,EXISTS,EXTERNAL,FALSE,FETCH,FLOAT,REAL,FOR
  * ,FOREIGN,FULL,GRANT,GROUP,GROUPING
  * ,IMPORT,IN,INNER,INSERT,INT,INTERSECT,INTO,IS
  * ,LATERAL,LEFT,LIKE,LOCAL,MINUS,NONE,NULL
@@ -434,6 +434,17 @@ public class TestSQL11ReservedKeyWordsNegative {
 					ex.getMessage());
 		}
 	}
+
+  @Test
+  public void testSQL11ReservedKeyWords_REAL() {
+    try {
+      parse("CREATE TABLE REAL (col STRING)");
+      Assert.assertFalse("Expected ParseException", true);
+    } catch (ParseException ex) {
+      Assert.assertEquals("Failure didn't match.",
+          "line 1:13 cannot recognize input near 'REAL' '(' 'col' in table name", ex.getMessage());
+    }
+  }
 
 	@Test
 	public void testSQL11ReservedKeyWords_FOR() {

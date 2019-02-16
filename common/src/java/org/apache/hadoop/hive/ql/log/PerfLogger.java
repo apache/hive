@@ -85,6 +85,8 @@ public class PerfLogger {
   public static final String SPARK_OPTIMIZE_OPERATOR_TREE = "SparkOptimizeOperatorTree";
   public static final String SPARK_OPTIMIZE_TASK_TREE = "SparkOptimizeTaskTree";
   public static final String SPARK_FLUSH_HASHTABLE = "SparkFlushHashTable.";
+  public static final String SPARK_DYNAMICALLY_PRUNE_PARTITIONS =
+          "SparkDynamicallyPrunePartitions.";
 
   public static final String FILE_MOVES = "FileMoves";
   public static final String LOAD_TABLE = "LoadTable";

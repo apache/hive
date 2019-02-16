@@ -37,6 +37,7 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.rules.DateRangeRules;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlSumEmptyIsZeroAggFunction;
 import org.apache.calcite.tools.RelBuilder;
@@ -95,6 +96,9 @@ public class HiveDruidRules {
 
   public static final AggregateExpandDistinctAggregatesDruidRule EXPAND_SINGLE_DISTINCT_AGGREGATES_DRUID_RULE =
       new AggregateExpandDistinctAggregatesDruidRule(HiveRelFactories.HIVE_BUILDER);
+
+  public static final DateRangeRules.FilterDateRangeRule FILTER_DATE_RANGE_RULE =
+                new DateRangeRules.FilterDateRangeRule(HiveRelFactories.HIVE_BUILDER);
 
   /**
    * This is a simplified version of {@link org.apache.calcite.rel.rules.AggregateExpandDistinctAggregatesRule}

@@ -1,7 +1,11 @@
 PREHOOK: query: explain select * from src b where b.key in (select key from src a where b.value > a.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src b where b.key in (select key from src a where b.value > a.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -101,8 +105,12 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from src b where b.key in (select key from src a where b.value <= a.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src b where b.key in (select key from src a where b.value <= a.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -702,8 +710,12 @@ POSTHOOK: Input: default@src
 98	val_98
 PREHOOK: query: explain select * from src b where b.key in (select key from src a where b.value > a.value and b.key < a.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: explain select * from src b where b.key in (select key from src a where b.value > a.value and b.key < a.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -50,10 +50,16 @@ PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_desc1
+PREHOOK: Input: default@table_desc2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key and a.value=b.value where a.key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_desc1
+POSTHOOK: Input: default@table_desc2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -71,10 +77,10 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: (value is not null and (key < 10)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((key < 10) and value is not null) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 keys:
                   0 key (type: string), value (type: string)
@@ -86,17 +92,17 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: (value is not null and (key < 10)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((key < 10) and value is not null) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
-                Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 182 Data size: 32502 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

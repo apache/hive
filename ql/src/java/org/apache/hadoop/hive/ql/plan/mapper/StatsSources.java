@@ -95,9 +95,14 @@ public class StatsSources {
         }
         LOG.debug(sb.toString());
       }
-      if (stat.size() >= 1 && sig.size() >= 1) {
-        map.put(sig.get(0), stat.get(0));
+      if (stat.size() < 1 || sig.size() < 1) {
+        continue;
       }
+      if (e.getAll(OperatorStats.IncorrectRuntimeStatsMarker.class).size() > 0) {
+        LOG.debug("Ignoring {}, marked with OperatorStats.IncorrectRuntimeStatsMarker", sig.get(0));
+        continue;
+      }
+      map.put(sig.get(0), stat.get(0));
     }
     return map.build();
   }

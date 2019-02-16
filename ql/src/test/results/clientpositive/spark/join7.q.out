@@ -26,6 +26,8 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_n17 SELECT c.c1, c.c2, c.c3, c.c4, c.c5, c.c6
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n17
 POSTHOOK: query: EXPLAIN
 FROM (
  FROM 
@@ -46,6 +48,8 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_n17 SELECT c.c1, c.c2, c.c3, c.c4, c.c5, c.c6
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n17
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -122,7 +126,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Outer Join 0 to 1
+                     Full Outer Join 0 to 1
                      Left Outer Join 0 to 2
                 keys:
                   0 _col0 (type: string)

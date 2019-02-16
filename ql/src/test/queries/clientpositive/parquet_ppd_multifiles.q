@@ -1,4 +1,5 @@
 set hive.vectorized.execution.enabled=false;
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE parquet_ppd_multifiles (
   name string,

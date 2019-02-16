@@ -462,12 +462,17 @@ public class HCatUtil {
 
     Map<String, String> jobProperties = new HashMap<String, String>();
     try {
-      tableDesc.getJobProperties().put(
-        HCatConstants.HCAT_KEY_JOB_INFO,
-        HCatUtil.serialize(inputJobInfo));
 
-      storageHandler.configureInputJobProperties(tableDesc,
-        jobProperties);
+      Map<String, String> properties = tableDesc.getJobProperties();
+      LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
+              properties.get(HCatConstants.HCAT_KEY_JOB_INFO));
+      if (inputJobInfos == null) {
+        inputJobInfos = new LinkedList<>();
+      }
+      inputJobInfos.add(inputJobInfo);
+      properties.put(HCatConstants.HCAT_KEY_JOB_INFO, HCatUtil.serialize(inputJobInfos));
+
+      storageHandler.configureInputJobProperties(tableDesc, jobProperties);
 
     } catch (IOException e) {
       throw new IllegalStateException(
@@ -757,4 +762,35 @@ public class HCatUtil {
       throw new IllegalArgumentException(msg);
     }
   }
+
+  public static void putInputJobInfoToConf(InputJobInfo inputJobInfo, Configuration conf)
+   throws IOException {
+
+    LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
+            conf.get(HCatConstants.HCAT_KEY_JOB_INFO));
+
+    if (inputJobInfos == null) {
+      inputJobInfos = new LinkedList<>();
+    }
+    inputJobInfos.add(inputJobInfo);
+    conf.set(HCatConstants.HCAT_KEY_JOB_INFO, HCatUtil.serialize(inputJobInfos));
+  }
+
+  public static LinkedList<InputJobInfo> getInputJobInfosFromConf(Configuration conf)
+          throws IOException {
+    LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
+            conf.get(HCatConstants.HCAT_KEY_JOB_INFO));
+    return inputJobInfos;
+  }
+
+  public static InputJobInfo getLastInputJobInfosFromConf(Configuration conf)
+          throws IOException {
+    LinkedList<InputJobInfo> inputJobInfos = getInputJobInfosFromConf(conf);
+    if (inputJobInfos == null || inputJobInfos.isEmpty()) {
+      return null;
+    } else {
+      return getInputJobInfosFromConf(conf).getLast();
+    }
+  }
+
 }

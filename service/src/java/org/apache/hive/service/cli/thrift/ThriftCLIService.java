@@ -428,7 +428,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       userName = req.getUsername();
     }
 
-    userName = getShortName(userName);
+    if (cliService.getHiveConf().getBoolVar(ConfVars.HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME))
+    {
+      userName = getShortName(userName);
+    }
+
     String effectiveClientUser = getProxyUser(userName, req.getConfiguration(), getIpAddress());
     LOG.debug("Client's username: " + effectiveClientUser);
     return effectiveClientUser;
@@ -702,7 +706,9 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setTaskStatus(operationStatus.getTaskStatus());
       resp.setOperationStarted(operationStatus.getOperationStarted());
       resp.setOperationCompleted(operationStatus.getOperationCompleted());
-      resp.setHasResultSet(operationStatus.getHasResultSet());
+      if (operationStatus.isHasResultSetIsSet()) {
+        resp.setHasResultSet(operationStatus.getHasResultSet());
+      }
       JobProgressUpdate progressUpdate = operationStatus.jobProgressUpdate();
       ProgressMonitorStatusMapper mapper = ProgressMonitorStatusMapper.DEFAULT;
       if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {

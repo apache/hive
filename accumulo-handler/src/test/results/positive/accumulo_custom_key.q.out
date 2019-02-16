@@ -1,20 +1,22 @@
-PREHOOK: query: CREATE TABLE accumulo_ck_1(key struct<col1:string,col2:string,col3:string>, value string)
+PREHOOK: query: CREATE EXTERNAL TABLE accumulo_ck_1(key struct<col1:string,col2:string,col3:string>, value string)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES (
     "accumulo.table.name" = "accumulo_custom",
     "accumulo.columns.mapping" = ":rowid,cf:string",
     "accumulo.composite.rowid.factory"="org.apache.hadoop.hive.accumulo.serde.DelimitedAccumuloRowIdFactory",
     "accumulo.composite.delimiter" = "$")
+TBLPROPERTIES ("external.table.purge" = "true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@accumulo_ck_1
-POSTHOOK: query: CREATE TABLE accumulo_ck_1(key struct<col1:string,col2:string,col3:string>, value string)
+POSTHOOK: query: CREATE EXTERNAL TABLE accumulo_ck_1(key struct<col1:string,col2:string,col3:string>, value string)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES (
     "accumulo.table.name" = "accumulo_custom",
     "accumulo.columns.mapping" = ":rowid,cf:string",
     "accumulo.composite.rowid.factory"="org.apache.hadoop.hive.accumulo.serde.DelimitedAccumuloRowIdFactory",
     "accumulo.composite.delimiter" = "$")
+TBLPROPERTIES ("external.table.purge" = "true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@accumulo_ck_1

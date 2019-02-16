@@ -18,12 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
@@ -37,10 +35,6 @@ import com.google.common.base.Preconditions;
  * Sum up non-null column values; group result is sum / non-null count.
  */
 public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDecimalAvg.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected boolean isGroupResultNull;
   protected HiveDecimalWritable sum;
@@ -57,7 +51,8 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -130,14 +125,21 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
         }
       }
     }
+  }
 
-    if (isLastGroupBatch) {
-      if (!isGroupResultNull) {
-        avg.set(sum);
-        temp.setFromLong(nonNullGroupCount);
-        avg.mutateDivide(temp);
-      }
+  @Override
+  public void doLastBatchWork() {
+    if (!isGroupResultNull) {
+      avg.set(sum);
+      temp.setFromLong(nonNullGroupCount);
+      avg.mutateDivide(temp);
     }
+  }
+
+  @Override
+  public boolean streamsResult() {
+    // We must evaluate whole group before producing a result.
+    return false;
   }
 
   @Override

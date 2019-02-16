@@ -9,6 +9,8 @@ SELECT NAMED_STRUCT(
        ).F2
        FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT NAMED_STRUCT(
          IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
@@ -20,6 +22,8 @@ SELECT NAMED_STRUCT(
        ).F2
        FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

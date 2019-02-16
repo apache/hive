@@ -21,7 +21,6 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.CastLongToDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToDate;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -42,7 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     + "Example:\n "
     + "  > SELECT CAST('2009-01-01' AS DATE) FROM src LIMIT 1;\n"
     + "  '2009-01-01'")
-@VectorizedExpressions({CastStringToDate.class, CastLongToDate.class, CastTimestampToDate.class})
+@VectorizedExpressions({CastStringToDate.class, CastTimestampToDate.class})
 public class GenericUDFToDate extends GenericUDF {
 
   private transient PrimitiveObjectInspector argumentOI;

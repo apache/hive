@@ -72,6 +72,7 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_ext1 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -157,6 +158,7 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_ext2 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -246,6 +248,7 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_db.wre1_ext3 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -331,6 +334,7 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_db.wre1_ext4 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -413,6 +417,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
+  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_ext5 select * from src where key < 5
 PREHOOK: type: QUERY
@@ -495,6 +500,7 @@ OUTPUTFORMAT
 LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
+  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: insert into table wre1_db.wre1_ext6 select * from src where key < 5
 PREHOOK: type: QUERY

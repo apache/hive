@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.vector.udf;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -27,10 +29,20 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Descriptor for function argument.
@@ -73,13 +85,55 @@ public class VectorUDFArgDesc implements Serializable {
   public void prepareConstant() {
     final Object writableValue;
     if (constExpr != null) {
-      PrimitiveCategory pc = ((PrimitiveTypeInfo) constExpr.getTypeInfo())
-          .getPrimitiveCategory();
+      Object constantValue = constExpr.getValue();
+      TypeInfo typeInfo = constExpr.getTypeInfo();
+      ObjectInspector objectInspector =
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
+      Category category = typeInfo.getCategory();
+      switch (category) {
+      case PRIMITIVE:
+        {
+          PrimitiveCategory pc =
+              ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
 
-      // Convert from Java to Writable
-      writableValue = PrimitiveObjectInspectorFactory
-          .getPrimitiveJavaObjectInspector(pc).getPrimitiveWritableObject(
-            constExpr.getValue());
+          // Convert from Java to Writable
+          AbstractPrimitiveJavaObjectInspector primitiveJavaObjectInspector =
+              PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(pc);
+          writableValue =
+              primitiveJavaObjectInspector.getPrimitiveWritableObject(constantValue);
+        }
+        break;
+      case STRUCT:
+        {
+          if (constantValue.getClass().isArray()) {
+            constantValue = java.util.Arrays.asList((Object[]) constantValue);
+          }
+
+          StructObjectInspector structObjectInspector =
+              (StructObjectInspector) objectInspector;
+          List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
+          List<String> fieldNames = new ArrayList<String>(fields.size());
+          List<ObjectInspector> fieldObjectInspectors =
+              new ArrayList<ObjectInspector>(fields.size());
+          for (StructField f : fields) {
+            fieldNames.add(f.getFieldName());
+            fieldObjectInspectors.add(
+                ObjectInspectorUtils.getStandardObjectInspector(
+                    f.getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE));
+          }
+
+          StandardConstantStructObjectInspector constantStructObjectInspector =
+              ObjectInspectorFactory.getStandardConstantStructObjectInspector(
+              fieldNames,
+              fieldObjectInspectors,
+              (List<?>) constantValue);
+          writableValue =
+              constantStructObjectInspector.getWritableConstantValue();
+        }
+        break;
+      default:
+        throw new RuntimeException("Unexpected category " + category);
+      }
     } else {
       writableValue = null;
     }

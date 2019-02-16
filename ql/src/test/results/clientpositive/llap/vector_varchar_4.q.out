@@ -124,9 +124,13 @@ POSTHOOK: Output: default@varchar_lazy_binary_columnar
 PREHOOK: query: explain vectorization expression
 insert overwrite table varchar_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc_n1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vectortab2korc_n1
+PREHOOK: Output: default@varchar_lazy_binary_columnar
 POSTHOOK: query: explain vectorization expression
 insert overwrite table varchar_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc_n1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectortab2korc_n1
+POSTHOOK: Output: default@varchar_lazy_binary_columnar
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

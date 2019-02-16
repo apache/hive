@@ -12,12 +12,32 @@ SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.key = z.key and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j1_n10
 POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1_n10
 SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.key = z.key and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j1_n10
+OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `key` IS NOT NULL) AS `t0`
+INNER JOIN ((SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `key`
+FROM `default`.`src1`
+WHERE `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

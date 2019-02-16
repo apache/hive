@@ -97,9 +97,15 @@ POSTHOOK: Lineage: vsmb_bucket_txt.value SIMPLE [(alltypesorc)alltypesorc.FieldS
 PREHOOK: query: explain vectorization expression
 select /*+MAPJOIN(a)*/ * from vsmb_bucket_1 a join vsmb_bucket_2 b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vsmb_bucket_1
+PREHOOK: Input: default@vsmb_bucket_2
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select /*+MAPJOIN(a)*/ * from vsmb_bucket_1 a join vsmb_bucket_2 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vsmb_bucket_1
+POSTHOOK: Input: default@vsmb_bucket_2
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -150,6 +156,9 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -174,9 +183,15 @@ POSTHOOK: Input: default@vsmb_bucket_2
 PREHOOK: query: explain vectorization expression
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_RC b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vsmb_bucket_1
+PREHOOK: Input: default@vsmb_bucket_rc
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_RC b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vsmb_bucket_1
+POSTHOOK: Input: default@vsmb_bucket_rc
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -227,6 +242,9 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -251,9 +269,15 @@ POSTHOOK: Input: default@vsmb_bucket_rc
 PREHOOK: query: explain vectorization expression
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_TXT b on a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@vsmb_bucket_1
+PREHOOK: Input: default@vsmb_bucket_txt
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_TXT b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vsmb_bucket_1
+POSTHOOK: Input: default@vsmb_bucket_txt
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -304,6 +328,9 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator

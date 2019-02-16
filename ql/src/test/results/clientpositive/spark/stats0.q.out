@@ -10,10 +10,16 @@ PREHOOK: query: explain extended
 insert overwrite table stats_non_partitioned
 select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_non_partitioned
 POSTHOOK: query: explain extended
 insert overwrite table stats_non_partitioned
 select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_non_partitioned
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -698,10 +704,14 @@ PREHOOK: query: explain
 insert overwrite table stats_partitioned partition (ds='1')
 select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_partitioned@ds=1
 POSTHOOK: query: explain
 insert overwrite table stats_partitioned partition (ds='1')
 select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_partitioned@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1334,10 +1344,16 @@ PREHOOK: query: explain extended
 insert overwrite table stats_non_partitioned
 select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_non_partitioned
 POSTHOOK: query: explain extended
 insert overwrite table stats_non_partitioned
 select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_non_partitioned
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2022,10 +2038,14 @@ PREHOOK: query: explain
 insert overwrite table stats_partitioned partition (ds='1')
 select * from src
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_partitioned@ds=1
 POSTHOOK: query: explain
 insert overwrite table stats_partitioned partition (ds='1')
 select * from src
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_partitioned@ds=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

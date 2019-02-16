@@ -18,13 +18,19 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.hive.spark.client.SparkClientUtilities;
+import org.apache.spark.SparkConf;
 import org.apache.spark.util.CallSite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,10 +74,11 @@ import com.google.common.base.Preconditions;
 
 @SuppressWarnings("rawtypes")
 public class SparkPlanGenerator {
+
   private static final String CLASS_NAME = SparkPlanGenerator.class.getName();
-  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final Logger LOG = LoggerFactory.getLogger(SparkPlanGenerator.class);
 
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private final JavaSparkContext sc;
   private final JobConf jobConf;
   private final Context context;
@@ -82,6 +89,7 @@ public class SparkPlanGenerator {
   private final Map<BaseWork, SparkTran> workToParentWorkTranMap;
   // a map from each BaseWork to its cloned JobConf
   private final Map<BaseWork, JobConf> workToJobConf;
+  private final org.apache.spark.serializer.KryoSerializer shuffleSerializer;
 
   public SparkPlanGenerator(
     JavaSparkContext sc,
@@ -98,6 +106,11 @@ public class SparkPlanGenerator {
     this.workToParentWorkTranMap = new HashMap<BaseWork, SparkTran>();
     this.sparkReporter = sparkReporter;
     this.workToJobConf = new HashMap<BaseWork, JobConf>();
+    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.SPARK_OPTIMIZE_SHUFFLE_SERDE)) {
+      this.shuffleSerializer = ShuffleKryoSerializer.getInstance(sc, jobConf);
+    } else {
+      this.shuffleSerializer = null;
+    }
   }
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
@@ -109,6 +122,9 @@ public class SparkPlanGenerator {
 
     try {
       for (BaseWork work : sparkWork.getAllWork()) {
+        // Run the SparkDynamicPartitionPruner, we run this here instead of inside the
+        // InputFormat so that we don't have to run pruning when creating a Record Reader
+        runDynamicPartitionPruner(work);
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_TRAN + work.getName());
         SparkTran tran = generate(work, sparkWork);
         SparkTran parentTran = generateParentTran(sparkPlan, sparkWork, work);
@@ -125,6 +141,27 @@ public class SparkPlanGenerator {
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
     return sparkPlan;
+  }
+
+  /**
+   * Run a {@link SparkDynamicPartitionPruner} on the given {@link BaseWork}. This method only
+   * runs the pruner if the work object is a {@link MapWork}. We do this here because we need to
+   * do it after all previous Spark jobs for the given query have completed, otherwise the input
+   * file for the pruner won't exist. We need to make sure this runs before we serialize the
+   * given work object to a file (so it can be read by individual tasks) because the pruner will
+   * mutate the work work object by removing certain input paths.
+   *
+   * @param work the {@link BaseWork} to run the pruner on
+   */
+  private void runDynamicPartitionPruner(BaseWork work) {
+    if (work instanceof MapWork && HiveConf.isSparkDPPAny(jobConf)) {
+      SparkDynamicPartitionPruner pruner = new SparkDynamicPartitionPruner();
+      try {
+        pruner.prune((MapWork) work, jobConf);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   // Generate (possibly get from a cached result) parent SparkTran
@@ -227,9 +264,9 @@ public class SparkPlanGenerator {
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
     SparkShuffler shuffler;
     if (edge.isMRShuffle()) {
-      shuffler = new SortByShuffler(false, sparkPlan);
+      shuffler = new SortByShuffler(false, sparkPlan, shuffleSerializer);
     } else if (edge.isShuffleSort()) {
-      shuffler = new SortByShuffler(true, sparkPlan);
+      shuffler = new SortByShuffler(true, sparkPlan, shuffleSerializer);
     } else {
       shuffler = new GroupByShuffler();
     }
@@ -374,5 +411,4 @@ public class SparkPlanGenerator {
       }
     }
   }
-
 }

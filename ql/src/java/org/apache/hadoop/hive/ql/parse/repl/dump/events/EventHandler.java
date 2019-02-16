@@ -35,18 +35,37 @@ public interface EventHandler {
   DumpType dumpType();
 
   class Context {
-    final Path eventRoot, cmRoot;
+    Path eventRoot;
+    final Path  cmRoot;
     final Hive db;
     final HiveConf hiveConf;
     final ReplicationSpec replicationSpec;
+    final String dbName;
+    final String tableName;
 
     public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf,
-        ReplicationSpec replicationSpec) {
+        ReplicationSpec replicationSpec, String dbName, String tableName) {
       this.eventRoot = eventRoot;
       this.cmRoot = cmRoot;
       this.db = db;
       this.hiveConf = hiveConf;
       this.replicationSpec = replicationSpec;
+      this.dbName = dbName;
+      this.tableName = tableName;
+    }
+
+    public Context(Context other) {
+      this.eventRoot = other.eventRoot;
+      this.cmRoot = other.cmRoot;
+      this.db = other.db;
+      this.hiveConf = other.hiveConf;
+      this.replicationSpec = other.replicationSpec;
+      this.dbName = other.dbName;
+      this.tableName = other.tableName;
+    }
+
+    public void setEventRoot(Path eventRoot) {
+      this.eventRoot = eventRoot;
     }
 
     DumpMetaData createDmd(EventHandler eventHandler) {

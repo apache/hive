@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE masking_test_druid
+PREHOOK: query: CREATE EXTERNAL TABLE masking_test_druid
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
@@ -17,7 +17,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_druid
-POSTHOOK: query: CREATE TABLE masking_test_druid
+POSTHOOK: query: CREATE EXTERNAL TABLE masking_test_druid
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS

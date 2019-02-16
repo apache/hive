@@ -22,12 +22,15 @@ PREHOOK: Output: default@repairtable_n4
 POSTHOOK: query: MSCK TABLE default.repairtable_n4
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n4
+Partitions not in metastore:	repairtable_n4:p1=a/p2=a	repairtable_n4:p1=b/p2=a
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n4
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n4
 POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n4
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable_n4
+Partitions not in metastore:	repairtable_n4:p1=a/p2=a	repairtable_n4:p1=b/p2=a
+#### A masked pattern was here ####
 PREHOOK: query: MSCK TABLE repairtable_n4
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable_n4

@@ -225,6 +225,8 @@ group by ss_ticket_number
 order by ss_ticket_number
 limit 20
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select 
   ss_ticket_number
@@ -234,6 +236,8 @@ group by ss_ticket_number
 order by ss_ticket_number
 limit 20
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -266,28 +270,37 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [9]
                     Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 9:int
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
+                    Top N Key Operator
+                      sort order: +
                       keys: ss_ticket_number (type: int)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 85 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkLongOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                      top n: 20
+                      Top N Key Vectorization:
+                          className: VectorTopNKeyOperator
+                          keyExpressions: col 9:int
+                          native: true
+                      Group By Operator
+                        Group By Vectorization:
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: col 9:int
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: []
+                        keys: ss_ticket_number (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 85 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 85 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -421,6 +434,8 @@ from
 group by ss_ticket_number
 order by m
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select 
     min(ss_ticket_number) m
@@ -433,6 +448,8 @@ from
 group by ss_ticket_number
 order by m
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -703,6 +720,8 @@ from
 group by ss_ticket_number
 order by ss_ticket_number
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
     ss_ticket_number, sum(ss_item_sk), sum(q), avg(q), sum(np), avg(np), sum(decwc), avg(decwc)
@@ -716,6 +735,8 @@ from
 group by ss_ticket_number
 order by ss_ticket_number
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -828,18 +849,18 @@ STAGE PLANS:
                         aggregators: VectorUDAFSumLong(col 0:int) -> bigint, VectorUDAFSumLong(col 1:int) -> bigint, VectorUDAFCount(col 1:int) -> bigint, VectorUDAFSumDouble(col 2:double) -> double, VectorUDAFCount(col 2:double) -> bigint, VectorUDAFSumDecimal(col 3:decimal(38,18)) -> decimal(38,18), VectorUDAFCount(col 3:decimal(38,18)) -> bigint
                         className: VectorGroupByOperator
                         groupByMode: HASH
-                        keyExpressions: ConstantVectorExpression(val 1) -> 4:int
+                        keyExpressions: ConstantVectorExpression(val 1) -> 4:boolean
                         native: false
                         vectorProcessingMode: HASH
                         projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                    keys: 1 (type: int)
+                    keys: true (type: boolean)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                     Statistics: Num rows: 1 Data size: 164 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int)
+                      key expressions: _col0 (type: boolean)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
+                      Map-reduce partition columns: _col0 (type: boolean)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
                           native: true
@@ -861,11 +882,11 @@ STAGE PLANS:
                     aggregators: VectorUDAFSumLong(col 1:bigint) -> bigint, VectorUDAFSumLong(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFSumDecimal(col 6:decimal(38,18)) -> decimal(38,18), VectorUDAFCountMerge(col 7:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
-                keys: KEY._col0 (type: int)
+                keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                 Statistics: Num rows: 1 Data size: 164 Basic stats: COMPLETE Column stats: COMPLETE
@@ -875,8 +896,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [8, 1, 2, 10, 4, 9, 6, 12]
-                      selectExpressions: ConstantVectorExpression(val 1) -> 8:int, DoubleColDivideLongColumn(col 9:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 9:double) -> 10:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 9:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 11:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 11:decimal(19,0)) -> 12:decimal(38,18)
+                      projectedOutputColumnNums: [8, 1, 2, 10, 4, 11, 6, 13]
+                      selectExpressions: ConstantVectorExpression(val 1) -> 8:int, DoubleColDivideLongColumn(col 9:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 9:double) -> 10:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 11:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 12:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 12:decimal(19,0)) -> 13:decimal(38,18)
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -936,6 +957,8 @@ from
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk
 PREHOOK: type: QUERY
+PREHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select
     ss_ticket_number, ss_item_sk, sum(q), avg(q), sum(np), avg(np), sum(decwc), avg(decwc)
@@ -948,6 +971,8 @@ from
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_sales_n3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1066,8 +1091,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1, 2, 9, 4, 8, 6, 11]
-                          selectExpressions: DoubleColDivideLongColumn(col 8:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 8:double) -> 9:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 8:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 10:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 10:decimal(19,0)) -> 11:decimal(38,18)
+                          projectedOutputColumnNums: [0, 1, 2, 9, 4, 10, 6, 12]
+                          selectExpressions: DoubleColDivideLongColumn(col 8:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 8:double) -> 9:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 10:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 11:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 11:decimal(19,0)) -> 12:decimal(38,18)
                       Statistics: Num rows: 500 Data size: 132000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)

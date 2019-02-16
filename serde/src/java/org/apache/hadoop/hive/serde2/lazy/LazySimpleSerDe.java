@@ -362,7 +362,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
       if (ois == null) {
         out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
       } else {
-        LazyUtils.writePrimitiveUTF8(out, new Byte(uoi.getTag(obj)),
+        LazyUtils.writePrimitiveUTF8(out, Byte.valueOf(uoi.getTag(obj)),
             PrimitiveObjectInspectorFactory.javaByteObjectInspector,
             escaped, escapeChar, needsEscape);
         out.write(separator);

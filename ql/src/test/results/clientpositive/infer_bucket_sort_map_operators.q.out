@@ -49,9 +49,13 @@ POSTHOOK: Output: default@test_table_out_n0
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1_n14 GROUP BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1_n14 GROUP BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -68,24 +72,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_table1_n14
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 316 Data size: 85636 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -94,18 +98,18 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), '1' (type: string)
                     outputColumnNames: key, value, part
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 316 Data size: 112496 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: part (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
@@ -113,14 +117,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -243,6 +247,9 @@ SELECT a.key, a.value FROM (
 ) b
 ON (a.value = b.value)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT a.key, a.value FROM (
 	SELECT key, count(*) AS value FROM test_table1_n14 GROUP BY key
@@ -251,6 +258,9 @@ SELECT a.key, a.value FROM (
 ) b
 ON (a.value = b.value)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -263,58 +273,62 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_table1_n14
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string)
               outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: _col1 is not null (type: boolean)
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: UDFToDouble(_col1) (type: double)
-                    sort order: +
-                    Map-reduce partition columns: UDFToDouble(_col1) (type: double)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: string), _col1 (type: bigint)
+                  Statistics: Num rows: 316 Data size: 30020 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: bigint), UDFToDouble(_col1) (type: double)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 316 Data size: 32548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: double)
+                      sort order: +
+                      Map-reduce partition columns: _col2 (type: double)
+                      Statistics: Num rows: 316 Data size: 32548 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: string), _col1 (type: bigint)
           TableScan
             alias: src
             filterExpr: value is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: value is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: value (type: string)
+                expressions: UDFToDouble(value) (type: double)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: UDFToDouble(_col0) (type: double)
+                  key expressions: _col0 (type: double)
                   sort order: +
-                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col0 (type: double)
+                  Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 UDFToDouble(_col1) (type: double)
-            1 UDFToDouble(_col0) (type: double)
+            0 _col2 (type: double)
+            1 _col0 (type: double)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+            expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 135500 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 135500 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -323,13 +337,13 @@ STAGE PLANS:
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), '1' (type: string)
               outputColumnNames: key, value, part
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                 keys: part (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   table:
@@ -365,7 +379,7 @@ STAGE PLANS:
               key expressions: _col0 (type: string)
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -374,14 +388,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 965 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -451,9 +465,15 @@ Storage Desc Params:
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Input: default@test_table2_n13
+PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Input: default@test_table2_n13
+POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
@@ -471,10 +491,10 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -635,10 +655,16 @@ PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part
 SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Input: default@test_table2_n13
+PREHOOK: Output: default@test_table_out_n0@part=1
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Input: default@test_table2_n13
+POSTHOOK: Output: default@test_table_out_n0@part=1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -652,10 +678,10 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -680,7 +706,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Select Operator
-            expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+            expressions: _col0 (type: string), CAST( _col1 AS STRING) (type: string)
             outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false

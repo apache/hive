@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -132,8 +133,7 @@ public class HCatLoader extends HCatBaseLoader {
       Job clone = new Job(job.getConfiguration());
       HCatInputFormat.setInput(job, dbName, tableName, getPartitionFilterString());
 
-      InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(
-          job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
+      InputJobInfo inputJobInfo = HCatUtil.getLastInputJobInfosFromConf(job.getConfiguration());
 
       SpecialCases.addSpecialCasesParametersForHCatLoader(job.getConfiguration(),
           inputJobInfo.getTableInfo());
@@ -260,10 +260,28 @@ public class HCatLoader extends HCatBaseLoader {
   @Override
   public ResourceStatistics getStatistics(String location, Job job) throws IOException {
     try {
+      if (dbName == null || tableName == null) {
+        throw new IOException("DB or table name unset. setLocation() must be invoked on this " +
+                "loader to set them");
+      }
       ResourceStatistics stats = new ResourceStatistics();
-      InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(
-        job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
-      stats.setSizeInBytes(getSizeInBytes(inputJobInfo));
+      long inputSize = -1;
+
+      LinkedList<InputJobInfo> inputJobInfos = HCatUtil.getInputJobInfosFromConf(
+              job.getConfiguration());
+
+      for (InputJobInfo inputJobInfo : inputJobInfos) {
+        if (dbName.equals(inputJobInfo.getDatabaseName()) && tableName.equals(inputJobInfo.getTableName())){
+          inputSize = getSizeInBytes(inputJobInfo);
+          break;
+        }
+      }
+
+      if (inputSize == -1) {
+        throw new IOException("Could not calculate input size for database: " + dbName + ", " +
+                "table: " + tableName + ". Requested location:" + location);
+      }
+      stats.setSizeInBytes(inputSize);
       return stats;
     } catch (Exception e) {
       throw new IOException(e);

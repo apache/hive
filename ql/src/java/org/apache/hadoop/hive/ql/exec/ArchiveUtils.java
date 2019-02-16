@@ -21,13 +21,14 @@ package org.apache.hadoop.hive.ql.exec;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -41,7 +42,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
  * ArchiveUtils.
- *
  */
 @SuppressWarnings("nls")
 public final class ArchiveUtils {
@@ -105,7 +105,7 @@ public final class ArchiveUtils {
         throw new HiveException("Unable to get partitions directories prefix", e);
       }
       Path tableDir = tbl.getDataLocation();
-      if(tableDir == null) {
+      if (tableDir == null) {
         throw new HiveException("Table has no location set");
       }
       return new Path(tableDir, prefixSubdir);
@@ -136,16 +136,16 @@ public final class ArchiveUtils {
     public HarPathHelper(HiveConf hconf, URI archive, URI originalBase) throws HiveException {
       this.originalBase = addSlash(originalBase);
       String parentHost = archive.getHost();
-      String harHost = null;
+      String harHost = archive.getScheme();
       if (parentHost == null) {
-        harHost = archive.getScheme() + "-localhost";
+        harHost += "-localhost";
       } else {
-        harHost = archive.getScheme() + "-" + parentHost;
+        harHost += "-" + parentHost;
       }
 
       // have to make sure there's slash after .har, otherwise resolve doesn't work
-      String path = addSlash(archive.getPath());
-      if(!path.endsWith(".har/")) {
+      String path = StringUtils.appendIfMissing(archive.getPath(), "/");
+      if (!path.endsWith(".har/")) {
         throw new HiveException("HAR archive path must end with .har");
       }
       // harUri is used to access the partition's files, which are in the archive
@@ -155,26 +155,19 @@ public final class ArchiveUtils {
         base = new URI("har", archive.getUserInfo(), harHost, archive.getPort(),
               path, archive.getQuery(), archive.getFragment());
       } catch (URISyntaxException e) {
-        throw new HiveException("Couldn't create har URI from archive URI", e);
+        throw new HiveException("Could not create har URI from archive URI", e);
       }
     }
 
     public URI getHarUri(URI original) throws URISyntaxException {
       URI relative = originalBase.relativize(original);
       if (relative.isAbsolute()) {
-        throw new URISyntaxException("Couldn't create URI for location.",
-                                     "Relative: " + relative + " Base: "
-                                     + base + " OriginalBase: " + originalBase);
+        throw new URISyntaxException("Could not create URI for location.",
+            "Relative: " + relative + " Base: " + base + " OriginalBase: "
+                + originalBase);
       }
-
       return base.resolve(relative);
-
-
     }
-  }
-
-  public static String addSlash(String s) {
-    return s.endsWith("/") ? s : s + "/";
   }
 
   /**
@@ -182,14 +175,13 @@ public final class ArchiveUtils {
    * Useful in relativizing URIs.
    */
   public static URI addSlash(URI u) throws HiveException {
-    if(u.getPath().endsWith("/")) {
+    if (u.getPath().endsWith("/")) {
       return u;
-    } else {
-      try {
-        return new URI(u.getScheme(), u.getAuthority(), u.getPath() + "/", u.getQuery(), u.getFragment());
-      } catch (URISyntaxException e) {
-        throw new HiveException("Couldn't append slash to a URI", e);
-      }
+    }
+    try {
+      return new URI(u.getScheme(), u.getAuthority(), u.getPath() + "/", u.getQuery(), u.getFragment());
+    } catch (URISyntaxException e) {
+      throw new HiveException("Could not append slash to a URI", e);
     }
   }
 
@@ -217,9 +209,9 @@ public final class ArchiveUtils {
   }
 
   /**
-   * Get a prefix of the given parition's string representation. The sencond
+   * Get a prefix of the given parition's string representation. The second
    * argument, level, is used for the prefix length. For example, partition
-   * (ds='2010-01-01', hr='00', min='00'), level 1 will reture 'ds=2010-01-01',
+   * (ds='2010-01-01', hr='00', min='00'), level 1 will return 'ds=2010-01-01',
    * and level 2 will return 'ds=2010-01-01/hr=00'.
    *
    * @param p
@@ -230,16 +222,8 @@ public final class ArchiveUtils {
    * @throws HiveException
    */
   public static String getPartialName(Partition p, int level) throws HiveException {
-    List<FieldSchema> ffields = p.getTable().getPartCols();
-    List<FieldSchema> fields = new ArrayList<FieldSchema>(level);
-    List<String> fvalues = p.getValues();
-    List<String> values = new ArrayList<String>(level);
-    for(int i =0;i<level;i++) {
-      FieldSchema fs = ffields.get(i);
-      String s = fvalues.get(i);
-      fields.add(fs);
-      values.add(s);
-    }
+    List<FieldSchema> fields = p.getTable().getPartCols().subList(0, level);
+    List<String> values = p.getValues().subList(0, level);
     try {
       return Warehouse.makePartName(fields, values);
     } catch (MetaException e) {
@@ -282,18 +266,20 @@ public final class ArchiveUtils {
       partSpecLevel++;
     }
 
-    if(partSpecLevel != partSpec.size()) {
-      throw new HiveException("partspec " + partSpec
-          + " is wrong for table " + tbl.getTableName());
+    if (partSpecLevel != partSpec.size()) {
+      throw new HiveException(
+          "partspec " + partSpec + " is wrong for table " + tbl.getTableName());
     }
 
     Map<String, String> spec = new HashMap<String, String>(partSpec);
-    List<String> reversedKeys = new LinkedList<String>();
+    List<String> reversedKeys = new ArrayList<String>();
     for (FieldSchema fs : tbl.getPartCols()) {
       if (spec.containsKey(fs.getName())) {
-        reversedKeys.add(0, fs.getName());
+        reversedKeys.add(fs.getName());
       }
     }
+
+    Collections.reverse(reversedKeys);
 
     for (String rk : reversedKeys) {
       List<Partition> parts = db.getPartitions(tbl, spec, (short) 1);
@@ -304,14 +290,14 @@ public final class ArchiveUtils {
           // partition would be archived, so it not being archived means
           // no archiving was done neither at this nor at upper level
           return null;
-        } else if (getArchivingLevel(p) > spec.size()) {
+        }
+        if (getArchivingLevel(p) > spec.size()) {
           // if archiving was done at this or at upper level its level
           // would be lesser or equal to specification size
           // it is not, which means no archiving at this or upper level
           return null;
-        } else {
-          return getPartialName(p, getArchivingLevel(p));
         }
+        return getPartialName(p, getArchivingLevel(p));
       }
       spec.remove(rk);
     }

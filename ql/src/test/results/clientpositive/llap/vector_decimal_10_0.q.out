@@ -36,9 +36,13 @@ POSTHOOK: Lineage: decimal.dec SIMPLE [(decimal_txt)decimal_txt.FieldSchema(name
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT `dec` FROM `DECIMAL` order by `dec`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT `dec` FROM `DECIMAL` order by `dec`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -59,7 +63,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal
-                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:dec:decimal(10,0)/DECIMAL_64, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -70,17 +74,16 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: decimal(10,0))
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:decimal(10,0)
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
-                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -103,7 +106,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -121,13 +124,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -147,14 +150,18 @@ POSTHOOK: query: SELECT `dec` FROM `DECIMAL` order by `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal
 #### A masked pattern was here ####
-NULL
 1000000000
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT `dec` FROM `decimal_txt` order by `dec`
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_txt
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT `dec` FROM `decimal_txt` order by `dec`
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_txt
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -192,10 +199,9 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0]
+                          keyColumns: 0:decimal(10,0)
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: []
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -219,7 +225,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -263,8 +269,8 @@ POSTHOOK: query: SELECT `dec` FROM `decimal_txt` order by `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_txt
 #### A masked pattern was here ####
-NULL
 1000000000
+NULL
 PREHOOK: query: DROP TABLE DECIMAL_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_txt

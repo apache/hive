@@ -1,0 +1,19 @@
+PREHOOK: query: create table mvnc_basetable (a int, b varchar(256), c decimal(10,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mvnc_basetable
+POSTHOOK: query: create table mvnc_basetable (a int, b varchar(256), c decimal(10,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mvnc_basetable
+PREHOOK: query: create materialized view mvnc_mat_view disable rewrite as select a, b, c from mvnc_basetable
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@mvnc_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mvnc_mat_view
+POSTHOOK: query: create materialized view mvnc_mat_view disable rewrite as select a, b, c from mvnc_basetable
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mvnc_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mvnc_mat_view
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Table already exists: default.mvnc_mat_view

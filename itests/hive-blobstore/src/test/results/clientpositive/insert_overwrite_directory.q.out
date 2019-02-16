@@ -60,8 +60,14 @@ k1
 k2
 PREHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Output: ### test.blobstore.path ###/table1.dir
 POSTHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: ### test.blobstore.path ###/table1.dir
+OPTIMIZED SQL: SELECT `id`, `key`
+FROM `default`.`table1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
@@ -77,18 +83,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table1
-            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
               expressions: id (type: int), key (type: string)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
                 directory: ### BLOBSTORE_STAGING_PATH ###
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                 Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -283,10 +289,16 @@ PREHOOK: query: EXPLAIN EXTENDED FROM table1
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT id
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table2.dir/' SELECT key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Output: ### test.blobstore.path ###/table1.dir
+PREHOOK: Output: ### test.blobstore.path ###/table2.dir
 POSTHOOK: query: EXPLAIN EXTENDED FROM table1
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT id
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table2.dir/' SELECT key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: ### test.blobstore.path ###/table1.dir
+POSTHOOK: Output: ### test.blobstore.path ###/table2.dir
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-7 depends on stages: Stage-2 , consists of Stage-4, Stage-3, Stage-5
@@ -308,18 +320,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table1
-            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
               expressions: id (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
                 directory: ### BLOBSTORE_STAGING_PATH ###
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -336,13 +348,13 @@ STAGE PLANS:
             Select Operator
               expressions: key (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 2
                 directory: ### BLOBSTORE_STAGING_PATH ###
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 172 Basic stats: COMPLETE Column stats: COMPLETE
                 Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat

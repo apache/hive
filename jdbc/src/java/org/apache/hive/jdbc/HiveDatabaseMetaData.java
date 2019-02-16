@@ -147,7 +147,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
     return new HiveQueryResultSet.Builder(connection)
     .setClient(client)
-    .setSessionHandle(sessHandle)
     .setStmtHandle(catalogResp.getOperationHandle())
     .build();
   }
@@ -273,7 +272,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     // build the resultset from response
     return new HiveQueryResultSet.Builder(connection)
     .setClient(client)
-    .setSessionHandle(sessHandle)
     .setStmtHandle(colResp.getOperationHandle())
     .build();
   }
@@ -324,7 +322,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
    return new HiveQueryResultSet.Builder(connection)
      .setClient(client)
-     .setSessionHandle(sessHandle)
      .setStmtHandle(getFKResp.getOperationHandle())
      .build();
   }
@@ -405,7 +402,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
     return new HiveQueryResultSet.Builder(connection)
     .setClient(client)
-    .setSessionHandle(sessHandle)
     .setStmtHandle(funcResp.getOperationHandle())
     .build();
   }
@@ -578,7 +574,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
     return new HiveQueryResultSet.Builder(connection)
     .setClient(client)
-    .setSessionHandle(sessHandle)
     .setStmtHandle(getPKResp.getOperationHandle())
     .build();
   }
@@ -667,7 +662,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
     return new HiveQueryResultSet.Builder(connection)
     .setClient(client)
-    .setSessionHandle(sessHandle)
     .setStmtHandle(schemaResp.getOperationHandle())
     .build();
   }
@@ -711,7 +705,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
     return new HiveQueryResultSet.Builder(connection)
     .setClient(client)
-    .setSessionHandle(sessHandle)
     .setStmtHandle(tableTypeResp.getOperationHandle())
     .build();
   }
@@ -742,7 +735,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
 
     return new HiveQueryResultSet.Builder(connection)
     .setClient(client)
-    .setSessionHandle(sessHandle)
     .setStmtHandle(getTableResp.getOperationHandle())
     .build();
   }
@@ -800,7 +792,6 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     Utils.verifySuccess(getTypeInfoResp.getStatus());
     return new HiveQueryResultSet.Builder(connection)
     .setClient(client)
-    .setSessionHandle(sessHandle)
     .setStmtHandle(getTypeInfoResp.getOperationHandle())
     .build();
   }

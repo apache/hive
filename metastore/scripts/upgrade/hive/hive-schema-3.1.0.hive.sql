@@ -1,7 +1,6 @@
 -- HIVE system db
 
-DROP DATABASE IF EXISTS SYS CASCADE;
-CREATE DATABASE SYS;
+CREATE DATABASE IF NOT EXISTS SYS;
 
 USE SYS;
 
@@ -817,14 +816,8 @@ FROM
   \"PART_COL_STATS\""
 );
 
-CREATE EXTERNAL TABLE IF NOT EXISTS `VERSION` (
-  `VER_ID` BIGINT,
-  `SCHEMA_VERSION` string,
-  `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
-);
-
-INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0');
+CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.0' AS `VERSION_COMMENT`;
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
@@ -924,7 +917,7 @@ FROM
   \"KEY_CONSTRAINTS\""
 );
 
-CREATE VIEW `TABLE_STATS_VIEW` AS
+CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
 SELECT
   `TBL_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -935,7 +928,7 @@ SELECT
   max(CASE `PARAM_KEY` WHEN 'transient_lastDdlTime' THEN `PARAM_VALUE` END) AS TRANSIENT_LAST_DDL_TIME
 FROM `TABLE_PARAMS` GROUP BY `TBL_ID`;
 
-CREATE VIEW `PARTITION_STATS_VIEW` AS
+CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
 SELECT
   `PART_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -1064,12 +1057,11 @@ LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_I
 "
 );
 
-DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE;
-CREATE DATABASE INFORMATION_SCHEMA;
+CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA;
 
 USE INFORMATION_SCHEMA;
 
-CREATE VIEW IF NOT EXISTS `SCHEMATA`
+CREATE OR REPLACE VIEW `SCHEMATA`
 (
   `CATALOG_NAME`,
   `SCHEMA_NAME`,
@@ -1088,16 +1080,15 @@ SELECT DISTINCT
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D LEFT JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  NOT restrict_information_schema() OR
-  D.`DB_ID` = T.`DB_ID`
-  AND T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND current_authorizer() = P.`AUTHORIZER`;
 
-CREATE VIEW IF NOT EXISTS `TABLES`
+CREATE OR REPLACE VIEW `TABLES`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -1126,15 +1117,15 @@ SELECT DISTINCT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
+  `sys`.`TBLS` T JOIN `sys`.`DBS` D ON (D.`DB_ID` = T.`DB_ID`)
+                 LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer();
 
-CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
+CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -1155,20 +1146,17 @@ SELECT DISTINCT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  `sys`.`TBL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                      JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                      LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  P.`TBL_ID` = T.`TBL_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR
+  (P2.`TBL_ID` IS NOT NULL AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer();
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer());
 
-CREATE VIEW IF NOT EXISTS `COLUMNS`
+CREATE OR REPLACE VIEW `COLUMNS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -1307,23 +1295,18 @@ SELECT DISTINCT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  `sys`.`COLUMNS_V2` C,
-  `sys`.`SDS` S,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`TBL_COL_PRIVS` P
+  `sys`.`COLUMNS_V2` C JOIN `sys`.`SDS` S ON (C.`CD_ID` = S.`CD_ID`)
+                       JOIN `sys`.`TBLS` T ON (S.`SD_ID` = T.`SD_ID`)
+                       JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                       LEFT JOIN `sys`.`TBL_COL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND C.`CD_ID` = S.`CD_ID`
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer();
 
-CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
+CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -1344,22 +1327,18 @@ SELECT DISTINCT
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  `sys`.`TBL_COL_PRIVS` P,
-  `sys`.`TBLS` T,
-  `sys`.`DBS` D,
-  `sys`.`SDS` S,
-  `sys`.`TBL_PRIVS` P2
+  `sys`.`TBL_COL_PRIVS` P JOIN `sys`.`TBLS` T ON (P.`TBL_ID` = T.`TBL_ID`)
+                          JOIN `sys`.`DBS` D ON (T.`DB_ID` = D.`DB_ID`)
+                          JOIN `sys`.`SDS` S ON (S.`SD_ID` = T.`SD_ID`)
+                          LEFT JOIN `sys`.`TBL_PRIVS` P2 ON (P.`TBL_ID` = P2.`TBL_ID`)
 WHERE
-  S.`SD_ID` = T.`SD_ID`
-  AND T.`DB_ID` = D.`DB_ID`
-  AND P.`TBL_ID` = T.`TBL_ID`
-  AND (NOT restrict_information_schema() OR
-  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  NOT restrict_information_schema() OR P2.`TBL_ID` IS NOT NULL
+  AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer());
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer();
 
-CREATE VIEW IF NOT EXISTS `VIEWS`
+CREATE OR REPLACE VIEW `VIEWS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -1384,14 +1363,11 @@ SELECT DISTINCT
   false,
   false
 FROM
-  `sys`.`DBS` D,
-  `sys`.`TBLS` T,
-  `sys`.`TBL_PRIVS` P
+  `sys`.`DBS` D JOIN `sys`.`TBLS` T ON (D.`DB_ID` = T.`DB_ID`)
+                LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
 WHERE
-  D.`DB_ID` = T.`DB_ID`
-  AND length(T.VIEW_ORIGINAL_TEXT) > 0
-  AND (NOT restrict_information_schema() OR
-  T.`TBL_ID` = P.`TBL_ID`
+  length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
   AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());

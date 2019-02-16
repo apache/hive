@@ -88,8 +88,8 @@ public class TestCompactionTxnHandler {
     assertEquals(CompactionType.MINOR, ci.type);
     assertNull(ci.runAs);
     assertNull(txnHandler.findNextToCompact("fred"));
-
-    txnHandler.setRunAs(ci.id, "bob");
+    ci.runAs = "bob";
+    txnHandler.updateCompactorState(ci, openTxn());
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();

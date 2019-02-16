@@ -69,6 +69,7 @@ public class GenericUDFOPDTIPlus extends GenericUDFBaseDTI {
     INTERVALYM_PLUS_TIMESTAMP,
     INTERVALDT_PLUS_INTERVALDT,
     INTERVALDT_PLUS_TIMESTAMP,
+    DATE_PLUS_INT,
   };
 
   public GenericUDFOPDTIPlus() {
@@ -98,8 +99,8 @@ public class GenericUDFOPDTIPlus extends GenericUDFBaseDTI {
     }
 
     inputOIs = new PrimitiveObjectInspector[] {
-      (PrimitiveObjectInspector) arguments[0],
-      (PrimitiveObjectInspector) arguments[1]
+        (PrimitiveObjectInspector) arguments[0],
+        (PrimitiveObjectInspector) arguments[1]
     };
     PrimitiveObjectInspector leftOI = inputOIs[0];
     PrimitiveObjectInspector rightOI = inputOIs[1];
@@ -111,6 +112,7 @@ public class GenericUDFOPDTIPlus extends GenericUDFBaseDTI {
     // IntervalDayTime + IntervalDayTime = IntervalDayTime
     // IntervalDayTime + Date = Timestamp (operands reversible)
     // IntervalDayTime + Timestamp = Timestamp (operands reversible)
+    // Date + Int = Date
     if (checkArgs(PrimitiveCategory.INTERVAL_YEAR_MONTH, PrimitiveCategory.INTERVAL_YEAR_MONTH)) {
       plusOpType = OperationType.INTERVALYM_PLUS_INTERVALYM;
       intervalArg1Idx = 0;
@@ -163,6 +165,13 @@ public class GenericUDFOPDTIPlus extends GenericUDFBaseDTI {
       resultOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
           TypeInfoFactory.timestampTypeInfo);
       dtConverter = ObjectInspectorConverters.getConverter(leftOI, resultOI);
+    } else if (checkArgs(PrimitiveCategory.DATE, PrimitiveCategory.INT)) {
+      plusOpType = OperationType.DATE_PLUS_INT;
+      intervalArg1Idx = 1;
+      dtArgIdx = 0;
+      resultOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          TypeInfoFactory.dateTypeInfo);
+      dtConverter = ObjectInspectorConverters.getConverter(leftOI, resultOI);
     } else {
       // Unsupported types - error
       List<TypeInfo> argTypeInfos = new ArrayList<TypeInfo>(2);
@@ -177,43 +186,50 @@ public class GenericUDFOPDTIPlus extends GenericUDFBaseDTI {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     switch (plusOpType) {
-      case INTERVALYM_PLUS_INTERVALYM: {
-        HiveIntervalYearMonth iym1 = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
-            arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
-        HiveIntervalYearMonth iym2 = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
-            arguments[intervalArg2Idx].get(), inputOIs[intervalArg2Idx]);
-        return handleIntervalYearMonthResult(dtm.add(iym1, iym2));
-      }
-      case INTERVALYM_PLUS_DATE: {
-        HiveIntervalYearMonth iym1 = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
-            arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
-        Date dt1 = PrimitiveObjectInspectorUtils.getDate(
-            arguments[dtArgIdx].get(), inputOIs[dtArgIdx]);
-        return handleDateResult(dtm.add(dt1, iym1));
-      }
-      case INTERVALYM_PLUS_TIMESTAMP: {
-        HiveIntervalYearMonth iym1 = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
-            arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
-        Timestamp ts1 = PrimitiveObjectInspectorUtils.getTimestamp(
-            arguments[dtArgIdx].get(), inputOIs[dtArgIdx]);
-        return handleTimestampResult(dtm.add(ts1, iym1));
-      }
-      case INTERVALDT_PLUS_INTERVALDT: {
-        HiveIntervalDayTime idt1 = PrimitiveObjectInspectorUtils.getHiveIntervalDayTime(
-            arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
-        HiveIntervalDayTime idt2 = PrimitiveObjectInspectorUtils.getHiveIntervalDayTime(
-            arguments[intervalArg2Idx].get(), inputOIs[intervalArg2Idx]);
-        return handleIntervalDayTimeResult(dtm.add(idt1, idt2));
-      }
-      case INTERVALDT_PLUS_TIMESTAMP: {
-        HiveIntervalDayTime idt1 = PrimitiveObjectInspectorUtils.getHiveIntervalDayTime(
-            arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
-        Timestamp ts1 = PrimitiveObjectInspectorUtils.getTimestamp(
-            arguments[dtArgIdx].get(), inputOIs[dtArgIdx]);
-        return handleTimestampResult(dtm.add(ts1, idt1));
-      }
-      default:
-        throw new HiveException("Unknown PlusOpType " + plusOpType);
+    case INTERVALYM_PLUS_INTERVALYM: {
+      HiveIntervalYearMonth iym1 = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
+          arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
+      HiveIntervalYearMonth iym2 = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
+          arguments[intervalArg2Idx].get(), inputOIs[intervalArg2Idx]);
+      return handleIntervalYearMonthResult(dtm.add(iym1, iym2));
+    }
+    case INTERVALYM_PLUS_DATE: {
+      HiveIntervalYearMonth iym1 = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
+          arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
+      Date dt1 = PrimitiveObjectInspectorUtils.getDate(
+          arguments[dtArgIdx].get(), inputOIs[dtArgIdx]);
+      return handleDateResult(dtm.add(dt1, iym1));
+    }
+    case INTERVALYM_PLUS_TIMESTAMP: {
+      HiveIntervalYearMonth iym1 = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
+          arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
+      Timestamp ts1 = PrimitiveObjectInspectorUtils.getTimestamp(
+          arguments[dtArgIdx].get(), inputOIs[dtArgIdx]);
+      return handleTimestampResult(dtm.add(ts1, iym1));
+    }
+    case INTERVALDT_PLUS_INTERVALDT: {
+      HiveIntervalDayTime idt1 = PrimitiveObjectInspectorUtils.getHiveIntervalDayTime(
+          arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
+      HiveIntervalDayTime idt2 = PrimitiveObjectInspectorUtils.getHiveIntervalDayTime(
+          arguments[intervalArg2Idx].get(), inputOIs[intervalArg2Idx]);
+      return handleIntervalDayTimeResult(dtm.add(idt1, idt2));
+    }
+    case INTERVALDT_PLUS_TIMESTAMP: {
+      HiveIntervalDayTime idt1 = PrimitiveObjectInspectorUtils.getHiveIntervalDayTime(
+          arguments[intervalArg1Idx].get(), inputOIs[intervalArg1Idx]);
+      Timestamp ts1 = PrimitiveObjectInspectorUtils.getTimestamp(
+          arguments[dtArgIdx].get(), inputOIs[dtArgIdx]);
+      return handleTimestampResult(dtm.add(ts1, idt1));
+    }
+    case DATE_PLUS_INT: {
+      int intVal = PrimitiveObjectInspectorUtils.getInt(arguments[intervalArg1Idx].get(),
+          inputOIs[intervalArg1Idx]);
+      Date dt1 = PrimitiveObjectInspectorUtils.getDate(
+          arguments[dtArgIdx].get(), inputOIs[dtArgIdx]);
+      return handleDateResult(dtm.add(dt1, intVal));
+    }
+    default:
+      throw new HiveException("Unknown PlusOpType " + plusOpType);
     }
   }
 

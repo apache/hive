@@ -114,9 +114,8 @@ public class GetTablesOperation extends MetadataOperation {
 
       String tablePattern = convertIdentifierPattern(tableName, true);
       for (String dbName : metastoreClient.getDatabases(schemaPattern)) {
-        String dbNamePattern = convertIdentifierPattern(dbName, true);
         for (TableMeta tableMeta :
-                metastoreClient.getTableMeta(dbNamePattern, tablePattern, tableTypeList)) {
+                metastoreClient.getTableMeta(dbName, tablePattern, tableTypeList)) {
           String tableType = tableTypeMapping.mapToClientType(tableMeta.getTableType());
           rowSet.addRow(new Object[]{
                   DEFAULT_HIVE_CATALOG,

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -431,11 +432,19 @@ public final class HiveUtils {
 
   public static String getReplPolicy(String dbName, String tableName) {
     if ((dbName == null) || (dbName.isEmpty())) {
-      return null;
+      return "*.*";
     } else if ((tableName == null) || (tableName.isEmpty())) {
       return dbName.toLowerCase() + ".*";
     } else {
       return dbName.toLowerCase() + "." + tableName.toLowerCase();
     }
+  }
+
+  public static Path getDumpPath(Path root, String dbName, String tableName) {
+    assert (dbName != null);
+    if ((tableName != null) && (!tableName.isEmpty())) {
+      return new Path(root, dbName + "." + tableName);
+    }
+    return new Path(root, dbName);
   }
 }

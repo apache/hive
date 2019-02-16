@@ -14,7 +14,11 @@ CREATE TABLE myinput1_n4 STORED AS ORC AS SELECT * FROM myinput1_txt_n1;
 
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a JOIN myinput1_n4 b;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a LEFT OUTER JOIN myinput1_n4 b;
+
+EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b;
+-- SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b;
+
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a JOIN myinput1_n4 b ON a.key = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a JOIN myinput1_n4 b ON a.key = b.key;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a JOIN myinput1_n4 b ON a.value = b.value;
@@ -23,9 +27,21 @@ SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a LEFT OUTER JOIN
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a LEFT OUTER JOIN myinput1_n4 b ON a.value = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a LEFT OUTER JOIN myinput1_n4 b ON a.key = b.key;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a LEFT OUTER JOIN myinput1_n4 b ON a.key = b.key and a.value=b.value;
+
+EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key = b.value;
+-- SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key = b.value;
+
+EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key = b.key;
+-- SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key = b.key;
+
+EXPLAIN VECTORIZATION OPERATOR
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.value = b.value;
+-- SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.value = b.value;
+
+EXPLAIN VECTORIZATION OPERATOR
+-- SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key=b.key and a.value = b.value;
 SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n4 a RIGHT OUTER JOIN myinput1_n4 b ON a.key=b.key and a.value = b.value;
 
 SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n4 a LEFT OUTER JOIN myinput1_n4 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1_n4 c ON (b.value=c.value);

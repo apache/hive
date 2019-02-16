@@ -32,4 +32,4 @@ PREHOOK: query: drop table mytable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mytable
 PREHOOK: Output: default@mytable
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Exception thrown flushing changes to datastore)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Cannot drop table since it is used by at least one materialized view definition. Please drop any materialized view that uses the table before dropping it

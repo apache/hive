@@ -18,14 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.type.FastHiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
@@ -41,10 +37,6 @@ import com.google.common.base.Preconditions;
  */
 public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase {
 
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorDecimalFirstValue.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
-
   protected boolean haveFirstValue;
   protected boolean isGroupResultNull;
   protected HiveDecimalWritable firstValue;
@@ -56,7 +48,8 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
     resetEvaluator();
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+  @Override
+  public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
     evaluateInputExpr(batch);
@@ -106,6 +99,7 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
     }
   }
 
+  @Override
   public boolean streamsResult() {
     return true;
   }

@@ -448,6 +448,11 @@
       <artifactId>opencsv</artifactId>
       <version>${opencsv.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -458,7 +463,14 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
@@ -758,6 +770,12 @@
       <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
+      <version>${guava.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -892,6 +910,19 @@
               <classifier>core</classifier>
             </configuration>
           </execution>
+          <execution>
+            <id>fallbackauthorizer-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>fallbackauthorizer</classifier>
+              <includes>
+                <include>org/apache/hadoop/hive/ql/security/authorization/plugin/fallback/*.class</include>
+              </includes>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -915,7 +946,8 @@
                   <include>org.apache.hive:hive-llap-common</include>
                   <include>org.apache.hive:hive-llap-client</include>
                   <include>org.apache.hive:hive-metastore</include>
-                  <include>org.apache.hive:hive-standalone-metastore</include>
+                  <include>org.apache.hive:hive-standalone-metastore-common</include>
+                  <include>org.apache.hive:hive-standalone-metastore-server</include>
                   <include>org.apache.hive:hive-service-rpc</include>
                   <include>com.esotericsoftware:kryo-shaded</include>
                   <include>com.esotericsoftware:minlog</include>

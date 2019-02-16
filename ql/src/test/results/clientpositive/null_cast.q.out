@@ -4,12 +4,16 @@ PREHOOK: query: EXPLAIN SELECT ARRAY(NULL, 0),
                ARRAY(NULL, STRUCT(0))
         FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT ARRAY(NULL, 0), 
                ARRAY(NULL, ARRAY()),
                ARRAY(NULL, MAP()),
                ARRAY(NULL, STRUCT(0))
         FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

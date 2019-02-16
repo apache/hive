@@ -1,9 +1,15 @@
 PREHOOK: query: explain
 create table noskew as select a.* from src a join src b on a.key=b.key order by a.key limit 30
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@noskew
 POSTHOOK: query: explain
 create table noskew as select a.* from src a join src b on a.key=b.key order by a.key limit 30
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@noskew
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-5 depends on stages: Stage-1 , consists of Stage-6, Stage-3

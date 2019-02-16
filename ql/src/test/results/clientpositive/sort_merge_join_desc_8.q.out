@@ -99,10 +99,16 @@ PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1_n2 a join table_desc2_n2 b
 on a.key=b.key where a.key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_desc1_n2
+PREHOOK: Input: default@table_desc2_n2
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1_n2 a join table_desc2_n2 b
 on a.key=b.key where a.key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_desc1_n2
+POSTHOOK: Input: default@table_desc2_n2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -114,10 +120,10 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: (key < 10) (type: boolean)
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -166,10 +172,16 @@ PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc3 a join table_desc4 b
 on a.key=b.key and a.value2=b.value2 where a.key < 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table_desc3
+PREHOOK: Input: default@table_desc4
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc3 a join table_desc4 b
 on a.key=b.key and a.value2=b.value2 where a.key < 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_desc3
+POSTHOOK: Input: default@table_desc4
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3
@@ -187,10 +199,10 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: (value2 is not null and (key < 10)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((key < 10) and value2 is not null) (type: boolean)
-              Statistics: Num rows: 166 Data size: 2095 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29880 Basic stats: COMPLETE Column stats: COMPLETE
               HashTable Sink Operator
                 keys:
                   0 key (type: string), value2 (type: string)
@@ -202,17 +214,17 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr: (value2 is not null and (key < 10)) (type: boolean)
-            Statistics: Num rows: 500 Data size: 10218 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((key < 10) and value2 is not null) (type: boolean)
-              Statistics: Num rows: 166 Data size: 3392 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 29880 Basic stats: COMPLETE Column stats: COMPLETE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
                 keys:
                   0 key (type: string), value2 (type: string)
                   1 key (type: string), value2 (type: string)
-                Statistics: Num rows: 182 Data size: 3731 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 182 Data size: 32868 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

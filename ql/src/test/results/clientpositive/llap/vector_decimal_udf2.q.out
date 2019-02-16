@@ -62,10 +62,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2_n0 WHERE key = 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2_n0 WHERE key = 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -169,6 +173,8 @@ SELECT
   log10(key), sqrt(key)
 FROM DECIMAL_UDF2_n0 WHERE key = 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2_n0
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   exp(key), ln(key),
@@ -176,6 +182,8 @@ SELECT
   log10(key), sqrt(key)
 FROM DECIMAL_UDF2_n0 WHERE key = 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2_n0
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -288,10 +296,14 @@ PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2_txt WHERE key = 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2_txt
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2_txt WHERE key = 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2_txt
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -395,6 +407,8 @@ SELECT
   log10(key), sqrt(key)
 FROM DECIMAL_UDF2_txt WHERE key = 10
 PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2_txt
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   exp(key), ln(key),
@@ -402,6 +416,8 @@ SELECT
   log10(key), sqrt(key)
 FROM DECIMAL_UDF2_txt WHERE key = 10
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2_txt
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]

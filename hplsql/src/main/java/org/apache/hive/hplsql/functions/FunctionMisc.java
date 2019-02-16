@@ -36,27 +36,27 @@ public class FunctionMisc extends Function {
    */
   @Override
   public void register(Function f) {
-    f.map.put("COALESCE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { nvl(ctx); }});
-    f.map.put("DECODE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { decode(ctx); }});
-    f.map.put("NVL", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { nvl(ctx); }});
-    f.map.put("NVL2", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { nvl2(ctx); }});
-    f.map.put("PART_COUNT_BY", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { partCountBy(ctx); }});
-    
-    f.specMap.put("ACTIVITY_COUNT", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { activityCount(ctx); }});
-    f.specMap.put("CAST", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { cast(ctx); }});
-    f.specMap.put("CURRENT", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { current(ctx); }});
-    f.specMap.put("CURRENT_USER", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { currentUser(ctx); }});
-    f.specMap.put("PART_COUNT", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { partCount(ctx); }});
-    f.specMap.put("USER", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { currentUser(ctx); }});
+    f.map.put("COALESCE", this::nvl);
+    f.map.put("DECODE", this::decode);
+    f.map.put("NVL", this::nvl);
+    f.map.put("NVL2", this::nvl2);
+    f.map.put("PART_COUNT_BY", this::partCountBy);
 
-    f.specSqlMap.put("CURRENT", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { currentSql(ctx); }});
+    f.specMap.put("ACTIVITY_COUNT", this::activityCount);
+    f.specMap.put("CAST", this::cast);
+    f.specMap.put("CURRENT", this::current);
+    f.specMap.put("CURRENT_USER", this::currentUser);
+    f.specMap.put("PART_COUNT", this::partCount);
+    f.specMap.put("USER", this::currentUser);
+
+    f.specSqlMap.put("CURRENT", this::currentSql);
   }
   
   /**
    * ACTIVITY_COUNT function (built-in variable)
    */
   void activityCount(HplsqlParser.Expr_spec_funcContext ctx) {
-    evalInt(new Long(exec.getRowCount()));
+    evalInt(Long.valueOf(exec.getRowCount()));
   }
   
   /**
@@ -268,7 +268,7 @@ public class FunctionMisc extends Function {
       return;
     }
     ResultSet rs = query.getResultSet();
-    HashMap<String, Integer> group = new HashMap<String, Integer>();
+    Map<String, Integer> group = new HashMap<String, Integer>();
     try {
       while (rs.next()) {
         String part = rs.getString(1);
@@ -288,7 +288,7 @@ public class FunctionMisc extends Function {
         }
         Integer count = group.get(key);
         if (count == null) {
-          count = new Integer(0); 
+          count = Integer.valueOf(0);
         }
         group.put(key, count + 1);        
       }

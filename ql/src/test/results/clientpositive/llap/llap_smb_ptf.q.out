@@ -400,6 +400,11 @@ FROM (
     ON ( failed_rqst.cogs_alc_rqst_id = status_rqst.cogs_alc_rqst_id )
 WHERE failed_rqst.cogs_alc_rqst_id IS NULL
 PREHOOK: type: QUERY
+PREHOOK: Input: default@cogs_alc_rqst
+PREHOOK: Input: default@cogs_alc_rqst_trgt_offs
+PREHOOK: Input: default@cogs_alc_stat
+PREHOOK: Input: default@int_cogs_alc_post_stg
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT status_rqst.*
 FROM (
@@ -460,6 +465,11 @@ FROM (
     ON ( failed_rqst.cogs_alc_rqst_id = status_rqst.cogs_alc_rqst_id )
 WHERE failed_rqst.cogs_alc_rqst_id IS NULL
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cogs_alc_rqst
+POSTHOOK: Input: default@cogs_alc_rqst_trgt_offs
+POSTHOOK: Input: default@cogs_alc_stat
+POSTHOOK: Input: default@int_cogs_alc_post_stg
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -591,7 +601,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col4 ASC NULLS FIRST
+                        order by: _col4 ASC NULLS LAST
                         partition by: _col0, _col4
                         raw input shape:
                         window functions:
@@ -625,12 +635,12 @@ STAGE PLANS:
                   0 _col4 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 1 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 277 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col4 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col4 (type: int)
-                  Statistics: Num rows: 1 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 277 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col0 (type: smallint), _col1 (type: string), _col2 (type: smallint), _col3 (type: string), _col5 (type: smallint), _col6 (type: string), _col7 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -641,18 +651,18 @@ STAGE PLANS:
                 keys:
                   0 _col4 (type: int)
                   1 _col5 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col6, _col7, _col9, _col10, _col11, _col12, _col13
-                Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 304 Basic stats: PARTIAL Column stats: NONE
                 Select Operator
-                  expressions: _col7 (type: int), _col0 (type: smallint), _col1 (type: string), _col2 (type: smallint), _col3 (type: string), _col5 (type: smallint), _col6 (type: string), _col9 (type: smallint), _col10 (type: smallint), _col12 (type: string), _col13 (type: string), _col11 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                  Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col7 (type: int), _col0 (type: smallint), _col1 (type: string), _col2 (type: smallint), _col3 (type: string), _col5 (type: smallint), _col6 (type: string), _col8 (type: smallint), _col9 (type: smallint), _col10 (type: string), _col11 (type: string), _col12 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                  Statistics: Num rows: 1 Data size: 304 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col1 (type: smallint), _col2 (type: string), _col3 (type: smallint), _col4 (type: string), _col5 (type: smallint), _col6 (type: string), _col7 (type: smallint), _col8 (type: smallint), _col9 (type: string), _col10 (type: string), _col11 (type: string)
+                    Statistics: Num rows: 1 Data size: 304 Basic stats: PARTIAL Column stats: NONE
+                    value expressions: _col1 (type: smallint), _col2 (type: string), _col3 (type: smallint), _col4 (type: string), _col6 (type: smallint), _col7 (type: string), _col8 (type: smallint), _col9 (type: smallint), _col10 (type: string), _col11 (type: string), _col12 (type: string)
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -662,22 +672,26 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-                Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: _col12 is null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: string), _col3 (type: smallint), _col4 (type: string), _col5 (type: smallint), _col6 (type: string), _col7 (type: smallint), _col8 (type: smallint), _col9 (type: string), _col10 (type: string), _col11 (type: string), '201611160940' (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-                    Statistics: Num rows: 1 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col14
+                Statistics: Num rows: 1 Data size: 334 Basic stats: PARTIAL Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: string), _col3 (type: smallint), _col4 (type: string), _col6 (type: smallint), _col7 (type: string), _col8 (type: smallint), _col9 (type: smallint), _col11 (type: string), _col12 (type: string), _col10 (type: string), _col14 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                  Statistics: Num rows: 1 Data size: 334 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: _col12 is null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 334 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: string), _col3 (type: smallint), _col4 (type: string), _col5 (type: smallint), _col6 (type: string), _col7 (type: smallint), _col8 (type: smallint), _col9 (type: string), _col10 (type: string), _col11 (type: string), '201611160940' (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      Statistics: Num rows: 1 Data size: 334 Basic stats: PARTIAL Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 334 Basic stats: PARTIAL Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -689,12 +703,12 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
         Reducer 9 
             Execution mode: llap
             Reduce Operator Tree:
@@ -711,7 +725,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS FIRST
+                        order by: _col2 ASC NULLS LAST
                         partition by: _col3, _col2
                         raw input shape:
                         window functions:

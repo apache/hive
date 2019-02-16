@@ -65,8 +65,12 @@ POSTHOOK: Output: default@stats_only_external_tab1_ext
 test.comment=Regular table should should compute using stats
 PREHOOK: query: explain select count(*) from stats_only_external_tab1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_only_external_tab1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_only_external_tab1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_only_external_tab1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -80,8 +84,12 @@ STAGE PLANS:
 test.comment=External table should not should compute using stats
 PREHOOK: query: explain select count(*) from stats_only_external_tab1_ext
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_only_external_tab1_ext
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_only_external_tab1_ext
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_only_external_tab1_ext
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -137,8 +145,12 @@ STAGE PLANS:
 test.comment=Query predicates removed due to column stats
 PREHOOK: query: explain select count(*) from stats_only_external_tab1 where value is not null and key >= 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_only_external_tab1
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_only_external_tab1 where value is not null and key >= 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_only_external_tab1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -152,8 +164,12 @@ STAGE PLANS:
 test.comment=Predicate removal disabled for external tables
 PREHOOK: query: explain select count(*) from stats_only_external_tab1_ext where value is not null and key >= 0
 PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_only_external_tab1_ext
+#### A masked pattern was here ####
 POSTHOOK: query: explain select count(*) from stats_only_external_tab1_ext where value is not null and key >= 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_only_external_tab1_ext
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

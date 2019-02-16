@@ -218,6 +218,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(ctimestamp1) AS c1,
   year(ctimestamp1),
@@ -239,6 +241,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -258,7 +262,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -269,7 +273,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [5, 6, 7, 8, 9, 10, 11, 12, 0, 1, 3, 13, 14, 15, 16, 17]
                         selectExpressions: VectorUDFUnixTimeStampTimestamp(col 1:timestamp) -> 5:bigint, VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 6:int, VectorUDFMonthTimestamp(col 1:timestamp, field MONTH) -> 7:int, VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 8:int, VectorUDFWeekOfYearTimestamp(col 1:timestamp, field WEEK_OF_YEAR) -> 9:int, VectorUDFHourTimestamp(col 1:timestamp, field HOUR_OF_DAY) -> 10:int, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 11:int, VectorUDFSecondTimestamp(col 1:timestamp, field SECOND) -> 12:int, IfExprTimestampColumnScalar(col 0:boolean, col 1:timestamp, val 1319-01-25 08:31:57.778) -> 13:timestamp, IfExprTimestampScalarColumn(col 0:boolean, val 2000-12-18 00:42:30.0005, col 1:timestamp) -> 14:timestamp, IfExprTimestampColumnColumn(col 0:boolean, col 1:timestampcol 3:timestamp) -> 15:timestamp, IfExprColumnNull(col 0:boolean, col 1:timestamp, null)(children: col 0:boolean, col 1:timestamp) -> 16:timestamp, IfExprNullColumn(col 0:boolean, null, col 3)(children: col 0:boolean, col 3:timestamp) -> 17:timestamp
-                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
@@ -277,7 +281,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: boolean), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp), _col13 (type: timestamp), _col14 (type: timestamp), _col15 (type: timestamp), _col16 (type: timestamp)
             Execution mode: vectorized
             Map Vectorization:
@@ -305,13 +309,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-                Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -369,6 +373,46 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.628	1969-12-31 15:59:55.451	1319-02-02 16:31:57.778	1969-12-31 23:59:43.628	1969-12-31 15:59:55.451	NULL	1969-12-31 15:59:55.451
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.637	1969-12-31 15:59:58.174	1319-02-02 16:31:57.778	1969-12-31 23:59:43.637	1969-12-31 15:59:58.174	NULL	1969-12-31 15:59:58.174
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.64	1969-12-31 15:59:58.174	1319-02-02 16:31:57.778	1969-12-31 23:59:43.64	1969-12-31 15:59:58.174	NULL	1969-12-31 15:59:58.174
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.661	1969-12-31 15:59:55.451	1319-02-02 16:31:57.778	1969-12-31 23:59:43.661	1969-12-31 15:59:55.451	NULL	1969-12-31 15:59:55.451
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.676	1969-12-31 15:59:55.451	1319-02-02 16:31:57.778	1969-12-31 23:59:43.676	1969-12-31 15:59:55.451	NULL	1969-12-31 15:59:55.451
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.705	1969-12-31 15:59:58.456	1319-02-02 16:31:57.778	1969-12-31 23:59:43.705	1969-12-31 15:59:58.456	NULL	1969-12-31 15:59:58.456
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.709	1969-12-31 15:59:58.456	1319-02-02 16:31:57.778	1969-12-31 23:59:43.709	1969-12-31 15:59:58.456	NULL	1969-12-31 15:59:58.456
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.72	1969-12-31 15:59:55.451	1319-02-02 16:31:57.778	1969-12-31 23:59:43.72	1969-12-31 15:59:55.451	NULL	1969-12-31 15:59:55.451
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.721	1969-12-31 15:59:58.456	1319-02-02 16:31:57.778	1969-12-31 23:59:43.721	1969-12-31 15:59:58.456	NULL	1969-12-31 15:59:58.456
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.749	1969-12-31 15:59:58.174	1319-02-02 16:31:57.778	1969-12-31 23:59:43.749	1969-12-31 15:59:58.174	NULL	1969-12-31 15:59:58.174
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.771	1969-12-31 15:59:58.456	1319-02-02 16:31:57.778	1969-12-31 23:59:43.771	1969-12-31 15:59:58.456	NULL	1969-12-31 15:59:58.456
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.773	1969-12-31 15:59:55.451	1319-02-02 16:31:57.778	1969-12-31 23:59:43.773	1969-12-31 15:59:55.451	NULL	1969-12-31 15:59:55.451
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.782	1969-12-31 15:59:58.174	1319-02-02 16:31:57.778	1969-12-31 23:59:43.782	1969-12-31 15:59:58.174	NULL	1969-12-31 15:59:58.174
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.783	1969-12-31 15:59:55.451	1319-02-02 16:31:57.778	1969-12-31 23:59:43.783	1969-12-31 15:59:55.451	NULL	1969-12-31 15:59:55.451
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.807	1969-12-31 15:59:58.174	1319-02-02 16:31:57.778	1969-12-31 23:59:43.807	1969-12-31 15:59:58.174	NULL	1969-12-31 15:59:58.174
+-16	1969	12	31	31	1	23	59	43	NULL	1969-12-31 23:59:43.82	1969-12-31 15:59:58.174	1319-02-02 16:31:57.778	1969-12-31 23:59:43.82	1969-12-31 15:59:58.174	NULL	1969-12-31 15:59:58.174
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.619	1969-12-31 16:00:14.793	1969-12-31 23:59:43.619	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.619	1969-12-31 23:59:43.619	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.627	1969-12-31 16:00:03.679	1969-12-31 23:59:43.627	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.627	1969-12-31 23:59:43.627	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.631	1969-12-31 16:00:06.612	1969-12-31 23:59:43.631	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.631	1969-12-31 23:59:43.631	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.642	1969-12-31 16:00:04.424	1969-12-31 23:59:43.642	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.642	1969-12-31 23:59:43.642	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.643	1969-12-31 16:00:11.764	1969-12-31 23:59:43.643	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.643	1969-12-31 23:59:43.643	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.645	1969-12-31 16:00:00.077	1969-12-31 23:59:43.645	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.645	1969-12-31 23:59:43.645	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.661	1969-12-31 15:59:58.732	1969-12-31 23:59:43.661	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.661	1969-12-31 23:59:43.661	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.689	1969-12-31 15:59:46.848	1969-12-31 23:59:43.689	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.689	1969-12-31 23:59:43.689	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.695	1969-12-31 16:00:06.867	1969-12-31 23:59:43.695	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.695	1969-12-31 23:59:43.695	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.707	1969-12-31 15:59:56.965	1969-12-31 23:59:43.707	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.707	1969-12-31 23:59:43.707	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.71	1969-12-31 16:00:00.687	1969-12-31 23:59:43.71	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.71	1969-12-31 23:59:43.71	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.723	1969-12-31 16:00:03.375	1969-12-31 23:59:43.723	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.723	1969-12-31 23:59:43.723	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.745	1969-12-31 16:00:04.052	1969-12-31 23:59:43.745	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.745	1969-12-31 23:59:43.745	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.764	1969-12-31 16:00:10.52	1969-12-31 23:59:43.764	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.764	1969-12-31 23:59:43.764	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.775	1969-12-31 15:59:48.003	1969-12-31 23:59:43.775	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.775	1969-12-31 23:59:43.775	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.779	1969-12-31 15:59:53.274	1969-12-31 23:59:43.779	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.779	1969-12-31 23:59:43.779	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.785	1969-12-31 16:00:14.096	1969-12-31 23:59:43.785	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.785	1969-12-31 23:59:43.785	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.792	1969-12-31 15:59:52.041	1969-12-31 23:59:43.792	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.792	1969-12-31 23:59:43.792	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.793	1969-12-31 15:59:56.316	1969-12-31 23:59:43.793	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.793	1969-12-31 23:59:43.793	NULL
+-16	1969	12	31	31	1	23	59	43	true	1969-12-31 23:59:43.811	1969-12-31 16:00:00.479	1969-12-31 23:59:43.811	2000-12-18 08:42:30.0005	1969-12-31 23:59:43.811	1969-12-31 23:59:43.811	NULL
+-29	1969	12	31	31	1	23	59	30	NULL	1969-12-31 23:59:30.929	1969-12-31 15:59:55.451	1319-02-02 16:31:57.778	1969-12-31 23:59:30.929	1969-12-31 15:59:55.451	NULL	1969-12-31 15:59:55.451
+-29	1969	12	31	31	1	23	59	30	NULL	1969-12-31 23:59:30.929	1969-12-31 15:59:55.451	1319-02-02 16:31:57.778	1969-12-31 23:59:30.929	1969-12-31 15:59:55.451	NULL	1969-12-31 15:59:55.451
+-29	1969	12	31	31	1	23	59	30	NULL	1969-12-31 23:59:30.929	1969-12-31 15:59:58.174	1319-02-02 16:31:57.778	1969-12-31 23:59:30.929	1969-12-31 15:59:58.174	NULL	1969-12-31 15:59:58.174
+-29	1969	12	31	31	1	23	59	30	NULL	1969-12-31 23:59:30.929	1969-12-31 15:59:58.456	1319-02-02 16:31:57.778	1969-12-31 23:59:30.929	1969-12-31 15:59:58.456	NULL	1969-12-31 15:59:58.456
 -45479202281	528	10	25	25	43	8	15	18	true	0528-10-27 08:15:18.941718273	NULL	0528-10-27 08:15:18.941718273	2000-12-18 08:42:30.0005	0528-10-27 08:15:18.941718273	0528-10-27 08:15:18.941718273	NULL
 1632453512	2021	9	24	24	38	3	18	32	NULL	2021-09-24 03:18:32.4	1974-10-04 17:21:03.989	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	1974-10-04 17:21:03.989	NULL	1974-10-04 17:21:03.989
 1632453512	2021	9	24	24	38	3	18	32	false	2021-09-24 03:18:32.4	1999-10-03 16:59:10.396903939	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	1999-10-03 16:59:10.396903939	NULL	1999-10-03 16:59:10.396903939
@@ -378,47 +422,7 @@ POSTHOOK: Input: default@alltypesorc_string
 163809583224	7160	12	2	2	48	6	0	24	NULL	7160-12-02 06:00:24.81200852	NULL	1319-02-02 16:31:57.778	7160-12-02 06:00:24.81200852	NULL	NULL	NULL
 490699811	1985	7	20	20	29	9	30	11	true	1985-07-20 09:30:11	1319-02-02 16:31:57.778	1985-07-20 09:30:11	2000-12-18 08:42:30.0005	1985-07-20 09:30:11	1985-07-20 09:30:11	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1319-02-02 16:31:57.778	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:47.183	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:47.183	NULL	1969-12-31 15:59:47.183
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:52.843	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:52.843	NULL	1969-12-31 15:59:52.843
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:53.087	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:53.087	NULL	1969-12-31 15:59:53.087
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:53.55	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:53.55	NULL	1969-12-31 15:59:53.55
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:54.042	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:54.042	NULL	1969-12-31 15:59:54.042
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:54.686	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:54.686	NULL	1969-12-31 15:59:54.686
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:58.459	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:58.459	NULL	1969-12-31 15:59:58.459
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 16:00:00.889	1319-02-02 16:31:57.778	NULL	1969-12-31 16:00:00.889	NULL	1969-12-31 16:00:00.889
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 16:00:01.258	1319-02-02 16:31:57.778	NULL	1969-12-31 16:00:01.258	NULL	1969-12-31 16:00:01.258
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 16:00:05.698	1319-02-02 16:31:57.778	NULL	1969-12-31 16:00:05.698	NULL	1969-12-31 16:00:05.698
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 16:00:08.602	1319-02-02 16:31:57.778	NULL	1969-12-31 16:00:08.602	NULL	1969-12-31 16:00:08.602
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 16:00:14.214	1319-02-02 16:31:57.778	NULL	1969-12-31 16:00:14.214	NULL	1969-12-31 16:00:14.214
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 16:00:15.466	1319-02-02 16:31:57.778	NULL	1969-12-31 16:00:15.466	NULL	1969-12-31 16:00:15.466
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	NULL	1319-02-02 16:31:57.778	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:46.123	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:49.989	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:51.119	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:52.961	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:52.967	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:53.593	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:53.641	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:55.407	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:55.439	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:56.031	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:57.719	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 15:59:58.636	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:00.176	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:00.423	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:00.477	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:00.93	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:01.839	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:02.13	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:03.151	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:03.756	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:06.134	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:07.209	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:10.361	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:11.525	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:13.589	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:13.839	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	1969-12-31 16:00:15.601	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	2024-11-11 16:42:41.101	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	NULL	NULL	2000-12-18 08:42:30.0005	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
@@ -434,6 +438,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
@@ -447,6 +453,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -466,7 +474,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -475,9 +483,9 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5, 7, 8, 9, 6, 11, 10, 13, 14]
-                        selectExpressions: VectorUDFUnixTimeStampString(col 2:string) -> 5:bigint, VectorUDFYearDate(col 6, field YEAR)(children: CastStringToDate(col 2:string) -> 6:date) -> 7:int, VectorUDFMonthDate(col 6, field MONTH)(children: CastStringToDate(col 2:string) -> 6:date) -> 8:int, VectorUDFDayOfMonthDate(col 6, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 6:date) -> 9:int, VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 6:int, VectorUDFWeekOfYearDate(col 10, field WEEK_OF_YEAR)(children: CastStringToDate(col 2:string) -> 10:date) -> 11:int, VectorUDFHourTimestamp(col 12:timestamp, field HOUR_OF_DAY)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 12:timestamp) -> 10:int, VectorUDFMinuteTimestamp(col 12:timestamp, field MINUTE)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 12:timestamp) -> 13:int, VectorUDFSecondTimestamp(col 12:timestamp, field SECOND)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 12:timestamp) -> 14:int
-                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [5, 7, 9, 11, 12, 14, 16, 18, 20]
+                        selectExpressions: VectorUDFUnixTimeStampString(col 2:string) -> 5:bigint, VectorUDFYearDate(col 6, field YEAR)(children: CastStringToDate(col 2:string) -> 6:date) -> 7:int, VectorUDFMonthDate(col 8, field MONTH)(children: CastStringToDate(col 2:string) -> 8:date) -> 9:int, VectorUDFDayOfMonthDate(col 10, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 10:date) -> 11:int, VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 12:int, VectorUDFWeekOfYearDate(col 13, field WEEK_OF_YEAR)(children: CastStringToDate(col 2:string) -> 13:date) -> 14:int, VectorUDFHourTimestamp(col 15:timestamp, field HOUR_OF_DAY)(children: CastStringToTimestamp(col 2:string) -> 15:timestamp) -> 16:int, VectorUDFMinuteTimestamp(col 17:timestamp, field MINUTE)(children: CastStringToTimestamp(col 2:string) -> 17:timestamp) -> 18:int, VectorUDFSecondTimestamp(col 19:timestamp, field SECOND)(children: CastStringToTimestamp(col 2:string) -> 19:timestamp) -> 20:int
+                    Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
@@ -485,7 +493,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int)
             Execution mode: vectorized
             Map Vectorization:
@@ -495,7 +503,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized
@@ -513,13 +521,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -561,7 +569,47 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
+-17	1969	12	31	31	1	23	59	43
 -2736272726	1883	4	17	17	16	4	14	34
+-30	1969	12	31	31	1	23	59	30
+-30	1969	12	31	31	1	23	59	30
+-30	1969	12	31	31	1	23	59	30
+-30	1969	12	31	31	1	23	59	30
 -62018199211	4	9	24	22	39	18	26	29
 1365554626	2013	4	10	10	15	0	43	46
 206730996125	8521	1	16	16	3	20	42	5
@@ -569,46 +617,6 @@ POSTHOOK: Input: default@alltypesorc_string
 501179874	1985	11	18	18	47	16	37	54
 501179874	1985	11	18	18	47	16	37	54
 94573819855	4966	12	4	4	49	9	30	55
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -626,6 +634,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1) AS c1,
   year(ctimestamp1) = year(stimestamp1),
@@ -639,6 +649,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -658,7 +670,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -667,9 +679,9 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [7, 6, 8, 9, 11, 10, 14, 15, 16]
-                        selectExpressions: LongColEqualLongColumn(col 5:bigint, col 6:bigint)(children: VectorUDFUnixTimeStampTimestamp(col 1:timestamp) -> 5:bigint, VectorUDFUnixTimeStampString(col 2:string) -> 6:bigint) -> 7:boolean, LongColEqualLongColumn(col 5:int, col 8:int)(children: VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 5:int, VectorUDFYearDate(col 6, field YEAR)(children: CastStringToDate(col 2:string) -> 6:date) -> 8:int) -> 6:boolean, LongColEqualLongColumn(col 5:int, col 9:int)(children: VectorUDFMonthTimestamp(col 1:timestamp, field MONTH) -> 5:int, VectorUDFMonthDate(col 8, field MONTH)(children: CastStringToDate(col 2:string) -> 8:date) -> 9:int) -> 8:boolean, LongColEqualLongColumn(col 5:int, col 10:int)(children: VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 5:int, VectorUDFDayOfMonthDate(col 9, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 9:date) -> 10:int) -> 9:boolean, LongColEqualLongColumn(col 5:int, col 10:int)(children: VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 5:int, VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 10:int) -> 11:boolean, LongColEqualLongColumn(col 5:int, col 12:int)(children: VectorUDFWeekOfYearTimestamp(col 1:timestamp, field WEEK_OF_YEAR) -> 5:int, VectorUDFWeekOfYearDate(col 10, field WEEK_OF_YEAR)(children: CastStringToDate(col 2:string) -> 10:date) -> 12:int) -> 10:boolean, LongColEqualLongColumn(col 5:int, col 12:int)(children: VectorUDFHourTimestamp(col 1:timestamp, field HOUR_OF_DAY) -> 5:int, VectorUDFHourTimestamp(col 13:timestamp, field HOUR_OF_DAY)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 13:timestamp) -> 12:int) -> 14:boolean, LongColEqualLongColumn(col 5:int, col 12:int)(children: VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 5:int, VectorUDFMinuteTimestamp(col 13:timestamp, field MINUTE)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 13:timestamp) -> 12:int) -> 15:boolean, LongColEqualLongColumn(col 5:int, col 12:int)(children: VectorUDFSecondTimestamp(col 1:timestamp, field SECOND) -> 5:int, VectorUDFSecondTimestamp(col 13:timestamp, field SECOND)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 13:timestamp) -> 12:int) -> 16:boolean
-                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                        projectedOutputColumnNums: [7, 11, 15, 19, 22, 26, 30, 34, 38]
+                        selectExpressions: LongColEqualLongColumn(col 5:bigint, col 6:bigint)(children: VectorUDFUnixTimeStampTimestamp(col 1:timestamp) -> 5:bigint, VectorUDFUnixTimeStampString(col 2:string) -> 6:bigint) -> 7:boolean, LongColEqualLongColumn(col 8:int, col 10:int)(children: VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 8:int, VectorUDFYearDate(col 9, field YEAR)(children: CastStringToDate(col 2:string) -> 9:date) -> 10:int) -> 11:boolean, LongColEqualLongColumn(col 12:int, col 14:int)(children: VectorUDFMonthTimestamp(col 1:timestamp, field MONTH) -> 12:int, VectorUDFMonthDate(col 13, field MONTH)(children: CastStringToDate(col 2:string) -> 13:date) -> 14:int) -> 15:boolean, LongColEqualLongColumn(col 16:int, col 18:int)(children: VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 16:int, VectorUDFDayOfMonthDate(col 17, field DAY_OF_MONTH)(children: CastStringToDate(col 2:string) -> 17:date) -> 18:int) -> 19:boolean, LongColEqualLongColumn(col 20:int, col 21:int)(children: VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 20:int, VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 21:int) -> 22:boolean, LongColEqualLongColumn(col 23:int, col 25:int)(children: VectorUDFWeekOfYearTimestamp(col 1:timestamp, field WEEK_OF_YEAR) -> 23:int, VectorUDFWeekOfYearDate(col 24, field WEEK_OF_YEAR)(children: CastStringToDate(col 2:string) -> 24:date) -> 25:int) -> 26:boolean, LongColEqualLongColumn(col 27:int, col 29:int)(children: VectorUDFHourTimestamp(col 1:timestamp, field HOUR_OF_DAY) -> 27:int, VectorUDFHourTimestamp(col 28:timestamp, field HOUR_OF_DAY)(children: CastStringToTimestamp(col 2:string) -> 28:timestamp) -> 29:int) -> 30:boolean, LongColEqualLongColumn(col 31:int, col 33:int)(children: VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 31:int, VectorUDFMinuteTimestamp(col 32:timestamp, field MINUTE)(children: CastStringToTimestamp(col 2:string) -> 32:timestamp) -> 33:int) -> 34:boolean, LongColEqualLongColumn(col 35:int, col 37:int)(children: VectorUDFSecondTimestamp(col 1:timestamp, field SECOND) -> 35:int, VectorUDFSecondTimestamp(col 36:timestamp, field SECOND)(children: CastStringToTimestamp(col 2:string) -> 36:timestamp) -> 37:int) -> 38:boolean
+                    Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: boolean)
                       sort order: +
@@ -677,7 +689,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean)
             Execution mode: vectorized
             Map Vectorization:
@@ -687,7 +699,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized
@@ -705,13 +717,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -761,50 +773,50 @@ NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 false	false	false	false	false	false	false	false	false
 false	false	false	false	false	false	false	false	false
 false	false	false	false	false	false	false	false	false
 false	false	false	false	false	false	false	false	false
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
+false	true	true	true	true	true	true	true	true
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
@@ -818,6 +830,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_wrong
 ORDER BY c1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_wrong
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
@@ -831,6 +845,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
 FROM alltypesorc_wrong
 ORDER BY c1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_wrong
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -859,8 +875,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [2, 4, 5, 6, 3, 8, 7, 10, 11]
-                        selectExpressions: VectorUDFUnixTimeStampString(col 0:string) -> 2:bigint, VectorUDFYearDate(col 3, field YEAR)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int, VectorUDFMonthDate(col 3, field MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 5:int, VectorUDFDayOfMonthDate(col 3, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 3:date) -> 6:int, VectorUDFDayOfMonthString(col 0:string, fieldStart 8, fieldLength 2) -> 3:int, VectorUDFWeekOfYearDate(col 7, field WEEK_OF_YEAR)(children: CastStringToDate(col 0:string) -> 7:date) -> 8:int, VectorUDFHourTimestamp(col 9:timestamp, field HOUR_OF_DAY)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 9:timestamp) -> 7:int, VectorUDFMinuteTimestamp(col 9:timestamp, field MINUTE)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 9:timestamp) -> 10:int, VectorUDFSecondTimestamp(col 9:timestamp, field SECOND)(children: VectorUDFAdaptor(CAST( stimestamp1 AS TIMESTAMP)) -> 9:timestamp) -> 11:int
+                        projectedOutputColumnNums: [2, 4, 6, 8, 9, 11, 13, 15, 17]
+                        selectExpressions: VectorUDFUnixTimeStampString(col 0:string) -> 2:bigint, VectorUDFYearDate(col 3, field YEAR)(children: CastStringToDate(col 0:string) -> 3:date) -> 4:int, VectorUDFMonthDate(col 5, field MONTH)(children: CastStringToDate(col 0:string) -> 5:date) -> 6:int, VectorUDFDayOfMonthDate(col 7, field DAY_OF_MONTH)(children: CastStringToDate(col 0:string) -> 7:date) -> 8:int, VectorUDFDayOfMonthString(col 0:string, fieldStart 8, fieldLength 2) -> 9:int, VectorUDFWeekOfYearDate(col 10, field WEEK_OF_YEAR)(children: CastStringToDate(col 0:string) -> 10:date) -> 11:int, VectorUDFHourTimestamp(col 12:timestamp, field HOUR_OF_DAY)(children: CastStringToTimestamp(col 0:string) -> 12:timestamp) -> 13:int, VectorUDFMinuteTimestamp(col 14:timestamp, field MINUTE)(children: CastStringToTimestamp(col 0:string) -> 14:timestamp) -> 15:int, VectorUDFSecondTimestamp(col 16:timestamp, field SECOND)(children: CastStringToTimestamp(col 0:string) -> 16:timestamp) -> 17:int
                     Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
@@ -879,7 +895,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized
@@ -955,6 +971,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   count(*)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   min(ctimestamp1),
   max(ctimestamp1),
@@ -962,6 +980,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   count(*)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -981,7 +1001,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -991,7 +1011,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1]
-                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ctimestamp1), max(ctimestamp1), count(ctimestamp1), count()
                       Group By Vectorization:
@@ -1078,15 +1098,19 @@ FROM alltypesorc_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-0528-10-27 08:15:18.941718273	7160-12-02 06:00:24.81200852	8	52
+0528-10-27 08:15:18.941718273	7160-12-02 06:00:24.81200852	48	52
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1106,7 +1130,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1116,7 +1140,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1]
-                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(ctimestamp1)
                       Group By Vectorization:
@@ -1206,7 +1230,7 @@ FROM alltypesorc_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-2.89160478029166E11
+2.891604773267E11
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(avg(ctimestamp1), 0),
   variance(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
@@ -1218,6 +1242,8 @@ PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(avg(ctimestamp1), 0),
   variance(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
@@ -1229,6 +1255,8 @@ POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -1248,7 +1276,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1259,7 +1287,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [1, 5, 8]
                         selectExpressions: CastTimestampToDouble(col 1:timestamp) -> 5:double, DoubleColMultiplyDoubleColumn(col 6:double, col 7:double)(children: CastTimestampToDouble(col 1:timestamp) -> 6:double, CastTimestampToDouble(col 1:timestamp) -> 7:double) -> 8:double
-                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 8979 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col0), count(_col0), sum(_col2), sum(_col1)
                       Group By Vectorization:
@@ -1296,7 +1324,7 @@ STAGE PLANS:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
@@ -1317,8 +1345,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [5, 7, 8, 11, 6, 12, 13, 14]
-                      selectExpressions: RoundWithNumDigitsDoubleToDouble(col 4, decimalPlaces 0)(children: DoubleColDivideLongColumn(col 0:double, col 1:bigint) -> 4:double) -> 5:double, VectorUDFAdaptor(((_col2 - ((_col3 * _col3) / _col1)) / _col1) BETWEEN 8.97077295279421E19D AND 8.97077295279422E19D)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 6:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 4:double) -> 6:double) -> 4:double) -> 6:double) -> 7:boolean, VectorUDFAdaptor(((_col2 - ((_col3 * _col3) / _col1)) / _col1) BETWEEN 8.97077295279421E19D AND 8.97077295279422E19D)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 6:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 4:double) -> 6:double) -> 4:double) -> 6:double) -> 8:boolean, VectorUDFAdaptor(((_col2 - ((_col3 * _col3) / _col1)) / CASE WHEN ((_col1 = 1L)) THEN (null) ELSE ((_col1 - 1)) END) BETWEEN 9.20684592523616E19D AND 9.20684592523617E19D)(children: DoubleColDivideLongColumn(col 4:double, col 11:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 6:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 4:double) -> 6:double) -> 4:double, IfExprNullCondExpr(col 9:boolean, null, col 10:bigint)(children: LongColEqualLongScalar(col 1:bigint, val 1) -> 9:boolean, LongColSubtractLongScalar(col 1:bigint, val 1) -> 10:bigint) -> 11:bigint) -> 6:double) -> 11:boolean, RoundWithNumDigitsDoubleToDouble(col 4, decimalPlaces 3)(children: FuncPowerDoubleToDouble(col 6:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 6:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 4:double) -> 6:double) -> 4:double) -> 6:double) -> 4:double) -> 6:double, RoundWithNumDigitsDoubleToDouble(col 4, decimalPlaces 3)(children: FuncPowerDoubleToDouble(col 12:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 12:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 4:double) -> 12:double) -> 4:double) -> 12:double) -> 4:double) -> 12:double, RoundWithNumDigitsDoubleToDouble(col 4, decimalPlaces 3)(children: FuncPowerDoubleToDouble(col 13:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 13:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 4:double) -> 13:double) -> 4:double) -> 13:double) -> 4:double) -> 13:double, RoundWithNumDigitsDoubleToDouble(col 4, decimalPlaces 3)(children: FuncPowerDoubleToDouble(col 14:double)(children: DoubleColDivideLongColumn(col 4:double, col 17:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 14:double)(children: DoubleColDivideLongColumn(col 4:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 4:double) -> 14:double) -> 4:double, IfExprNullCondExpr(col 15:boolean, null, col 16:bigint)(children: LongColEqualLongScalar(col 1:bigint, val 1) -> 15:boolean, LongColSubtractLongScalar(col 1:bigint, val 1) -> 16:bigint) -> 17:bigint) -> 14:double) -> 4:double) -> 14:double
+                      projectedOutputColumnNums: [5, 10, 15, 23, 29, 35, 41, 50]
+                      selectExpressions: RoundWithNumDigitsDoubleToDouble(col 4, decimalPlaces 0)(children: DoubleColDivideLongColumn(col 0:double, col 1:bigint) -> 4:double) -> 5:double, DoubleColumnBetween(col 9:double, left 8.97077295279421E19, right 8.97077295279422E19)(children: DoubleColDivideLongColumn(col 8:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 7:double)(children: DoubleColDivideLongColumn(col 6:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 6:double) -> 7:double) -> 8:double) -> 9:double) -> 10:boolean, DoubleColumnBetween(col 14:double, left 8.97077295279421E19, right 8.97077295279422E19)(children: DoubleColDivideLongColumn(col 13:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 11:double) -> 12:double) -> 13:double) -> 14:double) -> 15:boolean, DoubleColumnBetween(col 22:double, left 9.20684592523616E19, right 9.20684592523617E19)(children: DoubleColDivideLongColumn(col 18:double, col 21:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 17:double)(children: DoubleColDivideLongColumn(col 16:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 16:double) -> 17:double) -> 18:double, IfExprNullCondExpr(col 19:boolean, null, col 20:bigint)(children: LongColEqualLongScalar(col 1:bigint, val 1) -> 19:boolean, LongColSubtractLongScalar(col 1:bigint, val 1) -> 20:bigint) -> 21:bigint) -> 22:double) -> 23:boolean, RoundWithNumDigitsDoubleToDouble(col 28, decimalPlaces 3)(children: FuncPowerDoubleToDouble(col 27:double)(children: DoubleColDivideLongColumn(col 26:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 25:double)(children: DoubleColDivideLongColumn(col 24:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 24:double) -> 25:double) -> 26:double) -> 27:double) -> 28:double) -> 29:double, RoundWithNumDigitsDoubleToDouble(col 34, decimalPlaces 3)(children: FuncPowerDoubleToDouble(col 33:double)(children: DoubleColDivideLongColumn(col 32:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 31:double)(children: DoubleColDivideLongColumn(col 30:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 30:double) -> 31:double) -> 32:double) -> 33:double) -> 34:double) -> 35:double, RoundWithNumDigitsDoubleToDouble(col 40, decimalPlaces 3)(children: FuncPowerDoubleToDouble(col 39:double)(children: DoubleColDivideLongColumn(col 38:double, col 1:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 37:double)(children: DoubleColDivideLongColumn(col 36:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 36:double) -> 37:double) -> 38:double) -> 39:double) -> 40:double) -> 41:double, RoundWithNumDigitsDoubleToDouble(col 49, decimalPlaces 3)(children: FuncPowerDoubleToDouble(col 48:double)(children: DoubleColDivideLongColumn(col 44:double, col 47:bigint)(children: DoubleColSubtractDoubleColumn(col 2:double, col 43:double)(children: DoubleColDivideLongColumn(col 42:double, col 1:bigint)(children: DoubleColMultiplyDoubleColumn(col 3:double, col 3:double) -> 42:double) -> 43:double) -> 44:double, IfExprNullCondExpr(col 45:boolean, null, col 46:bigint)(children: LongColEqualLongScalar(col 1:bigint, val 1) -> 45:boolean, LongColSubtractLongScalar(col 1:bigint, val 1) -> 46:bigint) -> 47:bigint) -> 48:double) -> 49:double) -> 50:double
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -1363,4 +1391,4 @@ FROM alltypesorc_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-3.6145059754E10	false	false	false	7.5245178084814E10	7.5245178084814E10	7.5245178084814E10	8.0440478971476E10
+6.024176611E9	false	false	false	3.3542405863247E10	3.3542405863247E10	3.3542405863247E10	3.3897361841912E10

@@ -21,7 +21,6 @@ insert into inputTbl3 select * from inputSrcTbl3;
 
 set hive.compute.query.using.stats=true;
 set hive.optimize.union.remove=true;
-set mapred.input.dir.recursive=true;
 
 --- union remove optimization effects, stats optimization does not though it is on since inputTbl2 column stats is not available
 analyze table inputTbl1_n6 compute statistics for columns;
@@ -76,7 +75,6 @@ select count(*) from (
 
 set hive.compute.query.using.stats=false;
 set hive.optimize.union.remove=true;
-set mapred.input.dir.recursive=true;
 
 explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1_n6

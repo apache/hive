@@ -193,6 +193,9 @@ t1.userid,
   from bug_201_input_b as t1
   join bug_201_input_a as fa on (t1.userid = fa.userid)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bug_201_input_a
+PREHOOK: Input: default@bug_201_input_b
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
 t1.userid,
@@ -200,6 +203,9 @@ t1.userid,
   from bug_201_input_b as t1
   join bug_201_input_a as fa on (t1.userid = fa.userid)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bug_201_input_a
+POSTHOOK: Input: default@bug_201_input_b
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -297,6 +303,9 @@ t1.userid,
   from bug_201_input_b as t1
   join bug_201_input_a as fa on (t1.userid = fa.userid)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@bug_201_input_a
+PREHOOK: Input: default@bug_201_input_b
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select
 t1.userid,
@@ -304,6 +313,9 @@ t1.userid,
   from bug_201_input_b as t1
   join bug_201_input_a as fa on (t1.userid = fa.userid)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bug_201_input_a
+POSTHOOK: Input: default@bug_201_input_b
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

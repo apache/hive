@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +55,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 /**
  * Test HiveAuthorizer api invocation
@@ -383,6 +384,97 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
     assertTrue("function name", funcName.equalsIgnoreCase(funcObj.getObjectName()));
     assertEquals("db name", null, funcObj.getDbname());
+  }
+
+  @Test
+  public void testTempTable() throws Exception {
+
+    String tmpTableDir = getDefaultTmp() + File.separator + "THSAC_testTableTable";
+
+    final String tableName = "testTempTable";
+    { // create temp table
+      reset(mockedAuthorizer);
+      int status = driver.run("create temporary table " + tableName + "(i int) location '" + tmpTableDir + "'")
+          .getResponseCode();
+      assertEquals(0, status);
+
+      List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+      List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+
+      // only the URI should be passed for authorization check
+      assertEquals("input count", 1, inputs.size());
+      assertEquals("input type", HivePrivilegeObjectType.LOCAL_URI, inputs.get(0).getType());
+
+      // only the dbname should be passed authorization check
+      assertEquals("output count", 1, outputs.size());
+      assertEquals("output type", HivePrivilegeObjectType.DATABASE, outputs.get(0).getType());
+
+      status = driver.compile("select * from " + tableName);
+      assertEquals(0, status);
+    }
+    { // select from the temp table
+      reset(mockedAuthorizer);
+      int status = driver.compile("insert into " + tableName + " values(1)");
+      assertEquals(0, status);
+
+      // temp tables should be skipped from authorization
+      List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+      List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+      System.err.println("inputs " + inputs);
+      System.err.println("outputs " + outputs);
+
+      assertEquals("input count", 0, inputs.size());
+      assertEquals("output count", 0, outputs.size());
+    }
+    { // select from the temp table
+      reset(mockedAuthorizer);
+      int status = driver.compile("select * from " + tableName);
+      assertEquals(0, status);
+
+      // temp tables should be skipped from authorization
+      List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+      List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+      System.err.println("inputs " + inputs);
+      System.err.println("outputs " + outputs);
+
+      assertEquals("input count", 0, inputs.size());
+      assertEquals("output count", 0, outputs.size());
+    }
+
+  }
+
+  @Test
+  public void testTempTableImplicit() throws Exception {
+    final String tableName = "testTempTableImplicit";
+    int status = driver.run("create table " + tableName + "(i int)").getResponseCode();
+    assertEquals(0, status);
+
+    reset(mockedAuthorizer);
+    status = driver.compile("insert into " + tableName + " values (1)");
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+
+    // only the URI should be passed for authorization check
+    assertEquals("input count", 0, inputs.size());
+
+    reset(mockedAuthorizer);
+    status = driver.compile("select * from " + tableName);
+    assertEquals(0, status);
+
+    inputs = getHivePrivilegeObjectInputs().getLeft();
+    outputs = getHivePrivilegeObjectInputs().getRight();
+
+    // temp tables should be skipped from authorization
+    assertEquals("input count", 1, inputs.size());
+    assertEquals("output count", 0, outputs.size());
+
+  }
+
+  private String getDefaultTmp() {
+    return System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp");
   }
 
   @Test

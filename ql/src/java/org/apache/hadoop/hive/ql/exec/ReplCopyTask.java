@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
@@ -46,6 +48,9 @@ import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
+import static org.apache.hadoop.hive.common.FileUtils.HIDDEN_FILES_PATH_FILTER;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
+
 public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -61,6 +66,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     LOG.debug("ReplCopyTask.execute()");
     FileSystem dstFs = null;
     Path toPath = null;
+
     try {
       // Note: CopyWork supports copying multiple files, but ReplCopyWork doesn't.
       //       Not clear of ReplCopyWork should inherit from CopyWork.
@@ -112,6 +118,24 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 0;
           }
         }
+
+        if (work.isCopyToMigratedTxnTable()) {
+          // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
+          // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
+          // The toPath received in ReplCopyWork is pointing to table/partition base location.
+          // So, just need to append the base or delta directory.
+          // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
+          // hence need to create base directory. If false, then it is repl load for regular insert into or
+          // load flow and hence just create delta directory.
+          String writeIdString = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
+          if (writeIdString == null) {
+            console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
+            return 6;
+          }
+          long writeId = Long.parseLong(writeIdString);
+          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId,
+                  driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement()));
+        }
       } else {
         // This flow is usually taken for IMPORT command
         FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
@@ -136,6 +160,15 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       }
 
       LOG.debug("ReplCopyTask numFiles: {}", srcFiles.size());
+
+      // in case of move optimization, file is directly copied to destination. So we need to clear the old content, if
+      // its a replace (insert overwrite ) operation.
+      if (work.getDeleteDestIfExist() && dstFs.exists(toPath)) {
+        LOG.debug(" path " + toPath + " is cleaned before renaming");
+        getHive().cleanUpOneDirectoryForReplace(toPath, dstFs, HIDDEN_FILES_PATH_FILTER, conf, work.getNeedRecycle(),
+                                                          work.getIsAutoPurge());
+      }
+
       if (!FileUtils.mkdir(dstFs, toPath, conf)) {
         console.printError("Cannot make target directory: " + toPath.toString());
         return 2;
@@ -151,10 +184,19 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           continue;
         }
         String destFileName = srcFile.getCmPath().getName();
-        Path destFile = new Path(toPath, destFileName);
+        Path destRoot = CopyUtils.getCopyDestination(srcFile, toPath);
+        Path destFile = new Path(destRoot, destFileName);
         if (dstFs.exists(destFile)) {
           String destFileWithSourceName = srcFile.getSourcePath().getName();
-          Path newDestFile = new Path(toPath, destFileWithSourceName);
+          Path newDestFile = new Path(destRoot, destFileWithSourceName);
+
+          // if the new file exist then delete it before renaming, to avoid rename failure. If the copy is done
+          // directly to table path (bypassing staging directory) then there might be some stale files from previous
+          // incomplete/failed load. No need of recycle as this is a case of stale file.
+          if (dstFs.exists(newDestFile)) {
+            LOG.debug(" file " + newDestFile + " is deleted before renaming");
+            dstFs.delete(newDestFile, true);
+          }
           boolean result = dstFs.rename(destFile, newDestFile);
           if (!result) {
             throw new IllegalStateException(
@@ -222,11 +264,19 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     return "REPL_COPY";
   }
 
-  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath, HiveConf conf) {
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                        boolean copyToMigratedTxnTable) {
     Task<?> copyTask = null;
     LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
+      if (replicationSpec.isReplace() && conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
+        rcwork.setDeleteDestIfExist(true);
+        rcwork.setAutoPurge(isAutoPurge);
+        rcwork.setNeedRecycle(needRecycle);
+      }
+      rcwork.setCopyToMigratedTxnTable(copyToMigratedTxnTable);
       LOG.debug("ReplCopyTask:\trcwork");
       if (replicationSpec.isLazy()) {
         LOG.debug("ReplCopyTask:\tlazy");
@@ -243,5 +293,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false), conf);
     }
     return copyTask;
+  }
+
+  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false, false);
   }
 }

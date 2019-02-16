@@ -13,9 +13,13 @@ POSTHOOK: Lineage: s1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -101,9 +105,13 @@ POSTHOOK: Input: default@s1
 PREHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@s1
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@s1
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

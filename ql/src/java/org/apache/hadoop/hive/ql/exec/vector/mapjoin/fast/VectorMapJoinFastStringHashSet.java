@@ -33,15 +33,20 @@ public class VectorMapJoinFastStringHashSet extends VectorMapJoinFastBytesHashSe
   private VectorMapJoinFastStringCommon stringCommon;
 
   @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+      throws HiveException, IOException {
+
+    // Ignore NULL keys (HashSet not used for FULL OUTER).
     stringCommon.adaptPutRow(this, currentKey, currentValue);
   }
 
   public VectorMapJoinFastStringHashSet(
-      boolean isOuterJoin,
+      boolean isFullOuter,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
-    stringCommon = new VectorMapJoinFastStringCommon(isOuterJoin);
+    super(
+        isFullOuter,
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
+    stringCommon = new VectorMapJoinFastStringCommon();
   }
 
   @Override

@@ -132,6 +132,7 @@ public class TestMetaStoreMetrics {
   @Test
   public void testConnections() throws Exception {
 
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     //initial state is one connection
     int initialCount =
         (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue();
@@ -145,13 +146,13 @@ public class TestMetaStoreMetrics {
 
     //close one connection, verify still two left
     msc.close();
-    Thread.sleep(500);  // TODO Evil!  Need to figure out a way to remove this sleep.
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     Assert.assertEquals(initialCount + 1,
         Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
 
     //close one connection, verify still one left
     msc2.close();
-    Thread.sleep(500);  // TODO Evil!  Need to figure out a way to remove this sleep.
+    Thread.sleep(2000);  // TODO Evil!  Need to figure out a way to remove this sleep.
     Assert.assertEquals(initialCount,
         Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue());
   }

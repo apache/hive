@@ -1,6 +1,5 @@
 --! qt:dataset:part
 
-set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
@@ -202,12 +201,6 @@ TBLPROPERTIES ('transactional'='true');
 
 INSERT INTO `lineorder_n0`
 SELECT * FROM `lineorder_ext_n0`;
-
-analyze table customer_n1 compute statistics for columns;
-analyze table dates_n0 compute statistics for columns;
-analyze table ssb_part_n0 compute statistics for columns;
-analyze table supplier_n0 compute statistics for columns;
-analyze table lineorder_n0 compute statistics for columns;
 
 CREATE MATERIALIZED VIEW `ssb_mv_n0`
 AS

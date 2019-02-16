@@ -32,7 +32,6 @@ public class JavaVoidObjectInspector extends
 
   @Override
   public Object getPrimitiveWritableObject(Object o) {
-    return NullWritable.get();
+    return o == null ? null : NullWritable.get();
   }
-
 }

@@ -13,8 +13,8 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde.primitive;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -107,11 +107,8 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
 
   @Override
   public Object set(final Object o, final String string) {
-    try {
-      return new BytesWritable(string == null ? null : string.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("Failed to encode string in UTF-8", e);
-    }
+    return new BytesWritable(
+        string == null ? null : string.getBytes(StandardCharsets.UTF_8));
   }
 
   @Override

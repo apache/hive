@@ -76,10 +76,20 @@ PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_acid_fast
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_acid_fast
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -109,10 +119,10 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0, 4, 1]
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [4, 0]
+                            keyColumns: 4:smallint, 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1]
+                            valueColumns: 1:bigint
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -136,7 +146,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -219,9 +229,23 @@ POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cint SCRIPT []
 PREHOOK: query: explain vectorization only detail
 update orc_llap_acid_fast set cbigint = 2 where cint = 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_acid_fast
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+PREHOOK: Output: default@orc_llap_acid_fast@csmallint=1
+PREHOOK: Output: default@orc_llap_acid_fast@csmallint=2
+PREHOOK: Output: default@orc_llap_acid_fast@csmallint=3
 POSTHOOK: query: explain vectorization only detail
 update orc_llap_acid_fast set cbigint = 2 where cint = 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_acid_fast
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=1
+POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=2
+POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=3
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -253,11 +277,11 @@ STAGE PLANS:
                           projectedOutputColumnNums: [5, 2, 3, 4]
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [5]
+                            keyColumns: 5:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumnNums: [6]
-                            valueColumnNums: [2, 3, 4]
+                            partitionColumns: 6:int
+                            valueColumns: 2:float, 3:double, 4:smallint
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -282,7 +306,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
+                reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -330,10 +354,20 @@ PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_acid_fast
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+PREHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_acid_fast where cint is not null order
 by csmallint, cint
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_acid_fast
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
+POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -363,10 +397,10 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0, 4, 1]
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumnNums: [4, 0]
+                            keyColumns: 4:smallint, 0:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumnNums: [1]
+                            valueColumns: 1:bigint
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -390,7 +424,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
+                reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false

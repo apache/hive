@@ -33,8 +33,8 @@ public class LongColumnInList extends VectorExpression implements ILongInExpr {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private long[] inListValues;
+  protected int colNum;
+  protected long[] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
   // of the data type of the column.

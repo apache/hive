@@ -23,6 +23,8 @@ SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.Math", "floor", 1.9D)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.String", "isEmpty"),
@@ -33,6 +35,8 @@ SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.Math", "floor", 1.9D)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -22,13 +22,17 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
+import org.apache.hadoop.hive.serde2.WriteBuffers;
+import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.HashCodeUtil;
 
@@ -41,15 +45,113 @@ public class VectorMapJoinFastLongHashMap
              extends VectorMapJoinFastLongHashTable
              implements VectorMapJoinLongHashMap, MemoryEstimate {
 
-  public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashMap.class);
+  // public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashMap.class);
 
   protected VectorMapJoinFastValueStore valueStore;
 
   private BytesWritable testValueBytesWritable;
 
+  private long fullOuterNullKeyValueRef;
+
+  private static class NonMatchedLongHashMapIterator extends VectorMapJoinFastNonMatchedIterator {
+
+    private VectorMapJoinFastLongHashMap hashMap;
+
+    private boolean noMore;
+    private boolean keyIsNull;
+
+    private WriteBuffers.Position nonMatchedReadPos;
+
+    private ByteSegmentRef nonMatchedKeyByteSegmentRef;
+
+    private VectorMapJoinFastValueStore.HashMapResult nonMatchedHashMapResult;
+
+    NonMatchedLongHashMapIterator(MatchTracker matchTracker,
+        VectorMapJoinFastLongHashMap hashMap) {
+      super(matchTracker);
+      this.hashMap = hashMap;
+    }
+
+    @Override
+    public void init() {
+      super.init();
+      noMore = false;
+      keyIsNull = false;
+      nonMatchedHashMapResult = new VectorMapJoinFastValueStore.HashMapResult();
+    }
+
+    @Override
+    public boolean findNextNonMatched() {
+      if (noMore) {
+        return false;
+      }
+      while (true) {
+        nonMatchedLogicalSlotNum++;
+        if (nonMatchedLogicalSlotNum >= hashMap.logicalHashBucketCount){
+
+          // Fall below and handle Small Table NULL key.
+          break;
+        }
+        final int nonMatchedDoubleIndex = nonMatchedLogicalSlotNum * 2;
+        if (hashMap.slotPairs[nonMatchedDoubleIndex] != 0) {
+          if (!matchTracker.wasMatched(nonMatchedLogicalSlotNum)) {
+            nonMatchedHashMapResult.set(
+                hashMap.valueStore, hashMap.slotPairs[nonMatchedDoubleIndex]);
+            keyIsNull = false;
+            return true;
+          }
+        }
+      }
+
+      // Do we have a Small Table NULL Key?
+      if (hashMap.fullOuterNullKeyValueRef == 0) {
+        return false;
+      }
+      nonMatchedHashMapResult.set(
+          hashMap.valueStore, hashMap.fullOuterNullKeyValueRef);
+      noMore = true;
+      keyIsNull = true;
+      return true;
+    }
+
+    @Override
+    public boolean readNonMatchedLongKey() {
+      return !keyIsNull;
+    }
+
+    @Override
+    public long getNonMatchedLongKey() {
+      return hashMap.slotPairs[nonMatchedLogicalSlotNum * 2 + 1];
+    }
+
+    @Override
+    public VectorMapJoinHashMapResult getNonMatchedHashMapResult() {
+      return nonMatchedHashMapResult;
+    }
+  }
+
   @Override
   public VectorMapJoinHashMapResult createHashMapResult() {
     return new VectorMapJoinFastValueStore.HashMapResult();
+  }
+
+  @Override
+  public VectorMapJoinNonMatchedIterator createNonMatchedIterator(MatchTracker matchTracker) {
+    return new NonMatchedLongHashMapIterator(matchTracker, this);
+  }
+
+  @Override
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+      throws HiveException, IOException {
+
+    if (!adaptPutRow(currentKey, currentValue)) {
+
+      // Ignore NULL keys, except for FULL OUTER.
+      if (isFullOuter) {
+        addFullOuterNullKeyValue(currentValue);
+      }
+
+    }
   }
 
   /*
@@ -91,13 +193,12 @@ public class VectorMapJoinFastLongHashMap
     optimizedHashMapResult.forget();
 
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
-    // LOG.debug("VectorMapJoinFastLongHashMap lookup " + key + " hashCode " + hashCode);
-    long valueRef = findReadSlot(key, hashCode);
+    int pairIndex = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
-    if (valueRef == -1) {
+    if (pairIndex == -1) {
       joinResult = JoinUtil.JoinResult.NOMATCH;
     } else {
-      optimizedHashMapResult.set(valueStore, valueRef);
+      optimizedHashMapResult.set(valueStore, slotPairs[pairIndex]);
 
       joinResult = JoinUtil.JoinResult.MATCH;
     }
@@ -107,12 +208,59 @@ public class VectorMapJoinFastLongHashMap
     return joinResult;
   }
 
+  @Override
+  public JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult,
+      MatchTracker matchTracker) {
+
+    VectorMapJoinFastValueStore.HashMapResult optimizedHashMapResult =
+        (VectorMapJoinFastValueStore.HashMapResult) hashMapResult;
+
+    optimizedHashMapResult.forget();
+
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    int pairIndex = findReadSlot(key, hashCode);
+    JoinUtil.JoinResult joinResult;
+    if (pairIndex == -1) {
+      joinResult = JoinUtil.JoinResult.NOMATCH;
+    } else {
+      if (matchTracker != null) {
+        matchTracker.trackMatch(pairIndex / 2);
+      }
+      optimizedHashMapResult.set(valueStore, slotPairs[pairIndex]);
+
+      joinResult = JoinUtil.JoinResult.MATCH;
+    }
+
+    optimizedHashMapResult.setJoinResult(joinResult);
+
+    return joinResult;
+  }
+
+  public void addFullOuterNullKeyValue(BytesWritable currentValue) {
+
+    byte[] valueBytes = currentValue.getBytes();
+    int valueLength = currentValue.getLength();
+
+    if (fullOuterNullKeyValueRef == 0) {
+      fullOuterNullKeyValueRef = valueStore.addFirst(valueBytes, 0, valueLength);
+    } else {
+
+      // Add another value.
+      fullOuterNullKeyValueRef =
+          valueStore.addMore(fullOuterNullKeyValueRef, valueBytes, 0, valueLength);
+    }
+  }
+
   public VectorMapJoinFastLongHashMap(
-      boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
+      boolean isFullOuter,
+      boolean minMaxEnabled,
+      HashTableKeyType hashTableKeyType,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
-    super(minMaxEnabled, isOuterJoin, hashTableKeyType,
+    super(
+        isFullOuter, minMaxEnabled, hashTableKeyType,
         initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     valueStore = new VectorMapJoinFastValueStore(writeBuffersSize);
+    fullOuterNullKeyValueRef = 0;
   }
 
   @Override

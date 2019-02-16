@@ -51,11 +51,21 @@ src11 a JOIN
 src12 b ON (a.key = b.key) JOIN
 (SELECT * FROM (SELECT * FROM src13 UNION ALL SELECT * FROM src14)a )c ON c.value = b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src11
+PREHOOK: Input: default@src12
+PREHOOK: Input: default@src13
+PREHOOK: Input: default@src14
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT * FROM 
 src11 a JOIN
 src12 b ON (a.key = b.key) JOIN
 (SELECT * FROM (SELECT * FROM src13 UNION ALL SELECT * FROM src14)a )c ON c.value = b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src11
+POSTHOOK: Input: default@src12
+POSTHOOK: Input: default@src13
+POSTHOOK: Input: default@src14
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

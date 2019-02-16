@@ -45,9 +45,15 @@ POSTHOOK: Output: default@table2
 PREHOOK: query: explain extended
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
 PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

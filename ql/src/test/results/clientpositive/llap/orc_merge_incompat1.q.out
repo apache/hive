@@ -24,8 +24,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@orc_merge5_n3
 PREHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n3
+PREHOOK: Output: default@orc_merge5b
 POSTHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n3
+POSTHOOK: Output: default@orc_merge5b
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

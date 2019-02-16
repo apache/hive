@@ -13,21 +13,25 @@
  */
 package org.apache.hive.benchmark.vectorization.mapjoin;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.tez.ObjectCache;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.CountCollectorTestOperator;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.CountVectorCollectorTestOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorRandomBatchSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestConfig;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestConfig.MapJoinTestImplementation;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestData;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestDescription;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestConfig.CreateMapJoinResult;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestDescription.MapJoinPlanVariation;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestDescription.SmallTableGenerationParameters;
-import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerateUtil;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
@@ -74,30 +78,31 @@ public abstract class AbstractMapJoin {
   }
 
   protected void setupMapJoin(HiveConf hiveConf, long seed, int rowCount,
-    VectorMapJoinVariation vectorMapJoinVariation, MapJoinTestImplementation mapJoinImplementation,
-    String[] bigTableColumnNames, TypeInfo[] bigTableTypeInfos, int[] bigTableKeyColumnNums,
-    String[] smallTableValueColumnNames, TypeInfo[] smallTableValueTypeInfos,
-    int[] bigTableRetainColumnNums,
-    int[] smallTableRetainKeyColumnNums, int[] smallTableRetainValueColumnNums,
-    SmallTableGenerationParameters smallTableGenerationParameters) throws Exception {
+      VectorMapJoinVariation vectorMapJoinVariation, MapJoinTestImplementation mapJoinImplementation,
+      String[] bigTableColumnNames, TypeInfo[] bigTableTypeInfos,
+      int[] bigTableKeyColumnNums,
+      String[] smallTableValueColumnNames, TypeInfo[] smallTableValueTypeInfos,
+      int[] bigTableRetainColumnNums,
+      int[] smallTableRetainKeyColumnNums, int[] smallTableRetainValueColumnNums,
+      SmallTableGenerationParameters smallTableGenerationParameters) throws Exception {
 
     this.vectorMapJoinVariation = vectorMapJoinVariation;
     this.mapJoinImplementation = mapJoinImplementation;
     testDesc = new MapJoinTestDescription(
         hiveConf, vectorMapJoinVariation,
-        bigTableColumnNames, bigTableTypeInfos,
+        bigTableTypeInfos,
         bigTableKeyColumnNums,
-        smallTableValueColumnNames, smallTableValueTypeInfos,
-        bigTableRetainColumnNums,
-        smallTableRetainKeyColumnNums, smallTableRetainValueColumnNums,
-        smallTableGenerationParameters);
+        smallTableValueTypeInfos,
+        smallTableRetainKeyColumnNums,
+        smallTableGenerationParameters,
+        MapJoinPlanVariation.DYNAMIC_PARTITION_HASH_JOIN);
 
     // Prepare data.  Good for ANY implementation variation.
-    testData = new MapJoinTestData(rowCount, testDesc, seed, seed * 10);
+    testData = new MapJoinTestData(rowCount, testDesc, seed);
 
     ObjectRegistryImpl objectRegistry = new ObjectRegistryImpl();
     ObjectCache.setupObjectRegistry(objectRegistry);
-  
+
     operator = setupBenchmarkImplementation(
         mapJoinImplementation, testDesc, testData);
 
@@ -108,15 +113,21 @@ public abstract class AbstractMapJoin {
      */
     if (!isVectorOutput) {
 
-      bigTableRows = VectorBatchGenerateUtil.generateRowObjectArray(
-          testDesc.bigTableKeyTypeInfos, testData.getBigTableBatchStream(),
-          testData.getBigTableBatch(), testDesc.outputObjectInspectors);
+      bigTableRows = testData.getBigTableBatchSource().getRandomRows();
 
     } else {
 
-      bigTableBatches = VectorBatchGenerateUtil.generateBatchArray(
-          testData.getBigTableBatchStream(), testData.getBigTableBatch());
-
+      ArrayList<VectorizedRowBatch> bigTableBatchList = new ArrayList<VectorizedRowBatch>();
+      VectorRandomBatchSource batchSource = testData.getBigTableBatchSource();
+      batchSource.resetBatchIteration();
+      while (true) {
+        VectorizedRowBatch batch = testData.createBigTableBatch(testDesc);
+        if (!batchSource.fillNextBatch(batch)) {
+          break;
+        }
+        bigTableBatchList.add(batch);
+      }
+      bigTableBatches = bigTableBatchList.toArray(new VectorizedRowBatch[0]);
     }
   }
 
@@ -131,7 +142,6 @@ public abstract class AbstractMapJoin {
 	      MapJoinTestData testData)
 	          throws Exception {
 
-    // UNDONE: Parameterize for implementation variation?
     MapJoinDesc mapJoinDesc = MapJoinTestConfig.createMapJoinDesc(testDesc);
 
     final boolean isVectorOutput = isVectorOutput(mapJoinImplementation);
@@ -141,9 +151,19 @@ public abstract class AbstractMapJoin {
         (!isVectorOutput ? new CountCollectorTestOperator() :
             new CountVectorCollectorTestOperator());
 
-    MapJoinOperator operator =
+    CreateMapJoinResult createMapJoinResult =
         MapJoinTestConfig.createMapJoinImplementation(
-            mapJoinImplementation, testDesc, testCollectorOperator, testData, mapJoinDesc);
+            mapJoinImplementation, testDesc, testData, mapJoinDesc,
+            /* shareMapJoinTableContainer */ null);
+    MapJoinOperator operator = createMapJoinResult.mapJoinOperator;
+    MapJoinTableContainer mapJoinTableContainer = createMapJoinResult.mapJoinTableContainer;
+
+    // Invoke initializeOp methods.
+    operator.initialize(testDesc.hiveConf, testDesc.inputObjectInspectors);
+
+    // Fixup the mapJoinTables.
+    operator.setTestMapJoinTableContainer(1, mapJoinTableContainer, null);
+
     return operator;
   }
 

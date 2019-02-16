@@ -82,7 +82,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static int BUCKET = 2;
   final static int ROW_ID = 3;
   final static int CURRENT_WRITEID = 4;
-  final static int ROW = 5;
+  public static final int ROW = 5;
   /**
    * total number of fields (above)
    */
@@ -342,13 +342,14 @@ public class OrcRecordUpdater implements RecordUpdater {
       writerOptions.blockPadding(false);
       if (optionsCloneForDelta.getConfiguration().getBoolean(
         HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED.varname, false)) {
-        writerOptions.compress(CompressionKind.NONE);
         writerOptions.encodingStrategy(org.apache.orc.OrcFile.EncodingStrategy.SPEED);
         writerOptions.rowIndexStride(0);
         writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
       }
     }
-    writerOptions.fileSystem(fs).callback(indexBuilder);
+    if(!HiveConf.getBoolVar(options.getConfiguration(), HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP)) {
+      writerOptions.fileSystem(fs).callback(indexBuilder);
+    }
     rowInspector = (StructObjectInspector)options.getInspector();
     writerOptions.inspector(createEventObjectInspector(findRecId(options.getInspector(),
         options.getRecordIdColumn())));
@@ -622,6 +623,10 @@ public class OrcRecordUpdater implements RecordUpdater {
   static RecordIdentifier[] parseKeyIndex(Reader reader) {
     String[] stripes;
     try {
+      if (!reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
+        return null;
+      }
+
       ByteBuffer val =
           reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)
               .duplicate();
@@ -629,7 +634,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     } catch (CharacterCodingException e) {
       throw new IllegalArgumentException("Bad string encoding for " +
           OrcRecordUpdater.ACID_KEY_INDEX_NAME, e);
-    }
+    } 
     RecordIdentifier[] result = new RecordIdentifier[stripes.length];
     for(int i=0; i < stripes.length; ++i) {
       if (stripes[i].length() != 0) {

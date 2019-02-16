@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -50,34 +51,16 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateAdd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateDiff;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateSub;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPDivide;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 
 import junit.framework.Assert;
 
@@ -194,7 +177,7 @@ public class TestVectorNegative {
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
-    int columnNum = 0;
+    int columnNum = 1;
 
     generationSpecList.add(
         GenerationSpec.createSameType(typeInfo));
@@ -218,7 +201,8 @@ public class TestVectorNegative {
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
     rowSource.initGenerationSpecSchema(
-        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, generationSpecList, /* maxComplexDepth */ 0,
+        /* allowNull */ true, /* isUnicodeOk */ true,
         explicitDataTypePhysicalVariationList);
 
     Object[][] randomRows = rowSource.randomRows(100000);
@@ -330,10 +314,12 @@ public class TestVectorNegative {
       ObjectInspector rowInspector,
       TypeInfo outputTypeInfo, Object[] resultObjects) throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " negativeTestMode ROW_MODE" +
         " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
@@ -404,6 +390,14 @@ public class TestVectorNegative {
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
 
+    if (negativeTestMode == NegativeTestMode.VECTOR_EXPRESSION &&
+        vectorExpression instanceof VectorUDFAdaptor) {
+      System.out.println(
+          "*NO NATIVE VECTOR EXPRESSION* typeInfo " + typeInfo.toString() +
+          " negativeTestMode " + negativeTestMode +
+          " vectorExpression " + vectorExpression.toString());
+    }
+
     String[] outputScratchTypeNames= vectorizationContext.getScratchColumnTypeNames();
 
     VectorizedRowBatchCtx batchContext =
@@ -425,10 +419,15 @@ public class TestVectorNegative {
         new TypeInfo[] { outputTypeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " negativeTestMode " + negativeTestMode +
         " vectorExpression " + vectorExpression.toString());
+    */
+
     batchSource.resetBatchIteration();
     int rowIndex = 0;
     while (true) {

@@ -229,7 +229,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     return new RemoteSparkJobRef(hiveConf, jobHandle, sparkJobStatus);
   }
 
-  private void refreshLocalResources(SparkWork sparkWork, HiveConf conf) throws IOException {
+  private synchronized void refreshLocalResources(SparkWork sparkWork, HiveConf conf) throws IOException {
     // add hive-exec jar
     addJars((new JobConf(this.getClass())).getJar());
 
@@ -264,6 +264,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     addResources(addedArchives);
   }
 
+  //This method is not thread safe
   private void addResources(String addedFiles) throws IOException {
     for (String addedFile : CSV_SPLITTER.split(Strings.nullToEmpty(addedFiles))) {
       try {
@@ -281,6 +282,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     }
   }
 
+  //This method is not thread safe
   private void addJars(String addedJars) throws IOException {
     for (String addedJar : CSV_SPLITTER.split(Strings.nullToEmpty(addedJars))) {
       try {

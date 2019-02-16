@@ -121,10 +121,15 @@ public class TestAcidOnTez {
     SessionState.start(new SessionState(hiveConf));
     d = DriverFactory.newDriver(hiveConf);
     dropTables();
-    runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc " + getTblProperties());
-    runStatementOnDriver("create table " + Table.ACIDTBLPART + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc " + getTblProperties());
-    runStatementOnDriver("create table " + Table.NONACIDORCTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc ");
-    runStatementOnDriver("create table " + Table.NONACIDPART + "(a int, b int) partitioned by (p string) stored as orc ");
+    runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT
+        + " buckets stored as orc " + getTblProperties());
+    runStatementOnDriver("create table " + Table.ACIDTBLPART
+        + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc "
+        + getTblProperties());
+    runStatementOnDriver("create table " + Table.NONACIDORCTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT
+        + " buckets stored as orc ");
+    runStatementOnDriver("create table " + Table.NONACIDPART
+        + "(a int, b int) partitioned by (p string) stored as orc ");
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(5,6)");
@@ -608,11 +613,16 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
       LOG.warn(s);
     }
     String[][] expected2 = {
-       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "warehouse/t/base_-9223372036854775808/bucket_00000"},
-      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "warehouse/t/base_-9223372036854775808/bucket_00000"},
-      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6", "warehouse/t/base_-9223372036854775808/bucket_00000"},
-      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t7\t8", "warehouse/t/base_-9223372036854775808/bucket_00000"},
-      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10", "warehouse/t/base_-9223372036854775808/bucket_00000"}
+       {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
+           "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
+          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6",
+          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":3}\t7\t8",
+          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"},
+      {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10",
+          "warehouse/t/base_-9223372036854775808_v0000024/bucket_00000"}
     };
     Assert.assertEquals("Unexpected row count after major compact", expected2.length, rs.size());
     for(int i = 0; i < expected2.length; i++) {
@@ -782,6 +792,87 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     assertEquals(1, rows.size());
   }
 
+  @Test
+  public void testGetSplitsLocksWithMaterializedView() throws Exception {
+    // Need to test this with LLAP settings, which requires some additional configurations set.
+    HiveConf modConf = new HiveConf(hiveConf);
+    setupTez(modConf);
+    modConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
+    modConf.setVar(ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    modConf.setVar(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "localhost");
+
+    // SessionState/Driver needs to be restarted with the Tez conf settings.
+    restartSessionAndDriver(modConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(modConf);
+    String mvName = "mv_acidTbl";
+    try {
+      runStatementOnDriver("create materialized view " + mvName + " as select a from " + Table.ACIDTBL + " where a > 5");
+
+      // Request LLAP splits for a table.
+      String queryParam = "select a from " + Table.ACIDTBL + " where a > 5";
+      runStatementOnDriver("select get_splits(\"" + queryParam + "\", 1)");
+
+      // The get_splits call should have resulted in a lock on ACIDTBL and materialized view mv_acidTbl
+      ShowLocksResponse slr = txnHandler.showLocks(new ShowLocksRequest());
+      TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
+              "default", Table.ACIDTBL.name, null, slr.getLocks());
+      TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED,
+              "default", mvName, null, slr.getLocks());
+      assertEquals(2, slr.getLocksSize());
+    } finally {
+      // Close the session which should free up the TxnHandler/locks held by the session.
+      // Done in the finally block to make sure we free up the locks; otherwise
+      // the cleanup in tearDown() will get stuck waiting on the lock held here on ACIDTBL.
+      restartSessionAndDriver(hiveConf);
+      runStatementOnDriver("drop materialized view if exists " + mvName);
+    }
+
+    // Lock should be freed up now.
+    ShowLocksResponse slr = txnHandler.showLocks(new ShowLocksRequest());
+    assertEquals(0, slr.getLocksSize());
+
+    List<String> rows = runStatementOnDriver("show transactions");
+    // Transactions should be committed.
+    // No transactions - just the header row
+    assertEquals(1, rows.size());
+  }
+ 
+  /**
+   * HIVE-20699
+   *
+   * see TestTxnCommands3.testCompactor
+   */
+  @Test
+  public void testCrudMajorCompactionSplitGrouper() throws Exception {
+    String tblName = "test_split_grouper";
+    // make a clone of existing hive conf
+    HiveConf confForTez = new HiveConf(hiveConf);
+    setupTez(confForTez); // one-time setup to make query able to run with Tez
+    HiveConf.setVar(confForTez, HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    runStatementOnDriver("create transactional table " + tblName + " (a int, b int) clustered by (a) into 2 buckets "
+        + "stored as ORC TBLPROPERTIES('bucketing_version'='2', 'transactional'='true',"
+        + " 'transactional_properties'='default')", confForTez);
+    runStatementOnDriver("insert into " + tblName + " values(1,2),(1,3),(1,4),(2,2),(2,3),(2,4)", confForTez);
+    runStatementOnDriver("insert into " + tblName + " values(3,2),(3,3),(3,4),(4,2),(4,3),(4,4)", confForTez);
+    runStatementOnDriver("delete from " + tblName + " where b = 2");
+    List<String> expectedRs = new ArrayList<>();
+    expectedRs.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t2\t4");
+    expectedRs.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t2\t3");
+    expectedRs.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t4");
+    expectedRs.add("{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t3");
+    expectedRs.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t4");
+    expectedRs.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t1\t3");
+    expectedRs.add("{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t4\t4");
+    expectedRs.add("{\"writeid\":2,\"bucketid\":536936448,\"rowid\":1}\t4\t3");
+    List<String> rs =
+        runStatementOnDriver("select ROW__ID, * from " + tblName + " order by ROW__ID.bucketid, ROW__ID", confForTez);
+    HiveConf.setVar(confForTez, HiveConf.ConfVars.SPLIT_GROUPING_MODE, "compactor");
+    // No order by needed: this should use the compactor split grouping to return the rows in correct order
+    List<String> rsCompact = runStatementOnDriver("select ROW__ID, * from  " + tblName, confForTez);
+    Assert.assertEquals("normal read", expectedRs, rs);
+    Assert.assertEquals("compacted read", rs, rsCompact);
+  }
+
   private void restartSessionAndDriver(HiveConf conf) throws Exception {
     SessionState ss = SessionState.get();
     if (ss != null) {
@@ -860,11 +951,16 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   private void setupTez(HiveConf conf) {
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
+    conf.set("tez.am.resource.memory.mb", "128");
+    conf.set("tez.am.dag.scheduler.class", "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
     conf.setBoolean("tez.local.mode", true);
     conf.set("fs.defaultFS", "file:///");
     conf.setBoolean("tez.runtime.optimize.local.fetch", true);
     conf.set("tez.staging-dir", TEST_DATA_DIR);
     conf.setBoolean("tez.ignore.lib.uris", true);
+    conf.set("hive.tez.container.size", "128");
+    conf.setBoolean("hive.merge.tezfiles", false); 
+    conf.setBoolean("hive.in.tez.test", true);
   }
 
   private void setupMapJoin(HiveConf conf) {
