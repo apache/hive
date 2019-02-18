@@ -167,6 +167,7 @@ mask_show_last_n
 matchpath
 max
 md5
+mid
 min
 minute
 mod
@@ -195,6 +196,7 @@ percentile_approx
 pi
 pmod
 posexplode
+position
 positive
 pow
 power
@@ -436,6 +438,7 @@ mask_show_last_n
 matchpath
 max
 md5
+mid
 min
 minute
 mod
