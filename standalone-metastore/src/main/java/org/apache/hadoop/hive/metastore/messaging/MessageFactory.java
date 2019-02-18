@@ -20,360 +20,86 @@
 package org.apache.hadoop.hive.metastore.messaging;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Abstract Factory for the construction of HCatalog message instances.
  */
 public abstract class MessageFactory {
-
-  // Common name constants for event messages
-  public static final String ADD_PARTITION_EVENT = "ADD_PARTITION";
-  public static final String ALTER_PARTITION_EVENT = "ALTER_PARTITION";
-  public static final String DROP_PARTITION_EVENT = "DROP_PARTITION";
-  public static final String CREATE_TABLE_EVENT = "CREATE_TABLE";
-  public static final String ALTER_TABLE_EVENT = "ALTER_TABLE";
-  public static final String DROP_TABLE_EVENT = "DROP_TABLE";
-  public static final String CREATE_DATABASE_EVENT = "CREATE_DATABASE";
-  public static final String ALTER_DATABASE_EVENT = "ALTER_DATABASE";
-  public static final String DROP_DATABASE_EVENT = "DROP_DATABASE";
-  public static final String INSERT_EVENT = "INSERT";
-  public static final String CREATE_FUNCTION_EVENT = "CREATE_FUNCTION";
-  public static final String DROP_FUNCTION_EVENT = "DROP_FUNCTION";
-  public static final String ADD_PRIMARYKEY_EVENT = "ADD_PRIMARYKEY";
-  public static final String ADD_FOREIGNKEY_EVENT = "ADD_FOREIGNKEY";
-  public static final String ADD_UNIQUECONSTRAINT_EVENT = "ADD_UNIQUECONSTRAINT";
-  public static final String ADD_NOTNULLCONSTRAINT_EVENT = "ADD_NOTNULLCONSTRAINT";
-  public static final String DROP_CONSTRAINT_EVENT = "DROP_CONSTRAINT";
-  public static final String CREATE_ISCHEMA_EVENT = "CREATE_ISCHEMA";
-  public static final String ALTER_ISCHEMA_EVENT = "ALTER_ISCHEMA";
-  public static final String DROP_ISCHEMA_EVENT = "DROP_ISCHEMA";
-  public static final String ADD_SCHEMA_VERSION_EVENT = "ADD_SCHEMA_VERSION";
-  public static final String ALTER_SCHEMA_VERSION_EVENT = "ALTER_SCHEMA_VERSION";
-  public static final String DROP_SCHEMA_VERSION_EVENT = "DROP_SCHEMA_VERSION";
-  public static final String CREATE_CATALOG_EVENT = "CREATE_CATALOG";
-  public static final String DROP_CATALOG_EVENT = "DROP_CATALOG";
-  public static final String OPEN_TXN_EVENT = "OPEN_TXN";
-  public static final String COMMIT_TXN_EVENT = "COMMIT_TXN";
-  public static final String ABORT_TXN_EVENT = "ABORT_TXN";
-  public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
-  public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
-  public static final String ACID_WRITE_EVENT = "ACID_WRITE_EVENT";
-  public static final String UPDATE_TBL_COL_STAT_EVENT = "UPDATE_TBL_COL_STAT_EVENT";
-  public static final String DELETE_TBL_COL_STAT_EVENT = "DELETE_TBL_COL_STAT_EVENT";
-  public static final String UPDATE_PART_COL_STAT_EVENT = "UPDATE_PART_COL_STAT_EVENT";
-  public static final String DELETE_PART_COL_STAT_EVENT = "DELETE_PART_COL_STAT_EVENT";
-
-  private static MessageFactory instance = null;
+  private static final Logger LOG = LoggerFactory.getLogger(MessageFactory.class.getName());
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
-  /*
-  // TODO MS-SPLIT I'm 99% certain we don't need this, as MetastoreConf.newMetastoreConf already
-  adds this resource.
+
+  private static final Map<String, Method> registry = new HashMap<>();
+
+  public static void register(String messageFormat, Class clazz) {
+    Method method = requiredMethod(clazz);
+    registry.put(messageFormat, method);
+  }
+
   static {
-    conf.addResource("hive-site.xml");
+    register(GzipJSONMessageEncoder.FORMAT, GzipJSONMessageEncoder.class);
+    register(JSONMessageEncoder.FORMAT, JSONMessageEncoder.class);
   }
-  */
 
-  protected static final String MS_SERVER_URL = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS, "");
-  protected static final String MS_SERVICE_PRINCIPAL =
-      MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL, "");
-
-  /**
-   * Getter for MessageFactory instance.
-   */
-  public static MessageFactory getInstance() {
-    if (instance == null) {
-      instance =
-          getInstance(MetastoreConf.getVar(conf, ConfVars.EVENT_MESSAGE_FACTORY));
+  private static Method requiredMethod(Class clazz) {
+    if (MessageEncoder.class.isAssignableFrom(clazz)) {
+      try {
+        Method methodInstance = clazz.getMethod("getInstance");
+        if (MessageEncoder.class.isAssignableFrom(methodInstance.getReturnType())) {
+          int modifiers = methodInstance.getModifiers();
+          if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
+            return methodInstance;
+          }
+          throw new NoSuchMethodException(
+              "modifier for getInstance() method is not 'public static' in " + clazz
+                  .getCanonicalName());
+        }
+        throw new NoSuchMethodException(
+            "return type is not assignable to " + MessageEncoder.class.getCanonicalName());
+      } catch (NoSuchMethodException e) {
+        String message = clazz.getCanonicalName()
+            + " does not implement the required 'public static MessageEncoder getInstance()' method ";
+        LOG.error(message, e);
+        throw new IllegalArgumentException(message, e);
+      }
     }
-    return instance;
+    String message = clazz.getCanonicalName() + " is not assignable to " + MessageEncoder.class
+        .getCanonicalName();
+    LOG.error(message);
+    throw new IllegalArgumentException(message);
   }
 
-  private static MessageFactory getInstance(String className) {
+  public static MessageEncoder getInstance(String messageFormat)
+      throws InvocationTargetException, IllegalAccessException {
+    Method methodInstance = registry.get(messageFormat);
+    if (methodInstance == null) {
+      LOG.error("received incorrect MessageFormat " + messageFormat);
+      throw new RuntimeException("messageFormat: " + messageFormat + " is not supported ");
+    }
+    return (MessageEncoder) methodInstance.invoke(null);
+  }
+
+  public static MessageEncoder getDefaultInstance(Configuration conf) {
+    String clazz =
+        MetastoreConf.get(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getVarname());
     try {
-      return JavaUtils.newInstance(JavaUtils.getClass(className, MessageFactory.class));
-    }
-    catch (MetaException e) {
-      throw new IllegalStateException("Could not construct MessageFactory implementation: ", e);
+      Class<?> clazzObject = MessageFactory.class.getClassLoader().loadClass(clazz);
+      return (MessageEncoder) requiredMethod(clazzObject).invoke(null);
+    } catch (Exception e) {
+      String message = "could not load the configured class " + clazz;
+      LOG.error(message, e);
+      throw new IllegalStateException(message, e);
     }
   }
-
-  /**
-   * Getter for MessageDeserializer, corresponding to the specified format and version.
-   * @param format Serialization format for notifications.
-   * @param version Version of serialization format (currently ignored.)
-   * @return MessageDeserializer.
-   */
-  public static MessageDeserializer getDeserializer(String format,
-                            String version) {
-    return getInstance(MetastoreConf.getVar(conf, ConfVars.EVENT_MESSAGE_FACTORY)).getDeserializer();
-    // Note : The reason this method exists outside the no-arg getDeserializer method is in
-    // case there is a user-implemented MessageFactory that's used, and some the messages
-    // are in an older format and the rest in another. Then, what MessageFactory is default
-    // is irrelevant, we should always use the one that was used to create it to deserialize.
-    //
-    // There exist only 2 implementations of this - json and jms
-    //
-    // Additional note : rather than as a config parameter, does it make sense to have
-    // this use jdbc-like semantics that each MessageFactory made available register
-    // itself for discoverability? Might be worth pursuing.
-  }
-
-  public abstract MessageDeserializer getDeserializer();
-
-  /**
-   * Getter for message-format.
-   */
-  public abstract String getMessageFormat();
-
-  /**
-   * Factory method for CreateDatabaseMessage.
-   * @param db The Database being added.
-   * @return CreateDatabaseMessage instance.
-   */
-  public abstract CreateDatabaseMessage buildCreateDatabaseMessage(Database db);
-
-  /**
-   * Factory method for AlterDatabaseMessage.
-   * @param beforeDb The Database before alter.
-   * @param afterDb The Database after alter.
-   * @return AlterDatabaseMessage instance.
-   */
-  public abstract AlterDatabaseMessage buildAlterDatabaseMessage(Database beforeDb, Database afterDb);
-
-  /**
-   * Factory method for DropDatabaseMessage.
-   * @param db The Database being dropped.
-   * @return DropDatabaseMessage instance.
-   */
-  public abstract DropDatabaseMessage buildDropDatabaseMessage(Database db);
-
-  /**
-   * Factory method for CreateTableMessage.
-   * @param table The Table being created.
-   * @param files Iterator of files
-   * @return CreateTableMessage instance.
-   */
-  public abstract CreateTableMessage buildCreateTableMessage(Table table, Iterator<String> files);
-
-  /**
-   * Factory method for AlterTableMessage.  Unlike most of these calls, this one can return null,
-   * which means no message should be sent.  This is because there are many flavors of alter
-   * table (add column, add partition, etc.).  Some are covered elsewhere (like add partition)
-   * and some are not yet supported.
-   * @param before The table before the alter
-   * @param after The table after the alter
-   * @param isTruncateOp Flag to denote truncate table
-   * @param writeId writeId under which alter is done (for ACID tables)
-   * @return
-   */
-  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp,
-                                                           Long writeId);
-
-  /**
-   * Factory method for DropTableMessage.
-   * @param table The Table being dropped.
-   * @return DropTableMessage instance.
-   */
-  public abstract DropTableMessage buildDropTableMessage(Table table);
-
-    /**
-     * Factory method for AddPartitionMessage.
-     * @param table The Table to which the partitions are added.
-     * @param partitions The iterator to set of Partitions being added.
-     * @param partitionFiles The iterator of partition files
-     * @return AddPartitionMessage instance.
-     */
-  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitions,
-      Iterator<PartitionFiles> partitionFiles);
-
-  /**
-   * Factory method for building AlterPartitionMessage
-   * @param table The table in which the partition is being altered
-   * @param before The partition before it was altered
-   * @param after The partition after it was altered
-   * @param isTruncateOp Flag to denote truncate partition
-   * @param writeId writeId under which alter is done (for ACID tables)
-   * @return a new AlterPartitionMessage
-   */
-  public abstract AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-                                                                   Partition after, boolean isTruncateOp, Long writeId);
-
-  /**
-   * Factory method for DropPartitionMessage.
-   * @param table The Table from which the partition is dropped.
-   * @param partitions The set of partitions being dropped.
-   * @return DropPartitionMessage instance.
-   */
-  public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Iterator<Partition> partitions);
-
-  /**
-   * Factory method for CreateFunctionMessage.
-   * @param fn The Function being added.
-   * @return CreateFunctionMessage instance.
-   */
-  public abstract CreateFunctionMessage buildCreateFunctionMessage(Function fn);
-
-  /**
-   * Factory method for DropFunctionMessage.
-   * @param fn The Function being dropped.
-   * @return DropFunctionMessage instance.
-   */
-  public abstract DropFunctionMessage buildDropFunctionMessage(Function fn);
-
-  /**
-   * Factory method for building insert message
-   *
-   * @param tableObj Table object where the insert occurred in
-   * @param ptnObj Partition object where the insert occurred in, may be null if
-   *          the insert was done into a non-partitioned table
-   * @param replace Flag to represent if INSERT OVERWRITE or INSERT INTO
-   * @param files Iterator of file created
-   * @return instance of InsertMessage
-   */
-  public abstract InsertMessage buildInsertMessage(Table tableObj, Partition ptnObj,
-                                                   boolean replace, Iterator<String> files);
-
-  /**
-   * Factory method for building open txn message using start and end transaction range
-   *
-   * @param fromTxnId start transaction id (inclusive)
-   * @param toTxnId end transaction id (inclusive)
-   * @return instance of OpenTxnMessage
-   */
-  public abstract OpenTxnMessage buildOpenTxnMessage(Long fromTxnId, Long toTxnId);
-
-  /**
-   * Factory method for building commit txn message
-   *
-   * @param txnId Id of the transaction to be committed
-   * @return instance of CommitTxnMessage
-   */
-  public abstract CommitTxnMessage buildCommitTxnMessage(Long txnId);
-
-  /**
-   * Factory method for building abort txn message
-   *
-   * @param txnId Id of the transaction to be aborted
-   * @return instance of AbortTxnMessage
-   */
-  public abstract AbortTxnMessage buildAbortTxnMessage(Long txnId);
-
-  /**
-   * Factory method for building alloc write id message
-   *
-   * @param txnToWriteIdList List of Txn Ids and write id map
-   * @param dbName db for which write ids to be allocated
-   * @param tableName table for which write ids to be allocated
-   * @return instance of AllocWriteIdMessage
-   */
-  public abstract AllocWriteIdMessage buildAllocWriteIdMessage(List<TxnToWriteId> txnToWriteIdList, String dbName,
-                                                               String tableName);
-
-  /***
-   * Factory method for building add primary key message
-   *
-   * @param pks list of primary keys
-   * @return instance of AddPrimaryKeyMessage
-   */
-  public abstract AddPrimaryKeyMessage buildAddPrimaryKeyMessage(List<SQLPrimaryKey> pks);
-
-  /***
-   * Factory method for building add foreign key message
-   *
-   * @param fks list of foreign keys
-   * @return instance of AddForeignKeyMessage
-   */
-  public abstract AddForeignKeyMessage buildAddForeignKeyMessage(List<SQLForeignKey> fks);
-
-  /***
-   * Factory method for building add unique constraint message
-   *
-   * @param uks list of unique constraints
-   * @return instance of SQLUniqueConstraint
-   */
-  public abstract AddUniqueConstraintMessage buildAddUniqueConstraintMessage(List<SQLUniqueConstraint> uks);
-
-  /***
-   * Factory method for building add not null constraint message
-   *
-   * @param nns list of not null constraints
-   * @return instance of SQLNotNullConstraint
-   */
-  public abstract AddNotNullConstraintMessage buildAddNotNullConstraintMessage(List<SQLNotNullConstraint> nns);
-
-  /***
-   * Factory method for building drop constraint message
-   * @param dbName
-   * @param tableName
-   * @param constraintName
-   * @return
-   */
-  public abstract DropConstraintMessage buildDropConstraintMessage(String dbName, String tableName,
-      String constraintName);
-
-  public abstract CreateCatalogMessage buildCreateCatalogMessage(Catalog catalog);
-
-  public abstract DropCatalogMessage buildDropCatalogMessage(Catalog catalog);
-
-  public abstract AlterCatalogMessage buildAlterCatalogMessage(Catalog oldCat, Catalog newCat);
-
-  /**
-   * Factory method for building acid write message
-   *
-   *
-   * @param acidWriteEvent information related to the acid write operation
-   * @param files files added by this write operation
-   * @return instance of AcidWriteMessage
-   */
-  public abstract AcidWriteMessage buildAcidWriteMessage(AcidWriteEvent acidWriteEvent, Iterator<String> files);
-
-  /**
-   * Factory method for building UpdateTableColumnStat message
-   *
-   */
-  public abstract UpdateTableColumnStatMessage buildUpdateTableColumnStatMessage(ColumnStatistics colStats,
-                                                                                 Table tableObj,
-                                                                                   Map<String, String> parameters,
-                                                                                   long writeId);
-  /**
-   * Factory method for building DeleteTableColumnStat message
-   *
-   */
-  public abstract DeleteTableColumnStatMessage buildDeleteTableColumnStatMessage(String dbName, String colName);
-
-  /**
-   * Factory method for building UpdatePartitionColumnStat message
-   *
-   */
-  public abstract UpdatePartitionColumnStatMessage buildUpdatePartitionColumnStatMessage(ColumnStatistics colStats,
-                                                                 List<String> partVals, Map<String, String> parameters,
-                                                                 Table tableObj, long writeId);
-
-  /**
-   * Factory method for building DeletePartitionColumnStat message
-   *
-   */
-  public abstract DeletePartitionColumnStatMessage buildDeletePartitionColumnStatMessage(String dbName,
-                                                             String colName, String partName, List<String> partValues);
 }

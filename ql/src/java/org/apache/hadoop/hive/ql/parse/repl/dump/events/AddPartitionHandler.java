@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -43,8 +44,13 @@ class AddPartitionHandler extends AbstractEventHandler {
   }
 
   @Override
+  EventMessage eventMessage(String stringRepresentation) {
+    return deserializer.getAddPartitionMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} ADD_PARTITION message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} ADD_PARTITION message : {}", fromEventId(), eventMessageAsJSON);
 
     // We do not dump partitions during metadata only bootstrap dump (See TableExport
     // .getPartitions(), for bootstrap dump we pass tableSpec with TABLE_ONLY set.). So don't
@@ -53,7 +59,7 @@ class AddPartitionHandler extends AbstractEventHandler {
       return;
     }
 
-    AddPartitionMessage apm = deserializer.getAddPartitionMessage(event.getMessage());
+    AddPartitionMessage apm = (AddPartitionMessage) eventMessage;
     org.apache.hadoop.hive.metastore.api.Table tobj = apm.getTableObj();
     if (tobj == null) {
       LOG.debug("Event#{} was a ADD_PTN_EVENT with no table listed", fromEventId());

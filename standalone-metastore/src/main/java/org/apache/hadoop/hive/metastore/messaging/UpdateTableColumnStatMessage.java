@@ -33,8 +33,6 @@ public abstract class UpdateTableColumnStatMessage extends EventMessage {
 
   public abstract ColumnStatistics getColumnStatistics();
 
-  public abstract String getcolStatsJson();
-
   public abstract Long getWriteId();
 
   public abstract Map<String, String> getParameters();

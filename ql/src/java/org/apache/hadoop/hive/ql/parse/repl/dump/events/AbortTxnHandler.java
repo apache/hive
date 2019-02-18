@@ -18,20 +18,26 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class AbortTxnHandler extends AbstractEventHandler {
+class AbortTxnHandler extends AbstractEventHandler<AbortTxnMessage> {
 
   AbortTxnHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  AbortTxnMessage eventMessage(String stringRepresentation) {
+    return deserializer.getAbortTxnMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} ABORT_TXN message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} ABORT_TXN message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

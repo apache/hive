@@ -18,20 +18,26 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class DeletePartColStatHandler extends AbstractEventHandler {
+class DeletePartColStatHandler extends AbstractEventHandler<DeletePartitionColumnStatMessage> {
 
   DeletePartColStatHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  DeletePartitionColumnStatMessage eventMessage(String stringRepresentation) {
+    return deserializer.getDeletePartitionColumnStatMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} DeletePartitionColumnStatMessage message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} DeletePartitionColumnStatMessage message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

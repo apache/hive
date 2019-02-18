@@ -18,13 +18,15 @@
  */
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import java.util.Map;
+
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON alter table message
@@ -61,12 +63,12 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
     this.tableType = tableObj.getTableType();
     this.isTruncateOp = Boolean.toString(isTruncateOp);
     this.timestamp = timestamp;
-    this.keyValues = JSONMessageFactory.getPartitionKeyValues(tableObj, partitionObjBefore);
+    this.keyValues = MessageBuilder.getPartitionKeyValues(tableObj, partitionObjBefore);
     this.writeId = writeId;
     try {
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
-      this.partitionObjBeforeJson = JSONMessageFactory.createPartitionObjJson(partitionObjBefore);
-      this.partitionObjAfterJson = JSONMessageFactory.createPartitionObjJson(partitionObjAfter);
+      this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
+      this.partitionObjBeforeJson = MessageBuilder.createPartitionObjJson(partitionObjBefore);
+      this.partitionObjAfterJson = MessageBuilder.createPartitionObjJson(partitionObjAfter);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
@@ -100,7 +102,11 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @Override
   public String getTableType() {
-    if (tableType != null) return tableType; else return "";
+    if (tableType != null) {
+      return tableType;
+    } else {
+      return "";
+    }
   }
 
   @Override
@@ -113,17 +119,17 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @Override
   public Table getTableObj() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+    return (Table) MessageBuilder.getTObj(tableObjJson,Table.class);
   }
 
   @Override
   public Partition getPtnObjBefore() throws Exception {
-    return (Partition) JSONMessageFactory.getTObj(partitionObjBeforeJson, Partition.class);
+    return (Partition) MessageBuilder.getTObj(partitionObjBeforeJson, Partition.class);
   }
 
   @Override
   public Partition getPtnObjAfter() throws Exception {
-    return (Partition) JSONMessageFactory.getTObj(partitionObjAfterJson, Partition.class);
+    return (Partition) MessageBuilder.getTObj(partitionObjAfterJson, Partition.class);
   }
 
   public String getTableObjJson() {

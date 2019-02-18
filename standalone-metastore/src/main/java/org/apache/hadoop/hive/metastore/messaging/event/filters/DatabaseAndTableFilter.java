@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.messaging.event.filters;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 
 import java.util.regex.Pattern;
 
@@ -41,9 +41,9 @@ public class DatabaseAndTableFilter extends BasicFilter {
   }
 
   private boolean isTxnRelatedEvent(final NotificationEvent event) {
-    return ((event.getEventType().equals(MessageFactory.OPEN_TXN_EVENT)) ||
-            (event.getEventType().equals(MessageFactory.COMMIT_TXN_EVENT)) ||
-            (event.getEventType().equals(MessageFactory.ABORT_TXN_EVENT)));
+    return ((event.getEventType().equals(MessageBuilder.OPEN_TXN_EVENT)) ||
+            (event.getEventType().equals(MessageBuilder.COMMIT_TXN_EVENT)) ||
+            (event.getEventType().equals(MessageBuilder.ABORT_TXN_EVENT)));
   }
 
   @Override

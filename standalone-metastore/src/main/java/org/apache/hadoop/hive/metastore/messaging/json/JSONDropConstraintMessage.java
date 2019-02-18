@@ -20,7 +20,8 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON implementation of DropConstraintMessage

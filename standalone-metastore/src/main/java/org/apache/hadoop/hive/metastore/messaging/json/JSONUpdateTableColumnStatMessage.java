@@ -19,9 +19,10 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.thrift.TException;
 import java.util.Map;
@@ -35,10 +36,13 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   private Long writeId, timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, db, colStatsJson;
+  private String server, servicePrincipal, database;
 
   @JsonProperty
-  private Map<String, String> parameters;
+  private String colStatsJson;
+
+  @JsonProperty
+  Map<String, String> parameters;
 
   @JsonProperty
   private String tableObjJson;
@@ -56,14 +60,14 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.writeId = writeId;
-    this.db = colStats.getStatsDesc().getDbName();
-    this.parameters = parameters;
+    this.database = colStats.getStatsDesc().getDbName();
     try {
-      this.colStatsJson = JSONMessageFactory.createTableColumnStatJson(colStats);
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      this.colStatsJson = MessageBuilder.createTableColumnStatJson(colStats);
+      this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize JSONUpdateTableColumnStatMessage : ", e);
     }
+    this.parameters = parameters;
   }
 
   @Override
@@ -73,7 +77,7 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
 
   @Override
   public String getDB() {
-    return db;
+    return database;
   }
 
   @Override
@@ -89,7 +93,7 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   @Override
   public ColumnStatistics getColumnStatistics() {
     try {
-      return  (ColumnStatistics) JSONMessageFactory.getTObj(colStatsJson, ColumnStatistics.class);
+      return  (ColumnStatistics) MessageBuilder.getTObj(colStatsJson, ColumnStatistics.class);
     } catch (Exception e) {
       throw new RuntimeException("failed to get the ColumnStatistics object ", e);
     }
@@ -97,12 +101,7 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
 
   @Override
   public Table getTableObject() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjJson, Table.class);
-  }
-
-  @Override
-  public String getcolStatsJson() {
-    return colStatsJson;
+    return (Table) MessageBuilder.getTObj(tableObjJson, Table.class);
   }
 
   @Override

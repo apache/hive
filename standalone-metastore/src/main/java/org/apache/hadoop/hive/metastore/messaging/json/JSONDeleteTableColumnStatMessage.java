@@ -19,7 +19,7 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.hadoop.hive.metastore.messaging.DeleteTableColumnStatMessage;
 
 /**

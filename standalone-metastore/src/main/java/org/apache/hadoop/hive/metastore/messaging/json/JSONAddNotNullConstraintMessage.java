@@ -22,8 +22,10 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class JSONAddNotNullConstraintMessage extends AddNotNullConstraintMessage {
   @JsonProperty
@@ -49,7 +51,7 @@ public class JSONAddNotNullConstraintMessage extends AddNotNullConstraintMessage
     this.notNullConstraintListJson = new ArrayList<>();
     try {
       for (SQLNotNullConstraint nn : nns) {
-        notNullConstraintListJson.add(JSONMessageFactory.createNotNullConstraintObjJson(nn));
+        notNullConstraintListJson.add(MessageBuilder.createNotNullConstraintObjJson(nn));
       }
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
@@ -80,7 +82,7 @@ public class JSONAddNotNullConstraintMessage extends AddNotNullConstraintMessage
   public List<SQLNotNullConstraint> getNotNullConstraints() throws Exception {
     List<SQLNotNullConstraint> nns = new ArrayList<>();
     for (String nnJson : notNullConstraintListJson) {
-      nns.add((SQLNotNullConstraint)JSONMessageFactory.getTObj(nnJson, SQLNotNullConstraint.class));
+      nns.add((SQLNotNullConstraint) MessageBuilder.getTObj(nnJson, SQLNotNullConstraint.class));
     }
     return nns;
   }

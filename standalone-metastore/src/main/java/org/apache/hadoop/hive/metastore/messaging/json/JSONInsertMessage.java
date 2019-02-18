@@ -19,16 +19,17 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
-import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import com.google.common.collect.Lists;
-
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
+import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
+import org.apache.thrift.TException;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 /**
  * JSON implementation of InsertMessage
@@ -67,9 +68,9 @@ public class JSONInsertMessage extends InsertMessage {
     this.tableType = tableObj.getTableType();
 
     try {
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
       if (null != ptnObj) {
-        this.ptnObjJson = JSONMessageFactory.createPartitionObjJson(ptnObj);
+        this.ptnObjJson = MessageBuilder.createPartitionObjJson(ptnObj);
       } else {
         this.ptnObjJson = null;
       }
@@ -91,7 +92,11 @@ public class JSONInsertMessage extends InsertMessage {
 
   @Override
   public String getTableType() {
-    if (tableType != null) return tableType; else return "";
+    if (tableType != null) {
+      return tableType;
+    } else {
+      return "";
+    }
   }
 
   @Override
@@ -124,12 +129,12 @@ public class JSONInsertMessage extends InsertMessage {
 
   @Override
   public Table getTableObj() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+    return (Table) MessageBuilder.getTObj(tableObjJson,Table.class);
   }
 
   @Override
   public Partition getPtnObj() throws Exception {
-    return ((null == ptnObjJson) ? null : (Partition) JSONMessageFactory.getTObj(ptnObjJson, Partition.class));
+    return ((null == ptnObjJson) ? null : (Partition) MessageBuilder.getTObj(ptnObjJson, Partition.class));
   }
 
   @Override

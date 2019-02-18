@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

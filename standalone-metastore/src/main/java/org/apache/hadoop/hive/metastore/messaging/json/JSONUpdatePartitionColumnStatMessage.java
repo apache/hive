@@ -19,9 +19,10 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
 import org.apache.thrift.TException;
 
@@ -37,7 +38,7 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   private Long writeId, timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, db;
+  private String server, servicePrincipal, database;
 
   @JsonProperty
   private String colStatsJson;
@@ -65,11 +66,11 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.writeId = writeId;
-    this.db = colStats.getStatsDesc().getDbName();
+    this.database = colStats.getStatsDesc().getDbName();
     this.partVals = partVals;
     try {
-      this.colStatsJson = JSONMessageFactory.createTableColumnStatJson(colStats);
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      this.colStatsJson = MessageBuilder.createTableColumnStatJson(colStats);
+      this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize JSONUpdatePartitionColumnStatMessage : ", e);
     }
@@ -83,7 +84,7 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
 
   @Override
   public String getDB() {
-    return db;
+    return database;
   }
 
   @Override
@@ -99,15 +100,10 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   @Override
   public ColumnStatistics getColumnStatistics() {
     try {
-      return  (ColumnStatistics) JSONMessageFactory.getTObj(colStatsJson, ColumnStatistics.class);
+      return  (ColumnStatistics) MessageBuilder.getTObj(colStatsJson, ColumnStatistics.class);
     } catch (Exception e) {
       throw new RuntimeException("failed to get the ColumnStatistics object ", e);
     }
-  }
-
-  @Override
-  public String getColStatsJson() {
-    return colStatsJson;
   }
 
   @Override
@@ -127,7 +123,7 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
 
   @Override
   public Table getTableObject() throws Exception {
-    return  (Table) JSONMessageFactory.getTObj(tableObjJson, Table.class);
+    return  (Table) MessageBuilder.getTObj(tableObjJson, Table.class);
   }
 
   @Override

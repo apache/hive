@@ -34,8 +34,6 @@ public abstract class UpdatePartitionColumnStatMessage extends EventMessage {
 
   public abstract ColumnStatistics getColumnStatistics();
 
-  public abstract String getColStatsJson();
-
   public abstract Long getWriteId();
 
   public abstract Map<String, String> getParameters();

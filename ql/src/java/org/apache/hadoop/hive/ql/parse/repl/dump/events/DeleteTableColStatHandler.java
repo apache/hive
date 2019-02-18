@@ -18,20 +18,26 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.DeleteTableColumnStatMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class DeleteTableColStatHandler extends AbstractEventHandler {
+class DeleteTableColStatHandler extends AbstractEventHandler<DeleteTableColumnStatMessage> {
 
   DeleteTableColStatHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  DeleteTableColumnStatMessage eventMessage(String stringRepresentation) {
+    return deserializer.getDeleteTableColumnStatMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} DeleteTableColumnStat message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} DeleteTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

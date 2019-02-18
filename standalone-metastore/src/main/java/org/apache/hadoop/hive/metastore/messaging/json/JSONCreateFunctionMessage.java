@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON Implementation of CreateFunctionMessage.
@@ -46,7 +48,7 @@ public class JSONCreateFunctionMessage extends CreateFunctionMessage {
     this.db = fn.getDbName();
     this.timestamp = timestamp;
     try {
-      this.functionObjJson = JSONMessageFactory.createFunctionObjJson(fn);
+      this.functionObjJson = MessageBuilder.createFunctionObjJson(fn);
     } catch (TException ex) {
       throw new IllegalArgumentException("Could not serialize Function object", ex);
     }
@@ -71,7 +73,7 @@ public class JSONCreateFunctionMessage extends CreateFunctionMessage {
 
   @Override
   public Function getFunctionObj() throws Exception {
-    return (Function) JSONMessageFactory.getTObj(functionObjJson,Function.class);
+    return (Function) MessageBuilder.getTObj(functionObjJson,Function.class);
   }
 
   @Override

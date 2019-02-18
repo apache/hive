@@ -492,7 +492,7 @@ public class MetastoreConf {
             "Alternatively, configure hive.metastore.transactional.event.listeners to ensure both are invoked in same JDO transaction."),
     EVENT_MESSAGE_FACTORY("metastore.event.message.factory",
         "hive.metastore.event.message.factory",
-        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory",
+        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
         "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,

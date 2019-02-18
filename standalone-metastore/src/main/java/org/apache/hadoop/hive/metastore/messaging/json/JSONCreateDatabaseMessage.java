@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON Implementation of CreateDatabaseMessage.
@@ -47,15 +49,16 @@ public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
     this.db = db.getName();
     this.timestamp = timestamp;
     try {
-      this.dbJson = JSONMessageFactory.createDatabaseObjJson(db);
+      this.dbJson = MessageBuilder.createDatabaseObjJson(db);
     } catch (TException ex) {
-      throw new IllegalArgumentException("Could not serialize Function object", ex);
+      throw new IllegalArgumentException("Could not serialize database object", ex);
     }
     checkValid();
   }
 
+  @Override
   public Database getDatabaseObject() throws Exception {
-    return (Database) JSONMessageFactory.getTObj(dbJson, Database.class);
+    return (Database) MessageBuilder.getTObj(dbJson, Database.class);
   }
 
   @Override

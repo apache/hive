@@ -19,14 +19,17 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
@@ -38,17 +41,14 @@ import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
-import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
-import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
-import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
-import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.DeleteTableColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessage;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * MessageDeserializer implementation, for deserializing from JSON strings.
@@ -58,10 +58,10 @@ public class JSONMessageDeserializer extends MessageDeserializer {
   static ObjectMapper mapper = new ObjectMapper(); // Thread-safe.
 
   static {
-    mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    mapper.configure(SerializationConfig.Feature.AUTO_DETECT_GETTERS, false);
-    mapper.configure(SerializationConfig.Feature.AUTO_DETECT_IS_GETTERS, false);
-    mapper.configure(SerializationConfig.Feature.AUTO_DETECT_FIELDS, false);
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper.configure(MapperFeature.AUTO_DETECT_GETTERS, false);
+    mapper.configure(MapperFeature.AUTO_DETECT_IS_GETTERS, false);
+    mapper.configure(MapperFeature.AUTO_DETECT_FIELDS, false);
   }
 
   @Override
@@ -257,6 +257,7 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     }
   }
 
+  @Override
   public AllocWriteIdMessage getAllocWriteIdMessage(String messageBody) {
     try {
       return mapper.readValue(messageBody, JSONAllocWriteIdMessage.class);
@@ -265,6 +266,7 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     }
   }
 
+  @Override
   public AcidWriteMessage getAcidWriteMessage(String messageBody) {
     try {
       return mapper.readValue(messageBody, JSONAcidWriteMessage.class);

@@ -24,11 +24,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EmptyStackException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,7 +38,6 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
@@ -55,7 +52,6 @@ import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -89,7 +85,6 @@ import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
@@ -120,7 +115,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
-import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
@@ -129,8 +123,9 @@ import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.DeleteTableColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessage;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -309,25 +304,25 @@ public class CachedStore implements RawStore, Configurable {
     NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
 
     //Add the events which are not related to metadata update
-    rqst.addToEventTypeSkipList(MessageFactory.INSERT_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.OPEN_TXN_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.COMMIT_TXN_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ABORT_TXN_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ALLOC_WRITE_ID_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ACID_WRITE_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.CREATE_FUNCTION_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.DROP_FUNCTION_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ADD_PRIMARYKEY_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ADD_FOREIGNKEY_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ADD_UNIQUECONSTRAINT_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ADD_NOTNULLCONSTRAINT_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.DROP_CONSTRAINT_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.CREATE_ISCHEMA_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ALTER_ISCHEMA_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.DROP_ISCHEMA_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ADD_SCHEMA_VERSION_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.ALTER_SCHEMA_VERSION_EVENT);
-    rqst.addToEventTypeSkipList(MessageFactory.DROP_SCHEMA_VERSION_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.INSERT_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.OPEN_TXN_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.COMMIT_TXN_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ABORT_TXN_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ALLOC_WRITE_ID_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ACID_WRITE_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.CREATE_FUNCTION_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.DROP_FUNCTION_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ADD_PRIMARYKEY_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ADD_FOREIGNKEY_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ADD_UNIQUECONSTRAINT_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ADD_NOTNULLCONSTRAINT_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.DROP_CONSTRAINT_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.CREATE_ISCHEMA_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ALTER_ISCHEMA_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.DROP_ISCHEMA_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ADD_SCHEMA_VERSION_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.ALTER_SCHEMA_VERSION_EVENT);
+    rqst.addToEventTypeSkipList(MessageBuilder.DROP_SCHEMA_VERSION_EVENT);
 
     Deadline.startTimer("getNextNotification");
     NotificationEventResponse resp = rawStore.getNextNotification(rqst);
@@ -351,7 +346,7 @@ public class CachedStore implements RawStore, Configurable {
       String message = event.getMessage();
       LOG.debug("Event to process " + event);
       //TODO: get the deserializer based on message format type. Currently only json format is supported.
-      MessageDeserializer deserializer = MessageFactory.getInstance().getDeserializer();
+      MessageDeserializer deserializer = MessageFactory.getDefaultInstance(rawStore.getConf()).getDeserializer();
       String catalogName = event.getCatName() == null ? "" : event.getCatName().toLowerCase();
       String dbName = event.getDbName() == null ? "" : event.getDbName().toLowerCase();
       String tableName = event.getTableName() == null ? "" : event.getTableName().toLowerCase();
@@ -359,12 +354,12 @@ public class CachedStore implements RawStore, Configurable {
         continue;
       }
       switch (event.getEventType()) {
-        case MessageFactory.ADD_PARTITION_EVENT:
+        case MessageBuilder.ADD_PARTITION_EVENT:
           AddPartitionMessage addPartMessage = deserializer.getAddPartitionMessage(message);
           sharedCache.addPartitionsToCache(catalogName,
                   dbName, tableName, addPartMessage.getPartitionObjs());
           break;
-        case MessageFactory.ALTER_PARTITION_EVENT:
+        case MessageBuilder.ALTER_PARTITION_EVENT:
           AlterPartitionMessage alterPartitionMessage = deserializer.getAlterPartitionMessage(message);
           sharedCache.alterPartitionInCache(catalogName, dbName, tableName,
                   alterPartitionMessage.getPtnObjBefore().getValues(), alterPartitionMessage.getPtnObjAfter());
@@ -372,25 +367,25 @@ public class CachedStore implements RawStore, Configurable {
           updateStatsForAlterPart(rawStore, alterPartitionMessage.getTableObj(),
                   catalogName, dbName, tableName, alterPartitionMessage.getPtnObjAfter());
           break;
-        case MessageFactory.DROP_PARTITION_EVENT:
+        case MessageBuilder.DROP_PARTITION_EVENT:
           DropPartitionMessage dropPartitionMessage = deserializer.getDropPartitionMessage(message);
           for (Map<String, String> partMap : dropPartitionMessage.getPartitions()) {
             sharedCache.removePartitionFromCache(catalogName, dbName, tableName, new ArrayList<>(partMap.values()));
           }
           break;
-        case MessageFactory.CREATE_TABLE_EVENT:
+        case MessageBuilder.CREATE_TABLE_EVENT:
           CreateTableMessage createTableMessage = deserializer.getCreateTableMessage(message);
           sharedCache.addTableToCache(catalogName, dbName,
                   tableName, createTableMessage.getTableObj());
           break;
-        case MessageFactory.ALTER_TABLE_EVENT:
+        case MessageBuilder.ALTER_TABLE_EVENT:
           AlterTableMessage alterTableMessage = deserializer.getAlterTableMessage(message);
           sharedCache.alterTableInCache(catalogName, dbName, tableName, alterTableMessage.getTableObjAfter());
           //TODO : Use the stat object stored in the alter table message to update the stats in cache.
           updateStatsForAlterTable(rawStore, alterTableMessage.getTableObjBefore(), alterTableMessage.getTableObjAfter(),
                   catalogName, dbName, tableName);
           break;
-        case MessageFactory.DROP_TABLE_EVENT:
+        case MessageBuilder.DROP_TABLE_EVENT:
           int batchSize = MetastoreConf.getIntVar(rawStore.getConf(), ConfVars.BATCH_RETRIEVE_MAX);
 
           // get partitions in batch and delete
@@ -407,39 +402,39 @@ public class CachedStore implements RawStore, Configurable {
           }
           sharedCache.removeTableFromCache(catalogName, dbName, tableName);
           break;
-        case MessageFactory.CREATE_DATABASE_EVENT:
+        case MessageBuilder.CREATE_DATABASE_EVENT:
           CreateDatabaseMessage createDatabaseMessage = deserializer.getCreateDatabaseMessage(message);
           sharedCache.addDatabaseToCache(createDatabaseMessage.getDatabaseObject());
           break;
-        case MessageFactory.ALTER_DATABASE_EVENT:
+        case MessageBuilder.ALTER_DATABASE_EVENT:
           AlterDatabaseMessage alterDatabaseMessage = deserializer.getAlterDatabaseMessage(message);
           sharedCache.alterDatabaseInCache(catalogName, dbName, alterDatabaseMessage.getDbObjAfter());
           break;
-        case MessageFactory.DROP_DATABASE_EVENT:
+        case MessageBuilder.DROP_DATABASE_EVENT:
           sharedCache.removeDatabaseFromCache(catalogName, dbName);
           break;
-        case MessageFactory.CREATE_CATALOG_EVENT:
-        case MessageFactory.DROP_CATALOG_EVENT:
-        case MessageFactory.ALTER_CATALOG_EVENT:
+        case MessageBuilder.CREATE_CATALOG_EVENT:
+        case MessageBuilder.DROP_CATALOG_EVENT:
+        case MessageBuilder.ALTER_CATALOG_EVENT:
           // TODO : Need to add cache invalidation for catalog events
           LOG.error("catalog Events are not supported for cache invalidation : " + event.getEventType());
           break;
-        case MessageFactory.UPDATE_TBL_COL_STAT_EVENT:
+        case MessageBuilder.UPDATE_TBL_COL_STAT_EVENT:
           UpdateTableColumnStatMessage msg = deserializer.getUpdateTableColumnStatMessage(message);
           sharedCache.alterTableAndStatsInCache(catalogName, dbName, tableName, msg.getWriteId(),
                   msg.getColumnStatistics().getStatsObj(), msg.getParameters());
           break;
-        case MessageFactory.DELETE_TBL_COL_STAT_EVENT:
+        case MessageBuilder.DELETE_TBL_COL_STAT_EVENT:
           DeleteTableColumnStatMessage msgDel = deserializer.getDeleteTableColumnStatMessage(message);
           sharedCache.removeTableColStatsFromCache(catalogName, dbName, tableName, msgDel.getColName());
           break;
-        case MessageFactory.UPDATE_PART_COL_STAT_EVENT:
+        case MessageBuilder.UPDATE_PART_COL_STAT_EVENT:
           UpdatePartitionColumnStatMessage msgPartUpdate = deserializer.getUpdatePartitionColumnStatMessage(message);
           sharedCache.alterPartitionAndStatsInCache(catalogName, dbName, tableName, msgPartUpdate.getWriteId(),
                   msgPartUpdate.getPartVals(), msgPartUpdate.getParameters(),
                   msgPartUpdate.getColumnStatistics().getStatsObj());
           break;
-        case MessageFactory.DELETE_PART_COL_STAT_EVENT:
+        case MessageBuilder.DELETE_PART_COL_STAT_EVENT:
           DeletePartitionColumnStatMessage msgPart = deserializer.getDeletePartitionColumnStatMessage(message);
           sharedCache.removePartitionColStatsFromCache(catalogName, dbName, tableName,
                   msgPart.getPartValues(), msgPart.getColName());

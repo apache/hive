@@ -23,8 +23,10 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON implementation of AddForeignKeyMessage
@@ -54,7 +56,7 @@ public class JSONAddForeignKeyMessage extends AddForeignKeyMessage {
     this.foreignKeyListJson = new ArrayList<>();
     try {
       for (SQLForeignKey pk : fks) {
-        foreignKeyListJson.add(JSONMessageFactory.createForeignKeyObjJson(pk));
+        foreignKeyListJson.add(MessageBuilder.createForeignKeyObjJson(pk));
       }
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
@@ -85,7 +87,7 @@ public class JSONAddForeignKeyMessage extends AddForeignKeyMessage {
   public List<SQLForeignKey> getForeignKeys() throws Exception {
     List<SQLForeignKey> fks = new ArrayList<>();
     for (String pkJson : foreignKeyListJson) {
-      fks.add((SQLForeignKey)JSONMessageFactory.getTObj(pkJson, SQLForeignKey.class));
+      fks.add((SQLForeignKey) MessageBuilder.getTObj(pkJson, SQLForeignKey.class));
     }
     return fks;
   }

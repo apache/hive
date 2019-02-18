@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -997,12 +997,12 @@ public final class QueryResultsCache {
       String tableName;
 
       switch (event.getEventType()) {
-      case MessageFactory.ADD_PARTITION_EVENT:
-      case MessageFactory.ALTER_PARTITION_EVENT:
-      case MessageFactory.DROP_PARTITION_EVENT:
-      case MessageFactory.ALTER_TABLE_EVENT:
-      case MessageFactory.DROP_TABLE_EVENT:
-      case MessageFactory.INSERT_EVENT:
+      case MessageBuilder.ADD_PARTITION_EVENT:
+      case MessageBuilder.ALTER_PARTITION_EVENT:
+      case MessageBuilder.DROP_PARTITION_EVENT:
+      case MessageBuilder.ALTER_TABLE_EVENT:
+      case MessageBuilder.DROP_TABLE_EVENT:
+      case MessageBuilder.INSERT_EVENT:
         dbName = event.getDbName();
         tableName = event.getTableName();
         break;

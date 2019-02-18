@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-class AlterPartitionHandler extends AbstractEventHandler {
+class AlterPartitionHandler extends AbstractEventHandler<AlterPartitionMessage> {
   private final org.apache.hadoop.hive.metastore.api.Partition after;
   private final org.apache.hadoop.hive.metastore.api.Table tableObject;
   private final boolean isTruncateOp;
@@ -40,12 +40,17 @@ class AlterPartitionHandler extends AbstractEventHandler {
 
   AlterPartitionHandler(NotificationEvent event) throws Exception {
     super(event);
-    AlterPartitionMessage apm = deserializer.getAlterPartitionMessage(event.getMessage());
+    AlterPartitionMessage apm = eventMessage;
     tableObject = apm.getTableObj();
     org.apache.hadoop.hive.metastore.api.Partition before = apm.getPtnObjBefore();
     after = apm.getPtnObjAfter();
     isTruncateOp = apm.getIsTruncateOp();
     scenario = scenarioType(before, after);
+  }
+
+  @Override
+  AlterPartitionMessage eventMessage(String stringRepresentation) {
+    return deserializer.getAlterPartitionMessage(stringRepresentation);
   }
 
   private enum Scenario {
@@ -85,7 +90,7 @@ class AlterPartitionHandler extends AbstractEventHandler {
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} ALTER_PARTITION message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} ALTER_PARTITION message : {}", fromEventId(), eventMessageAsJSON);
 
     // We do not dump partitions during metadata only bootstrap dump (See TableExport
     // .getPartitions(), for bootstrap dump we pass tableSpec with TABLE_ONLY set.). So don't
@@ -113,7 +118,7 @@ class AlterPartitionHandler extends AbstractEventHandler {
           withinContext.hiveConf);
     }
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

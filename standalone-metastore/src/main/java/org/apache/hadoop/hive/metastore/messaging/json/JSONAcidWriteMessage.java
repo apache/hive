@@ -19,13 +19,14 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
 import java.util.Iterator;
 import java.util.List;
 
@@ -60,9 +61,9 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
     this.writeId = acidWriteEvent.getWriteId();
     this.partition = acidWriteEvent.getPartition();
     try {
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(acidWriteEvent.getTableObj());
+      this.tableObjJson = MessageBuilder.createTableObjJson(acidWriteEvent.getTableObj());
       if (acidWriteEvent.getPartitionObj() != null) {
-        this.partitionObjJson = JSONMessageFactory.createPartitionObjJson(acidWriteEvent.getPartitionObj());
+        this.partitionObjJson = MessageBuilder.createPartitionObjJson(acidWriteEvent.getPartitionObj());
       } else {
         this.partitionObjJson = null;
       }
@@ -119,13 +120,13 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
 
   @Override
   public Table getTableObj() throws Exception {
-    return (tableObjJson == null) ? null : (Table) JSONMessageFactory.getTObj(tableObjJson, Table.class);
+    return (tableObjJson == null) ? null : (Table) MessageBuilder.getTObj(tableObjJson, Table.class);
   }
 
   @Override
   public Partition getPartitionObj() throws Exception {
     return ((partitionObjJson == null) ? null :
-            (Partition) JSONMessageFactory.getTObj(partitionObjJson, Partition.class));
+            (Partition) MessageBuilder.getTObj(partitionObjJson, Partition.class));
   }
 
   @Override

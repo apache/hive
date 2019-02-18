@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -33,31 +33,31 @@ public class EventHandlerFactory {
   private static Map<String, Class<? extends EventHandler>> registeredHandlers = new HashMap<>();
 
   static {
-    register(MessageFactory.ADD_PARTITION_EVENT, AddPartitionHandler.class);
-    register(MessageFactory.ALTER_DATABASE_EVENT, AlterDatabaseHandler.class);
-    register(MessageFactory.ALTER_PARTITION_EVENT, AlterPartitionHandler.class);
-    register(MessageFactory.ALTER_TABLE_EVENT, AlterTableHandler.class);
-    register(MessageFactory.CREATE_FUNCTION_EVENT, CreateFunctionHandler.class);
-    register(MessageFactory.CREATE_TABLE_EVENT, CreateTableHandler.class);
-    register(MessageFactory.DROP_PARTITION_EVENT, DropPartitionHandler.class);
-    register(MessageFactory.DROP_TABLE_EVENT, DropTableHandler.class);
-    register(MessageFactory.INSERT_EVENT, InsertHandler.class);
-    register(MessageFactory.DROP_FUNCTION_EVENT, DropFunctionHandler.class);
-    register(MessageFactory.ADD_PRIMARYKEY_EVENT, AddPrimaryKeyHandler.class);
-    register(MessageFactory.ADD_FOREIGNKEY_EVENT, AddForeignKeyHandler.class);
-    register(MessageFactory.ADD_UNIQUECONSTRAINT_EVENT, AddUniqueConstraintHandler.class);
-    register(MessageFactory.ADD_NOTNULLCONSTRAINT_EVENT, AddNotNullConstraintHandler.class);
-    register(MessageFactory.DROP_CONSTRAINT_EVENT, DropConstraintHandler.class);
-    register(MessageFactory.CREATE_DATABASE_EVENT, CreateDatabaseHandler.class);
-    register(MessageFactory.DROP_DATABASE_EVENT, DropDatabaseHandler.class);
-    register(MessageFactory.OPEN_TXN_EVENT, OpenTxnHandler.class);
-    register(MessageFactory.COMMIT_TXN_EVENT, CommitTxnHandler.class);
-    register(MessageFactory.ABORT_TXN_EVENT, AbortTxnHandler.class);
-    register(MessageFactory.ALLOC_WRITE_ID_EVENT, AllocWriteIdHandler.class);
-    register(MessageFactory.UPDATE_TBL_COL_STAT_EVENT, UpdateTableColStatHandler.class);
-    register(MessageFactory.DELETE_TBL_COL_STAT_EVENT, DeleteTableColStatHandler.class);
-    register(MessageFactory.UPDATE_PART_COL_STAT_EVENT, UpdatePartColStatHandler.class);
-    register(MessageFactory.DELETE_PART_COL_STAT_EVENT, DeletePartColStatHandler.class);
+    register(MessageBuilder.ADD_PARTITION_EVENT, AddPartitionHandler.class);
+    register(MessageBuilder.ALTER_DATABASE_EVENT, AlterDatabaseHandler.class);
+    register(MessageBuilder.ALTER_PARTITION_EVENT, AlterPartitionHandler.class);
+    register(MessageBuilder.ALTER_TABLE_EVENT, AlterTableHandler.class);
+    register(MessageBuilder.CREATE_FUNCTION_EVENT, CreateFunctionHandler.class);
+    register(MessageBuilder.CREATE_TABLE_EVENT, CreateTableHandler.class);
+    register(MessageBuilder.DROP_PARTITION_EVENT, DropPartitionHandler.class);
+    register(MessageBuilder.DROP_TABLE_EVENT, DropTableHandler.class);
+    register(MessageBuilder.INSERT_EVENT, InsertHandler.class);
+    register(MessageBuilder.DROP_FUNCTION_EVENT, DropFunctionHandler.class);
+    register(MessageBuilder.ADD_PRIMARYKEY_EVENT, AddPrimaryKeyHandler.class);
+    register(MessageBuilder.ADD_FOREIGNKEY_EVENT, AddForeignKeyHandler.class);
+    register(MessageBuilder.ADD_UNIQUECONSTRAINT_EVENT, AddUniqueConstraintHandler.class);
+    register(MessageBuilder.ADD_NOTNULLCONSTRAINT_EVENT, AddNotNullConstraintHandler.class);
+    register(MessageBuilder.DROP_CONSTRAINT_EVENT, DropConstraintHandler.class);
+    register(MessageBuilder.CREATE_DATABASE_EVENT, CreateDatabaseHandler.class);
+    register(MessageBuilder.DROP_DATABASE_EVENT, DropDatabaseHandler.class);
+    register(MessageBuilder.OPEN_TXN_EVENT, OpenTxnHandler.class);
+    register(MessageBuilder.COMMIT_TXN_EVENT, CommitTxnHandler.class);
+    register(MessageBuilder.ABORT_TXN_EVENT, AbortTxnHandler.class);
+    register(MessageBuilder.ALLOC_WRITE_ID_EVENT, AllocWriteIdHandler.class);
+    register(MessageBuilder.UPDATE_TBL_COL_STAT_EVENT, UpdateTableColStatHandler.class);
+    register(MessageBuilder.DELETE_TBL_COL_STAT_EVENT, DeleteTableColStatHandler.class);
+    register(MessageBuilder.UPDATE_PART_COL_STAT_EVENT, UpdatePartColStatHandler.class);
+    register(MessageBuilder.DELETE_PART_COL_STAT_EVENT, DeletePartColStatHandler.class);
   }
 
   static void register(String event, Class<? extends EventHandler> handlerClazz) {

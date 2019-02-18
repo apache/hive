@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.messaging.AlterCatalogMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
 
 public class JSONAlterCatalogMessage extends AlterCatalogMessage {
@@ -41,8 +42,8 @@ public class JSONAlterCatalogMessage extends AlterCatalogMessage {
     this.servicePrincipal = servicePrincipal;
     this.timestamp = timestamp;
     try {
-      this.catObjBeforeJson = JSONMessageFactory.createCatalogObjJson(catObjBefore);
-      this.catObjAfterJson = JSONMessageFactory.createCatalogObjJson(catObjAfter);
+      this.catObjBeforeJson = MessageBuilder.createCatalogObjJson(catObjBefore);
+      this.catObjAfterJson = MessageBuilder.createCatalogObjJson(catObjAfter);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
@@ -71,12 +72,12 @@ public class JSONAlterCatalogMessage extends AlterCatalogMessage {
 
   @Override
   public Catalog getCatObjBefore() throws Exception {
-    return (Catalog) JSONMessageFactory.getTObj(catObjBeforeJson, Catalog.class);
+    return (Catalog) MessageBuilder.getTObj(catObjBeforeJson, Catalog.class);
   }
 
   @Override
   public Catalog getCatObjAfter() throws Exception {
-    return (Catalog) JSONMessageFactory.getTObj(catObjAfterJson, Catalog.class);
+    return (Catalog) MessageBuilder.getTObj(catObjAfterJson, Catalog.class);
   }
 
   @Override

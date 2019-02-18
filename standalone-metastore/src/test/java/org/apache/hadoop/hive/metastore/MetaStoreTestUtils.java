@@ -26,6 +26,7 @@ import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.net.Socket;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,8 @@ import org.slf4j.LoggerFactory;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 public class MetaStoreTestUtils {
+  private static Map<Integer, Thread> map = new HashMap<>();
+
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreTestUtils.class);
   private static final String TMP_DIR = System.getProperty("test.tmp.dir");
   public static final int RETRY_COUNT = 10;
@@ -80,10 +83,18 @@ public class MetaStoreTestUtils {
     thread.setDaemon(true);
     thread.start();
     String msHost = MetastoreConf.getVar(conf, ConfVars.THRIFT_BIND_HOST);
+    map.put(port,thread);
     MetaStoreTestUtils.loopUntilHMSReady(msHost, port);
     String serviceDiscMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE);
     if (serviceDiscMode != null && serviceDiscMode.equalsIgnoreCase("zookeeper")) {
       MetaStoreTestUtils.loopUntilZKReady(conf, msHost, port);
+    }
+  }
+
+  public static void close(final int port){
+    Thread thread = map.get(port);
+    if(thread != null){
+      thread.stop();
     }
   }
 

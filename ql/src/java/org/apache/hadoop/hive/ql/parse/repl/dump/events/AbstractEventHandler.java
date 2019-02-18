@@ -18,20 +18,48 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract class AbstractEventHandler implements EventHandler {
+abstract class AbstractEventHandler<T extends EventMessage> implements EventHandler {
   static final Logger LOG = LoggerFactory.getLogger(AbstractEventHandler.class);
+  static final MessageEncoder jsonMessageEncoder = JSONMessageEncoder.getInstance();
 
   final NotificationEvent event;
   final MessageDeserializer deserializer;
+  final String eventMessageAsJSON;
+  final T eventMessage;
 
   AbstractEventHandler(NotificationEvent event) {
     this.event = event;
-    deserializer = MessageFactory.getInstance().getDeserializer();
+    try {
+      deserializer = MessageFactory.getInstance(event.getMessageFormat()).getDeserializer();
+    } catch (Exception e) {
+      String message =
+          "could not create appropriate messageFactory for format " + event.getMessageFormat();
+      LOG.error(message, e);
+      throw new IllegalStateException(message, e);
+    }
+    eventMessage = eventMessage(event.getMessage());
+    eventMessageAsJSON = eventMessageAsJSON(eventMessage);
+  }
+
+  /**
+   * This takes in the string representation of the message in the format as specified in rdbms backing metastore.
+   */
+  abstract T eventMessage(String stringRepresentation);
+
+  private String eventMessageAsJSON(T eventMessage) {
+    if (eventMessage == null) {
+      // this will only happen in case DefaultHandler is invoked
+      return null;
+    }
+    return jsonMessageEncoder.getSerializer().serialize(eventMessage);
   }
 
   @Override

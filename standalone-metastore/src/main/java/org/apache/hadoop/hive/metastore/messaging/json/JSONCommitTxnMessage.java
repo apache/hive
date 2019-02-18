@@ -23,7 +23,9 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 
 import java.util.List;
 
@@ -117,13 +119,13 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
 
   @Override
   public Table getTableObj(int idx) throws Exception {
-    return tableObjs == null ? null :  (Table) JSONMessageFactory.getTObj(tableObjs.get(idx), Table.class);
+    return tableObjs == null ? null :  (Table) MessageBuilder.getTObj(tableObjs.get(idx), Table.class);
   }
 
   @Override
   public Partition getPartitionObj(int idx) throws Exception {
     return (partitionObjs == null ? null : (partitionObjs.get(idx) == null ? null :
-            (Partition)JSONMessageFactory.getTObj(partitionObjs.get(idx), Partition.class)));
+            (Partition) MessageBuilder.getTObj(partitionObjs.get(idx), Partition.class)));
   }
 
   @Override

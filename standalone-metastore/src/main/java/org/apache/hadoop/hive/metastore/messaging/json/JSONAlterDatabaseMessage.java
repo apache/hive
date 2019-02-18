@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON alter database message.
@@ -47,8 +49,8 @@ public class JSONAlterDatabaseMessage extends AlterDatabaseMessage {
     this.db = dbObjBefore.getName();
     this.timestamp = timestamp;
     try {
-      this.dbObjBeforeJson = JSONMessageFactory.createDatabaseObjJson(dbObjBefore);
-      this.dbObjAfterJson = JSONMessageFactory.createDatabaseObjJson(dbObjAfter);
+      this.dbObjBeforeJson = MessageBuilder.createDatabaseObjJson(dbObjBefore);
+      this.dbObjAfterJson = MessageBuilder.createDatabaseObjJson(dbObjAfter);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
@@ -77,12 +79,12 @@ public class JSONAlterDatabaseMessage extends AlterDatabaseMessage {
 
   @Override
   public Database getDbObjBefore() throws Exception {
-    return (Database) JSONMessageFactory.getTObj(dbObjBeforeJson, Database.class);
+    return (Database) MessageBuilder.getTObj(dbObjBeforeJson, Database.class);
   }
 
   @Override
   public Database getDbObjAfter() throws Exception {
-    return (Database) JSONMessageFactory.getTObj(dbObjAfterJson, Database.class);
+    return (Database) MessageBuilder.getTObj(dbObjAfterJson, Database.class);
   }
 
   @Override

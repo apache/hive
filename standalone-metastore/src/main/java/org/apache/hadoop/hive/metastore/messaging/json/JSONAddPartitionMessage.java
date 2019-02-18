@@ -19,23 +19,24 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
-import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
-import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import javax.annotation.Nullable;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
+import org.apache.thrift.TException;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * JSON implementation of AddPartitionMessage.
@@ -79,11 +80,11 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
     partitionListJson = new ArrayList<>();
     Partition partitionObj;
     try {
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
       while (partitionsIterator.hasNext()) {
         partitionObj = partitionsIterator.next();
-        partitions.add(JSONMessageFactory.getPartitionKeyValues(tableObj, partitionObj));
-        partitionListJson.add(JSONMessageFactory.createPartitionObjJson(partitionObj));
+        partitions.add(MessageBuilder.getPartitionKeyValues(tableObj, partitionObj));
+        partitionListJson.add(MessageBuilder.createPartitionObjJson(partitionObj));
       }
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
@@ -115,12 +116,16 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @Override
   public String getTableType() {
-    if (tableType != null) return tableType; else return "";
+    if (tableType != null) {
+      return tableType;
+    } else {
+      return "";
+    }
   }
 
   @Override
   public Table getTableObj() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+    return (Table) MessageBuilder.getTObj(tableObjJson,Table.class);
   }
 
   @Override
@@ -137,7 +142,7 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   public Iterable<Partition> getPartitionObjs() throws Exception {
     // glorified cast from Iterable<TBase> to Iterable<Partition>
     return Iterables.transform(
-        JSONMessageFactory.getTObjs(partitionListJson,Partition.class),
+        MessageBuilder.getTObjs(partitionListJson,Partition.class),
         new Function<Object, Partition>() {
       @Nullable
       @Override

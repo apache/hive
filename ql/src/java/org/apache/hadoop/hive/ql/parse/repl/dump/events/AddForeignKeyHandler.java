@@ -18,21 +18,27 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-public class AddForeignKeyHandler extends AbstractConstraintEventHandler {
+public class AddForeignKeyHandler extends AbstractConstraintEventHandler<AddForeignKeyMessage> {
   AddForeignKeyHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
+  AddForeignKeyMessage eventMessage(String stringRepresentation) {
+    return deserializer.getAddForeignKeyMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
     LOG.debug("Processing#{} ADD_FOREIGNKEY_MESSAGE message : {}", fromEventId(),
-        event.getMessage());
+        eventMessageAsJSON);
     if (shouldReplicate(withinContext)) {
       DumpMetaData dmd = withinContext.createDmd(this);
-      dmd.setPayload(event.getMessage());
+      dmd.setPayload(eventMessageAsJSON);
       dmd.write();
     }
   }

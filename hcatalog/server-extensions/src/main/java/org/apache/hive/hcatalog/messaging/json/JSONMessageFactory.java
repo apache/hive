@@ -20,16 +20,14 @@
 package org.apache.hive.hcatalog.messaging.json;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
 import org.apache.hive.hcatalog.messaging.AlterPartitionMessage;
 import org.apache.hive.hcatalog.messaging.AlterTableMessage;
@@ -43,14 +41,8 @@ import org.apache.hive.hcatalog.messaging.DropTableMessage;
 import org.apache.hive.hcatalog.messaging.InsertMessage;
 import org.apache.hive.hcatalog.messaging.MessageDeserializer;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
-import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TJSONProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 /**
  * The JSON implementation of the MessageFactory. Constructs JSON implementations of
@@ -111,7 +103,7 @@ public class JSONMessageFactory extends MessageFactory {
   public AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitionsIterator) {
     return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
         table.getTableName(), table.getTableType(),
-        getPartitionKeyValues(table, partitionsIterator), now());
+        MessageBuilder.getPartitionKeyValues(table, partitionsIterator), now());
   }
 
   @Override
@@ -119,14 +111,14 @@ public class JSONMessageFactory extends MessageFactory {
                                                           Long writeId) {
     return new JSONAlterPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL,
         before.getDbName(), before.getTableName(), table.getTableType(),
-        getPartitionKeyValues(table,before), writeId, now());
+        MessageBuilder.getPartitionKeyValues(table,before), writeId, now());
   }
 
   @Override
   public DropPartitionMessage buildDropPartitionMessage(Table table, Iterator<Partition> partitions) {
     return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
         table.getTableName(), table.getTableType(),
-        getPartitionKeyValues(table, partitions), now());
+        MessageBuilder.getPartitionKeyValues(table, partitions), now());
   }
 
   @Override
@@ -157,29 +149,6 @@ public class JSONMessageFactory extends MessageFactory {
 
   private long now() {
     return System.currentTimeMillis() / 1000;
-  }
-
-  private static Map<String, String> getPartitionKeyValues(Table table, Partition partition) {
-    Map<String, String> partitionKeys = new LinkedHashMap<String, String>();
-    for (int i=0; i<table.getPartitionKeysSize(); ++i) {
-      partitionKeys.put(table.getPartitionKeys().get(i).getName(),
-          partition.getValues().get(i));
-    }
-    return partitionKeys;
-  }
-
-  private static List<Map<String, String>> getPartitionKeyValues(final Table table, Iterator<Partition> iterator) {
-    return Lists.newArrayList(Iterators.transform(iterator, new com.google.common.base.Function<Partition, Map<String, String>>() {
-      @Override
-      public Map<String, String> apply(@Nullable Partition partition) {
-        return getPartitionKeyValues(table, partition);
-      }
-    }));
-  }
-
-  static String createFunctionObjJson(Function functionObj) throws TException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(functionObj, "UTF-8");
   }
 
 }

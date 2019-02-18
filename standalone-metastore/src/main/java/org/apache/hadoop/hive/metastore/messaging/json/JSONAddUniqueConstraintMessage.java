@@ -24,8 +24,10 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class JSONAddUniqueConstraintMessage extends AddUniqueConstraintMessage {
   @JsonProperty
@@ -51,7 +53,7 @@ public class JSONAddUniqueConstraintMessage extends AddUniqueConstraintMessage {
     this.uniqueConstraintListJson = new ArrayList<>();
     try {
       for (SQLUniqueConstraint uk : uks) {
-        uniqueConstraintListJson.add(JSONMessageFactory.createUniqueConstraintObjJson(uk));
+        uniqueConstraintListJson.add(MessageBuilder.createUniqueConstraintObjJson(uk));
       }
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
@@ -82,7 +84,7 @@ public class JSONAddUniqueConstraintMessage extends AddUniqueConstraintMessage {
   public List<SQLUniqueConstraint> getUniqueConstraints() throws Exception {
     List<SQLUniqueConstraint> uks = new ArrayList<>();
     for (String pkJson : uniqueConstraintListJson) {
-      uks.add((SQLUniqueConstraint)JSONMessageFactory.getTObj(pkJson, SQLUniqueConstraint.class));
+      uks.add((SQLUniqueConstraint) MessageBuilder.getTObj(pkJson, SQLUniqueConstraint.class));
     }
     return uks;
   }

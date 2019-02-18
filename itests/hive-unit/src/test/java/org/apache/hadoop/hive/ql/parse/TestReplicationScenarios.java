@@ -46,12 +46,16 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
+import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -137,6 +141,8 @@ public class TestReplicationScenarios {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     HashMap<String, String> overrideProperties = new HashMap<>();
+    overrideProperties.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
+        GzipJSONMessageEncoder.class.getCanonicalName());
     internalBeforeClassSetup(overrideProperties, false);
   }
 
@@ -3111,12 +3117,12 @@ public class TestReplicationScenarios {
     // that match a provided message format
 
     IMetaStoreClient.NotificationFilter restrictByDefaultMessageFormat =
-        new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat());
+        new MessageFormatFilter(JSONMessageEncoder.FORMAT);
     IMetaStoreClient.NotificationFilter restrictByArbitraryMessageFormat =
-        new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat() + "_bogus");
+        new MessageFormatFilter(JSONMessageEncoder.FORMAT + "_bogus");
     NotificationEvent dummyEvent = createDummyEvent(dbname,tblname,0);
 
-    assertEquals(MessageFactory.getInstance().getMessageFormat(),dummyEvent.getMessageFormat());
+    assertEquals(JSONMessageEncoder.FORMAT,dummyEvent.getMessageFormat());
 
     assertFalse(restrictByDefaultMessageFormat.accept(null));
     assertTrue(restrictByDefaultMessageFormat.accept(dummyEvent));
@@ -3465,19 +3471,25 @@ public class TestReplicationScenarios {
   }
 
   private NotificationEvent createDummyEvent(String dbname, String tblname, long evid) {
-    MessageFactory msgFactory = MessageFactory.getInstance();
+    MessageEncoder msgEncoder = null;
+    try {
+      msgEncoder = MessageFactory.getInstance(JSONMessageEncoder.FORMAT);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     Table t = new Table();
     t.setDbName(dbname);
     t.setTableName(tblname);
     NotificationEvent event = new NotificationEvent(
         evid,
         (int)System.currentTimeMillis(),
-        MessageFactory.CREATE_TABLE_EVENT,
-        msgFactory.buildCreateTableMessage(t, Arrays.asList("/tmp/").iterator()).toString()
+        MessageBuilder.CREATE_TABLE_EVENT,
+        MessageBuilder.getInstance().buildCreateTableMessage(t, Arrays.asList("/tmp/").iterator())
+            .toString()
     );
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    event.setMessageFormat(msgFactory.getMessageFormat());
+    event.setMessageFormat(msgEncoder.getMessageFormat());
     return event;
   }
 

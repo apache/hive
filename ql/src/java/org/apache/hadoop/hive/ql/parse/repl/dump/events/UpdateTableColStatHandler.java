@@ -25,15 +25,19 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class UpdateTableColStatHandler extends AbstractEventHandler {
+class UpdateTableColStatHandler extends AbstractEventHandler<UpdateTableColumnStatMessage> {
 
   UpdateTableColStatHandler(NotificationEvent event) { super(event); }
 
   @Override
+  UpdateTableColumnStatMessage eventMessage(String stringRepresentation) {
+    return deserializer.getUpdateTableColumnStatMessage(stringRepresentation);
+  }
+
+  @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), event.getMessage());
-    UpdateTableColumnStatMessage utcsm = deserializer.getUpdateTableColumnStatMessage(event.getMessage());
-    Table qlMdTable = new Table(utcsm.getTableObject());
+    LOG.info("Processing#{} UpdateTableColumnStat message : {}", fromEventId(), eventMessageAsJSON);
+    Table qlMdTable = new Table(eventMessage.getTableObject());
     if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, true, withinContext.hiveConf)) {
       return;
     }
@@ -48,7 +52,7 @@ class UpdateTableColStatHandler extends AbstractEventHandler {
     }
 
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    dmd.setPayload(eventMessageAsJSON);
     dmd.write();
   }
 

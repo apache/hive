@@ -18,7 +18,8 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.messaging.DropCatalogMessage;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class JSONDropCatalogMessage extends DropCatalogMessage {
 
