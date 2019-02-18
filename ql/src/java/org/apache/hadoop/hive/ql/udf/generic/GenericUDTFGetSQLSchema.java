@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class GenericUDTFGetSQLSchema extends GenericUDTF {
   protected transient StringObjectInspector stringOI;
   protected transient JobConf jc;
 
-  private transient final Object[] nameTypePair = new Object[2];
+  private final transient Object[] nameTypePair = new Object[2];
 
   @Override
   public void process(Object[] arguments) throws HiveException {
@@ -74,8 +75,8 @@ public class GenericUDTFGetSQLSchema extends GenericUDTF {
 
     if (fieldSchemas != null) {
       for (FieldSchema fieldSchema : fieldSchemas) {
-        nameTypePair[0] = fieldSchema.getName().getBytes();
-        nameTypePair[1] = fieldSchema.getType().getBytes();
+        nameTypePair[0] = fieldSchema.getName().getBytes(StandardCharsets.UTF_8);
+        nameTypePair[1] = fieldSchema.getType().getBytes(StandardCharsets.UTF_8);
         forward(nameTypePair);
       }
     }

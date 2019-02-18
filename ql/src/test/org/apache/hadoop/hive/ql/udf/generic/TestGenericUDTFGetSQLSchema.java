@@ -25,13 +25,16 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory.javaStringObjectInspector;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * TestGenericUDTFGetSQLSchema.
+ */
 public class TestGenericUDTFGetSQLSchema {
 
   private static SessionState sessionState;
@@ -95,7 +98,8 @@ public class TestGenericUDTFGetSQLSchema {
       }
     };
 
-    genericUDTFGetSQLSchema.initialize(new ObjectInspector[]{javaStringObjectInspector});
+    genericUDTFGetSQLSchema
+        .initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.javaStringObjectInspector});
     genericUDTFGetSQLSchema.process(new Object[]{query});
 
     assertEquals(expected.length, actual.size());
