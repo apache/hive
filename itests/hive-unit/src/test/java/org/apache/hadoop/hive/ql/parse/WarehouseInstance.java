@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -358,6 +359,32 @@ public class WarehouseInstance implements Closeable {
   private void printOutput() throws IOException {
     for (String s : getOutput()) {
       logger.info(s);
+    }
+  }
+
+  private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
+    assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
+    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
+  }
+
+  public void verifyIfCkptSet(String dbName, String dumpDir) throws Exception {
+    Database db = getDatabase(dbName);
+    verifyIfCkptSet(db.getParameters(), dumpDir);
+
+    List<String> tblNames = getAllTables(dbName);
+    verifyIfCkptSetForTables(dbName, tblNames, dumpDir);
+  }
+
+  public void verifyIfCkptSetForTables(String dbName, List<String> tblNames, String dumpDir) throws Exception {
+    for (String tblName : tblNames) {
+      Table tbl = getTable(dbName, tblName);
+      verifyIfCkptSet(tbl.getParameters(), dumpDir);
+      if (tbl.getPartitionKeysSize() != 0) {
+        List<Partition> partitions = getAllPartitions(dbName, tblName);
+        for (Partition ptn : partitions) {
+          verifyIfCkptSet(ptn.getParameters(), dumpDir);
+        }
+      }
     }
   }
 

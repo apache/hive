@@ -147,6 +147,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .run("select country from t2 where country = 'france'")
         .verifyResult("france");
 
+    // Ckpt should be set on bootstrapped db.
+    replica.verifyIfCkptSet(replicatedDbName, tuple.dumpLocation);
+
     assertTablePartitionLocation(primaryDbName + ".t1", replicatedDbName + ".t1");
     assertTablePartitionLocation(primaryDbName + ".t2", replicatedDbName + ".t2");
 
@@ -510,6 +513,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResult("t3")
             .run("show tables like 't4'")
             .verifyResult("t4");
+
+    // Ckpt should be set on bootstrapped tables.
+    replica.verifyIfCkptSetForTables(replicatedDbName, Arrays.asList("t2", "t3"), tuple.dumpLocation);
 
     // Drop source tables to see if target points to correct data or not after bootstrap load.
     primary.run("use " + primaryDbName)
