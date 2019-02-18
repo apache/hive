@@ -865,23 +865,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     assertFalse(fs.exists(cSerdesTableDumpLocation));
   }
 
-  private void verifyIfCkptSet(WarehouseInstance wh, String dbName, String dumpDir) throws Exception {
-    Database db = wh.getDatabase(replicatedDbName);
-    verifyIfCkptSet(db.getParameters(), dumpDir);
-
-    List<String> tblNames = wh.getAllTables(dbName);
-    for (String tblName : tblNames) {
-      Table tbl = wh.getTable(dbName, tblName);
-      verifyIfCkptSet(tbl.getParameters(), dumpDir);
-      if (tbl.getPartitionKeysSize() != 0) {
-        List<Partition> partitions = wh.getAllPartitions(dbName, tblName);
-        for (Partition ptn : partitions) {
-          verifyIfCkptSet(ptn.getParameters(), dumpDir);
-        }
-      }
-    }
-  }
-
   @Test
   public void testShouldDumpMetaDataForNonNativeTableIfSetMeataDataOnly() throws Throwable {
     String tableName = testName.getMethodName() + "_table";
@@ -1166,7 +1149,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(Collections.singletonList("10"))
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("india", "uk", "us"));
-    verifyIfCkptSet(replica, replicatedDbName, tuple.dumpLocation);
+    replica.verifyIfCkptSet(replicatedDbName, tuple.dumpLocation);
 
     WarehouseInstance.Tuple tuple_2 = primary
             .run("use " + primaryDbName)
