@@ -1142,8 +1142,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         } catch (Exception ex) {
           //catching exceptions here makes sure that the thread doesn't die in case of unexpected
           //exceptions
-          LOG.warn("Exception received while cleaning notifications. More details can be found in debug mode",
-                  ex);
+          LOG.warn("Exception received while cleaning notifications: ", ex);
         }
 
         LOG.debug("Cleaner thread done");
