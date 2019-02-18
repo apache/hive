@@ -199,12 +199,22 @@ public class LoadPartitions {
             context.hiveConf
     );
 
+    Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
+            tableDesc,
+            (HashMap<String, String>)partSpec.getPartSpec(),
+            context.dumpDirectory,
+            context.hiveConf
+    );
+
     boolean isOnlyDDLOperation = event.replicationSpec().isMetadataOnly()
         || (TableType.EXTERNAL_TABLE.equals(table.getTableType())
         && !event.replicationSpec().isMigratingToExternalTable()
     );
 
     if (isOnlyDDLOperation) {
+      // Set Checkpoint task as dependant to add partition tasks. So, if same dump is retried for
+      // bootstrap, we skip current partition update.
+      addPartTask.addDependentTask(ckptTask);
       if (ptnRootTask == null) {
         ptnRootTask = addPartTask;
       } else {
@@ -246,21 +256,14 @@ public class LoadPartitions {
       movePartitionTask = movePartitionTask(table, partSpec, stagingDir, loadFileType);
     }
 
-    // Set Checkpoint task as dependant to add partition tasks. So, if same dump is retried for
-    // bootstrap, we skip current partition update.
-    Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
-            tableDesc,
-            (HashMap<String, String>)partSpec.getPartSpec(),
-            context.dumpDirectory,
-            context.hiveConf
-    );
-
     if (ptnRootTask == null) {
       ptnRootTask = copyTask;
     } else {
       ptnRootTask.addDependentTask(copyTask);
     }
 
+    // Set Checkpoint task as dependant to the tail of add partition tasks. So, if same dump is
+    // retried for bootstrap, we skip current partition update.
     copyTask.addDependentTask(addPartTask);
     if (movePartitionTask != null) {
       addPartTask.addDependentTask(movePartitionTask);
