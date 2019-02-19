@@ -150,7 +150,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: if((key = '-1'), 1, 2) (type: int), if((key = '-2'), true, false) (type: boolean)
+            expressions: CASE WHEN ((key = '-1')) THEN (1) ELSE (2) END (type: int), COALESCE((key = '-2'),false) (type: boolean)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
