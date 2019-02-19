@@ -115,10 +115,9 @@ public abstract class ValueBoundaryScanner {
         Map.Entry<Integer, Object> maxEntry = cache.getMaxEntry();
         if (maxEntry != null && maxEntry.getKey() <= rowIdx) {
           cache.evictOne();
-        }
-        else if (end.isFollowing()) {
-          int start = computeStart(rowIdx, p);
-          checkIfCacheCanEvict(start - 1, p, true);
+        } else if (end.isFollowing()) {
+          int startIdx = computeStart(rowIdx, p);
+          checkIfCacheCanEvict(startIdx - 1, p, true);
         }
       }
     }
@@ -958,7 +957,7 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 
   protected int computeStartCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
-    Object sortKey = computeValue(p.getAt(rowIdx));
+    Object sortKey = computeValueUseCache(rowIdx, p);
     Object rowVal = sortKey;
     int r = rowIdx;
 
@@ -997,7 +996,7 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 
   protected int computeEndCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
-    Object sortKey = computeValue(p.getAt(rowIdx));
+    Object sortKey = computeValueUseCache(rowIdx, p);
     Object rowVal = sortKey;
     int r = rowIdx;
 
