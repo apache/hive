@@ -35,3 +35,9 @@ SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS COL1,
        IF(FALSE, 1, 'ABC') AS COL3,
        IF(FALSE, 'ABC', 12.3) AS COL4
 FROM src tablesample (1 rows);
+
+explain
+SELECT IF(key='-1', 1, 2) AS COL1,
+       IF(key='-2', true, false) AS COL2
+FROM src limit 1;
+

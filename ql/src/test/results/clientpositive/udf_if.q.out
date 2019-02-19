@@ -124,3 +124,37 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 128	1.1	ABC	12.3
+PREHOOK: query: explain
+SELECT IF(key='-1', 1, 2) AS COL1,
+       IF(key='-2', true, false) AS COL2
+FROM src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT IF(key='-1', 1, 2) AS COL1,
+       IF(key='-2', true, false) AS COL2
+FROM src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: if((key = '-1'), 1, 2) (type: int), if((key = '-2'), true, false) (type: boolean)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+            Limit
+              Number of rows: 1
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+
