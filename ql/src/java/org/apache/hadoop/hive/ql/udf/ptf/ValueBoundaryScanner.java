@@ -80,34 +80,85 @@ public abstract class ValueBoundaryScanner {
       return;
     }
 
-    //Start of partition
+    //No need to setup/fill cache.
+    if (start.isUnbounded() && end.isUnbounded()) {
+      return;
+    }
+
+    //Start of partition.
     if (rowIdx == 0) {
       cache.clear();
     }
     if (cache.isComplete()) {
       return;
     }
-
-    int cachePos = cache.approxCachePositionOf(rowIdx);
-
     if (cache.isEmpty()) {
       fillCacheUntilEndOrFull(rowIdx, p);
-    } else if (cachePos > 50 && cachePos <= 75) {
-      if (!start.isPreceding() && end.isFollowing()) {
-        cache.evictHalf();
-        fillCacheUntilEndOrFull(rowIdx, p);
-      }
-    } else if (cachePos > 75 && cachePos <= 95) {
-      if (start.isPreceding() && end.isFollowing()) {
-        cache.evictHalf();
-        fillCacheUntilEndOrFull(rowIdx, p);
-      }
-    } else if (cachePos >= 95) {
-      if (start.isPreceding() && !end.isFollowing()) {
-        cache.evictHalf();
-        fillCacheUntilEndOrFull(rowIdx, p);
-      }
+      return;
+    }
 
+    if (start.isPreceding()) {
+      if (start.isUnbounded()) {
+        if (end.isPreceding()) {
+          //We can wait with cache eviction until we're at the end of currently known ranges.
+          Map.Entry<Integer, Object> maxEntry = cache.getMaxEntry();
+          if (maxEntry != null && maxEntry.getKey() <= rowIdx) {
+            cache.evictOne();
+          }
+        } else {
+          //Starting from current row, all previous ranges can be evicted.
+          checkIfCacheCanEvict(rowIdx, p, true);
+        }
+      } else {
+        //We either evict when we're at the end of currently known ranges, or if not there yet and
+        // END is of FOLLOWING type: we should remove ranges preceding the current range beginning.
+        Map.Entry<Integer, Object> maxEntry = cache.getMaxEntry();
+        if (maxEntry != null && maxEntry.getKey() <= rowIdx) {
+          cache.evictOne();
+        }
+        else if (end.isFollowing()) {
+          int start = computeStart(rowIdx, p);
+          checkIfCacheCanEvict(start - 1, p, true);
+        }
+      }
+    }
+
+    if (start.isCurrentRow()) {
+      //Starting from current row, all previous ranges before the previous range can be evicted.
+      checkIfCacheCanEvict(rowIdx, p, false);
+    }
+    if (start.isFollowing()) {
+      //Starting from current row, all previous ranges can be evicted.
+      checkIfCacheCanEvict(rowIdx, p, true);
+    }
+
+    fillCacheUntilEndOrFull(rowIdx, p);
+  }
+
+  /**
+   * Retrieves the range for rowIdx, then removes all previous range entries before it.
+   * @param rowIdx row index.
+   * @param p partition.
+   * @param willScanFwd false: removal is started only from the previous previous range.
+   */
+  private void checkIfCacheCanEvict(int rowIdx, PTFPartition p, boolean willScanFwd) {
+    BoundaryCache cache = p.getBoundaryCache();
+    if (cache == null) {
+      return;
+    }
+    Map.Entry<Integer, Object> floorEntry = cache.floorEntry(rowIdx);
+    if (floorEntry != null) {
+      floorEntry = cache.floorEntry(floorEntry.getKey() - 1);
+      if (floorEntry != null) {
+        if (willScanFwd) {
+          cache.evictThisAndAllBefore(floorEntry.getKey());
+        } else {
+          floorEntry = cache.floorEntry(floorEntry.getKey() - 1);
+          if (floorEntry != null) {
+            cache.evictThisAndAllBefore(floorEntry.getKey());
+          }
+        }
+      }
     }
   }
 
@@ -124,21 +175,22 @@ public abstract class ValueBoundaryScanner {
       return;
     }
 
+    Object rowVal = null;
+
     //If we continue building cache
     Map.Entry<Integer, Object> ceilingEntry = cache.getMaxEntry();
     if (ceilingEntry != null) {
       rowIdx = ceilingEntry.getKey();
+      rowVal = ceilingEntry.getValue();
+      ++rowIdx;
     }
 
-    Object rowVal = null;
-    Object lastRowVal = null;
+    Object lastRowVal = rowVal;
 
-    while (rowIdx < p.size()) {
+    while (rowIdx < p.size() && !cache.isFull()) {
       rowVal = computeValue(p.getAt(rowIdx));
       if (!isEqual(rowVal, lastRowVal)){
-        if (!cache.putIfNotFull(rowIdx, rowVal)){
-          break;
-        }
+        cache.put(rowIdx, rowVal);
       }
       lastRowVal = rowVal;
       ++rowIdx;
@@ -241,7 +293,7 @@ public abstract class ValueBoundaryScanner {
     }
 
     if (ceilingEntry != null && ceilingEntry.getKey().equals(r)){
-      ceilingEntry = cache.ceilingEntry(r + 1);
+      return ceilingEntry.getValue();
     }
     if (floorEntry != null && ceilingEntry != null) {
       return floorEntry.getValue();

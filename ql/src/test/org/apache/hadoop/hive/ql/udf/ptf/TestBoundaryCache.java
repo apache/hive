@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -49,6 +50,7 @@ import static org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction.CURRENT;
 import static org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction.FOLLOWING;
 import static org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction.PRECEDING;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -121,8 +123,8 @@ public class TestBoundaryCache {
   }
 
   @Test
-  public void testPreceding2Following2() throws Exception {
-    runTest(PRECEDING, 2, FOLLOWING, 2);
+  public void testPreceding2Following100() throws Exception {
+    runTest(PRECEDING, 1, FOLLOWING, 100);
   }
 
   @Test
@@ -160,9 +162,11 @@ public class TestBoundaryCache {
 
     BoundaryDef startBoundary = new BoundaryDef(startDirection, startAmount);
     BoundaryDef endBoundary = new BoundaryDef(endDirection, endAmount);
+    AtomicInteger readCounter = new AtomicInteger(0);
 
     int[] expectedBoundaryStarts = new int[TEST_PARTITION.size()];
     int[] expectedBoundaryEnds = new int[TEST_PARTITION.size()];
+    int expectedReadCountWithoutCache = -1;
 
     for (PTFInvocationSpec.Order order : ORDERS) {
       for (Integer cacheSize : CACHE_SIZES) {
@@ -170,7 +174,7 @@ public class TestBoundaryCache {
         LOG.info("Cache: " + cacheSize + " order: " + order);
         BoundaryCache cache = cacheSize == null ? null : new BoundaryCache(cacheSize);
         Pair<PTFPartition, ValueBoundaryScanner> mocks = setupMocks(TEST_PARTITION,
-                ORDER_BY_COL, startBoundary, endBoundary, order, cache);
+                ORDER_BY_COL, startBoundary, endBoundary, order, cache, readCounter);
         PTFPartition ptfPartition = mocks.getLeft();
         ValueBoundaryScanner scanner = mocks.getRight();
         for (int i = 0; i < TEST_PARTITION.size(); ++i) {
@@ -190,6 +194,17 @@ public class TestBoundaryCache {
           Integer col2 = ofNullable(TEST_PARTITION.get(i).get(2)).map(v -> v.get()).orElse(null);
           LOG.info(String.format("%d|\t%d\t%d\t%d\t|%d-%d", i, col0, col1, col2, start, end));
         }
+        if (cache == null) {
+          expectedReadCountWithoutCache = readCounter.get();
+        } else {
+          //Read count should be smaller with cache being used, but larger than the minimum of
+          // reading every row once.
+          assertTrue(expectedReadCountWithoutCache >= readCounter.get());
+          if (startAmount != UNBOUNDED_AMOUNT || endAmount != UNBOUNDED_AMOUNT) {
+            assertTrue(TEST_PARTITION.size() <= readCounter.get());
+          }
+        }
+        readCounter.set(0);
       }
     }
   }
@@ -202,13 +217,14 @@ public class TestBoundaryCache {
    * @param end Window definition.
    * @param order Window definition.
    * @param cache BoundaryCache instance, it may come in various sizes.
+   * @param readCounter counts how many times reading was invoked
    * @return Mocked PTFPartition instance and ValueBoundaryScanner spy.
    * @throws Exception
    */
   private static Pair<PTFPartition, ValueBoundaryScanner> setupMocks(
           List<List<IntWritable>> partition, int orderByCol, BoundaryDef start, BoundaryDef end,
-          PTFInvocationSpec.Order order, BoundaryCache cache
-  ) throws Exception {
+          PTFInvocationSpec.Order order, BoundaryCache cache,
+          AtomicInteger readCounter) throws Exception {
     PTFPartition partitionMock = mock(PTFPartition.class);
     doAnswer(invocationOnMock -> {
       int idx = invocationOnMock.getArgumentAt(0, Integer.class);
@@ -225,6 +241,7 @@ public class TestBoundaryCache {
     ValueBoundaryScanner scan = new LongValueBoundaryScanner(start, end, orderDef, order == ASC);
     ValueBoundaryScanner scannerSpy = spy(scan);
     doAnswer(invocationOnMock -> {
+      readCounter.incrementAndGet();
       List<IntWritable> row = invocationOnMock.getArgumentAt(0, List.class);
       return row.get(orderByCol);
     }).when(scannerSpy).computeValue(any(Object.class));

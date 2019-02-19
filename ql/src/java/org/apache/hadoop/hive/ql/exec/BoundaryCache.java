@@ -73,7 +73,7 @@ public class BoundaryCache extends TreeMap<Integer, Object> {
    * @return false if queue was full and put failed. True otherwise.
    */
   public Boolean putIfNotFull(Integer key, Object value) {
-    if ((queue.size() + 1) > maxSize) {
+    if (isFull()) {
       return false;
     } else {
       put(key, value);
@@ -81,41 +81,19 @@ public class BoundaryCache extends TreeMap<Integer, Object> {
     }
   }
 
+  /**
+   * Checks if cache is full.
+   * @return true if full, false otherwise.
+   */
+  public Boolean isFull() {
+    return queue.size() >= maxSize;
+  }
+
   @Override
   public void clear() {
     this.isComplete = false;
     this.queue.clear();
     super.clear();
-  }
-
-  /**
-   * Evicts the older half of cache.
-   */
-  public void evictHalf() {
-    int evictCount = queue.size() / 2;
-    for (int i = 0; i < evictCount; ++i) {
-      evictOne();
-    }
-  }
-
-  /**
-   * Calculates the percentile of the row's group position in the cache, 0 means cache
-   * beginning, 100 means cache end.
-   *
-   * @param pos
-   * @return percentile.
-   */
-  public int approxCachePositionOf(int pos) {
-    if (size() == 0) {
-      return 0;
-    }
-    Map.Entry<Integer, Object> floorEntry = floorEntry(pos);
-    if (floorEntry == null) {
-      return 100;
-    } else{
-      //Using the fact, that queue is always filled from bottom to top in a partition
-      return (100 * (queue.indexOf(floorEntry.getKey()) + 1)) / maxSize;
-    }
   }
 
   /**
@@ -129,9 +107,18 @@ public class BoundaryCache extends TreeMap<Integer, Object> {
   /**
    * Removes eldest entry from the boundary cache.
    */
-  private void evictOne() {
+  public void evictOne() {
+    if (queue.isEmpty()) {
+      return;
+    }
     Integer elementToDelete = queue.poll();
     this.remove(elementToDelete);
+  }
+
+  public void evictThisAndAllBefore(int rowIdx) {
+    while (queue.peek() <= rowIdx) {
+      evictOne();
+    }
   }
 
 }
