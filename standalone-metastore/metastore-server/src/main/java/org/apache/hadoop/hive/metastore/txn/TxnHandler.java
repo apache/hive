@@ -897,13 +897,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       if (needUpdateDBReplId) {
         // not used select for update as it will be updated by single thread only from repl load
-        rs = stmt.executeQuery("select \"PARAM_VALUE\" from \"DATABASE_PARAMS\" where \"PARAM_KEY\" = " +
-                "'repl.last.id' and \"DB_ID\" = " + dbId);
+        rs = stmt.executeQuery("select PARAM_VALUE from DATABASE_PARAMS where PARAM_KEY = " +
+                "'repl.last.id' and DB_ID = " + dbId);
         if (!rs.next()) {
-          query = "insert into \"DATABASE_PARAMS\" values ( " + dbId + " , 'repl.last.id' , ? )";
+          query = "insert into DATABASE_PARAMS values ( " + dbId + " , 'repl.last.id' , ? )";
         } else {
-          query = "update \"DATABASE_PARAMS\" set \"PARAM_VALUE\" = ? where \"DB_ID\" = " + dbId +
-                  " and \"PARAM_KEY\" = 'repl.last.id'";
+          query = "update DATABASE_PARAMS set PARAM_VALUE = ? where DB_ID = " + dbId +
+                  " and PARAM_KEY = 'repl.last.id'";
         }
         close(rs);
         params = Arrays.asList(lastReplId);
@@ -935,13 +935,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       pst.close();
 
       // select for update is not required as only one task will update this during repl load.
-      rs = stmt.executeQuery("select \"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" = " +
-              "'repl.last.id' and \"TBL_ID\" = " + tblId);
+      rs = stmt.executeQuery("select PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = " +
+              "'repl.last.id' and TBL_ID = " + tblId);
       if (!rs.next()) {
-        query = "insert into \"TABLE_PARAMS\" values ( " + tblId + " , 'repl.last.id' , ? )";
+        query = "insert into TABLE_PARAMS values ( " + tblId + " , 'repl.last.id' , ? )";
       } else {
-        query = "update \"TABLE_PARAMS\" set \"PARAM_VALUE\" = ? where \"TBL_ID\" = " + tblId +
-                " and \"PARAM_KEY\" = 'repl.last.id'";
+        query = "update TABLE_PARAMS set PARAM_VALUE = ? where TBL_ID = " + tblId +
+                " and PARAM_KEY = 'repl.last.id'";
       }
       rs.close();
 
@@ -988,13 +988,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         prs = pst.executeQuery();
         while (prs.next()) {
           long partId = prs.getLong(1);
-          rs = stmt.executeQuery("select \"PARAM_VALUE\" from \"PARTITION_PARAMS\" where \"PARAM_KEY\" " +
-                  " = 'repl.last.id' and \"PART_ID\" = " + partId);
+          rs = stmt.executeQuery("select PARAM_VALUE from PARTITION_PARAMS where PARAM_KEY " +
+                  " = 'repl.last.id' and PART_ID = " + partId);
           if (!rs.next()) {
-            query = "insert into \"PARTITION_PARAMS\" values ( " + partId + " , 'repl.last.id' , ? )";
+            query = "insert into PARTITION_PARAMS values ( " + partId + " , 'repl.last.id' , ? )";
           } else {
-            query = "update \"PARTITION_PARAMS\" set \"PARAM_VALUE\" = ? " +
-                    " where \"PART_ID\" = " + partId + " and \"PARAM_KEY\" = 'repl.last.id'";
+            query = "update PARTITION_PARAMS set PARAM_VALUE = ? " +
+                    " where PART_ID = " + partId + " and PARAM_KEY = 'repl.last.id'";
           }
           rs.close();
 
