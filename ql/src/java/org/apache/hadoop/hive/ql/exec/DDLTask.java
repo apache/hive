@@ -225,6 +225,7 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
+import org.apache.hadoop.hive.ql.plan.ReplSetFirstIncLoadFlagDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
@@ -286,6 +287,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
@@ -660,6 +662,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (work.getAlterMaterializedViewDesc() != null) {
         return alterMaterializedView(db, work.getAlterMaterializedViewDesc());
+      }
+
+      if (work.getReplSetFirstIncLoadFlagDesc() != null) {
+        return updateFirstIncPendingFlag(db, work.getReplSetFirstIncLoadFlagDesc());
       }
     } catch (Throwable e) {
       failed(e);
@@ -5197,6 +5203,31 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               && !sh.equals("org.apache.hadoop.hive.accumulo.AccumuloStorageHandler");
     }
     return retval;
+  }
+
+  private int updateFirstIncPendingFlag(Hive hive, ReplSetFirstIncLoadFlagDesc desc) throws HiveException, TException {
+    String dbName = desc.getDatabaseName();
+    String tblName = desc.getTableName();
+    Map<String,String> parameters;
+    if (tblName != null && !tblName.isEmpty()) {
+      org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbName, tblName);
+      parameters = tbl.getParameters();
+      if (!ReplUtils.isFirstIncDone(parameters)) {
+        parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "false");
+        hive.getMSC().alter_table(dbName, tblName, tbl);
+      }
+    } else {
+      Iterable<String> dbNames = Utils.matchesDb(hive, dbName);
+      for (String db : dbNames) {
+        Database database = hive.getMSC().getDatabase(db);
+        parameters = database.getParameters();
+        if (!ReplUtils.isFirstIncDone(parameters)) {
+          parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "false");
+          hive.getMSC().alterDatabase(db, database);
+        }
+      }
+    }
+    return 0;
   }
 
   /*

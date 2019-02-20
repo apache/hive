@@ -123,7 +123,7 @@ public class LoadDatabase {
     CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc();
     createDbDesc.setName(dbObj.getName());
     createDbDesc.setComment(dbObj.getDescription());
-    createDbDesc.setDatabaseProperties(updateDbProps(dbObj, context.dumpDirectory));
+    createDbDesc.setDatabaseProperties(updateDbProps(dbObj, context.dumpDirectory, true));
 
     // note that we do not set location - for repl load, we want that auto-created.
     createDbDesc.setIfNotExists(false);
@@ -135,7 +135,8 @@ public class LoadDatabase {
   }
 
   private Task<? extends Serializable> alterDbTask(Database dbObj) {
-    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory), context.hiveConf);
+    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory, false),
+            context.hiveConf);
   }
 
   private Task<? extends Serializable> setOwnerInfoTask(Database dbObj) {
@@ -146,7 +147,7 @@ public class LoadDatabase {
     return TaskFactory.get(work, context.hiveConf);
   }
 
-  private static Map<String, String> updateDbProps(Database dbObj, String dumpDirectory) {
+  private static Map<String, String> updateDbProps(Database dbObj, String dumpDirectory, boolean needSetIncFlag) {
     /*
     explicitly remove the setting of last.repl.id from the db object parameters as loadTask is going
     to run multiple times and explicit logic is in place which prevents updates to tables when db level
@@ -158,6 +159,15 @@ public class LoadDatabase {
     // Add the checkpoint key to the Database binding it to current dump directory.
     // So, if retry using same dump, we shall skip Database object update.
     parameters.put(ReplUtils.REPL_CHECKPOINT_KEY, dumpDirectory);
+
+    if (needSetIncFlag) {
+      // This flag will be set to false after first incremental load is done. This flag is used by repl copy task to
+      // check if duplicate file check is required or not. This flag is used by compaction to check if compaction can be
+      // done for this database or not. If compaction is done before first incremental then duplicate check will fail as
+      // compaction may change the directory structure.
+      parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "true");
+    }
+
     return parameters;
   }
 

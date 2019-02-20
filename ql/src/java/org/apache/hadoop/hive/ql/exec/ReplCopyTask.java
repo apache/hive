@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,25 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
   public ReplCopyTask(){
     super();
+  }
+
+  // If file is already present in base directory, then remove it from the list.
+  // Check  HIVE-21197 for more detail
+  private void updateSrcFileListForDupCopy(FileSystem dstFs, Path toPath, List<ReplChangeManager.FileInfo> srcFiles,
+                                           long writeId, int stmtId) throws IOException {
+    ListIterator<ReplChangeManager.FileInfo> iter = srcFiles.listIterator();
+    Path basePath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(true, writeId, writeId, stmtId));
+    while (iter.hasNext()) {
+      Path filePath = new Path(basePath, iter.next().getSourcePath().getName());
+      try {
+        if (dstFs.getFileStatus(filePath) != null) {
+          LOG.debug("File " + filePath + " is already present in base directory. So removing it from the list.");
+          iter.remove();
+        }
+      } catch (java.io.FileNotFoundException e) {
+        continue;
+      }
+    }
   }
 
   @Override
@@ -120,6 +140,14 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         }
 
         if (work.isCopyToMigratedTxnTable()) {
+          if (work.isNeedCheckDuplicateCopy()) {
+            updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
+                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, 0);
+            if (srcFiles.isEmpty()) {
+              LOG.info("All files are already present in the base directory. Skipping copy task.");
+              return 0;
+            }
+          }
           // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
           // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
           // The toPath received in ReplCopyWork is pointing to table/partition base location.
@@ -133,8 +161,11 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 6;
           }
           long writeId = Long.parseLong(writeIdString);
-          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId,
-                  driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement()));
+          // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
+          // duplicate copy from the source. Check HIVE-21197 for more detail.
+          int stmtId = (writeId == ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID) ? 0 :
+                  driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement();
+          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
         }
       } else {
         // This flow is usually taken for IMPORT command
@@ -271,12 +302,13 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
-      if (replicationSpec.isReplace() && conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
+      if (replicationSpec.isReplace() && (conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION) || copyToMigratedTxnTable)) {
         rcwork.setDeleteDestIfExist(true);
         rcwork.setAutoPurge(isAutoPurge);
         rcwork.setNeedRecycle(needRecycle);
       }
       rcwork.setCopyToMigratedTxnTable(copyToMigratedTxnTable);
+      rcwork.setCheckDuplicateCopy(replicationSpec.needDupCopyCheck());
       LOG.debug("ReplCopyTask:\trcwork");
       if (replicationSpec.isLazy()) {
         LOG.debug("ReplCopyTask:\tlazy");

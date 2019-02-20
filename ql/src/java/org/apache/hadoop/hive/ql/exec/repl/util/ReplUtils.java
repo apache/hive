@@ -60,6 +60,7 @@ public class ReplUtils {
 
   public static final String LAST_REPL_ID_KEY = "hive.repl.last.repl.id";
   public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
+  public static final String REPL_FIRST_INC_PENDING_FLAG = "hive.repl.first.inc.pending";
 
   // write id allocated in the current execution context which will be passed through config to be used by different
   // tasks.
@@ -186,5 +187,13 @@ public class ReplUtils {
         throw new RuntimeException(e);
       }
     };
+  }
+
+  public static boolean isFirstIncDone(Map<String, String> parameter) {
+    if (parameter == null) {
+      return true;
+    }
+    String compFlag = parameter.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+    return compFlag == null  || compFlag.isEmpty() || compFlag.equalsIgnoreCase("false");
   }
 }

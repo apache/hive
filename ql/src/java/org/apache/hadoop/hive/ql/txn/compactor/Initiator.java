@@ -104,11 +104,23 @@ public class Initiator extends MetaStoreCompactorThread {
             }
             LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
             try {
+              if (replIsCompactionDisabledForDatabase(ci.dbname)) {
+                // Compaction is disabled for replicated database until after first successful incremental load.
+                LOG.info("Compaction is disabled for database " + ci.dbname);
+                continue;
+              }
+
               Table t = resolveTable(ci);
               if (t == null) {
                 // Most likely this means it's a temp table
                 LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
                     "table or has been dropped and moving on.");
+                continue;
+              }
+
+              if (replIsCompactionDisabledForTable(t)) {
+                // Compaction is disabled for replicated table until after first successful incremental load.
+                LOG.info("Compaction is disabled for table " + ci.getFullTableName());
                 continue;
               }
 
