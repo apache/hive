@@ -62,7 +62,7 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesparquet
                   filterExpr: ((cboolean2 is not null and (cstring1 like '%b%')) or ((UDFToDouble(ctinyint) = cdouble) and ctimestamp2 is not null and (cstring2 like 'a'))) (type: boolean)
-                  Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 593751 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Filter Operator
@@ -71,7 +71,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 11:boolean), FilterStringColLikeStringScalar(col 6:string, pattern %b%)), FilterExprAndExpr(children: FilterDoubleColEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), SelectColumnIsNotNull(col 9:timestamp), FilterStringColLikeStringScalar(col 7:string, pattern a)))
                     predicate: (((UDFToDouble(ctinyint) = cdouble) and ctimestamp2 is not null and (cstring2 like 'a')) or (cboolean2 is not null and (cstring1 like '%b%'))) (type: boolean)
-                    Statistics: Num rows: 9216 Data size: 110592 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 9216 Data size: 445313 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int)
                       outputColumnNames: ctinyint, csmallint, cint
@@ -79,7 +79,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2]
-                      Statistics: Num rows: 9216 Data size: 110592 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 9216 Data size: 445313 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: max(csmallint), count(), min(csmallint), sum(cint), max(ctinyint)
                         Group By Vectorization:
