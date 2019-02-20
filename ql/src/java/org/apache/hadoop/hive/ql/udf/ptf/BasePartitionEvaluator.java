@@ -253,6 +253,7 @@ public class BasePartitionEvaluator {
       end = getRowBoundaryEnd(endB, currRow, p);
     } else {
       ValueBoundaryScanner vbs = ValueBoundaryScanner.getScanner(winFrame);
+      vbs.handleCache(currRow, p);
       start = vbs.computeStart(currRow, p);
       end = vbs.computeEnd(currRow, p);
     }

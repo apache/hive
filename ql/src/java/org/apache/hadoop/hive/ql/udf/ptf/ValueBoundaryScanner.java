@@ -18,10 +18,15 @@
 
 package org.apache.hadoop.hive.ql.udf.ptf;
 
+import java.util.Map;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.ql.exec.BoundaryCache;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -42,9 +47,257 @@ public abstract class ValueBoundaryScanner {
     this.end = end;
   }
 
+  public abstract Object computeValue(Object row) throws HiveException;
+
+  /**
+   * Checks if the distance of v2 to v1 is greater than the given amt.
+   * @return True if the value of v1 - v2 is greater than amt or either value is null.
+   */
+  public abstract boolean isDistanceGreater(Object v1, Object v2, int amt);
+
+  /**
+   * Checks if the values of v1 or v2 are the same.
+   * @return True if both values are the same or both are nulls.
+   */
+  public abstract boolean isEqual(Object v1, Object v2);
+
   public abstract int computeStart(int rowIdx, PTFPartition p) throws HiveException;
 
   public abstract int computeEnd(int rowIdx, PTFPartition p) throws HiveException;
+
+  /**
+   * Checks and maintains cache content - optimizes cache window to always be around current row
+   * thereby makes it follow the current progress.
+   * @param rowIdx current row
+   * @param p current partition for the PTF operator
+   * @throws HiveException
+   */
+  public void handleCache(int rowIdx, PTFPartition p) throws HiveException {
+    BoundaryCache cache = p.getBoundaryCache();
+    if (cache == null) {
+      return;
+    }
+
+    //No need to setup/fill cache.
+    if (start.isUnbounded() && end.isUnbounded()) {
+      return;
+    }
+
+    //Start of partition.
+    if (rowIdx == 0) {
+      cache.clear();
+    }
+    if (cache.isComplete()) {
+      return;
+    }
+    if (cache.isEmpty()) {
+      fillCacheUntilEndOrFull(rowIdx, p);
+      return;
+    }
+
+    if (start.isPreceding()) {
+      if (start.isUnbounded()) {
+        if (end.isPreceding()) {
+          //We can wait with cache eviction until we're at the end of currently known ranges.
+          Map.Entry<Integer, Object> maxEntry = cache.getMaxEntry();
+          if (maxEntry != null && maxEntry.getKey() <= rowIdx) {
+            cache.evictOne();
+          }
+        } else {
+          //Starting from current row, all previous ranges can be evicted.
+          checkIfCacheCanEvict(rowIdx, p, true);
+        }
+      } else {
+        //We either evict when we're at the end of currently known ranges, or if not there yet and
+        // END is of FOLLOWING type: we should remove ranges preceding the current range beginning.
+        Map.Entry<Integer, Object> maxEntry = cache.getMaxEntry();
+        if (maxEntry != null && maxEntry.getKey() <= rowIdx) {
+          cache.evictOne();
+        } else if (end.isFollowing()) {
+          int startIdx = computeStart(rowIdx, p);
+          checkIfCacheCanEvict(startIdx - 1, p, true);
+        }
+      }
+    }
+
+    if (start.isCurrentRow()) {
+      //Starting from current row, all previous ranges before the previous range can be evicted.
+      checkIfCacheCanEvict(rowIdx, p, false);
+    }
+    if (start.isFollowing()) {
+      //Starting from current row, all previous ranges can be evicted.
+      checkIfCacheCanEvict(rowIdx, p, true);
+    }
+
+    fillCacheUntilEndOrFull(rowIdx, p);
+  }
+
+  /**
+   * Retrieves the range for rowIdx, then removes all previous range entries before it.
+   * @param rowIdx row index.
+   * @param p partition.
+   * @param willScanFwd false: removal is started only from the previous previous range.
+   */
+  private void checkIfCacheCanEvict(int rowIdx, PTFPartition p, boolean willScanFwd) {
+    BoundaryCache cache = p.getBoundaryCache();
+    if (cache == null) {
+      return;
+    }
+    Map.Entry<Integer, Object> floorEntry = cache.floorEntry(rowIdx);
+    if (floorEntry != null) {
+      floorEntry = cache.floorEntry(floorEntry.getKey() - 1);
+      if (floorEntry != null) {
+        if (willScanFwd) {
+          cache.evictThisAndAllBefore(floorEntry.getKey());
+        } else {
+          floorEntry = cache.floorEntry(floorEntry.getKey() - 1);
+          if (floorEntry != null) {
+            cache.evictThisAndAllBefore(floorEntry.getKey());
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Inserts values into cache starting from rowIdx in the current partition p. Stops if cache
+   * reaches its maximum size or we get out of rows in p.
+   * @param rowIdx
+   * @param p
+   * @throws HiveException
+   */
+  private void fillCacheUntilEndOrFull(int rowIdx, PTFPartition p) throws HiveException {
+    BoundaryCache cache = p.getBoundaryCache();
+    if (cache == null || p.size() <= 0) {
+      return;
+    }
+
+    Object rowVal = null;
+
+    //If we continue building cache
+    Map.Entry<Integer, Object> ceilingEntry = cache.getMaxEntry();
+    if (ceilingEntry != null) {
+      rowIdx = ceilingEntry.getKey();
+      rowVal = ceilingEntry.getValue();
+      ++rowIdx;
+    }
+
+    Object lastRowVal = rowVal;
+
+    while (rowIdx < p.size() && !cache.isFull()) {
+      rowVal = computeValue(p.getAt(rowIdx));
+      if (!isEqual(rowVal, lastRowVal)){
+        cache.put(rowIdx, rowVal);
+      }
+      lastRowVal = rowVal;
+      ++rowIdx;
+
+    }
+    //Signaling end of all rows in a partition
+    if (cache.putIfNotFull(rowIdx, null)) {
+      cache.setComplete(true);
+    }
+  }
+
+  /**
+   * Uses cache content to jump backwards if possible. If not, it steps one back.
+   * @param r
+   * @param p
+   * @return pair of (row we stepped/jumped onto ; row value at this position)
+   * @throws HiveException
+   */
+  protected Pair<Integer, Object> skipOrStepBack(int r, PTFPartition p)
+          throws HiveException {
+    Object rowVal = null;
+    BoundaryCache cache = p.getBoundaryCache();
+
+    Map.Entry<Integer, Object> floorEntry = null;
+    Map.Entry<Integer, Object> ceilingEntry = null;
+
+    if (cache != null) {
+      floorEntry = cache.floorEntry(r);
+      ceilingEntry = cache.ceilingEntry(r);
+    }
+
+    if (floorEntry != null && ceilingEntry != null) {
+      r = floorEntry.getKey() - 1;
+      floorEntry = cache.floorEntry(r);
+      if (floorEntry != null) {
+        rowVal = floorEntry.getValue();
+      } else if (r >= 0){
+        rowVal = computeValue(p.getAt(r));
+      }
+    } else {
+      r--;
+      if (r >= 0) {
+        rowVal = computeValue(p.getAt(r));
+      }
+    }
+    return new ImmutablePair<>(r, rowVal);
+  }
+
+  /**
+   * Uses cache content to jump forward if possible. If not, it steps one forward.
+   * @param r
+   * @param p
+   * @return pair of (row we stepped/jumped onto ; row value at this position)
+   * @throws HiveException
+   */
+  protected Pair<Integer, Object> skipOrStepForward(int r, PTFPartition p)
+          throws HiveException {
+    Object rowVal = null;
+    BoundaryCache cache = p.getBoundaryCache();
+
+    Map.Entry<Integer, Object> floorEntry = null;
+    Map.Entry<Integer, Object> ceilingEntry = null;
+
+    if (cache != null) {
+      floorEntry = cache.floorEntry(r);
+      ceilingEntry = cache.ceilingEntry(r);
+    }
+
+    if (ceilingEntry != null && ceilingEntry.getKey().equals(r)){
+      ceilingEntry = cache.ceilingEntry(r + 1);
+    }
+    if (floorEntry != null && ceilingEntry != null) {
+      r = ceilingEntry.getKey();
+      rowVal = ceilingEntry.getValue();
+    } else {
+      r++;
+      if (r < p.size()) {
+        rowVal = computeValue(p.getAt(r));
+      }
+    }
+    return new ImmutablePair<>(r, rowVal);
+  }
+
+  /**
+   * Uses cache to lookup row value. Computes it on the fly on cache miss.
+   * @param r
+   * @param p
+   * @return row value.
+   * @throws HiveException
+   */
+  protected Object computeValueUseCache(int r, PTFPartition p) throws HiveException {
+    BoundaryCache cache = p.getBoundaryCache();
+
+    Map.Entry<Integer, Object> floorEntry = null;
+    Map.Entry<Integer, Object> ceilingEntry = null;
+
+    if (cache != null) {
+      floorEntry = cache.floorEntry(r);
+      ceilingEntry = cache.ceilingEntry(r);
+    }
+
+    if (ceilingEntry != null && ceilingEntry.getKey().equals(r)){
+      return ceilingEntry.getValue();
+    }
+    if (floorEntry != null && ceilingEntry != null) {
+      return floorEntry.getValue();
+    } else {
+      return computeValue(p.getAt(r));
+    }
+  }
 
   public static ValueBoundaryScanner getScanner(WindowFrameDef winFrameDef)
       throws HiveException {
@@ -103,6 +356,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 |      |                |                |          |       | such that R2.sk - R.sk > amt      |
 |------+----------------+----------------+----------+-------+-----------------------------------|
    */
+
   @Override
   public int computeStart(int rowIdx, PTFPartition p) throws HiveException {
     switch(start.getDirection()) {
@@ -122,7 +376,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
       return 0;
     }
-    Object sortKey = computeValue(p.getAt(rowIdx));
+    Object sortKey = computeValueUseCache(rowIdx, p);
 
     if ( sortKey == null ) {
       // Use Case 2.
@@ -131,12 +385,11 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
       else { // Use Case 3.
         while ( sortKey == null && rowIdx >= 0 ) {
-          --rowIdx;
-          if ( rowIdx >= 0 ) {
-            sortKey = computeValue(p.getAt(rowIdx));
-          }
+          Pair<Integer, Object> stepResult = skipOrStepBack(rowIdx, p);
+          rowIdx = stepResult.getLeft();
+          sortKey = stepResult.getRight();
         }
-        return rowIdx+1;
+        return rowIdx + 1;
       }
     }
 
@@ -146,36 +399,34 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     // Use Case 4.
     if ( expressionDef.getOrder() == Order.DESC ) {
       while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        r--;
-        if ( r >= 0 ) {
-          rowVal = computeValue(p.getAt(r));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
+        r = stepResult.getLeft();
+        rowVal = stepResult.getRight();
       }
       return r + 1;
     }
     else { // Use Case 5.
       while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        r--;
-        if ( r >= 0 ) {
-          rowVal = computeValue(p.getAt(r));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
+        r = stepResult.getLeft();
+        rowVal = stepResult.getRight();
       }
+
       return r + 1;
     }
   }
 
   protected int computeStartCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
-    Object sortKey = computeValue(p.getAt(rowIdx));
+    Object sortKey = computeValueUseCache(rowIdx, p);
 
     // Use Case 6.
     if ( sortKey == null ) {
       while ( sortKey == null && rowIdx >= 0 ) {
-        --rowIdx;
-        if ( rowIdx >= 0 ) {
-          sortKey = computeValue(p.getAt(rowIdx));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepBack(rowIdx, p);
+        rowIdx = stepResult.getLeft();
+        sortKey = stepResult.getRight();
       }
-      return rowIdx+1;
+      return rowIdx + 1;
     }
 
     Object rowVal = sortKey;
@@ -183,17 +434,16 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 
     // Use Case 7.
     while (r >= 0 && isEqual(rowVal, sortKey) ) {
-      r--;
-      if ( r >= 0 ) {
-        rowVal = computeValue(p.getAt(r));
-      }
+      Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
+      r = stepResult.getLeft();
+      rowVal = stepResult.getRight();
     }
     return r + 1;
   }
 
   protected int computeStartFollowing(int rowIdx, PTFPartition p) throws HiveException {
     int amt = start.getAmt();
-    Object sortKey = computeValue(p.getAt(rowIdx));
+    Object sortKey = computeValueUseCache(rowIdx, p);
 
     Object rowVal = sortKey;
     int r = rowIdx;
@@ -205,10 +455,9 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
       else { // Use Case 10.
         while (r < p.size() && rowVal == null ) {
-          r++;
-          if ( r < p.size() ) {
-            rowVal = computeValue(p.getAt(r));
-          }
+          Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+          r = stepResult.getLeft();
+          rowVal = stepResult.getRight();
         }
         return r;
       }
@@ -217,19 +466,17 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     // Use Case 11.
     if ( expressionDef.getOrder() == Order.DESC) {
       while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        r++;
-        if ( r < p.size() ) {
-          rowVal = computeValue(p.getAt(r));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+        r = stepResult.getLeft();
+        rowVal = stepResult.getRight();
       }
       return r;
     }
     else { // Use Case 12.
       while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        r++;
-        if ( r < p.size() ) {
-          rowVal = computeValue(p.getAt(r));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+        r = stepResult.getLeft();
+        rowVal = stepResult.getRight();
       }
       return r;
     }
@@ -285,7 +532,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     // Use Case 1.
     // amt == UNBOUNDED, is caught during translation
 
-    Object sortKey = computeValue(p.getAt(rowIdx));
+    Object sortKey = computeValueUseCache(rowIdx, p);
 
     if ( sortKey == null ) {
       // Use Case 2.
@@ -303,34 +550,31 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     // Use Case 4.
     if ( expressionDef.getOrder() == Order.DESC ) {
       while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        r--;
-        if ( r >= 0 ) {
-          rowVal = computeValue(p.getAt(r));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
+        r = stepResult.getLeft();
+        rowVal = stepResult.getRight();
       }
       return r + 1;
     }
     else { // Use Case 5.
       while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        r--;
-        if ( r >= 0 ) {
-          rowVal = computeValue(p.getAt(r));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
+        r = stepResult.getLeft();
+        rowVal = stepResult.getRight();
       }
       return r + 1;
     }
   }
 
   protected int computeEndCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
-    Object sortKey = computeValue(p.getAt(rowIdx));
+    Object sortKey = computeValueUseCache(rowIdx, p);
 
     // Use Case 6.
     if ( sortKey == null ) {
       while ( sortKey == null && rowIdx < p.size() ) {
-        ++rowIdx;
-        if ( rowIdx < p.size() ) {
-          sortKey = computeValue(p.getAt(rowIdx));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepForward(rowIdx, p);
+        rowIdx = stepResult.getLeft();
+        sortKey = stepResult.getRight();
       }
       return rowIdx;
     }
@@ -340,10 +584,9 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 
     // Use Case 7.
     while (r < p.size() && isEqual(sortKey, rowVal) ) {
-      r++;
-      if ( r < p.size() ) {
-        rowVal = computeValue(p.getAt(r));
-      }
+      Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+      r = stepResult.getLeft();
+      rowVal = stepResult.getRight();
     }
     return r;
   }
@@ -355,7 +598,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
       return p.size();
     }
-    Object sortKey = computeValue(p.getAt(rowIdx));
+    Object sortKey = computeValueUseCache(rowIdx, p);
 
     Object rowVal = sortKey;
     int r = rowIdx;
@@ -367,10 +610,9 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
       else { // Use Case 10.
         while (r < p.size() && rowVal == null ) {
-          r++;
-          if ( r < p.size() ) {
-            rowVal = computeValue(p.getAt(r));
-          }
+          Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+          r = stepResult.getLeft();
+          rowVal = stepResult.getRight();
         }
         return r;
       }
@@ -379,19 +621,17 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     // Use Case 11.
     if ( expressionDef.getOrder() == Order.DESC) {
       while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        r++;
-        if ( r < p.size() ) {
-          rowVal = computeValue(p.getAt(r));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+        r = stepResult.getLeft();
+        rowVal = stepResult.getRight();
       }
       return r;
     }
     else { // Use Case 12.
       while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        r++;
-        if ( r < p.size() ) {
-          rowVal = computeValue(p.getAt(r));
-        }
+        Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+        r = stepResult.getLeft();
+        rowVal = stepResult.getRight();
       }
       return r;
     }
@@ -702,15 +942,14 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 
   protected int computeStartCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
-    Object[] sortKey = computeValues(p.getAt(rowIdx));
-    Object[] rowVal = sortKey;
+    Object sortKey = computeValueUseCache(rowIdx, p);
+    Object rowVal = sortKey;
     int r = rowIdx;
 
     while (r >= 0 && isEqual(rowVal, sortKey) ) {
-      r--;
-      if ( r >= 0 ) {
-        rowVal = computeValues(p.getAt(r));
-      }
+      Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
+      r = stepResult.getLeft();
+      rowVal = stepResult.getRight();
     }
     return r + 1;
   }
@@ -726,6 +965,7 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
 |   2. | FOLLOWING      | UNB           | ANY      | ANY   | end = partition.size()            |
 |------+----------------+---------------+----------+-------+-----------------------------------|
    */
+
   @Override
   public int computeEnd(int rowIdx, PTFPartition p) throws HiveException {
     switch(end.getDirection()) {
@@ -741,15 +981,14 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 
   protected int computeEndCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
-    Object[] sortKey = computeValues(p.getAt(rowIdx));
-    Object[] rowVal = sortKey;
+    Object sortKey = computeValueUseCache(rowIdx, p);
+    Object rowVal = sortKey;
     int r = rowIdx;
 
     while (r < p.size() && isEqual(sortKey, rowVal) ) {
-      r++;
-      if ( r < p.size() ) {
-        rowVal = computeValues(p.getAt(r));
-      }
+      Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+      r = stepResult.getLeft();
+      rowVal = stepResult.getRight();
     }
     return r;
   }
@@ -763,7 +1002,8 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
             "FOLLOWING needs UNBOUNDED for RANGE with multiple expressions in ORDER BY");
   }
 
-  public Object[] computeValues(Object row) throws HiveException {
+  @Override
+  public Object computeValue(Object row) throws HiveException {
     Object[] objs = new Object[orderDef.getExpressions().size()];
     for (int i = 0; i < objs.length; i++) {
       Object o = orderDef.getExpressions().get(i).getExprEvaluator().evaluate(row);
@@ -772,7 +1012,14 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
     return objs;
   }
 
-  public boolean isEqual(Object[] v1, Object[] v2) {
+  @Override
+  public boolean isEqual(Object val1, Object val2) {
+    if (val1 == null || val2 == null) {
+      return (val1 == null && val2 == null);
+    }
+    Object[] v1 = (Object[]) val1;
+    Object[] v2 = (Object[]) val2;
+
     assert v1.length == v2.length;
     for (int i = 0; i < v1.length; i++) {
       if (v1[i] == null && v2[i] == null) {
@@ -788,6 +1035,11 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
       }
     }
     return true;
+  }
+
+  @Override
+  public boolean isDistanceGreater(Object v1, Object v2, int amt) {
+    throw new UnsupportedOperationException("Only unbounded ranges supported");
   }
 }
 
