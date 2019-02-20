@@ -1,8 +1,8 @@
-PREHOOK: query: create table tti(i int check i > 5)
+PREHOOK: query: create table tti(i int check (i > 5))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tti
-POSTHOOK: query: create table tti(i int check i > 5)
+POSTHOOK: query: create table tti(i int check (i > 5))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tti

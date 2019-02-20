@@ -25,6 +25,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
@@ -223,39 +225,74 @@ public class PreUpgradeTool {
     boolean isAcidEnabled = isAcidEnabled(conf);
     IMetaStoreClient hms = getHMS(conf);
     LOG.debug("Looking for databases");
-    List<String> databases = hms.getAllDatabases();//TException
-    LOG.debug("Found " + databases.size() + " databases to process");
+    String exceptionMsg = null;
+    List<String> databases;
     List<String> compactions = new ArrayList<>();
     final CompactionMetaInfo compactionMetaInfo = new CompactionMetaInfo();
     ValidTxnList txns = null;
     Hive db = null;
-    if(execute) {
-      db = Hive.get(conf);
-    }
+    try {
+      databases = hms.getAllDatabases();//TException
+      LOG.debug("Found " + databases.size() + " databases to process");
+      if (execute) {
+        db = Hive.get(conf);
+      }
 
-    for(String dbName : databases) {
-      List<String> tables = hms.getAllTables(dbName);
-      LOG.debug("found " + tables.size() + " tables in " + dbName);
-      for(String tableName : tables) {
-        Table t = hms.getTable(dbName, tableName);
-        LOG.debug("processing table " + Warehouse.getQualifiedName(t));
-        if(isAcidEnabled) {
-          //if acid is off, there can't be any acid tables - nothing to compact
-          if(txns == null) {
+      for (String dbName : databases) {
+        try {
+          List<String> tables = hms.getAllTables(dbName);
+          LOG.debug("found " + tables.size() + " tables in " + dbName);
+          for (String tableName : tables) {
+            try {
+              Table t = hms.getTable(dbName, tableName);
+              LOG.debug("processing table " + Warehouse.getQualifiedName(t));
+              if (isAcidEnabled) {
+                //if acid is off, there can't be any acid tables - nothing to compact
+                if (txns == null) {
           /*
            This API changed from 2.x to 3.0.  so this won't even compile with 3.0
            but it doesn't need to since we only run this preUpgrade
           */
-            TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-            txns = TxnUtils.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
+                  TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+                  txns = TxnUtils.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
+                }
+                List<String> compactionCommands =
+                  getCompactionCommands(t, conf, hms, compactionMetaInfo, execute, db, txns);
+                compactions.addAll(compactionCommands);
+              }
+              /*todo: handle renaming files somewhere*/
+            } catch (Exception e) {
+              if (isAccessControlException(e)) {
+                // this could be external table with 0 permission for hive user
+                exceptionMsg = "Unable to access " + dbName + "." + tableName + ". Pre-upgrade tool requires read-access " +
+                  "to databases and tables to determine if a table has to be compacted. " +
+                  "Set " + HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname + " config to " +
+                  "false to allow read-access to databases and tables and retry the pre-upgrade tool again..";
+              }
+              throw e;
+            }
           }
-          List<String> compactionCommands =
-              getCompactionCommands(t, conf, hms, compactionMetaInfo, execute, db, txns);
-          compactions.addAll(compactionCommands);
+        } catch (Exception e) {
+          if (exceptionMsg == null && isAccessControlException(e)) {
+            // we may not have access to read all tables from this db
+            exceptionMsg = "Unable to access " + dbName + ". Pre-upgrade tool requires read-access " +
+              "to databases and tables to determine if a table has to be compacted. " +
+              "Set " + HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname + " config to " +
+              "false to allow read-access to databases and tables and retry the pre-upgrade tool again..";
+          }
+          throw e;
         }
-        /*todo: handle renaming files somewhere*/
       }
+    } catch (Exception e) {
+      if (exceptionMsg == null && isAccessControlException(e)) {
+        exceptionMsg = "Unable to get databases. Pre-upgrade tool requires read-access " +
+          "to databases and tables to determine if a table has to be compacted. " +
+          "Set " + HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname + " config to " +
+          "false to allow read-access to databases and tables and retry the pre-upgrade tool again..";
+      }
+      throw new HiveException(exceptionMsg, e);
     }
+
     makeCompactionScript(compactions, scriptLocation, compactionMetaInfo);
 
     if(execute) {
@@ -306,6 +343,22 @@ public class PreUpgradeTool {
     }
   }
 
+  private boolean isAccessControlException(final Exception e) {
+    // hadoop security AccessControlException
+    if ((e instanceof MetaException && e.getCause() instanceof AccessControlException) ||
+      ExceptionUtils.getRootCause(e) instanceof AccessControlException) {
+      return true;
+    }
+
+    // java security AccessControlException
+    if ((e instanceof MetaException && e.getCause() instanceof java.security.AccessControlException) ||
+      ExceptionUtils.getRootCause(e) instanceof java.security.AccessControlException) {
+      return true;
+    }
+
+    // metastore in some cases sets the AccessControlException as message instead of wrapping the exception
+    return e instanceof MetaException && e.getMessage().startsWith("java.security.AccessControlException: Permission denied");
+  }
 
   /**
    * Generates a set compaction commands to run on pre Hive 3 cluster
