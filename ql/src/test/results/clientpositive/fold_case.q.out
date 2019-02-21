@@ -384,7 +384,7 @@ STAGE PLANS:
               predicate: (not COALESCE((key = '238'),false)) (type: boolean)
               Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: CASE WHEN ((key = '238')) THEN (null) ELSE (false) END (type: boolean)
+                expressions: if((key = '238'), null, false) (type: boolean)
                 outputColumnNames: _col0
                 Statistics: Num rows: 250 Data size: 1000 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -467,10 +467,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: CASE WHEN ((key = '238')) THEN (null) ELSE (true) END (type: boolean)
+            filterExpr: if((key = '238'), null, true) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: CASE WHEN ((key = '238')) THEN (null) ELSE (true) END (type: boolean)
+              predicate: if((key = '238'), null, true) (type: boolean)
               Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -557,7 +557,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: CASE WHEN ((key = value)) THEN ('1') ELSE ('0') END (type: string)
+              expressions: if((key = value), '1', '0') (type: string)
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator

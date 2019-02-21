@@ -82,13 +82,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c1
-            filterExpr: CASE WHEN (a1 is not null) THEN (a1 is not null) ELSE (a2 is not null) END (type: boolean)
+            filterExpr: if(a1 is not null, a1 is not null, a2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: CASE WHEN (a1 is not null) THEN (a1 is not null) ELSE (a2 is not null) END (type: boolean)
+              predicate: if(a1 is not null, a1 is not null, a2 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: a1 (type: string), a2 (type: string), CASE WHEN (a1 is not null) THEN (a1) ELSE (a2) END (type: string)
+                expressions: a1 (type: string), a2 (type: string), if(a1 is not null, a1, a2) (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -99,13 +99,13 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: c2
-            filterExpr: CASE WHEN (b1 is not null) THEN (b1 is not null) ELSE (b2 is not null) END (type: boolean)
+            filterExpr: if(b1 is not null, b1 is not null, b2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: CASE WHEN (b1 is not null) THEN (b1 is not null) ELSE (b2 is not null) END (type: boolean)
+              predicate: if(b1 is not null, b1 is not null, b2 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: b1 (type: string), b2 (type: string), CASE WHEN (b1 is not null) THEN (b1) ELSE (b2) END (type: string)
+                expressions: b1 (type: string), b2 (type: string), if(b1 is not null, b1, b2) (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -173,13 +173,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c1
-            filterExpr: CASE WHEN (a1 is not null) THEN (a1 is not null) ELSE (a2 is not null) END (type: boolean)
+            filterExpr: if(a1 is not null, a1 is not null, a2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: CASE WHEN (a1 is not null) THEN (a1 is not null) ELSE (a2 is not null) END (type: boolean)
+              predicate: if(a1 is not null, a1 is not null, a2 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: a1 (type: string), a2 (type: string), CASE WHEN (a1 is not null) THEN (a1) ELSE (a2) END (type: string)
+                expressions: a1 (type: string), a2 (type: string), if(a1 is not null, a1, a2) (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
@@ -190,13 +190,13 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: c2
-            filterExpr: CASE WHEN (b1 is not null) THEN (b1 is not null) ELSE (b2 is not null) END (type: boolean)
+            filterExpr: if(b1 is not null, b1 is not null, b2 is not null) (type: boolean)
             Statistics: Num rows: 2 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: CASE WHEN (b1 is not null) THEN (b1 is not null) ELSE (b2 is not null) END (type: boolean)
+              predicate: if(b1 is not null, b1 is not null, b2 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: b1 (type: string), b2 (type: string), CASE WHEN (b1 is not null) THEN (b1) ELSE (b2) END (type: string)
+                expressions: b1 (type: string), b2 (type: string), if(b1 is not null, b1, b2) (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
