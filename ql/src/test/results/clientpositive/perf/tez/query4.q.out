@@ -281,7 +281,7 @@ Stage-0
               Select Operator [SEL_140] (rows=7323197 width=85)
                 Output:["_col0"]
                 Filter Operator [FIL_139] (rows=7323197 width=537)
-                  predicate:CASE WHEN (_col3 is not null) THEN (CASE WHEN (_col9) THEN (((_col11 / _col8) > (_col14 / _col3))) ELSE ((null > (_col14 / _col3))) END) ELSE (CASE WHEN (_col9) THEN (((_col11 / _col8) > null)) ELSE (null) END) END
+                  predicate:if(_col3 is not null, if(_col9, ((_col11 / _col8) > (_col14 / _col3)), (null > (_col14 / _col3))), if(_col9, ((_col11 / _col8) > null), null))
                   Merge Join Operator [MERGEJOIN_472] (rows=14646395 width=537)
                     Conds:RS_136._col2=RS_554._col0(Inner),Output:["_col3","_col8","_col9","_col11","_col13","_col14"]
                   <-Reducer 30 [SIMPLE_EDGE] vectorized
@@ -345,7 +345,7 @@ Stage-0
                     FORWARD [RS_136]
                       PartitionCols:_col2
                       Filter Operator [FIL_135] (rows=12248093 width=668)
-                        predicate:CASE WHEN (_col6) THEN (CASE WHEN (_col9) THEN (((_col11 / _col8) > (_col1 / _col5))) ELSE ((null > (_col1 / _col5))) END) ELSE (CASE WHEN (_col9) THEN (((_col11 / _col8) > null)) ELSE (null) END) END
+                        predicate:if(_col6, if(_col9, ((_col11 / _col8) > (_col1 / _col5)), (null > (_col1 / _col5))), if(_col9, ((_col11 / _col8) > null), null))
                         Merge Join Operator [MERGEJOIN_471] (rows=24496186 width=668)
                           Conds:RS_132._col2=RS_548._col0(Inner),Output:["_col1","_col2","_col3","_col5","_col6","_col8","_col9","_col11"]
                         <-Reducer 26 [SIMPLE_EDGE] vectorized
