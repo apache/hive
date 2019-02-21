@@ -26,6 +26,7 @@ import java.security.AccessControlException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1726,10 +1727,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         queryProperties.setHasGroupBy(true);
         if (qbp.getJoinExpr() != null) {
           queryProperties.setHasJoinFollowedByGroupBy(true);
-        }
-        if (qbp.getSelForClause(ctx_1.dest).getToken().getType() == HiveParser.TOK_SELECTDI) {
-          throw new SemanticException(generateErrorMessage(ast,
-              ErrorMsg.SELECT_DISTINCT_WITH_GROUPBY.getMsg()));
         }
         qbp.setGroupByExprForClause(ctx_1.dest, ast);
         skipRecursion = true;
@@ -4194,27 +4191,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * This function is a wrapper of parseInfo.getGroupByForClause which
-   * automatically translates SELECT DISTINCT a,b,c to SELECT a,b,c GROUP BY
-   * a,b,c.
+   * Returns the GBY, if present;
+   * DISTINCT, if present, will be handled when generating the SELECT.
    */
   List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) throws SemanticException {
-    if (parseInfo.getSelForClause(dest).getToken().getType() == HiveParser.TOK_SELECTDI) {
-      ASTNode selectExprs = parseInfo.getSelForClause(dest);
-      List<ASTNode> result = new ArrayList<ASTNode>(selectExprs == null ? 0
-          : selectExprs.getChildCount());
-      if (selectExprs != null) {
-        for (int i = 0; i < selectExprs.getChildCount(); ++i) {
-          if (((ASTNode) selectExprs.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
+    // When *not* invoked by CalcitePlanner, return the DISTINCT as a GBY
+    // CBO will handle the DISTINCT in CalcitePlannerAction.genSelectLogicalPlan
+    ASTNode selectExpr = parseInfo.getSelForClause(dest);
+    Collection<ASTNode> aggregateFunction = parseInfo.getDestToAggregationExprs().get(dest).values();
+    if (isSelectDistinct(selectExpr) && !isGroupBy(selectExpr) && !isAggregateInSelect(selectExpr, aggregateFunction)) {
+      List<ASTNode> result = new ArrayList<ASTNode>(selectExpr == null ? 0 : selectExpr.getChildCount());
+      if (selectExpr != null) {
+        for (int i = 0; i < selectExpr.getChildCount(); ++i) {
+          if (((ASTNode) selectExpr.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
             continue;
           }
           // table.column AS alias
-          ASTNode grpbyExpr = (ASTNode) selectExprs.getChild(i).getChild(0);
+          ASTNode grpbyExpr = (ASTNode) selectExpr.getChild(i).getChild(0);
           result.add(grpbyExpr);
         }
       }
       return result;
     } else {
+      // look for a true GBY
       ASTNode grpByExprs = parseInfo.getGroupByForClause(dest);
       List<ASTNode> result = new ArrayList<ASTNode>(grpByExprs == null ? 0
           : grpByExprs.getChildCount());
@@ -4228,6 +4227,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       return result;
     }
+  }
+
+  protected boolean isGroupBy(ASTNode expr) {
+    boolean isGroupBy = false;
+    if (expr.getParent() != null && expr.getParent() instanceof Node)
+    for (Node sibling : ((Node)expr.getParent()).getChildren()) {
+      isGroupBy |= sibling instanceof ASTNode && ((ASTNode)sibling).getType() == HiveParser.TOK_GROUPBY;
+    }
+
+    return isGroupBy;
+  }
+
+  protected boolean isSelectDistinct(ASTNode expr) {
+    return expr.getType() == HiveParser.TOK_SELECTDI;
+  }
+
+  protected boolean isAggregateInSelect(Node node, Collection<ASTNode> aggregateFunction) {
+    if (node.getChildren() == null) {
+      return false;
+    }
+
+    for (Node child : node.getChildren()) {
+      if (aggregateFunction.contains(child) || isAggregateInSelect(child, aggregateFunction)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   static String[] getColAlias(ASTNode selExpr, String defaultName,
