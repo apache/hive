@@ -195,7 +195,7 @@ STAGE PLANS:
               predicate: ((id = 2) and item is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: item (type: string), CASE WHEN (amount is not null) THEN (amount) ELSE (0) END (type: decimal(13,3)), CASE WHEN (sales_tax is not null) THEN (sales_tax) ELSE (0) END (type: decimal(13,3))
+                expressions: item (type: string), if(amount is not null, amount, 0) (type: decimal(13,3)), if(sales_tax is not null, sales_tax, 0) (type: decimal(13,3))
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 308 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator

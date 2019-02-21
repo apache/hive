@@ -60,7 +60,7 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: str2 (type: string), UDFToInteger(CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END) (type: int)
+              expressions: str2 (type: string), UDFToInteger(if(str1 is not null, str1, '0')) (type: int)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
@@ -179,7 +179,7 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END (type: string)
+              expressions: if(str1 is not null, str1, '0') (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
@@ -263,7 +263,7 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: str2 (type: string), UDFToInteger(CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END) (type: int)
+              expressions: str2 (type: string), UDFToInteger(if(str1 is not null, str1, '0')) (type: int)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
@@ -382,7 +382,7 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END (type: string)
+              expressions: if(str1 is not null, str1, '0') (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator

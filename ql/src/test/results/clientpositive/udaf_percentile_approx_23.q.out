@@ -516,7 +516,7 @@ STAGE PLANS:
             alias: bucket_n0
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: CASE WHEN ((key < 100.0D)) THEN (NaND) ELSE (key) END (type: double)
+              expressions: if((key < 100.0D), NaND, key) (type: double)
               outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator

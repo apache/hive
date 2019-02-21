@@ -206,7 +206,7 @@ STAGE PLANS:
                     1 Map 7
                   Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col10 (type: string), _col8 (type: string), CASE WHEN (_col5) THEN (_col3) ELSE (0) END (type: int), CASE WHEN (_col6) THEN (_col3) ELSE (0) END (type: int)
+                    expressions: _col10 (type: string), _col8 (type: string), if(_col5, _col3, 0) (type: int), if(_col6, _col3, 0) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -231,7 +231,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 25012152 Data size: 395187961 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (CASE WHEN ((_col2 > 0L)) THEN (((UDFToDouble(_col3) / UDFToDouble(_col2)) <= 1.5D)) ELSE (null) END and CASE WHEN ((_col2 > 0L)) THEN ((0.666667D <= (UDFToDouble(_col3) / UDFToDouble(_col2)))) ELSE (null) END) (type: boolean)
+                  predicate: (if((_col2 > 0L), ((UDFToDouble(_col3) / UDFToDouble(_col2)) <= 1.5D), null) and if((_col2 > 0L), (0.666667D <= (UDFToDouble(_col3) / UDFToDouble(_col2))), null)) (type: boolean)
                   Statistics: Num rows: 6253038 Data size: 98796990 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)

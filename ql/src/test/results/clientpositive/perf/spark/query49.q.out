@@ -304,7 +304,7 @@ STAGE PLANS:
                     predicate: ((ws_net_paid > 0) and (ws_net_profit > 1) and (ws_quantity > 0) and ws_item_sk is not null and ws_order_number is not null and ws_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 5333432 Data size: 725192506 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ws_sold_date_sk (type: int), ws_item_sk (type: int), ws_order_number (type: int), CASE WHEN (ws_quantity is not null) THEN (ws_quantity) ELSE (0) END (type: int), CASE WHEN (ws_net_paid is not null) THEN (ws_net_paid) ELSE (0) END (type: decimal(12,2))
+                      expressions: ws_sold_date_sk (type: int), ws_item_sk (type: int), ws_order_number (type: int), if(ws_quantity is not null, ws_quantity, 0) (type: int), if(ws_net_paid is not null, ws_net_paid, 0) (type: decimal(12,2))
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 5333432 Data size: 725192506 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
@@ -343,7 +343,7 @@ STAGE PLANS:
                     predicate: ((wr_return_amt > 10000) and wr_item_sk is not null and wr_order_number is not null) (type: boolean)
                     Statistics: Num rows: 4799489 Data size: 441731394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: wr_item_sk (type: int), wr_order_number (type: int), CASE WHEN (wr_return_quantity is not null) THEN (wr_return_quantity) ELSE (0) END (type: int), CASE WHEN (wr_return_amt is not null) THEN (wr_return_amt) ELSE (0) END (type: decimal(12,2))
+                      expressions: wr_item_sk (type: int), wr_order_number (type: int), if(wr_return_quantity is not null, wr_return_quantity, 0) (type: int), if(wr_return_amt is not null, wr_return_amt, 0) (type: decimal(12,2))
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 4799489 Data size: 441731394 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
@@ -363,7 +363,7 @@ STAGE PLANS:
                     predicate: ((cs_net_paid > 0) and (cs_net_profit > 1) and (cs_quantity > 0) and cs_item_sk is not null and cs_order_number is not null and cs_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 10666290 Data size: 1444429931 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cs_sold_date_sk (type: int), cs_item_sk (type: int), cs_order_number (type: int), CASE WHEN (cs_quantity is not null) THEN (cs_quantity) ELSE (0) END (type: int), CASE WHEN (cs_net_paid is not null) THEN (cs_net_paid) ELSE (0) END (type: decimal(12,2))
+                      expressions: cs_sold_date_sk (type: int), cs_item_sk (type: int), cs_order_number (type: int), if(cs_quantity is not null, cs_quantity, 0) (type: int), if(cs_net_paid is not null, cs_net_paid, 0) (type: decimal(12,2))
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 10666290 Data size: 1444429931 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
@@ -383,7 +383,7 @@ STAGE PLANS:
                     predicate: ((cr_return_amount > 10000) and cr_item_sk is not null and cr_order_number is not null) (type: boolean)
                     Statistics: Num rows: 9599627 Data size: 1019078226 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cr_item_sk (type: int), cr_order_number (type: int), CASE WHEN (cr_return_quantity is not null) THEN (cr_return_quantity) ELSE (0) END (type: int), CASE WHEN (cr_return_amount is not null) THEN (cr_return_amount) ELSE (0) END (type: decimal(12,2))
+                      expressions: cr_item_sk (type: int), cr_order_number (type: int), if(cr_return_quantity is not null, cr_return_quantity, 0) (type: int), if(cr_return_amount is not null, cr_return_amount, 0) (type: decimal(12,2))
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 9599627 Data size: 1019078226 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
@@ -403,7 +403,7 @@ STAGE PLANS:
                     predicate: ((ss_net_paid > 0) and (ss_net_profit > 1) and (ss_quantity > 0) and ss_item_sk is not null and ss_sold_date_sk is not null and ss_ticket_number is not null) (type: boolean)
                     Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_ticket_number (type: int), CASE WHEN (ss_quantity is not null) THEN (ss_quantity) ELSE (0) END (type: int), CASE WHEN (ss_net_paid is not null) THEN (ss_net_paid) ELSE (0) END (type: decimal(12,2))
+                      expressions: ss_sold_date_sk (type: int), ss_item_sk (type: int), ss_ticket_number (type: int), if(ss_quantity is not null, ss_quantity, 0) (type: int), if(ss_net_paid is not null, ss_net_paid, 0) (type: decimal(12,2))
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
                       Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
@@ -423,7 +423,7 @@ STAGE PLANS:
                     predicate: ((sr_return_amt > 10000) and sr_item_sk is not null and sr_ticket_number is not null) (type: boolean)
                     Statistics: Num rows: 19197050 Data size: 1487398277 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: sr_item_sk (type: int), sr_ticket_number (type: int), CASE WHEN (sr_return_quantity is not null) THEN (sr_return_quantity) ELSE (0) END (type: int), CASE WHEN (sr_return_amt is not null) THEN (sr_return_amt) ELSE (0) END (type: decimal(12,2))
+                      expressions: sr_item_sk (type: int), sr_ticket_number (type: int), if(sr_return_quantity is not null, sr_return_quantity, 0) (type: int), if(sr_return_amt is not null, sr_return_amt, 0) (type: decimal(12,2))
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 19197050 Data size: 1487398277 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
