@@ -194,6 +194,6 @@ public class ReplUtils {
       return true;
     }
     String compFlag = parameter.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
-    return compFlag == null  || compFlag.isEmpty() || compFlag.equalsIgnoreCase("false");
+    return compFlag == null  || compFlag.isEmpty() || "false".equalsIgnoreCase(compFlag);
   }
 }

@@ -5208,7 +5208,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int updateFirstIncPendingFlag(Hive hive, ReplSetFirstIncLoadFlagDesc desc) throws HiveException, TException {
     String dbName = desc.getDatabaseName();
     String tblName = desc.getTableName();
-    Map<String,String> parameters;
+    Map<String, String> parameters;
     if (tblName != null && !tblName.isEmpty()) {
       org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbName, tblName);
       parameters = tbl.getParameters();
