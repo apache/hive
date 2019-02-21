@@ -37,6 +37,7 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.DateUtils;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
@@ -197,7 +198,11 @@ public class JdbcSerDe extends AbstractSerDe {
         case CHAR:
         case VARCHAR:
         case STRING:
-          rowVal = rowVal.toString();
+          if (rowVal instanceof java.sql.Date) {
+            rowVal = DateUtils.getDateFormat().format((java.sql.Date)rowVal);
+          } else {
+            rowVal = rowVal.toString();
+          }
           break;
         case DATE:
           if (rowVal instanceof java.sql.Date) {

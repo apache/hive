@@ -34,19 +34,19 @@ FROM src
 SELECT
 
 dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
+'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' ),
 
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','20','20','20.0','20.0','1999-02-22'),
 
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','-20','8','9.0','11.0','2000-03-15'),
 
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','101','-16','66.0','-75.0','2010-04-01'),
 
 dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
+'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','40','50','-455.4543','330.767','2010-04-02')
 
 limit 1;
 
@@ -75,7 +75,8 @@ CREATE EXTERNAL TABLE ext_simple_derby_table2
  ikey int,
  bkey bigint,
  fkey float,
- dkey double
+ dkey double,
+ datekey string
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -96,7 +97,7 @@ select dkey,fkey,bkey,ikey from ext_simple_derby_table1;
 select bkey+ikey,fkey+dkey from ext_simple_derby_table1;
 select abs(dkey),abs(ikey),abs(fkey),abs(bkey) from ext_simple_derby_table1;
 
-
+select datekey from ext_simple_derby_table2;
 
 --Test aggregation
 select count(*) from ext_simple_derby_table1;
