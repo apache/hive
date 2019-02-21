@@ -608,7 +608,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6]
-                        selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 7:decimal(11,0)col 8:decimal(11,0))(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 3:boolean, ConvertDecimal64ToDecimal(col 4:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 4:decimal(11,0)/DECIMAL_64) -> 7:decimal(11,0), ConvertDecimal64ToDecimal(col 5:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 5:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)) -> 6:decimal(11,0)
+                        selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 7:decimal(11,0), col 8:decimal(11,0))(children: Decimal64ColEqualDecimal64Scalar(col 0:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 3:boolean, ConvertDecimal64ToDecimal(col 4:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 1, decimalVal 1) -> 4:decimal(11,0)/DECIMAL_64) -> 7:decimal(11,0), ConvertDecimal64ToDecimal(col 5:decimal(11,0)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 1:decimal(10,0)/DECIMAL_64, decimal64Val 2, decimalVal 2) -> 5:decimal(11,0)/DECIMAL_64) -> 8:decimal(11,0)) -> 6:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -878,7 +878,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6]
-                        selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 4:bigintcol 5:bigint)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 4:bigint, LongColAddLongScalar(col 1:bigint, val 2) -> 5:bigint) -> 6:bigint
+                        selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 4:bigint, col 5:bigint)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 4:bigint, LongColAddLongScalar(col 1:bigint, val 2) -> 5:bigint) -> 6:bigint
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false

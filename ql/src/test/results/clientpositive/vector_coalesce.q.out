@@ -36,7 +36,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [6, 2, 4, 1, 21]
-                    selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 6:stringcol 20:string)(children: IsNotNull(col 6:string) -> 13:boolean, col 6:string, IfExprCondExprCondExpr(col 14:boolean, col 15:stringcol 19:string)(children: IsNotNull(col 2:int) -> 14:boolean, CastLongToString(col 2:int) -> 15:string, IfExprCondExprCondExpr(col 16:boolean, col 17:stringcol 18:string)(children: IsNotNull(col 4:float) -> 16:boolean, CastFloatToString(col 4:float) -> 17:string, CastLongToString(col 1:smallint) -> 18:string) -> 19:string) -> 20:string) -> 21:string
+                    selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 6:stringcol 20:string)(children: IsNotNull(col 6:string) -> 13:boolean, col 6:string, IfExprCondExprCondExpr(col 14:boolean, col 15:string, col 19:string)(children: IsNotNull(col 2:int) -> 14:boolean, CastLongToString(col 2:int) -> 15:string, IfExprCondExprCondExpr(col 16:boolean, col 17:string, col 18:string)(children: IsNotNull(col 4:float) -> 16:boolean, CastFloatToString(col 4:float) -> 17:string, CastLongToString(col 1:smallint) -> 18:string) -> 19:string) -> 20:string) -> 21:string
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
