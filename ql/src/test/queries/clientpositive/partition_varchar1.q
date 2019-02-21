@@ -41,4 +41,6 @@ select count(*) from partition_varchar_1 where dt <= '2000-01-01' and region = 1
 -- 20
 select count(*) from partition_varchar_1 where dt <> '2000-01-01' and region = 1;
 
+alter table partition_varchar_1 drop partition (dt = '2000-01-01');
+
 drop table partition_varchar_1;
