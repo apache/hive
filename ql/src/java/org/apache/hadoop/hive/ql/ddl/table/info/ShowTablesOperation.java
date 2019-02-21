@@ -53,29 +53,35 @@ public class ShowTablesOperation extends DDLOperation {
     TableType type       = desc.getType(); // null for tables, VIRTUAL_VIEW for views, MATERIALIZED_VIEW for MVs
     String dbName        = desc.getDbName();
     String pattern       = desc.getPattern(); // if null, all tables/views are returned
+    TableType typeFilter = desc.getTypeFilter();
     String resultsFile   = desc.getResFile();
+    boolean isExtended   = desc.isExtended();
 
     if (!context.getDb().databaseExists(dbName)) {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
     LOG.debug("pattern: {}", pattern);
+    LOG.debug("typeFilter: {}", typeFilter);
 
-    List<String> tablesOrViews = null;
-    List<Table> materializedViews = null;
+    List<String> tableNames  = null;
+    List<Table> tableObjects = null;
     if (type == null) {
-      tablesOrViews = new ArrayList<>();
-      tablesOrViews.addAll(context.getDb().getTablesByType(dbName, pattern, TableType.MANAGED_TABLE));
-      tablesOrViews.addAll(context.getDb().getTablesByType(dbName, pattern, TableType.EXTERNAL_TABLE));
-      LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tablesOrViews.size());
+      if (isExtended) {
+        tableObjects = new ArrayList<>();
+        tableObjects.addAll(context.getDb().getTableObjectsByType(dbName, pattern, typeFilter));
+        LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
+      } else {
+        tableNames = context.getDb().getTablesByType(dbName, pattern, typeFilter);
+        LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
+      }
     } else if (type == TableType.MATERIALIZED_VIEW) {
-      materializedViews = new ArrayList<>();
-      materializedViews.addAll(context.getDb().getMaterializedViewObjectsByPattern(dbName, pattern));
-      LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.",
-          materializedViews.size());
+      tableObjects = new ArrayList<>();
+      tableObjects.addAll(context.getDb().getMaterializedViewObjectsByPattern(dbName, pattern));
+      LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", tableObjects.size());
     } else if (type == TableType.VIRTUAL_VIEW) {
-      tablesOrViews = context.getDb().getTablesByType(dbName, pattern, type);
-      LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tablesOrViews.size());
+      tableNames = context.getDb().getTablesByType(dbName, pattern, type);
+      LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tableNames.size());
     } else {
       throw new HiveException("Option not recognized in SHOW TABLES/VIEWS/MATERIALIZED VIEWS");
     }
@@ -87,12 +93,16 @@ public class ShowTablesOperation extends DDLOperation {
       FileSystem fs = resFile.getFileSystem(context.getConf());
       outStream = fs.create(resFile);
       // Sort by name and print
-      if (tablesOrViews != null) {
-        SortedSet<String> sortedSet = new TreeSet<String>(tablesOrViews);
+      if (tableNames != null) {
+        SortedSet<String> sortedSet = new TreeSet<String>(tableNames);
         context.getFormatter().showTables(outStream, sortedSet);
       } else {
-        Collections.sort(materializedViews, Comparator.comparing(Table::getTableName));
-        context.getFormatter().showMaterializedViews(outStream, materializedViews);
+        Collections.sort(tableObjects, Comparator.comparing(Table::getTableName));
+        if (isExtended) {
+          context.getFormatter().showTablesExtended(outStream, tableObjects);
+        } else {
+          context.getFormatter().showMaterializedViews(outStream, tableObjects);
+        }
       }
       outStream.close();
     } catch (Exception e) {

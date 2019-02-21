@@ -2667,33 +2667,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ShowTablesDesc showTblsDesc;
     String dbName = SessionState.get().getCurrentDatabase();
     String tableNames = null;
+    TableType tableTypeFilter = null;
+    boolean isExtended = false;
 
-    if (ast.getChildCount() > 3) {
+    if (ast.getChildCount() > 4) {
       throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg(ast.toStringTree()));
     }
 
-    switch (ast.getChildCount()) {
-    case 1: // Uses a pattern
-      tableNames = unescapeSQLString(ast.getChild(0).getText());
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
-      break;
-    case 2: // Specifies a DB
-      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
-      dbName = unescapeIdentifier(ast.getChild(1).getText());
-      validateDatabase(dbName);
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      break;
-    case 3: // Uses a pattern and specifies a DB
-      assert (ast.getChild(0).getType() == HiveParser.TOK_FROM);
-      dbName = unescapeIdentifier(ast.getChild(1).getText());
-      tableNames = unescapeSQLString(ast.getChild(2).getText());
-      validateDatabase(dbName);
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
-      break;
-    default: // No pattern or DB
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
-      break;
+    for (int i = 0; i < ast.getChildCount(); i++) {
+      ASTNode child = (ASTNode) ast.getChild(i);
+      if (child.getType() == HiveParser.TOK_FROM) { // Specifies a DB
+        dbName = unescapeIdentifier(ast.getChild(++i).getText());
+        validateDatabase(dbName);
+      } else if (child.getType() == HiveParser.TOK_TABLE_TYPE) { // Filter on table type
+        String tableType = unescapeIdentifier(child.getChild(0).getText());
+        if (!tableType.equalsIgnoreCase("table_type")) {
+          throw new SemanticException("SHOW TABLES statement only allows equality filter on table_type value");
+        }
+        tableTypeFilter = TableType.valueOf(unescapeSQLString(child.getChild(1).getText()));
+      } else if (child.getType() == HiveParser.KW_EXTENDED) { // Include table type
+        isExtended = true;
+      } else { // Uses a pattern
+        tableNames = unescapeSQLString(child.getText());
+      }
     }
+
+    showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames, tableTypeFilter, isExtended);
     inputs.add(new ReadEntity(getDatabase(dbName)));
     rootTasks.add(TaskFactory.get(new DDLWork2(getInputs(), getOutputs(), showTblsDesc)));
     setFetchTask(createFetchTask(showTblsDesc.getSchema()));
