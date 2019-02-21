@@ -232,6 +232,9 @@ PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES 'view.*'
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
+view1
+view2
+view3
 PREHOOK: query: SHOW VIEWS 'view.*'
 PREHOOK: type: SHOWVIEWS
 POSTHOOK: query: SHOW VIEWS 'view.*'

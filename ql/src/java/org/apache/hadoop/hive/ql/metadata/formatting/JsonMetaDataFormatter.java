@@ -113,6 +113,30 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
   }
 
   /**
+   * Show a list of tables including table types.
+   */
+  @Override
+  public void showTablesExtended(DataOutputStream out, List<Table> tables)
+      throws HiveException {
+    if (tables.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    MapBuilder builder = MapBuilder.create();
+    ArrayList<Map<String, Object>> res = new ArrayList<Map<String, Object>>();
+    for (Table table : tables) {
+      final String tableName = table.getTableName();
+      final String tableType = table.getTableType().toString();
+      res.add(builder
+          .put("Table Name", tableName)
+          .put("Table Type", tableType)
+          .build());
+    }
+    asJson(out, builder.put("tables", res).build());
+  }
+
+  /**
    * Show a list of materialized views.
    */
   @Override

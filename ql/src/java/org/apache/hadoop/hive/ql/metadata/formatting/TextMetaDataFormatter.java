@@ -133,6 +133,33 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   }
 
   /**
+   * Show a list of tables including table types.
+   */
+  public void showTablesExtended(DataOutputStream out, List<Table> tables)
+      throws HiveException {
+    if (tables.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    try {
+      TextMetaDataTable mdt = new TextMetaDataTable();
+      mdt.addRow("# Table Name", "Table Type");
+      for (Table table : tables) {
+        final String tableName = table.getTableName();
+        final String tableType = table.getTableType().toString();
+        mdt.addRow(tableName, tableType);
+      }
+      // In case the query is served by HiveServer2, don't pad it with spaces,
+      // as HiveServer2 output is consumed by JDBC/ODBC clients.
+      out.write(mdt.renderTable(!SessionState.get().isHiveServerQuery()).getBytes("UTF-8"));
+      out.write(terminator);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
    * Show a list of materialized views.
    */
   @Override

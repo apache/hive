@@ -39,9 +39,14 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
   private static final String table = "show";
 
   /**
-   * thrift ddl for the result of show tables.
+   * thrift ddl for the result of show tables and show views.
    */
   private static final String TABLES_VIEWS_SCHEMA = "tab_name#string";
+
+  /**
+   * thrift ddl for the result of show extended tables.
+   */
+  private static final String EXTENDED_TABLES_SCHEMA = "tab_name,table_type#string,string";
 
   /**
    * thrift ddl for the result of show tables.
@@ -50,10 +55,12 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
       "mv_name,rewrite_enabled,mode#string:string:string";
 
 
+  TableType type;
   String pattern;
+  TableType typeFilter;
   String dbName;
   String resFile;
-  TableType type;
+  boolean isExtended;
 
   public String getTable() {
     return table;
@@ -63,7 +70,7 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
     if (type != null && type == TableType.MATERIALIZED_VIEW) {
       return MATERIALIZED_VIEWS_SCHEMA;
     }
-    return TABLES_VIEWS_SCHEMA;
+    return isExtended ? EXTENDED_TABLES_SCHEMA : TABLES_VIEWS_SCHEMA;
   }
 
   public ShowTablesDesc() {
@@ -90,10 +97,12 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
    * @param pattern
    *          names of tables to show
    */
-  public ShowTablesDesc(Path resFile, String dbName, String pattern) {
+  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType typeFilter, boolean isExtended) {
     this.resFile = resFile.toString();
     this.dbName = dbName;
     this.pattern = pattern;
+    this.typeFilter = typeFilter;
+    this.isExtended = isExtended;
   }
 
   /**
@@ -169,5 +178,37 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
    */
   public void setDbName(String dbName) {
     this.dbName = dbName;
+  }
+
+  /**
+   * @return is extended
+   */
+  @Explain(displayName = "extended", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED }, displayOnlyOnTrue = true)
+  public boolean isExtended() {
+    return isExtended;
+  }
+
+  /**
+   * @param isExtended
+   *          whether extended modifier is enabled
+   */
+  public void setIsExtended(boolean isExtended) {
+    this.isExtended = isExtended;
+  }
+
+  /**
+   * @return table type filter, null if it is not filtered
+   */
+  @Explain(displayName = "table type filter", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public TableType getTypeFilter() {
+    return typeFilter;
+  }
+
+  /**
+   * @param typeFilter
+   *          table type filter for show statement
+   */
+  public void setTypeFilter(TableType typeFilter) {
+    this.typeFilter = typeFilter;
   }
 }
