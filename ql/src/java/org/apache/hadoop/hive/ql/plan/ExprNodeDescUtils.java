@@ -102,7 +102,8 @@ public class ExprNodeDescUtils {
 
   private static boolean isDefaultPartition(ExprNodeDesc origin, String defaultPartitionName) {
     if (origin instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc)origin).getValue() != null &&
-        ((ExprNodeConstantDesc)origin).getValue().equals(defaultPartitionName)) {
+        ((ExprNodeConstantDesc)origin).getValue() instanceof String && ((ExprNodeConstantDesc)origin).getValue()
+            .equals(defaultPartitionName)) {
       return true;
     } else {
       return false;
