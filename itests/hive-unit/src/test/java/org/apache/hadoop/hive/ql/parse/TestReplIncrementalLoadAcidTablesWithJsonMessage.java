@@ -28,6 +28,7 @@ import org.junit.Ignore;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 @Ignore
 public class TestReplIncrementalLoadAcidTablesWithJsonMessage
@@ -38,7 +39,7 @@ public class TestReplIncrementalLoadAcidTablesWithJsonMessage
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    HashMap<String, String> overrides = new HashMap<>();
+    Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
             JSONMessageEncoder.class.getCanonicalName());
     internalBeforeClassSetup(overrides, TestReplIncrementalLoadAcidTablesWithJsonMessage.class);

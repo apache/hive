@@ -26,8 +26,8 @@ import org.junit.Rule;
 import org.junit.rules.TestRule;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public class TestReplAcrossInstancesWithJsonMessageFormat
     extends TestReplicationScenariosAcrossInstances {
@@ -37,7 +37,7 @@ public class TestReplAcrossInstancesWithJsonMessageFormat
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    HashMap<String, String> overrides = new HashMap<>();
+    Map<String, String> overrides = new HashMap<>();
     overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
             JSONMessageEncoder.class.getCanonicalName());
     internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
