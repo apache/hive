@@ -2298,7 +2298,7 @@ pkUkConstraint
 checkConstraint
 @init { pushMsg("CHECK constraint", state); }
 @after { popMsg(state); }
-    : KW_CHECK expression
+    : KW_CHECK LPAREN expression RPAREN
     -> ^(TOK_CHECK_CONSTRAINT expression)
     ;
 

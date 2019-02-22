@@ -840,7 +840,6 @@ nonReserved
     | KW_RESOURCE | KW_PLAN | KW_PLANS | KW_QUERY_PARALLELISM | KW_ACTIVATE | KW_MOVE | KW_DO
     | KW_POOL | KW_ALLOC_FRACTION | KW_SCHEDULING_POLICY | KW_PATH | KW_MAPPING | KW_WORKLOAD | KW_MANAGEMENT | KW_ACTIVE | KW_UNMANAGED
     | KW_UNKNOWN
-
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

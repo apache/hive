@@ -1634,6 +1634,10 @@ public class HiveConf extends Configuration {
         + "the evaluation of certain joins, since we will not be emitting rows which are thrown away by "
         + "a Filter operator straight away. However, currently vectorization does not support them, thus "
         + "enabling it is only recommended when vectorization is disabled."),
+    HIVE_PTF_RANGECACHE_SIZE("hive.ptf.rangecache.size", 10000,
+        "Size of the cache used on reducer side, that stores boundaries of ranges within a PTF " +
+        "partition. Used if a query specifies a RANGE type window including an orderby clause." +
+        "Set this to 0 to disable this cache."),
 
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
@@ -4348,9 +4352,9 @@ public class HiveConf extends Configuration {
       "Whether LLAP daemon web UI should use SSL.", "llap.daemon.service.ssl"),
     LLAP_CLIENT_CONSISTENT_SPLITS("hive.llap.client.consistent.splits", true,
         "Whether to setup split locations to match nodes on which llap daemons are running, " +
-        "instead of using the locations provided by the split itself. If there is no llap daemon " +
-        "running, fall back to locations provided by the split. This is effective only if " +
-        "hive.execution.mode is llap"),
+        "preferring one of the locations provided by the split itself. If there is no llap daemon " +
+        "running on any of those locations (or on the cloud), fall back to a cache affinity to" + 
+        " an LLAP node. This is effective only if hive.execution.mode is llap."),
     LLAP_VALIDATE_ACLS("hive.llap.validate.acls", true,
         "Whether LLAP should reject permissive ACLs in some cases (e.g. its own management\n" +
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),

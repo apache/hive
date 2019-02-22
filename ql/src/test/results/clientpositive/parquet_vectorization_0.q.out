@@ -1693,7 +1693,7 @@ STAGE PLANS:
               name default.alltypesparquet
               numFiles 1
               numRows 12288
-              rawDataSize 147456
+              rawDataSize 593751
               serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -1715,7 +1715,7 @@ STAGE PLANS:
                 name default.alltypesparquet
                 numFiles 1
                 numRows 12288
-                rawDataSize 147456
+                rawDataSize 593751
                 serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -30518,7 +30518,7 @@ STAGE PLANS:
               name default.alltypesparquet
               numFiles 1
               numRows 12288
-              rawDataSize 147456
+              rawDataSize 593751
               serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -30540,7 +30540,7 @@ STAGE PLANS:
                 name default.alltypesparquet
                 numFiles 1
                 numRows 12288
-                rawDataSize 147456
+                rawDataSize 593751
                 serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -30635,7 +30635,7 @@ STAGE PLANS:
               name default.alltypesparquet
               numFiles 1
               numRows 12288
-              rawDataSize 147456
+              rawDataSize 593751
               serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -30657,7 +30657,7 @@ STAGE PLANS:
                 name default.alltypesparquet
                 numFiles 1
                 numRows 12288
-                rawDataSize 147456
+                rawDataSize 593751
                 serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -30756,7 +30756,7 @@ STAGE PLANS:
               name default.alltypesparquet
               numFiles 1
               numRows 12288
-              rawDataSize 147456
+              rawDataSize 593751
               serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -30778,7 +30778,7 @@ STAGE PLANS:
                 name default.alltypesparquet
                 numFiles 1
                 numRows 12288
-                rawDataSize 147456
+                rawDataSize 593751
                 serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -30862,7 +30862,7 @@ STAGE PLANS:
               name default.alltypesparquet
               numFiles 1
               numRows 12288
-              rawDataSize 147456
+              rawDataSize 593751
               serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
@@ -30884,7 +30884,7 @@ STAGE PLANS:
                 name default.alltypesparquet
                 numFiles 1
                 numRows 12288
-                rawDataSize 147456
+                rawDataSize 593751
                 serialization.ddl struct alltypesparquet { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
