@@ -17,13 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.junit.BeforeClass;
 
 import java.util.Collections;
+import java.util.HashMap;
 
 public class TestReplTableMigrationWithJsonFormat extends TestReplicationWithTableMigration {
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    internalBeforeClassSetup(Collections.emptyMap());
+    HashMap<String, String> overrides = new HashMap<>();
+    overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
+            JSONMessageEncoder.class.getCanonicalName());
+    internalBeforeClassSetup(overrides);
   }
 }
