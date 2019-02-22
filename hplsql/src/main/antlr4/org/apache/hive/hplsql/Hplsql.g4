@@ -1183,7 +1183,7 @@ timestamp_literal :                       // TIMESTAMP 'YYYY-MM-DD HH:MI:SS.FFF'
      ;
      
 ident :
-       (L_ID | non_reserved_words) ('.' (L_ID | non_reserved_words))* 
+       '-'? (L_ID | non_reserved_words) ('.' (L_ID | non_reserved_words))*
      ;
      
 string :                                   // String literal (single or double quoted)
