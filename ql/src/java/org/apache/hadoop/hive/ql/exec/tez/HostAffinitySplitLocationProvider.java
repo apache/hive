@@ -15,11 +15,11 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.hash.Hashing;
+import java.util.Set;
 
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.FileSplit;
@@ -28,6 +28,10 @@ import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.apache.hive.common.util.Murmur3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.hash.Hashing;
 
 /**
  * This maps a split (path + offset) to an index based on the number of locations provided.
@@ -47,18 +51,20 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
   private final boolean isDebugEnabled = LOG.isDebugEnabled();
 
   private final List<String> locations;
+  private final Set<String> locationSet;
 
   public HostAffinitySplitLocationProvider(List<String> knownLocations) {
     Preconditions.checkState(knownLocations != null && !knownLocations.isEmpty(),
         HostAffinitySplitLocationProvider.class.getName() +
             " needs at least 1 location to function");
     this.locations = knownLocations;
+    this.locationSet = new HashSet<String>(knownLocations);
   }
 
   @Override
   public String[] getLocations(InputSplit split) throws IOException {
     if (!(split instanceof FileSplit)) {
-      if (LOG.isDebugEnabled()) {
+      if (isDebugEnabled) {
         LOG.debug("Split: " + split + " is not a FileSplit. Using default locations");
       }
       return split.getLocations();
@@ -66,14 +72,39 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
     FileSplit fsplit = (FileSplit) split;
     String splitDesc = "Split at " + fsplit.getPath() + " with offset= " + fsplit.getStart()
         + ", length=" + fsplit.getLength();
-    String location = locations.get(determineLocation(
-        locations, fsplit.getPath().toString(), fsplit.getStart(), splitDesc));
+    List<String> preferredLocations = preferLocations(fsplit);
+    String location =
+        preferredLocations.get(determineLocation(preferredLocations, fsplit.getPath().toString(),
+            fsplit.getStart(), splitDesc));
     return (location != null) ? new String[] { location } : null;
+  }
+
+  private List<String> preferLocations(FileSplit fsplit) throws IOException {
+    if (fsplit.getLocations() == null || fsplit.getLocations().length <= 0) {
+      // Cloud FS
+      return this.locations;
+    }
+    String[] datanodes = fsplit.getLocations();
+    Arrays.sort(datanodes);
+    ArrayList<String> targets = new ArrayList<String>(datanodes.length);
+    for (String location : datanodes) {
+      if (locationSet.contains(location)) {
+        targets.add(location);
+      }
+    }
+    if (targets.size() > 0) {
+      return targets;
+    }
+    return this.locations;
   }
 
   @VisibleForTesting
   public static int determineLocation(
       List<String> locations, String path, long start, String desc) {
+    if (locations.size() == 1) {
+      // skip everything, this is simple
+      return 0;
+    }
     byte[] bytes = getHashInputForSplit(path, start);
     long hash1 = hash1(bytes);
     int index = Hashing.consistentHash(hash1, locations.size());
