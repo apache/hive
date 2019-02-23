@@ -135,19 +135,19 @@ Stage-0
                 <-Map 1 [SIMPLE_EDGE] vectorized, llap
                   SHUFFLE [RS_33]
                     PartitionCols:_col0
-                    Select Operator [SEL_32] (runtime: rows=1 width=4)
+                    Select Operator [SEL_32] (runtime: rows=5 width=4)
                       Output:["_col0"]
-                      Filter Operator [FIL_31] (runtime: rows=1 width=4)
+                      Filter Operator [FIL_31] (runtime: rows=5 width=4)
                         predicate:((u < 10) and (u > 2))
-                        TableScan [TS_0] (runtime: rows=1 width=4)
+                        TableScan [TS_0] (runtime: rows=8 width=4)
                           default@tx_n3,tx_n3,Tbl:COMPLETE,Col:COMPLETE,Output:["u"]
                 <-Map 4 [SIMPLE_EDGE] vectorized, llap
                   SHUFFLE [RS_36]
                     PartitionCols:_col0
-                    Select Operator [SEL_35] (runtime: rows=1 width=4)
+                    Select Operator [SEL_35] (runtime: rows=3 width=4)
                       Output:["_col0"]
-                      Filter Operator [FIL_34] (runtime: rows=1 width=4)
+                      Filter Operator [FIL_34] (runtime: rows=3 width=4)
                         predicate:((p < 10) and (p > 2))
-                        TableScan [TS_3] (runtime: rows=1 width=4)
+                        TableScan [TS_3] (runtime: rows=5 width=4)
                           default@px_n0,px_n0,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
 
