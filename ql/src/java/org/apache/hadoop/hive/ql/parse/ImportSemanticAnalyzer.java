@@ -1133,7 +1133,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<?> dropTblTask = null;
     WriteEntity.WriteType lockType = WriteEntity.WriteType.DDL_NO_LOCK;
-    boolean firstIncDone;
+    boolean firstIncDone = true;
 
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist
     // is a error condition. However, in the case of a REPL LOAD, it is possible that we are trying
@@ -1145,11 +1145,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!waitOnPrecursor){
         throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(tblDesc.getDatabaseName()));
       }
-      // For warehouse level replication, if the database itself is getting created in this load, then no need to
-      // check for duplicate copy. Check HIVE-21197 for more detail.
-      firstIncDone = true;
     } else {
       // For database replication, get the flag from database parameter. Check HIVE-21197 for more detail.
+      // TODO : Need to handle warehouse level and table level load.
       firstIncDone = ReplUtils.isFirstIncDone(parentDb.getParameters());
     }
 
@@ -1168,9 +1166,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (x.getEventType() == DumpType.EVENT_CREATE_TABLE) {
         dropTblTask = dropTableTask(table, x, replicationSpec);
         table = null;
-      } else if (firstIncDone) {
-        // For table level replication, get the flag from table parameter. Check HIVE-21197 for more detail.
-        firstIncDone = ReplUtils.isFirstIncDone(table.getParameters());
       }
     } else {
       // If table doesn't exist, allow creating a new one only if the database state is older than the update.

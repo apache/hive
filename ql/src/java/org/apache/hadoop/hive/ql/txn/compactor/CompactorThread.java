@@ -221,8 +221,4 @@ public abstract class CompactorThread extends Thread implements Configurable {
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
   }
-
-  protected boolean replIsCompactionDisabledForTable(Table tbl) {
-    return !ReplUtils.isFirstIncDone(tbl.getParameters());
-  }
 }
