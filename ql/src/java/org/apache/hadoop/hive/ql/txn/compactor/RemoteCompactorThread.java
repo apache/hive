@@ -59,11 +59,7 @@ public class RemoteCompactorThread extends CompactorThread {
   @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
     try {
       Database database = msc.getDatabase(getDefaultCatalog(conf), dbName);
-      if (database != null) {
-        return !ReplUtils.isFirstIncDone(database.getParameters());
-      }
-      LOG.info("Unable to find database " + dbName);
-      return true;
+      return !ReplUtils.isFirstIncDone(database.getParameters());
     } catch (NoSuchObjectException e) {
       LOG.info("Unable to find database " + dbName);
       return true;

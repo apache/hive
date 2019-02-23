@@ -5208,12 +5208,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int updateFirstIncPendingFlag(Hive hive, ReplSetFirstIncLoadFlagDesc desc) throws HiveException, TException {
     String dbName = desc.getDatabaseName();
     String tblName = desc.getTableName();
+    String flag = desc.getIncLoadPendingFlag() ? "true" : "false";
     Map<String, String> parameters;
     if (tblName != null && !tblName.isEmpty()) {
+      //TODO : Need to handle patterns for table name.
       org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbName, tblName);
       parameters = tbl.getParameters();
       if (!ReplUtils.isFirstIncDone(parameters)) {
-        parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "false");
+        parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
         hive.getMSC().alter_table(dbName, tblName, tbl);
       }
     } else {
@@ -5222,7 +5224,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Database database = hive.getMSC().getDatabase(db);
         parameters = database.getParameters();
         if (!ReplUtils.isFirstIncDone(parameters)) {
-          parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "false");
+          parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
           hive.getMSC().alterDatabase(db, database);
         }
       }

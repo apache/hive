@@ -31,6 +31,7 @@ public class ReplSetFirstIncLoadFlagDesc extends DDLDesc implements Serializable
   private static final long serialVersionUID = 1L;
   String databaseName;
   String tableName;
+  boolean incLoadPendingFlag;
 
   /**
    * For serialization only.
@@ -38,10 +39,11 @@ public class ReplSetFirstIncLoadFlagDesc extends DDLDesc implements Serializable
   public ReplSetFirstIncLoadFlagDesc() {
   }
 
-  public ReplSetFirstIncLoadFlagDesc(String databaseName, String tableName) {
+  public ReplSetFirstIncLoadFlagDesc(String databaseName, String tableName, boolean incLoadPendingFlag) {
     super();
     this.databaseName = databaseName;
     this.tableName = tableName;
+    this.incLoadPendingFlag = incLoadPendingFlag;
   }
 
   @Explain(displayName="db_name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -60,5 +62,10 @@ public class ReplSetFirstIncLoadFlagDesc extends DDLDesc implements Serializable
 
   public void setTableName(String tableName) {
     this.tableName = tableName;
+  }
+
+  @Explain(displayName="inc load pending flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean getIncLoadPendingFlag() {
+    return incLoadPendingFlag;
   }
 }

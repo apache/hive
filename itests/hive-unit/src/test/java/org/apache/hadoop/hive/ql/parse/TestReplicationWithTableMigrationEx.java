@@ -30,7 +30,6 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 
@@ -40,13 +39,13 @@ import static org.apache.hadoop.hive.ql.io.AcidUtils.isTransactionalTable;
 import static org.junit.Assert.*;
 
 /**
- * TestReplicationWithTableMigration - test replication for Hive2 to Hive3 (Strict managed tables)
+ * TestReplicationWithTableMigrationEx - test replication for Hive2 to Hive3 (Strict managed tables)
  */
-public class TestReplicationWithTableMigrationMisc {
+public class TestReplicationWithTableMigrationEx {
   @Rule
   public final TestName testName = new TestName();
 
-  protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationWithTableMigrationMisc.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationWithTableMigrationEx.class);
   private static WarehouseInstance primary, replica;
   private String primaryDbName, replicatedDbName;
 
@@ -57,7 +56,7 @@ public class TestReplicationWithTableMigrationMisc {
   }
 
   static void internalBeforeClassSetup(Map<String, String> overrideConfigs) throws Exception {
-    HiveConf conf = new HiveConf(TestReplicationWithTableMigrationMisc.class);
+    HiveConf conf = new HiveConf(TestReplicationWithTableMigrationEx.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
@@ -173,7 +172,7 @@ public class TestReplicationWithTableMigrationMisc {
     try {
       return primary.dump(primaryDbName, null);
     } finally {
-      InjectableBehaviourObjectStore.setGetCurrentNotificationEventIdBehaviour(null);
+      InjectableBehaviourObjectStore.resetGetCurrentNotificationEventIdBehaviour();
       callerVerifier.assertInjectionsPerformed(true, false);
     }
   }
@@ -186,7 +185,7 @@ public class TestReplicationWithTableMigrationMisc {
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(2);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
-    assertTrue(!ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
     tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
@@ -203,7 +202,7 @@ public class TestReplicationWithTableMigrationMisc {
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(4);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
-    assertTrue(!ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
     tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
@@ -221,7 +220,7 @@ public class TestReplicationWithTableMigrationMisc {
     replica.run("create database " + replicatedDbName);
     replica.loadWithoutExplain(replicatedDbName + ".t1", tuple.dumpLocation);
     assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
-    assertTrue(!ReplUtils.isFirstIncDone(replica.getTable(replicatedDbName, "t1").getParameters()));
+    assertFalse(ReplUtils.isFirstIncDone(replica.getTable(replicatedDbName, "t1").getParameters()));
 
     tuple = primary.run("use " + primaryDbName)
             .run("insert into t1 values (1, 2)")

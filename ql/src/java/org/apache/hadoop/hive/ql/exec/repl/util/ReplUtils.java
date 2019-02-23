@@ -76,6 +76,10 @@ public class ReplUtils {
   // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
   public static final Long REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID = 1L;
 
+  // we keep the statement id as 0 so that the base directory is created with 0 and is easy to find out during
+  // duplicate check. Note : Stmt id is not used for base directory now, but to avoid misuse later, its maintained.
+  public static final int REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID = 0;
+
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */

@@ -166,7 +166,7 @@ public class IncrementalLoadTasksBuilder {
         }
       }
 
-      ReplSetFirstIncLoadFlagDesc desc = new ReplSetFirstIncLoadFlagDesc(dbName, tableName);
+      ReplSetFirstIncLoadFlagDesc desc = new ReplSetFirstIncLoadFlagDesc(dbName, tableName, false);
       Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
       taskChainTail.addDependentTask(updateIncPendTask);
       taskChainTail = updateIncPendTask;

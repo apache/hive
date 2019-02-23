@@ -70,13 +70,9 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     Path basePath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(true, writeId, writeId, stmtId));
     while (iter.hasNext()) {
       Path filePath = new Path(basePath, iter.next().getSourcePath().getName());
-      try {
-        if (dstFs.getFileStatus(filePath) != null) {
-          LOG.debug("File " + filePath + " is already present in base directory. So removing it from the list.");
-          iter.remove();
-        }
-      } catch (java.io.FileNotFoundException e) {
-        continue;
+      if (dstFs.exists(filePath)) {
+        LOG.debug("File " + filePath + " is already present in base directory. So removing it from the list.");
+        iter.remove();
       }
     }
   }
@@ -142,7 +138,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         if (work.isCopyToMigratedTxnTable()) {
           if (work.isNeedCheckDuplicateCopy()) {
             updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
-                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, 0);
+                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
             if (srcFiles.isEmpty()) {
               LOG.info("All files are already present in the base directory. Skipping copy task.");
               return 0;
@@ -163,7 +159,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           long writeId = Long.parseLong(writeIdString);
           // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
           // duplicate copy from the source. Check HIVE-21197 for more detail.
-          int stmtId = (writeId == ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID) ? 0 :
+          int stmtId = (writeId == ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID) ?
+                  ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
                   driverContext.getCtx().getHiveTxnManager().getStmtIdAndIncrement();
           toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
         }

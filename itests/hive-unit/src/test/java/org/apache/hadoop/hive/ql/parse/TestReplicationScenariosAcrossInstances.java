@@ -612,8 +612,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     //default db is already created at replica before load. So the incr flag should not be set.
     assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase("default").getParameters()));
-    assertTrue(!ReplUtils.isFirstIncDone(replica.getDatabase(primaryDbName).getParameters()));
-    assertTrue(!ReplUtils.isFirstIncDone(replica.getDatabase(dbOne).getParameters()));
+    assertFalse(ReplUtils.isFirstIncDone(replica.getDatabase(primaryDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncDone(replica.getDatabase(dbOne).getParameters()));
 
     replica.load("", incrementalTuple.dumpLocation)
         .run("show databases")
