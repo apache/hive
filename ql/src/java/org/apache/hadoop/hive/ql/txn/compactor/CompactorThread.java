@@ -223,6 +223,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   protected boolean replIsCompactionDisabledForTable(Table tbl) {
-    return !ReplUtils.isFirstIncDone(tbl.getParameters());
+    // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
+    return ReplUtils.isFirstIncPending(tbl.getParameters());
   }
 }

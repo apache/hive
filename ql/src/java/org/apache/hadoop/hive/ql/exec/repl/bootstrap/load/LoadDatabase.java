@@ -48,13 +48,15 @@ public class LoadDatabase {
 
   private final DatabaseEvent event;
   private final String dbNameToLoadIn;
+  private final boolean isTableLevelLoad;
 
-  public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn,
+  public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn, String tblNameToLoadIn,
       TaskTracker loadTaskTracker) {
     this.context = context;
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(loadTaskTracker);
+    isTableLevelLoad = tblNameToLoadIn != null && !tblNameToLoadIn.isEmpty();
   }
 
   public TaskTracker tasks() throws SemanticException {
@@ -135,7 +137,7 @@ public class LoadDatabase {
   }
 
   private Task<? extends Serializable> alterDbTask(Database dbObj) {
-    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory, false),
+    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory, !isTableLevelLoad),
             context.hiveConf);
   }
 
@@ -183,7 +185,7 @@ public class LoadDatabase {
 
     public AlterDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn,
         TaskTracker loadTaskTracker) {
-      super(context, event, dbNameToLoadIn, loadTaskTracker);
+      super(context, event, dbNameToLoadIn, null, loadTaskTracker);
     }
 
     @Override

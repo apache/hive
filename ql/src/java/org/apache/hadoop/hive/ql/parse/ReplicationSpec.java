@@ -432,9 +432,9 @@ public class ReplicationSpec {
     return needDupCopyCheck;
   }
 
-  public void setNeedDupCopyCheck(boolean isFirstIncDone) {
-    // During migration to transactional table, we need to check for duplicate copy. Check HIVE-21197 for more detail.
-    //Duplicate check is required only if its migration to txn table and first incremental load is not yet done.
-    this.needDupCopyCheck = (isMigratingToTxnTable && !isFirstIncDone);
+  public void setNeedDupCopyCheck(boolean isFirstIncPending) {
+    // Duplicate file check during copy is required until after first successful incremental load.
+    // Check HIVE-21197 for more detail.
+    this.needDupCopyCheck = isFirstIncPending;
   }
 }

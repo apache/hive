@@ -77,7 +77,8 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
   @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
     try {
       Database database = rs.getDatabase(getDefaultCatalog(conf), dbName);
-      return !ReplUtils.isFirstIncDone(database.getParameters());
+      // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
+      return ReplUtils.isFirstIncPending(database.getParameters());
     } catch (NoSuchObjectException e) {
       LOG.info("Unable to find database " + dbName);
       return true;

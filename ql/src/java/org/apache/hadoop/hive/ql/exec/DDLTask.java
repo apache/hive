@@ -5206,26 +5206,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int updateFirstIncPendingFlag(Hive hive, ReplSetFirstIncLoadFlagDesc desc) throws HiveException, TException {
-    String dbName = desc.getDatabaseName();
-    String tblName = desc.getTableName();
+    String dbNameOrPattern = desc.getDatabaseName();
+    String tableNameOrPattern = desc.getTableName();
     String flag = desc.getIncLoadPendingFlag() ? "true" : "false";
     Map<String, String> parameters;
-    if (tblName != null && !tblName.isEmpty()) {
-      //TODO : Need to handle patterns for table name.
-      org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbName, tblName);
-      parameters = tbl.getParameters();
-      if (!ReplUtils.isFirstIncDone(parameters)) {
-        parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
-        hive.getMSC().alter_table(dbName, tblName, tbl);
+    // For database level load tableNameOrPattern will be null. Flag is set only in database for db level load.
+    if (tableNameOrPattern != null && !tableNameOrPattern.isEmpty()) {
+      // For table level load, dbNameOrPattern is db name and not a pattern.
+      for (String tableName : Utils.matchesTbl(hive, dbNameOrPattern, tableNameOrPattern)) {
+        org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbNameOrPattern, tableName);
+        parameters = tbl.getParameters();
+        if (ReplUtils.isFirstIncPending(parameters)) {
+          parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
+          hive.getMSC().alter_table(dbNameOrPattern, tableName, tbl);
+        }
       }
     } else {
-      Iterable<String> dbNames = Utils.matchesDb(hive, dbName);
-      for (String db : dbNames) {
-        Database database = hive.getMSC().getDatabase(db);
+      for (String dbName : Utils.matchesDb(hive, dbNameOrPattern)) {
+        Database database = hive.getMSC().getDatabase(dbName);
         parameters = database.getParameters();
-        if (!ReplUtils.isFirstIncDone(parameters)) {
+        if (ReplUtils.isFirstIncPending(parameters)) {
           parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
-          hive.getMSC().alterDatabase(db, database);
+          hive.getMSC().alterDatabase(dbName, database);
         }
       }
     }

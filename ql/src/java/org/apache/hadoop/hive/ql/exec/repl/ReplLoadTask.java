@@ -129,7 +129,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         case Database:
           DatabaseEvent dbEvent = (DatabaseEvent) next;
           dbTracker =
-              new LoadDatabase(context, dbEvent, work.dbNameToLoadIn, loadTaskTracker)
+              new LoadDatabase(context, dbEvent, work.dbNameToLoadIn, work.tableNameToLoadIn, loadTaskTracker)
                   .tasks();
           loadTaskTracker.update(dbTracker);
           if (work.hasDbState()) {

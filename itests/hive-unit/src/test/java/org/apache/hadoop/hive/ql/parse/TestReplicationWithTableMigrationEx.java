@@ -185,13 +185,13 @@ public class TestReplicationWithTableMigrationEx {
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(2);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
-    assertFalse(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
     tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
-    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
 
   @Test
@@ -202,13 +202,13 @@ public class TestReplicationWithTableMigrationEx {
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(4);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
-    assertFalse(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
     tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
     replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
     verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
-    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
 
   @Test
@@ -219,14 +219,55 @@ public class TestReplicationWithTableMigrationEx {
             .dump(primaryDbName+".t1", null);
     replica.run("create database " + replicatedDbName);
     replica.loadWithoutExplain(replicatedDbName + ".t1", tuple.dumpLocation);
-    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
-    assertFalse(ReplUtils.isFirstIncDone(replica.getTable(replicatedDbName, "t1").getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
+    assertTrue(ReplUtils.isFirstIncPending(replica.getTable(replicatedDbName, "t1").getParameters()));
 
     tuple = primary.run("use " + primaryDbName)
             .run("insert into t1 values (1, 2)")
             .dump(primaryDbName+".t1", tuple.lastReplicationId);
     replica.loadWithoutExplain(replicatedDbName + ".t1", tuple.dumpLocation);
-    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase(replicatedDbName).getParameters()));
-    assertTrue(ReplUtils.isFirstIncDone(replica.getTable(replicatedDbName, "t1").getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getTable(replicatedDbName, "t1").getParameters()));
+  }
+
+  @Test
+  public void testConcurrentOpDuringBootStrapDumpInsertOverwrite() throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("create table tacid (id int) clustered by(id) into 3 buckets stored as orc ")
+            .run("insert into tacid values(1)")
+            .run("insert into tacid values(2)")
+            .run("insert into tacid values(3)")
+            .run("insert overwrite table tacid values(4)")
+            .run("insert into tacid values(5)")
+            .run("insert into tacid values(6)")
+            .run("insert into tacid values(7)");
+
+    // dump with operation after last repl id is fetched.
+    WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(2);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"tacid"})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select count(*) from tacid")
+            .verifyResult("4")
+            .run("select id from tacid order by id")
+            .verifyResults(new String[]{"4", "5", "6", "7"});
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
+
+    // next incremental dump
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"tacid"})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("select count(*) from tacid")
+            .verifyResult("4")
+            .run("select id from tacid order by id")
+            .verifyResults(new String[]{"4", "5", "6", "7"});
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
 }

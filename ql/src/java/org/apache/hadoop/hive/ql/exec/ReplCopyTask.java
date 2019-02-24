@@ -305,7 +305,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         rcwork.setNeedRecycle(needRecycle);
       }
       rcwork.setCopyToMigratedTxnTable(copyToMigratedTxnTable);
-      rcwork.setCheckDuplicateCopy(replicationSpec.needDupCopyCheck());
+      // For replace case, duplicate check should not be done. The new base directory will automatically make the older
+      // data invisible. Doing duplicate check and ignoring copy will cause consistency issue if there are multiple
+      // replace events getting replayed in the first incremental load.
+      rcwork.setCheckDuplicateCopy(replicationSpec.needDupCopyCheck() && !replicationSpec.isReplace());
       LOG.debug("ReplCopyTask:\trcwork");
       if (replicationSpec.isLazy()) {
         LOG.debug("ReplCopyTask:\tlazy");
