@@ -452,11 +452,11 @@ public class VectorAssignRow {
           {
             if (object instanceof byte[]) {
               byte[] bytes = (byte[]) object;
-              ((BytesColumnVector) columnVector).setVal(
+              ((BytesColumnVector) columnVector).setRef(
                   batchIndex, bytes, 0, bytes.length);
             } else {
               BytesWritable bw = (BytesWritable) object;
-              ((BytesColumnVector) columnVector).setVal(
+              ((BytesColumnVector) columnVector).setRef(
                   batchIndex, bw.getBytes(), 0, bw.getLength());
             }
           }
@@ -466,11 +466,11 @@ public class VectorAssignRow {
             if (object instanceof String) {
               String string = (String) object;
               byte[] bytes = string.getBytes();
-              ((BytesColumnVector) columnVector).setVal(
+              ((BytesColumnVector) columnVector).setRef(
                   batchIndex, bytes, 0, bytes.length);
             } else {
               Text tw = (Text) object;
-              ((BytesColumnVector) columnVector).setVal(
+              ((BytesColumnVector) columnVector).setRef(
                   batchIndex, tw.getBytes(), 0, tw.getLength());
             }
           }
@@ -490,7 +490,7 @@ public class VectorAssignRow {
             // TODO: HIVE-13624 Do we need maxLength checking?
 
             byte[] bytes = hiveVarchar.getValue().getBytes();
-            ((BytesColumnVector) columnVector).setVal(
+            ((BytesColumnVector) columnVector).setRef(
                 batchIndex, bytes, 0, bytes.length);
           }
           break;
@@ -510,7 +510,7 @@ public class VectorAssignRow {
 
             // We store CHAR in vector row batch with padding stripped.
             byte[] bytes = hiveChar.getStrippedValue().getBytes();
-            ((BytesColumnVector) columnVector).setVal(
+            ((BytesColumnVector) columnVector).setRef(
                 batchIndex, bytes, 0, bytes.length);
           }
           break;
@@ -761,7 +761,7 @@ public class VectorAssignRow {
               VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            ((BytesColumnVector) columnVector).setVal(
+            ((BytesColumnVector) columnVector).setRef(
                 batchIndex, bytesWritable.getBytes(), 0, bytesWritable.getLength());
           }
           break;
@@ -778,7 +778,7 @@ public class VectorAssignRow {
               text = new Text();
             }
             text.set(string);
-            ((BytesColumnVector) columnVector).setVal(
+            ((BytesColumnVector) columnVector).setRef(
                 batchIndex, text.getBytes(), 0, text.getLength());
           }
           break;
@@ -797,7 +797,7 @@ public class VectorAssignRow {
             // TODO: Do we need maxLength checking?
 
             byte[] bytes = hiveVarchar.getValue().getBytes();
-            ((BytesColumnVector) columnVector).setVal(
+            ((BytesColumnVector) columnVector).setRef(
                 batchIndex, bytes, 0, bytes.length);
           }
           break;
@@ -817,7 +817,7 @@ public class VectorAssignRow {
             // TODO: Do we need maxLength checking?
 
             final byte[] bytes = hiveChar.getStrippedValue().getBytes();
-            ((BytesColumnVector) columnVector).setVal(
+            ((BytesColumnVector) columnVector).setRef(
                 batchIndex, bytes, 0, bytes.length);
           }
           break;
