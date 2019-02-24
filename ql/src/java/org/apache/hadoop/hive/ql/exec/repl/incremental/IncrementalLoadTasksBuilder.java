@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
+import org.apache.hadoop.hive.ql.plan.ReplSetFirstIncLoadFlagDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 
@@ -157,7 +157,7 @@ public class IncrementalLoadTasksBuilder {
       if (taskChainTail == evTaskRoot) {
         String lastEventid = eventTo.toString();
         if (StringUtils.isEmpty(tableName)) {
-          taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, null, taskChainTail);
+          taskChainTail = dbUpdateReplStateTask(dbName, lastEventid, taskChainTail);
           this.log.debug("no events to replay, set last repl id of db  " + dbName + " to " + lastEventid);
         } else {
           taskChainTail = tableUpdateReplStateTask(dbName, tableName, null, lastEventid, taskChainTail);
@@ -166,10 +166,10 @@ public class IncrementalLoadTasksBuilder {
         }
       }
 
-      if (dbName != null && !dbName.isEmpty()) {
-        // TODO : Need to handle warehouse level and table level load.
-        taskChainTail = dbUpdateReplStateTask(dbName, null, "false", taskChainTail);
-      }
+      ReplSetFirstIncLoadFlagDesc desc = new ReplSetFirstIncLoadFlagDesc(dbName, tableName, false);
+      Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
+      taskChainTail.addDependentTask(updateIncPendTask);
+      taskChainTail = updateIncPendTask;
 
       Map<String, String> dbProps = new HashMap<>();
       dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(lastReplayedEvent));
@@ -296,21 +296,12 @@ public class IncrementalLoadTasksBuilder {
     return updateReplIdTask;
   }
 
-  private Task<? extends Serializable> dbUpdateReplStateTask(String dbName, String replState, String incLoadPendFlag,
+  private Task<? extends Serializable> dbUpdateReplStateTask(String dbName, String replState,
                                                              Task<? extends Serializable> preCursor) {
     HashMap<String, String> mapProp = new HashMap<>();
+    mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
 
-    // if the update is for incLoadPendFlag, then send replicationSpec as null to avoid replacement check.
-    ReplicationSpec replicationSpec = null;
-    if (incLoadPendFlag == null) {
-      mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
-      replicationSpec = new ReplicationSpec(replState, replState);
-    } else {
-      assert replState == null;
-      mapProp.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, incLoadPendFlag);
-    }
-
-    AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, mapProp, replicationSpec);
+    AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, mapProp, new ReplicationSpec(replState, replState));
     Task<? extends Serializable> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterDbDesc), conf);
 
     // Link the update repl state task with dependency collection task
@@ -387,7 +378,7 @@ public class IncrementalLoadTasksBuilder {
         tasks.add(updateReplIdTask);
       } else if (isDatabaseLoad) {
         // For table level load, need not update replication state for the database
-        updateReplIdTask = dbUpdateReplStateTask(dbName, replState, null, barrierTask);
+        updateReplIdTask = dbUpdateReplStateTask(dbName, replState, barrierTask);
         tasks.add(updateReplIdTask);
       }
     }

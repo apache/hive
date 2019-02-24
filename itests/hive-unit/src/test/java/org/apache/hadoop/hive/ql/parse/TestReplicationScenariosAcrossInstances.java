@@ -610,6 +610,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("show tables")
         .verifyResults(new String[] { "t1" });
 
+    //default db is already created at replica before load. So the incr flag should not be set.
+    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase("default").getParameters()));
+    assertFalse(ReplUtils.isFirstIncDone(replica.getDatabase(primaryDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncDone(replica.getDatabase(dbOne).getParameters()));
+
     replica.load("", incrementalTuple.dumpLocation)
         .run("show databases")
         .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
@@ -619,6 +624,11 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("use " + dbOne)
         .run("show tables")
         .verifyResults(new String[] { "t1", "t2" });
+
+    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase("default").getParameters()));
+    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase(primaryDbName).getParameters()));
+    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase(dbOne).getParameters()));
+    assertTrue(ReplUtils.isFirstIncDone(replica.getDatabase(dbTwo).getParameters()));
 
     /*
        Start of cleanup
