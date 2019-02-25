@@ -70,6 +70,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private Map<String, String> serdeProps; // only used for materialized views
   private Set<String> tablesUsed;  // only used for materialized views
   private ReplicationSpec replicationSpec = null;
+  private String ownerName = null;
 
   /**
    * For serialization only.
@@ -418,5 +419,9 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
         StatsSetupConst.FALSE);
 
     return tbl;
+  }
+
+  public void setOwnerName(String ownerName) {
+    this.ownerName = ownerName;
   }
 }
