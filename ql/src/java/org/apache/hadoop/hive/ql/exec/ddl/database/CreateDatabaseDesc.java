@@ -16,42 +16,40 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.exec.ddl.database;
 
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.exec.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * CreateDatabaseDesc.
- *
+ * DDL task description for CREATE DATABASE commands.
  */
 @Explain(displayName = "Create Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CreateDatabaseDesc extends DDLDesc implements Serializable {
-
+public class CreateDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  String databaseName;
-  String locationUri;
-  String comment;
-  boolean ifNotExists;
-  Map<String, String> dbProperties;
-
-  /**
-   * For serialization only.
-   */
-  public CreateDatabaseDesc() {
+  static {
+    DDLTask2.registerOperation(CreateDatabaseDesc.class, CreateDatabaseOperation.class);
   }
 
-  public CreateDatabaseDesc(String databaseName, String comment,
-      String locationUri, boolean ifNotExists) {
-    super();
+  private final String databaseName;
+  private final String comment;
+  private final String locationUri;
+  private final boolean ifNotExists;
+  private final Map<String, String> dbProperties;
+
+  public CreateDatabaseDesc(String databaseName, String comment, String locationUri, boolean ifNotExists,
+      Map<String, String> dbProperties) {
     this.databaseName = databaseName;
     this.comment = comment;
     this.locationUri = locationUri;
     this.ifNotExists = ifNotExists;
-    this.dbProperties = null;
+    this.dbProperties = dbProperties;
   }
 
   @Explain(displayName="if not exists", displayOnlyOnTrue = true)
@@ -59,16 +57,8 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
     return ifNotExists;
   }
 
-  public void setIfNotExists(boolean ifNotExists) {
-    this.ifNotExists = ifNotExists;
-  }
-
   public Map<String, String> getDatabaseProperties() {
     return dbProperties;
-  }
-
-  public void setDatabaseProperties(Map<String, String> dbProps) {
-    this.dbProperties = dbProps;
   }
 
   @Explain(displayName="name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -76,25 +66,13 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
     return databaseName;
   }
 
-  public void setName(String databaseName) {
-    this.databaseName = databaseName;
-  }
-
   @Explain(displayName="comment")
   public String getComment() {
     return comment;
   }
 
-  public void setComment(String comment) {
-    this.comment = comment;
-  }
-
   @Explain(displayName="locationUri")
   public String getLocationUri() {
     return locationUri;
-  }
-
-  public void setLocationUri(String locationUri) {
-    this.locationUri = locationUri;
   }
 }

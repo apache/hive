@@ -16,35 +16,37 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.exec.ddl.database;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.exec.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.exec.ddl.DDLTask2;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * DropDatabaseDesc.
- *
+ * DDL task description for DROP DATABASE commands.
  */
 @Explain(displayName = "Drop Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropDatabaseDesc extends DDLDesc implements Serializable {
+public class DropDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  String databaseName;
-  boolean ifExists;
-  boolean cascade;
-  ReplicationSpec replicationSpec;
+  static {
+    DDLTask2.registerOperation(DropDatabaseDesc.class, DropDatabaseOperation.class);
+  }
 
-  public DropDatabaseDesc(String databaseName, boolean ifExists,
-      ReplicationSpec replicationSpec) {
+  private final String databaseName;
+  private final boolean ifExists;
+  private final boolean cascade;
+  private final ReplicationSpec replicationSpec;
+
+  public DropDatabaseDesc(String databaseName, boolean ifExists, ReplicationSpec replicationSpec) {
     this(databaseName, ifExists, false, replicationSpec);
   }
 
-  public DropDatabaseDesc(String databaseName, boolean ifExists, boolean cascade,
-      ReplicationSpec replicationSpec) {
-    super();
+  public DropDatabaseDesc(String databaseName, boolean ifExists, boolean cascade, ReplicationSpec replicationSpec) {
     this.databaseName = databaseName;
     this.ifExists = ifExists;
     this.cascade = cascade;
@@ -56,25 +58,13 @@ public class DropDatabaseDesc extends DDLDesc implements Serializable {
     return databaseName;
   }
 
-  public void setDatabaseName(String databaseName) {
-    this.databaseName = databaseName;
-  }
-
   @Explain(displayName = "if exists")
   public boolean getIfExists() {
     return ifExists;
   }
 
-  public void setIfExists(boolean ifExists) {
-    this.ifExists = ifExists;
-  }
-
   public boolean isCasdade() {
     return cascade;
-  }
-
-  public void setIsCascade(boolean cascade) {
-    this.cascade = cascade;
   }
 
   public ReplicationSpec getReplicationSpec() {

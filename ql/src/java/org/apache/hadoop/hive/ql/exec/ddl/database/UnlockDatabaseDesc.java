@@ -16,64 +16,34 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.exec.ddl.database;
 
 import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.exec.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.exec.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * LockDatabaseDesc.
- *
+ * DDL task description for UNLOCK DATABASE commands.
  */
-@Explain(displayName = "Lock Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class LockDatabaseDesc extends DDLDesc implements Serializable {
+@Explain(displayName = "Unlock Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class UnlockDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String databaseName;
-  private String mode;
-  private String queryId;
-  private String queryStr;
-
-  public LockDatabaseDesc() {
+  static {
+    DDLTask2.registerOperation(UnlockDatabaseDesc.class, UnlockDatabaseOperation.class);
   }
 
-  public LockDatabaseDesc(String databaseName, String mode, String queryId) {
+  private final String databaseName;
+
+  public UnlockDatabaseDesc(String databaseName) {
     this.databaseName = databaseName;
-    this.mode = mode;
-    this.queryId = queryId;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return databaseName;
-  }
-
-  public void setDatabaseName(String databaseName) {
-    this.databaseName = databaseName;
-  }
-
-  public void setMode(String mode) {
-    this.mode = mode;
-  }
-
-  public String getMode() {
-    return mode;
-  }
-
-  public String getQueryId() {
-    return queryId;
-  }
-
-  public void setQueryId(String queryId) {
-    this.queryId = queryId;
-  }
-
-  public String getQueryStr() {
-    return queryStr;
-  }
-
-  public void setQueryStr(String queryStr) {
-    this.queryStr = queryStr;
   }
 }

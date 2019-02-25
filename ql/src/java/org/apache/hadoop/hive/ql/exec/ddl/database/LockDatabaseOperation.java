@@ -16,37 +16,29 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.exec.ddl.database;
 
-import java.io.Serializable;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.exec.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * SwitchDatabaseDesc.
- *
+ * Operation process of locking a database.
  */
-@Explain(displayName = "Switch Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class SwitchDatabaseDesc extends DDLDesc implements Serializable {
+public class LockDatabaseOperation extends DDLOperation {
+  private final LockDatabaseDesc desc;
 
-  private static final long serialVersionUID = 1L;
-
-  String databaseName;
-
-  public SwitchDatabaseDesc() {
+  public LockDatabaseOperation(DDLOperationContext context, LockDatabaseDesc desc) {
+    super(context);
+    this.desc = desc;
   }
 
-  public SwitchDatabaseDesc(String databaseName) {
-    super();
-    this.databaseName = databaseName;
-  }
-
-  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getDatabaseName() {
-    return databaseName;
-  }
-
-  public void setDatabaseName(String databaseName) {
-    this.databaseName = databaseName;
+  @Override
+  public int execute() throws HiveException {
+    Context ctx = context.getDriverContext().getCtx();
+    HiveTxnManager txnManager = ctx.getHiveTxnManager();
+    return txnManager.lockDatabase(context.getDb(), desc);
   }
 }

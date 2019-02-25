@@ -16,33 +16,34 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.exec.ddl.database;
 
 import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.exec.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.exec.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * UnlockDatabaseDesc.
- *
+ * DDL task description for USE commands.
  */
-@Explain(displayName = "Unlock Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class UnlockDatabaseDesc extends DDLDesc implements Serializable {
+@Explain(displayName = "Switch Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class SwitchDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String databaseName;
+  static {
+    DDLTask2.registerOperation(SwitchDatabaseDesc.class, SwitchDatabaseOperation.class);
+  }
 
-  public UnlockDatabaseDesc(String databaseName) {
+  private final String databaseName;
+
+  public SwitchDatabaseDesc(String databaseName) {
     this.databaseName = databaseName;
   }
 
-  @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return databaseName;
   }
-
-  public void setDatabaseName(String databaseName) {
-    this.databaseName = databaseName;
-  }
-
 }

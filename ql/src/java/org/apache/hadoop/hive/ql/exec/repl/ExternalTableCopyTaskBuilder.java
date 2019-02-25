@@ -69,7 +69,7 @@ public class ExternalTableCopyTaskBuilder {
     private static final int MAX_COPY_RETRY = 5;
 
     @Override
-    protected int execute(DriverContext driverContext) {
+    public int execute(DriverContext driverContext) {
       String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
 
       Path sourcePath = work.fullyQualifiedSourcePath;

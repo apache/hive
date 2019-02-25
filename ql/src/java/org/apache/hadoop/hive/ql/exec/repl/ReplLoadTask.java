@@ -74,12 +74,12 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
    * by the driver. It does not track details across multiple runs of LoadTask.
    */
   private static class Scope {
-    boolean database = false, table = false, partition = false;
+    boolean database = false, table = false;
     List<Task<? extends Serializable>> rootTasks = new ArrayList<>();
   }
 
   @Override
-  protected int execute(DriverContext driverContext) {
+  public int execute(DriverContext driverContext) {
     Task<? extends Serializable> rootTask = work.getRootTask();
     if (rootTask != null) {
       rootTask.setChildTasks(null);
@@ -332,7 +332,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     setUpDependencies(tableTracker, partitionsTracker);
     if (!scope.database && !scope.table) {
       scope.rootTasks.addAll(partitionsTracker.tasks());
-      scope.partition = true;
     }
     loadTaskTracker.update(tableTracker);
     loadTaskTracker.update(partitionsTracker);
