@@ -464,7 +464,7 @@ public class TestVectorBetweenIn {
 
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
     if (isBetween) {
-      children.add(new ExprNodeConstantDesc(new Boolean(isInvert)));
+      children.add(new ExprNodeConstantDesc(Boolean.valueOf(isInvert)));
     }
     children.add(col1Expr);
     for (Object compareObject : compareList) {

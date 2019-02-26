@@ -233,7 +233,7 @@ public class JobState {
     throws IOException
   {
     String jsonString = getField("userArgs");
-    return (Map<String, Object>)JsonBuilder.jsonToMap(jsonString);
+    return JsonBuilder.jsonToMap(jsonString);
   }
   public void setUserArgs(Map<String, Object> userArgs)
     throws IOException
@@ -295,7 +295,7 @@ public class JobState {
       return null;
     else {
       try {
-        return new Long(s);
+        return Long.valueOf(s);
       } catch (NumberFormatException e) {
         LOG.error("templeton: bug " + name + " " + s + " : " + e);
         return null;

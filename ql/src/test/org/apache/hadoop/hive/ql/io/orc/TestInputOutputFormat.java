@@ -2655,7 +2655,7 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", PredicateLeaf.Type.LONG, new Long(0))
+            .lessThan("z", PredicateLeaf.Type.LONG, Long.valueOf(0))
             .end()
             .build();
     conf.set("sarg.pushdown", toKryo(sarg));
