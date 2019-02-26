@@ -103,6 +103,7 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -434,6 +435,7 @@ public class TestStreaming {
   // stream data into streaming table with N buckets, then copy the data into another bucketed table
   // check if bucketing in both was done in the same way
   @Test
+  @Ignore
   public void testStreamBucketingMatchesRegularBucketing() throws Exception {
     int bucketCount = 100;
 

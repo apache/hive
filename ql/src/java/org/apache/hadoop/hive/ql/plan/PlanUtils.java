@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileInputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -277,7 +278,10 @@ public final class PlanUtils {
 
     Class inputFormat, outputFormat;
     // get the input & output file formats
-    if ("SequenceFile".equalsIgnoreCase(fileFormat)) {
+    if ("HiveSequenceFile".equalsIgnoreCase(fileFormat)) {
+      inputFormat = HiveSequenceFileInputFormat.class;
+      outputFormat = SequenceFileOutputFormat.class;
+    } else if ("SequenceFile".equalsIgnoreCase(fileFormat)) {
       inputFormat = SequenceFileInputFormat.class;
       outputFormat = SequenceFileOutputFormat.class;
     } else if ("RCFile".equalsIgnoreCase(fileFormat)) {

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -273,6 +274,13 @@ public class FetchOperator implements Serializable {
       if (isNonNativeTable) {
         return true;
       }
+      // if fetch is not being done from table and file sink has provided a list
+      // of files to fetch from then there is no need to query FS to check the existence
+      // of currpath
+      if(!this.getWork().isSourceTable() && this.getWork().getFilesToFetch() != null
+          && !this.getWork().getFilesToFetch().isEmpty()) {
+        return true;
+      }
       FileSystem fs = currPath.getFileSystem(job);
       if (fs.exists(currPath)) {
         if (extractValidWriteIdList() != null &&
@@ -379,6 +387,11 @@ public class FetchOperator implements Serializable {
       Class<? extends InputFormat> formatter = currDesc.getInputFileFormatClass();
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
       InputFormat inputFormat = getInputFormatFromCache(formatter, job);
+      if(inputFormat instanceof HiveSequenceFileInputFormat) {
+        // input format could be cached, in which case we need to reset the list of files to fetch
+        ((HiveSequenceFileInputFormat) inputFormat).setFiles(null);
+      }
+
       List<Path> dirs = new ArrayList<>(), dirsWithOriginals = new ArrayList<>();
       processCurrPathForMmWriteIds(inputFormat, dirs, dirsWithOriginals);
       if (dirs.isEmpty() && dirsWithOriginals.isEmpty()) {
@@ -387,12 +400,22 @@ public class FetchOperator implements Serializable {
       }
 
       List<FetchInputFormatSplit> inputSplits = new ArrayList<>();
+      if(inputFormat instanceof HiveSequenceFileInputFormat && this.getWork().getFilesToFetch() != null
+          && !this.getWork().getFilesToFetch().isEmpty() && !this.getWork().isSourceTable()) {
+        HiveSequenceFileInputFormat fileFormat = (HiveSequenceFileInputFormat)inputFormat;
+        fileFormat.setFiles(this.getWork().getFilesToFetch());
+        InputSplit[] splits = inputFormat.getSplits(job, 1);
+        for (int i = 0; i < splits.length; i++) {
+          inputSplits.add(new FetchInputFormatSplit(splits[i], inputFormat));
+        }
+      } else {
       if (!dirs.isEmpty()) {
         String inputs = makeInputString(dirs);
         Utilities.FILE_OP_LOGGER.trace("Setting fetch inputs to {}", inputs);
         job.set("mapred.input.dir", inputs);
 
         generateWrappedSplits(inputFormat, inputSplits, job);
+      }
       }
 
       if (!dirsWithOriginals.isEmpty()) {
