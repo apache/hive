@@ -4197,9 +4197,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) throws SemanticException {
     ASTNode selectExpr = parseInfo.getSelForClause(dest);
     Collection<ASTNode> aggregateFunction = parseInfo.getDestToAggregationExprs().get(dest).values();
+    if (!(this instanceof CalcitePlanner) && isSelectDistinct(selectExpr) &&
+        isAggregateInSelect(selectExpr, aggregateFunction) && hasGroupBySibling(selectExpr)) {
+      throw new SemanticException("SELECT DISTINCT with aggregate function and GROUP BY is only supported with CBO");
+    }
+
     if (isSelectDistinct(selectExpr) && !hasGroupBySibling(selectExpr) &&
         !isAggregateInSelect(selectExpr, aggregateFunction)) {
-      List<ASTNode> result = new ArrayList<ASTNode>(selectExpr == null ? 0 : selectExpr.getChildCount());
+      List<ASTNode> result = new ArrayList<ASTNode>(selectExpr.getChildCount());
       for (int i = 0; i < selectExpr.getChildCount(); ++i) {
         if (((ASTNode) selectExpr.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
           continue;
@@ -4212,8 +4217,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       // look for a true GBY
       ASTNode grpByExprs = parseInfo.getGroupByForClause(dest);
-      List<ASTNode> result = new ArrayList<ASTNode>(grpByExprs == null ? 0
-          : grpByExprs.getChildCount());
+      List<ASTNode> result = new ArrayList<ASTNode>(grpByExprs == null ? 0 : grpByExprs.getChildCount());
       if (grpByExprs != null) {
         for (int i = 0; i < grpByExprs.getChildCount(); ++i) {
           ASTNode grpbyExpr = (ASTNode) grpByExprs.getChild(i);

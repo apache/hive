@@ -1,8 +1,8 @@
-PREHOOK: query: explain select distinct count(a.value) from src a group by a.key
+PREHOOK: query: explain select distinct count(value) from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: explain select distinct count(a.value) from src a group by a.key
+POSTHOOK: query: explain select distinct count(value) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -16,7 +16,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: src
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -88,11 +88,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select distinct count(a.value) from src a group by a.key
+PREHOOK: query: select distinct count(value) from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct count(a.value) from src a group by a.key
+POSTHOOK: query: select distinct count(value) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

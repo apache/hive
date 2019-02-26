@@ -1,8 +1,8 @@
 --! qt:dataset:src
 --! qt:dataset:src1
 
-explain select distinct count(a.value) from src a group by a.key;
-select distinct count(a.value) from src a group by a.key;
+explain select distinct count(value) from src group by key;
+select distinct count(value) from src group by key;
 
 explain select distinct count(*) from src1 where key in (128,146,150);
 select distinct count(*) from src1 where key in (128,146,150);
