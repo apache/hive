@@ -1,6 +1,8 @@
 --! qt:dataset:src
 --! qt:dataset:src1
 
+set hive.cbo.enable=false;
+
 explain select distinct count(a.value) from src a group by a.key;
 select distinct count(a.value) from src a group by a.key;
 

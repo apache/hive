@@ -4195,21 +4195,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * DISTINCT, if present, will be handled when generating the SELECT.
    */
   List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) throws SemanticException {
-    // When *not* invoked by CalcitePlanner, return the DISTINCT as a GBY
-    // CBO will handle the DISTINCT in CalcitePlannerAction.genSelectLogicalPlan
     ASTNode selectExpr = parseInfo.getSelForClause(dest);
     Collection<ASTNode> aggregateFunction = parseInfo.getDestToAggregationExprs().get(dest).values();
-    if (isSelectDistinct(selectExpr) && !isGroupBy(selectExpr) && !isAggregateInSelect(selectExpr, aggregateFunction)) {
+    if (isSelectDistinct(selectExpr) && !hasGroupBySibling(selectExpr) &&
+        !isAggregateInSelect(selectExpr, aggregateFunction)) {
       List<ASTNode> result = new ArrayList<ASTNode>(selectExpr == null ? 0 : selectExpr.getChildCount());
-      if (selectExpr != null) {
-        for (int i = 0; i < selectExpr.getChildCount(); ++i) {
-          if (((ASTNode) selectExpr.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
-            continue;
-          }
-          // table.column AS alias
-          ASTNode grpbyExpr = (ASTNode) selectExpr.getChild(i).getChild(0);
-          result.add(grpbyExpr);
+      for (int i = 0; i < selectExpr.getChildCount(); ++i) {
+        if (((ASTNode) selectExpr.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
+          continue;
         }
+        // table.column AS alias
+        ASTNode grpbyExpr = (ASTNode) selectExpr.getChild(i).getChild(0);
+        result.add(grpbyExpr);
       }
       return result;
     } else {
@@ -4229,10 +4226,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  protected boolean isGroupBy(ASTNode expr) {
+  protected boolean hasGroupBySibling(ASTNode selectExpr) {
     boolean isGroupBy = false;
-    if (expr.getParent() != null && expr.getParent() instanceof Node)
-    for (Node sibling : ((Node)expr.getParent()).getChildren()) {
+    if (selectExpr.getParent() != null && selectExpr.getParent() instanceof Node)
+    for (Node sibling : ((Node)selectExpr.getParent()).getChildren()) {
       isGroupBy |= sibling instanceof ASTNode && ((ASTNode)sibling).getType() == HiveParser.TOK_GROUPBY;
     }
 

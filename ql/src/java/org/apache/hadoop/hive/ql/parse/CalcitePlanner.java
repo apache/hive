@@ -3697,9 +3697,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
         if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
           // As we said before, here we use genSelectLogicalPlan to rewrite AllColRef
-          if (!(isSelectDistinct(selExprList) && isGroupBy(selExprList))) {
-            srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
-          }
+          srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
           RowResolver rr = this.relToHiveRR.get(srcRel);
           qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
         }
@@ -4383,7 +4381,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       QBParseInfo qbp = getQBParseInfo(qb);
       String selClauseName = qbp.getClauseNames().iterator().next();
       ASTNode selExprList = qbp.getSelForClause(selClauseName);
-      if (isSelectDistinct(selExprList) && isGroupBy(selExprList)) {
+      if (isSelectDistinct(selExprList) && hasGroupBySibling(selExprList)) {
         retNodeRR = genGBSelectDistinctPlan(retNodeRR);
       }
 
