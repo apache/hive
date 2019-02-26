@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -25,6 +27,8 @@ import org.junit.rules.TestRule;
 import org.junit.Ignore;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Ignore
 public class TestReplIncrementalLoadAcidTablesWithJsonMessage
@@ -35,8 +39,10 @@ public class TestReplIncrementalLoadAcidTablesWithJsonMessage
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    internalBeforeClassSetup(Collections.emptyMap(),
-        TestReplIncrementalLoadAcidTablesWithJsonMessage.class);
+    Map<String, String> overrides = new HashMap<>();
+    overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
+            JSONMessageEncoder.class.getCanonicalName());
+    internalBeforeClassSetup(overrides, TestReplIncrementalLoadAcidTablesWithJsonMessage.class);
   }
 
   @Before

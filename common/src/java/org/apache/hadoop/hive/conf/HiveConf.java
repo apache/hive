@@ -1191,7 +1191,7 @@ public class HiveConf extends Configuration {
      */
     @Deprecated
     METASTORE_EVENT_MESSAGE_FACTORY("hive.metastore.event.message.factory",
-        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder",
+        "org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
     /**
      * @deprecated Use MetastoreConf.EXECUTE_SET_UGI

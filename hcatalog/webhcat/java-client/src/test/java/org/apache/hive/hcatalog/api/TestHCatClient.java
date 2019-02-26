@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -80,7 +82,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 
-import org.apache.hadoop.util.Shell;
 
 import javax.annotation.Nullable;
 
@@ -120,6 +121,8 @@ public class TestHCatClient {
 
     System.setProperty(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS.varname,
         DbNotificationListener.class.getName()); // turn on db notification listener on metastore
+    System.setProperty(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
+            JSONMessageEncoder.class.getName());
     msPort = MetaStoreTestUtils.startMetaStoreWithRetry();
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());

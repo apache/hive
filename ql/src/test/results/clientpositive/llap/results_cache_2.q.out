@@ -239,14 +239,14 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  Statistics: Num rows: 500/1 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500/500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
-                    Statistics: Num rows: 166/1 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 166/10 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: sign(value) (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 166/1 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 166/10 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         keys: _col0 (type: double)

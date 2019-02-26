@@ -2552,31 +2552,38 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int showTablesOrViews(Hive db, ShowTablesDesc showDesc) throws HiveException {
     // get the tables/views for the desired pattern - populate the output stream
-    List<String> tablesOrViews = null;
-    List<Table> materializedViews = null;
+    List<String> tableNames  = null;
+    List<Table> tableObjects = null;
 
-    String dbName      = showDesc.getDbName();
-    String pattern     = showDesc.getPattern(); // if null, all tables/views are returned
-    String resultsFile = showDesc.getResFile();
-    TableType type     = showDesc.getType(); // null for tables, VIRTUAL_VIEW for views, MATERIALIZED_VIEW for MVs
+    TableType type       = showDesc.getType(); // null for tables, VIRTUAL_VIEW for views, MATERIALIZED_VIEW for MVs
+    String dbName        = showDesc.getDbName();
+    String pattern       = showDesc.getPattern(); // if null, all tables/views are returned
+    TableType typeFilter = showDesc.getTypeFilter();
+    String resultsFile   = showDesc.getResFile();
+    boolean isExtended   = showDesc.isExtended();
 
     if (!db.databaseExists(dbName)) {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
     LOG.debug("pattern: {}", pattern);
+    LOG.debug("typeFilter: {}", typeFilter);
     if (type == null) {
-      tablesOrViews = new ArrayList<>();
-      tablesOrViews.addAll(db.getTablesByType(dbName, pattern, TableType.MANAGED_TABLE));
-      tablesOrViews.addAll(db.getTablesByType(dbName, pattern, TableType.EXTERNAL_TABLE));
-      LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tablesOrViews.size());
+      if (isExtended) {
+        tableObjects = new ArrayList<>();
+        tableObjects.addAll(db.getTableObjectsByType(dbName, pattern, typeFilter));
+        LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
+      } else {
+        tableNames = db.getTablesByType(dbName, pattern, typeFilter);
+        LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
+      }
     } else if (type == TableType.MATERIALIZED_VIEW) {
-      materializedViews = new ArrayList<>();
-      materializedViews.addAll(db.getMaterializedViewObjectsByPattern(dbName, pattern));
-      LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", materializedViews.size());
+      tableObjects = new ArrayList<>();
+      tableObjects.addAll(db.getMaterializedViewObjectsByPattern(dbName, pattern));
+      LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", tableObjects.size());
     } else if (type == TableType.VIRTUAL_VIEW) {
-      tablesOrViews = db.getTablesByType(dbName, pattern, type);
-      LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tablesOrViews.size());
+      tableNames = db.getTablesByType(dbName, pattern, type);
+      LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tableNames.size());
     } else {
       throw new HiveException("Option not recognized in SHOW TABLES/VIEWS/MATERIALIZED VIEWS");
     }
@@ -2588,12 +2595,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       FileSystem fs = resFile.getFileSystem(conf);
       outStream = fs.create(resFile);
       // Sort by name and print
-      if (tablesOrViews != null) {
-        SortedSet<String> sortedSet = new TreeSet<String>(tablesOrViews);
+      if (tableNames != null) {
+        SortedSet<String> sortedSet = new TreeSet<String>(tableNames);
         formatter.showTables(outStream, sortedSet);
       } else {
-        Collections.sort(materializedViews, Comparator.comparing(Table::getTableName));
-        formatter.showMaterializedViews(outStream, materializedViews);
+        Collections.sort(tableObjects, Comparator.comparing(Table::getTableName));
+        if (isExtended) {
+          formatter.showTablesExtended(outStream, tableObjects);
+        } else {
+          formatter.showMaterializedViews(outStream, tableObjects);
+        }
       }
       outStream.close();
     } catch (Exception e) {

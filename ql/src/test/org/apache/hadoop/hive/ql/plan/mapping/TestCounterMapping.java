@@ -146,7 +146,7 @@ public class TestCounterMapping {
     FilterOperator filter2 = filters2.get(0);
 
     assertEquals("original check", 7, filter1.getStatistics().getNumRows());
-    assertEquals("optimized check", 1, filter2.getStatistics().getNumRows());
+    assertEquals("optimized check", 6, filter2.getStatistics().getNumRows());
 
   }
 

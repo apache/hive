@@ -1593,7 +1593,8 @@ showStatement
 @init { pushMsg("show statement", state); }
 @after { popMsg(state); }
     : KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
-    | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
+    | KW_SHOW (isExtended=KW_EXTENDED)? KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (filter=showTablesFilterExpr)?
+    -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? $filter? $isExtended?)
     | KW_SHOW KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_MATERIALIZED KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWMATERIALIZEDVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?
@@ -1622,6 +1623,15 @@ showStatement
         (KW_PLAN rp_name=identifier -> ^(TOK_SHOW_RP $rp_name))
         | (KW_PLANS -> ^(TOK_SHOW_RP))
       )
+    ;
+
+showTablesFilterExpr
+@init { pushMsg("show tables filter expr", state); }
+@after { popMsg(state); }
+    : KW_WHERE identifier EQUAL StringLiteral
+    -> ^(TOK_TABLE_TYPE identifier StringLiteral)
+    | KW_LIKE showStmtIdentifier|showStmtIdentifier
+    -> showStmtIdentifier
     ;
 
 lockStatement
