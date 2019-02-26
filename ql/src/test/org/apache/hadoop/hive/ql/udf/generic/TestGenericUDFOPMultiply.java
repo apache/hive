@@ -41,6 +41,8 @@ import org.junit.Test;
 
 public class TestGenericUDFOPMultiply extends AbstractTestGenericUDFOPNumeric {
 
+  private static final double EPSILON = 1E-6;
+
   @Test
   public void testByteTimesShort() throws HiveException {
     GenericUDFOPMultiply udf = new GenericUDFOPMultiply();
@@ -81,7 +83,7 @@ public class TestGenericUDFOPMultiply extends AbstractTestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.doubleTypeInfo);
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(123 * 456), new Double(res.get()));
+    Assert.assertEquals(123 * 456, res.get(), EPSILON);
   }
 
   @Test
@@ -102,7 +104,7 @@ public class TestGenericUDFOPMultiply extends AbstractTestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(45.0), new Double(res.get()));
+    Assert.assertEquals(45.0, res.get(), EPSILON);
   }
 
   @Test
@@ -144,7 +146,7 @@ public class TestGenericUDFOPMultiply extends AbstractTestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.floatTypeInfo);
     FloatWritable res = (FloatWritable) udf.evaluate(args);
-    Assert.assertEquals(new Float(0.0), new Float(res.get()));
+    Assert.assertEquals(0.0, res.get(), EPSILON);
   }
 
   @Test
@@ -165,7 +167,7 @@ public class TestGenericUDFOPMultiply extends AbstractTestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(17509.9644), new Double(res.get()));
+    Assert.assertEquals(17509.9644, res.get(), EPSILON);
   }
 
   @Test

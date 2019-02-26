@@ -130,7 +130,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     @Override
     public void doReset(AverageAggregationBuffer<Double> aggregation) throws HiveException {
       aggregation.count = 0;
-      aggregation.sum = new Double(0);
+      aggregation.sum = Double.valueOf(0);
       aggregation.uniqueObjects = new HashSet<ObjectInspectorObject>();
     }
 
@@ -225,7 +225,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
             throws HiveException {
           AverageAggregationBuffer<Double> myagg = (AverageAggregationBuffer<Double>) ss.wrappedBuf;
           return myagg.count == 0 ? null : new Object[] {
-              new Double(myagg.sum), myagg.count };
+              myagg.sum, myagg.count};
         }
 
       };

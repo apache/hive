@@ -515,7 +515,7 @@ public class BeeLine implements Closeable {
 
   protected String locElapsedTime(long milliseconds) {
     if (getOpts().getShowElapsedTime()) {
-      return loc("time-ms", new Object[] {new Double(milliseconds / 1000d)});
+      return loc("time-ms", new Object[] {Double.valueOf(milliseconds / 1000d)});
     }
     return "";
   }
