@@ -1536,6 +1536,62 @@ public class TestCompactor {
     Assert.assertEquals("The hash codes must be equal", compactionInfo.hashCode(), compactionInfo1.hashCode());
   }
 
+  @Test
+  public void testDisableCompactionDuringReplLoad() throws Exception {
+    String tblName = "discomp";
+    String database = "discomp_db";
+    executeStatementOnDriver("drop database if exists " + database + " cascade", driver);
+    executeStatementOnDriver("create database " + database, driver);
+    executeStatementOnDriver("CREATE TABLE " + database + "." + tblName + "(a INT, b STRING) " +
+            " PARTITIONED BY(ds string)" +
+            " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+            " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + database + "." + tblName + " partition (ds) values (1, 'fred', " +
+            "'today'), (2, 'wilma', 'yesterday')", driver);
+
+    executeStatementOnDriver("ALTER TABLE " + database + "." + tblName +
+            " SET TBLPROPERTIES ( 'hive.repl.first.inc.pending' = 'true')", driver);
+    List<ShowCompactResponseElement> compacts = getCompactionList();
+    Assert.assertEquals(0, compacts.size());
+
+    executeStatementOnDriver("alter database " + database +
+            " set dbproperties ('hive.repl.first.inc.pending' = 'true')", driver);
+    executeStatementOnDriver("ALTER TABLE " + database + "." + tblName +
+            " SET TBLPROPERTIES ( 'hive.repl.first.inc.pending' = 'false')", driver);
+    compacts = getCompactionList();
+    Assert.assertEquals(0, compacts.size());
+
+    executeStatementOnDriver("alter database " + database +
+            " set dbproperties ('hive.repl.first.inc.pending' = 'false')", driver);
+    executeStatementOnDriver("ALTER TABLE " + database + "." + tblName +
+            " SET TBLPROPERTIES ( 'hive.repl.first.inc.pending' = 'false')", driver);
+    compacts = getCompactionList();
+    Assert.assertEquals(2, compacts.size());
+    List<String> partNames = new ArrayList<String>();
+    for (int i = 0; i < compacts.size(); i++) {
+      Assert.assertEquals(database, compacts.get(i).getDbname());
+      Assert.assertEquals(tblName, compacts.get(i).getTablename());
+      Assert.assertEquals("initiated", compacts.get(i).getState());
+      partNames.add(compacts.get(i).getPartitionname());
+    }
+    Assert.assertEquals("ds=today", partNames.get(1));
+    Assert.assertEquals("ds=yesterday", partNames.get(0));
+    executeStatementOnDriver("drop database if exists " + database + " cascade", driver);
+
+    // Finish the scheduled compaction for ttp2
+    runWorker(conf);
+    runCleaner(conf);
+  }
+
+  private List<ShowCompactResponseElement> getCompactionList() throws Exception {
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
+    runInitiator(conf);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    return rsp.getCompacts();
+  }
+
   private void writeBatch(org.apache.hive.hcatalog.streaming.StreamingConnection connection,
     DelimitedInputWriter writer,
     boolean closeEarly) throws InterruptedException, org.apache.hive.hcatalog.streaming.StreamingException {

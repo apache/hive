@@ -75,7 +75,8 @@ public class TableSerializer implements JsonWriter.Serializer {
     Map<String, String> parameters = table.getParameters();
     if (parameters != null) {
       parameters.entrySet()
-              .removeIf(e -> e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY));
+              .removeIf(e -> (e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY) ||
+                      e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG)));
     }
 
     if (additionalPropertiesProvider.isInReplicationScope()) {
