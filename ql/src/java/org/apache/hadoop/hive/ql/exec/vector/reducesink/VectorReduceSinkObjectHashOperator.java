@@ -259,65 +259,29 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
 
       final int size = batch.size;
 
-      if (isEmptyBuckets) { // EmptyBuckets = true
-        if (isSingleReducer) {
-          for (int logical = 0; logical< size; logical++) {
-            final int batchIndex = (selectedInUse ? selected[logical] : logical);
-            postProcess(batch, batchIndex, tag, 0);
+      for (int logical = 0; logical< size; logical++) {
+        final int batchIndex = (selectedInUse ? selected[logical] : logical);
+        int hashCode = 0;
+        if (isEmptyPartitions) {
+          if (!isSingleReducer) {
+            hashCode = nonPartitionRandom.nextInt();
           }
         } else {
-          if (isEmptyPartitions) { // isEmptyPartition = true
-            for (int logical = 0; logical< size; logical++) {
-              final int batchIndex = (selectedInUse ? selected[logical] : logical);
-              final int hashCode = nonPartitionRandom.nextInt();
-              postProcess(batch, batchIndex, tag, hashCode);
-            }
-          } else { // isEmptyPartition = false
-            for (int logical = 0; logical< size; logical++) {
-              final int batchIndex = (selectedInUse ? selected[logical] : logical);
-              partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-              final int hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors);
-              postProcess(batch, batchIndex, tag, hashCode);
-            }
-          }
+          partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
+          hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors);
         }
-      } else { // EmptyBuckets = false
-        if (isSingleReducer) {
-          for (int logical = 0; logical< size; logical++) {
-            final int batchIndex = (selectedInUse ? selected[logical] : logical);
-            if (bucketExpr != null) {
-              evaluateBucketExpr(batch, batchIndex, 0);
-            }
-            postProcess(batch, batchIndex, tag, 0);
+
+        if (!isEmptyBuckets) {
+          bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
+          final int bucketNum = ObjectInspectorUtils.getBucketNumber(
+              hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
+          if (bucketExpr != null) {
+            evaluateBucketExpr(batch, batchIndex, bucketNum);
           }
-        } else {
-          if (isEmptyPartitions) { // isEmptyPartition = true
-            for (int logical = 0; logical< size; logical++) {
-              final int batchIndex = (selectedInUse ? selected[logical] : logical);
-              bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
-              final int bucketNum = ObjectInspectorUtils.getBucketNumber(
-                  hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
-              final int hashCode = nonPartitionRandom.nextInt() * 31 + bucketNum;
-              if (bucketExpr != null) {
-                evaluateBucketExpr(batch, batchIndex, bucketNum);
-              }
-              postProcess(batch, batchIndex, tag, hashCode);
-            }
-          } else { // isEmptyPartition = false
-            for (int logical = 0; logical< size; logical++) {
-              final int batchIndex = (selectedInUse ? selected[logical] : logical);
-              partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-              bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
-              final int bucketNum = ObjectInspectorUtils.getBucketNumber(
-                  hashFunc.apply(bucketFieldValues, bucketObjectInspectors), numBuckets);
-              final int hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors) * 31 + bucketNum;
-              if (bucketExpr != null) {
-                evaluateBucketExpr(batch, batchIndex, bucketNum);
-              }
-              postProcess(batch, batchIndex, tag, hashCode);
-            }
-          }
+          hashCode = hashCode * 31 + bucketNum;
         }
+
+        postProcess(batch, batchIndex, tag, hashCode);
       }
     } catch (Exception e) {
       throw new HiveException(e);
