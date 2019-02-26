@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -43,6 +44,9 @@ public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
   final String tableNameToLoadIn;
   final String dumpDirectory;
+  final String bootstrapDumpToRollback;
+  boolean isNeedBootstrapRollback;
+
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
@@ -65,6 +69,9 @@ public class ReplLoadWork implements Serializable {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
+    this.bootstrapDumpToRollback = hiveConf.get(ReplUtils.REPL_ROLLBACK_BOOTSTRAP_LOAD_CONFIG);
+    this.isNeedBootstrapRollback = StringUtils.isNotBlank(this.bootstrapDumpToRollback);
+
     rootTask = null;
     if (isIncrementalDump) {
       incrementalLoadTasksBuilder =

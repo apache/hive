@@ -38,6 +38,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_ROLLBACK_BOOTSTRAP_LOAD_CONFIG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -533,6 +535,90 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
             .verifyResults(Arrays.asList("10", "20"))
             .run("select id from t4 order by id")
             .verifyResults(Arrays.asList("10", "20"));
+  }
+
+  @Test
+  public void retryBootstrapExternalTablesFromDifferentDump() throws Throwable {
+    List<String> loadWithClause = new ArrayList<>();
+    loadWithClause.addAll(externalTableBasePathWithClause());
+
+    List<String> dumpWithClause = Collections.singletonList(
+            "'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='false'"
+    );
+
+    WarehouseInstance.Tuple tupleBootstrapWithoutExternal = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (1)")
+            .run("create external table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='us') values ('austin')")
+            .run("create table t3 as select * from t1")
+            .dump(primaryDbName, null, dumpWithClause);
+
+    replica.load(replicatedDbName, tupleBootstrapWithoutExternal.dumpLocation, loadWithClause)
+            .status(replicatedDbName)
+            .verifyResult(tupleBootstrapWithoutExternal.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResult("t3")
+            .run("select id from t3")
+            .verifyResult("1");
+
+    dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
+    WarehouseInstance.Tuple tupleIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+            .run("drop table t1")
+            .run("create external table t4 (id int)")
+            .run("insert into table t4 values (10)")
+            .run("create table t5 as select * from t4")
+            .dump(primaryDbName, tupleBootstrapWithoutExternal.lastReplicationId, dumpWithClause);
+
+    // Verify if bootstrapping with same dump is idempotent and return same result
+    for (int i = 0; i < 2; i++) {
+      replica.load(replicatedDbName, tupleIncWithExternalBootstrap.dumpLocation, loadWithClause)
+              .status(replicatedDbName)
+              .verifyResult(tupleIncWithExternalBootstrap.lastReplicationId)
+              .run("use " + replicatedDbName)
+              .run("show tables like 't1'")
+              .verifyFailure(new String[]{"t1"})
+              .run("select place from t2 where country = 'us'")
+              .verifyResult("austin")
+              .run("select id from t4")
+              .verifyResult("10")
+              .run("select id from t5")
+              .verifyResult("10");
+    }
+
+    // Drop an external table, add another managed table with same name, insert into existing external table
+    // and dump another bootstrap dump for external tables.
+    WarehouseInstance.Tuple tupleNewIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+            .run("insert into table t2 partition(country='india') values ('chennai')")
+            .run("drop table t2")
+            .run("create table t2 as select * from t4")
+            .run("insert into table t4 values (20)")
+            .dump(primaryDbName, tupleIncWithExternalBootstrap.lastReplicationId, dumpWithClause);
+
+    // Set previous dump as bootstrap to be rolled-back. Now, new bootstrap should overwrite the old one.
+    loadWithClause.add("'" + REPL_ROLLBACK_BOOTSTRAP_LOAD_CONFIG + "'='"
+            + tupleIncWithExternalBootstrap.dumpLocation + "'");
+    replica.load(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyFailure(new String[]{"t1"})
+            .run("select id from t2")
+            .verifyResult("10")
+            .run("select id from t4")
+            .verifyResults(Arrays.asList("10", "20"))
+            .run("select id from t5")
+            .verifyResult("10");
+
+    // Re-bootstrapping from different dump should fail.
+    tupleNewIncWithExternalBootstrap = primary.run("use " + primaryDbName)
+            .dump(primaryDbName, tupleIncWithExternalBootstrap.lastReplicationId, dumpWithClause);
+    loadWithClause.clear();
+    loadWithClause.addAll(externalTableBasePathWithClause());
+    replica.loadFailure(replicatedDbName, tupleNewIncWithExternalBootstrap.dumpLocation, loadWithClause);
   }
 
   private List<String> externalTableBasePathWithClause() throws IOException, SemanticException {
