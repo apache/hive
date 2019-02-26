@@ -261,9 +261,11 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
 
       for (int logical = 0; logical< size; logical++) {
         final int batchIndex = (selectedInUse ? selected[logical] : logical);
-        int hashCode = 0;
+        int hashCode;
         if (isEmptyPartitions) {
-          if (!isSingleReducer) {
+          if (isSingleReducer) {
+            hashCode = 0;
+          } else {
             hashCode = nonPartitionRandom.nextInt();
           }
         } else {
