@@ -264,15 +264,19 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
         int hashCode;
         if (isEmptyPartitions) {
           if (isSingleReducer) {
+            // Empty partition, single reducer -> constant hashCode
             hashCode = 0;
           } else {
+            // Empty partition, multiple reducers -> random hashCode
             hashCode = nonPartitionRandom.nextInt();
           }
         } else {
+          // Compute hashCode from partitions
           partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
           hashCode = hashFunc.apply(partitionFieldValues, partitionObjectInspectors);
         }
 
+        // Compute hashCode from buckets
         if (!isEmptyBuckets) {
           bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
           final int bucketNum = ObjectInspectorUtils.getBucketNumber(
