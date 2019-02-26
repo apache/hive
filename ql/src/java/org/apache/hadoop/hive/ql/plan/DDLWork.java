@@ -100,7 +100,7 @@ public class DDLWork implements Serializable {
 
   private CreateOrDropTriggerToPoolMappingDesc triggerToPoolMappingDesc;
 
-  private ReplSetFirstIncLoadPendFlagDesc replSetFirstIncLoadFlagDesc;
+  private ReplRemoveFirstIncLoadPendFlagDesc replSetFirstIncLoadFlagDesc;
 
   boolean needLock = false;
 
@@ -615,7 +615,7 @@ public class DDLWork implements Serializable {
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-                 ReplSetFirstIncLoadPendFlagDesc replSetFirstIncLoadFlagDesc) {
+                 ReplRemoveFirstIncLoadPendFlagDesc replSetFirstIncLoadFlagDesc) {
     this(inputs, outputs);
     this.replSetFirstIncLoadFlagDesc = replSetFirstIncLoadFlagDesc;
   }
@@ -1365,11 +1365,11 @@ public class DDLWork implements Serializable {
     this.triggerToPoolMappingDesc = triggerToPoolMappingDesc;
   }
 
-  public ReplSetFirstIncLoadPendFlagDesc getReplSetFirstIncLoadFlagDesc() {
+  public ReplRemoveFirstIncLoadPendFlagDesc getReplSetFirstIncLoadFlagDesc() {
     return replSetFirstIncLoadFlagDesc;
   }
 
-  public void setReplSetFirstIncLoadFlagDesc(ReplSetFirstIncLoadPendFlagDesc replSetFirstIncLoadFlagDesc) {
+  public void setReplSetFirstIncLoadFlagDesc(ReplRemoveFirstIncLoadPendFlagDesc replSetFirstIncLoadFlagDesc) {
     this.replSetFirstIncLoadFlagDesc = replSetFirstIncLoadFlagDesc;
   }
 }

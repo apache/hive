@@ -285,9 +285,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
 
           try {
-            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName,
-                                                                                        conf);
-            Table table = tableTuple.object;
+            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName, conf);
+            Table table = tableTuple != null ? tableTuple.object : null;
             if (table != null && ReplUtils.isFirstIncPending(table.getParameters())) {
               // For replicated (target) table, until after first successful incremental load, the table will not be
               // in a consistent state. Avoid allowing replicating this table to a new target.

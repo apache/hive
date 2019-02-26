@@ -225,7 +225,7 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
-import org.apache.hadoop.hive.ql.plan.ReplSetFirstIncLoadPendFlagDesc;
+import org.apache.hadoop.hive.ql.plan.ReplRemoveFirstIncLoadPendFlagDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
@@ -665,7 +665,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       if (work.getReplSetFirstIncLoadFlagDesc() != null) {
-        return updateFirstIncPendingFlag(db, work.getReplSetFirstIncLoadFlagDesc());
+        return remFirstIncPendFlag(db, work.getReplSetFirstIncLoadFlagDesc());
       }
     } catch (Throwable e) {
       failed(e);
@@ -5205,10 +5205,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return retval;
   }
 
-  private int updateFirstIncPendingFlag(Hive hive, ReplSetFirstIncLoadPendFlagDesc desc) throws HiveException, TException {
+  private int remFirstIncPendFlag(Hive hive, ReplRemoveFirstIncLoadPendFlagDesc desc) throws HiveException, TException {
     String dbNameOrPattern = desc.getDatabaseName();
     String tableNameOrPattern = desc.getTableName();
-    String flag = desc.getIncLoadPendingFlag() ? "true" : "false";
     Map<String, String> parameters;
     // For database level load tableNameOrPattern will be null. Flag is set only in database for db level load.
     if (tableNameOrPattern != null && !tableNameOrPattern.isEmpty()) {
@@ -5217,8 +5216,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbNameOrPattern, tableName);
         parameters = tbl.getParameters();
         String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
-        if (incPendPara != null && (!flag.equalsIgnoreCase(incPendPara))) {
-          parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
+        if (incPendPara != null) {
+          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
           hive.getMSC().alter_table(dbNameOrPattern, tableName, tbl);
         }
       }
@@ -5227,8 +5226,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Database database = hive.getMSC().getDatabase(dbName);
         parameters = database.getParameters();
         String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
-        if (incPendPara != null && (!flag.equalsIgnoreCase(incPendPara))) {
-          parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
+        if (incPendPara != null) {
+          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
           hive.getMSC().alterDatabase(dbName, database);
         }
       }

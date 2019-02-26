@@ -22,11 +22,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import java.io.Serializable;
 
 /**
- * ReplSetFirstIncLoadPendFlagDesc.
+ * ReplRemoveFirstIncLoadPendFlagDesc. -- Remove the flag from db/table property if its already present.
  *
  */
 @Explain(displayName = "Set First Incr Load Pend Flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ReplSetFirstIncLoadPendFlagDesc extends DDLDesc implements Serializable {
+public class ReplRemoveFirstIncLoadPendFlagDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
   String databaseName;
@@ -36,14 +36,13 @@ public class ReplSetFirstIncLoadPendFlagDesc extends DDLDesc implements Serializ
   /**
    * For serialization only.
    */
-  public ReplSetFirstIncLoadPendFlagDesc() {
+  public ReplRemoveFirstIncLoadPendFlagDesc() {
   }
 
-  public ReplSetFirstIncLoadPendFlagDesc(String databaseName, String tableName, boolean incLoadPendingFlag) {
+  public ReplRemoveFirstIncLoadPendFlagDesc(String databaseName, String tableName) {
     super();
     this.databaseName = databaseName;
     this.tableName = tableName;
-    this.incLoadPendingFlag = incLoadPendingFlag;
   }
 
   @Explain(displayName="db_name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -62,10 +61,5 @@ public class ReplSetFirstIncLoadPendFlagDesc extends DDLDesc implements Serializ
 
   public void setTableName(String tableName) {
     this.tableName = tableName;
-  }
-
-  @Explain(displayName="inc load pending flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public boolean getIncLoadPendingFlag() {
-    return incLoadPendingFlag;
   }
 }
