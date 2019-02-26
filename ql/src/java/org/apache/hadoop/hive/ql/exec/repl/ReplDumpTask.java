@@ -255,9 +255,18 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     Long bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
     assert (bootDumpBeginReplId >= 0L);
 
+    LOG.info("Bootstrap Dump for db {} and table {}", work.dbNameOrPattern, work.tableNameOrPattern);
+
     String validTxnList = getValidTxnListForReplDump(hiveDb);
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
+      Database db = hiveDb.getDatabase(dbName);
+      if ((db != null) && (ReplUtils.isFirstIncPending(db.getParameters()))) {
+        // For replicated (target) database, until after first successful incremental load, the database will not be
+        // in a consistent state. Avoid allowing replicating this database to a new target.
+        throw new HiveException("Replication dump not allowed for replicated database" +
+                " with first incremental dump pending : " + dbName);
+      }
       replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
               Utils.getAllTables(hiveDb, dbName).size(),
               hiveDb.getAllFunctions().size());
@@ -274,9 +283,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
           LOG.debug(
               "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
+
           try {
-            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName,
-                                                                                        conf);
+            HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName, conf);
+            Table table = tableTuple != null ? tableTuple.object : null;
+            if (table != null && ReplUtils.isFirstIncPending(table.getParameters())) {
+              // For replicated (target) table, until after first successful incremental load, the table will not be
+              // in a consistent state. Avoid allowing replicating this table to a new target.
+              throw new HiveException("Replication dump not allowed for replicated table" +
+                      " with first incremental dump pending : " + tblName);
+            }
             if (shouldWriteExternalTableLocationInfo
                     && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
               LOG.debug("Adding table {} to external tables list", tblName);
