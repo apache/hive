@@ -56,6 +56,7 @@ public class LoadDatabase {
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(loadTaskTracker);
+    //TODO : Load database should not be called for table level load.
     isTableLevelLoad = tblNameToLoadIn != null && !tblNameToLoadIn.isEmpty();
   }
 
@@ -125,7 +126,7 @@ public class LoadDatabase {
     CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc();
     createDbDesc.setName(dbObj.getName());
     createDbDesc.setComment(dbObj.getDescription());
-    createDbDesc.setDatabaseProperties(updateDbProps(dbObj, context.dumpDirectory, true));
+    createDbDesc.setDatabaseProperties(updateDbProps(dbObj, context.dumpDirectory, !isTableLevelLoad));
 
     // note that we do not set location - for repl load, we want that auto-created.
     createDbDesc.setIfNotExists(false);

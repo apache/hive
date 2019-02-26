@@ -193,11 +193,11 @@ public class ReplUtils {
     };
   }
 
-  public static boolean isFirstIncPending(Map<String, String> parameter) {
-    if (parameter == null) {
+  public static boolean isFirstIncPending(Map<String, String> parameters) {
+    if (parameters == null) {
       return false;
     }
-    String firstIncPendFlag = parameter.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+    String firstIncPendFlag = parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
     // If flag is not set, then we assume first incremental load is done as the database/table may be created by user
     // and not through replication.
     return firstIncPendFlag != null && !firstIncPendFlag.isEmpty() && "true".equalsIgnoreCase(firstIncPendFlag);

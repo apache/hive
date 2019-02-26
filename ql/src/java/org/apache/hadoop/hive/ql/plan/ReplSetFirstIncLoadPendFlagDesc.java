@@ -22,11 +22,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import java.io.Serializable;
 
 /**
- * ReplSetFirstIncLoadFlagDesc.
+ * ReplSetFirstIncLoadPendFlagDesc.
  *
  */
-@Explain(displayName = "Set First Incr Load Flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ReplSetFirstIncLoadFlagDesc extends DDLDesc implements Serializable {
+@Explain(displayName = "Set First Incr Load Pend Flag", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+public class ReplSetFirstIncLoadPendFlagDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
   String databaseName;
@@ -36,10 +36,10 @@ public class ReplSetFirstIncLoadFlagDesc extends DDLDesc implements Serializable
   /**
    * For serialization only.
    */
-  public ReplSetFirstIncLoadFlagDesc() {
+  public ReplSetFirstIncLoadPendFlagDesc() {
   }
 
-  public ReplSetFirstIncLoadFlagDesc(String databaseName, String tableName, boolean incLoadPendingFlag) {
+  public ReplSetFirstIncLoadPendFlagDesc(String databaseName, String tableName, boolean incLoadPendingFlag) {
     super();
     this.databaseName = databaseName;
     this.tableName = tableName;

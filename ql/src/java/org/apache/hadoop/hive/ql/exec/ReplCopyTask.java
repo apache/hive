@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -33,6 +34,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -66,6 +68,31 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   // Check  HIVE-21197 for more detail
   private void updateSrcFileListForDupCopy(FileSystem dstFs, Path toPath, List<ReplChangeManager.FileInfo> srcFiles,
                                            long writeId, int stmtId) throws IOException {
+    FileStatus[] statuses;
+    try {
+      statuses = dstFs.listStatus(toPath, path -> {
+        String fn = path.getName();
+        try {
+          return dstFs.getFileStatus(path).isDirectory() && fn.startsWith(AcidUtils.BASE_PREFIX);
+        } catch (IOException e) {
+          LOG.error("File listing failed for " + toPath, e);
+          throw new RuntimeException(e.getMessage());
+        }
+      });
+    } catch (FileNotFoundException e) {
+      LOG.debug("Path {} does not exist, will be created before copy", toPath);
+      return;
+    }
+
+    if (statuses.length > 1) {
+      // if more than one base directory is present, then it means one or more replace operation is done. Any duplicate
+      // check after that may cause data loss as the check will happen with the first base directory
+      // which is no more valid.
+      LOG.info("Number of base directory {} in path {} is more than one. Duplicate check should not be done.",
+              statuses, toPath);
+      return;
+    }
+
     ListIterator<ReplChangeManager.FileInfo> iter = srcFiles.listIterator();
     Path basePath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(true, writeId, writeId, stmtId));
     while (iter.hasNext()) {

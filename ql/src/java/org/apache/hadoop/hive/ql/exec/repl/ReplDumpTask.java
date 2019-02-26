@@ -283,22 +283,17 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
           LOG.debug(
               "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
-          Table table;
-          try {
-            table = hiveDb.getTable(dbName, tblName);
-          } catch (InvalidTableException e) {
-            LOG.info("table has been dropped concurrently "+ tblName);
-            continue;
-          }
-          if (table != null && ReplUtils.isFirstIncPending(table.getParameters())) {
-            // For replicated (target) table, until after first successful incremental load, the table will not be
-            // in a consistent state. Avoid allowing replicating this table to a new target.
-            throw new HiveException("Replication dump not allowed for replicated table" +
-                    " with first incremental dump pending : " + tblName);
-          }
+
           try {
             HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName,
                                                                                         conf);
+            Table table = tableTuple.object;
+            if (table != null && ReplUtils.isFirstIncPending(table.getParameters())) {
+              // For replicated (target) table, until after first successful incremental load, the table will not be
+              // in a consistent state. Avoid allowing replicating this table to a new target.
+              throw new HiveException("Replication dump not allowed for replicated table" +
+                      " with first incremental dump pending : " + tblName);
+            }
             if (shouldWriteExternalTableLocationInfo
                     && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
               LOG.debug("Adding table {} to external tables list", tblName);

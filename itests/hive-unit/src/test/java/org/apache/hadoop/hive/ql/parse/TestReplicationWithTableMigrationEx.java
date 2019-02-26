@@ -23,13 +23,16 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.junit.*;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 
@@ -238,9 +241,7 @@ public class TestReplicationWithTableMigrationEx {
             .run("insert into tacid values(2)")
             .run("insert into tacid values(3)")
             .run("insert overwrite table tacid values(4)")
-            .run("insert into tacid values(5)")
-            .run("insert into tacid values(6)")
-            .run("insert into tacid values(7)");
+            .run("insert into tacid values(5)");
 
     // dump with operation after last repl id is fetched.
     WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(2);
@@ -251,9 +252,9 @@ public class TestReplicationWithTableMigrationEx {
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
             .run("select count(*) from tacid")
-            .verifyResult("4")
+            .verifyResult("2")
             .run("select id from tacid order by id")
-            .verifyResults(new String[]{"4", "5", "6", "7"});
+            .verifyResults(new String[]{"4", "5"});
     assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
 
     // next incremental dump
@@ -265,9 +266,86 @@ public class TestReplicationWithTableMigrationEx {
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
             .run("select count(*) from tacid")
-            .verifyResult("4")
+            .verifyResult("2")
             .run("select id from tacid order by id")
-            .verifyResults(new String[]{"4", "5", "6", "7"});
+            .verifyResults(new String[]{"4", "5",});
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
+  }
+
+  private void loadWithFailureInAddNotification(String tbl, String dumpLocation) throws Throwable {
+    BehaviourInjection<InjectableBehaviourObjectStore.CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<InjectableBehaviourObjectStore.CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable InjectableBehaviourObjectStore.CallerArguments args) {
+        injectionPathCalled = true;
+        LOG.warn("InjectableBehaviourObjectStore called for Verifier - Table: " + args.tblName);
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.constraintTblName != null)) {
+          LOG.warn("Verifier - DB: " + args.dbName
+                  + " Constraint Table: " + args.constraintTblName);
+          return false;
+        }
+        if (args.tblName != null) {
+          LOG.warn("Verifier - Table: " + args.tblName);
+          return !args.tblName.equalsIgnoreCase(tbl);
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+    try {
+      List<String> withClause = Collections.singletonList("'hive.metastore.transactional.event.listeners'='"
+              + DbNotificationListener.class.getCanonicalName() + "'");
+      replica.loadFailure(replicatedDbName, dumpLocation, withClause);
+    } finally {
+      InjectableBehaviourObjectStore.resetCallerVerifier();
+    }
+    callerVerifier.assertInjectionsPerformed(true, false);
+  }
+
+  @Test
+  public void testIncLoadPenFlagPropAlterDB() throws Throwable {
+    prepareData(primaryDbName);
+
+    // dump with operation after last repl id is fetched.
+    WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(4);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(primary.getDatabase(primaryDbName).getParameters()));
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("alter database " + primaryDbName + " set dbproperties('dummy_key'='dummy_val')")
+           .run("create table tbl_temp (fld int)")
+            .dump(primaryDbName, tuple.lastReplicationId);
+
+    loadWithFailureInAddNotification("tbl_temp", tuple.dumpLocation);
+    Database replDb = replica.getDatabase(replicatedDbName);
+    assertTrue(ReplUtils.isFirstIncPending(replDb.getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(primary.getDatabase(primaryDbName).getParameters()));
+    assertTrue(replDb.getParameters().get("dummy_key").equalsIgnoreCase("dummy_val"));
+
+    // next incremental dump
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    replica.loadWithoutExplain(replicatedDbName, tuple.dumpLocation);
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
+  }
+
+  @Test
+  public void testIncLoadPenFlagWithMoveOptimization() throws Throwable {
+    List<String> withClause = Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
+
+    prepareData(primaryDbName);
+
+    // dump with operation after last repl id is fetched.
+    WarehouseInstance.Tuple tuple =  dumpWithLastEventIdHacked(4);
+    replica.load(replicatedDbName, tuple.dumpLocation, withClause);
+    verifyLoadExecution(replicatedDbName, tuple.lastReplicationId);
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
+
+    // next incremental dump
+    tuple = primary.dump(primaryDbName, tuple.lastReplicationId);
+    replica.load(replicatedDbName, tuple.dumpLocation, withClause);
     assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(replicatedDbName).getParameters()));
   }
 }

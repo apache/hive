@@ -225,7 +225,7 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
-import org.apache.hadoop.hive.ql.plan.ReplSetFirstIncLoadFlagDesc;
+import org.apache.hadoop.hive.ql.plan.ReplSetFirstIncLoadPendFlagDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
@@ -5205,7 +5205,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return retval;
   }
 
-  private int updateFirstIncPendingFlag(Hive hive, ReplSetFirstIncLoadFlagDesc desc) throws HiveException, TException {
+  private int updateFirstIncPendingFlag(Hive hive, ReplSetFirstIncLoadPendFlagDesc desc) throws HiveException, TException {
     String dbNameOrPattern = desc.getDatabaseName();
     String tableNameOrPattern = desc.getTableName();
     String flag = desc.getIncLoadPendingFlag() ? "true" : "false";
@@ -5216,7 +5216,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for (String tableName : Utils.matchesTbl(hive, dbNameOrPattern, tableNameOrPattern)) {
         org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbNameOrPattern, tableName);
         parameters = tbl.getParameters();
-        if (ReplUtils.isFirstIncPending(parameters)) {
+        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+        if (incPendPara != null && (!flag.equalsIgnoreCase(incPendPara))) {
           parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
           hive.getMSC().alter_table(dbNameOrPattern, tableName, tbl);
         }
@@ -5225,7 +5226,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for (String dbName : Utils.matchesDb(hive, dbNameOrPattern)) {
         Database database = hive.getMSC().getDatabase(dbName);
         parameters = database.getParameters();
-        if (ReplUtils.isFirstIncPending(parameters)) {
+        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+        if (incPendPara != null && (!flag.equalsIgnoreCase(incPendPara))) {
           parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, flag);
           hive.getMSC().alterDatabase(dbName, database);
         }

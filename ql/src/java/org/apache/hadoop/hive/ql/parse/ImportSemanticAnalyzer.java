@@ -1169,7 +1169,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         dropTblTask = dropTableTask(table, x, replicationSpec);
         table = null;
       } else if (!firstIncPending) {
-        // For table level replication, get the flag from table parameter. Check HIVE-21197 for more detail.
+        //If in db pending flag is not set then check in table parameter for table level load.
+        // Check HIVE-21197 for more detail.
         firstIncPending = ReplUtils.isFirstIncPending(table.getParameters());
       }
     } else {

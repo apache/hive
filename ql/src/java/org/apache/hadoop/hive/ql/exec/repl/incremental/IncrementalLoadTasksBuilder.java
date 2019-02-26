@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
-import org.apache.hadoop.hive.ql.plan.ReplSetFirstIncLoadFlagDesc;
+import org.apache.hadoop.hive.ql.plan.ReplSetFirstIncLoadPendFlagDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 
@@ -166,7 +166,7 @@ public class IncrementalLoadTasksBuilder {
         }
       }
 
-      ReplSetFirstIncLoadFlagDesc desc = new ReplSetFirstIncLoadFlagDesc(dbName, tableName, false);
+      ReplSetFirstIncLoadPendFlagDesc desc = new ReplSetFirstIncLoadPendFlagDesc(dbName, tableName, false);
       Task<? extends Serializable> updateIncPendTask = TaskFactory.get(new DDLWork(inputs, outputs, desc), conf);
       taskChainTail.addDependentTask(updateIncPendTask);
       taskChainTail = updateIncPendTask;
