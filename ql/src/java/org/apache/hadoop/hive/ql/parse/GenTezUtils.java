@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFOR
 
 import java.util.*;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -299,11 +300,11 @@ public class GenTezUtils {
 
     Set<Operator<?>> seen = new HashSet<Operator<?>>();
 
-    Set<Path> filesToFetch = null;
+    Set<FileStatus> fileStatusesToFetch = null;
     if(context.parseContext.getFetchTask() != null) {
       // File sink operator keeps a reference to a list of files. This reference needs to be passed on
       // to other file sink operators which could have been added by removal of Union Operator
-      filesToFetch = context.parseContext.getFetchTask().getWork().getFilesToFetch();
+      fileStatusesToFetch = context.parseContext.getFetchTask().getWork().getFilesToFetch();
     }
 
     while(!operators.isEmpty()) {
@@ -332,7 +333,7 @@ public class GenTezUtils {
             + desc.getDirName() + "; parent " + path);
         desc.setLinkedFileSink(true);
         desc.setLinkedFileSinkDesc(linked);
-        desc.setFilesToFetch(filesToFetch);
+        desc.setFilesToFetch(fileStatusesToFetch);
       }
 
       if (current instanceof AppMasterEventOperator) {

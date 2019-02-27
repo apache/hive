@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -102,7 +103,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private boolean isMerge;
   private boolean isMmCtas;
 
-  private Set<Path> filesToFetch = null;
+  private Set<FileStatus> filesToFetch = null;
 
   /**
    * Whether is a HiveServer query, and the destination table is
@@ -183,7 +184,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     return ret;
   }
 
-  public void setFilesToFetch(Set<Path> filesToFetch) {
+  public void setFilesToFetch(Set<FileStatus> filesToFetch) {
     this.filesToFetch = filesToFetch;
   }
 
@@ -195,7 +196,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     return this.isQuery;
   }
 
-  public Set<Path> getFilesToFetch() {
+  public Set<FileStatus> getFilesToFetch() {
     return filesToFetch;
   }
 

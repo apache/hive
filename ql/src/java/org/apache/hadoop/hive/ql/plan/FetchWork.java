@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
@@ -81,7 +82,7 @@ public class FetchWork implements Serializable {
    */
   private boolean isCachedResult = false;
 
-  private Set<Path> filesToFetch = null;
+  private Set<FileStatus> filesToFetch = null;
 
   public boolean isHiveServerQuery() {
 	return isHiveServerQuery;
@@ -389,11 +390,11 @@ public class FetchWork implements Serializable {
     this.isCachedResult = isCachedResult;
   }
 
-  public void setFilesToFetch(Set<Path> filesToFetch) {
+  public void setFilesToFetch(Set<FileStatus> filesToFetch) {
     this.filesToFetch = filesToFetch;
   }
 
-  public Set<Path> getFilesToFetch() {
+  public Set<FileStatus> getFilesToFetch() {
     return filesToFetch;
   }
 }

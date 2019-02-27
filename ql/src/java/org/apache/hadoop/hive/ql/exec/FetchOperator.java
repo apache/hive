@@ -389,7 +389,7 @@ public class FetchOperator implements Serializable {
       InputFormat inputFormat = getInputFormatFromCache(formatter, job);
       if(inputFormat instanceof HiveSequenceFileInputFormat) {
         // input format could be cached, in which case we need to reset the list of files to fetch
-        ((HiveSequenceFileInputFormat) inputFormat).setListsToFetch(null);
+        ((HiveSequenceFileInputFormat) inputFormat).setFiles(null);
       }
 
       List<Path> dirs = new ArrayList<>(), dirsWithOriginals = new ArrayList<>();
@@ -403,7 +403,7 @@ public class FetchOperator implements Serializable {
       if(inputFormat instanceof HiveSequenceFileInputFormat && this.getWork().getFilesToFetch() != null
           && !this.getWork().getFilesToFetch().isEmpty() && !this.getWork().isSourceTable()) {
         HiveSequenceFileInputFormat fileFormat = (HiveSequenceFileInputFormat)inputFormat;
-        fileFormat.setListsToFetch(this.getWork().getFilesToFetch());
+        fileFormat.setFiles(this.getWork().getFilesToFetch());
         InputSplit[] splits = inputFormat.getSplits(job, 1);
         for (int i = 0; i < splits.length; i++) {
           inputSplits.add(new FetchInputFormatSplit(splits[i], inputFormat));

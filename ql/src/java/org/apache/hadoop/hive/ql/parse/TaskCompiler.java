@@ -23,6 +23,7 @@ import com.google.common.collect.Interners;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.collections.*;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -219,12 +220,15 @@ public abstract class TaskCompiler {
           fetch.setIsUsingThriftJDBCBinarySerDe(false);
       }
 
+      // The idea here is to keep an object reference both in FileSink and in FetchTask for list of files
+      // to be fetched. During Job close file sink will populate the list and fetch task later will use it
+      // to fetch the results.
       Collection<Operator<? extends OperatorDesc>> tableScanOps =
           Lists.<Operator<?>>newArrayList(pCtx.getTopOps().values());
       Set<FileSinkOperator> fsOps = OperatorUtils.findOperators(tableScanOps, FileSinkOperator.class);
       if(fsOps != null && fsOps.size() == 1) {
         FileSinkOperator op = fsOps.iterator().next();
-        Set<Path> filesToFetch =  new HashSet<>();
+        Set<FileStatus> filesToFetch =  new HashSet<>();
         op.getConf().setFilesToFetch(filesToFetch);
         fetch.setFilesToFetch(filesToFetch);
       }

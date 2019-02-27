@@ -1511,9 +1511,10 @@ public final class Utilities {
     //      Deduplicate and keep a list of files
     //      Pass on the list of files to conf (to be used later by fetch operator)
     //    if true:
-    //      Rename tmpPath to a new directory name
-    //      Remove duplicates
-    //      Rename/move the new directory to specPath
+    //       1) Rename tmpPath to a new directory name to prevent additional files
+    //          from being added by runaway processes.
+    //       2) Remove duplicates from the temp directory
+    //       3) Rename/move the temp directory to specPath
 
     FileSystem fs = specPath.getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
@@ -1534,7 +1535,7 @@ public final class Utilities {
       FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
         PerfLogger perfLogger = SessionState.getPerfLogger();
-        Set<Path> filesKept = new HashSet<Path>();
+        Set<FileStatus> filesKept = new HashSet<>();
         perfLogger.PerfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // remove any tmp file or double-committed output files
         List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
@@ -1545,7 +1546,10 @@ public final class Utilities {
           perfLogger.PerfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
           createEmptyBuckets(
               hconf, emptyBuckets, conf.getCompressed(), conf.getTableInfo(), reporter);
-          filesKept.addAll(emptyBuckets);
+          for(Path p:emptyBuckets) {
+            FileStatus[] items = fs.listStatus(p);
+            filesKept.addAll(Arrays.asList(items));
+          }
           perfLogger.PerfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
         }
 
@@ -1616,9 +1620,9 @@ public final class Utilities {
     }
   }
 
-  private static void addFilesToPathSet(Collection<FileStatus> files, Set<Path> fileSet) {
+  private static void addFilesToPathSet(Collection<FileStatus> files, Set<FileStatus> fileSet) {
     for (FileStatus file : files) {
-      fileSet.add(file.getPath());
+      fileSet.add(file);
     }
   }
 
@@ -1651,7 +1655,7 @@ public final class Utilities {
    * @return a list of path names corresponding to should-be-created empty buckets.
    */
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf, Set<Path> filesKept, boolean isBaseDir)
+      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf, Set<FileStatus> filesKept, boolean isBaseDir)
           throws IOException {
     int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
         numBuckets = (conf != null && conf.getTable() != null) ? conf.getTable().getNumBuckets() : 0;
@@ -1675,7 +1679,7 @@ public final class Utilities {
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
       String unionSuffix, int dpLevels, int numBuckets, Configuration hconf, Long writeId,
-      int stmtId, boolean isMmTable, Set<Path> filesKept, boolean isBaseDir) throws IOException {
+      int stmtId, boolean isMmTable, Set<FileStatus> filesKept, boolean isBaseDir) throws IOException {
     if (fileStats == null) {
       return null;
     }
