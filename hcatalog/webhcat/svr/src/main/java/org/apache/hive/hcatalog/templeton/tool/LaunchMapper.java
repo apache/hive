@@ -18,10 +18,6 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
-import org.apache.hadoop.security.Credentials;
-import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.security.token.TokenIdentifier;
-import org.apache.hive.hcatalog.templeton.SecureProxySupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -157,10 +153,10 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
       env.put(pathVarName, paths);
     }
   }
-  protected Process startJob(Context context, String jobId, String user, String overrideClasspath,
+  protected Process startJob(Configuration conf, String jobId, String user, String overrideClasspath,
                              LauncherDelegator.JobType jobType)
     throws IOException, InterruptedException {
-    Configuration conf = context.getConfiguration();
+
     copyLocal(COPY_NAME, conf);
     String[] jarArgs = TempletonUtils.decodeArray(conf.get(JAR_ARGS_NAME));
 
@@ -178,16 +174,6 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER, "mapreduce.job.credentials.binary");
     handleTokenFile(jarArgsList, JobSubmissionConstants.TOKEN_FILE_ARG_PLACEHOLDER_TEZ, "tez.credentials.path");
     if (jobType == LauncherDelegator.JobType.HIVE) {
-      Credentials cred = new Credentials();
-      Token<? extends TokenIdentifier> token = context.getCredentials().getToken(new
-              Text(SecureProxySupport.HIVE_SERVICE));
-      cred.addToken(new
-              Text(SecureProxySupport.HIVE_SERVICE), token);
-      File t = File.createTempFile("templeton", null);
-      Path tokenPath = new Path(t.toURI());
-      cred.writeTokenStorageFile(tokenPath, conf);
-      env.put(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION,
-              tokenPath.toUri().getPath());
       replaceJobTag(jarArgsList, JobSubmissionConstants.HIVE_QUERY_TAG_ARG_PLACEHOLDER,
               JobSubmissionConstants.HIVE_QUERY_TAG, jobId);
     } else {
@@ -419,7 +405,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     killLauncherChildJobs(conf, context.getJobID().toString());
 
     // Start the job
-    Process proc = startJob(context,
+    Process proc = startJob(conf,
             context.getJobID().toString(),
             conf.get("user.name"),
             conf.get(OVERRIDE_CLASSPATH),

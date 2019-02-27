@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.hcatalog.templeton.tool.JobSubmissionConstants;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
@@ -78,11 +77,6 @@ public class HiveDelegator extends LauncherDelegator {
       args.add(user);
       args.add("-p");
       args.add("default");
-
-      if (UserGroupInformation.isSecurityEnabled()) {
-        args.add("-a");
-        args.add("delegationToken");
-      }
 
       //add mapreduce job tag placeholder
       args.add("--hiveconf");
