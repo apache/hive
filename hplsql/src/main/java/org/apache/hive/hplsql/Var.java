@@ -194,7 +194,7 @@ public class Var {
 	  }
 	  else if (type == Type.DOUBLE) {
 	    if (val.type == Type.STRING) {
-        value = new Double((String)val.value);
+        value = Double.valueOf((String) val.value);
       }
 	    else if (val.type == Type.BIGINT || val.type == Type.DECIMAL) {
         value = Double.valueOf(val.doubleValue());
@@ -265,13 +265,13 @@ public class Var {
     }
     else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT ||
         type == java.sql.Types.SMALLINT || type == java.sql.Types.TINYINT) {
-      cast(new Var(new Long(rs.getLong(idx))));
+      cast(new Var(Long.valueOf(rs.getLong(idx))));
     }
     else if (type == java.sql.Types.DECIMAL || type == java.sql.Types.NUMERIC) {
       cast(new Var(rs.getBigDecimal(idx)));
     }
     else if (type == java.sql.Types.FLOAT || type == java.sql.Types.DOUBLE) {
-      cast(new Var(new Double(rs.getDouble(idx))));
+      cast(new Var(Double.valueOf(rs.getDouble(idx))));
     }
     return this;
   }
@@ -411,7 +411,7 @@ public class Var {
       }
     }
     else if (type == Type.STRING && var.type == Type.STRING &&
-            ((String)value).equals((String)var.value)) {
+            ((String)value).equals(var.value)) {
       return true;
     }
     else if (type == Type.DECIMAL && var.type == Type.DECIMAL &&
@@ -475,9 +475,9 @@ public class Var {
 	 /**
    * Increment an integer value
    */
-  public Var increment(Long i) {
+  public Var increment(long i) {
     if (type == Type.BIGINT) {
-      value = new Long(((Long)value).longValue() + i);
+      value = Long.valueOf(((Long) value).longValue() + i);
     }
     return this;
   }
@@ -485,12 +485,12 @@ public class Var {
   /**
   * Decrement an integer value
   */
- public Var decrement(Long i) {
-   if (type == Type.BIGINT) {
-     value = new Long(((Long)value).longValue() - i);
-   }
-   return this;
- }
+  public Var decrement(long i) {
+    if (type == Type.BIGINT) {
+      value = Long.valueOf(((Long) value).longValue() - i);
+    }
+    return this;
+  }
   
 	/**
 	 * Return an integer value

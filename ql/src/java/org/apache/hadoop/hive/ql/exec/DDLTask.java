@@ -225,6 +225,7 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
+import org.apache.hadoop.hive.ql.plan.ReplRemoveFirstIncLoadPendFlagDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
@@ -286,6 +287,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
@@ -660,6 +662,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (work.getAlterMaterializedViewDesc() != null) {
         return alterMaterializedView(db, work.getAlterMaterializedViewDesc());
+      }
+
+      if (work.getReplSetFirstIncLoadFlagDesc() != null) {
+        return remFirstIncPendFlag(db, work.getReplSetFirstIncLoadFlagDesc());
       }
     } catch (Throwable e) {
       failed(e);
@@ -5197,6 +5203,36 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               && !sh.equals("org.apache.hadoop.hive.accumulo.AccumuloStorageHandler");
     }
     return retval;
+  }
+
+  private int remFirstIncPendFlag(Hive hive, ReplRemoveFirstIncLoadPendFlagDesc desc) throws HiveException, TException {
+    String dbNameOrPattern = desc.getDatabaseName();
+    String tableNameOrPattern = desc.getTableName();
+    Map<String, String> parameters;
+    // For database level load tableNameOrPattern will be null. Flag is set only in database for db level load.
+    if (tableNameOrPattern != null && !tableNameOrPattern.isEmpty()) {
+      // For table level load, dbNameOrPattern is db name and not a pattern.
+      for (String tableName : Utils.matchesTbl(hive, dbNameOrPattern, tableNameOrPattern)) {
+        org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbNameOrPattern, tableName);
+        parameters = tbl.getParameters();
+        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+        if (incPendPara != null) {
+          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+          hive.getMSC().alter_table(dbNameOrPattern, tableName, tbl);
+        }
+      }
+    } else {
+      for (String dbName : Utils.matchesDb(hive, dbNameOrPattern)) {
+        Database database = hive.getMSC().getDatabase(dbName);
+        parameters = database.getParameters();
+        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+        if (incPendPara != null) {
+          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+          hive.getMSC().alterDatabase(dbName, database);
+        }
+      }
+    }
+    return 0;
   }
 
   /*

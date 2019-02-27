@@ -24,10 +24,13 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.thrift.TException;
 
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +71,17 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
     } catch (MetaException e) {
       LOG.error("Unable to find table " + ci.getFullTableName() + ", " + e.getMessage());
       throw e;
+    }
+  }
+
+  @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
+    try {
+      Database database = rs.getDatabase(getDefaultCatalog(conf), dbName);
+      // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
+      return ReplUtils.isFirstIncPending(database.getParameters());
+    } catch (NoSuchObjectException e) {
+      LOG.info("Unable to find database " + dbName);
+      return true;
     }
   }
 

@@ -275,7 +275,8 @@ public class EximUtil {
       tmpParameters.entrySet()
                 .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
                             || e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY)
-                            || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION));
+                            || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION)
+                            || e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
       dbObj.setParameters(tmpParameters);
     }
     try (JsonWriter jsonWriter = new JsonWriter(fs, metadataPath)) {

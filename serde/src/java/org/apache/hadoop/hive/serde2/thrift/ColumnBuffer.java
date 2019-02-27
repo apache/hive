@@ -381,7 +381,7 @@ public class ColumnBuffer extends AbstractList {
       break;
     case FLOAT_TYPE:
       nulls.set(size, field == null);
-      doubleVars()[size] = field == null ? 0 : new Double(field.toString());
+      doubleVars()[size] = field == null ? 0.0 : Double.parseDouble(field.toString());
       break;
     case DOUBLE_TYPE:
       nulls.set(size, field == null);

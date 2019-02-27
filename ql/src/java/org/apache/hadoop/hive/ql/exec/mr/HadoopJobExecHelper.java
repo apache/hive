@@ -646,7 +646,7 @@ public class HadoopJobExecHelper {
     Map<String, Double> exctractedCounters = new HashMap<String, Double>();
     for (Counters.Group cg : counters) {
       for (Counter c : cg) {
-        exctractedCounters.put(cg.getName() + "::" + c.getName(), new Double(c.getCounter()));
+        exctractedCounters.put(cg.getName() + "::" + c.getName(), Double.valueOf(c.getCounter()));
       }
     }
     return exctractedCounters;

@@ -382,63 +382,56 @@ public class LlapDecider implements PhysicalPlanResolver {
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             LOG.debug("Cannot run operator [" + n + "] in llap mode.");
-            return new Boolean(false);
+              return Boolean.FALSE;
           }
         });
-      opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            ExprNodeDesc expr = ((FilterOperator)n).getConf().getPredicate();
-            Boolean retval = new Boolean(checkExpression(expr));
-            if (!retval) {
-              LOG.info("Cannot run filter operator [" + n + "] in llap mode");
-            }
-            return new Boolean(retval);
+      opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"), new NodeProcessor() {
+        @Override
+        public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+          ExprNodeDesc expr = ((FilterOperator) n).getConf().getPredicate();
+          boolean retval = checkExpression(expr);
+          if (!retval) {
+            LOG.info("Cannot run filter operator [" + n + "] in llap mode");
           }
-        });
-      opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            @SuppressWarnings("unchecked")
-            List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
-            Boolean retval = new Boolean(checkAggregators(aggs));
-            if (!retval) {
-              LOG.info("Cannot run group by operator [" + n + "] in llap mode");
-            }
-            return new Boolean(retval);
+          return Boolean.valueOf(retval);
+        }
+      });
+      opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"), new NodeProcessor() {
+        @Override
+        public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+          @SuppressWarnings("unchecked")
+          List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
+          boolean retval = checkAggregators(aggs);
+          if (!retval) {
+            LOG.info("Cannot run group by operator [" + n + "] in llap mode");
           }
-        });
+          return Boolean.valueOf(retval);
+        }
+      });
       opRules.put(new RuleRegExp("No user code in select", SelectOperator.getOperatorName() + "%"),
           new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            @SuppressWarnings({ "unchecked" })
-            List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
-            Boolean retval = new Boolean(checkExpressions(exprs));
-            if (!retval) {
-              LOG.info("Cannot run select operator [" + n + "] in llap mode");
+            @Override
+            public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+              @SuppressWarnings({"unchecked"})
+              List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
+              boolean retval = checkExpressions(exprs);
+              if (!retval) {
+                LOG.info("Cannot run select operator [" + n + "] in llap mode");
+              }
+              return Boolean.valueOf(retval);
             }
-            return new Boolean(retval);
-          }
-        });
+          });
 
       if (!conf.getBoolVar(HiveConf.ConfVars.LLAP_ENABLE_GRACE_JOIN_IN_LLAP)) {
-        opRules.put(
-            new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
-                MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
+        opRules.put(new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
+            MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
               @Override
               public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
-                if (mapJoinOp.getConf().isHybridHashJoin()
-                    && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
+                if (mapJoinOp.getConf().isHybridHashJoin() && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
                   mapJoinOpList.add((MapJoinOperator) n);
                 }
-                return new Boolean(true);
+                return Boolean.TRUE;
               }
             });
       }

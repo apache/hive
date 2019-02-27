@@ -118,6 +118,7 @@ public class FMSketch implements NumDistinctValueEstimator {
   /**
    * Resets a distinctValueEstimator object to its original state.
    */
+  @Override
   public void reset() {
     for (int i=0; i< numBitVectors; i++) {
       bitVector[i].clear();
@@ -211,6 +212,7 @@ public class FMSketch implements NumDistinctValueEstimator {
     return hash;
   }
 
+  @Override
   public void addToEstimator(long v) {
     /* Update summary bitVector :
      * Generate hash value of the long value and mod it by 2^bitVectorSize-1.
@@ -251,16 +253,18 @@ public class FMSketch implements NumDistinctValueEstimator {
     bitVector[hash%numBitVectors].set(index);
   }
 
+  @Override
   public void addToEstimator(double d) {
-    int v = new Double(d).hashCode();
+    int v = Double.hashCode(d);
     addToEstimator(v);
   }
 
   public void addToEstimatorPCSA(double d) {
-    int v = new Double(d).hashCode();
+    int v = Double.hashCode(d);
     addToEstimatorPCSA(v);
   }
 
+  @Override
   public void addToEstimator(HiveDecimal decimal) {
     int v = decimal.hashCode();
     addToEstimator(v);
@@ -297,6 +301,7 @@ public class FMSketch implements NumDistinctValueEstimator {
   /* We use the Flajolet-Martin estimator to estimate the number of distinct values.FM uses the
    * location of the least significant zero as an estimate of log2(phi*ndvs).
    */
+  @Override
   public long estimateNumDistinctValues() {
     int sumLeastSigZero = 0;
     double avgLeastSigZero;
@@ -333,6 +338,7 @@ public class FMSketch implements NumDistinctValueEstimator {
     return length;
   }
 
+  @Override
   public int lengthFor(JavaDataModel model) {
     return lengthFor(model, getNumBitVectors());
   }

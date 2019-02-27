@@ -129,7 +129,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         case Database:
           DatabaseEvent dbEvent = (DatabaseEvent) next;
           dbTracker =
-              new LoadDatabase(context, dbEvent, work.dbNameToLoadIn, loadTaskTracker)
+              new LoadDatabase(context, dbEvent, work.dbNameToLoadIn, work.tableNameToLoadIn, loadTaskTracker)
                   .tasks();
           loadTaskTracker.update(dbTracker);
           if (work.hasDbState()) {
@@ -370,6 +370,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
       // If incremental events are already applied, then check and perform if need to bootstrap any tables.
       if (!builder.hasMoreWork() && !work.getPathsToCopyIterator().hasNext()) {
+        // No need to set incremental load pending flag for external tables as the files will be copied to the same path
+        // for external table unlike migrated txn tables. Currently bootstrap during incremental is done only for
+        // external tables.
         if (work.hasBootstrapLoadTasks()) {
           LOG.debug("Current incremental dump have tables to be bootstrapped. Switching to bootstrap "
                   + "mode after applying all events.");
