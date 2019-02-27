@@ -41,6 +41,7 @@ public class TezEdgeProperty {
   private int minReducer;
   private int maxReducer;
   private long inputSizePerReducer;
+  private Integer bufferSize;
 
   public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType,
       int buckets) {
@@ -103,6 +104,14 @@ public class TezEdgeProperty {
 
   public void setSlowStart(boolean slowStart) {
     this.isSlowStart = slowStart;
+  }
+
+  public void setBufferSize(Integer bufferSize) {
+    this.bufferSize = bufferSize;
+  }
+
+  public Integer getBufferSize() {
+    return bufferSize;
   }
 
   public void setEdgeType(EdgeType type) {
