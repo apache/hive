@@ -225,6 +225,7 @@ import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
+import org.apache.hadoop.hive.ql.plan.ReplRemoveFirstIncLoadPendFlagDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowColumnsDesc;
@@ -286,6 +287,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
@@ -660,6 +662,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (work.getAlterMaterializedViewDesc() != null) {
         return alterMaterializedView(db, work.getAlterMaterializedViewDesc());
+      }
+
+      if (work.getReplSetFirstIncLoadFlagDesc() != null) {
+        return remFirstIncPendFlag(db, work.getReplSetFirstIncLoadFlagDesc());
       }
     } catch (Throwable e) {
       failed(e);
@@ -2552,31 +2558,38 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int showTablesOrViews(Hive db, ShowTablesDesc showDesc) throws HiveException {
     // get the tables/views for the desired pattern - populate the output stream
-    List<String> tablesOrViews = null;
-    List<Table> materializedViews = null;
+    List<String> tableNames  = null;
+    List<Table> tableObjects = null;
 
-    String dbName      = showDesc.getDbName();
-    String pattern     = showDesc.getPattern(); // if null, all tables/views are returned
-    String resultsFile = showDesc.getResFile();
-    TableType type     = showDesc.getType(); // null for tables, VIRTUAL_VIEW for views, MATERIALIZED_VIEW for MVs
+    TableType type       = showDesc.getType(); // null for tables, VIRTUAL_VIEW for views, MATERIALIZED_VIEW for MVs
+    String dbName        = showDesc.getDbName();
+    String pattern       = showDesc.getPattern(); // if null, all tables/views are returned
+    TableType typeFilter = showDesc.getTypeFilter();
+    String resultsFile   = showDesc.getResFile();
+    boolean isExtended   = showDesc.isExtended();
 
     if (!db.databaseExists(dbName)) {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
     LOG.debug("pattern: {}", pattern);
+    LOG.debug("typeFilter: {}", typeFilter);
     if (type == null) {
-      tablesOrViews = new ArrayList<>();
-      tablesOrViews.addAll(db.getTablesByType(dbName, pattern, TableType.MANAGED_TABLE));
-      tablesOrViews.addAll(db.getTablesByType(dbName, pattern, TableType.EXTERNAL_TABLE));
-      LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tablesOrViews.size());
+      if (isExtended) {
+        tableObjects = new ArrayList<>();
+        tableObjects.addAll(db.getTableObjectsByType(dbName, pattern, typeFilter));
+        LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableObjects.size());
+      } else {
+        tableNames = db.getTablesByType(dbName, pattern, typeFilter);
+        LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
+      }
     } else if (type == TableType.MATERIALIZED_VIEW) {
-      materializedViews = new ArrayList<>();
-      materializedViews.addAll(db.getMaterializedViewObjectsByPattern(dbName, pattern));
-      LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", materializedViews.size());
+      tableObjects = new ArrayList<>();
+      tableObjects.addAll(db.getMaterializedViewObjectsByPattern(dbName, pattern));
+      LOG.debug("Found {} materialized view(s) matching the SHOW MATERIALIZED VIEWS statement.", tableObjects.size());
     } else if (type == TableType.VIRTUAL_VIEW) {
-      tablesOrViews = db.getTablesByType(dbName, pattern, type);
-      LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tablesOrViews.size());
+      tableNames = db.getTablesByType(dbName, pattern, type);
+      LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", tableNames.size());
     } else {
       throw new HiveException("Option not recognized in SHOW TABLES/VIEWS/MATERIALIZED VIEWS");
     }
@@ -2588,12 +2601,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       FileSystem fs = resFile.getFileSystem(conf);
       outStream = fs.create(resFile);
       // Sort by name and print
-      if (tablesOrViews != null) {
-        SortedSet<String> sortedSet = new TreeSet<String>(tablesOrViews);
+      if (tableNames != null) {
+        SortedSet<String> sortedSet = new TreeSet<String>(tableNames);
         formatter.showTables(outStream, sortedSet);
       } else {
-        Collections.sort(materializedViews, Comparator.comparing(Table::getTableName));
-        formatter.showMaterializedViews(outStream, materializedViews);
+        Collections.sort(tableObjects, Comparator.comparing(Table::getTableName));
+        if (isExtended) {
+          formatter.showTablesExtended(outStream, tableObjects);
+        } else {
+          formatter.showMaterializedViews(outStream, tableObjects);
+        }
       }
       outStream.close();
     } catch (Exception e) {
@@ -5186,6 +5203,36 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               && !sh.equals("org.apache.hadoop.hive.accumulo.AccumuloStorageHandler");
     }
     return retval;
+  }
+
+  private int remFirstIncPendFlag(Hive hive, ReplRemoveFirstIncLoadPendFlagDesc desc) throws HiveException, TException {
+    String dbNameOrPattern = desc.getDatabaseName();
+    String tableNameOrPattern = desc.getTableName();
+    Map<String, String> parameters;
+    // For database level load tableNameOrPattern will be null. Flag is set only in database for db level load.
+    if (tableNameOrPattern != null && !tableNameOrPattern.isEmpty()) {
+      // For table level load, dbNameOrPattern is db name and not a pattern.
+      for (String tableName : Utils.matchesTbl(hive, dbNameOrPattern, tableNameOrPattern)) {
+        org.apache.hadoop.hive.metastore.api.Table tbl = hive.getMSC().getTable(dbNameOrPattern, tableName);
+        parameters = tbl.getParameters();
+        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+        if (incPendPara != null) {
+          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+          hive.getMSC().alter_table(dbNameOrPattern, tableName, tbl);
+        }
+      }
+    } else {
+      for (String dbName : Utils.matchesDb(hive, dbNameOrPattern)) {
+        Database database = hive.getMSC().getDatabase(dbName);
+        parameters = database.getParameters();
+        String incPendPara = parameters != null ? parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG) : null;
+        if (incPendPara != null) {
+          parameters.remove(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+          hive.getMSC().alterDatabase(dbName, database);
+        }
+      }
+    }
+    return 0;
   }
 
   /*

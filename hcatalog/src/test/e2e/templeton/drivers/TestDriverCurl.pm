@@ -555,12 +555,12 @@ sub execCurlCmd(){
     my %result;
     my $out;
     my $err;
-    IPC::Run::run(\@curl_cmd, \undef, $out, $err)
+    IPC::Run::run(\@curl_cmd, \undef, $log, $log)
         or die "Failed running curl cmd " . join ' ', @curl_cmd;
 
     $result{'rc'} = $? >> 8;
-    $result{'stderr'} = $err;
-    $result{'stdout'} = $out;
+    $result{'stderr'} = $log;
+    $result{'stdout'} = $log;
     $result{'body'} = `cat $res_body`;
 
     my @full_header = `cat $res_header`;

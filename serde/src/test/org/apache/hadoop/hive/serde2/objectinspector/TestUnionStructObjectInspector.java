@@ -100,7 +100,7 @@ public class TestUnionStructObjectInspector extends TestCase {
       struct1.add(true);
       ArrayList<Object> struct2 = new ArrayList<Object>(2);
       struct2.add(1.0);
-      struct2.add(new Long(111));
+      struct2.add(Long.valueOf(111));
       ArrayList<Object> struct = new ArrayList<Object>(2);
       struct.add(struct1);
       struct.add(struct2);

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 
 import static org.junit.Assert.assertEquals;
 
@@ -86,6 +87,9 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   private static com.google.common.base.Function<NotificationEvent, Boolean> addNotificationEventModifier = null;
 
   private static com.google.common.base.Function<CallerArguments, Boolean> alterTableModifier = null;
+
+  private static com.google.common.base.Function<CurrentNotificationEventId, CurrentNotificationEventId>
+          getCurrNotiEventIdModifier = null;
 
   // Methods to set/reset getTable modifier
   public static void setGetTableBehaviour(com.google.common.base.Function<Table, Table> modifier){
@@ -269,5 +273,26 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
       callerVerifier.apply(args);
     }
     return super.alterDatabase(catalogName, dbname, db);
+  }
+
+  // Methods to set/reset getCurrentNotificationEventId modifier
+  public static void setGetCurrentNotificationEventIdBehaviour(
+          com.google.common.base.Function<CurrentNotificationEventId, CurrentNotificationEventId> modifier){
+    getCurrNotiEventIdModifier = modifier;
+  }
+  public static void resetGetCurrentNotificationEventIdBehaviour(){
+    setGetCurrentNotificationEventIdBehaviour(null);
+  }
+
+  @Override
+  public CurrentNotificationEventId getCurrentNotificationEventId() {
+    CurrentNotificationEventId id = super.getCurrentNotificationEventId();
+    if (getCurrNotiEventIdModifier != null) {
+      id = getCurrNotiEventIdModifier.apply(id);
+      if (id == null) {
+        throw new RuntimeException("InjectableBehaviourObjectStore: Invalid getCurrentNotificationEventId");
+      }
+    }
+    return id;
   }
 }
