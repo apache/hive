@@ -31,6 +31,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.Mapping;
@@ -198,4 +199,13 @@ public class HiveProject extends Project implements HiveRelNode {
     return shuttle.visit(this);
   }
 
+  public boolean hasWindowingExpr() {
+    for (RexNode expr : this.getChildExps()) {
+      if (expr instanceof RexOver) {
+        // Bail out as it may change cardinality
+        return true;
+      }
+    }
+    return false;
+  }
 }
