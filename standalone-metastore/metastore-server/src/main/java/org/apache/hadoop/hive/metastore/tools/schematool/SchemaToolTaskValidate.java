@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.tools;
+package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,8 +43,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
-import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
+import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
