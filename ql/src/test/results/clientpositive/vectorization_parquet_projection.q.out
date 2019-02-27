@@ -213,9 +213,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquet_project_test
-            Statistics: Num rows: 22 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 22 Data size: 709 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 22 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 22 Data size: 709 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -489,9 +489,9 @@ STAGE PLANS:
           TableScan
             alias: parquet_nullsplit
             filterExpr: (len = '1') (type: boolean)
-            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 mode: hash

@@ -49,6 +49,8 @@ import org.junit.Test;
 
 public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
 
+  private static final double EPSILON = 1E-6;
+
   @Test
   public void testByteMinusShort() throws HiveException {
     GenericUDFOPMinus udf = new GenericUDFOPMinus();
@@ -89,7 +91,7 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.doubleTypeInfo);
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(-333.0), new Double(res.get()));
+    Assert.assertEquals(-333.0, res.get(), EPSILON);
   }
 
   @Test
@@ -111,7 +113,7 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(-5.5), new Double(res.get()));
+    Assert.assertEquals(-5.5, res.get(), EPSILON);
   }
 
   @Test
@@ -153,7 +155,7 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(oi.getTypeInfo(), TypeInfoFactory.floatTypeInfo);
     FloatWritable res = (FloatWritable) udf.evaluate(args);
-    Assert.assertEquals(new Float(4.5), new Float(res.get()));
+    Assert.assertEquals(4.5, res.get(), EPSILON);
   }
 
   @Test
@@ -174,7 +176,7 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(-160.45), new Double(res.get()));
+    Assert.assertEquals(-160.45, res.get(), EPSILON);
   }
 
   @Test

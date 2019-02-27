@@ -60,6 +60,7 @@ public class ReplUtils {
 
   public static final String LAST_REPL_ID_KEY = "hive.repl.last.repl.id";
   public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
+  public static final String REPL_FIRST_INC_PENDING_FLAG = "hive.repl.first.inc.pending";
 
   // write id allocated in the current execution context which will be passed through config to be used by different
   // tasks.
@@ -74,6 +75,10 @@ public class ReplUtils {
   // Migrating to transactional tables in bootstrap load phase.
   // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
   public static final Long REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID = 1L;
+
+  // we keep the statement id as 0 so that the base directory is created with 0 and is easy to find out during
+  // duplicate check. Note : Stmt id is not used for base directory now, but to avoid misuse later, its maintained.
+  public static final int REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID = 0;
 
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
@@ -186,5 +191,15 @@ public class ReplUtils {
         throw new RuntimeException(e);
       }
     };
+  }
+
+  public static boolean isFirstIncPending(Map<String, String> parameters) {
+    if (parameters == null) {
+      return false;
+    }
+    String firstIncPendFlag = parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
+    // If flag is not set, then we assume first incremental load is done as the database/table may be created by user
+    // and not through replication.
+    return firstIncPendFlag != null && !firstIncPendFlag.isEmpty() && "true".equalsIgnoreCase(firstIncPendFlag);
   }
 }

@@ -32,8 +32,10 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -90,6 +92,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @throws org.apache.hadoop.hive.metastore.api.MetaException if the table cannot be found.
    */
   abstract Table resolveTable(CompactionInfo ci) throws MetaException;
+
+  abstract boolean replIsCompactionDisabledForDatabase(String dbName) throws TException;
 
   /**
    * Get list of partitions by name.
@@ -216,5 +220,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
     thread.setThreadId(nextThreadId.incrementAndGet());
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
+  }
+
+  protected boolean replIsCompactionDisabledForTable(Table tbl) {
+    // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
+    return ReplUtils.isFirstIncPending(tbl.getParameters());
   }
 }
