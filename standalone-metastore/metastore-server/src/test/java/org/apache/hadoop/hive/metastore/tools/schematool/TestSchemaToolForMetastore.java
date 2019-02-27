@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.tools;
+package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -46,13 +46,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Category(MetastoreCheckinTest.class)
 public class TestSchemaToolForMetastore {
-  private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreSchemaTool.class);
-
   private MetastoreSchemaTool schemaTool;
   private Connection conn;
   private Configuration conf;
