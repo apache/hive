@@ -1,6 +1,9 @@
 --! qt:dataset:src
 --! qt:dataset:src1
 
+explain select distinct key from src1 group by key,value;
+select distinct key from src1 group by key,value;
+
 explain select distinct count(value) from src group by key;
 select distinct count(value) from src group by key;
 

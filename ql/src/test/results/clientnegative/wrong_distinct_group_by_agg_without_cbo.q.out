@@ -1,1 +1,0 @@
-FAILED: SemanticException SELECT DISTINCT with aggregate function and GROUP BY is only supported with CBO

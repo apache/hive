@@ -4197,9 +4197,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) throws SemanticException {
     ASTNode selectExpr = parseInfo.getSelForClause(dest);
     Collection<ASTNode> aggregateFunction = parseInfo.getDestToAggregationExprs().get(dest).values();
-    if (!(this instanceof CalcitePlanner) && isSelectDistinct(selectExpr) &&
-        isAggregateInSelect(selectExpr, aggregateFunction) && hasGroupBySibling(selectExpr)) {
-      throw new SemanticException("SELECT DISTINCT with aggregate function and GROUP BY is only supported with CBO");
+    if (!(this instanceof CalcitePlanner) && isSelectDistinct(selectExpr) && hasGroupBySibling(selectExpr)) {
+      throw new SemanticException("SELECT DISTINCT with GROUP BY is only supported with CBO");
     }
 
     if (isSelectDistinct(selectExpr) && !hasGroupBySibling(selectExpr) &&
