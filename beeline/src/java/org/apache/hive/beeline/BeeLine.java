@@ -1203,6 +1203,10 @@ public class BeeLine implements Closeable {
       if (password != null) {
         jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD, password);
       }
+      String auth = cl.getOptionValue("a");
+      if (auth != null) {
+        jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_TYPE, auth);
+      }
       mergedConnectionProperties =
           HS2ConnectionFileUtils.mergeUserConnectionPropertiesAndBeelineSite(
               userConnectionProperties, jdbcConnectionParams);
