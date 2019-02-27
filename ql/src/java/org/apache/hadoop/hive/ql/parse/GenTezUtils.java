@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -83,6 +84,7 @@ public class GenTezUtils {
         context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MAX_PARTITION_FACTOR);
     float minPartitionFactor = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR);
     long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
+    int defaultTinyBufferSize = context.conf.getIntVar(HiveConf.ConfVars.TEZ_SIMPLE_CUSTOM_EDGE_TINY_BUFFER_SIZE_MB);
 
     ReduceWork reduceWork = new ReduceWork(Utilities.REDUCENAME + context.nextSequenceNumber());
     LOG.debug("Adding reduce work (" + reduceWork.getName() + ") for " + root);
@@ -142,6 +144,7 @@ public class GenTezUtils {
       edgeProp = new TezEdgeProperty(edgeType);
       edgeProp.setSlowStart(reduceWork.isSlowStart());
     }
+    edgeProp.setBufferSize(obtainBufferSize(root, reduceSink, defaultTinyBufferSize));
     reduceWork.setEdgePropRef(edgeProp);
 
     tezWork.connect(
@@ -850,4 +853,23 @@ public class GenTezUtils {
     egw.startWalking(startNodes, outputMap);
     return outputMap;
   }
+
+  private static Integer obtainBufferSize(Operator<?> op, ReduceSinkOperator rsOp, int defaultTinyBufferSize) {
+    if (op instanceof GroupByOperator) {
+      GroupByOperator groupByOperator = (GroupByOperator) op;
+      if (groupByOperator.getConf().getKeys().isEmpty() &&
+          groupByOperator.getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL) {
+        // Check configuration and value is -1, infer value
+        int result = defaultTinyBufferSize == -1 ?
+            (int) Math.ceil((double) groupByOperator.getStatistics().getDataSize() / 1E6) :
+            defaultTinyBufferSize;
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Buffer size for output from operator {} can be set to {}Mb", rsOp, result);
+        }
+        return result;
+      }
+    }
+    return null;
+  }
+
 }
