@@ -387,7 +387,12 @@ public class RexNodeConverter {
         childRexNodeLst.add(cluster.getRexBuilder().makeCall(cmpOp, rangeL, op));
         childRexNodeLst.add(cluster.getRexBuilder().makeCall(cmpOp, op, rangeH));
       }
-      expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
+
+      if (calciteOp == SqlStdOperatorTable.CASE) {
+        expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
+      } else {
+        expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
+      }
     } else {
       retType = expr.getType();
     }
