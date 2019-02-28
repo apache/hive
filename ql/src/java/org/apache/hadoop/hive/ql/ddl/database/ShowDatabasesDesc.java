@@ -16,91 +16,50 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.ddl.database;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-
 /**
- * ShowDatabasesDesc.
- *
+ * DDL task description for SHOW DATABASES commands.
  */
 @Explain(displayName = "Show Databases", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class ShowDatabasesDesc extends DDLDesc implements Serializable {
+public class ShowDatabasesDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  String pattern;
-  String resFile;
 
-  /**
-   * table name for the result of show databases.
-   */
-  private static final String table = "show_databases";
+  /** Thrift ddl for the result of show databases. */
+  public static final String SHOW_DATABASES_SCHEMA = "database_name#string";
 
-  /**
-   * thrift ddl for the result of show databases.
-   */
-  private static final String schema = "database_name#string";
-
-  public String getTable() {
-    return table;
+  static {
+    DDLTask2.registerOperation(ShowDatabasesDesc.class, ShowDatabasesOperation.class);
   }
 
-  public String getSchema() {
-    return schema;
-  }
+  private final String resFile;
+  private final String pattern;
 
-  public ShowDatabasesDesc() {
-  }
-
-  /**
-   * @param resFile
-   */
   public ShowDatabasesDesc(Path resFile) {
     this.resFile = resFile.toString();
-    pattern = null;
+    this.pattern = null;
   }
 
-  /**
-   * @param pattern
-   *          names of databases to show
-   */
   public ShowDatabasesDesc(Path resFile, String pattern) {
     this.resFile = resFile.toString();
     this.pattern = pattern;
   }
 
-  /**
-   * @return the pattern
-   */
   @Explain(displayName = "pattern")
   public String getPattern() {
     return pattern;
   }
 
-  /**
-   * @param pattern
-   *          the pattern to set
-   */
-  public void setPattern(String pattern) {
-    this.pattern = pattern;
-  }
-
-  /**
-   * @return the resFile
-   */
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
-  }
-
-  /**
-   * @param resFile
-   *          the resFile to set
-   */
-  public void setResFile(String resFile) {
-    this.resFile = resFile;
   }
 }

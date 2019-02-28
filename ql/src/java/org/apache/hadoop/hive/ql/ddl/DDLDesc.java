@@ -16,37 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
-
-import java.io.Serializable;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
+package org.apache.hadoop.hive.ql.ddl;
 
 /**
- * SwitchDatabaseDesc.
- *
+ * Marker interface for all DDL operation descriptors.
  */
-@Explain(displayName = "Switch Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class SwitchDatabaseDesc extends DDLDesc implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-
-  String databaseName;
-
-  public SwitchDatabaseDesc() {
-  }
-
-  public SwitchDatabaseDesc(String databaseName) {
-    super();
-    this.databaseName = databaseName;
-  }
-
-  @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getDatabaseName() {
-    return databaseName;
-  }
-
-  public void setDatabaseName(String databaseName) {
-    this.databaseName = databaseName;
-  }
+public interface DDLDesc {
 }
