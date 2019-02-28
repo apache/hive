@@ -19,7 +19,7 @@ package org.apache.hive.beeline.schematool;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
+import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

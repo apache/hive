@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.tools;
+package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
@@ -131,9 +131,6 @@ public class HiveSchemaHelper {
 
     /**
      * Find the type of given command
-     *
-     * @param dbCommand
-     * @return
      */
     boolean isPartialCommand(String dbCommand) throws IllegalArgumentException;
 
@@ -141,52 +138,37 @@ public class HiveSchemaHelper {
      * Parse the DB specific nesting format and extract the inner script name if any
      *
      * @param dbCommand command from parent script
-     * @return
      * @throws IllegalFormatException
      */
     String getScriptName(String dbCommand) throws IllegalArgumentException;
 
     /**
      * Find if the given command is a nested script execution
-     *
-     * @param dbCommand
-     * @return
      */
     boolean isNestedScript(String dbCommand);
 
     /**
      * Find if the given command should not be passed to DB
-     *
-     * @param dbCommand
-     * @return
      */
     boolean isNonExecCommand(String dbCommand);
 
     /**
      * Get the SQL statement delimiter
-     *
-     * @return
      */
     String getDelimiter();
 
     /**
      * Get the SQL indentifier quotation character
-     *
-     * @return
      */
     String getQuoteCharacter();
 
     /**
      * Clear any client specific tags
-     *
-     * @return
      */
     String cleanseCommand(String dbCommand);
 
     /**
      * Does the DB required table/column names quoted
-     *
-     * @return
      */
     boolean needsQuotedIdentifier();
 
@@ -212,7 +194,7 @@ public class HiveSchemaHelper {
         throws IllegalFormatException, IOException;
   }
 
-  /***
+  /**
    * Base implementation of NestedScriptParser
    * abstractCommandParser.
    *

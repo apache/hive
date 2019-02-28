@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.tools;
+package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import java.io.BufferedWriter;
 import java.io.File;

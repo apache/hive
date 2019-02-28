@@ -15,14 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.tools;
+package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
+import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 
 /**
  * Perform metastore schema upgrade.
