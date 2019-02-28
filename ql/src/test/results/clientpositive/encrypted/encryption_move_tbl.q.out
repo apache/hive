@@ -230,7 +230,7 @@ PREHOOK: query: DROP DATABASE encrypted_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:encrypted_db
 PREHOOK: Output: database:encrypted_db
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Database encrypted_db is not empty. One or more tables exist.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask2. InvalidOperationException(message:Database encrypted_db is not empty. One or more tables exist.)
 PREHOOK: query: DROP TABLE encrypted_db_outloc.renamed_encrypted_table_n1 PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: encrypted_db_outloc@renamed_encrypted_table_n1

@@ -1,0 +1,158 @@
+PREHOOK: query: describe function get_sql_schema
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function get_sql_schema
+POSTHOOK: type: DESCFUNCTION
+get_sql_schema(string) - Takes query as argument. Returns schema (column names and types) of the resultset  that would be generated when the query is executed. Can be invoked like: select get_sql_schema("select * from some_table").NOTE: This does not produce any output for DDL queries like show tables/databases/... and others.
+PREHOOK: query: describe function extended get_sql_schema
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function extended get_sql_schema
+POSTHOOK: type: DESCFUNCTION
+get_sql_schema(string) - Takes query as argument. Returns schema (column names and types) of the resultset  that would be generated when the query is executed. Can be invoked like: select get_sql_schema("select * from some_table").NOTE: This does not produce any output for DDL queries like show tables/databases/... and others.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDTFGetSQLSchema
+Function type:BUILTIN
+PREHOOK: query: create table t1(c1 int, c2 float, c3 double, c4 string, c5 date, c6 array<int>, c7 struct<a:int,b:string>, c8 map<int,int>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(c1 int, c2 float, c3 double, c4 string, c5 date, c6 array<int>, c7 struct<a:int,b:string>, c8 map<int,int>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 select 1, 1.1, 2.2, 'val1', '2019-02-15', array(1), named_struct('a',1,'b','2'), map(1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 select 1, 1.1, 2.2, 'val1', '2019-02-15', array(1), named_struct('a',1,'b','2'), map(1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.c1 SIMPLE []
+POSTHOOK: Lineage: t1.c2 EXPRESSION []
+POSTHOOK: Lineage: t1.c3 EXPRESSION []
+POSTHOOK: Lineage: t1.c4 SIMPLE []
+POSTHOOK: Lineage: t1.c5 EXPRESSION []
+POSTHOOK: Lineage: t1.c6 EXPRESSION []
+POSTHOOK: Lineage: t1.c7 EXPRESSION []
+POSTHOOK: Lineage: t1.c8 EXPRESSION []
+PREHOOK: query: explain select get_sql_schema('select * from t1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select get_sql_schema('select * from t1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'select * from t1' (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
+            UDTF Operator
+              Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
+              function name: get_sql_schema
+              Select Operator
+                expressions: col_name (type: binary), col_type (type: binary)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                ListSink
+
+PREHOOK: query: select get_sql_schema('select * from t1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select get_sql_schema('select * from t1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+t1.c1	int
+t1.c2	float
+t1.c3	double
+t1.c4	string
+t1.c5	date
+t1.c6	array<int>
+t1.c7	struct<a:int,b:string>
+t1.c8	map<int,int>
+PREHOOK: query: create external table t2(c1 int, c2 float, c3 double, c4 string, c5 date, c6 array<int>, c7 struct<a:int,b:string>, c8 map<int,int>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create external table t2(c1 int, c2 float, c3 double, c4 string, c5 date, c6 array<int>, c7 struct<a:int,b:string>, c8 map<int,int>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: insert into t2 select 1, 1.1, 2.2, 'val1', '2019-02-15', array(1), named_struct('a',1,'b','2'), map(1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2 select 1, 1.1, 2.2, 'val1', '2019-02-15', array(1), named_struct('a',1,'b','2'), map(1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.c1 SIMPLE []
+POSTHOOK: Lineage: t2.c2 EXPRESSION []
+POSTHOOK: Lineage: t2.c3 EXPRESSION []
+POSTHOOK: Lineage: t2.c4 SIMPLE []
+POSTHOOK: Lineage: t2.c5 EXPRESSION []
+POSTHOOK: Lineage: t2.c6 EXPRESSION []
+POSTHOOK: Lineage: t2.c7 EXPRESSION []
+POSTHOOK: Lineage: t2.c8 EXPRESSION []
+PREHOOK: query: explain select get_sql_schema('select * from t2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select get_sql_schema('select * from t2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'select * from t2' (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
+            UDTF Operator
+              Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
+              function name: get_sql_schema
+              Select Operator
+                expressions: col_name (type: binary), col_type (type: binary)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                ListSink
+
+PREHOOK: query: select get_sql_schema('select * from t2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select get_sql_schema('select * from t2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+t2.c1	int
+t2.c2	float
+t2.c3	double
+t2.c4	string
+t2.c5	date
+t2.c6	array<int>
+t2.c7	struct<a:int,b:string>
+t2.c8	map<int,int>

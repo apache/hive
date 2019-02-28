@@ -111,6 +111,7 @@ from_unixtime
 from_utc_timestamp
 get_json_object
 get_splits
+get_sql_schema
 greatest
 grouping
 hash
