@@ -446,6 +446,17 @@ public class CliDriver {
         }
         break;
       case '"':
+        if (!escape) {
+          if (!inQuotes) {
+            quoteChar = c;
+            inQuotes = !inQuotes;
+          } else {
+            if (c == quoteChar) {
+              inQuotes = !inQuotes;
+            }
+          }
+        }
+        break;
       case '\'':
         if (!escape) {
           if (!inQuotes) {

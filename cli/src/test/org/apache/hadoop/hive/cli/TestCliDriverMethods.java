@@ -378,6 +378,11 @@ public class TestCliDriverMethods extends TestCase {
     results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2 + ";");
     assertEquals(cmd1, results.get(0));
     assertEquals(cmd2, results.get(1));
+
+    // Test semicolon in double quote
+    String cmd3 = "select * from table_a where column_a not like \"%;\"";
+    assertEquals(cmd3, CliDriver.splitSemiColon(cmd3).get(0));
+    assertEquals(cmd3, CliDriver.splitSemiColon(cmd3 + ";").get(0));
   }
 
   private static void setEnv(String key, String value) throws Exception {
