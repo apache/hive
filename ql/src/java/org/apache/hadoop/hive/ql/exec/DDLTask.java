@@ -21,18 +21,15 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +50,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -61,16 +57,13 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -86,7 +79,6 @@ import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -133,7 +125,6 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
-import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -157,13 +148,11 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
-import org.apache.hadoop.hive.metastore.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -185,7 +174,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
@@ -196,7 +184,6 @@ import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.AlterWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
@@ -206,10 +193,8 @@ import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
-import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
@@ -222,7 +207,6 @@ import org.apache.hadoop.hive.ql.plan.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.plan.KillQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
-import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
@@ -240,7 +224,6 @@ import org.apache.hadoop.hive.ql.plan.ShowCompactionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowConfDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.ShowCreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
@@ -250,10 +233,8 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTxnsDesc;
-import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
-import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -294,7 +275,6 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
-import org.apache.hive.common.util.RetryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
@@ -360,41 +340,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Hive db;
     try {
       db = Hive.get(conf);
-
-      CreateDatabaseDesc createDatabaseDesc = work.getCreateDatabaseDesc();
-      if (null != createDatabaseDesc) {
-        return createDatabase(db, createDatabaseDesc);
-      }
-
-      DropDatabaseDesc dropDatabaseDesc = work.getDropDatabaseDesc();
-      if (dropDatabaseDesc != null) {
-        return dropDatabase(db, dropDatabaseDesc);
-      }
-
-      LockDatabaseDesc lockDatabaseDesc = work.getLockDatabaseDesc();
-      if (lockDatabaseDesc != null) {
-        return lockDatabase(db, lockDatabaseDesc);
-      }
-
-      UnlockDatabaseDesc unlockDatabaseDesc = work.getUnlockDatabaseDesc();
-      if (unlockDatabaseDesc != null) {
-        return unlockDatabase(db, unlockDatabaseDesc);
-      }
-
-      SwitchDatabaseDesc switchDatabaseDesc = work.getSwitchDatabaseDesc();
-      if (switchDatabaseDesc != null) {
-        return switchDatabase(db, switchDatabaseDesc);
-      }
-
-      DescDatabaseDesc descDatabaseDesc = work.getDescDatabaseDesc();
-      if (descDatabaseDesc != null) {
-        return descDatabase(db, descDatabaseDesc);
-      }
-
-      AlterDatabaseDesc alterDatabaseDesc = work.getAlterDatabaseDesc();
-      if (alterDatabaseDesc != null) {
-        return alterDatabase(db, alterDatabaseDesc);
-      }
 
       CreateTableDesc crtTbl = work.getCreateTblDesc();
       if (crtTbl != null) {
@@ -470,11 +415,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       DescFunctionDesc descFunc = work.getDescFunctionDesc();
       if (descFunc != null) {
         return describeFunction(db, descFunc);
-      }
-
-      ShowDatabasesDesc showDatabases = work.getShowDatabasesDesc();
-      if (showDatabases != null) {
-        return showDatabases(db, showDatabases);
       }
 
       ShowTablesDesc showTbls = work.getShowTblsDesc();
@@ -1178,69 +1118,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     writeToFile(sb.toString(), resFile);
   }
-
-  private int alterDatabase(Hive db, AlterDatabaseDesc alterDbDesc) throws HiveException {
-
-    String dbName = alterDbDesc.getDatabaseName();
-    Database database = db.getDatabase(dbName);
-    if (database == null) {
-      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
-    }
-
-    Map<String, String> params = database.getParameters();
-    if ((null != alterDbDesc.getReplicationSpec())
-        && !alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
-      LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
-      return 0; // no replacement, the existing database state is newer than our update.
-    }
-
-    switch (alterDbDesc.getAlterType()) {
-    case ALTER_PROPERTY:
-      Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
-
-      // if both old and new params are not null, merge them
-      if (params != null && newParams != null) {
-        params.putAll(newParams);
-        database.setParameters(params);
-      } else {
-        // if one of them is null, replace the old params with the new one
-        database.setParameters(newParams);
-      }
-      break;
-
-    case ALTER_OWNER:
-      database.setOwnerName(alterDbDesc.getOwnerPrincipal().getName());
-      database.setOwnerType(alterDbDesc.getOwnerPrincipal().getType());
-      break;
-
-    case ALTER_LOCATION:
-      try {
-        String newLocation = alterDbDesc.getLocation();
-        URI locationURI = new URI(newLocation);
-        if (   !locationURI.isAbsolute()
-            || StringUtils.isBlank(locationURI.getScheme())) {
-          throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
-        }
-        if (newLocation.equals(database.getLocationUri())) {
-          LOG.info("AlterDatabase skipped. No change in location.");
-        }
-        else {
-          database.setLocationUri(newLocation);
-        }
-      }
-      catch (URISyntaxException e) {
-        throw new HiveException(e);
-      }
-      break;
-
-    default:
-      throw new AssertionError("Unsupported alter database type! : " + alterDbDesc.getAlterType());
-    }
-
-    db.alterDatabase(database.getName(), database);
-    return 0;
-  }
-
 
   /**
    * Alters a materialized view.
@@ -2488,39 +2365,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return builder;
   }
 
-
-  /**
-   * Write a list of the available databases to a file.
-   *
-   * @param showDatabasesDesc
-   *          These are the databases we're interested in.
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int showDatabases(Hive db, ShowDatabasesDesc showDatabasesDesc) throws HiveException {
-    // get the databases for the desired pattern - populate the output stream
-    List<String> databases = null;
-    if (showDatabasesDesc.getPattern() != null) {
-      LOG.info("pattern: {}", showDatabasesDesc.getPattern());
-      databases = db.getDatabasesByPattern(showDatabasesDesc.getPattern());
-    } else {
-      databases = db.getAllDatabases();
-    }
-    LOG.info("results : {}", databases.size());
-
-    // write the results in the file
-    DataOutputStream outStream = getOutputStream(showDatabasesDesc.getResFile());
-    try {
-      formatter.showDatabases(outStream, databases);
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "show databases");
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
   /**
    * Write a list of the tables/views in the database to a file.
    *
@@ -3077,36 +2921,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Lock the database
-   *
-   * @param lockDb
-   *          the database to be locked along with the mode
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int lockDatabase(Hive db, LockDatabaseDesc lockDb) throws HiveException {
-    Context ctx = driverContext.getCtx();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    return txnManager.lockDatabase(db, lockDb);
-  }
-
-  /**
-   * Unlock the database specified
-   *
-   * @param unlockDb
-   *          the database to be unlocked
-   * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException
-   *           Throws this exception if an unexpected error occurs.
-   */
-  private int unlockDatabase(Hive db, UnlockDatabaseDesc unlockDb) throws HiveException {
-    Context ctx = driverContext.getCtx();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    return txnManager.unlockDatabase(db, unlockDb);
-  }
-
-  /**
    * Unlock the table/partition specified
    * @param db
    *
@@ -3190,43 +3004,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 1;
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
-    return 0;
-  }
-
-  private int descDatabase(Hive db, DescDatabaseDesc descDatabase) throws HiveException {
-    DataOutputStream outStream = getOutputStream(descDatabase.getResFile());
-    try {
-      Database database = db.getDatabase(descDatabase.getDatabaseName());
-
-      if (database == null) {
-        throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, descDatabase.getDatabaseName());
-      }
-      Map<String, String> params = null;
-      if (descDatabase.isExt()) {
-        params = database.getParameters();
-      }
-
-      // If this is a q-test, let's order the params map (lexicographically) by
-      // key. This is to get consistent param ordering between Java7 and Java8.
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) &&
-          params != null) {
-        params = new TreeMap<String, String>(params);
-      }
-
-      String location = database.getLocationUri();
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
-        location = "location/in/test";
-      }
-      PrincipalType ownerType = database.getOwnerType();
-      formatter.showDatabaseDescription(outStream, database.getName(),
-          database.getDescription(), location,
-          database.getOwnerName(), (null == ownerType) ? null : ownerType.name(), params);
-
-    } catch (Exception e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
       IOUtils.closeStream(outStream);
     }
@@ -4573,96 +4350,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Create a Database
-   * @param db
-   * @param crtDb
-   * @return Always returns 0
-   * @throws HiveException
-   */
-  private int createDatabase(Hive db, CreateDatabaseDesc crtDb)
-      throws HiveException {
-    Database database = new Database();
-    database.setName(crtDb.getName());
-    database.setDescription(crtDb.getComment());
-    database.setLocationUri(crtDb.getLocationUri());
-    database.setParameters(crtDb.getDatabaseProperties());
-    database.setOwnerName(SessionState.getUserFromAuthenticator());
-    database.setOwnerType(PrincipalType.USER);
-    try {
-      makeLocationQualified(database);
-      db.createDatabase(database, crtDb.getIfNotExists());
-    }
-    catch (AlreadyExistsException ex) {
-      //it would be better if AlreadyExistsException had an errorCode field....
-      throw new HiveException(ex, ErrorMsg.DATABASE_ALREADY_EXISTS, crtDb.getName());
-    }
-    return 0;
-  }
-
-  /**
-   * Drop a Database
-   * @param db
-   * @param dropDb
-   * @return Always returns 0
-   * @throws HiveException
-   */
-  private int dropDatabase(Hive db, DropDatabaseDesc dropDb)
-      throws HiveException {
-    try {
-      String dbName = dropDb.getDatabaseName();
-      ReplicationSpec replicationSpec = dropDb.getReplicationSpec();
-      if (replicationSpec.isInReplicationScope()) {
-        Database database = db.getDatabase(dbName);
-        if (database == null
-            || !replicationSpec.allowEventReplacementInto(database.getParameters())) {
-          return 0;
-        }
-      }
-      db.dropDatabase(dbName, true, dropDb.getIfExists(), dropDb.isCasdade());
-      // Unregister the functions as well
-      if (dropDb.isCasdade()) {
-        FunctionRegistry.unregisterPermanentFunctions(dbName);
-      }
-    } catch (NoSuchObjectException ex) {
-      throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, dropDb.getDatabaseName());
-    }
-    return 0;
-  }
-
-  /**
-   * Switch to a different Database
-   * @param db
-   * @param switchDb
-   * @return Always returns 0
-   * @throws HiveException
-   */
-  private int switchDatabase(Hive db, SwitchDatabaseDesc switchDb)
-      throws HiveException {
-    String dbName = switchDb.getDatabaseName();
-    if (!db.databaseExists(dbName)) {
-      throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
-    }
-    SessionState.get().setCurrentDatabase(dbName);
-
-    // set database specific parameters
-    Database database = db.getDatabase(dbName);
-    assert(database != null);
-    Map<String, String> dbParams = database.getParameters();
-    if (dbParams != null) {
-      for (HiveConf.ConfVars var: HiveConf.dbVars) {
-        String newValue = dbParams.get(var.varname);
-        if (newValue != null) {
-          LOG.info("Changing {} from {} to {}", var.varname, conf.getVar(var),
-            newValue);
-          conf.setVar(var, newValue);
-        }
-      }
-    }
-
-    return 0;
-  }
-
-  /**
    * Create a new table.
    *
    * @param db
@@ -5093,25 +4780,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (path != null)
     {
       sd.setLocation(Utilities.getQualifiedPath(conf, path));
-    }
-  }
-
-   /**
-   * Make qualified location for a database .
-   *
-   * @param database
-   *          Database.
-   */
-  public static final String DATABASE_PATH_SUFFIX = ".db";
-  private void makeLocationQualified(Database database) throws HiveException {
-    if (database.isSetLocationUri()) {
-      database.setLocationUri(Utilities.getQualifiedPath(conf, new Path(database.getLocationUri())));
-    }
-    else {
-      // Location is not set we utilize METASTOREWAREHOUSE together with database name
-      database.setLocationUri(
-          Utilities.getQualifiedPath(conf, new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE),
-              database.getName().toLowerCase() + DATABASE_PATH_SUFFIX)));
     }
   }
 
