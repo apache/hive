@@ -29,11 +29,14 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -42,6 +45,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * Superclass for all threads in the compactor.
@@ -210,11 +214,27 @@ public abstract class CompactorThread extends Thread implements Configurable {
   private static AtomicInteger nextThreadId = new AtomicInteger(1000000);
 
   public static void initializeAndStartThread(CompactorThread thread,
-      Configuration conf) throws Exception {
+                                              Configuration conf) throws Exception {
     LOG.info("Starting compactor thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.setThreadId(nextThreadId.incrementAndGet());
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
+  }
+
+  protected boolean replIsCompactionDisabledForTable(Table tbl) {
+    // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
+    return ReplUtils.isFirstIncPending(tbl.getParameters());
+  }
+
+  protected boolean replIsCompactionDisabledForDatabase(String dbName) {
+    try {
+      Database database = rs.getDatabase(getDefaultCatalog(conf), dbName);
+      // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
+      return ReplUtils.isFirstIncPending(database.getParameters());
+    } catch (NoSuchObjectException e) {
+      LOG.info("Unable to find database " + dbName);
+      return true;
+    }
   }
 }
